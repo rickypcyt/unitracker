@@ -1,13 +1,16 @@
-// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react'; // Importamos defaultSystem
-import Home from './Home'; // Componente Home
-import './index.css'; // Importamos los estilos globales si los tienes
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react'; // Import ChakraProvider and defaultSystem
+import { Provider } from 'react-redux'; // Redux Provider
+import { store } from './comp/store'; // Import Redux store
+import Home from './Home'; // Import your Home component
+import './index.css'; // Import global styles
 
-// Montamos el componente Home dentro del div con id 'root'
+// Mount the Home component within the div with id 'root'
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ChakraProvider value={defaultSystem}> {/* Pasamos defaultSystem al ChakraProvider */}
-    <Home />
-  </ChakraProvider>
+  <Provider store={store}> {/* Wrap the app with Redux Provider */}
+    <ChakraProvider value={defaultSystem}> {/* Pass defaultSystem to ChakraProvider */}
+      <Home /> {/* Your main component */}
+    </ChakraProvider>
+  </Provider>
 );

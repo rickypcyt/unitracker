@@ -1,18 +1,17 @@
-// src/comp/Tasks.jsx o src/store/tasksSlice.js (preferiblemente tasksSlice.js)
+// src/redux/tasksSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const tasksSlice = createSlice({
+export const tasksSlice = createSlice({
   name: 'tasks',
-  initialState: [],
+  initialState: [
+    // Example tasks (adjust based on your actual data structure)
+    { title: 'Task 1', deadline: '2024-12-05' },
+    { title: 'Task 2', deadline: '2024-12-10' },
+    { title: 'Task 3', deadline: '2024-12-15' },
+  ],
   reducers: {
     addTask: (state, action) => {
       state.push(action.payload);
-    },
-    toggleTaskCompletion: (state, action) => {
-      const task = state.find((task) => task.id === action.payload);
-      if (task) {
-        task.completed = !task.completed;
-      }
     },
     removeTask: (state, action) => {
       return state.filter((task) => task.id !== action.payload);
@@ -20,5 +19,6 @@ const tasksSlice = createSlice({
   },
 });
 
-export const { addTask, toggleTaskCompletion, removeTask } = tasksSlice.actions;
-export default tasksSlice.reducer;  // Asegúrate de exportar el reducer correctamente
+export const { addTask, removeTask } = tasksSlice.actions;
+
+export default tasksSlice.reducer;
