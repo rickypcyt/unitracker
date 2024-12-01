@@ -4,7 +4,6 @@ import FullCalendar from '@fullcalendar/react'; // Import FullCalendar component
 import dayGridPlugin from '@fullcalendar/daygrid'; // Import dayGridPlugin for the calendar grid
 import { useSelector } from 'react-redux'; // Import useSelector for accessing Redux state
 import Achievements from './comp/Achievements'; // Import the Achievements component
-import TaskDetails from './comp/TaskDetails'; // Import TaskDetails component
 
 const Home = () => {
   // Fetch tasks from Redux store
@@ -24,7 +23,7 @@ const Home = () => {
       flexDirection="column" // Stack children vertically
       alignItems="center"
       justifyContent="center"
-      minHeight="100vh"
+      height="100vh"
       bg="black"
       p={4} // Add padding for better spacing
       color="white"
@@ -34,12 +33,12 @@ const Home = () => {
       </Text>
 
       {/* Achievements Component */}
-      <Box mb={6} width="100%" display="flex" justifyContent="center">
+      <Box mb={6}> {/* Add spacing below Achievements */}
         <Achievements />
       </Box>
       
       {/* FullCalendar component container */}
-      <Box width="50%" maxWidth="1200px" boxShadow="lg" borderRadius="md" overflow="hidden" mb={6}>
+      <Box width="50%" maxWidth="1200px" boxShadow="lg" borderRadius="md" overflow="hidden">
         <FullCalendar
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
@@ -56,14 +55,10 @@ const Home = () => {
         />
       </Box>
 
-      {/* Task Details */}
-      <Box width="100%" maxWidth="800px">
-        <VStack spacing={4} align="stretch">
-          {tasks.map((task) => (
-            <TaskDetails key={task.id} task={task} />
-          ))}
-        </VStack>
-      </Box>
+      {/* Spacer for additional layout */}
+      <VStack spacing={8}>
+        {/* Add any other UI components you may want here */}
+      </VStack>
     </Box>
   );
 };
