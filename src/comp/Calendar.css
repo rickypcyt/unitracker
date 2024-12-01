@@ -1,96 +1,134 @@
-/* Calendar.css */
-
-/* Calendar Container: Black Background */
-.calendar-container {
+/* Dark Mode Calendar Styling */
+:root {
+    /* Color Palette */
+    --dark-bg-primary: #000;
+    --dark-bg-secondary: #1a1a1a;
+    --dark-bg-tertiary: #2a2a2a;
+    --dark-border: #333;
+    --dark-border-hover: #444;
+    --text-primary: #fff;
+    --text-secondary: #888;
+    --text-subtle: #666;
+  }
+  
+  /* Calendar Container */
+  .calendar-container {
+    max-width: auto; /* Allows full responsiveness */
+    margin: 10px auto;
+    background-color: var(--dark-bg-secondary);
+    border-radius: 12px;
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto; /* Center the calendar */
-    background-color: #000; /* Pure black background */
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); /* Subtle white glow */
+    box-shadow: 
+      0 0 15px rgba(255, 255, 255, 0.05),
+      0 4px 6px rgba(0, 0, 0, 0.1);
   }
   
-  /* FullCalendar Styling */
+  /* FullCalendar Overrides */
   .fc {
-    font-family: "San Francisco", "Arial", sans-serif; /* Clean Apple-like font */
-    background-color: #000; /* Pure black */
-    color: #000000; /* White text for dark mode */
-    overflow: hidden;
+    color: black;
   }
   
-  /* Toolbar Styling: Dark Gray Background with White Text */
-  .fc-toolbar {
-    background-color: #1a1a1a; /* Dark gray */
-    color: #fff; /* White text */
+  /* Header Styling */
+  .fc-header-toolbar {
+    background-color: var(--dark-bg-tertiary);
     padding: 10px;
-    border-radius: 8px 8px 8px 8px; /* Rounded top corners */
-    border-bottom: 0px solid #444; /* Slightly lighter gray border */
-  }
-  
-  .fc-toolbar h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #fff; /* Bright white font */
-  }
-  
-  .fc-toolbar .fc-button-group > .fc-button {
-    margin: 0;
-  }
-  
-  /* Button Styling: Subtle Gray with Hover Effect */
-  .fc-button {
-    background-color: #333; /* Dark gray for buttons */
-    color: #fff; /* White text */
-    border: 1px solid #555; /* Subtle gray border */
     border-radius: 8px;
-    padding: 5px 10px;
-    font-size: 0.9rem;
-    margin: 0 2px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    margin-bottom: 15px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.75em;
+    margin: 0px;
+    color: white;
   }
   
-  .fc-button:hover {
-    background-color: #555; /* Slightly lighter gray on hover */
-    color: #fff;
+  .fc-header-toolbar .fc-button {
+    background-color: var(--dark-bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--dark-border) !important;
+    border-radius: 6px !important;
+    transition: 
+      background-color 0.2s ease,
+      transform 0.15s ease;
   }
   
-  /* Grid Borders: Dark Gray */
+  .fc-header-toolbar .fc-button:hover {
+    background-color: var(--dark-border) !important;
+    transform: scale(1.02);
+  }
+  
+  .fc-header-toolbar .fc-button-active {
+    background-color: var(--dark-border-hover) !important;
+  }
+  
+  /* Day Grid Styling */
+  .fc-daygrid {
+    background-color: var(--dark-bg-secondary);
+    border-radius: 10px;
+  }
+  
   .fc-daygrid-day {
-    border: 8px solid #333; /* Dark gray borders for grid */
-    color: #fff; /* White text */
+    background-color: var(--dark-bg-secondary);
+    border-color: var(--dark-border) !important;
   }
   
   .fc-daygrid-day-number {
-    color: #888; /* Medium gray for day numbers */
-    font-weight: 500;
+    color: var(--text-primary);
+    padding: 4px;
   }
   
-  /* Events Styling */
+  .fc-daygrid-day.fc-day-today {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  /* Event Styling */
   .fc-event {
-    background-color: #007aff; /* Apple blue for events */
-    color: #fff; /* White text for events */
-    border: none;
+    background-color: #4a4a4a !important;
+    border-color: var(--dark-border) !important;
+    color: var(--text-primary);
     border-radius: 4px;
-    padding: 2px 5px;
-    font-size: 0.8rem;
-    text-align: center;
+    margin: 2px;
+    padding: 2px 4px;
   }
   
-  /* Hover Effect on Events */
   .fc-event:hover {
-    background-color: #0056b3; /* Slightly darker blue on hover */
+    background-color: var(--dark-border-hover) !important;
   }
   
-  /* Adjustments for Mobile */
+  /* Scrollbar Styling */
+  .fc-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark-border-hover) var(--dark-bg-secondary);
+  }
+  
+  .fc-scroller::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .fc-scroller::-webkit-scrollbar-track {
+    background: var(--dark-bg-secondary);
+  }
+  
+  .fc-scroller::-webkit-scrollbar-thumb {
+    background-color: var(--dark-border-hover);
+    border-radius: 3px;
+  }
+  
+  /* Responsive Adjustments */
   @media (max-width: 768px) {
-    .fc-toolbar h2 {
-      font-size: 1.2rem;
+    .calendar-container {
+      margin: 10px;
+      padding: 10px;
     }
   
-    .fc-button {
-      padding: 5px;
-      font-size: 0.8rem;
+    .fc-header-toolbar {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .fc-header-toolbar .fc-toolbar-chunk {
+      display: flex;
+      justify-content: center;
+      width: 100%;
     }
   }
-  

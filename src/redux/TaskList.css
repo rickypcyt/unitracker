@@ -14,7 +14,7 @@
   .task-list-container {
     margin-top: 20px;
     background-color: var(--dark-bg-primary);
-    padding: 10px;
+    padding: 0px;
     border-radius: 12px;
     box-shadow: 
       0 0 15px rgba(255, 255, 255, 0.05),
@@ -30,6 +30,11 @@
     color: var(--text-subtle);
     font-size: 1.2rem;
     padding: 40px;
+    background-color: var(--dark-bg-secondary);
+    border-radius: 10px;
+    margin-bottom: 3%;
+
+
   }
   
   .task-item {
@@ -37,7 +42,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    margin-bottom: 15px;
+    margin-bottom: 3%;
     background-color: var(--dark-bg-secondary);
     border: 1px solid var(--dark-border);
     border-radius: 10px;
@@ -48,7 +53,6 @@
   }
   
   .task-item:hover {
-    transform: translateY(-2px);
     box-shadow: 
       0 3px 6px rgba(0, 0, 0, 0.4),
       0 2px 4px rgba(255, 255, 255, 0.03);

@@ -1,82 +1,106 @@
-/* TaskForm.css */
-
-/* Form Container: Black Background */
-form {
-    background-color: #000; /* Pure black */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); /* Subtle white glow */
+/* Dark Mode Task Form Styling */
+:root {
+    /* Color Palette */
+    --dark-bg-primary: #000;
+    --dark-bg-secondary: #1a1a1a;
+    --dark-bg-tertiary: #2a2a2a;
+    --dark-border: #333;
+    --dark-border-hover: #444;
+    --text-primary: #fff;
+    --text-secondary: #888;
+    --text-subtle: #666;
+    --accent-color: #4a90e2;
+  }
+  
+  .task-form-container {
     max-width: auto;
-    margin: 0 auto; /* Center the form */
-    color: #fff; /* White text */
-    margin-top: 5%;
+    margin: 20px auto;
+    background-color: var(--dark-bg-secondary);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 
+      0 0 15px rgba(255, 255, 255, 0.05),
+      0 4px 6px rgba(0, 0, 0, 0.1);
   }
   
-  /* Input Fields */
-  input[type="text"],
-  input[type="date"] {
-    background-color: #1a1a1a; /* Dark gray background */
-    color: #fff; /* White text */
-    border: 1px solid #333; /* Subtle dark gray border */
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 1rem;
-    width: 100%;
-    margin-bottom: 15px;
-    transition: border-color 0.3s;
-  }
-  
-  input[type="text"]:focus,
-  input[type="date"]:focus {
-    border-color: #007aff; /* Apple blue on focus */
-    outline: none; /* Remove default outline */
-  }
-  
-  /* Placeholder Text */
-  input::placeholder {
-    color: #666; /* Medium gray placeholder text */
-  }
-  
-  /* Button Styling */
-  button {
-    background-color: #333; /* Dark gray button */
-    color: #fff; /* White text */
-    border: 1px solid #555; /* Subtle gray border */
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 100%; /* Full width */
-    transition: background 0.3s;
-  }
-  
-  button:hover {
-    background-color: #007aff; /* Apple blue on hover */
-    color: #fff; /* Keep white text */
-  }
-  
-  /* Stack Spacing */
-  .stack {
+  .task-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
   }
   
-  /* Form Labels (if added later) */
-  label {
-    font-weight: 600;
-    color: #fff; /* White text */
+  .task-input {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: var(--dark-bg-primary);
+    border: 1px solid var(--dark-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: 
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
   
-  /* Adjustments for Mobile */
+  .task-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+  }
+  
+  .task-input::placeholder {
+    color: var(--text-secondary);
+  }
+  
+  .task-input-error {
+    border-color: #ff453a;
+  }
+  
+  .task-input-error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.2);
+  }
+  
+  .task-submit-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-color);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 
+      background-color 0.2s ease,
+      transform 0.15s ease;
+    margin-top: 15px;
+  }
+  
+  .task-submit-button:hover {
+    background-color: #5a9deb;
+    transform: translateY(-2px);
+  }
+  
+  .task-submit-button:active {
+    transform: translateY(1px);
+  }
+  
+  .task-form-error-message {
+    color: #ff453a;
+    font-size: 0.9rem;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  
   @media (max-width: 768px) {
-    form {
+    .task-form-container {
+      margin: 10px;
       padding: 15px;
     }
   
-    button {
-      font-size: 0.9rem;
-      padding: 8px;
+    .task-input,
+    .task-submit-button {
+      padding: 10px;
     }
   }
-  
