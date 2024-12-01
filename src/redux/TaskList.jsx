@@ -26,6 +26,7 @@ const TaskList = () => {
               display="flex"
               justifyContent="space-between"
               alignItems="center"
+              mb={5}
             >
               <Text
                 fontWeight="bold"

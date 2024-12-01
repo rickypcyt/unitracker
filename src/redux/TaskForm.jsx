@@ -31,6 +31,7 @@ const TaskForm = () => {
       <Stack spacing={4}>
         <Input
           id="title"
+          mt={5}
           value={newTask.title}
           onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
           placeholder="Enter task title"
@@ -49,7 +50,7 @@ const TaskForm = () => {
           onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
           required
         />
-        <Button colorScheme="teal" type="submit" width="full">
+        <Button colorScheme="teal" type="submit" width="full" mt={5}>
           Add Task
         </Button>
       </Stack>

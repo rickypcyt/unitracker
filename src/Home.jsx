@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux';
 import TaskForm from './redux/TaskForm';
 import TaskList from './redux/TaskList';
 import { fetchTasks } from './redux/TaskActions';
+import Achievements from './comp/Achievements';
+import Calendar from './comp/Calendar'; // Import the Calendar component
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -14,12 +16,14 @@ const Home = () => {
   }, [dispatch]);
 
   return (
-    <Box maxW="800px" mx="auto" mt={10} p={5}>
-      <Heading mb={6} textAlign="center" size="lg">
+    <Box maxW="800px" mx="auto" p={5}>
+      <Heading mb={6} textAlign="center" size="lg" color="white">
         Task Tracker
       </Heading>
+      <Achievements />
       <TaskForm />
       <TaskList />
+      <Calendar /> {/* Add the Calendar component */}
     </Box>
   );
 };

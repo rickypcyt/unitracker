@@ -1,0 +1,96 @@
+/* Calendar.css */
+
+/* Calendar Container: Black Background */
+.calendar-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto; /* Center the calendar */
+    background-color: #000; /* Pure black background */
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); /* Subtle white glow */
+  }
+  
+  /* FullCalendar Styling */
+  .fc {
+    font-family: "San Francisco", "Arial", sans-serif; /* Clean Apple-like font */
+    background-color: #000; /* Pure black */
+    color: #000000; /* White text for dark mode */
+    overflow: hidden;
+  }
+  
+  /* Toolbar Styling: Dark Gray Background with White Text */
+  .fc-toolbar {
+    background-color: #1a1a1a; /* Dark gray */
+    color: #fff; /* White text */
+    padding: 10px;
+    border-radius: 8px 8px 8px 8px; /* Rounded top corners */
+    border-bottom: 0px solid #444; /* Slightly lighter gray border */
+  }
+  
+  .fc-toolbar h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff; /* Bright white font */
+  }
+  
+  .fc-toolbar .fc-button-group > .fc-button {
+    margin: 0;
+  }
+  
+  /* Button Styling: Subtle Gray with Hover Effect */
+  .fc-button {
+    background-color: #333; /* Dark gray for buttons */
+    color: #fff; /* White text */
+    border: 1px solid #555; /* Subtle gray border */
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    margin: 0 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .fc-button:hover {
+    background-color: #555; /* Slightly lighter gray on hover */
+    color: #fff;
+  }
+  
+  /* Grid Borders: Dark Gray */
+  .fc-daygrid-day {
+    border: 8px solid #333; /* Dark gray borders for grid */
+    color: #fff; /* White text */
+  }
+  
+  .fc-daygrid-day-number {
+    color: #888; /* Medium gray for day numbers */
+    font-weight: 500;
+  }
+  
+  /* Events Styling */
+  .fc-event {
+    background-color: #007aff; /* Apple blue for events */
+    color: #fff; /* White text for events */
+    border: none;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  
+  /* Hover Effect on Events */
+  .fc-event:hover {
+    background-color: #0056b3; /* Slightly darker blue on hover */
+  }
+  
+  /* Adjustments for Mobile */
+  @media (max-width: 768px) {
+    .fc-toolbar h2 {
+      font-size: 1.2rem;
+    }
+  
+    .fc-button {
+      padding: 5px;
+      font-size: 0.8rem;
+    }
+  }
+  
