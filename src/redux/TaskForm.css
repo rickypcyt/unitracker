@@ -1,16 +1,16 @@
 /* Dark Mode Task Form Styling */
 :root {
   /* Color Palette */
-  --dark-bg-primary: #121212;  /* Un fondo más suave */
-  --dark-bg-secondary: #1e1e1e; 
-  --dark-bg-tertiary: #2a2a2a;
-  --dark-border: #444;
-  --dark-border-hover: #555;
-  --text-primary: #e0e0e0;  /* Texto suave */
-  --text-secondary: #bbb;
-  --text-subtle: #888;
-  --accent-color: #3078b7;  /* Tono pastel más suave */
-  --error-color: #e07b7b;  /* Error en un tono pastel suave */
+  --dark-bg-primary: #353941;
+  --dark-bg-secondary: #3C3D37;
+  --dark-bg-tertiary: #353941;
+  --dark-border: #5F85DB;
+  --dark-border-hover: #4064b9;
+  --text-primary: #fff; /* Color blanco para el texto */
+  --text-secondary: #686D76;
+  --text-subtle: #3D3B40;
+  --accent-color: #1766ac;
+  --error-color: #dc5d5d;
 }
 
 .task-form-container {
@@ -19,7 +19,7 @@
   background-color: var(--dark-bg-secondary);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 
+  box-shadow:
     0 0 15px rgba(255, 255, 255, 0.05),
     0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -30,7 +30,8 @@
   gap: 12px;
 }
 
-.task-input {
+.task-input,
+.task-tag-input {
   width: 100%;
   padding: 12px;
   background-color: var(--dark-bg-primary);
@@ -38,27 +39,42 @@
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 1rem;
-  transition: 
+  transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.task-input:focus {
+.task-input:focus,
+.task-tag-input:focus {
   outline: none;
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(122, 159, 191, 0.2);  /* Tono pastel suave en el enfoque */
+  box-shadow: 0 0 0 3px rgba(122, 159, 191, 0.2);
 }
 
-.task-input::placeholder {
+.task-input::placeholder,
+.task-tag-input::placeholder {
   color: var(--text-secondary);
 }
 
-.task-input-error {
+.task-input-error,
+.task-tag-input-error {
   border-color: var(--error-color);
 }
 
-.task-input-error:focus {
-  box-shadow: 0 0 0 3px rgba(224, 123, 123, 0.2);  /* Tono de error suave */
+.task-input-error:focus,
+.task-tag-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(224, 123, 123, 0.2);
+}
+
+.task-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 0px;
+}
+
+.task-tag-input-group {
+  margin-top: 12px;
 }
 
 .task-submit-button {
@@ -71,14 +87,14 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: 
+  transition:
     background-color 0.2s ease,
     transform 0.15s ease;
   margin-top: 15px;
 }
 
 .task-submit-button:hover {
-  background-color: #3e7fb7;  /* Tono pastel más claro */
+  background-color: #0a7de1;
   transform: translateY(-2px);
 }
 
@@ -94,50 +110,6 @@
   text-align: left;
 }
 
-@media (max-width: 768px) {
-  .task-form-container {
-    margin: 10px;
-    padding: 15px;
-  }
-
-  .task-input,
-  .task-submit-button {
-    padding: 12px;
-  }
-}
-
-/* Contenedor para agrupar el título y el input de tags */
-.task-input-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-/* Estilo para los inputs */
-.task-input {
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid var(--dark-border);
-  border-radius: 5px;
-  width: 100%;
-  background-color: var(--dark-bg-primary);
-}
-
-.task-tag-input-group {
-  margin-top: 12px;
-}
-
-.task-tag-input {
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid var(--dark-border);
-  border-radius: 5px;
-  width: 100%;
-  background-color: var(--dark-bg-primary);
-}
-
-/* Estilo para las etiquetas seleccionadas */
 .task-tags {
   display: flex;
   flex-wrap: wrap;
@@ -145,7 +117,7 @@
 }
 
 .task-tag {
-  background-color: #3e7fb7;  /* Tono pastel suave */
+  background-color: #3e7fb7;
   color: #ffffff;
   padding: 6px 12px;
   margin-right: 8px;
@@ -164,20 +136,15 @@
   cursor: pointer;
 }
 
-.task-form-error-message {
-  color: var(--error-color);
-  margin-bottom: 12px;
-}
+@media (max-width: 768px) {
+  .task-form-container {
+    margin: 10px;
+    padding: 15px;
+  }
 
-.task-submit-button {
-  padding: 12px 18px;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.task-submit-button:hover {
-  background-color: #3e7fb7; /* Tonalidad pastel suave */
+  .task-input,
+  .task-tag-input,
+  .task-submit-button {
+    padding: 12px;
+  }
 }

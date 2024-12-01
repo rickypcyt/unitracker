@@ -1,14 +1,14 @@
 /* Dark Mode Task List Styling - Refined Version */
 :root {
     /* Color Palette */
-    --dark-bg-primary: #000;
-    --dark-bg-secondary: #1a1a1a;
-    --dark-bg-tertiary: #2a2a2a;
-    --dark-border: #333;
-    --dark-border-hover: #444;
+    --dark-bg-primary: #353941;
+    --dark-bg-secondary: #3C3D37;
+    --dark-bg-tertiary: #353941;
+    --dark-border: #5F85DB;
+    --dark-border-hover: #4064b9;
     --text-primary: #fff; /* Color blanco para el texto */
-    --text-secondary: #888;
-    --text-subtle: #666;
+    --text-secondary: #686D76;
+    --text-subtle: #3D3B40;
 }
 
 .task-list-container {

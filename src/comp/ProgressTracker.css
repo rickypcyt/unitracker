@@ -13,15 +13,14 @@
 
 .progress-tracker-container {
     width: 100%;
-    max-width: auto;
-    margin: 20px auto;
+    margin: 15px auto;
     background-color: var(--dark-bg-secondary);
     color: var(--text-secondary);
-    padding: 20px;
-    border-radius: 12px;
+    padding: 15px;
+    border-radius: 10px;
     box-shadow:
-        0 0 15px rgba(255, 255, 255, 0.05),
-        0 4px 6px rgba(0, 0, 0, 0.1);
+        0 0 10px rgba(255, 255, 255, 0.03),
+        0 3px 5px rgba(0, 0, 0, 0.08);
     text-align: center;
     transition: background-color 0.2s ease, transform 0.15s ease;
 }
@@ -31,34 +30,33 @@
 }
 
 .progress-tracker-text {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .progress-tracker-milestone {
     color: #f0f0f0;
     background-color: rgba(255, 255, 255, 0.1);
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 @media (max-width: 768px) {
     .progress-tracker-container {
-        margin: 10px;
-        padding: 15px;
+        margin: 8px;
+        padding: 12px;
     }
-
     .progress-tracker-text {
-        font-size: 1rem;
+        font-size: 0.9rem;
         flex-direction: column;
-        gap: 5px;
+        gap: 4px;
     }
 }

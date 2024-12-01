@@ -26,7 +26,7 @@ const Home = () => {
     <Box maxW="800px" mx="auto" p={5}>
       {/* Display the main title of the application */}
       <Heading mb={6} textAlign="center" size="lg" color="white">
-        Task Tracker
+        Study Tracker 2025
       </Heading>
 
       {/* Display user achievements */}

@@ -1,134 +1,163 @@
-/* Dark Mode Calendar Styling */
+/* Modern Dark Mode Calendar Styling */
 :root {
-    /* Color Palette */
-    --dark-bg-primary: #000;
-    --dark-bg-secondary: #1a1a1a;
-    --dark-bg-tertiary: #2a2a2a;
-    --dark-border: #333;
-    --dark-border-hover: #444;
-    --text-primary: #fff;
-    --text-secondary: #888;
-    --text-subtle: #666;
-  }
-  
-  /* Calendar Container */
+  /* Refined Color Palette */
+  --dark-bg-primary: #353941;
+  --dark-bg-secondary: #3C3D37;
+  --dark-bg-tertiary: #353941;
+  --dark-border: #5F85DB;
+  --dark-border-hover: #4064b9;
+  --text-primary: #fff; /* Color blanco para el texto */
+  --text-secondary: #8690a2;
+  --text-subtle: #3D3B40;
+  --accent-color: #2997ff;
+  --accent-hover: #2997ff;
+}
+
+.calendar-container {
+  max-width: 100%;
+  margin: 20px auto;
+  background-color: var(--dark-bg-secondary);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 
+      0 15px 30px rgba(0, 0, 0, 0.15),
+      0 10px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.calendar-container:hover {
+  box-shadow: 
+      0 20px 40px rgba(0, 0, 0, 0.2),
+      0 15px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* FullCalendar Refined Styling */
+.fc {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.fc-header-toolbar {
+  background-color: var(--dark-bg-tertiary);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.8em;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.fc-header-toolbar .fc-button {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+.fc-header-toolbar .fc-button:hover {
+  background-color: rgba(255,255,255,0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+.fc-header-toolbar .fc-button-active {
+  background-color: var(--accent-color) !important;
+  color: white !important;
+}
+
+.fc-daygrid {
+  background-color: var(--dark-bg-secondary);
+  border-radius: 12px;
+}
+
+.fc-daygrid-day {
+  background-color: transparent;
+  border-color: rgba(255,255,255,0.1) !important;
+  transition: background-color 0.2s ease;
+}
+
+.fc-daygrid-day-number {
+  color: var(--text-primary);
+  font-weight: 500;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.fc-daygrid-day:hover .fc-daygrid-day-number {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.fc-event {
+  background-color: var(--accent-color) !important;
+  border: none !important;
+  color: white;
+  border-radius: 4px;
+  margin: 1px;
+  padding: 0 4px !important;
+  font-weight: 500;
+  line-height: 1.4;
+  font-size: 0.85em;
+  height: auto !important;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.fc-event:hover {
+  background-color: var(--accent-hover) !important;
+  transform: scale(1.05);
+}
+
+/* Scrollbar Styling */
+.fc-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+.fc-scroller::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fc-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
   .calendar-container {
-    max-width: auto; /* Allows full responsiveness */
-    margin: 10px auto;
-    background-color: var(--dark-bg-secondary);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 
-      0 0 15px rgba(255, 255, 255, 0.05),
-      0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* FullCalendar Overrides */
-  .fc {
-    color: black;
-  }
-  
-  /* Header Styling */
-  .fc-header-toolbar {
-    background-color: var(--dark-bg-tertiary);
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+      margin: 10px;
+      padding: 15px;
+      border-radius: 12px;
   }
 
-  .fc .fc-toolbar-title {
-    font-size: 1.75em;
-    margin: 0px;
-    color: white;
-  }
-  
-  .fc-header-toolbar .fc-button {
-    background-color: var(--dark-bg-primary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--dark-border) !important;
-    border-radius: 6px !important;
-    transition: 
-      background-color 0.2s ease,
-      transform 0.15s ease;
-  }
-  
-  .fc-header-toolbar .fc-button:hover {
-    background-color: var(--dark-border) !important;
-    transform: scale(1.02);
-  }
-  
-  .fc-header-toolbar .fc-button-active {
-    background-color: var(--dark-border-hover) !important;
-  }
-  
-  /* Day Grid Styling */
-  .fc-daygrid {
-    background-color: var(--dark-bg-secondary);
-    border-radius: 10px;
-  }
-  
-  .fc-daygrid-day {
-    background-color: var(--dark-bg-secondary);
-    border-color: var(--dark-border) !important;
-  }
-  
-  .fc-daygrid-day-number {
-    color: var(--text-primary);
-    padding: 4px;
-  }
-  
-  .fc-daygrid-day.fc-day-today {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
-  
-  /* Event Styling */
-  .fc-event {
-    background-color: #4a4a4a !important;
-    border-color: var(--dark-border) !important;
-    color: var(--text-primary);
-    border-radius: 4px;
-    margin: 2px;
-    padding: 2px 4px;
-  }
-  
-  .fc-event:hover {
-    background-color: var(--dark-border-hover) !important;
-  }
-  
-  /* Scrollbar Styling */
-  .fc-scroller {
-    scrollbar-width: thin;
-    scrollbar-color: var(--dark-border-hover) var(--dark-bg-secondary);
-  }
-  
-  .fc-scroller::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .fc-scroller::-webkit-scrollbar-track {
-    background: var(--dark-bg-secondary);
-  }
-  
-  .fc-scroller::-webkit-scrollbar-thumb {
-    background-color: var(--dark-border-hover);
-    border-radius: 3px;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .calendar-container {
-      margin: 10px;
-      padding: 10px;
-    }
-  
-    .fc-header-toolbar {
+  .fc-header-toolbar {
       flex-direction: column;
       gap: 10px;
-    }
-  
-    .fc-header-toolbar .fc-toolbar-chunk {
+      padding: 12px;
+  }
+
+  .fc-header-toolbar .fc-toolbar-chunk {
       display: flex;
       justify-content: center;
       width: 100%;
-    }
   }
+}
