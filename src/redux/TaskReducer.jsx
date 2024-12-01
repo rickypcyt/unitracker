@@ -8,7 +8,9 @@ const taskReducer = (state = initialState, action) => {
     case 'FETCH_TASKS':
       return { ...state, tasks: action.payload };
     case 'ADD_TASK':
-      return { ...state, tasks: [...state.tasks, action.payload] };
+      return state.map((task) => 
+        task.id === action.payload.id ? { ...task, tags: action.payload.tags } : task
+    );
     case 'TOGGLE_TASK_STATUS':
       return {
         ...state,

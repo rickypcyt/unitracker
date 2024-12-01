@@ -12,23 +12,61 @@ export const fetchTasks = () => {
   };
 };
 
-export const addTask = (newTask) => {
+// Acción para agregar la tarea
+export const addTask = (task) => {
   return async (dispatch) => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks', {
-        method: 'POST',
+      // Llamada al backend para crear la tarea
+      const response = await fetch("/api/tasks", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(newTask),
+        body: JSON.stringify(task),
       });
       const data = await response.json();
-      dispatch({ type: 'ADD_TASK', payload: data });
+
+      // Si la tarea se creó correctamente, la agregamos al store
+      dispatch({
+        type: "ADD_TASK",
+        payload: data,
+      });
+
+      return data; // Devuelvo los datos para continuar el flujo
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error("Error adding task:", error);
     }
   };
 };
+
+// Acción para agregar tags a una tarea existente
+export const addTags = (tags) => {
+  return async (dispatch) => {
+    try {
+      // Llamada al backend para actualizar los tags
+      const response = await fetch("/api/addTags", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tags }), // Aquí se pasan solo los tags
+      });
+      const data = await response.json();
+
+      // Actualizar el estado de Redux si es necesario
+      dispatch({
+        type: "ADD_TAGS",
+        payload: data,
+      });
+
+      return data;
+    } catch (error) {
+      console.error("Error adding tags:", error);
+    }
+  };
+};
+
+
 
 // Acción para marcar tarea como completada
 // src/actions/taskActions.js
