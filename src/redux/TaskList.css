@@ -1,0 +1,162 @@
+/* Dark Mode Task List Styling - Refined Version */
+:root {
+    /* Color Palette */
+    --dark-bg-primary: #000;
+    --dark-bg-secondary: #1a1a1a;
+    --dark-bg-tertiary: #2a2a2a;
+    --dark-border: #333;
+    --dark-border-hover: #444;
+    --text-primary: #fff;
+    --text-secondary: #888;
+    --text-subtle: #666;
+  }
+  
+  .task-list-container {
+    margin-top: 20px;
+    background-color: var(--dark-bg-primary);
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 
+      0 0 15px rgba(255, 255, 255, 0.05),
+      0 4px 6px rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+    max-width: auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .task-list-empty {
+    text-align: center;
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+    padding: 40px;
+  }
+  
+  .task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: var(--dark-bg-secondary);
+    border: 1px solid var(--dark-border);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: 
+      background-color 0.2s ease,
+      transform 0.15s ease;
+  }
+  
+  .task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.4),
+      0 2px 4px rgba(255, 255, 255, 0.03);
+  }
+  
+  .task-item.task-item-completed {
+    background-color: var(--dark-bg-tertiary);
+  }
+  
+  .task-text {
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+    flex-grow: 1;
+    margin-right: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .task-text-completed {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+  }
+  
+  .task-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Increased gap between buttons */
+  }
+  
+  .task-button {
+    background-color: var(--dark-bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--dark-border-hover);
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 90px; /* Ensure consistent button width */
+    text-align: center;
+    transition: 
+      background-color 0.2s ease,
+      transform 0.15s ease,
+      box-shadow 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .task-button:hover {
+    background-color: var(--dark-bg-tertiary);
+    transform: scale(1.02); /* More subtle scale */
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 1px 2px rgba(255, 255, 255, 0.05);
+  }
+  
+  .task-button-delete {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #ff453a; /* Vibrant red for delete action */
+  }
+  
+  .task-button-delete:hover {
+    background-color: #333;
+    color: #ff6961;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .task-list-container {
+      margin: 10px;
+      padding: 15px;
+    }
+  
+    .task-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .task-text {
+      margin-bottom: 10px;
+      margin-right: 0;
+      width: 100%;
+    }
+  
+    .task-buttons {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 10px; /* Reduced gap for mobile */
+    }
+  
+    .task-button {
+      flex-grow: 1;
+      min-width: auto; /* Allow buttons to adjust on mobile */
+    }
+  }
+  
+  /* Scrollbar Styling */
+  .task-list-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .task-list-container::-webkit-scrollbar-track {
+    background: var(--dark-bg-secondary);
+  }
+  
+  .task-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--dark-border-hover);
+    border-radius: 3px;
+  }

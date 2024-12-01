@@ -1,0 +1,82 @@
+/* TaskForm.css */
+
+/* Form Container: Black Background */
+form {
+    background-color: #000; /* Pure black */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); /* Subtle white glow */
+    max-width: auto;
+    margin: 0 auto; /* Center the form */
+    color: #fff; /* White text */
+    margin-top: 5%;
+  }
+  
+  /* Input Fields */
+  input[type="text"],
+  input[type="date"] {
+    background-color: #1a1a1a; /* Dark gray background */
+    color: #fff; /* White text */
+    border: 1px solid #333; /* Subtle dark gray border */
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 15px;
+    transition: border-color 0.3s;
+  }
+  
+  input[type="text"]:focus,
+  input[type="date"]:focus {
+    border-color: #007aff; /* Apple blue on focus */
+    outline: none; /* Remove default outline */
+  }
+  
+  /* Placeholder Text */
+  input::placeholder {
+    color: #666; /* Medium gray placeholder text */
+  }
+  
+  /* Button Styling */
+  button {
+    background-color: #333; /* Dark gray button */
+    color: #fff; /* White text */
+    border: 1px solid #555; /* Subtle gray border */
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%; /* Full width */
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background-color: #007aff; /* Apple blue on hover */
+    color: #fff; /* Keep white text */
+  }
+  
+  /* Stack Spacing */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Form Labels (if added later) */
+  label {
+    font-weight: 600;
+    color: #fff; /* White text */
+  }
+  
+  /* Adjustments for Mobile */
+  @media (max-width: 768px) {
+    form {
+      padding: 15px;
+    }
+  
+    button {
+      font-size: 0.9rem;
+      padding: 8px;
+    }
+  }
+  
