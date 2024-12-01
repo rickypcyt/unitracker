@@ -10,14 +10,10 @@ const TaskForm = () => {
     title: "",
     description: "",
     deadline: "",
-    tags: [], // Single tag as text
   });
 
   // State to manage error messages
   const [error, setError] = useState("");
-
-  // State to manage the tag input
-  const [tagInput, setTagInput] = useState("");
 
   // Get the dispatch function from the Redux store
   const dispatch = useDispatch();
@@ -46,7 +42,6 @@ const TaskForm = () => {
       description: newTask.description,
       deadline: newTask.deadline,
       completed: false,
-      tags: newTask.tags, // Single tag as text
     };
 
     // Send a POST request to the server (port 5000)
@@ -74,34 +69,8 @@ const TaskForm = () => {
       setError('There was an error adding the task');
     }
 
-    // Clear the form fields and tag input
-    setNewTask({ title: "", description: "", deadline: "", tags: "" });
-    setTagInput("");
-  };
-
-  // Handle tag input change
-  const handleTagChange = (e) => {
-    setTagInput(e.target.value); // Update the tag input
-  };
-
-  // Handle adding a tag on Enter key press
-  const handleAddTag = (e) => {
-    if (e.key === "Enter" && tagInput.trim() !== "") {
-      // Assign the tag directly since it's a single tag
-      setNewTask({
-        ...newTask,
-        tags: tagInput.trim(),
-      });
-      setTagInput(""); // Clear the tag input
-    }
-  };
-
-  // Handle removing the tag
-  const handleTagRemove = () => {
-    setNewTask({
-      ...newTask,
-      tags: "", // Clear the tag
-    });
+    // Clear the form fields
+    setNewTask({ title: "", description: "", deadline: "" });
   };
 
   return (
@@ -134,18 +103,6 @@ const TaskForm = () => {
           placeholder="Enter task description (optional)"
         />
 
-        {/* Tag input field */}
-        <div className="task-tag-input-group">
-          <input
-            className="task-tag-input"
-            type="text"
-            value={tagInput}
-            onChange={handleTagChange}
-            onKeyDown={handleAddTag}
-            placeholder="Add a tag (press Enter)"
-          />
-        </div>
-
         <input
           className={`task-input ${
             error && !newTask.deadline ? "task-input-error" : ""
@@ -157,18 +114,6 @@ const TaskForm = () => {
           }
           required
         />
-
-        {/* Display the added tag */}
-        {newTask.tags && (
-          <div className="task-tags">
-            <span className="task-tag">
-              {newTask.tags}
-              <button type="button" onClick={handleTagRemove}>
-                &times;
-              </button>
-            </span>
-          </div>
-        )}
 
         <button type="submit" className="task-submit-button">
           Add Task
