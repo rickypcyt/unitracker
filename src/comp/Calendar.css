@@ -8,8 +8,7 @@
   --text-primary: #fff; /* White text */
   --text-secondary: #8690a2;
   --text-subtle: #3D3B40;
-  --accent-color: #2415c5;
-  --accent-hover: #1a8cff; /* Slightly darker accent for hover */
+  --accent-hover: #2326d7; /* Slightly darker accent for hover */
 }
 
 .calendar-container {
