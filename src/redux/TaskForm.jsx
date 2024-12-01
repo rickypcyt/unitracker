@@ -1,45 +1,55 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addTask } from "./TaskActions"; // Asegúrate de tener addTask en tu archivo de acciones
+import { addTask } from "./TaskActions"; // Ensure you have addTask in your actions file
 import "./TaskForm.css";
 
+// TaskForm component to handle adding new tasks
 const TaskForm = () => {
+  // State to manage the new task details
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     deadline: "",
-    tags: "", // Solo un tag como texto
+    tags: [], // Single tag as text
   });
+
+  // State to manage error messages
   const [error, setError] = useState("");
-  const [tagInput, setTagInput] = useState(""); // Para manejar el input de tags
+
+  // State to manage the tag input
+  const [tagInput, setTagInput] = useState("");
+
+  // Get the dispatch function from the Redux store
   const dispatch = useDispatch();
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    // Validar inputs
+
+    // Validate inputs
     if (!newTask.title) {
       setError("Task title is required");
       return;
     }
-  
+
     if (!newTask.deadline) {
       setError("Deadline is required");
       return;
     }
-  
-    // Limpiar errores previos
+
+    // Clear previous errors
     setError("");
-  
+
+    // Create the task object to add
     const taskToAdd = {
       title: newTask.title,
       description: newTask.description,
       deadline: newTask.deadline,
       completed: false,
-      tags: newTask.tags, // Ahora un solo tag como texto
+      tags: newTask.tags, // Single tag as text
     };
-  
-    // Enviar la solicitud POST al servidor (puerto 5000)
+
+    // Send a POST request to the server (port 5000)
     try {
       const response = await fetch('http://localhost:5000/api/tasks', {
         method: 'POST',
@@ -48,51 +58,58 @@ const TaskForm = () => {
         },
         body: JSON.stringify(taskToAdd),
       });
-  
-      const data = await response.json(); // Procesamos la respuesta como JSON
-  
+
+      const data = await response.json(); // Process the response as JSON
+
       if (response.ok) {
-        console.log('Tarea agregada:', data);
-        // Aquí puedes agregar el código para actualizar el estado o mostrar la nueva tarea
+        console.log('Task added:', data);
+        // Here you can add code to update the state or display the new task
+        dispatch(addTask(taskToAdd)); // Dispatch the addTask action to update the Redux state
       } else {
-        console.error('Error al agregar tarea:', data.message);
-        setError(data.message); // Mostrar el error si lo hay
+        console.error('Error adding task:', data.message);
+        setError(data.message); // Display the error if any
       }
     } catch (error) {
-      console.error('Error al hacer la solicitud:', error);
-      setError('Hubo un error al agregar la tarea');
+      console.error('Error making the request:', error);
+      setError('There was an error adding the task');
     }
-  
-    setNewTask({ title: "", description: "", deadline: "", tags: "" }); // Limpiar el tag también
-    setTagInput(""); // Limpiar input de tag
+
+    // Clear the form fields and tag input
+    setNewTask({ title: "", description: "", deadline: "", tags: "" });
+    setTagInput("");
   };
 
+  // Handle tag input change
   const handleTagChange = (e) => {
-    setTagInput(e.target.value); // Actualizar input de tag
+    setTagInput(e.target.value); // Update the tag input
   };
 
+  // Handle adding a tag on Enter key press
   const handleAddTag = (e) => {
     if (e.key === "Enter" && tagInput.trim() !== "") {
-      // Solo un tag, así que asignamos directamente
+      // Assign the tag directly since it's a single tag
       setNewTask({
         ...newTask,
-        tags: tagInput.trim(), // Asignamos el tag directamente
+        tags: tagInput.trim(),
       });
-      setTagInput(""); // Limpiar input de tag
+      setTagInput(""); // Clear the tag input
     }
   };
 
+  // Handle removing the tag
   const handleTagRemove = () => {
     setNewTask({
       ...newTask,
-      tags: "", // Limpiar el tag
+      tags: "", // Clear the tag
     });
   };
 
   return (
     <div className="task-form-container">
       <form className="task-form" onSubmit={handleSubmit}>
-        {error && <div className="task-form-error-message">{error}</div>}
+        {error && (
+          <div className="task-form-error-message">{error}</div>
+        )}
 
         <div className="task-input-group">
           <input
@@ -100,7 +117,9 @@ const TaskForm = () => {
               error && !newTask.title ? "task-input-error" : ""
             }`}
             value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            onChange={(e) =>
+              setNewTask({ ...newTask, title: e.target.value })
+            }
             placeholder="Enter task title"
             required
           />
@@ -115,7 +134,7 @@ const TaskForm = () => {
           placeholder="Enter task description (optional)"
         />
 
-        {/* Campo de texto para ingresar tags */}
+        {/* Tag input field */}
         <div className="task-tag-input-group">
           <input
             className="task-tag-input"
@@ -126,18 +145,20 @@ const TaskForm = () => {
             placeholder="Add a tag (press Enter)"
           />
         </div>
-        
+
         <input
           className={`task-input ${
             error && !newTask.deadline ? "task-input-error" : ""
           }`}
           type="date"
           value={newTask.deadline}
-          onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+          onChange={(e) =>
+            setNewTask({ ...newTask, deadline: e.target.value })
+          }
           required
         />
 
-        {/* Mostrar el tag agregado */}
+        {/* Display the added tag */}
         {newTask.tags && (
           <div className="task-tags">
             <span className="task-tag">
@@ -157,4 +178,5 @@ const TaskForm = () => {
   );
 };
 
+// Export the TaskForm component as the default export
 export default TaskForm;

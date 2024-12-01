@@ -1,10 +1,13 @@
 // src/actions/taskActions.js
 
+// Action to fetch tasks from the server
 export const fetchTasks = () => {
   return async (dispatch) => {
     try {
+      // Fetch tasks from the server
       const response = await fetch('http://localhost:5000/api/tasks');
       const data = await response.json();
+      // Dispatch the FETCH_TASKS action with the fetched tasks
       dispatch({ type: 'FETCH_TASKS', payload: data });
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -12,11 +15,11 @@ export const fetchTasks = () => {
   };
 };
 
-// Acción para agregar la tarea
+// Action to add a new task
 export const addTask = (task) => {
   return async (dispatch) => {
     try {
-      // Llamada al backend para crear la tarea
+      // Make a POST request to the backend to create the task
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: {
@@ -26,34 +29,34 @@ export const addTask = (task) => {
       });
       const data = await response.json();
 
-      // Si la tarea se creó correctamente, la agregamos al store
+      // If the task was created successfully, dispatch the ADD_TASK action
       dispatch({
         type: "ADD_TASK",
         payload: data,
       });
 
-      return data; // Devuelvo los datos para continuar el flujo
+      return data; // Return the data for further processing
     } catch (error) {
       console.error("Error adding task:", error);
     }
   };
 };
 
-// Acción para agregar tags a una tarea existente
+// Action to add tags to an existing task (this action seems incomplete)
 export const addTags = (tags) => {
   return async (dispatch) => {
     try {
-      // Llamada al backend para actualizar los tags
+      // Make a POST request to the backend to update the tags
       const response = await fetch("/api/addTags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ tags }), // Aquí se pasan solo los tags
+        body: JSON.stringify({ tags }), // Pass only the tags
       });
       const data = await response.json();
 
-      // Actualizar el estado de Redux si es necesario
+      // Update the Redux state if necessary
       dispatch({
         type: "ADD_TAGS",
         payload: data,
@@ -66,24 +69,20 @@ export const addTags = (tags) => {
   };
 };
 
-
-
-// Acción para marcar tarea como completada
-// src/actions/taskActions.js
-// src/actions/taskActions.js
-
-// Acción para marcar tarea como completada
+// Action to mark a task as completed
 export const markTaskAsCompleted = (id) => {
   return async (dispatch, getState) => {
+    // Find the task in the current state
     const task = getState().tasks.tasks.find((task) => task.id === id);
 
-    // Realiza el update optimista (sin esperar al servidor)
+    // Perform an optimistic update (without waiting for the server response)
     dispatch({
       type: 'TOGGLE_TASK_STATUS',
       payload: { id, completed: true },
     });
 
     try {
+      // Make a PUT request to the server to mark the task as completed
       const response = await fetch(`http://localhost:5000/api/tasks/${id}/complete`, {
         method: 'PUT',
       });
@@ -94,11 +93,11 @@ export const markTaskAsCompleted = (id) => {
 
       const data = await response.json();
 
-      // Aquí no necesitamos hacer nada, ya que ya hemos hecho el cambio optimista
+      // No need to do anything here since we've already made the optimistic update
     } catch (error) {
       console.error('Error marking task as completed:', error);
 
-      // Si el update falla, revertimos el cambio optimista
+      // If the update fails, revert the optimistic update
       dispatch({
         type: 'TOGGLE_TASK_STATUS',
         payload: { id, completed: false },
@@ -107,18 +106,20 @@ export const markTaskAsCompleted = (id) => {
   };
 };
 
-// Acción para marcar tarea como incompleta
+// Action to mark a task as not completed
 export const markTaskAsNotCompleted = (id) => {
   return async (dispatch, getState) => {
+    // Find the task in the current state
     const task = getState().tasks.tasks.find((task) => task.id === id);
 
-    // Realiza el update optimista (sin esperar al servidor)
+    // Perform an optimistic update (without waiting for the server response)
     dispatch({
       type: 'TOGGLE_TASK_STATUS',
       payload: { id, completed: false },
     });
 
     try {
+      // Make a PUT request to the server to mark the task as not completed
       const response = await fetch(`http://localhost:5000/api/tasks/${id}/incomplete`, {
         method: 'PUT',
       });
@@ -129,11 +130,11 @@ export const markTaskAsNotCompleted = (id) => {
 
       const data = await response.json();
 
-      // Aquí no necesitamos hacer nada, ya que ya hemos hecho el cambio optimista
+      // No need to do anything here since we've already made the optimistic update
     } catch (error) {
       console.error('Error marking task as incomplete:', error);
 
-      // Si el update falla, revertimos el cambio optimista
+      // If the update fails, revert the optimistic update
       dispatch({
         type: 'TOGGLE_TASK_STATUS',
         payload: { id, completed: true },
@@ -142,14 +143,15 @@ export const markTaskAsNotCompleted = (id) => {
   };
 };
 
-
-
+// Action to delete a task
 export const deleteTask = (id) => {
   return async (dispatch) => {
     try {
+      // Make a DELETE request to the server to delete the task
       await fetch(`http://localhost:5000/api/tasks/${id}`, {
         method: 'DELETE',
       });
+      // Dispatch the DELETE_TASK action with the task ID
       dispatch({ type: 'DELETE_TASK', payload: id });
     } catch (error) {
       console.error('Error deleting task:', error);
