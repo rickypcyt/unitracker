@@ -2,12 +2,11 @@ import React from 'react';
 import { 
   Box, 
   Flex, 
-  Text, 
-  Checkbox 
+  Text 
 } from "@chakra-ui/react";
 import { Trash2, CheckCircle2, Circle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleTaskStatus, deleteTask } from './TaskActions';
+import { markTaskAsCompleted, markTaskAsNotCompleted, deleteTask } from './TaskActions';
 import "./TaskList.css";
 
 const TaskList = () => {
@@ -31,12 +30,30 @@ const TaskList = () => {
               bg="var(--dark-bg-secondary)"
               _hover={{ bg: "var(--dark-bg-tertiary)" }}
             >
+              {/* Button to toggle task completion */}
               <Flex alignItems="center" mr={4}>
-                {task.completed ? (
-                  <CheckCircle2 color="#4CAF50" size={24} />
-                ) : (
-                  <Circle color="#888" size={24} />
-                )}
+                <button
+                  onClick={() => {
+                    if (task.completed) {
+                      dispatch(markTaskAsNotCompleted(task.id)); // Mark as not completed
+                    } else {
+                      dispatch(markTaskAsCompleted(task.id)); // Mark as completed
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {task.completed ? (
+                    <CheckCircle2 color="#4CAF50" size={24} />
+                  ) : (
+                    <Circle color="#888" size={24} />
+                  )}
+                </button>
               </Flex>
 
               <Text 
