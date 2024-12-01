@@ -15,30 +15,24 @@ const TaskList = () => {
       ) : (
         <div>
           {tasks.map((task) => (
-            <div 
-              key={task.id} 
-              className={`task-item ${task.completed ? 'task-item-completed' : ''}`}
+            <div className="task-item">
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => dispatch(toggleTaskStatus(task.id))}
+              className="task-checkbox"
+            />
+            <span className={`task-text ${task.completed ? 'task-text-completed' : ''}`}>
+              {task.title}
+            </span>
+            <button 
+              className="task-button task-button-delete"
+              onClick={() => dispatch(deleteTask(task.id))}
             >
-              <div 
-                className={`task-text ${task.completed ? 'task-text-completed' : ''}`}
-              >
-                {task.title}
-              </div>
-              <div>
-                <button 
-                  className={`task-button task-button-complete`}
-                  onClick={() => dispatch(toggleTaskStatus(task.id))}
-                >
-                  {task.completed ? 'Undo' : 'Complete'}
-                </button>
-                <button 
-                  className={`task-button task-button-delete`}
-                  onClick={() => dispatch(deleteTask(task.id))}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+              Delete
+            </button>
+          </div>
+          
           ))}
         </div>
       )}

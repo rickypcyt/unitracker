@@ -1,15 +1,16 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const cors = require('cors');
-const app = express();
+const express = require('express'); // Framework para crear servidores web
+const sqlite3 = require('sqlite3').verbose(); // Biblioteca para manejar bases de datos SQLite
+const cors = require('cors'); // Middleware para manejar CORS (permitir solicitudes de otros dominios)
+
+const app = express(); // Inicializa la aplicación de Express
 
 // Permitir solicitudes de diferentes dominios (desde el frontend)
 app.use(cors());
 
-// Usar JSON para manejar datos
+// Configurar Express para manejar datos en formato JSON
 app.use(express.json());
 
-// Crear una base de datos SQLite (si no existe) o abrirla
+// Crear o conectar la base de datos SQLite
 const db = new sqlite3.Database('./tasks.db', (err) => {
   if (err) {
     console.error('Error al conectar con la base de datos:', err.message);
@@ -18,35 +19,46 @@ const db = new sqlite3.Database('./tasks.db', (err) => {
   }
 });
 
-// Crear la tabla de tareas si no existe (incluyendo el campo 'completed')
+// Crear la tabla "tasks" si no existe, asegurándonos de incluir la columna "completed"
 db.serialize(() => {
-  db.run('ALTER TABLE tasks ADD COLUMN completed BOOLEAN NOT NULL DEFAULT 0;', (err) => {
-    if (err) {
-      console.error('Error al agregar la columna completed:', err);
-    } else {
-      console.log('Columna "completed" agregada exitosamente.');
+  db.run(
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, -- ID único para cada tarea
+      title TEXT NOT NULL, -- Título de la tarea (obligatorio)
+      description TEXT, -- Descripción de la tarea (opcional)
+      deadline TEXT NOT NULL, -- Fecha límite de la tarea (obligatorio)
+      completed BOOLEAN DEFAULT 0 -- Estado de completado, predeterminado en falso
+    );`,
+    (err) => {
+      if (err) {
+        console.error('Error al crear/verificar la tabla tasks:', err.message);
+      } else {
+        console.log('Tabla "tasks" verificada/creada correctamente.');
+      }
     }
-  });  
+  );
 });
 
-// Ruta para agregar tarea
+// Ruta para agregar una tarea nueva
 app.post('/api/tasks', (req, res) => {
   const { title, description, deadline, completed } = req.body;
 
-  // Validación básica
+  // Validación básica de los datos de entrada
   if (!title || !deadline) {
     return res.status(400).json({ message: 'Title and deadline are required' });
   }
 
+  // Insertar la nueva tarea en la base de datos
   const stmt = db.prepare('INSERT INTO tasks (title, description, deadline, completed) VALUES (?, ?, ?, ?)');
   stmt.run(title, description, deadline, completed || false, function (err) {
     if (err) {
       res.status(500).json({ message: 'Error al agregar la tarea' });
     } else {
+      // Respuesta con los datos de la tarea recién creada
       res.status(201).json({ id: this.lastID, title, description, deadline, completed: completed || false });
     }
   });
-  stmt.finalize();
+  stmt.finalize(); // Liberar el statement preparado
 });
 
 // Ruta para obtener todas las tareas
@@ -55,49 +67,49 @@ app.get('/api/tasks', (req, res) => {
     if (err) {
       res.status(500).json({ message: 'Error al obtener las tareas' });
     } else {
-      res.json(rows);
+      res.json(rows); // Enviar todas las tareas al cliente
     }
   });
 });
 
-// Ruta para marcar una tarea como completada o incompleta
+// Ruta para alternar el estado de una tarea (completada/incompleta)
 app.put('/api/tasks/:id/toggle', (req, res) => {
-  const taskId = req.params.id;
+  const taskId = req.params.id; // Obtener el ID de la tarea de los parámetros de la URL
   const query = 'UPDATE tasks SET completed = NOT completed WHERE id = ?';
 
   db.run(query, [taskId], function (err) {
     if (err) {
       res.status(500).json({ message: 'Error al cambiar el estado de la tarea' });
     } else if (this.changes === 0) {
-      res.status(404).json({ message: 'Task not found' });
+      res.status(404).json({ message: 'Task not found' }); // Tarea no encontrada
     } else {
-      res.status(200).json({ id: taskId, completed: this.changes > 0 });
+      res.status(200).json({ id: taskId, completed: this.changes > 0 }); // Estado actualizado
     }
   });
 });
 
 // Ruta para eliminar una tarea
 app.delete('/api/tasks/:id', (req, res) => {
-  const taskId = req.params.id;
+  const taskId = req.params.id; // Obtener el ID de la tarea de los parámetros de la URL
 
   db.run('DELETE FROM tasks WHERE id = ?', [taskId], function (err) {
     if (err) {
       res.status(500).json({ message: 'Error al eliminar la tarea' });
     } else if (this.changes === 0) {
-      res.status(404).json({ message: 'Task not found' });
+      res.status(404).json({ message: 'Task not found' }); // Tarea no encontrada
     } else {
-      res.status(204).send(); // No content
+      res.status(204).send(); // Éxito sin contenido
     }
   });
 });
 
-// Configuración del puerto
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-});
-
-// Ruta para la raíz (opcional, solo para prueba)
+// Ruta de prueba para la raíz (opcional)
 app.get('/', (req, res) => {
   res.send('<h1>Welcome to the Task Tracker API</h1>');
+});
+
+// Configuración del puerto y arranque del servidor
+const PORT = 5000; // Puerto donde se ejecutará el servidor
+app.listen(PORT, () => {
+  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
