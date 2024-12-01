@@ -1,35 +1,61 @@
-import {
-    Accordion,
-    AccordionItem,
-    AccordionButton,
-    AccordionPanel,
-    AccordionIcon,
-    Box,
-  } from "@chakra-ui/react";
-  
-  const TaskDetails = ({ task }) => (
-    <Accordion allowToggle>
-      <AccordionItem>
-        <AccordionButton>
-          <Box flex="1" textAlign="left">{task.title}</Box>
-          <AccordionIcon />
-        </AccordionButton>
-        <AccordionPanel>
-          <Text>{task.notes}</Text>
-          {task.pdf && <a href={task.pdf} target="_blank">View PDF</a>}
-        </AccordionPanel>
-      </AccordionItem>
-    </Accordion>
-  );
-  
-  export default TaskDetails;
+import React from 'react';
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionButton, 
+  AccordionPanel, 
+  AccordionIcon, 
+  Box, 
+  Text, 
+  Button,
+  Input
+} from "@chakra-ui/react";
+import { useDispatch } from 'react-redux';
+import { toggleTaskCompletion, attachPDF } from '../redux/TasksSlice';
+
+const TaskDetails = ({ task }) => {
+  const dispatch = useDispatch();
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Save file to task object
+      const pdfUrl = URL.createObjectURL(file);
+      dispatch(attachPDF({ taskId: task.id, pdfUrl }));
     }
   };
-  
-  <Input type="file" onChange={handleFileUpload} />;
-  
+
+  const handleToggleCompletion = () => {
+    dispatch(toggleTaskCompletion(task.id));
+  };
+
+  return (
+    <Accordion allowToggle width="100%">
+      <AccordionItem>
+        <h2>
+          <AccordionButton>
+            <Box flex="1" textAlign="left">
+              {task.completed ? '✅ ' : '⏳ '}
+              {task.title}
+            </Box>
+            <AccordionIcon />
+          </AccordionButton>
+        </h2>
+        <AccordionPanel pb={4}>
+          <Text>Deadline: {task.deadline}</Text>
+          <Text>{task.notes}</Text>
+          <Button onClick={handleToggleCompletion} colorScheme={task.completed ? 'red' : 'green'}>
+            {task.completed ? 'Mark Incomplete' : 'Mark Complete'}
+          </Button>
+          <Input type="file" onChange={handleFileUpload} mt={2} />
+          {task.pdf && (
+            <a href={task.pdf} target="_blank" rel="noopener noreferrer">
+              View Attached PDF
+            </a>
+          )}
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+};
+
+export default TaskDetails;

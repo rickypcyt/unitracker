@@ -1,9 +1,10 @@
-// src/Home.jsx
 import React, { useMemo } from 'react';
 import { Box, Text, VStack } from '@chakra-ui/react'; // Import Chakra UI components
 import FullCalendar from '@fullcalendar/react'; // Import FullCalendar component
 import dayGridPlugin from '@fullcalendar/daygrid'; // Import dayGridPlugin for the calendar grid
 import { useSelector } from 'react-redux'; // Import useSelector for accessing Redux state
+import Achievements from './comp/Achievements'; // Import the Achievements component
+import TaskDetails from './comp/TaskDetails'; // Import TaskDetails component
 
 const Home = () => {
   // Fetch tasks from Redux store
@@ -23,7 +24,7 @@ const Home = () => {
       flexDirection="column" // Stack children vertically
       alignItems="center"
       justifyContent="center"
-      height="100vh"
+      minHeight="100vh"
       bg="black"
       p={4} // Add padding for better spacing
       color="white"
@@ -31,9 +32,14 @@ const Home = () => {
       <Text fontSize="30px" color="white" mb={4} fontStyle="bold">
         Uni Tracker 2024/2025
       </Text>
+
+      {/* Achievements Component */}
+      <Box mb={6} width="100%" display="flex" justifyContent="center">
+        <Achievements />
+      </Box>
       
       {/* FullCalendar component container */}
-      <Box width="50%" maxWidth="1200px" boxShadow="lg" borderRadius="md" overflow="hidden">
+      <Box width="50%" maxWidth="1200px" boxShadow="lg" borderRadius="md" overflow="hidden" mb={6}>
         <FullCalendar
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
@@ -50,10 +56,14 @@ const Home = () => {
         />
       </Box>
 
-      {/* Spacer for additional layout */}
-      <VStack spacing={8}>
-        {/* Add any other UI components you may want here */}
-      </VStack>
+      {/* Task Details */}
+      <Box width="100%" maxWidth="800px">
+        <VStack spacing={4} align="stretch">
+          {tasks.map((task) => (
+            <TaskDetails key={task.id} task={task} />
+          ))}
+        </VStack>
+      </Box>
     </Box>
   );
 };
