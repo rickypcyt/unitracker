@@ -6,8 +6,7 @@ import {
   Button, 
   HStack, 
   Checkbox, 
-  Input,
-  Alert
+  Input
 } from '@chakra-ui/react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -18,31 +17,30 @@ import Achievements from './comp/Achievements';
 
 const Home = () => {
   const tasks = useSelector((state) => state.tasks);
+  console.log(tasks);
+
   const dispatch = useDispatch();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDeadline, setNewTaskDeadline] = useState('');
   const [newTaskNotes, setNewTaskNotes] = useState('');
-  const [notification, setNotification] = useState(null);
 
   const events = useMemo(() => {
-    return tasks?.map((task) => ({
-      title: task.title,
-      date: task.deadline || new Date().toISOString(),
-      allDay: true,
-      color: task.completed ? 'green' : 'blue',
-    })) || [];
+    return Array.isArray(tasks)
+      ? tasks.map((task) => ({
+          title: task.title,
+          date: task.deadline || new Date().toISOString(),
+          allDay: true,
+          color: task.completed ? 'green' : 'blue',
+        }))
+      : [];  // If tasks is not an array, return an empty array
   }, [tasks]);
-
-  const showNotification = useCallback((type, title, description) => {
-    setNotification({ type, title, description });
-    const timer = setTimeout(() => setNotification(null), 3000);
-    return () => clearTimeout(timer);
-  }, []);
+  
 
   const handleAddTask = useCallback(() => {
     if (!newTaskTitle || !newTaskDeadline) {
-      showNotification('error', 'Task Creation Failed', 'Please provide both title and deadline');
+      // No notification alert, but you can handle the error however you want here
+      console.error("Task Creation Failed: Please provide both title and deadline");
       return;
     }
 
@@ -59,9 +57,7 @@ const Home = () => {
     setNewTaskTitle('');
     setNewTaskDeadline('');
     setNewTaskNotes('');
-
-    showNotification('success', 'Task Added', 'Your new task has been created successfully');
-  }, [dispatch, newTaskTitle, newTaskDeadline, newTaskNotes, showNotification]);
+  }, [dispatch, newTaskTitle, newTaskDeadline, newTaskNotes]);
 
   const handleTaskToggle = useCallback((taskId) => {
     dispatch(toggleTaskCompletion(taskId));
@@ -69,8 +65,7 @@ const Home = () => {
 
   const handleTaskDelete = useCallback((taskId) => {
     dispatch(deleteTask(taskId));
-    showNotification('info', 'Task Deleted', 'The task has been removed');
-  }, [dispatch, showNotification]);
+  }, [dispatch]);
 
   const handleDateClick = useCallback((info) => {
     const clickedDate = info.dateStr;
@@ -89,25 +84,6 @@ const Home = () => {
       color="white"
       position="relative"
     >
-      {/* Notification Alert */}
-      {notification && (
-        <Alert 
-          status={notification.type} 
-          position="fixed" 
-          top="4" 
-          right="4" 
-          zIndex="1000" 
-          width="300px"
-          textAlign="center"
-          py={3}
-        >
-          <Box width="full">
-            <Text fontWeight="bold" mb={1}>{notification.title}</Text>
-            <Text fontSize="sm">{notification.description}</Text>
-          </Box>
-        </Alert>
-      )}
-
       <Text fontSize="3xl" color="white" mb={6} fontWeight="bold">
         Uni Tracker 2024/2025
       </Text>
