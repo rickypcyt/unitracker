@@ -162,3 +162,33 @@
     background-color: var(--dark-border-hover);
     border-radius: 3px;
 }
+
+.task-item {
+  position: relative;
+}
+
+.task-description-tooltip {
+  position: absolute;
+  top: 50%;
+  left: 40%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  min-width: 200px;
+  max-width: 250px;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0s 0.3s;
+  text-align: center;
+}
+
+.task-item:hover .task-description-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s;
+}
+

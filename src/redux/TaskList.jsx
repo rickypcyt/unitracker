@@ -1,5 +1,4 @@
-// src/components/TaskList.js
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { Trash2, CheckCircle2, Circle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +8,7 @@ import './TaskList.css';
 const TaskList = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
+  const [hoveredTaskId, setHoveredTaskId] = useState(null); // Estado para gestionar la tarea en hover
 
   return (
     <Box className="task-list-container">
@@ -26,6 +26,8 @@ const TaskList = () => {
               borderRadius="md"
               bg="var(--dark-bg-secondary)"
               _hover={{ bg: 'var(--dark-bg-tertiary)' }}
+              onMouseEnter={() => setHoveredTaskId(task.id)} // Establece el id de la tarea al pasar el ratón
+              onMouseLeave={() => setHoveredTaskId(null)} // Restablece el id al salir el ratón
             >
               {/* Botón para alternar entre completado e incompleto */}
               <Flex alignItems="center" mr={4}>
@@ -61,6 +63,18 @@ const TaskList = () => {
               >
                 {task.title}
               </Text>
+
+              {/* Mostrar mensaje flotante de la descripción */}
+              {hoveredTaskId === task.id && (
+                <Box className="task-description-tooltip">
+                  <Text
+                    fontSize="sm"
+                    color="white"
+                  >
+                    {task.description}
+                  </Text>
+                </Box>
+              )}
 
               <Box
                 as="button"
