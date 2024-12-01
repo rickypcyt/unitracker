@@ -1,8 +1,34 @@
-# React + Vite
+# Task Management Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a task management application built using React, Redux, and Express with a SQLite database.
 
-Currently, two official plugins are available:
+## High-Level Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Components and Interactions
+
+#### Frontend
+- **Built with React**: Utilizes React for building the user interface.
+- **Redux for State Management**: Manages global state using Redux.
+- **Chakra UI for Styling**: Uses Chakra UI for styling and layout.
+
+#### Backend
+- **Built with Express**: Uses Express to create the server.
+- **SQLite Database**: Utilizes SQLite as the database.
+
+#### API
+- **Backend Endpoints**: The backend exposes API endpoints to interact with the database.
+
+### Frontend Components
+
+- **Home**: The main component that renders other components like `TaskForm`, `TaskList`, `ProgressTracker`, and `Achievements`.
+  - **TaskForm**: Allows users to add new tasks.
+  - **TaskList**: Displays a list of tasks and allows users to mark tasks as completed or delete them.
+  - **ProgressTracker**: Displays the number of completed tasks.
+  - **Achievements**: Displays achievements based on the number of completed tasks.
+  - **Calendar**: Displays tasks with deadlines on a calendar.
+
+### Redux State Management
+
+- **Store**: The central store managed by Redux, configured in `store.js`.
+- **Actions**: Defined in `taskActions.js`, these actions are dispatched to update the state.
+- **Reducers**: Defined in `taskReducer.js`, these reduce the state based on actions.
