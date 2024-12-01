@@ -4,10 +4,7 @@ const cors = require('cors');
 const app = express();
 
 // Permitir solicitudes de diferentes dominios (desde el frontend)
-app.use(cors({
-  origin: 'http://localhost:5173' // Solo permite solicitudes desde localhost:3000
-}));
-
+app.use(cors());
 
 // Usar JSON para manejar datos
 app.use(express.json());
@@ -23,15 +20,13 @@ const db = new sqlite3.Database('./tasks.db', (err) => {
 
 // Crear la tabla de tareas si no existe (incluyendo el campo 'completed')
 db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS tasks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT,
-      deadline TEXT,
-      completed BOOLEAN NOT NULL DEFAULT 0
-    )
-  `);
+  db.run('ALTER TABLE tasks ADD COLUMN completed BOOLEAN NOT NULL DEFAULT 0;', (err) => {
+    if (err) {
+      console.error('Error al agregar la columna completed:', err);
+    } else {
+      console.log('Columna "completed" agregada exitosamente.');
+    }
+  });  
 });
 
 // Ruta para agregar tarea

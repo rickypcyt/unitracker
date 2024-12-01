@@ -1,186 +1,156 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Box, Text, VStack, Button, HStack, Checkbox, Input } from '@chakra-ui/react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import Achievements from './comp/Achievements';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchTasks, addTask, toggleTaskCompletion, deleteTask } from './redux/TasksSlice'; // Import actions from your tasks slice
+// src/Home.jsx
+import React, { useState, useEffect } from 'react';
+import { Button, Input, Stack, Box, Heading, Text } from '@chakra-ui/react';
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.tasks); // Get tasks from Redux store
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    deadline: ''
+  });
 
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskDeadline, setNewTaskDeadline] = useState('');
-  const [newTaskNotes, setNewTaskNotes] = useState('');
-
-  // Fetch tasks when the component mounts
+  // Cargar las tareas desde el backend cuando se monta el componente
   useEffect(() => {
-    dispatch(fetchTasks()); // Dispatch the action to load tasks from the backend
-  }, [dispatch]);
+    fetch('http://localhost:5000/api/tasks')
+      .then((response) => response.json())
+      .then((data) => setTasks(data))
+      .catch((error) => console.error('Error al cargar tareas:', error));
+  }, []);
 
-  const events = useMemo(() => {
-    return tasks.map((task) => ({
-      title: task.title,
-      date: task.deadline || new Date().toISOString(),
-      allDay: true,
-      color: task.completed ? 'green' : 'blue',
-    }));
-  }, [tasks]);
-
-  // Handle adding a new task
-  const handleAddTask = useCallback(async () => {
-    if (!newTaskTitle || !newTaskDeadline) {
-      console.error("Task Creation Failed: Please provide both title and deadline");
+  // Función para agregar una nueva tarea
+  const addTask = (e) => {
+    e.preventDefault();
+  
+    if (!newTask.title || !newTask.deadline) {
+      alert('Title and deadline are required!');
       return;
     }
   
-    try {
-      const newTask = {
-        title: newTaskTitle,
-        deadline: newTaskDeadline,
-        notes: newTaskNotes,
-        completed: false,
-      };
+    // Establecer el estado `completed` como `false` por defecto si no está presente
+    const taskToAdd = { ...newTask, completed: false };
   
-      // Llamar al action de Redux para agregar la tarea
-      dispatch(addTask(newTask));
+    // Hacer la solicitud al servidor para agregar la tarea
+    fetch('http://localhost:5000/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(taskToAdd),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks([...tasks, data]); // Agregar la nueva tarea a la lista
+        setNewTask({ title: '', description: '', deadline: '' }); // Limpiar el formulario
+      })
+      .catch((error) => console.error('Error al agregar tarea:', error));
+  };
   
-      // Limpiar los campos
-      setNewTaskTitle('');
-      setNewTaskDeadline('');
-      setNewTaskNotes('');
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  }, [dispatch, newTaskTitle, newTaskDeadline, newTaskNotes]);
+
+  // Función para marcar una tarea como completada o incompleta
+  const toggleTaskStatus = (id) => {
+    fetch(`http://localhost:5000/api/tasks/${id}/toggle`, {
+      method: 'PUT',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(tasks.map((task) =>
+          task.id === data.id ? { ...task, completed: data.completed } : task
+        ));
+      })
+      .catch((error) => console.error('Error al cambiar el estado de la tarea:', error));
+  };
   
 
-  // Handle task completion toggle
-  const handleTaskToggle = useCallback(async (taskId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/toggle`, {
-        method: 'PUT',
-      });
-
-      if (response.ok) {
-        const updatedTask = await response.json();
-        dispatch(toggleTaskCompletion(updatedTask)); // Update task in Redux state
-      } else {
-        console.error('Error toggling task completion');
-      }
-    } catch (error) {
-      console.error('Error toggling task completion:', error);
-    }
-  }, [dispatch]);
-
-  // Handle task deletion
-  const handleTaskDelete = useCallback(async (taskId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        dispatch(deleteTask(taskId)); // Remove task from Redux state
-      } else {
-        console.error('Error deleting task');
-      }
-    } catch (error) {
-      console.error('Error deleting task:', error);
-    }
-  }, [dispatch]);
-
-  // Handle date click for task creation
-  const handleDateClick = useCallback((info) => {
-    const clickedDate = info.dateStr;
-    setNewTaskDeadline(clickedDate);
-  }, []);
+  // Función para eliminar una tarea
+  const deleteTask = (id) => {
+    fetch(`http://localhost:5000/api/tasks/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => {
+        setTasks(tasks.filter((task) => task.id !== id)); // Eliminar la tarea de la lista
+      })
+      .catch((error) => console.error('Error al eliminar la tarea:', error));
+  };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" bg="black" p={4} color="white" position="relative">
-      <Text fontSize="3xl" color="white" mb={6} fontWeight="bold">
-        Uni Tracker 2024/2025
-      </Text>
+    <Box maxW="800px" mx="auto" mt={10} p={5}>
+      <Heading mb={6} textAlign="center" size="lg">Task Tracker</Heading>
 
-      <Achievements />
+      {/* Formulario para agregar tareas */}
+      <form onSubmit={addTask}>
+        <Stack spacing={4}>
+          <Input
+            id="title"
+            value={newTask.title}
+            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            placeholder="Enter task title"
+            required
+          />
 
-      <Box display="flex" flexDirection="row" width="full" maxWidth="1400px" justifyContent="space-between" mb={6} gap={6}>
-        {/* Task Management Section */}
-        <Box width="45%" bg="gray.800" p={5} borderRadius="lg" boxShadow="xl">
-          <Text fontSize="2xl" mb={4} fontWeight="bold">
-            Task List
-          </Text>
-          <VStack align="stretch" spacing={4}>
-            {/* Pending Tasks */}
-            <Box>
-              <Text fontSize="xl" mb={2} fontWeight="semibold">
-                Pending Tasks
-              </Text>
-              {tasks.filter((task) => !task.completed).map((task) => (
-                <HStack key={task.id} spacing={3} mb={2}>
-                  <Checkbox colorScheme="blue" isChecked={false} onChange={() => handleTaskToggle(task.id)}>
-                    {task.title}
-                  </Checkbox>
-                  <Button size="xs" colorScheme="red" onClick={() => handleTaskDelete(task.id)}>
+          <Input
+            id="description"
+            value={newTask.description}
+            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+            placeholder="Enter task description (optional)"
+          />
+
+          <Input
+            id="deadline"
+            type="date"
+            value={newTask.deadline}
+            onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+            required
+          />
+
+          <Button colorScheme="teal" type="submit" width="full">Add Task</Button>
+        </Stack>
+      </form>
+
+      {/* Lista de tareas */}
+      <Box mt={10}>
+        {tasks.length === 0 ? (
+          <Text textAlign="center" color="gray.500">No tasks available</Text>
+        ) : (
+          <Stack spacing={4}>
+            {tasks.map((task) => (
+              <Box
+                key={task.id}
+                p={5}
+                borderWidth={1}
+                borderRadius="md"
+                bg={task.completed ? 'green.50' : 'white'}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Text
+                  fontWeight="bold"
+                  textDecoration={task.completed ? 'line-through' : 'none'}
+                >
+                  {task.title}
+                </Text>
+                <Box>
+                  <Button
+                    colorScheme={task.completed ? 'orange' : 'green'}
+                    size="sm"
+                    onClick={() => toggleTaskStatus(task.id)}
+                    mr={2}
+                  >
+                    {task.completed ? 'Undo' : 'Complete'}
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    size="sm"
+                    onClick={() => deleteTask(task.id)}
+                  >
                     Delete
                   </Button>
-                </HStack>
-              ))}
-            </Box>
-
-            {/* Completed Tasks */}
-            <Box>
-              <Text fontSize="xl" mb={2} fontWeight="semibold">
-                Completed Tasks
-              </Text>
-              {tasks.filter((task) => task.completed).map((task) => (
-                <HStack key={task.id} spacing={3} mb={2}>
-                  <Checkbox colorScheme="green" isChecked onChange={() => handleTaskToggle(task.id)}>
-                    {task.title}
-                  </Checkbox>
-                  <Button size="xs" colorScheme="red" onClick={() => handleTaskDelete(task.id)}>
-                    Delete
-                  </Button>
-                </HStack>
-              ))}
-            </Box>
-          </VStack>
-        </Box>
-
-        {/* Task Creation Section */}
-        <Box width="45%" bg="gray.800" p={5} borderRadius="lg" boxShadow="xl">
-          <Text fontSize="2xl" mb={4} fontWeight="bold">
-            Create Task
-          </Text>
-          <VStack spacing={4} align="stretch">
-            <Input placeholder="Task Title" value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)} bg="white" color="black" />
-            <Input type="date" placeholder="Deadline" value={newTaskDeadline} onChange={(e) => setNewTaskDeadline(e.target.value)} bg="white" color="black" />
-            <Input placeholder="Optional Notes" value={newTaskNotes} onChange={(e) => setNewTaskNotes(e.target.value)} bg="white" color="black" />
-            <Button colorScheme="blue" onClick={handleAddTask} isDisabled={!newTaskTitle || !newTaskDeadline}>
-              Add Task
-            </Button>
-          </VStack>
-        </Box>
-      </Box>
-
-      <Box width="full" maxWidth="1200px" boxShadow="xl" borderRadius="lg" overflow="hidden">
-        <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,dayGridWeek,dayGridDay',
-          }}
-          dateClick={handleDateClick}
-          eventColor="#3182CE"
-          contentHeight="auto"
-          eventTextColor="white"
-          height="600px"
-        />
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        )}
       </Box>
     </Box>
   );
