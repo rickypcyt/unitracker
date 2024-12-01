@@ -1,57 +1,59 @@
 // src/Home.jsx
-import React from 'react';
-import { Box, Heading, Text, Grid, Flex, Divider } from '@chakra-ui/react'; // Chakra UI components
-import Calendar from './comp/Calendar';
-import Goals from './comp/Goals';
-import ProgressTracker from './comp/ProgressTracker';
-import TaskDetails from './comp/TaskDetails';
-import TaskSlicer from './comp/taskSlicer';
+import React, { useMemo } from 'react';
+import { Box, Text, VStack } from '@chakra-ui/react'; // Import Chakra UI components
+import FullCalendar from '@fullcalendar/react'; // Import FullCalendar component
+import dayGridPlugin from '@fullcalendar/daygrid'; // Import dayGridPlugin for the calendar grid
+import { useSelector } from 'react-redux'; // Import useSelector for accessing Redux state
 
 const Home = () => {
+  // Fetch tasks from Redux store
+  const tasks = useSelector((state) => state.tasks);
+
+  // Use useMemo to optimize events data processing
+  const events = useMemo(() => {
+    return tasks?.map((task) => ({
+      title: task.title,
+      date: task.deadline || new Date().toISOString(), // Provide fallback for deadline if it's missing
+    })) || [];
+  }, [tasks]);
+
   return (
-    <Box bg="gray.100" minHeight="100vh" padding={6}>
-      {/* Main Header */}
-      <Heading as="h1" size="2xl" color="teal.600" textAlign="center" mb={6}>
-        Uni Tracker 2024
-      </Heading>
-
-      {/* Overview Text */}
-      <Text fontSize="xl" color="gray.700" textAlign="center" mb={8}>
-        Organize your assignments, goals, and tasks in one place.
+    <Box
+      display="flex"
+      flexDirection="column" // Stack children vertically
+      alignItems="center"
+      justifyContent="center"
+      height="100vh"
+      bg="black"
+      p={4} // Add padding for better spacing
+      color="white"
+    >
+      <Text fontSize="30px" color="white" mb={4} fontStyle="bold">
+        Uni Tracker 2024/2025
       </Text>
+      
+      {/* FullCalendar component container */}
+      <Box width="50%" maxWidth="1200px" boxShadow="lg" borderRadius="md" overflow="hidden">
+        <FullCalendar
+          plugins={[dayGridPlugin]}
+          initialView="dayGridMonth"
+          events={events} // Pass mapped events
+          headerToolbar={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek,dayGridDay',
+          }}
+          eventColor="#3182CE" // Set event color for better visibility
+          contentHeight="auto" // Make content height adjust dynamically
+          eventTextColor="white" // Make event text white for better contrast
+          height="600px" // Set fixed height for the calendar
+        />
+      </Box>
 
-      {/* Layout with Grid for various components */}
-      <Grid templateColumns="repeat(3, 1fr)" gap={6}>
-        <Box borderRadius="md" boxShadow="md" p={4} bg="white">
-          <Heading size="md" mb={4} textAlign="center">Progress Tracker</Heading>
-          <ProgressTracker />
-        </Box>
-
-        <Box borderRadius="md" boxShadow="md" p={4} bg="white">
-          <Heading size="md" mb={4} textAlign="center">Goals</Heading>
-          <Goals />
-        </Box>
-
-        <Box borderRadius="md" boxShadow="md" p={4} bg="white">
-          <Heading size="md" mb={4} textAlign="center">Calendar</Heading>
-          <Calendar />
-        </Box>
-      </Grid>
-
-      <Divider my={8} />
-
-      {/* Task details and task slicer section */}
-      <Flex direction="column" gap={6}>
-        <Box borderRadius="md" boxShadow="md" p={4} bg="white">
-          <Heading size="md" mb={4} textAlign="center">Task Details</Heading>
-          <TaskDetails />
-        </Box>
-
-        <Box borderRadius="md" boxShadow="md" p={4} bg="white">
-          <Heading size="md" mb={4} textAlign="center">Task Slicer</Heading>
-          <TaskSlicer />
-        </Box>
-      </Flex>
+      {/* Spacer for additional layout */}
+      <VStack spacing={8}>
+        {/* Add any other UI components you may want here */}
+      </VStack>
     </Box>
   );
 };
