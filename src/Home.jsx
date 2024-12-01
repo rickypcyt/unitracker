@@ -1,112 +1,114 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { 
-  Box, 
-  Text, 
-  VStack, 
-  Button, 
-  HStack, 
-  Checkbox, 
-  Input
-} from '@chakra-ui/react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Box, Text, VStack, Button, HStack, Checkbox, Input } from '@chakra-ui/react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { useSelector, useDispatch } from 'react-redux';
-import { addTask, toggleTaskCompletion, deleteTask } from './redux/TasksSlice';
 import Achievements from './comp/Achievements';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTasks, addTask, toggleTaskCompletion, deleteTask } from './redux/TasksSlice'; // Import actions from your tasks slice
 
 const Home = () => {
-  const tasks = useSelector((state) => state.tasks);
-  console.log(tasks);
-
   const dispatch = useDispatch();
+  const tasks = useSelector((state) => state.tasks.tasks); // Get tasks from Redux store
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDeadline, setNewTaskDeadline] = useState('');
   const [newTaskNotes, setNewTaskNotes] = useState('');
 
-  const events = useMemo(() => {
-    return Array.isArray(tasks)
-      ? tasks.map((task) => ({
-          title: task.title,
-          date: task.deadline || new Date().toISOString(),
-          allDay: true,
-          color: task.completed ? 'green' : 'blue',
-        }))
-      : [];  // If tasks is not an array, return an empty array
-  }, [tasks]);
-  
+  // Fetch tasks when the component mounts
+  useEffect(() => {
+    dispatch(fetchTasks()); // Dispatch the action to load tasks from the backend
+  }, [dispatch]);
 
-  const handleAddTask = useCallback(() => {
+  const events = useMemo(() => {
+    return tasks.map((task) => ({
+      title: task.title,
+      date: task.deadline || new Date().toISOString(),
+      allDay: true,
+      color: task.completed ? 'green' : 'blue',
+    }));
+  }, [tasks]);
+
+  // Handle adding a new task
+  const handleAddTask = useCallback(async () => {
     if (!newTaskTitle || !newTaskDeadline) {
-      // No notification alert, but you can handle the error however you want here
       console.error("Task Creation Failed: Please provide both title and deadline");
       return;
     }
-
-    dispatch(
-      addTask({
+  
+    try {
+      const newTask = {
         title: newTaskTitle,
         deadline: newTaskDeadline,
         notes: newTaskNotes,
         completed: false,
-      })
-    );
-
-    // Reset form
-    setNewTaskTitle('');
-    setNewTaskDeadline('');
-    setNewTaskNotes('');
+      };
+  
+      // Llamar al action de Redux para agregar la tarea
+      dispatch(addTask(newTask));
+  
+      // Limpiar los campos
+      setNewTaskTitle('');
+      setNewTaskDeadline('');
+      setNewTaskNotes('');
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   }, [dispatch, newTaskTitle, newTaskDeadline, newTaskNotes]);
+  
 
-  const handleTaskToggle = useCallback((taskId) => {
-    dispatch(toggleTaskCompletion(taskId));
+  // Handle task completion toggle
+  const handleTaskToggle = useCallback(async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/toggle`, {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        const updatedTask = await response.json();
+        dispatch(toggleTaskCompletion(updatedTask)); // Update task in Redux state
+      } else {
+        console.error('Error toggling task completion');
+      }
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    }
   }, [dispatch]);
 
-  const handleTaskDelete = useCallback((taskId) => {
-    dispatch(deleteTask(taskId));
+  // Handle task deletion
+  const handleTaskDelete = useCallback(async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        dispatch(deleteTask(taskId)); // Remove task from Redux state
+      } else {
+        console.error('Error deleting task');
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   }, [dispatch]);
 
+  // Handle date click for task creation
   const handleDateClick = useCallback((info) => {
     const clickedDate = info.dateStr;
     setNewTaskDeadline(clickedDate);
   }, []);
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="100vh"
-      bg="black"
-      p={4}
-      color="white"
-      position="relative"
-    >
+    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh" bg="black" p={4} color="white" position="relative">
       <Text fontSize="3xl" color="white" mb={6} fontWeight="bold">
         Uni Tracker 2024/2025
       </Text>
 
       <Achievements />
 
-      <Box
-        display="flex"
-        flexDirection="row"
-        width="full"
-        maxWidth="1400px"
-        justifyContent="space-between"
-        mb={6}
-        gap={6}
-      >
+      <Box display="flex" flexDirection="row" width="full" maxWidth="1400px" justifyContent="space-between" mb={6} gap={6}>
         {/* Task Management Section */}
-        <Box
-          width="45%"
-          bg="gray.800"
-          p={5}
-          borderRadius="lg"
-          boxShadow="xl"
-        >
+        <Box width="45%" bg="gray.800" p={5} borderRadius="lg" boxShadow="xl">
           <Text fontSize="2xl" mb={4} fontWeight="bold">
             Task List
           </Text>
@@ -116,26 +118,16 @@ const Home = () => {
               <Text fontSize="xl" mb={2} fontWeight="semibold">
                 Pending Tasks
               </Text>
-              {tasks
-                ?.filter((task) => !task.completed)
-                .map((task) => (
-                  <HStack key={task.id} spacing={3} mb={2}>
-                    <Checkbox
-                      colorScheme="blue"
-                      isChecked={false}
-                      onChange={() => handleTaskToggle(task.id)}
-                    >
-                      {task.title}
-                    </Checkbox>
-                    <Button 
-                      size="xs" 
-                      colorScheme="red" 
-                      onClick={() => handleTaskDelete(task.id)}
-                    >
-                      Delete
-                    </Button>
-                  </HStack>
-                ))}
+              {tasks.filter((task) => !task.completed).map((task) => (
+                <HStack key={task.id} spacing={3} mb={2}>
+                  <Checkbox colorScheme="blue" isChecked={false} onChange={() => handleTaskToggle(task.id)}>
+                    {task.title}
+                  </Checkbox>
+                  <Button size="xs" colorScheme="red" onClick={() => handleTaskDelete(task.id)}>
+                    Delete
+                  </Button>
+                </HStack>
+              ))}
             </Box>
 
             {/* Completed Tasks */}
@@ -143,82 +135,37 @@ const Home = () => {
               <Text fontSize="xl" mb={2} fontWeight="semibold">
                 Completed Tasks
               </Text>
-              {tasks
-                ?.filter((task) => task.completed)
-                .map((task) => (
-                  <HStack key={task.id} spacing={3} mb={2}>
-                    <Checkbox
-                      colorScheme="green"
-                      isChecked
-                      onChange={() => handleTaskToggle(task.id)}
-                    >
-                      {task.title}
-                    </Checkbox>
-                    <Button 
-                      size="xs" 
-                      colorScheme="red" 
-                      onClick={() => handleTaskDelete(task.id)}
-                    >
-                      Delete
-                    </Button>
-                  </HStack>
-                ))}
+              {tasks.filter((task) => task.completed).map((task) => (
+                <HStack key={task.id} spacing={3} mb={2}>
+                  <Checkbox colorScheme="green" isChecked onChange={() => handleTaskToggle(task.id)}>
+                    {task.title}
+                  </Checkbox>
+                  <Button size="xs" colorScheme="red" onClick={() => handleTaskDelete(task.id)}>
+                    Delete
+                  </Button>
+                </HStack>
+              ))}
             </Box>
           </VStack>
         </Box>
 
         {/* Task Creation Section */}
-        <Box
-          width="45%"
-          bg="gray.800"
-          p={5}
-          borderRadius="lg"
-          boxShadow="xl"
-        >
+        <Box width="45%" bg="gray.800" p={5} borderRadius="lg" boxShadow="xl">
           <Text fontSize="2xl" mb={4} fontWeight="bold">
             Create Task
           </Text>
           <VStack spacing={4} align="stretch">
-            <Input
-              placeholder="Task Title"
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              bg="white"
-              color="black"
-            />
-            <Input
-              type="date"
-              placeholder="Deadline"
-              value={newTaskDeadline}
-              onChange={(e) => setNewTaskDeadline(e.target.value)}
-              bg="white"
-              color="black"
-            />
-            <Input
-              placeholder="Optional Notes"
-              value={newTaskNotes}
-              onChange={(e) => setNewTaskNotes(e.target.value)}
-              bg="white"
-              color="black"
-            />
-            <Button
-              colorScheme="blue"
-              onClick={handleAddTask}
-              isDisabled={!newTaskTitle || !newTaskDeadline}
-            >
+            <Input placeholder="Task Title" value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)} bg="white" color="black" />
+            <Input type="date" placeholder="Deadline" value={newTaskDeadline} onChange={(e) => setNewTaskDeadline(e.target.value)} bg="white" color="black" />
+            <Input placeholder="Optional Notes" value={newTaskNotes} onChange={(e) => setNewTaskNotes(e.target.value)} bg="white" color="black" />
+            <Button colorScheme="blue" onClick={handleAddTask} isDisabled={!newTaskTitle || !newTaskDeadline}>
               Add Task
             </Button>
           </VStack>
         </Box>
       </Box>
 
-      <Box
-        width="full"
-        maxWidth="1200px"
-        boxShadow="xl"
-        borderRadius="lg"
-        overflow="hidden"
-      >
+      <Box width="full" maxWidth="1200px" boxShadow="xl" borderRadius="lg" overflow="hidden">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"

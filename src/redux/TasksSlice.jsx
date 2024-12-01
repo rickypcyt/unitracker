@@ -1,67 +1,89 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Helper function to load tasks from localStorage
-const loadTasksFromLocalStorage = () => {
-  const storedTasks = localStorage.getItem('tasks');
-  return storedTasks ? JSON.parse(storedTasks) : [];
-};
+// Definir el thunk para obtener las tareas
+export const fetchTasks = createAsyncThunk(
+  'tasks/fetchTasks',
+  async () => {
+    const response = await fetch('http://localhost:5000/api/tasks'); // Aquí va tu API
+    const data = await response.json();
+    return data;
+  }
+);
 
-// Helper function to save tasks to localStorage
-const saveTasksToLocalStorage = (tasks) => {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-};
+// Definir un thunk para agregar una tarea
+export const addTask = createAsyncThunk(
+  'tasks/addTask',
+  async (newTask) => {
+    const response = await fetch('http://localhost:5000/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTask),
+    });
+    const data = await response.json();
+    return data; // Devuelve la nueva tarea agregada
+  }
+);
+
+// Definir un thunk para actualizar una tarea (completada)
+export const toggleTaskCompletion = createAsyncThunk(
+  'tasks/toggleTaskCompletion',
+  async (taskId) => {
+    const response = await fetch(`http://localhost:5000/api/tasks${taskId}/toggle`, {
+      method: 'PUT',
+    });
+    const data = await response.json();
+    return data; // Devuelve la tarea actualizada
+  }
+);
+
+// Definir un thunk para eliminar una tarea
+export const deleteTask = createAsyncThunk(
+  'tasks/deleteTask',
+  async (taskId) => {
+    const response = await fetch(`http://localhost:5000/api/tasks${taskId}`, {
+      method: 'DELETE',
+    });
+    if (response.ok) {
+      return taskId; // Solo devolver el id de la tarea eliminada
+    }
+    throw new Error('Failed to delete task');
+  }
+);
 
 const tasksSlice = createSlice({
   name: 'tasks',
-  initialState: loadTasksFromLocalStorage(), // Initialize state from localStorage
-  reducers: {
-    addTask: (state, action) => {
-      const { title, deadline, notes } = action.payload;
-
-      if (!title || !deadline) {
-        console.error("Task must have a title and deadline.");
-        return state;
-      }
-
-      const newTask = {
-        id: state.length > 0 ? Math.max(...state.map(task => task.id)) + 1 : 1,
-        title,
-        deadline,
-        notes: notes || '',
-        completed: false,
-        pdf: null,
-      };
-
-      state.push(newTask); // Add task to the state
-      saveTasksToLocalStorage(state); // Save updated state to localStorage
-    },
-    deleteTask: (state, action) => {
-      const updatedState = state.filter((task) => task.id !== action.payload);
-      saveTasksToLocalStorage(updatedState); // Save updated state to localStorage
-      return updatedState;
-    },
-    toggleTaskCompletion: (state, action) => {
-      const task = state.find(task => task.id === action.payload);
-      if (task) {
-        task.completed = !task.completed;
-        saveTasksToLocalStorage(state); // Save updated state to localStorage
-      }
-    },
-    updateTask: (state, action) => {
-      const index = state.findIndex(task => task.id === action.payload.id);
-      if (index !== -1) {
-        state[index] = { ...state[index], ...action.payload.updates };
-        saveTasksToLocalStorage(state); // Save updated state to localStorage
-      }
-    }
-  }
+  initialState: {
+    tasks: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTasks.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tasks = action.payload;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(addTask.fulfilled, (state, action) => {
+        state.tasks.push(action.payload); // Añadir la tarea al estado
+      })
+      .addCase(toggleTaskCompletion.fulfilled, (state, action) => {
+        const task = state.tasks.find(task => task.id === action.payload.id);
+        if (task) {
+          task.completed = action.payload.completed;
+        }
+      })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.tasks = state.tasks.filter(task => task.id !== action.payload); // Eliminar tarea por id
+      });
+  },
 });
-
-export const {
-  addTask,
-  deleteTask,
-  toggleTaskCompletion,
-  updateTask
-} = tasksSlice.actions;
 
 export default tasksSlice.reducer;

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react'; // Import ChakraProvider and defaultSystem
 import { Provider } from 'react-redux'; // Redux Provider
-import { store } from './comp/store'; // Import Redux store
+import { store } from './redux/store'; // Import Redux store
 import Home from './Home'; // Import your Home component
 import './index.css'; // Import global styles
 
