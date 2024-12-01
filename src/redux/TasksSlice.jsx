@@ -30,11 +30,22 @@ export const tasksSlice = createSlice({
   ],
   reducers: {
     addTask: (state, action) => {
+      const { title, deadline, notes } = action.payload;
+    
+      if (!title || !deadline) {
+        console.error("Task must have a title and deadline.");
+        return state; // Exit without modifying state
+      }
+    
       const newTask = {
-        id: state.length + 1,
-        ...action.payload,
-        completed: false
+        id: state.length ? state[state.length - 1].id + 1 : 1, // Ensure unique ID
+        title,
+        deadline,
+        notes: notes || '',
+        completed: false,
+        pdf: null,
       };
+    
       state.push(newTask);
     },
     removeTask: (state, action) => {
@@ -71,3 +82,5 @@ export const {
 } = tasksSlice.actions;
 
 export default tasksSlice.reducer;
+
+
