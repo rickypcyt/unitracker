@@ -1,42 +1,69 @@
-// src/components/TaskList.jsx
 import React from 'react';
-import { Box, Button, Stack, Text } from '@chakra-ui/react';
+import { 
+  Box, 
+  Flex, 
+  Text, 
+  Checkbox 
+} from "@chakra-ui/react";
+import { Trash2, CheckCircle2, Circle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleTaskStatus, deleteTask } from './TaskActions';
-import "./TaskList.css"
+import "./TaskList.css";
 
 const TaskList = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
+
   return (
-    <div className="task-list-container">
+    <Box className="task-list-container">
       {tasks.length === 0 ? (
-        <div className="task-list-empty">No tasks available</div>
+        <Box className="task-list-empty">No tasks available</Box>
       ) : (
-        <div>
+        <Box>
           {tasks.map((task) => (
-            <div className="task-item">
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => dispatch(toggleTaskStatus(task.id))}
-              className="task-checkbox"
-            />
-            <span className={`task-text ${task.completed ? 'task-text-completed' : ''}`}>
-              {task.title}
-            </span>
-            <button 
-              className="task-button task-button-delete"
-              onClick={() => dispatch(deleteTask(task.id))}
+            <Flex 
+              key={task.id} 
+              className="task-item"
+              alignItems="center"
+              mb={2}
+              p={3}
+              borderRadius="md"
+              bg="var(--dark-bg-secondary)"
+              _hover={{ bg: "var(--dark-bg-tertiary)" }}
             >
-              Delete
-            </button>
-          </div>
-          
+              <Flex alignItems="center" mr={4}>
+                {task.completed ? (
+                  <CheckCircle2 color="#4CAF50" size={24} />
+                ) : (
+                  <Circle color="#888" size={24} />
+                )}
+              </Flex>
+
+              <Text 
+                flex={1}
+                className={`task-text ${task.completed ? 'task-text-completed' : ''}`}
+              >
+                {task.title}
+              </Text>
+              
+              <Box 
+                as="button"
+                onClick={() => dispatch(deleteTask(task.id))}
+                ml={2}
+                color="red.400"
+                transition="0.2s"
+                _hover={{ 
+                  color: "red.500",
+                  transform: "scale(1.1)"
+                }}
+              >
+                <Trash2 size={20} />
+              </Box>
+            </Flex>
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

@@ -1,16 +1,18 @@
-import { Progress, Box, Text } from "@chakra-ui/react";
+import React from "react";
+import { Box, Text, Stack } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
+import "./ProgressTracker.css";  // Import the CSS file
 
 const ProgressTracker = () => {
-  const tasks = useSelector((state) => state.tasks);
-  const total = tasks.length;
-  const completed = tasks.filter((task) => task.completed).length;
-  const percentage = total ? (completed / total) * 100 : 0;
-
+  const tasks = useSelector((state) => state.tasks.tasks);
+  const completedTasks = tasks.filter((task) => task.completed).length;
   return (
-    <Box>
-      <Text>Progress: {completed}/{total} tasks completed</Text>
-      <Progress value={percentage} size="lg" colorScheme="green" />
+    <Box className="progress-tracker-container">
+      <Text className="progress-tracker-text" fontSize="xl">Progress Tracker</Text>
+      <Stack spacing={4}>
+        <Text className="progress-tracker-text">{completedTasks} tasks completed!</Text>
+        {completedTasks >= 10 && <Text className="progress-tracker-milestone">🎉 You've completed 10 tasks!</Text>}
+      </Stack>
     </Box>
   );
 };

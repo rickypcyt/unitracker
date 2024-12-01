@@ -30,6 +30,8 @@ class ErrorBoundary extends React.Component {
 }
 
 
+
+
 // Mount the Home component within the div with id 'root'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}> {/* Wrap the app with Redux Provider */}
