@@ -1,9 +1,19 @@
-import React, { useMemo, useState } from 'react';
-import { Box, Text, VStack, Button, HStack, Checkbox, Input } from '@chakra-ui/react';
+import React, { useMemo, useState, useCallback } from 'react';
+import { 
+  Box, 
+  Text, 
+  VStack, 
+  Button, 
+  HStack, 
+  Checkbox, 
+  Input,
+  Alert
+} from '@chakra-ui/react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
 import { useSelector, useDispatch } from 'react-redux';
-import { addTask, toggleTaskCompletion } from './redux/TasksSlice';
+import { addTask, toggleTaskCompletion, deleteTask } from './redux/TasksSlice';
 import Achievements from './comp/Achievements';
 
 const Home = () => {
@@ -12,29 +22,60 @@ const Home = () => {
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDeadline, setNewTaskDeadline] = useState('');
+  const [newTaskNotes, setNewTaskNotes] = useState('');
+  const [notification, setNotification] = useState(null);
 
   const events = useMemo(() => {
-    return (
-      tasks?.map((task) => ({
-        title: task.title,
-        date: task.deadline || new Date().toISOString(),
-      })) || []
-    );
+    return tasks?.map((task) => ({
+      title: task.title,
+      date: task.deadline || new Date().toISOString(),
+      allDay: true,
+      color: task.completed ? 'green' : 'blue',
+    })) || [];
   }, [tasks]);
 
-  const handleAddTask = () => {
-    if (newTaskTitle && newTaskDeadline) {
-      dispatch(
-        addTask({
-          title: newTaskTitle,
-          deadline: newTaskDeadline,
-          notes: '',
-        })
-      );
-      setNewTaskTitle('');
-      setNewTaskDeadline('');
+  const showNotification = useCallback((type, title, description) => {
+    setNotification({ type, title, description });
+    const timer = setTimeout(() => setNotification(null), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleAddTask = useCallback(() => {
+    if (!newTaskTitle || !newTaskDeadline) {
+      showNotification('error', 'Task Creation Failed', 'Please provide both title and deadline');
+      return;
     }
-  };
+
+    dispatch(
+      addTask({
+        title: newTaskTitle,
+        deadline: newTaskDeadline,
+        notes: newTaskNotes,
+        completed: false,
+      })
+    );
+
+    // Reset form
+    setNewTaskTitle('');
+    setNewTaskDeadline('');
+    setNewTaskNotes('');
+
+    showNotification('success', 'Task Added', 'Your new task has been created successfully');
+  }, [dispatch, newTaskTitle, newTaskDeadline, newTaskNotes, showNotification]);
+
+  const handleTaskToggle = useCallback((taskId) => {
+    dispatch(toggleTaskCompletion(taskId));
+  }, [dispatch]);
+
+  const handleTaskDelete = useCallback((taskId) => {
+    dispatch(deleteTask(taskId));
+    showNotification('info', 'Task Deleted', 'The task has been removed');
+  }, [dispatch, showNotification]);
+
+  const handleDateClick = useCallback((info) => {
+    const clickedDate = info.dateStr;
+    setNewTaskDeadline(clickedDate);
+  }, []);
 
   return (
     <Box
@@ -42,74 +83,108 @@ const Home = () => {
       flexDirection="column"
       alignItems="center"
       justifyContent="center"
-      height="100vh"
+      minHeight="100vh"
       bg="black"
       p={4}
       color="white"
+      position="relative"
     >
-      <Text fontSize="30px" color="white" mb={4} fontWeight="bold">
+      {/* Notification Alert */}
+      {notification && (
+        <Alert 
+          status={notification.type} 
+          position="fixed" 
+          top="4" 
+          right="4" 
+          zIndex="1000" 
+          width="300px"
+          textAlign="center"
+          py={3}
+        >
+          <Box width="full">
+            <Text fontWeight="bold" mb={1}>{notification.title}</Text>
+            <Text fontSize="sm">{notification.description}</Text>
+          </Box>
+        </Alert>
+      )}
+
+      <Text fontSize="3xl" color="white" mb={6} fontWeight="bold">
         Uni Tracker 2024/2025
       </Text>
 
-      <Box mb={6}>
-        <Achievements />
-      </Box>
+      <Achievements />
 
       <Box
         display="flex"
         flexDirection="row"
-        width="90%"
+        width="full"
+        maxWidth="1400px"
         justifyContent="space-between"
         mb={6}
+        gap={6}
       >
         {/* Task Management Section */}
         <Box
           width="45%"
           bg="gray.800"
-          p={4}
-          borderRadius="md"
-          boxShadow="lg"
-          overflow="hidden"
+          p={5}
+          borderRadius="lg"
+          boxShadow="xl"
         >
-          <Text fontSize="20px" mb={4} fontWeight="bold">
+          <Text fontSize="2xl" mb={4} fontWeight="bold">
             Task List
           </Text>
           <VStack align="stretch" spacing={4}>
             {/* Pending Tasks */}
             <Box>
-              <Text fontSize="18px" mb={2} fontWeight="semibold">
+              <Text fontSize="xl" mb={2} fontWeight="semibold">
                 Pending Tasks
               </Text>
               {tasks
                 ?.filter((task) => !task.completed)
                 .map((task) => (
-                  <HStack key={task.id} spacing={3}>
+                  <HStack key={task.id} spacing={3} mb={2}>
                     <Checkbox
                       colorScheme="blue"
-                      onChange={() => dispatch(toggleTaskCompletion(task.id))}
+                      isChecked={false}
+                      onChange={() => handleTaskToggle(task.id)}
                     >
                       {task.title}
                     </Checkbox>
+                    <Button 
+                      size="xs" 
+                      colorScheme="red" 
+                      onClick={() => handleTaskDelete(task.id)}
+                    >
+                      Delete
+                    </Button>
                   </HStack>
                 ))}
             </Box>
 
             {/* Completed Tasks */}
             <Box>
-              <Text fontSize="18px" mb={2} fontWeight="semibold">
+              <Text fontSize="xl" mb={2} fontWeight="semibold">
                 Completed Tasks
               </Text>
               {tasks
                 ?.filter((task) => task.completed)
                 .map((task) => (
-                  <HStack key={task.id} spacing={3}>
+                  <HStack key={task.id} spacing={3} mb={2}>
                     <Checkbox
                       colorScheme="green"
                       isChecked
-                      onChange={() => dispatch(toggleTaskCompletion(task.id))}
+                      onChange={() => handleTaskToggle(task.id)}
                     >
                       {task.title}
                     </Checkbox>
+                    <Button 
+                      size="xs" 
+                      colorScheme="red" 
+                      onClick={() => handleTaskDelete(task.id)}
+                    >
+                      Delete
+                    </Button>
                   </HStack>
                 ))}
             </Box>
@@ -120,12 +195,11 @@ const Home = () => {
         <Box
           width="45%"
           bg="gray.800"
-          p={4}
-          borderRadius="md"
-          boxShadow="lg"
-          overflow="hidden"
+          p={5}
+          borderRadius="lg"
+          boxShadow="xl"
         >
-          <Text fontSize="20px" mb={4} fontWeight="bold">
+          <Text fontSize="2xl" mb={4} fontWeight="bold">
             Create Task
           </Text>
           <VStack spacing={4} align="stretch">
@@ -144,6 +218,13 @@ const Home = () => {
               bg="white"
               color="black"
             />
+            <Input
+              placeholder="Optional Notes"
+              value={newTaskNotes}
+              onChange={(e) => setNewTaskNotes(e.target.value)}
+              bg="white"
+              color="black"
+            />
             <Button
               colorScheme="blue"
               onClick={handleAddTask}
@@ -156,14 +237,14 @@ const Home = () => {
       </Box>
 
       <Box
-        width="50%"
+        width="full"
         maxWidth="1200px"
-        boxShadow="lg"
-        borderRadius="md"
+        boxShadow="xl"
+        borderRadius="lg"
         overflow="hidden"
       >
         <FullCalendar
-          plugins={[dayGridPlugin]}
+          plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           events={events}
           headerToolbar={{
@@ -171,6 +252,7 @@ const Home = () => {
             center: 'title',
             right: 'dayGridMonth,dayGridWeek,dayGridDay',
           }}
+          dateClick={handleDateClick}
           eventColor="#3182CE"
           contentHeight="auto"
           eventTextColor="white"
