@@ -72,14 +72,12 @@ app.get('/api/tasks', (req, res) => {
   });
 });
 
-// Ruta para alternar el estado de una tarea (completada/incompleta)
-// Ruta para alternar el estado de una tarea (completada/incompleta)
-// Ruta para marcar una tarea como completada
+// Ruta para marcar la tarea como completada
 app.put('/api/tasks/:id/complete', (req, res) => {
   const taskId = req.params.id;
   console.log(`Received request to mark task ${taskId} as complete`);
 
-  const query = 'UPDATE tasks SET completed = NOT completed WHERE id = ?';
+  const query = 'UPDATE tasks SET completed = 1 WHERE id = ?';
 
   db.run(query, [taskId], function (err) {
     if (err) {
@@ -90,12 +88,32 @@ app.put('/api/tasks/:id/complete', (req, res) => {
       res.status(404).json({ message: 'Task not found' });
     } else {
       console.log(`Task ${taskId} marked as completed`);
-      res.status(200).json({ id: taskId, completed: this.changes > 0 });
+      res.status(200).json({ id: taskId, completed: true });
     }
   });
 });
 
+// Ruta para marcar la tarea como incompleta
+app.put('/api/tasks/:id/incomplete', (req, res) => {
+  const taskId = req.params.id;
+  console.log(`Received request to mark task ${taskId} as incomplete`);
 
+  // Consulta para actualizar el estado de la tarea a incompleta (completed = 0)
+  const query = 'UPDATE tasks SET completed = 0 WHERE id = ?';
+
+  db.run(query, [taskId], function (err) {
+    if (err) {
+      console.error('Error al cambiar el estado de la tarea:', err);
+      res.status(500).json({ message: 'Error al cambiar el estado de la tarea' });
+    } else if (this.changes === 0) {
+      console.log('No task found with that ID');
+      res.status(404).json({ message: 'Task not found' });
+    } else {
+      console.log(`Task ${taskId} marked as incomplete`);
+      res.status(200).json({ id: taskId, completed: false });
+    }
+  });
+});
 
 // Ruta para eliminar una tarea
 app.delete('/api/tasks/:id', (req, res) => {

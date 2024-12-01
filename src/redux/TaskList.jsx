@@ -6,7 +6,7 @@ import {
 } from "@chakra-ui/react";
 import { Trash2, CheckCircle2, Circle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { markTaskAsCompleted, markTaskAsNotCompleted, deleteTask } from './TaskActions';
+import { markTaskAsCompleted, markTaskAsNotCompleted, deleteTask } from './TaskActions'; // Importar acciones
 import "./TaskList.css";
 
 const TaskList = () => {
@@ -30,14 +30,16 @@ const TaskList = () => {
               bg="var(--dark-bg-secondary)"
               _hover={{ bg: "var(--dark-bg-tertiary)" }}
             >
-              {/* Button to toggle task completion */}
+              {/* Botón para alternar entre completado e incompleto */}
               <Flex alignItems="center" mr={4}>
                 <button
                   onClick={() => {
                     if (task.completed) {
-                      dispatch(markTaskAsNotCompleted(task.id)); // Mark as not completed
+                      // Si la tarea está completa, marcarla como incompleta
+                      dispatch(markTaskAsNotCompleted(task.id));
                     } else {
-                      dispatch(markTaskAsCompleted(task.id)); // Mark as completed
+                      // Si la tarea está incompleta, marcarla como completa
+                      dispatch(markTaskAsCompleted(task.id));
                     }
                   }}
                   style={{
