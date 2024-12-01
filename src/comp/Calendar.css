@@ -1,4 +1,3 @@
-/* Modern Dark Mode Calendar Styling */
 :root {
   /* Refined Color Palette */
   --dark-bg-primary: #353941;
@@ -6,11 +5,11 @@
   --dark-bg-tertiary: #353941;
   --dark-border: #5F85DB;
   --dark-border-hover: #4064b9;
-  --text-primary: #fff; /* Color blanco para el texto */
+  --text-primary: #fff; /* White text */
   --text-secondary: #8690a2;
   --text-subtle: #3D3B40;
-  --accent-color: #2997ff;
-  --accent-hover: #2997ff;
+  --accent-color: #2415c5;
+  --accent-hover: #1a8cff; /* Slightly darker accent for hover */
 }
 
 .calendar-container {
@@ -114,12 +113,11 @@
   height: auto !important;
   display: inline-flex;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .fc-event:hover {
   background-color: var(--accent-hover) !important;
-  transform: scale(1.05);
 }
 
 /* Scrollbar Styling */
