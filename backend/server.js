@@ -110,6 +110,7 @@ app.put('/api/tasks/:id/incomplete', (req, res) => {
       res.status(404).json({ message: 'Task not found' });
     } else {
       console.log(`Task ${taskId} marked as incomplete`);
+      // Add this line to send a JSON response with the task ID and completed status
       res.status(200).json({ id: taskId, completed: false });
     }
   });
