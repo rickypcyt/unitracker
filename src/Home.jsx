@@ -23,17 +23,18 @@ const Home = () => {
 
   return (
     // Use a Box component from Chakra UI to wrap the content with a maximum width and padding.
-    <Box maxW="800px" mx="auto" p={5}>
+    <Box mx="80px" p={5}>
       {/* Display the main title of the application */}
       <Heading mb={6} textAlign="center" size="lg" color="white">
         Study Tracker 2025
       </Heading>
 
       {/* Display user achievements */}
-      <Achievements />
+      
 
       {/* Display the task progress bar */}
       <Box mb={6}>
+        <Achievements />
         <ProgressTracker /> {/* Render the ProgressTracker component */}
       </Box>
 

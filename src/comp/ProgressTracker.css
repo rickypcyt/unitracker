@@ -13,7 +13,7 @@
   
   .progress-tracker-container {
     width: 100%;
-    max-width: 800px;
+    max-width: auto;
     margin: 15px auto;
     background-color: var(--dark-bg-secondary);
     color: var(--text-secondary);
