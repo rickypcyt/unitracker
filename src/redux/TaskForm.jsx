@@ -21,6 +21,7 @@ const TaskForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted');
 
     // Validate inputs
     if (!newTask.title) {

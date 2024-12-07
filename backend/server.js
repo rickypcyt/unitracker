@@ -116,9 +116,9 @@ app.put('/api/tasks/:id/incomplete', (req, res) => {
   });
 });
 
-// Ruta para eliminar una tarea
 app.delete('/api/tasks/:id', (req, res) => {
   const taskId = req.params.id; // Obtener el ID de la tarea de los parámetros de la URL
+  console.log('Task ID to delete:', taskId); // Verifica el ID de la tarea
 
   db.run('DELETE FROM tasks WHERE id = ?', [taskId], function (err) {
     if (err) {
@@ -130,6 +130,7 @@ app.delete('/api/tasks/:id', (req, res) => {
     }
   });
 });
+
 
 // Ruta de prueba para la raíz (opcional)
 app.get('/', (req, res) => {

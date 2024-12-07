@@ -20,9 +20,10 @@ const taskReducer = (state = initialState, action) => {
       // Instead, it should push the new task into the tasks array.
       // Here is the corrected version:
       // return { ...state, tasks: [...state.tasks, action.payload] };
-      return state.map((task) => 
-        task.id === action.payload.id ? { ...task, tags: action.payload.tags } : task
-      );
+      return {
+        ...state,
+        tasks: [...state.tasks, action.payload], // Agrega la nueva tarea al array de tareas
+      };
 
     // Case for toggling the completion status of a task
     case 'TOGGLE_TASK_STATUS':
