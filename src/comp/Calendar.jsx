@@ -20,19 +20,19 @@ const Calendar = () => {
   return (
     // Container for the calendar
     <div className="calendar-container">
-      <FullCalendar
-        // Plugins required for the calendar functionality
-        plugins={[dayGridPlugin]}
-        // Initial view of the calendar (month view in this case)
-        initialView="dayGridMonth"
-        // Events to be displayed on the calendar
-        events={events}
-        // Set the height of the calendar to auto-adjust based on content
-        height="auto"
-        // Set the content height for better appearance
-        contentHeight={500}
-      />
-    </div>
+  <FullCalendar
+    plugins={[dayGridPlugin]}
+    initialView="dayGridMonth"
+    events={events}
+    height="auto"
+    contentHeight={500}
+    headerToolbar={{
+      left: 'title',    // Vacío para eliminar elementos izquierdos
+      center: '',
+      right: 'prev,next' // Solo botones de navegación
+    }}
+  />
+</div>
   );
 };
 

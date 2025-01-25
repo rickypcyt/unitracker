@@ -1,9 +1,9 @@
 /* Dark Mode Task Form Styling */
 :root {
   /* Color Palette */
-  --dark-bg-primary: #353941;
-  --dark-bg-secondary: #3C3D37;
-  --dark-bg-tertiary: #353941;
+  --dark-bg-primary: #000;
+  --dark-bg-secondary: #1a1a1a;
+  --dark-bg-tertiary: #2a2a2a;
   --dark-border: #5F85DB;
   --dark-border-hover: #4064b9;
   --text-primary: #fff; /* Color blanco para el texto */
@@ -147,4 +147,43 @@
   .task-submit-button {
     padding: 12px;
   }
+}
+
+.task-date-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.today-button {
+  padding: 8px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.today-button:hover {
+  background-color: #45a049;
+}
+
+
+.tomorrow-button {
+  padding: 8px 12px;
+  background-color: #3c55d1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tomorrow-button:hover {
+  background-color: #3939c5;
+}
+
+.task-input[type="date"] {
+  flex-grow: 1;
 }

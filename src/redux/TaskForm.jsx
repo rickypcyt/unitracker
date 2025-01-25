@@ -35,8 +35,30 @@ const handleSubmit = async (e) => {
   }
 };
 
-  return (
-    <div className="task-form-container">
+const handleSetToday = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Los meses son 0-based
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayString = `${year}-${month}-${day}`;
+  
+  setNewTask({ ...newTask, deadline: todayString });
+};
+
+const handleSetTomorrow = () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1); // Add 1 day to get tomorrow's date
+  const year = tomorrow.getFullYear();
+  const month = String(tomorrow.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(tomorrow.getDate()).padStart(2, '0');
+  const tomorrowString = `${year}-${month}-${day}`;
+  
+  setNewTask({ ...newTask, deadline: tomorrowString });
+};
+
+
+return (
+  <div className="task-form-container">
       <form className="task-form" onSubmit={handleSubmit}>
         {error && (
           <div className="task-form-error-message">{error}</div>
@@ -64,7 +86,15 @@ const handleSubmit = async (e) => {
           }
           placeholder="Enter task description (optional)"
         />
-
+      
+      <div className="task-date-group">
+      <button
+          type="button"
+          className="today-button"
+          onClick={handleSetToday}
+        >
+          Today
+        </button>
         <input
           className={`task-input ${
             error && !newTask.deadline ? "task-input-error" : ""
@@ -75,13 +105,21 @@ const handleSubmit = async (e) => {
             setNewTask({ ...newTask, deadline: e.target.value })
           }
         />
-
-        <button type="submit" className="task-submit-button">
-          Add Task
+        <button
+          type="button"
+          className="tomorrow-button"
+          onClick={handleSetTomorrow}
+        >
+          Tomorrow
         </button>
-      </form>
-    </div>
-  );
+      </div>
+
+      <button type="submit" className="task-submit-button">
+        Add Task
+      </button>
+    </form>
+  </div>
+);
 };
 
 export default TaskForm;
