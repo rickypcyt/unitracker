@@ -22,7 +22,8 @@ const Home = () => {
   }, [dispatch]); // The effect depends on the dispatch function.
 
   return (
-    <Box mx="80px" p={5}>
+    <Box mx="120px" p={5}>
+          <Box mx="40px">
       <Heading mb={6} textAlign="center" size="lg" color="white">
         Study Tracker 2025
       </Heading>
@@ -33,6 +34,7 @@ const Home = () => {
       <TaskForm />
       <TaskList />
       <Calendar />
+      </Box>
     </Box>
   );
 };

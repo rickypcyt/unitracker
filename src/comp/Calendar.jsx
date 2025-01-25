@@ -1,51 +1,49 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { useTaskForm } from "../redux/useTaskForm";
 import "./Calendar.css";
 
 const Calendar = () => {
-  const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
   const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    deadline: "",
-  });
+  const [selectedDate, setSelectedDate] = useState(null);
+  
+  // Usamos el custom hook con manejo de fecha inicial
+  const {
+    newTask,
+    error,
+    handleSubmit,
+    updateField,
+    setNewTask
+  } = useTaskForm("");
 
-  // Eventos del calendario
+  // Eventos para el calendario
   const events = tasks
     .filter((task) => task.deadline)
     .map((task) => ({
       title: task.title,
       date: task.deadline,
+      backgroundColor: task.completed ? "#4CAF50" : "#4A6FFF"
     }));
 
-  // Manejar doble click en un día
-
+  // Manejar doble click en día
   const handleDayDoubleClick = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
     
     setSelectedDate(date);
-    setNewTask({
-      ...newTask,
-      deadline: `${year}-${month}-${day}`
-    });
+    updateField('deadline', dateString);
     setShowModal(true);
   };
-  
-  // Enviar nuevo task
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (newTask.title.trim()) {
-      dispatch({
-        type: "ADD_TASK",
-        payload: { ...newTask, id: Date.now(), completed: false },
-      });
+
+  // Submit modificado para cerrar modal
+  const handleCalendarSubmit = async (e) => {
+    const success = await handleSubmit(e);
+    if (success) {
       setShowModal(false);
       setNewTask({ title: "", description: "", deadline: "" });
     }
@@ -62,45 +60,66 @@ const Calendar = () => {
         headerToolbar={{
           left: "title",
           center: "",
-          right: "prev,next",
+          right: "prev,next"
         }}
         dayCellDidMount={(arg) => {
           arg.el.addEventListener("dblclick", () => {
             handleDayDoubleClick(arg.date);
           });
         }}
+        eventDidMount={(info) => {
+          info.el.style.cursor = "pointer";
+          info.el.title = info.event.title;
+        }}
       />
 
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Crear tarea para {selectedDate.toDateString()}</h3>
-            <form onSubmit={handleSubmit}>
+            <h3>Crear tarea para {selectedDate?.toLocaleDateString()}</h3>
+            
+            {error && <div className="task-form-error-message">{error}</div>}
+
+            <form onSubmit={handleCalendarSubmit}>
               <input
                 type="text"
-                placeholder="Título"
+                placeholder="Título de la tarea"
                 value={newTask.title}
-                onChange={(e) =>
-                  setNewTask({ ...newTask, title: e.target.value })
-                }
+                onChange={(e) => updateField('title', e.target.value)}
                 required
+                className="task-input"
               />
+              
               <textarea
-                placeholder="Descripción"
+                placeholder="Descripción (opcional)"
                 value={newTask.description}
-                onChange={(e) =>
-                  setNewTask({ ...newTask, description: e.target.value })
-                }
+                onChange={(e) => updateField('description', e.target.value)}
+                className="task-input"
+                rows="3"
               />
-              <input
-                type="date"
-                value={newTask.deadline}
-                disabled
-              />
+              
+              <div className="task-date-group">
+                <input
+                  type="date"
+                  value={newTask.deadline}
+                  className="task-input"
+                  disabled
+                />
+              </div>
+
               <div className="modal-buttons">
-                <button type="submit">Guardar</button>
-                <button type="button" onClick={() => setShowModal(false)}>
+                <button
+                  type="button"
+                  className="modal-cancel"
+                  onClick={() => setShowModal(false)}
+                >
                   Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="modal-confirm"
+                >
+                  Crear Tarea
                 </button>
               </div>
             </form>
