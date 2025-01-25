@@ -48,7 +48,7 @@ const Achievements = () => {
       {completed < 10 && (
         <div className="achievement-text achievement-motivational">
           <span className="achievement-icon">🚀</span>
-          Keep going! Complete more tasks to earn achievements!
+          Complete more tasks to unlock achievements.
         </div>
       )}
     </div>

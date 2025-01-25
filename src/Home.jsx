@@ -22,29 +22,16 @@ const Home = () => {
   }, [dispatch]); // The effect depends on the dispatch function.
 
   return (
-    // Use a Box component from Chakra UI to wrap the content with a maximum width and padding.
     <Box mx="80px" p={5}>
-      {/* Display the main title of the application */}
       <Heading mb={6} textAlign="center" size="lg" color="white">
         Study Tracker 2025
       </Heading>
-
-      {/* Display user achievements */}
-      
-
-      {/* Display the task progress bar */}
       <Box mb={6}>
         <Achievements />
-        <ProgressTracker /> {/* Render the ProgressTracker component */}
+        <ProgressTracker /> 
       </Box>
-
-      {/* Form to add new tasks */}
       <TaskForm />
-
-      {/* List of existing tasks */}
       <TaskList />
-
-      {/* Calendar component */}
       <Calendar />
     </Box>
   );

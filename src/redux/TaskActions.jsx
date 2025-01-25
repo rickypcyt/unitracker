@@ -1,17 +1,29 @@
 // src/actions/taskActions.js
 
+// Acción para manejar errores
+export const taskError = (error) => ({
+  type: 'TASK_ERROR',
+  payload: error,
+});
+
+// Acción para obtener tareas
 export const fetchTasks = () => {
   return async (dispatch) => {
     try {
       const response = await fetch('http://localhost:5000/api/tasks');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
       const data = await response.json();
       dispatch({ type: 'FETCH_TASKS', payload: data });
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      dispatch(taskError(error.message));
     }
   };
 };
 
+// Acción para agregar una tarea
 export const addTask = (newTask) => {
   return async (dispatch) => {
     try {
@@ -22,31 +34,36 @@ export const addTask = (newTask) => {
         },
         body: JSON.stringify(newTask),
       });
+      if (!response.ok) {
+        throw new Error('Failed to add task');
+      }
       const data = await response.json();
       dispatch({ type: 'ADD_TASK', payload: data });
     } catch (error) {
       console.error('Error adding task:', error);
+      dispatch(taskError(error.message));
     }
   };
 };
 
-// Acción para marcar tarea como completada
-// src/actions/taskActions.js
-// src/actions/taskActions.js
-
-// Acción para marcar tarea como completada
-export const markTaskAsCompleted = (id) => {
+// Función auxiliar para marcar tarea como completada/incompleta
+const toggleTaskStatus = (id, completed) => {
   return async (dispatch, getState) => {
-    const task = getState().tasks.tasks.find((task) => task.id === id);
+    const task = getState().tasks?.tasks.find((task) => task.id === id);
+    if (!task) {
+      console.error('Task not found');
+      return;
+    }
 
-    // Realiza el update optimista (sin esperar al servidor)
+    // Actualización optimista
     dispatch({
       type: 'TOGGLE_TASK_STATUS',
-      payload: { id, completed: true },
+      payload: { id, completed },
     });
 
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${id}/complete`, {
+      const endpoint = completed ? 'complete' : 'incomplete';
+      const response = await fetch(`http://localhost:5000/api/tasks/${id}/${endpoint}`, {
         method: 'PUT',
       });
 
@@ -55,66 +72,38 @@ export const markTaskAsCompleted = (id) => {
       }
 
       const data = await response.json();
-
-      // Aquí no necesitamos hacer nada, ya que ya hemos hecho el cambio optimista
+      // Opcional: Despachar una acción para actualizar el estado con los datos del servidor
+      dispatch({ type: 'UPDATE_TASK', payload: data });
     } catch (error) {
-      console.error('Error marking task as completed:', error);
-
-      // Si el update falla, revertimos el cambio optimista
+      console.error('Error toggling task status:', error);
+      // Revertir la actualización optimista
       dispatch({
         type: 'TOGGLE_TASK_STATUS',
-        payload: { id, completed: false },
+        payload: { id, completed: !completed },
       });
+      // Notificar el error
+      dispatch(taskError(error.message));
     }
   };
 };
 
-// Acción para marcar tarea como incompleta
-export const markTaskAsNotCompleted = (id) => {
-  return async (dispatch, getState) => {
-    const task = getState().tasks.tasks.find((task) => task.id === id);
+export const markTaskAsCompleted = (id) => toggleTaskStatus(id, true);
+export const markTaskAsNotCompleted = (id) => toggleTaskStatus(id, false);
 
-    // Realiza el update optimista (sin esperar al servidor)
-    dispatch({
-      type: 'TOGGLE_TASK_STATUS',
-      payload: { id, completed: false },
-    });
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${id}/incomplete`, {
-        method: 'PUT',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update task');
-      }
-
-      const data = await response.json();
-
-      // Aquí no necesitamos hacer nada, ya que ya hemos hecho el cambio optimista
-    } catch (error) {
-      console.error('Error marking task as incomplete:', error);
-
-      // Si el update falla, revertimos el cambio optimista
-      dispatch({
-        type: 'TOGGLE_TASK_STATUS',
-        payload: { id, completed: true },
-      });
-    }
-  };
-};
-
-
-
+// Acción para eliminar una tarea
 export const deleteTask = (id) => {
   return async (dispatch) => {
     try {
-      await fetch(`http://localhost:5000/api/tasks/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
         method: 'DELETE',
       });
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
       dispatch({ type: 'DELETE_TASK', payload: id });
     } catch (error) {
       console.error('Error deleting task:', error);
+      dispatch(taskError(error.message));
     }
   };
 };

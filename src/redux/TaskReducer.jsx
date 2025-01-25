@@ -1,53 +1,58 @@
 // src/reducers/taskReducer.js
 
-// Define the initial state of the tasks reducer
+// Define el estado inicial del reducer
 const initialState = {
-  tasks: [], // An empty array to store tasks
+  tasks: [], // Array para almacenar las tareas
+  error: null, // Propiedad para almacenar errores
 };
 
-// Define the taskReducer function to handle different actions
+// Define el reducer para manejar las acciones relacionadas con las tareas
 const taskReducer = (state = initialState, action) => {
-  // Use a switch statement to handle different action types
   switch (action.type) {
-    // Case for fetching tasks from the server or other data source
+    // Caso para obtener las tareas desde el servidor
     case 'FETCH_TASKS':
-      // Return a new state with the tasks updated to the payload received
-      return { ...state, tasks: action.payload };
-
-    // Case for adding a new task (this implementation seems incorrect, see note below)
-    case 'ADD_TASK':
-      // This implementation is incorrect because it tries to map over the state object directly.
-      // Instead, it should push the new task into the tasks array.
-      // Here is the corrected version:
-      // return { ...state, tasks: [...state.tasks, action.payload] };
       return {
         ...state,
-        tasks: [...state.tasks, action.payload], // Agrega la nueva tarea al array de tareas
+        tasks: action.payload, // Actualiza la lista de tareas con los datos recibidos
       };
 
-    // Case for toggling the completion status of a task
+    // Caso para agregar una nueva tarea
+    case 'ADD_TASK':
+      return {
+        ...state,
+        tasks: [...state.tasks, action.payload], // Agrega una nueva tarea al array
+      };
+
+    // Caso para cambiar el estado de completado de una tarea
     case 'TOGGLE_TASK_STATUS':
-      // Return a new state with the tasks array updated to reflect the changed task status
       return {
         ...state,
         tasks: state.tasks.map((task) =>
           task.id === action.payload.id
-            ? { ...task, completed: !task.completed } // Toggle the completion status
+            ? { ...task, completed: action.payload.completed } // Actualiza el estado de completado
             : task
         ),
       };
 
-    // Case for deleting a task by its ID
+    // Caso para eliminar una tarea por su ID
     case 'DELETE_TASK':
-      // Return a new state with the tasks array filtered to exclude the task with the matching ID
-      return { ...state, tasks: state.tasks.filter((task) => task.id !== action.payload) };
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload), // Elimina la tarea por ID
+      };
 
-    // Default case to handle unknown action types
+    // Caso para manejar errores
+    case 'TASK_ERROR':
+      return {
+        ...state,
+        error: action.payload, // Almacena el mensaje de error
+      };
+
+    // Caso por defecto: retorna el estado actual sin cambios
     default:
-      // Return the current state unchanged if the action type is not recognized
       return state;
   }
 };
 
-// Export the taskReducer function as the default export
+// Exporta el reducer como exportación por defecto
 export default taskReducer;
