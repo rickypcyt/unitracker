@@ -19,6 +19,7 @@
     "@fullcalendar/react": "^6.1.15",
     "@reduxjs/toolkit": "^2.4.0",
     "@rollup/rollup-linux-x64-gnu": "^4.31.0",
+    "@sqlite.org/sqlite-wasm": "^3.48.0-build3",
     "concurrently": "^9.1.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
