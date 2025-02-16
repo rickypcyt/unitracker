@@ -28,7 +28,7 @@ const ProgressTracker = () => {
         {/* Conditional rendering for a milestone message */}
         {completedTasks >= 10 && (
           <Text className="progress-tracker-milestone">
-            🎉 You've completed 10 tasks!
+            🎉 You&apos;ve completed 10 tasks!
           </Text>
         )}
       </Stack>

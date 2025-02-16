@@ -1,108 +1,125 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const cors = require('cors');
+import express, { json } from 'express';
+import {supabase} from '../src/utils/supabaseClient'; // Asegúrate de ajustar esta ruta a donde esté tu cliente Supabase
+import cors from 'cors';
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
-const db = new sqlite3.Database('./tasks.db', (err) => {
-  if (err) {
-    console.error('Error al conectar con la base de datos:', err.message);
-  } else {
-    console.log('Conexión a la base de datos SQLite exitosa.');
+// Endpoint para agregar una tarea
+app.post('/api/tasks', async (req, res) => {
+  const { title, description, deadline, completed } = req.body;
+
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([
+        {
+          title,
+          description,
+          deadline,
+          completed: completed || false,
+        },
+      ]);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    res.status(201).json({ id: data[0].id, title, description, deadline, completed: completed || false });
+  } catch (err) {
+    console.error('Error al agregar la tarea:', err.message);
+    res.status(500).json({ message: 'Error al agregar la tarea: ' + err.message });
   }
 });
 
-db.serialize(() => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS tasks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT,
-      deadline TEXT,
-      completed BOOLEAN DEFAULT 0
-    );`,
-    (err) => {
-      if (err) {
-        console.error('Error al crear/verificar la tabla tasks:', err.message);
-      } else {
-        console.log('Tabla "tasks" verificada/creada correctamente.');
-      }
+// Endpoint para obtener todas las tareas
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*');
+
+    if (error) {
+      throw new Error(error.message);
     }
-  );
+
+    res.json(data);
+  } catch (err) {
+    console.error('Error al obtener las tareas:', err.message);
+    res.status(500).json({ message: 'Error al obtener las tareas: ' + err.message });
+  }
 });
 
-app.post('/api/tasks', (req, res) => {
-  const { title, description, deadline, completed } = req.body;
-  const stmt = db.prepare('INSERT INTO tasks (title, description, deadline, completed) VALUES (?, ?, ?, ?)');
-  stmt.run(title, description, deadline, completed || false, function (err) {
-    if (err) {
-      console.error('Error al agregar la tarea:', err.message);
-      return res.status(500).json({ message: 'Error al agregar la tarea: ' + err.message });
-    }
-    res.status(201).json({ id: this.lastID, title, description, deadline, completed: completed || false });
-  });
-  stmt.finalize();
-});
-
-app.get('/api/tasks', (req, res) => {
-  db.all('SELECT * FROM tasks', (err, rows) => {
-    if (err) {
-      console.error('Error al obtener las tareas:', err.message);
-      return res.status(500).json({ message: 'Error al obtener las tareas: ' + err.message });
-    }
-    res.json(rows);
-  });
-});
-
-app.put('/api/tasks/:id/complete', (req, res) => {
+// Endpoint para marcar una tarea como completada
+app.put('/api/tasks/:id/complete', async (req, res) => {
   const taskId = req.params.id;
-  console.log(`Received request to mark task ${taskId} as complete`);
 
-  const query = 'UPDATE tasks SET completed = 1 WHERE id = ?';
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ completed: true })
+      .eq('id', taskId);
 
-  db.run(query, [taskId], function (err) {
-    if (err) {
-      console.error('Error al cambiar el estado de la tarea:', err.message);
-      return res.status(500).json({ message: 'Error al cambiar el estado de la tarea: ' + err.message });
-    } else if (this.changes === 0) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
+
     res.status(200).json({ id: taskId, completed: true });
-  });
+  } catch (err) {
+    console.error('Error al cambiar el estado de la tarea:', err.message);
+    res.status(500).json({ message: 'Error al cambiar el estado de la tarea: ' + err.message });
+  }
 });
 
-app.put('/api/tasks/:id/incomplete', (req, res) => {
+// Endpoint para marcar una tarea como incompleta
+app.put('/api/tasks/:id/incomplete', async (req, res) => {
   const taskId = req.params.id;
-  console.log(`Received request to mark task ${taskId} as incomplete`);
 
-  const query = 'UPDATE tasks SET completed = 0 WHERE id = ?';
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ completed: false })
+      .eq('id', taskId);
 
-  db.run(query, [taskId], function (err) {
-    if (err) {
-      console.error('Error al cambiar el estado de la tarea:', err.message);
-      return res.status(500).json({ message: 'Error al cambiar el estado de la tarea: ' + err.message });
-    } else if (this.changes === 0) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
+
     res.status(200).json({ id: taskId, completed: false });
-  });
+  } catch (err) {
+    console.error('Error al cambiar el estado de la tarea:', err.message);
+    res.status(500).json({ message: 'Error al cambiar el estado de la tarea: ' + err.message });
+  }
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
+// Endpoint para eliminar una tarea
+app.delete('/api/tasks/:id', async (req, res) => {
   const taskId = req.params.id;
-  console.log('Task ID to delete:', taskId);
 
-  db.run('DELETE FROM tasks WHERE id = ?', [taskId], function (err) {
-    if (err) {
-      console.error('Error al eliminar la tarea:', err.message);
-      return res.status(500).json({ message: 'Error al eliminar la tarea: ' + err.message });
-    } else if (this.changes === 0) {
-      return res.status(404).json({ message: 'Task not found' });
+  try {
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId);
+
+    if (error) {
+      throw new Error(error.message);
     }
+
     res.status(200).json({ message: 'Task deleted successfully' });
-  });
+  } catch (err) {
+    console.error('Error al eliminar la tarea:', err.message);
+    res.status(500).json({ message: 'Error al eliminar la tarea: ' + err.message });
+  }
 });
 
 app.get('/', (req, res) => {
@@ -112,15 +129,4 @@ app.get('/', (req, res) => {
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-});
-
-process.on('SIGINT', () => {
-  db.close((err) => {
-    if (err) {
-      console.error('Error al cerrar la base de datos:', err.message);
-    } else {
-      console.log('Conexión a la base de datos cerrada.');
-    }
-    process.exit(0);
-  });
 });

@@ -1,4 +1,5 @@
 // src/actions/taskActions.js
+import { supabase } from '../utils/supabaseClient'; // Ajusta la ruta si es necesario
 
 // Acción para manejar errores
 export const taskError = (error) => ({
@@ -10,11 +11,14 @@ export const taskError = (error) => ({
 export const fetchTasks = () => {
   return async (dispatch) => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks');
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasks');
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*');
+
+      if (error) {
+        throw new Error(error.message);
       }
-      const data = await response.json();
+
       dispatch({ type: 'FETCH_TASKS', payload: data });
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -27,24 +31,34 @@ export const fetchTasks = () => {
 export const addTask = (newTask) => {
   return async (dispatch) => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTask),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add task');
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([
+          {
+            title: newTask.title,
+            description: newTask.description,
+            deadline: newTask.deadline,
+            completed: newTask.completed || false,
+          },
+        ]);
+
+      if (error) {
+        throw new Error(error.message);
       }
-      const data = await response.json();
-      dispatch({ type: 'ADD_TASK', payload: data });
+
+      // Verificar si 'data' está vacío
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from insert operation');
+      }
+
+      dispatch({ type: 'ADD_TASK', payload: data[0] });
     } catch (error) {
-      console.error('Error adding task:', error);
+      console.error('Error adding task:', error.message, error);
       dispatch(taskError(error.message));
     }
   };
 };
+
 
 // Función auxiliar para marcar tarea como completada/incompleta
 const toggleTaskStatus = (id, completed) => {
@@ -62,18 +76,16 @@ const toggleTaskStatus = (id, completed) => {
     });
 
     try {
-      const endpoint = completed ? 'complete' : 'incomplete';
-      const response = await fetch(`http://localhost:5000/api/tasks/${id}/${endpoint}`, {
-        method: 'PUT',
-      });
+      const { data, error } = await supabase
+        .from('tasks')
+        .update({ completed })
+        .eq('id', id);
 
-      if (!response.ok) {
-        throw new Error('Failed to update task');
+      if (error) {
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-      // Opcional: Despachar una acción para actualizar el estado con los datos del servidor
-      dispatch({ type: 'UPDATE_TASK', payload: data });
+      dispatch({ type: 'UPDATE_TASK', payload: data[0] });
     } catch (error) {
       console.error('Error toggling task status:', error);
       // Revertir la actualización optimista
@@ -81,7 +93,6 @@ const toggleTaskStatus = (id, completed) => {
         type: 'TOGGLE_TASK_STATUS',
         payload: { id, completed: !completed },
       });
-      // Notificar el error
       dispatch(taskError(error.message));
     }
   };
@@ -94,12 +105,15 @@ export const markTaskAsNotCompleted = (id) => toggleTaskStatus(id, false);
 export const deleteTask = (id) => {
   return async (dispatch) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete task');
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(error.message);
       }
+
       dispatch({ type: 'DELETE_TASK', payload: id });
     } catch (error) {
       console.error('Error deleting task:', error);
