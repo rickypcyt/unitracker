@@ -25,3 +25,7 @@ dist-ssr
 
 .vercel
 tasks.db
+
+.env*
+
+.env
