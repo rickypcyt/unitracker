@@ -1,130 +1,67 @@
 // src/actions/taskActions.js
-import { supabase } from '../utils/supabaseClient'; // Ajusta la ruta si es necesario
-
-// Acción para manejar errores
-export const taskError = (error) => ({
-  type: 'TASK_ERROR',
-  payload: error,
-});
+import { supabase } from '../utils/supabaseClient';
+import {
+  fetchTasksSuccess,
+  addTaskSuccess,
+  toggleTaskStatusOptimistic,
+  updateTaskSuccess,
+  taskError
+} from './TaskSlice';
 
 // Acción para obtener tareas
-export const fetchTasks = () => {
-  return async (dispatch) => {
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*');
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      dispatch({ type: 'FETCH_TASKS', payload: data });
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      dispatch(taskError(error.message));
-    }
-  };
+export const fetchTasks = () => async (dispatch) => {
+  try {
+    const { data, error } = await supabase.from('tasks').select('*');
+    if (error) throw error;
+    dispatch(fetchTasksSuccess(data));
+  } catch (error) {
+    dispatch(taskError(error.message));
+  }
 };
 
-// Acción para agregar una tarea
-export const addTask = (newTask) => {
-  return async (dispatch) => {
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([
-          {
-            title: newTask.title,
-            description: newTask.description,
-            deadline: newTask.deadline,
-            completed: newTask.completed || false,
-          },
-        ]);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      // Obtener las tareas más recientes después de agregar la nueva tarea
-      const { data: allTasks, error: fetchError } = await supabase
-        .from('tasks')
-        .select();
-
-      if (fetchError) {
-        throw new Error(fetchError.message);
-      }
-
-      // Actualizar el estado con la lista completa de tareas
-      dispatch({ type: 'FETCH_TASKS', payload: allTasks });
-    } catch (error) {
-      console.error('Error adding task:', error.message, error);
-      dispatch(taskError(error.message));
-    }
-  };
+// Acción para agregar tarea
+export const addTask = (newTask) => async (dispatch) => {
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([{ ...newTask, completed: false }])
+      .select();
+      
+    if (error) throw error;
+    dispatch(addTaskSuccess(data[0]));
+  } catch (error) {
+    dispatch(taskError(error.message));
+  }
 };
 
-
-
-
-// Función auxiliar para marcar tarea como completada/incompleta
-const toggleTaskStatus = (id, completed) => {
-  return async (dispatch, getState) => {
-    const task = getState().tasks?.tasks.find((task) => task.id === id);
-    if (!task) {
-      console.error('Task not found');
-      return;
-    }
-
+// Acción para marcar como completado/no completado
+export const toggleTaskStatus = (id, completed) => async (dispatch) => {
+  try {
     // Actualización optimista
-    dispatch({
-      type: 'TOGGLE_TASK_STATUS',
-      payload: { id, completed },
-    });
+    dispatch(toggleTaskStatusOptimistic({ id, completed }));
+    
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ completed })
+      .eq('id', id)
+      .select();
 
-    try {
-      const { data, error } = await supabase
-        .from('tasks')
-        .update({ completed })
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      dispatch({ type: 'UPDATE_TASK', payload: data[0] });
-    } catch (error) {
-      console.error('Error toggling task status:', error);
-      // Revertir la actualización optimista
-      dispatch({
-        type: 'TOGGLE_TASK_STATUS',
-        payload: { id, completed: !completed },
-      });
-      dispatch(taskError(error.message));
-    }
-  };
+    if (error) throw error;
+    dispatch(updateTaskSuccess(data[0]));
+  } catch (error) {
+    // Revertir en caso de error
+    dispatch(toggleTaskStatusOptimistic({ id, completed: !completed }));
+    dispatch(taskError(error.message));
+  }
 };
 
-export const markTaskAsCompleted = (id) => toggleTaskStatus(id, true);
-export const markTaskAsNotCompleted = (id) => toggleTaskStatus(id, false);
-
-// Acción para eliminar una tarea
-export const deleteTask = (id) => {
-  return async (dispatch) => {
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      dispatch({ type: 'DELETE_TASK', payload: id });
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      dispatch(taskError(error.message));
-    }
-  };
+// Acción para eliminar tarea
+export const deleteTask = (id) => async (dispatch) => {
+  try {
+    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    if (error) throw error;
+    dispatch(deleteTaskSuccess(id));
+  } catch (error) {
+    dispatch(taskError(error.message));
+  }
 };

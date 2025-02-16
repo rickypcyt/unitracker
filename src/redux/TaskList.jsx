@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { Trash2, CheckCircle2, Circle, Calendar } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { markTaskAsCompleted, markTaskAsNotCompleted, deleteTask } from './TaskActions';
+import { toggleTaskStatus } from './TaskActions';
+import { deleteTask } from './TaskActions';
 import './TaskList.css';
 
 const TaskList = () => {
@@ -10,13 +11,12 @@ const TaskList = () => {
   const tasks = useSelector((state) => state.tasks.tasks);
   const [hoveredTaskId, setHoveredTaskId] = useState(null);
 
-  const handleToggleCompletion = (task) => {
-    if (task.completed) {
-      dispatch(markTaskAsNotCompleted(task.id)); // Esto lo marca como no completado
-    } else {
-      dispatch(markTaskAsCompleted(task.id)); // Esto lo marca como completado
-    }
-  };
+// En el componente TaskList
+
+// Reemplazar handleToggleCompletion por:
+const handleToggleCompletion = (task) => {
+  dispatch(toggleTaskStatus(task.id, !task.completed));
+};
   
   
   return (
