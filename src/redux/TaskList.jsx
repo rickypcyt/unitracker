@@ -12,7 +12,7 @@ const TaskList = () => {
   };
 
   return (
-    <div className="mt-8 bg-bg-secondary p-6 rounded-2xl shadow-xl text-text-primary max-w-3xl mx-auto border border-border-primary">
+    <div className="mt-8 bg-bg-secondary p-6 rounded-2xl shadow-xl text-text-primary max-w-full mx-auto border border-border-primary">
       <h2 className="text-2xl font-bold mb-6">Your Tasks</h2>
       {tasks.length === 0 ? (
         <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
