@@ -1,39 +1,38 @@
-// Home.js
-import React, { useEffect } from 'react';
-import { Box, Heading } from '@chakra-ui/react';
-import { useDispatch, useSelector } from 'react-redux'; // Importa useSelector para obtener datos de Redux
+import React from 'react';
 import TaskForm from './redux/TaskForm';
 import TaskList from './redux/TaskList';
-import { fetchTasks } from './redux/TaskActions';
-import Achievements from './comp/Achievements';
-import Calendar from './comp/Calendar';
-import ProgressTracker from './comp/ProgressTracker';
+import ProgressTracker from './components/ProgressTracker';
+import Achievements from './components/Achievements';
+import Calendar from './components/Calendar';
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const { tasks, loading, error } = useSelector(state => state.tasks); // Accede al estado de tasks
-
-  useEffect(() => {
-    dispatch(fetchTasks());
-  }, [dispatch]);
-
   return (
-    <Box mx="120px" p={5}>
-      <Box mx="40px">
-        <Heading mb={6} textAlign="center" size="lg" color="white">
-          Study Tracker 2025
-        </Heading>
-        <Box mb={6}>
-          <Achievements />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold text-text-primary mb-8 text-center">Task Manager</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div>
           <ProgressTracker />
-        </Box>
-        <TaskForm />
-        <TaskList tasks={tasks} /> {/* Pasa las tasks al componente TaskList */}
-        {loading && <p>Loading tasks...</p>}
-        {error && <p>Error: {error}</p>}
-        <Calendar />
-      </Box>
-    </Box>
+        </div>
+        
+        <div>
+          <Achievements />
+        </div>
+
+        <div className="md:col-span-2">
+          <TaskForm />
+        </div>
+        
+        <div className="md:col-span-2">
+          <TaskList />
+        </div>
+        
+        <div className="md:col-span-2">
+          <Calendar />
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,18 +1,23 @@
 /* src/index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   font-family: 'Arial', sans-serif;
   background-color: #010101;
-  color: #333;
+  color: #FFFFFF;
 }
 
 h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 20px;
+  @apply text-4xl font-bold mb-8 text-text-primary;
 }
 
 h2 {
-  font-size: 1.75rem;
-  font-weight: bold;
-  margin-bottom: 15px;
+  @apply text-2xl font-bold mb-6 text-text-primary;
+}
+
+.container {
+  @apply max-w-7xl;
 }

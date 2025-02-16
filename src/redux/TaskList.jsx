@@ -1,112 +1,81 @@
-import React, { useState } from 'react';
-import { Box, Flex, Text } from '@chakra-ui/react';
-import { Trash2, CheckCircle2, Circle, Calendar } from 'lucide-react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleTaskStatus } from './TaskActions';
-import { deleteTask } from './TaskActions';
-import './TaskList.css';
+import { toggleTaskStatus, deleteTask } from './TaskActions';
+import { CheckCircle2, Circle, Calendar, Trash2 } from 'lucide-react';
 
 const TaskList = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
-  const [hoveredTaskId, setHoveredTaskId] = useState(null);
 
-// En el componente TaskList
+  const handleToggleCompletion = (task) => {
+    dispatch(toggleTaskStatus(task.id, !task.completed));
+  };
 
-// Reemplazar handleToggleCompletion por:
-const handleToggleCompletion = (task) => {
-  dispatch(toggleTaskStatus(task.id, !task.completed));
-};
-  
-  
   return (
-    <Box className="task-list-container">
+    <div className="mt-8 bg-bg-secondary p-6 rounded-2xl shadow-xl text-text-primary max-w-3xl mx-auto border border-border-primary">
+      <h2 className="text-2xl font-bold mb-6">Your Tasks</h2>
       {tasks.length === 0 ? (
-        <Box className="task-list-empty">No tasks available</Box>
+        <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
+          No tasks available. Start by adding a new task!
+        </div>
       ) : (
-        <Box>
+        <div className="space-y-4">
           {tasks.map((task) => (
-            <Flex
+            <div
               key={task.id}
-              className="task-item"
-              alignItems="center"
-              justifyContent="space-between"
-              p={3}
-              mb={2}
-              borderRadius="md"
-              bg="var(--dark-bg-secondary)"
-              _hover={{ bg: 'var(--dark-bg-tertiary)' }}
+              className="group flex justify-between items-center p-4 bg-bg-tertiary border border-border-primary rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-bg-surface"
             >
               {/* Left Section: Checkbox + Title */}
-              <Flex alignItems="center" flex={1}>
+              <div className="flex items-center flex-1 min-w-0">
                 <button
-                  onClick={() => handleToggleCompletion(task)}  // Cambié esto
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
+                  onClick={() => handleToggleCompletion(task)}
+                  className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full"
                 >
                   {task.completed ? (
-                    <CheckCircle2 color="#4CAF50" size={24} />
+                    <CheckCircle2 className="text-accent-primary" size={24} />
                   ) : (
-                    <Circle color="#888" size={24} />
+                    <Circle className="text-text-secondary" size={24} />
                   )}
                 </button>
-
-                <Text
-                  ml={3}
-                  className={`task-text ${task.completed ? 'task-text-completed' : ''}`}
-                  fontSize="md"
+                <span
+                  className={`ml-4 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis whitespace-nowrap ${
+                    task.completed
+                      ? 'line-through text-text-secondary'
+                      : 'text-text-primary'
+                  }`}
                 >
                   {task.title}
-                </Text>
-              </Flex>
+                </span>
+              </div>
 
               {/* Middle Section: Description */}
               {task.description && (
-                <Text
-                  flex={2}
-                  mx={4}
-                  fontSize="sm"
-                  color="var(--text-secondary)"
-                  noOfLines={1}
-                  title={task.description}
-                >
-                  {task.description}
-                </Text>
+                <div className="flex-1 mx-4 text-sm text-text-secondary truncate text-center">
+                  <span className="font-semibold">Task Description:</span> {task.description}
+                </div>
               )}
 
               {/* Right Section: Date + Delete */}
-              <Flex alignItems="center" flexShrink={0}>
-                <Flex alignItems="center" mr={4}>
-                  <Calendar size={16} color="var(--text-secondary)" />
-                  <Text ml={1} fontSize="sm" color="var(--text-secondary)">
+              <div className="flex items-center flex-shrink-0 ml-4">
+                <div className="flex items-center mr-4">
+                  <Calendar size={16} className="text-text-secondary" />
+                  <span className="ml-2 text-sm text-text-secondary">
                     {new Date(task.deadline).toLocaleDateString()}
-                  </Text>
-                </Flex>
-                <Box
-                  as="button"
+                  </span>
+                </div>
+                <button
                   onClick={() => dispatch(deleteTask(task.id))}
-                  color="red.400"
-                  transition="0.2s"
-                  _hover={{
-                    color: 'red.500',
-                    transform: 'scale(1.1)',
-                  }}
+                  className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full p-1"
                 >
                   <Trash2 size={20} />
-                </Box>
-              </Flex>
-            </Flex>
+                </button>
+              </div>
+            </div>
           ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
-
 
 export default TaskList;
