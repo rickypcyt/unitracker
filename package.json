@@ -20,6 +20,8 @@
     "@reduxjs/toolkit": "^2.4.0",
     "@rollup/rollup-linux-x64-gnu": "^4.31.0",
     "@supabase/supabase-js": "^2.48.1",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "concurrently": "^9.1.0",
     "cors": "^2.8.5",
     "express": "^4.21.1",
@@ -54,5 +56,11 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "trustedDependencies": [
+    "@swc/core",
+    "@vercel/speed-insights",
+    "core-js",
+    "esbuild"
+  ]
 }

@@ -45,7 +45,7 @@ const Calendar = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-1 ml-1">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"

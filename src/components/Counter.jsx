@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { Play, Pause, RotateCcw, Flag, Edit2, Check } from 'lucide-react';
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2 } from 'lucide-react';
 
 const Counter = () => {
   const [laps, setLaps] = useState([]);
@@ -76,15 +76,26 @@ const Counter = () => {
     }
   };
 
+  const deleteLap = async (lapId) => {
+    const { error } = await supabase
+      .from('study_laps')
+      .delete()
+      .eq('id', lapId);
+    if (error) console.error('Error deleting lap:', error);
+    else setLaps(laps.filter(lap => lap.id !== lapId));
+  };
+
   const formatTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-1 ml-1">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
       <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(time)}</div>
       <div className="flex justify-center space-x-4 mb-6">
@@ -110,23 +121,33 @@ const Counter = () => {
       <div className="space-y-2 max-h-60 overflow-y-auto">
         {laps.map((lap) => (
           <div key={lap.id} className="flex items-center justify-between bg-bg-tertiary p-3 rounded-lg">
-            {isEditing === lap.id ? (
-              <input
-                type="text"
-                value={lap.name}
-                onChange={(e) => setLaps(laps.map(l => l.id === lap.id ? { ...l, name: e.target.value } : l))}
-                onBlur={() => updateLapName(lap.id, lap.name)}
-                className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary"
-              />
-            ) : (
-              <span className="flex items-center">
-                <span>{lap.name}</span>
-                <button onClick={() => setIsEditing(lap.id)} className="ml-2 text-text-secondary hover:text-accent-primary">
-                  <Edit2 size={16} />
-                </button>
-              </span>
-            )}
+            <div className="flex items-center">
+              {isEditing === lap.id ? (
+                <input
+                  type="text"
+                  value={lap.name}
+                  onChange={(e) =>
+                    setLaps(laps.map(l => l.id === lap.id ? { ...l, name: e.target.value } : l))
+                  }
+                  onBlur={() => updateLapName(lap.id, lap.name)}
+                  className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary"
+                />
+              ) : (
+                <span className="flex items-center">
+                  <span>{lap.name}</span>
+                  <button onClick={() => setIsEditing(lap.id)} className="ml-2 text-text-secondary hover:text-accent-primary">
+                    <Edit2 size={16} />
+                  </button>
+                </span>
+              )}
+            </div>
             <span className="text-text-secondary">{lap.duration}</span>
+            <button
+              onClick={() => deleteLap(lap.id)}
+              className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full p-1"
+            >
+              <Trash2 size={20} />
+            </button>
           </div>
         ))}
       </div>

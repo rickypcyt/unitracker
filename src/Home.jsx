@@ -8,6 +8,8 @@ import ProgressTracker from './components/ProgressTracker';
 import Achievements from './components/Achievements';
 import Calendar from './components/Calendar';
 import Counter from './components/Counter';
+import Pomodoro from './components/Pomodoro';
+import BrownNoise from './components/BrownNoise';
 
 const AVAILABLE_COMPONENTS = {
   TaskForm: { component: TaskForm, name: 'Task Form', isWide: false },
@@ -15,14 +17,16 @@ const AVAILABLE_COMPONENTS = {
   ProgressTracker: { component: ProgressTracker, name: 'Progress Tracker', isWide: false },
   Achievements: { component: Achievements, name: 'Achievements', isWide: false },
   Calendar: { component: Calendar, name: 'Calendar', isWide: false },
-  Counter: { component: Counter, name: 'Counter', isWide: false }
+  Counter: { component: Counter, name: 'Counter', isWide: false },
+  BrownNoise: { component: BrownNoise, name: 'BrownNoise', isWide: false },
+  Pomodoro: { component: Pomodoro, name: 'Pomodoro', isWide: false }
 };
 
 const Home = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [layout, setLayout] = useState([
     { id: 'col-1', items: ['TaskForm', 'Calendar'] },
-    { id: 'col-2', items: [ 'Counter'] },
+    { id: 'col-2', items: [ 'Counter','Pomodoro','BrownNoise'] },
     { id: 'col-3', items: ['TaskList','ProgressTracker', 'Achievements'] }
   ]);
   const [wideComponents, setWideComponents] = useState(new Set());
@@ -84,7 +88,8 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto">
+    <div className="max-w-[1500px] mx-auto">
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-3 ga">
           {layout.map((column, colIndex) => (
