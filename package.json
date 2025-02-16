@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.13.5",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@reduxjs/toolkit": "^2.4.0",
     "@rollup/rollup-linux-x64-gnu": "^4.31.0",

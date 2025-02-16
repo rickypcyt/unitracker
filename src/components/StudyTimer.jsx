@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2 } from 'lucide-react';
 
-const Counter = () => {
+const StudyTimer = () => {
   const [laps, setLaps] = useState([]);
   const [isEditing, setIsEditing] = useState(null);
   const [time, setTime] = useState(0);
@@ -155,4 +155,4 @@ const Counter = () => {
   );
 };
 
-export default Counter;
+export default StudyTimer;
