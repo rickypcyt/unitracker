@@ -84,7 +84,7 @@ const Counter = () => {
   };
 
   return (
-    <div className="mt-8 bg-bg-secondary p-6 rounded-2xl shadow-xl text-text-primary max-w-md mx-auto border border-border-primary">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-1 ml-1">
       <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(time)}</div>
       <div className="flex justify-center space-x-4 mb-6">

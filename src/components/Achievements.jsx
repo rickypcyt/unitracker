@@ -14,7 +14,7 @@ const Achievements = () => {
   const completed = tasks.filter((task) => task.completed).length;
 
   return (
-    <div className="w-full max-w-md mx-auto my-8 bg-bg-secondary p-6 rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl border border-border-primary">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-1 ml-1">
       <h2 className="text-2xl font-bold text-text-primary mb-6">Achievements</h2>
 
       {completed >= 20 && (
