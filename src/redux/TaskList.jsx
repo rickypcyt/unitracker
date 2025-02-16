@@ -10,6 +10,15 @@ const TaskList = () => {
   const tasks = useSelector((state) => state.tasks.tasks);
   const [hoveredTaskId, setHoveredTaskId] = useState(null);
 
+  const handleToggleCompletion = (task) => {
+    if (task.completed) {
+      dispatch(markTaskAsNotCompleted(task.id)); // Esto lo marca como no completado
+    } else {
+      dispatch(markTaskAsCompleted(task.id)); // Esto lo marca como completado
+    }
+  };
+  
+  
   return (
     <Box className="task-list-container">
       {tasks.length === 0 ? (
@@ -31,13 +40,7 @@ const TaskList = () => {
               {/* Left Section: Checkbox + Title */}
               <Flex alignItems="center" flex={1}>
                 <button
-                  onClick={() => {
-                    if (task.completed) {
-                      dispatch(markTaskAsNotCompleted(task.id));
-                    } else {
-                      dispatch(markTaskAsCompleted(task.id));
-                    }
-                  }}
+                  onClick={() => handleToggleCompletion(task)}  // Cambié esto
                   style={{
                     background: 'none',
                     border: 'none',
@@ -104,5 +107,6 @@ const TaskList = () => {
     </Box>
   );
 };
+
 
 export default TaskList;
