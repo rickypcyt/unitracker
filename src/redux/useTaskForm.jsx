@@ -11,28 +11,16 @@ export const useTaskForm = (initialDeadline = '') => {
   });
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!newTask.title.trim()) {
-      setError('Title is required');
-      return;
-    }
-
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
-      await dispatch(addTask({
-        ...newTask,
-        completed: false
-      }));
-      
-      setNewTask({ title: '', description: '', deadline: initialDeadline });
-      return true; // Success
-    } catch (err) {
-      setError(err.message);
-      return false; // Failure
+      await dispatch(addTask(newTask)); // Llamada a la acción para agregar la tarea
+      setNewTask({ title: '', description: '', deadline: '' }); // Limpiar el formulario
+    } catch (error) {
+      setError("Error adding task");
     }
   };
+  
 
   const updateField = (field, value) => {
     setNewTask(prev => ({ ...prev, [field]: value }));

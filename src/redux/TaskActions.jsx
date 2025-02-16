@@ -46,18 +46,25 @@ export const addTask = (newTask) => {
         throw new Error(error.message);
       }
 
-      // Verificar si 'data' está vacío
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from insert operation');
+      // Obtener las tareas más recientes después de agregar la nueva tarea
+      const { data: allTasks, error: fetchError } = await supabase
+        .from('tasks')
+        .select();
+
+      if (fetchError) {
+        throw new Error(fetchError.message);
       }
 
-      dispatch({ type: 'ADD_TASK', payload: data[0] });
+      // Actualizar el estado con la lista completa de tareas
+      dispatch({ type: 'FETCH_TASKS', payload: allTasks });
     } catch (error) {
       console.error('Error adding task:', error.message, error);
       dispatch(taskError(error.message));
     }
   };
 };
+
+
 
 
 // Función auxiliar para marcar tarea como completada/incompleta
