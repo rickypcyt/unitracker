@@ -11,6 +11,21 @@ import StudyTimer from './components/StudyTimer';
 import Pomodoro from './components/Pomodoro';
 import BrownNoise from './components/BrownNoise';
 
+import {supabase} from './utils/supabaseClient'; // Asegúrate de importar tu archivo de configuración
+
+const handleGoogleLogin = async () => {
+  const { user, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+  });
+
+  if (error) {
+    console.error('Error during Google login:', error.message);
+  } else {
+    console.log('User logged in:', user);
+    navigate('/'); // Redirigir a la página de inicio sin recargar
+  }
+};
+
 const AVAILABLE_COMPONENTS = {
   TaskForm: { component: TaskForm, name: 'Task Form', isWide: false },
   TaskList: { component: TaskList, name: 'Task List', isWide: false },
@@ -223,31 +238,40 @@ const Home = () => {
 
       {/* Botones de control de sesión y edición */}
       <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-        <button
-          onClick={handleStartSession}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-        >
-          Start Sesh
-        </button>
-        <button
-          onClick={handlePauseSession}
-          className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
-        >
-          Pause Sesh
-        </button>
-        <button
-          onClick={handleEndSession}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          End Sesh
-        </button>
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          {isEditing ? 'Save Layout' : 'Edit Layout'}
-        </button>
-      </div>
+  <button
+    onClick={handleStartSession}
+    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+  >
+    Start Sesh
+  </button>
+  <button
+    onClick={handlePauseSession}
+    className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+  >
+    Pause Sesh
+  </button>
+  <button
+    onClick={handleEndSession}
+    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+  >
+    End Sesh
+  </button>
+  <button
+    onClick={() => setIsEditing(!isEditing)}
+    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+  >
+    {isEditing ? 'Save Layout' : 'Edit Layout'}
+  </button>
+  
+  {/* Nuevo botón para login con Google */}
+  <button
+      onClick={handleGoogleLogin} // Función que maneja el login con Google
+      className="px-4 py-2 bg-white text-black border-2 border-black rounded hover:bg-gray-100"
+    >
+      Login with Google
+    </button>
+</div>
+
     </div>
   );
 };

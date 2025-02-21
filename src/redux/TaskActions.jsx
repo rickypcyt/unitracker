@@ -9,27 +9,45 @@ import {
 } from './TaskSlice';
 
 // Acción para obtener tareas
-export const fetchTasks = () => async (dispatch) => {
-  try {
-    const { data, error } = await supabase.from('tasks').select('*');
-    if (error) throw error;
-    dispatch(fetchTasksSuccess(data));
-  } catch (error) {
-    dispatch(taskError(error.message));
-  }
+const fetchTasks = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', user.id);
+  if (error) console.error(error);
+  return data;
 };
 
 // Acción para agregar tarea
 export const addTask = (newTask) => async (dispatch) => {
   try {
+    // Obtener el usuario autenticado
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    // Agregar el user_id y el estado completed al nuevo task
+    const taskWithUser = { 
+      ...newTask, 
+      user_id: user.id, // Asociar la tarea al usuario
+      completed: false  // Estado inicial de la tarea
+    };
+
+    // Insertar la tarea en la base de datos
     const { data, error } = await supabase
       .from('tasks')
-      .insert([{ ...newTask, completed: false }])
+      .insert([taskWithUser])
       .select();
-      
+
     if (error) throw error;
+
+    // Despachar la acción de éxito con la tarea creada
     dispatch(addTaskSuccess(data[0]));
   } catch (error) {
+    // Despachar la acción de error
     dispatch(taskError(error.message));
   }
 };
