@@ -122,25 +122,7 @@ app.delete('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// Ruta de callback de OAuth
-app.get('/home', async (req, res) => {
-  const code = req.query.code;
-  const next = req.query.next ?? '/'; // Ruta a la que redirigir después de iniciar sesión
 
-  if (code) {
-    try {
-      // Intercambia el código por una sesión
-      await supabase.auth.exchangeCodeForSession(code);
-    } catch (error) {
-      console.error("Error al intercambiar el código:", error);
-      res.status(500).send("Error al iniciar sesión.");
-      return;
-    }
-  }
-
-  // Redirige al usuario después del login
-  res.redirect(303, `/${next.slice(1)}`);
-});
 
 app.get('/', (req, res) => {
   res.send('<h1>Welcome to the Task Tracker API</h1>');

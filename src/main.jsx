@@ -5,7 +5,7 @@ import { Provider } from 'react-redux'; // Redux Provider
 import { store } from './redux/store'; // Import Redux store
 import Home from './Home'; // Import your Home component
 import { Analytics } from "@vercel/analytics/react"
-import { AuthProvider } from "./utils/Auth"
+
 
 
 
