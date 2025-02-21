@@ -1,15 +1,16 @@
-// src/store/store.js
 import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './authSlice';
 import taskReducer from './TaskSlice';
+import lapReducer from './LapSlice';
 
-const store = configureStore({
+export const store = configureStore({
   reducer: {
+    auth: authReducer,
     tasks: taskReducer,
+    laps: lapReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      thunk: true, // Habilita Redux Thunk
-    }),
+      serializableCheck: false
+    })
 });
-
-export { store };

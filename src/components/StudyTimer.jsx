@@ -1,20 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '../utils/supabaseClient';
+import { resetTimerState, setCurrentSession } from '../redux/LapSlice';
+import { fetchLaps, createLap, updateLap, deleteLap } from '../redux/LapActions';
 import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2 } from 'lucide-react';
 
 const StudyTimer = () => {
-  const [laps, setLaps] = useState([]);
+  const dispatch = useDispatch();
+  const { laps, error, currentSession } = useSelector((state) => state.laps);
   const [isEditing, setIsEditing] = useState(null);
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [description, setDescription] = useState('');
-  const [currentSessionNumber, setCurrentSessionNumber] = useState(null);
   const intervalRef = useRef(null);
+  const [localUser, setLocalUser] = useState(null);
 
   useEffect(() => {
-    fetchLaps();
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setLocalUser(user);
+      if (user) dispatch(fetchLaps());
+    };
+    loadUser();
     return () => clearInterval(intervalRef.current);
-  }, []);
+  }, [dispatch]);
 
   const getCurrentSessionNumber = async () => {
     const today = new Date().toISOString().split('T')[0];
@@ -29,20 +38,10 @@ const StudyTimer = () => {
     return error || !data.length ? 1 : data[0].session_number + 1;
   };
 
-  const fetchLaps = async () => {
-    const { data, error } = await supabase
-      .from('study_laps')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) console.error('Error fetching laps:', error);
-    else setLaps(data);
-  };
-
   const startTimer = async () => {
     if (!isRunning) {
       const sessionNum = await getCurrentSessionNumber();
-      setCurrentSessionNumber(sessionNum);
+      dispatch(setCurrentSession(sessionNum));
       setIsRunning(true);
       intervalRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
@@ -60,69 +59,38 @@ const StudyTimer = () => {
     setIsRunning(false);
     setTime(0);
     setDescription('');
-    setCurrentSessionNumber(null);
+    dispatch(resetTimerState());
   };
 
-  const addLap = async () => {
-    if (!currentSessionNumber) return;
+  const handleAddLap = async () => {
+    if (!currentSession) return;
+    
+    const lapNumber = laps.filter(l => 
+      l.session_number === currentSession
+    ).length + 1;
 
-    const lapNumber = laps.filter(l => l.session_number === currentSessionNumber).length + 1;
+    const lapData = {
+      name: `Lap ${lapNumber}`,
+      duration: formatTime(time),
+      description,
+      session_number: currentSession
+    };
     
-    const { data, error } = await supabase
-      .from('study_laps')
-      .insert({ 
-        name: `Lap ${lapNumber}`,
-        duration: formatTime(time),
-        description,
-        session_number: currentSessionNumber
-      })
-      .select();
-    
-    if (error) console.error('Error adding lap:', error);
-    else setLaps([data[0], ...laps]);
+    dispatch(createLap(lapData));
   };
 
-  const finishStudySession = async () => {
-    if (!currentSessionNumber) return;
+  const handleFinishSession = async () => {
+    if (!currentSession) return;
 
-    const { data, error } = await supabase
-      .from('study_laps')
-      .insert({ 
-        name: `Session ${currentSessionNumber}`,
-        duration: formatTime(time),
-        description,
-        session_number: currentSessionNumber
-      })
-      .select();
+    const sessionData = {
+      name: `Session ${currentSession}`,
+      duration: formatTime(time),
+      description,
+      session_number: currentSession
+    };
     
-    if (error) console.error('Error finishing study session:', error);
-    else {
-      setLaps([data[0], ...laps]);
-      resetTimer();
-    }
-  };
-
-  const updateLap = async (id, newData) => {
-    const { error } = await supabase
-      .from('study_laps')
-      .update(newData)
-      .eq('id', id);
-    
-    if (error) console.error('Error updating lap:', error);
-    else {
-      setLaps(laps.map(lap => lap.id === id ? { ...lap, ...newData } : lap));
-      setIsEditing(null);
-    }
-  };
-
-  const deleteLap = async (lapId) => {
-    const { error } = await supabase
-      .from('study_laps')
-      .delete()
-      .eq('id', lapId);
-    
-    if (error) console.error('Error deleting lap:', error);
-    else setLaps(laps.filter(lap => lap.id !== lapId));
+    dispatch(createLap(sessionData));
+    resetTimer();
   };
 
   const formatTime = (totalSeconds) => {
@@ -143,9 +111,22 @@ const StudyTimer = () => {
     }, {});
   };
 
+  if (!localUser) {
+    return (
+      <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
+        <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
+        <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
+          Please log in to use the Study Timer
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
       <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(time)}</div>
       
       <div className="mb-4">
@@ -170,10 +151,10 @@ const StudyTimer = () => {
         <button onClick={resetTimer} className="bg-accent-secondary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
           <RotateCcw size={20} />
         </button>
-        <button onClick={addLap} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
+        <button onClick={handleAddLap} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
           <Flag size={20} />
         </button>
-        <button onClick={finishStudySession} className="bg-accent-deep text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200">
+        <button onClick={handleFinishSession} className="bg-accent-deep text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200">
           <Check size={20} />
         </button>
       </div>
@@ -192,9 +173,12 @@ const StudyTimer = () => {
                         type="text"
                         value={lap.name}
                         onChange={(e) =>
-                          setLaps(laps.map(l => l.id === lap.id ? { ...l, name: e.target.value } : l))
+                          dispatch(updateLap(lap.id, { name: e.target.value }))
                         }
-                        onBlur={() => updateLap(lap.id, { name: lap.name, description: lap.description })}
+                        onBlur={() => {
+                          dispatch(updateLap(lap.id, { name: lap.name }));
+                          setIsEditing(null);
+                        }}
                         className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
                       />
                     ) : (
@@ -213,7 +197,7 @@ const StudyTimer = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-text-secondary text-sm">{lap.duration}</span>
                   <button
-                    onClick={() => deleteLap(lap.id)}
+                    onClick={() => dispatch(deleteLap(lap.id))}
                     className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
                   >
                     <Trash2 size={18} />
