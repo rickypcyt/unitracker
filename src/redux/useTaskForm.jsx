@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addTask } from './TaskActions';
+import { supabase } from '../utils/supabaseClient'; // Importa el cliente de Supabase
 
 export const useTaskForm = (initialDeadline = '') => {
   const dispatch = useDispatch();
@@ -14,13 +15,29 @@ export const useTaskForm = (initialDeadline = '') => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await dispatch(addTask(newTask)); // Llamada a la acción para agregar la tarea
-      setNewTask({ title: '', description: '', deadline: '' }); // Limpiar el formulario
+      // Obtener el usuario autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      // Agregar el user_id al objeto newTask
+      const taskWithUser = {
+        ...newTask,
+        user_id: user.id, // Asociar la tarea al usuario
+      };
+
+      // Llamada a la acción para agregar la tarea
+      await dispatch(addTask(taskWithUser));
+
+      // Limpiar el formulario
+      setNewTask({ title: '', description: '', deadline: '' });
+      setError(''); // Limpiar el error si la operación fue exitosa
     } catch (error) {
-      setError("Error adding task");
+      setError("Error adding task: " + error.message);
     }
   };
-  
 
   const updateField = (field, value) => {
     setNewTask(prev => ({ ...prev, [field]: value }));

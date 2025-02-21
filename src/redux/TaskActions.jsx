@@ -1,42 +1,52 @@
-// src/actions/taskActions.js
 import { supabase } from '../utils/supabaseClient';
 import {
   fetchTasksSuccess,
   addTaskSuccess,
   toggleTaskStatusOptimistic,
   updateTaskSuccess,
+  deleteTaskSuccess,
   taskError
 } from './TaskSlice';
 
-// Acción para obtener tareas
-const fetchTasks = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', user.id);
-  if (error) console.error(error);
-  return data;
-};
-
-// Acción para agregar tarea
-export const addTask = (newTask) => async (dispatch) => {
+// En tu archivo TaskActions.js
+export const fetchTasks = () => async (dispatch) => {
   try {
-    // Obtener el usuario autenticado
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       throw new Error('Usuario no autenticado');
     }
 
-    // Agregar el user_id y el estado completed al nuevo task
-    const taskWithUser = { 
-      ...newTask, 
-      user_id: user.id, // Asociar la tarea al usuario
-      completed: false  // Estado inicial de la tarea
+    // Obtener tareas filtradas por user_id
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id); // <- Filtro clave
+
+    if (error) throw error;
+
+    dispatch(fetchTasksSuccess(data));
+  } catch (error) {
+    dispatch(taskError(error.message));
+  }
+};
+
+// Acción para obtener tareas
+export const addTask = (newTask) => async (dispatch) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    const taskWithUser = {
+      title: newTask.title,
+      description: newTask.description,
+      deadline: newTask.deadline,
+      user_id: user.id, // ← Solo campos existentes en la tabla
     };
 
-    // Insertar la tarea en la base de datos
     const { data, error } = await supabase
       .from('tasks')
       .insert([taskWithUser])
@@ -57,7 +67,8 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
   try {
     // Actualización optimista
     dispatch(toggleTaskStatusOptimistic({ id, completed }));
-    
+
+    // Actualizar la tarea en la base de datos
     const { data, error } = await supabase
       .from('tasks')
       .update({ completed })
@@ -65,6 +76,8 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
       .select();
 
     if (error) throw error;
+
+    // Despachar la tarea actualizada
     dispatch(updateTaskSuccess(data[0]));
   } catch (error) {
     // Revertir en caso de error
@@ -76,10 +89,19 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
 // Acción para eliminar tarea
 export const deleteTask = (id) => async (dispatch) => {
   try {
-    const { error } = await supabase.from('tasks').delete().eq('id', id);
+    // Eliminar la tarea de la base de datos
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+
     if (error) throw error;
+
+    // Despachar la tarea eliminada
     dispatch(deleteTaskSuccess(id));
   } catch (error) {
+    // Manejar errores
     dispatch(taskError(error.message));
   }
 };
+
