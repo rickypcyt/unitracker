@@ -123,7 +123,7 @@ const StudyTimer = () => {
 
   if (!localUser) {
     return (
-      <div className="bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg ">
+      <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
         <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
         <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
           Please log in to use the Study Timer
