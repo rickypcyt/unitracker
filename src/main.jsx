@@ -5,6 +5,8 @@ import { Provider } from 'react-redux'; // Redux Provider
 import { store } from './redux/store'; // Import Redux store
 import Home from './Home'; // Import your Home component
 import { Analytics } from "@vercel/analytics/react"
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import './index.css'; // Import global styles
 
 class ErrorBoundary extends React.Component {
@@ -39,6 +41,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ChakraProvider value={defaultSystem}> {/* Pass defaultSystem to ChakraProvider */}
     <ErrorBoundary>
     <Home />
+    <ToastContainer />
     <Analytics />
   </ErrorBoundary>
     </ChakraProvider>

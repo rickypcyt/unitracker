@@ -1,9 +1,12 @@
 // src/components/Achievements.jsx
-
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
-const Achievement = ({ emoji, text, bgColor }) => (
-  <div className={`inline-flex items-center text-lg font-medium text-text-primary ${bgColor} py-3 px-5 rounded-xl mt-3 transition-all duration-300 hover:shadow-lg hover:scale-105`}>
+const AchievementToast = ({ emoji, text, bgColor }) => (
+  <div
+    className={`inline-flex items-center text-lg font-medium text-text-primary ${bgColor} py-3 px-5 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105`}
+  >
     <span className="text-3xl mr-3">{emoji}</span>
     {text}
   </div>
@@ -12,40 +15,45 @@ const Achievement = ({ emoji, text, bgColor }) => (
 const Achievements = () => {
   const tasks = useSelector((state) => state.tasks.tasks);
   const completed = tasks.filter((task) => task.completed).length;
+  const previousCompleted = useRef(completed);
 
-  return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
-      <h2 className="text-2xl font-bold text-text-primary mb-6">Achievements</h2>
+  useEffect(() => {
+    const checkMilestones = () => {
+      const milestones = [
+        { threshold: 20, emoji: "🔥", text: "20 Tasks Completed!", bgColor: "bg-accent-deep" },
+        { threshold: 10, emoji: "🎉", text: "10 Tasks Completed!", bgColor: "bg-accent-tertiary" }
+      ];
 
-      {completed >= 20 && (
-        <Achievement 
-          emoji="🔥" 
-          text="20 Tasks Completed!" 
-          bgColor="bg-accent-deep bg-opacity-80 hover:bg-opacity-100"
-        />
-      )}
+      for (const milestone of milestones) {
+        if (
+          previousCompleted.current < milestone.threshold &&
+          completed >= milestone.threshold
+        ) {
+          toast(
+            <AchievementToast
+              emoji={milestone.emoji}
+              text={milestone.text}
+              bgColor={`${milestone.bgColor} bg-opacity-80 hover:bg-opacity-100`}
+            />,
+            {
+              position: "bottom-right",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            }
+          );
+          break; // Solo muestra el hito más alto alcanzado
+        }
+      }
+    };
 
-      {completed >= 10 && completed < 20 && (
-        <Achievement 
-          emoji="🎉" 
-          text="10 Tasks Completed!" 
-          bgColor="bg-accent-tertiary bg-opacity-80 hover:bg-opacity-100"
-        />
-      )}
+    checkMilestones();
+    previousCompleted.current = completed;
+  }, [completed]);
 
-      {completed < 10 && (
-        <div className="flex flex-col items-center justify-center text-base text-text-secondary bg-bg-tertiary p-4 rounded-xl">
-          <span className="text-4xl mb-3">🚀</span>
-          <p>Complete more tasks to unlock achievements.</p>
-          <p className="mt-2 text-sm text-text-tertiary">Next achievement: 10 tasks</p>
-        </div>
-      )}
-
-      <div className="mt-6 text-text-secondary">
-        <p>Total completed tasks: <span className="font-bold text-accent-primary">{completed}</span></p>
-      </div>
-    </div>
-  );
+  return null; // Este componente no renderiza nada en la UI
 };
 
 export default Achievements;

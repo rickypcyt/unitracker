@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import { Clock, Calendar, Zap, Activity } from 'lucide-react';
 
 const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
-  const [processedData, setProcessedData] = useState([]);
   const [todayHours, setTodayHours] = useState(0);
   const [weeklyData, setWeeklyData] = useState([]);
+  const [hoveredData, setHoveredData] = useState(null);
 
-  // Convertir duración HH:MM:SS a horas decimales
+  // Convierte duración HH:MM:SS a horas decimales
   const durationToHours = (duration) => {
     const [hours, minutes] = duration.split(':');
-    return parseInt(hours) + (parseInt(minutes) / 60);
+    return parseInt(hours) + parseInt(minutes) / 60;
   };
 
   // Procesar datos cuando cambian los laps
@@ -21,8 +28,8 @@ const Statistics = () => {
       const today = new Date().toISOString().split('T')[0];
       let todayTotal = 0;
       
-      // Datos semanales
-      const weekDays = Array.from({length: 7}, (_, i) => {
+      // Crear un arreglo con los últimos 7 días
+      const weekDays = Array.from({ length: 7 }, (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - i);
         return date.toISOString().split('T')[0];
@@ -55,8 +62,17 @@ const Statistics = () => {
     processData();
   }, [laps]);
 
+  // Controladores de eventos para cada barra
+  const handleCellMouseEnter = (entry) => {
+    setHoveredData(entry);
+  };
+
+  const handleCellMouseLeave = () => {
+    setHoveredData(null);
+  };
+
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center gap-2">
           <Activity size={24} /> Study Statistics
@@ -91,7 +107,7 @@ const Statistics = () => {
         </div>
       </div>
 
-      <div className="bg-bg-tertiary p-6 rounded-xl">
+      <div className="bg-bg-tertiary p-6 rounded-xl relative">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           Daily Study Hours
         </h3>
@@ -109,24 +125,41 @@ const Statistics = () => {
                 tick={{ fill: '#94a3b8' }}
                 tickFormatter={(value) => `${value}h`}
               />
-              <Tooltip 
+              {/* Puedes conservar o eliminar el Tooltip según tu preferencia */}
+              {/* <Tooltip 
                 contentStyle={{
-                  backgroundColor: '#1e293b',
+                  backgroundColor: 'transparent',
                   border: 'none',
-                  borderRadius: '8px',
+                  boxShadow: 'none'
                 }}
-                itemStyle={{ color: '#f8fafc' }}
-                formatter={(value) => [`${parseFloat(value).toFixed(2)} hours`, '']}
-              />
+                labelStyle={{ display: 'none' }}
+                formatter={(value) => [`${parseFloat(value).toFixed(2)} hrs`, '']}
+              /> */}
               <Bar 
                 dataKey="hours" 
                 fill="#3b82f6" 
                 radius={[4, 4, 0, 0]}
                 animationDuration={400}
-              />
+              >
+                {weeklyData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    onMouseEnter={() => handleCellMouseEnter(entry)}
+                    onMouseLeave={handleCellMouseLeave}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Tooltip personalizado */}
+        {hoveredData && (
+          <div className="absolute top-5 right-5 bg-black bg-opacity-60 text-white p-2 rounded pointer-events-none">
+            <div className="text-sm font-semibold">{hoveredData.dayName}</div>
+            <div className="text-xs">{hoveredData.hours} hrs</div>
+          </div>
+        )}
       </div>
     </div>
   );

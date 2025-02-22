@@ -1,42 +1,35 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Trash2, Plus, Move, Maximize2, Minimize2 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify'; // Importa ToastContainer y toast
+import 'react-toastify/dist/ReactToastify.css';
 
 import TaskForm from './redux/TaskForm';
 import TaskList from './redux/TaskList';
 import ProgressTracker from './components/ProgressTracker';
-import Achievements from './components/Achievements';
 import Calendar from './components/Calendar';
 import StudyTimer from './components/StudyTimer';
 import Pomodoro from './components/Pomodoro';
 import NoiseGenerator from './components/NoiseGenerator';
 import Statistics from './components/Stats';
 
-import {supabase} from './utils/supabaseClient'; // Asegúrate de importar tu archivo de configuración
-
-const handleGoogleLogin = async () => {
-  const { user, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-  });
-
-  if (error) {
-    console.error('Error during Google login:', error.message);
-  } else {
-    console.log('User logged in:', user);
-    navigate('/'); // Redirigir a la página de inicio sin recargar
-  }
-};
+import { supabase } from './utils/supabaseClient';
 
 // Componente del logo de Google
 const GoogleLogo = () => (
-<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="3 0 24 24" width="27"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="3 0 24 24" width="27">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    <path d="M1 1h22v22H1z" fill="none" />
+  </svg>
 );
 
 const AVAILABLE_COMPONENTS = {
   TaskForm: { component: TaskForm, name: 'Task Form', isWide: false },
   TaskList: { component: TaskList, name: 'Task List', isWide: false },
   ProgressTracker: { component: ProgressTracker, name: 'Progress Tracker', isWide: false },
-  Achievements: { component: Achievements, name: 'Achievements', isWide: false },
   Calendar: { component: Calendar, name: 'Calendar', isWide: false },
   StudyTimer: { component: StudyTimer, name: 'StudyTimer', isWide: false },
   NoiseGenerator: { component: NoiseGenerator, name: 'NoiseGenerator', isWide: false },
@@ -47,20 +40,38 @@ const AVAILABLE_COMPONENTS = {
 const Home = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [layout, setLayout] = useState([
-    { id: 'col-1', items: ['TaskList','TaskForm'] },
-    { id: 'col-2', items: [ 'StudyTimer', 'NoiseGenerator', 'Pomodoro'] },
-    { id: 'col-3', items: [ 'Statistics','ProgressTracker'] }
+    { id: 'col-1', items: ['TaskForm','TaskList' ] },
+    { id: 'col-2', items: ['StudyTimer', 'NoiseGenerator', 'Pomodoro'] },
+    { id: 'col-3', items: ['Statistics', 'ProgressTracker'] }
   ]);
   const [wideComponents, setWideComponents] = useState(new Set());
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado para seguimiento de login
 
-  // Refs para controlar los componentes de sesión
+  // Refs para componentes específicos
   const NoiseGeneratorRef = useRef(null);
   const pomodoroRef = useRef(null);
   const studyTimerRef = useRef(null);
 
+  // Suscribirse a cambios en la autenticación para actualizar el estado
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setIsLoggedIn(true);
+      }
+    };
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(session !== null);
+    });
+    return () => {
+      authListener?.unsubscribe();
+    };
+  }, []);
+
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-
     const { source, destination } = result;
     const newLayout = JSON.parse(JSON.stringify(layout));
 
@@ -89,7 +100,6 @@ const Home = () => {
     newLayout[colIndex].items.splice(itemIndex, 1);
     setLayout(newLayout);
 
-    // Elimina de los componentes anchos si estaba expandido
     if (wideComponents.has(componentKey)) {
       const newWideComponents = new Set(wideComponents);
       newWideComponents.delete(componentKey);
@@ -109,7 +119,6 @@ const Home = () => {
     setLayout(newLayout);
   };
 
-  // Función para renderizar componentes y, en el caso de NoiseGenerator, Pomodoro y StudyTimer, pasarles refs
   const renderComponent = (componentKey) => {
     const ComponentToRender = AVAILABLE_COMPONENTS[componentKey].component;
     if (componentKey === 'NoiseGenerator') {
@@ -120,6 +129,25 @@ const Home = () => {
       return <ComponentToRender ref={studyTimerRef} />;
     } else {
       return <ComponentToRender />;
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const { user, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
+
+    if (error) {
+      console.error('Error during Google login:', error.message);
+      toast.error(`Error: ${error.message}`, {
+        position: toast.POSITION.TOP_RIGHT
+      });
+    } else {
+      console.log('User logged in:', user);
+      // El estado se actualizará mediante onAuthStateChange
+      toast.success('You have successfully logged in!', {
+        position: toast.POSITION.TOP_RIGHT
+      });
     }
   };
 
@@ -206,26 +234,24 @@ const Home = () => {
         </div>
       </DragDropContext>
 
-      {/* Botones de control de sesión y edición */}
+      {/* Botones de control */}
       <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-  
-  <button
-    onClick={() => setIsEditing(!isEditing)}
-    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-  >
-    {isEditing ? 'Save Layout' : 'Edit Layout'}
-  </button>
-  
-  {/* Nuevo botón para login con Google */}
-  <button
-    onClick={handleGoogleLogin}
-    className="px-4 py-2 bg-white text-black border-2 border-black rounded hover:bg-gray-100 flex items-center justify-center"
-  >
-    <GoogleLogo />
-    Login with Google
-  </button>
-</div>
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 opacity-75"
+        >
+          {isEditing ? 'Save Layout' : 'Edit Layout'}
+        </button>
+        <button
+          onClick={handleGoogleLogin}
+          className="px-4 py-2 bg-white text-black border-2 border-black rounded hover:bg-gray-100 flex items-center justify-centerv opacity-75"
+        >
+          <GoogleLogo />
+          {isLoggedIn ? 'Logged In' : 'Login with Google'}
+        </button>
+      </div>
 
+      <ToastContainer /> {/* Componente de notificaciones */}
     </div>
   );
 };

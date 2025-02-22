@@ -39,6 +39,7 @@
     "react-resizable": "^3.0.5",
     "react-router-dom": "^7.2.0",
     "react-timer-hook": "^3.0.8",
+    "react-toastify": "^11.0.3",
     "recharts": "^2.15.1",
     "redux-thunk": "^3.1.0",
     "tailwind": "^4.0.0",
