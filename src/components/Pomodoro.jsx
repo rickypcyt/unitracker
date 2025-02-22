@@ -64,7 +64,7 @@ const Pomodoro = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-1 ml-1">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-1 ml-1">
       <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
       <div className="text-5xl font-mono mb-2 text-center">
         {formatTime(timeLeft)}

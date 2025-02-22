@@ -12,7 +12,7 @@ const TaskForm = () => {
   } = useTaskForm();
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
       <h2 className="text-2xl font-bold mb-6 text-text-primary">Add New Task</h2>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         {error && <div className="text-accent-secondary text-sm mb-3 text-left bg-bg-surface p-3 rounded-lg">{error}</div>}
@@ -33,7 +33,7 @@ const TaskForm = () => {
           <label htmlFor="description" className="text-text-secondary text-sm">Description (optional)</label>
           <textarea
             id="description"
-            className="w-full p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 min-h-[100px]"
+            className="w-full p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 min-h-[50px]"
             value={newTask.description}
             onChange={(e) => updateField('description', e.target.value)}
             placeholder="Enter task description"

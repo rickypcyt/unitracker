@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '../utils/supabaseClient';
 import { resetTimerState, setCurrentSession } from '../redux/LapSlice';
 import { fetchLaps, createLap, updateLap, deleteLap } from '../redux/LapActions';
-import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const StudyTimer = () => {
   const dispatch = useDispatch();
@@ -14,6 +14,7 @@ const StudyTimer = () => {
   const [description, setDescription] = useState('');
   const intervalRef = useRef(null);
   const [localUser, setLocalUser] = useState(null);
+  const [expandedDays, setExpandedDays] = useState({});
 
   useEffect(() => {
     const loadUser = async () => {
@@ -111,9 +112,18 @@ const StudyTimer = () => {
     }, {});
   };
 
+  const toggleDayVisibility = (date) => {
+    setExpandedDays(prev => ({
+      ...prev,
+      [date]: !prev[date]
+    }));
+  };
+
+  const groupedLaps = groupSessionsByDate();
+
   if (!localUser) {
     return (
-      <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
+      <div className="bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg ">
         <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
         <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
           Please log in to use the Study Timer
@@ -123,7 +133,7 @@ const StudyTimer = () => {
   }
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg transition-all duration-300 ease-in-out hover:translate-y-[-0.2rem] hover:shadow-xl mr-2 ml-2">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
       <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
       
@@ -159,54 +169,77 @@ const StudyTimer = () => {
         </button>
       </div>
 
-      <div className="space-y-4 max-h-60 overflow-y-auto">
-        {Object.entries(groupSessionsByDate()).map(([date, sessions]) => (
-          <div key={date} className="bg-bg-surface p-3 rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">{date}</h3>
-            {sessions.map((lap) => (
-              <div key={lap.id} className="flex items-center justify-between bg-bg-tertiary p-3 rounded-lg mb-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm text-accent-primary">Session #{lap.session_number}</span>
-                    {isEditing === lap.id ? (
-                      <input
-                        type="text"
-                        value={lap.name}
-                        onChange={(e) =>
-                          dispatch(updateLap(lap.id, { name: e.target.value }))
-                        }
-                        onBlur={() => {
-                          dispatch(updateLap(lap.id, { name: lap.name }));
-                          setIsEditing(null);
-                        }}
-                        className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
-                      />
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <span>{lap.name}</span>
-                        <button onClick={() => setIsEditing(lap.id)} className="text-text-secondary hover:text-accent-primary">
-                          <Edit2 size={16} />
-                        </button>
-                      </span>
-                    )}
+      <div>
+        {Object.entries(groupedLaps).map(([date, sessions]) => {
+          const isToday = date === new Date().toLocaleDateString();
+          const isYesterday = date === new Date(Date.now() - 86400000).toLocaleDateString();
+          let displayDate = date;
+
+          if (isToday) {
+            displayDate = "Today";
+          } else if (isYesterday) {
+            displayDate = "Yesterday";
+          } else {
+            displayDate = date;
+          }
+
+          return (
+            <div key={date} className="mb-4">
+              <button
+                className="flex items-center justify-between w-full py-2 px-3 bg-bg-surface rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200"
+                onClick={() => toggleDayVisibility(date)}
+              >
+                <span>{displayDate}</span>
+                {expandedDays[date] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+
+              <div className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${expandedDays[date] ? 'visible' : 'hidden'}`}>
+                {sessions.map((lap) => (
+                  <div key={lap.id} className="flex items-center justify-between bg-bg-tertiary p-3 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm text-accent-primary">Session #{lap.session_number}</span>
+                        {isEditing === lap.id ? (
+                          <input
+                            type="text"
+                            value={lap.name}
+                            onChange={(e) =>
+                              dispatch(updateLap(lap.id, { name: e.target.value }))
+                            }
+                            onBlur={() => {
+                              dispatch(updateLap(lap.id, { name: lap.name }));
+                              setIsEditing(null);
+                            }}
+                            className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
+                          />
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <span>{lap.name}</span>
+                            <button onClick={() => setIsEditing(lap.id)} className="text-text-secondary hover:text-accent-primary">
+                              <Edit2 size={16} />
+                            </button>
+                          </span>
+                        )}
+                      </div>
+                      {lap.description && (
+                        <p className="text-sm text-text-secondary">{lap.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-text-secondary text-sm">{lap.duration}</span>
+                      <button
+                        onClick={() => dispatch(deleteLap(lap.id))}
+                        className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
-                  {lap.description && (
-                    <p className="text-sm text-text-secondary">{lap.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-text-secondary text-sm">{lap.duration}</span>
-                  <button
-                    onClick={() => dispatch(deleteLap(lap.id))}
-                    className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
