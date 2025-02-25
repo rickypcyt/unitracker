@@ -25,23 +25,31 @@ const Statistics = () => {
   // Procesar datos cuando cambian los laps
   useEffect(() => {
     const processData = () => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 (domingo) a 6 (sábado)
+      const mondayOffset = currentDay === 0 ? 6 : currentDay - 1;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - mondayOffset);
+      
       let todayTotal = 0;
       
-      // Crear un arreglo con los últimos 7 días
+      // Crear un arreglo con los días de lunes a domingo de la semana actual
       const weekDays = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
         return date.toISOString().split('T')[0];
-      }).reverse();
+      });
 
       const dailyHours = laps.reduce((acc, lap) => {
-        const date = new Date(lap.created_at).toISOString().split('T')[0];
+        const lapDate = new Date(lap.created_at);
+        const date = lapDate.toISOString().split('T')[0];
         const hours = durationToHours(lap.duration);
         
-        if (date === today) todayTotal += hours;
+        if (date === today.toISOString().split('T')[0]) todayTotal += hours;
         
-        acc[date] = (acc[date] || 0) + hours;
+        if (weekDays.includes(date)) {
+          acc[date] = (acc[date] || 0) + hours;
+        }
         return acc;
       }, {});
 
@@ -125,7 +133,6 @@ const Statistics = () => {
                 tick={{ fill: '#94a3b8' }}
                 tickFormatter={(value) => `${value}h`}
               />
-              {/* Puedes conservar o eliminar el Tooltip según tu preferencia */}
               {/* <Tooltip 
                 contentStyle={{
                   backgroundColor: 'transparent',
