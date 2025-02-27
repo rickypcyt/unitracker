@@ -152,7 +152,7 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-[1500px] mx-auto">
+    <div className="mr-4 ml-4">
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {layout.map((column, colIndex) => (
