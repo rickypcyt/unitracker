@@ -1,18 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, Cloud, CloudRain } from 'lucide-react';
+import { Play, Pause, Cloud, CloudRain, Waves } from 'lucide-react';
 
 const NoiseGenerator = () => {
   const [isPlayingBrown, setIsPlayingBrown] = useState(false);
   const [isPlayingRain, setIsPlayingRain] = useState(false);
-  const [brownVolume, setBrownVolume] = useState(1);
+  const [brownVolume, setBrownVolume] = useState(0.5);
   const [rainVolume, setRainVolume] = useState(12.5);
-  const [isPlayingBoth, setIsPlayingBoth] = useState(false); // Nuevo estado para controlar ambos ruidos
+  const [isPlayingBoth, setIsPlayingBoth] = useState(false);
+  const [oceanWaveMode, setOceanWaveMode] = useState(true);
+  const [waveSpeed, setWaveSpeed] = useState(1); // Velocidad de las olas (Hz)
+  const [waveDepth, setWaveDepth] = useState(0.3); // Profundidad de modulación (0-1)
+
   const audioContextRef = useRef(null);
   const brownNodeRef = useRef(null);
   const rainNodeRef = useRef(null);
   const brownGainNodeRef = useRef(null);
   const rainGainNodeRef = useRef(null);
   const lastOutRef = useRef(0);
+  const animationFrameRef = useRef(null);
+  const wavePhaseRef = useRef(0);
 
   const setupAudioContext = () => {
     if (!audioContextRef.current) {
@@ -100,11 +106,12 @@ const NoiseGenerator = () => {
         modulationPhase += 0.2 / (audioCtx.sampleRate / bufferSize);
         const currentModulation = Math.sin(modulationPhase) * 0.1 + 0.9;
 
-        // Sonido de gotas destacadas
+        // Sonido de gotas destacadas (menos pronunciadas en modo océano)
         dropCounter++;
-        if (dropCounter > 1000 + Math.random() * 2000) {
+        const dropProbability = oceanWaveMode ? 2500 : 1000; // Menos gotas en modo océano
+        if (dropCounter > dropProbability + Math.random() * 2000) {
           dropCounter = 0;
-          const dropVolume = 0.5 + Math.random() * 0.5;
+          const dropVolume = (oceanWaveMode ? 0.3 : 0.5) + Math.random() * 0.5;
           const dropDuration = 100 + Math.random() * 200;
           for (let i = 0; i < dropDuration; i++) {
             const t = i / dropDuration;
@@ -118,7 +125,10 @@ const NoiseGenerator = () => {
         for (let i = 0; i < bufferSize; i++) {
           // Generación de ruido suavizado
           const white = Math.random() * 2 - 1;
-          lastValue = 0.96 * lastValue + 0.04 * white;
+
+          // Ajuste del coeficiente de suavizado para el modo océano
+          const smoothFactor = oceanWaveMode ? 0.98 : 0.96;
+          lastValue = smoothFactor * lastValue + (1 - smoothFactor) * white;
 
           // Aplicar modulación y ajuste de volumen
           output[i] = lastValue * currentModulation * 0.4;
@@ -167,17 +177,79 @@ const NoiseGenerator = () => {
     setIsPlayingBoth(!isPlayingBoth);
   };
 
+  // Función para activar/desactivar el modo olas de océano
+  const toggleOceanWaveMode = () => {
+    setOceanWaveMode(!oceanWaveMode);
+  };
+
+  // Actualizar volumen de ruido marrón
   useEffect(() => {
     if (brownGainNodeRef.current) {
       brownGainNodeRef.current.gain.value = brownVolume;
     }
   }, [brownVolume]);
 
+  // Actualizar volumen base de ruido de lluvia
   useEffect(() => {
     if (rainGainNodeRef.current) {
       rainGainNodeRef.current.gain.value = rainVolume;
     }
   }, [rainVolume]);
+
+  // Gestión del efecto de olas del océano
+  useEffect(() => {
+    // Cancelar animación anterior si existe
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (oceanWaveMode && isPlayingRain && rainGainNodeRef.current) {
+      // Función para animar las olas
+      const animateWaves = () => {
+        if (!rainGainNodeRef.current || !isPlayingRain) return;
+
+        // Incrementar la fase según la velocidad
+        wavePhaseRef.current += 0.025 * waveSpeed;
+
+        // Crear un patrón de olas con múltiples sinusoides
+        const baseVolume = rainVolume;
+        const waveVal = Math.sin(wavePhaseRef.current) * 0.5 +
+                        Math.sin(wavePhaseRef.current * 0.5) * 0.3 +
+                        Math.sin(wavePhaseRef.current * 0.25) * 0.2;
+
+        // Calcular nuevo volumen con el efecto de olas
+        const newVolume = baseVolume * (1 - waveDepth * 0.8 + waveVal * waveDepth);
+
+        // Aplicar cambio de volumen suavemente
+        rainGainNodeRef.current.gain.setTargetAtTime(
+          newVolume,
+          audioContextRef.current.currentTime,
+          0.1
+        );
+
+        // Continuar animación
+        animationFrameRef.current = requestAnimationFrame(animateWaves);
+      };
+
+      // Iniciar la animación
+      animationFrameRef.current = requestAnimationFrame(animateWaves);
+    } else if (!oceanWaveMode && rainGainNodeRef.current) {
+      // Restaurar volumen normal
+      rainGainNodeRef.current.gain.setTargetAtTime(
+        rainVolume,
+        audioContextRef.current ? audioContextRef.current.currentTime : 0,
+        0.1
+      );
+    }
+
+    // Limpieza cuando se desmonte el componente
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [oceanWaveMode, isPlayingRain, rainVolume, waveSpeed, waveDepth]);
 
   // Actualizar el estado de isPlayingBoth cuando cambian isPlayingBrown o isPlayingRain
   useEffect(() => {
@@ -220,22 +292,105 @@ const NoiseGenerator = () => {
             className="w-full"
           />
         </div>
+
+        {/* Ocean Wave Mode Toggle */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2">
+              <Waves size={18} />
+              <span className="font-medium">Ocean Wave Mode</span>
+            </label>
+            <div className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                className="opacity-0 w-0 h-0"
+                checked={oceanWaveMode}
+                onChange={toggleOceanWaveMode}
+                id="waveToggle"
+              />
+              <label
+                htmlFor="waveToggle"
+                className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-colors duration-300 ${
+                  oceanWaveMode ? 'bg-accent-deep' : 'bg-gray-300'
+                }`}
+                style={{
+                  display: 'block',
+                  '::before': {
+                    content: '""',
+                    position: 'absolute',
+                    height: '1.25rem',
+                    width: '1.25rem',
+                    left: oceanWaveMode ? 'calc(100% - 1.5rem)' : '0.25rem',
+                    bottom: '0.25rem',
+                    backgroundColor: 'white',
+                    transition: 'all 0.3s',
+                    borderRadius: '50%'
+                  }
+                }}
+              >
+                <span
+                  className={`absolute h-5 w-5 rounded-full bg-white transition-all duration-300 ${
+                    oceanWaveMode ? 'left-6' : 'left-1'
+                  }`}
+                  style={{top: '2px'}}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Ocean Wave Controls (solo visibles cuando Ocean Wave Mode está activo) */}
+        {oceanWaveMode && (
+          <div className="pt-2 space-y-4 pl-6 border-l-2 border-accent-deep">
+            <div className="space-y-2">
+              <label className="flex items-center justify-between">
+                <span className="font-medium">Wave Speed</span>
+                <span className="text-sm">{waveSpeed.toFixed(1)}x</span>
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="2"
+                step="0.1"
+                value={waveSpeed}
+                onChange={(e) => setWaveSpeed(parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center justify-between">
+                <span className="font-medium">Wave Intensity</span>
+                <span className="text-sm">{Math.round(waveDepth * 100)}%</span>
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="0.9"
+                step="0.1"
+                value={waveDepth}
+                onChange={(e) => setWaveDepth(parseFloat(e.target.value))}
+                className="w-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex justify-center space-x-4">
+      <div className="flex justify-center space-x-4 flex-wrap">
         {!isPlayingBrown ? (
           <button
             onClick={startBrownNoise}
             className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
           >
-            <Play size={20} /> Start Brown Noise
+            <Play size={20} /> Brown Noise
           </button>
         ) : (
           <button
             onClick={stopBrownNoise}
             className="bg-accent-tertiary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-secondary transition-colors duration-200 flex items-center gap-2"
           >
-            <Pause size={20} /> Stop Brown Noise
+            <Pause size={20} /> Brown Noise
           </button>
         )}
 
@@ -244,30 +399,30 @@ const NoiseGenerator = () => {
             onClick={startRainNoise}
             className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
           >
-            <Play size={20} /> Start Rain Noise
+            <Play size={20} /> Rain Noise
           </button>
         ) : (
           <button
             onClick={stopRainNoise}
             className="bg-accent-tertiary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-secondary transition-colors duration-200 flex items-center gap-2"
           >
-            <Pause size={20} /> Stop Rain Noise
+            <Pause size={20} /> Rain Noise
           </button>
         )}
-        {/* Botón para controlar ambos ruidos */}
+
         {!isPlayingBoth ? (
           <button
             onClick={toggleBothNoises}
             className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
           >
-            <Play size={20} /> Start Both
+            <Play size={20} />
           </button>
         ) : (
           <button
             onClick={toggleBothNoises}
             className="bg-accent-tertiary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-secondary transition-colors duration-200 flex items-center gap-2"
           >
-            <Pause size={20} /> Stop Both
+            <Pause size={20} />
           </button>
         )}
       </div>
