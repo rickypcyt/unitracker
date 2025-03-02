@@ -154,7 +154,7 @@ const Statistics = () => {
             onClick={toggleWeek}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
-            {isCurrentWeek ? "View Last Week" : "View This Week"}
+            {isCurrentWeek ? "Last Week" : "This Week"}
           </button>
         </div>
         

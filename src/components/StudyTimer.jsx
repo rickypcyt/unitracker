@@ -14,7 +14,8 @@ const StudyTimer = () => {
   const [description, setDescription] = useState('');
   const intervalRef = useRef(null);
   const [localUser, setLocalUser] = useState(null);
-  const [expandedDays, setExpandedDays] = useState({});
+  const [expandedMonths, setExpandedMonths] = useState({});
+  const [expandedWeeks, setExpandedWeeks] = useState({});
 
   useEffect(() => {
     const loadUser = async () => {
@@ -65,8 +66,8 @@ const StudyTimer = () => {
 
   const handleAddLap = async () => {
     if (!currentSession) return;
-    
-    const lapNumber = laps.filter(l => 
+
+    const lapNumber = laps.filter(l =>
       l.session_number === currentSession
     ).length + 1;
 
@@ -76,7 +77,7 @@ const StudyTimer = () => {
       description,
       session_number: currentSession
     };
-    
+
     dispatch(createLap(lapData));
   };
 
@@ -89,7 +90,7 @@ const StudyTimer = () => {
       description,
       session_number: currentSession
     };
-    
+
     dispatch(createLap(sessionData));
     resetTimer();
   };
@@ -103,23 +104,54 @@ const StudyTimer = () => {
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const groupSessionsByDate = () => {
+  const getMonthYear = (date) => {
+    const d = new Date(date);
+    const month = d.toLocaleString('default', { month: 'long' });
+    return `${month} ${d.getFullYear()}`;
+  };
+
+  const getWeekKey = (date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    const weekNo = Math.ceil(((d - yearStart) / 86400000) / 7);
+    return `Week ${weekNo}`;  // Simplified week key
+  };
+
+  const groupSessionsByMonthWeek = () => {
     return laps.reduce((groups, lap) => {
-      const date = new Date(lap.created_at).toLocaleDateString();
-      if (!groups[date]) groups[date] = [];
-      groups[date].push(lap);
+      const monthYear = getMonthYear(lap.created_at);
+      const weekKey = getWeekKey(lap.created_at);
+
+      if (!groups[monthYear]) {
+        groups[monthYear] = {};
+      }
+
+      if (!groups[monthYear][weekKey]) {
+        groups[monthYear][weekKey] = [];
+      }
+
+      groups[monthYear][weekKey].push(lap);
       return groups;
     }, {});
   };
 
-  const toggleDayVisibility = (date) => {
-    setExpandedDays(prev => ({
+  const toggleMonthVisibility = (monthYear) => {
+    setExpandedMonths(prev => ({
       ...prev,
-      [date]: !prev[date]
+      [monthYear]: !prev[monthYear]
     }));
   };
 
-  const groupedLaps = groupSessionsByDate();
+  const toggleWeekVisibility = (monthYear, weekKey) => {
+    setExpandedWeeks(prev => ({
+      ...prev,
+      [`${monthYear}-${weekKey}`]: !prev[`${monthYear}-${weekKey}`]
+    }));
+  };
+
+  const groupedLaps = groupSessionsByMonthWeek();
 
   if (!localUser) {
     return (
@@ -136,9 +168,9 @@ const StudyTimer = () => {
     <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
       <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      
+
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(time)}</div>
-      
+
       <div className="mb-4">
         <textarea
           value={description}
@@ -170,76 +202,74 @@ const StudyTimer = () => {
       </div>
 
       <div>
-        {Object.entries(groupedLaps).map(([date, sessions]) => {
-          const isToday = date === new Date().toLocaleDateString();
-          const isYesterday = date === new Date(Date.now() - 86400000).toLocaleDateString();
-          let displayDate = date;
-
-          if (isToday) {
-            displayDate = "Today";
-          } else if (isYesterday) {
-            displayDate = "Yesterday";
-          } else {
-            displayDate = date;
-          }
-
-          return (
-            <div key={date} className="mb-4">
-              <button
-                className="flex items-center justify-between w-full py-2 px-3 bg-bg-surface rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200"
-                onClick={() => toggleDayVisibility(date)}
-              >
-                <span>{displayDate}</span>
-                {expandedDays[date] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
-
-              <div className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${expandedDays[date] ? 'visible' : 'hidden'}`}>
-                {sessions.map((lap) => (
-                  <div key={lap.id} className="flex items-center justify-between bg-bg-tertiary p-3 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm text-accent-primary">Session #{lap.session_number}</span>
-                        {isEditing === lap.id ? (
-                          <input
-                            type="text"
-                            value={lap.name}
-                            onChange={(e) =>
-                              dispatch(updateLap(lap.id, { name: e.target.value }))
-                            }
-                            onBlur={() => {
-                              dispatch(updateLap(lap.id, { name: lap.name }));
-                              setIsEditing(null);
-                            }}
-                            className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
-                          />
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            <span>{lap.name}</span>
-                            <button onClick={() => setIsEditing(lap.id)} className="text-text-secondary hover:text-accent-primary">
-                              <Edit2 size={16} />
-                            </button>
-                          </span>
-                        )}
+        {Object.entries(groupedLaps).map(([monthYear, weeks]) => (
+          <div key={monthYear} className="mb-4">
+            <button
+              className="flex items-center justify-between w-full py-2 px-3 bg-bg-surface rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200"
+              onClick={() => toggleMonthVisibility(monthYear)}
+            >
+              <span>{monthYear}</span>
+              {expandedMonths[monthYear] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            <div className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${expandedMonths[monthYear] ? 'visible' : 'hidden'}`}>
+              {Object.entries(weeks).map(([weekKey, sessions]) => (
+                <div key={`${monthYear}-${weekKey}`} className="mb-2 ml-4">
+                  <button
+                    className="flex items-center justify-between w-full py-2 px-3 bg-bg-tertiary rounded-lg text-left font-semibold hover:bg-bg-secondary transition-colors duration-200"
+                    onClick={() => toggleWeekVisibility(monthYear, weekKey)}
+                  >
+                    <span>{weekKey}</span>
+                    {expandedWeeks[`${monthYear}-${weekKey}`] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+                  <div className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${expandedWeeks[`${monthYear}-${weekKey}`] ? 'visible' : 'hidden'}`}>
+                    {sessions.map((lap) => (
+                      <div key={lap.id} className="flex items-center justify-between bg-bg-secondary p-3 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm text-accent-primary">Session #{lap.session_number}</span>
+                            {isEditing === lap.id ? (
+                              <input
+                                type="text"
+                                value={lap.name}
+                                onChange={(e) =>
+                                  dispatch(updateLap(lap.id, { name: e.target.value }))
+                                }
+                                onBlur={() => {
+                                  dispatch(updateLap(lap.id, { name: lap.name }));
+                                  setIsEditing(null);
+                                }}
+                                className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
+                              />
+                            ) : (
+                              <span className="flex items-center gap-2">
+                                <span>{lap.name}</span>
+                                <button onClick={() => setIsEditing(lap.id)} className="text-text-secondary hover:text-accent-primary">
+                                  <Edit2 size={16} />
+                                </button>
+                              </span>
+                            )}
+                          </div>
+                          {lap.description && (
+                            <p className="text-sm text-text-secondary">{lap.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-text-secondary text-sm">{lap.duration}</span>
+                          <button
+                            onClick={() => dispatch(deleteLap(lap.id))}
+                            className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </div>
-                      {lap.description && (
-                        <p className="text-sm text-text-secondary">{lap.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-text-secondary text-sm">{lap.duration}</span>
-                      <button
-                        onClick={() => dispatch(deleteLap(lap.id))}
-                        className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
