@@ -6,6 +6,7 @@ const NoiseGenerator = () => {
   const [isPlayingRain, setIsPlayingRain] = useState(false);
   const [brownVolume, setBrownVolume] = useState(1);
   const [rainVolume, setRainVolume] = useState(12.5);
+  const [isPlayingBoth, setIsPlayingBoth] = useState(false); // Nuevo estado para controlar ambos ruidos
   const audioContextRef = useRef(null);
   const brownNodeRef = useRef(null);
   const rainNodeRef = useRef(null);
@@ -18,12 +19,12 @@ const NoiseGenerator = () => {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioContextRef.current = new AudioContext();
     }
-    
+
     if (!brownGainNodeRef.current) {
       brownGainNodeRef.current = audioContextRef.current.createGain();
       brownGainNodeRef.current.gain.value = brownVolume;
     }
-    
+
     if (!rainGainNodeRef.current) {
       rainGainNodeRef.current = audioContextRef.current.createGain();
       rainGainNodeRef.current.gain.value = rainVolume;
@@ -34,7 +35,7 @@ const NoiseGenerator = () => {
     if (!isPlayingBrown) {
       setupAudioContext();
       const audioCtx = audioContextRef.current;
-      
+
       const bufferSize = 4096;
       const node = audioCtx.createScriptProcessor(bufferSize, 1, 1);
       lastOutRef.current = 0;
@@ -51,7 +52,7 @@ const NoiseGenerator = () => {
 
       node.connect(brownGainNodeRef.current);
       brownGainNodeRef.current.connect(audioCtx.destination);
-      
+
       brownNodeRef.current = node;
       setIsPlayingBrown(true);
     }
@@ -61,15 +62,15 @@ const NoiseGenerator = () => {
     if (!isPlayingRain) {
       setupAudioContext();
       const audioCtx = audioContextRef.current;
-      
+
       const bufferSize = 4096;
       const node = audioCtx.createScriptProcessor(bufferSize, 1, 1);
-      
+
       // Configuración de filtros
       const highPassFilter = audioCtx.createBiquadFilter();
       highPassFilter.type = 'highpass';
       highPassFilter.frequency.value = 300; // Frecuencia más baja para más cuerpo
-      
+
       const lowPassFilter = audioCtx.createBiquadFilter();
       lowPassFilter.type = 'lowpass';
       lowPassFilter.frequency.value = 8000; // Frecuencia más alta para más detalle
@@ -94,11 +95,11 @@ const NoiseGenerator = () => {
 
       node.onaudioprocess = (e) => {
         const output = e.outputBuffer.getChannelData(0);
-        
+
         // Modulación lenta (0.2 Hz)
         modulationPhase += 0.2 / (audioCtx.sampleRate / bufferSize);
         const currentModulation = Math.sin(modulationPhase) * 0.1 + 0.9;
-        
+
         // Sonido de gotas destacadas
         dropCounter++;
         if (dropCounter > 1000 + Math.random() * 2000) {
@@ -118,7 +119,7 @@ const NoiseGenerator = () => {
           // Generación de ruido suavizado
           const white = Math.random() * 2 - 1;
           lastValue = 0.96 * lastValue + 0.04 * white;
-          
+
           // Aplicar modulación y ajuste de volumen
           output[i] = lastValue * currentModulation * 0.4;
         }
@@ -130,7 +131,7 @@ const NoiseGenerator = () => {
       lowPassFilter.connect(reverb);
       reverb.connect(rainGainNodeRef.current);
       rainGainNodeRef.current.connect(audioCtx.destination);
-      
+
       rainNodeRef.current = { node, highPassFilter, lowPassFilter, reverb };
       setIsPlayingRain(true);
     }
@@ -143,7 +144,6 @@ const NoiseGenerator = () => {
     }
   };
 
-
   const stopRainNoise = () => {
     if (isPlayingRain) {
       // Desconectar todos los nodos
@@ -153,6 +153,18 @@ const NoiseGenerator = () => {
       rainNodeRef.current.reverb.disconnect();
       setIsPlayingRain(false);
     }
+  };
+
+  // Función para iniciar/detener ambos ruidos
+  const toggleBothNoises = () => {
+    if (!isPlayingBoth) {
+      startBrownNoise();
+      startRainNoise();
+    } else {
+      stopBrownNoise();
+      stopRainNoise();
+    }
+    setIsPlayingBoth(!isPlayingBoth);
   };
 
   useEffect(() => {
@@ -166,6 +178,11 @@ const NoiseGenerator = () => {
       rainGainNodeRef.current.gain.value = rainVolume;
     }
   }, [rainVolume]);
+
+  // Actualizar el estado de isPlayingBoth cuando cambian isPlayingBrown o isPlayingRain
+  useEffect(() => {
+    setIsPlayingBoth(isPlayingBrown && isPlayingRain);
+  }, [isPlayingBrown, isPlayingRain]);
 
   return (
     <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-1 ml-1">
@@ -235,6 +252,22 @@ const NoiseGenerator = () => {
             className="bg-accent-tertiary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-secondary transition-colors duration-200 flex items-center gap-2"
           >
             <Pause size={20} /> Stop Rain Noise
+          </button>
+        )}
+        {/* Botón para controlar ambos ruidos */}
+        {!isPlayingBoth ? (
+          <button
+            onClick={toggleBothNoises}
+            className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
+          >
+            <Play size={20} /> Start Both
+          </button>
+        ) : (
+          <button
+            onClick={toggleBothNoises}
+            className="bg-accent-tertiary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-secondary transition-colors duration-200 flex items-center gap-2"
+          >
+            <Pause size={20} /> Stop Both
           </button>
         )}
       </div>
