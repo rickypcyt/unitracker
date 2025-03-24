@@ -1,49 +1,54 @@
+// Import necessary dependencies
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react'; // Import ChakraProvider and defaultSystem
-import { Provider } from 'react-redux'; // Redux Provider
-import { store } from './redux/store'; // Import Redux store
-import Home from './Home'; // Import your Home component
-import { Analytics } from "@vercel/analytics/react"
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import { Provider } from 'react-redux';
+import { Analytics } from "@vercel/analytics/react";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import './index.css'; // Import global styles
 
+// Import local files
+import { store } from './redux/store';
+import Home from './Home';
+import './index.css';
+import "react-toastify/dist/ReactToastify.css";
+
+// Error Boundary Component
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
   }
 
+  // Update state if an error occurs
   static getDerivedStateFromError(error) {
-    console.log(error);  // Log the error to help trace it
+    console.log(error);  
     return { hasError: true };
   }
 
+  // Log error details
   componentDidCatch(error, info) {
-    console.log(error, info);  // Log detailed error information
+    console.log(error, info);  
   }
 
   render() {
     if (this.state.hasError) {
+      // Render fallback UI if an error occurred
       return <h1>Something went wrong.</h1>;
     }
+    // Otherwise, render children components
     return this.props.children;
   }
 }
 
-
-
-
-// Mount the Home component within the div with id 'root'
+// Render the React application
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <Provider store={store}> {/* Wrap the app with Redux Provider */}
-    <ChakraProvider value={defaultSystem}> {/* Pass defaultSystem to ChakraProvider */}
-    <ErrorBoundary>
-    <Home />
-    <ToastContainer />
-    <Analytics />
-  </ErrorBoundary>
+  <Provider store={store}> 
+    <ChakraProvider value={defaultSystem}> 
+      <ErrorBoundary>
+        <Home />
+        <ToastContainer />
+        <Analytics />
+      </ErrorBoundary>
     </ChakraProvider>
   </Provider>
 );
