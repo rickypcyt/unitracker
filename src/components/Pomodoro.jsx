@@ -1,58 +1,73 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Check } from 'lucide-react';
 
-const WORK_TIME = 50 * 60; // 50 minutos en segundos
-const BREAK_TIME = 10 * 60; // 10 minutos en segundos
+// Importa tus archivos de sonido
+const workSound = new Audio('dist/assets/sounds/pomo-end.mp3');
+const breakSound = new Audio('dist/assets/sounds/break-end.mp3');
+
+const WORK_TIME = 5; // 50 minutos en segundos
+const BREAK_TIME = 1 * 60; // 10 minutos en segundos
 
 const Pomodoro = () => {
-  const [mode, setMode] = useState('work'); // 'work' o 'break'
+  const [mode, setMode] = useState('work');
   const [timeLeft, setTimeLeft] = useState(WORK_TIME);
   const [isRunning, setIsRunning] = useState(false);
+  const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    // Inicia el countdown cuando la cuenta está en ejecución
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
     }
 
-    // Cuando el contador llega a cero, alterna entre work y break
-    if (timeLeft === 0) {
-      if (mode === 'work') {
-        setMode('break');
-        setTimeLeft(BREAK_TIME);
-      } else {
-        // Finaliza el ciclo de break y regresa a modo trabajo
-        setMode('work');
-        setTimeLeft(WORK_TIME);
-        setIsRunning(false);
-      }
-    }
-
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, timeLeft, mode]);
+  }, [isRunning, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      // Seleccionar el sonido adecuado
+      const sound = mode === 'work' ? workSound.cloneNode(true) : breakSound.cloneNode(true);
+      sound.play();
+      setIsAlarmPlaying(true);
+
+      // Configurar siguiente fase
+      setTimeout(() => {
+        const nextMode = mode === 'work' ? 'break' : 'work';
+        const nextTime = mode === 'work' ? BREAK_TIME : WORK_TIME;
+        
+        setMode(nextMode);
+        setTimeLeft(nextTime);
+        setIsRunning(nextMode === 'work' ? false : true);
+      }, 100);
+    }
+  }, [timeLeft, mode]);
+
+  const stopAlarm = () => {
+    setIsAlarmPlaying(false);
+  };
 
   const startTimer = () => {
     if (!isRunning) setIsRunning(true);
+    stopAlarm();
   };
 
   const pauseTimer = () => {
     clearInterval(intervalRef.current);
     setIsRunning(false);
+    stopAlarm();
   };
 
   const resetTimer = () => {
     clearInterval(intervalRef.current);
     setIsRunning(false);
     setTimeLeft(mode === 'work' ? WORK_TIME : BREAK_TIME);
+    stopAlarm();
   };
 
   const finishCycle = () => {
-    // Finaliza el ciclo actual y reinicia en modo trabajo
-    clearInterval(intervalRef.current);
-    setIsRunning(false);
+    resetTimer();
     setMode('work');
     setTimeLeft(WORK_TIME);
   };
@@ -64,7 +79,7 @@ const Pomodoro = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-1 ml-1">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-1 ml-1">
       <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
       <div className="text-5xl font-mono mb-2 text-center">
         {formatTime(timeLeft)}
@@ -72,8 +87,10 @@ const Pomodoro = () => {
       <div className="text-center mb-6">
         <span className="text-xl font-medium text-text-primary">
           {mode === 'work' ? 'Work Time' : 'Break Time'}
+
         </span>
       </div>
+      
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
           <button
