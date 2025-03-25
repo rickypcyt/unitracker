@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import { Provider } from 'react-redux';
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react"
 import { ToastContainer } from "react-toastify";
 
 // Import local files
@@ -45,9 +46,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}> 
     <ChakraProvider value={defaultSystem}> 
       <ErrorBoundary>
+
         <Home />
         <ToastContainer />
         <Analytics />
+        <SpeedInsights />
       </ErrorBoundary>
     </ChakraProvider>
   </Provider>
