@@ -1,124 +1,167 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { Play, Pause, RotateCcw, Check, ChevronDown } from "lucide-react";
+import { toast } from "react-toastify";
 
-// Importa tus archivos de sonido
-const workSound = new Audio('dist/assets/sounds/pomo-end.mp3');
-const breakSound = new Audio('dist/assets/sounds/break-end.mp3');
+const workSound = new Audio("dist/assets/sounds/pomo-end.mp3");
+const breakSound = new Audio("dist/assets/sounds/break-end.mp3");
 
-const WORK_TIME = 5; // 50 minutos en segundos
-const BREAK_TIME = 1 * 60; // 10 minutos en segundos
+const MODES = [
+  { label: "50/10", work: 50 * 60, break: 10 * 60 },
+  { label: "25/5", work: 25 * 60, break: 5 * 60 },
+  { label: "90/30", work: 90 * 60, break: 30 * 60 },
+];
 
 const Pomodoro = () => {
-  const [mode, setMode] = useState('work');
-  const [timeLeft, setTimeLeft] = useState(WORK_TIME);
+  const [modeIndex, setModeIndex] = useState(0);
+  const [mode, setMode] = useState("work");
+  const [timeLeft, setTimeLeft] = useState(MODES[modeIndex].work);
   const [isRunning, setIsRunning] = useState(false);
-  const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
+  const [pomodoroCount, setPomodoroCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const intervalRef = useRef(null);
+
+  // 🔔 Solicitar permiso para notificaciones al cargar la página
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // 📌 Función para enviar notificación al sistema
+  const sendNotification = (title, body) => {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon: "🍅" });
+    }
+  };
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
+      intervalRef.current = setInterval(
+        () => setTimeLeft((prev) => prev - 1),
+        1000
+      );
     }
-
     return () => clearInterval(intervalRef.current);
   }, [isRunning, timeLeft]);
 
   useEffect(() => {
     if (timeLeft === 0) {
-      // Seleccionar el sonido adecuado
-      const sound = mode === 'work' ? workSound.cloneNode(true) : breakSound.cloneNode(true);
+      const sound =
+        mode === "work"
+          ? workSound.cloneNode(true)
+          : breakSound.cloneNode(true);
       sound.play();
-      setIsAlarmPlaying(true);
 
-      // Configurar siguiente fase
+      const message =
+        mode === "work"
+          ? "🍅 Pomodoro finished. ¡Take a break!"
+          : "⏳ Break finished. ¡Time to work!";
+
+      // 🚀 Notificación visual con react-toastify
+      toast(message, { position: "top-right", autoClose: 4000, theme: "dark" });
+
+      // 🔔 Notificación al sistema
+      sendNotification("Pomodoro Timer", message);
+
       setTimeout(() => {
-        const nextMode = mode === 'work' ? 'break' : 'work';
-        const nextTime = mode === 'work' ? BREAK_TIME : WORK_TIME;
-        
-        setMode(nextMode);
-        setTimeLeft(nextTime);
-        setIsRunning(nextMode === 'work' ? false : true);
+        if (mode === "work") {
+          setMode("break");
+          setTimeLeft(MODES[modeIndex].break);
+          setPomodoroCount((prev) => prev + 1);
+        } else {
+          setMode("work");
+          setTimeLeft(MODES[modeIndex].work);
+        }
+        setIsRunning(true);
       }, 100);
     }
-  }, [timeLeft, mode]);
-
-  const stopAlarm = () => {
-    setIsAlarmPlaying(false);
-  };
-
-  const startTimer = () => {
-    if (!isRunning) setIsRunning(true);
-    stopAlarm();
-  };
-
-  const pauseTimer = () => {
-    clearInterval(intervalRef.current);
-    setIsRunning(false);
-    stopAlarm();
-  };
-
-  const resetTimer = () => {
-    clearInterval(intervalRef.current);
-    setIsRunning(false);
-    setTimeLeft(mode === 'work' ? WORK_TIME : BREAK_TIME);
-    stopAlarm();
-  };
-
-  const finishCycle = () => {
-    resetTimer();
-    setMode('work');
-    setTimeLeft(WORK_TIME);
-  };
+  }, [timeLeft, mode, modeIndex]);
 
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-1 ml-1">
-      <h2 className="text-2xl font-bold mb-6">Pomodoro Timer</h2>
-      <div className="text-5xl font-mono mb-2 text-center">
+    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+      <div className="flex justify-between items-center w-full mb-1">
+        {/* Pomodoro e Intervalo a la izquierda */}
+        <h2 className="text-2xl font-bold">
+          🍅Pomodoro ({MODES[modeIndex].label})
+          <h3 className="text-xl font-medium text-left pl-8">
+            {mode === "work" ? "Work Time" : "Break Time"}
+          </h3>
+        </h2>
+
+        {/* Edit Intervals a la derecha */}
+        <div className="relative w-auto">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="relative flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 mb-8"
+          >
+            Edit Intervals <ChevronDown size={16} />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-2  bg-bg-surface rounded-lg shadow-lg ">
+              {MODES.map((m, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setModeIndex(index);
+                    setMode("work");
+                    setTimeLeft(MODES[index].work);
+                    setIsRunning(false);
+                    setMenuOpen(false);
+                  }}
+                  className="block px-4 py-2 w-full text-center hover:bg-bg-tertiary rounded-lg transition-colors duration-200"
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="text-5xl font-mono mb-4 text-center">
         {formatTime(timeLeft)}
       </div>
-      <div className="text-center mb-6">
-        <span className="text-xl font-medium text-text-primary">
-          {mode === 'work' ? 'Work Time' : 'Break Time'}
+      <div className="text-center mb-6"></div>
 
-        </span>
-      </div>
-      
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
           <button
-            onClick={startTimer}
+            onClick={() => setIsRunning(true)}
             className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
           >
             <Play size={20} />
           </button>
         ) : (
           <button
-            onClick={pauseTimer}
-            className="bg-accent-tertiary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200"
+            onClick={() => setIsRunning(false)}
+            className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
           >
             <Pause size={20} />
           </button>
         )}
         <button
-          onClick={resetTimer}
-          className="bg-accent-secondary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
+          onClick={() => {
+            setIsRunning(false);
+            setTimeLeft(
+              mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break
+            );
+          }}
+          className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
         >
           <RotateCcw size={20} />
         </button>
-        <button
-          onClick={finishCycle}
-          className="bg-accent-deep text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200"
-        >
-          <Check size={20} />
-        </button>
+      </div>
+
+      <div className="text-center text-lg font-medium">
+        Completed Pomodoros: {pomodoroCount}
       </div>
     </div>
   );

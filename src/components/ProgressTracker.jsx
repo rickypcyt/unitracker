@@ -11,7 +11,6 @@ const ProgressTracker = () => {
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const [toast, setToast] = useState({ visible: false, message: "" });
-  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (milestones.includes(completedTasks)) {
@@ -82,26 +81,7 @@ const ProgressTracker = () => {
             </div>
           </div>
 
-          <button 
-            onClick={() => setShowDetails(!showDetails)}
-            className="mt-4 bg-accent-secondary text-white px-4 py-2 rounded hover:bg-accent-secondary-dark transition-colors"
-          >
-            {showDetails ? "Hide Details" : "Show Details"}
-          </button>
 
-          {showDetails && (
-            <div className="mt-4 bg-bg-secondary p-4 rounded-lg">
-              <h3 className="font-bold mb-2">Task Breakdown:</h3>
-              <ul>
-                {tasks.map((task, index) => (
-                  <li key={index} className={`flex items-center ${task.completed ? 'text-green-500' : 'text-red-500'}`}>
-                    {task.completed ? <FaCheckCircle className="mr-2" /> : <span className="mr-2">❌</span>}
-                    {task.title}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       </div>
 

@@ -116,7 +116,7 @@ const Statistics = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-cyan-600 p-6 rounded-xl text-white shadow-lg">
+        <div className="bg-gradient-to-br from-green-500 to-cyan-600 p-5 rounded-xl text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-bold mb-1 flex items-center gap-2">

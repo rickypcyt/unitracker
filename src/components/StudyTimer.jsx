@@ -158,16 +158,7 @@ const StudyTimer = () => {
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(state.time)}</div>
-
-      <div className="mb-4">
-        <textarea
-          value={state.description}
-          onChange={(e) => setState(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Session description"
-          className="w-full p-2 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary"
-        />
-      </div>
-
+    
       <div className="flex justify-center space-x-4 mb-6">
         {!state.isRunning ? (
           <button onClick={timerControls.start} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
@@ -184,9 +175,19 @@ const StudyTimer = () => {
         <button onClick={lapHandlers.add} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
           <Flag size={20} />
         </button>
-        <button onClick={lapHandlers.finish} className="bg-accent-deep text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200">
+        <button onClick={lapHandlers.finish} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
           <Check size={20} />
         </button>
+        
+      </div>
+
+      <div className="mb-4">
+        <textarea
+          value={state.description}
+          onChange={(e) => setState(prev => ({ ...prev, description: e.target.value }))}
+          placeholder="Session description"
+          className="w-full p-2 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary"
+        />
       </div>
 
       {Object.entries(groupedLaps).map(([monthYear, weeks]) => (

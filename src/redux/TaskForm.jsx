@@ -18,7 +18,7 @@ const TaskForm = () => {
     e.preventDefault();
     setSubmitted(true);
     // Validamos que los campos obligatorios tengan valor
-    if (!newTask.title || !newTask.deadline) {
+    if (!newTask.title || !newTask.date) {
       return; // Si falta algún campo, no se llama a handleSubmit
     }
     handleSubmit(e);
@@ -74,40 +74,40 @@ const TaskForm = () => {
 
         {/* Campo Fecha límite */}
         <div className="flex flex-col gap-2">
-          <label htmlFor="deadline" className="text-text-secondary text-sm">
-            Deadline
+          <label htmlFor="date" className="text-text-secondary text-sm">
+            
           </label>
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center">
               <button
                 type="button"
-                className="px-4 py-2 bg-accent-tertiary text-text-primary rounded-lg hover:bg-accent-deep transition-colors duration-200 flex-grow"
+                className="p-3 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
                 onClick={handleSetToday}
               >
                 Today
               </button>
               <input
-                id="deadline"
-                className={`flex-grow p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 ${
-                  submitted && !newTask.deadline
+                id="date"
+                className={`flex-grow p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 ${
+                  submitted && !newTask.date
                     ? "border-accent-secondary focus:ring-accent-secondary"
                     : ""
                 }`}
                 type="date"
-                value={newTask.deadline}
-                onChange={(e) => updateField("deadline", e.target.value)}
+                value={newTask.date}
+                onChange={(e) => updateField("date", e.target.value)}
               />
               <button
                 type="button"
-                className="px-4 py-2 bg-accent-tertiary text-text-primary rounded-lg hover:bg-accent-deep transition-colors duration-200 flex-grow"
+                className="p-3 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
                 onClick={handleSetTomorrow}
               >
                 Tomorrow
               </button>
             </div>
-            {submitted && !newTask.deadline && (
+            {submitted && !newTask.date && (
               <span className="text-s text-red-600 place-self-center">
-                Falta rellenar la fecha límite.
+                Fill the date time.
               </span>
             )}
           </div>
@@ -115,7 +115,7 @@ const TaskForm = () => {
 
         <button
           type="submit"
-          className="w-full mt-6 p-4 bg-accent-primary text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+          className="w-full mt-6 p-4 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
         >
           Add Task
         </button>

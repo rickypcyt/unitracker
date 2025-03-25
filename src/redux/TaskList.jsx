@@ -51,7 +51,7 @@ const TaskList = () => {
 
       {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
         <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
-          Create your first task!
+          You have no tasks at the moment.
         </div>
       ) : (
         <>

@@ -1,9 +1,9 @@
 // utils/layoutManager.ts
 export const LayoutManager = {
     getInitialLayout: () => [
-      { id: 'col-1', items: ['TaskForm', 'TaskList'] },
-      { id: 'col-2', items: ['StudyTimer', 'NoiseGenerator', 'Pomodoro'] },
-      { id: 'col-3', items: ['Statistics', 'ProgressTracker'] }
+      { id: 'col-1', items: ['Pomodoro', 'TaskForm', 'ProgressTracker' ] },
+      { id: 'col-2', items: ['StudyTimer', 'NoiseGenerator', ] },
+      { id: 'col-3', items: ['TaskList', 'Statistics'] }
     ],
   
     updateLayoutAfterDrag: (layout: any, result: { source: any; destination: any; }) => {
