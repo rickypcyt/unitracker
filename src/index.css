@@ -38,6 +38,12 @@
   .plslogin{
     @apply text-center text-text-secondary text-xl p-12 bg-neutral-800 rounded-xl mb-4
   }
+  .editbutton{
+    @apply absolute right-0 flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 bottom-9
+  }
+  .cancelbutton{
+    @apply flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 
+  }
 }
 
 

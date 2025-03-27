@@ -1,38 +1,39 @@
 import { useState } from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
+import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useTaskForm } from "../redux/useTaskForm";
+import { X } from "lucide-react";
+
+const localizer = momentLocalizer(moment);
 
 const Calendar = () => {
   const tasks = useSelector((state) => state.tasks.tasks);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  
+
   const {
     newTask,
     error,
     handleSubmit,
     updateField,
-    setNewTask
+    setNewTask,
   } = useTaskForm("");
 
-  const events = tasks
-    .filter((task) => task.deadline)
-    .map((task) => ({
-      title: task.title,
-      date: task.deadline,
-      backgroundColor: task.completed ? "#023E7D" : "#0466C8" // Actualizados a nuevos colores
-    }));
+  const events = tasks.map((task) => ({
+    title: task.title,
+    start: new Date(task.deadline),
+    end: new Date(task.deadline),
+    allDay: true,
+    color: task.completed ? "#023E7D" : "#0466C8",
+  }));
 
-  const handleDayDoubleClick = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`;
-    
-    setSelectedDate(date);
-    updateField('deadline', dateString);
+  const handleDayClick = (slotInfo) => {
+    const dateString = moment(slotInfo.start).format("YYYY-MM-DD");
+    setSelectedDate(slotInfo.start);
+    updateField("deadline", dateString);
     setShowModal(true);
   };
 
@@ -45,85 +46,87 @@ const Calendar = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
-      <FullCalendar
-        plugins={[dayGridPlugin]}
-        initialView="dayGridMonth"
+    <div className="maincard">
+      <BigCalendar
+        localizer={localizer}
         events={events}
-        height="auto"
-        contentHeight={500}
-        headerToolbar={{
-          left: "title",
-          center: "",
-          right: "prev,next"
-        }}
-        dayCellDidMount={(arg) => {
-          arg.el.addEventListener("dblclick", () => {
-            handleDayDoubleClick(arg.date);
-          });
-        }}
-        eventDidMount={(info) => {
-          info.el.style.cursor = "pointer";
-          info.el.title = info.event.title;
-          info.el.style.border = "none"; // Eliminar bordes por defecto
-          info.el.style.borderRadius = "4px"; // Añadir esquinas redondeadas
-        }}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: "500px", borderRadius: "10px" }}
+        selectable
+        onSelectSlot={handleDayClick}
       />
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm">
-          <div className="bg-secondary p-6 rounded-2xl min-w-[320px] border border-border-primary shadow-2xl">
-            <h3 className="text-xl font-semibold text-text-primary mb-6">
-              Crear tarea para {selectedDate?.toLocaleDateString()}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
+        >
+          <div className="maincard">
+            <button
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition duration-200"
+              onClick={() => setShowModal(false)}
+            >
+              <X size={24} />
+            </button>
+            <h3 className="text-2xl font-bold mb-6 text-center">
+              New Task for{" "}
+              <span className="text-blue-400">
+                {moment(selectedDate).format("LL")}
+              </span>
             </h3>
-            
-            {error && <div className="text-accent-secondary mb-4">{error}</div>}
 
-            <form onSubmit={handleCalendarSubmit} className="space-y-4">
+            {error && (
+              <div className="text-red-400 mb-4 text-center font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleCalendarSubmit} className="space-y-5">
               <input
                 type="text"
-                placeholder="Título de la tarea"
+                placeholder="Task title"
                 value={newTask.title}
-                onChange={(e) => updateField('title', e.target.value)}
+                onChange={(e) => updateField("title", e.target.value)}
                 required
-                className="w-full p-3 bg-tertiary border border-border-primary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                className="textinput"
               />
-              
-              <textarea
-                placeholder="Descripción (opcional)"
-                value={newTask.description}
-                onChange={(e) => updateField('description', e.target.value)}
-                className="w-full p-3 bg-tertiary border border-border-primary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                rows="3"
-              />
-              
-              <div>
-                <input
-                  type="date"
-                  value={newTask.deadline}
-                  className="w-full p-3 bg-tertiary border border-border-primary rounded-lg text-text-primary text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                  disabled
-                />
-              </div>
 
-              <div className="flex justify-end space-x-3 mt-6">
+              <textarea
+                placeholder="Description (optional)"
+                value={newTask.description}
+                onChange={(e) => updateField("description", e.target.value)}
+                className="textinput"
+                rows="4"
+              />
+
+              <input
+                type="date"
+                value={newTask.deadline}
+                disabled
+                className="textinput"
+              />
+
+              <div className="flex justify-end space-x-4 mt-6">
                 <button
                   type="button"
-                  className="px-5 py-2 bg-tertiary text-text-secondary border border-border-primary rounded-lg font-medium transition-all duration-200 hover:bg-accent-deep hover:text-text-primary"
+                  className="cancelbutton"
                   onClick={() => setShowModal(false)}
                 >
-                  Cancelar
+                    Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-accent-primary text-text-primary rounded-lg font-medium transition-all duration-200 hover:bg-accent-secondary"
+                  className="button"
                 >
-                  Crear Tarea
+                  Create Task
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

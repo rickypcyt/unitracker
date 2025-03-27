@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleTaskStatus, deleteTask, fetchTasks } from '../redux/TaskActions';
-import { CheckCircle2, Circle, Calendar, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle2, Circle, Calendar, Trash2, ChevronDown, ChevronUp, ClipboardCheck } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 const TaskList = () => {
@@ -47,7 +47,7 @@ const TaskList = () => {
 
   return (
     <div className="maincard">
-      <h2 className="text-2xl font-bold mb-6">Your Tasks</h2>
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><ClipboardCheck size={24} />Your Tasks</h2>
 
       {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
         <div className="plslogin">

@@ -3,12 +3,12 @@ import { useDispatch } from 'react-redux';
 import { addTask } from './TaskActions';
 import { supabase } from '../utils/supabaseClient'; // Importa el cliente de Supabase
 
-export const useTaskForm = (initialDeadline = '') => {
+export const useTaskForm = (initialdate = '') => {
   const dispatch = useDispatch();
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
-    deadline: initialDeadline,
+    date: initialdate,
   });
   const [error, setError] = useState('');
 
@@ -32,7 +32,7 @@ export const useTaskForm = (initialDeadline = '') => {
       await dispatch(addTask(taskWithUser));
 
       // Limpiar el formulario
-      setNewTask({ title: '', description: '', deadline: '' });
+      setNewTask({ title: '', description: '', date: '' });
       setError(''); // Limpiar el error si la operación fue exitosa
     } catch (error) {
       setError("Error adding task: " + error.message);
@@ -52,13 +52,13 @@ export const useTaskForm = (initialDeadline = '') => {
     handleSetToday: () => {
       const today = new Date();
       const isoDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      updateField('deadline', isoDate);
+      updateField('date', isoDate);
     },
     handleSetTomorrow: () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const isoDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
-      updateField('deadline', isoDate);
+      updateField('date', isoDate);
     }
   };
 };

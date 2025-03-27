@@ -154,7 +154,7 @@ const StudyTimer = () => {
 
   return (
     <div className="maincard">
-      <div className="mb-8">
+      <div>
       <h2  className="text-2xl font-bold mb-6 flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
       </div>
@@ -195,7 +195,7 @@ const StudyTimer = () => {
       {Object.entries(groupedLaps).map(([monthYear, weeks]) => (
         <div key={monthYear} className="mb-4">
           <button
-            className="flex items-center justify-between w-full py-2 px-3 bg-bg-surface rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200"
+            className="infomenu"
             onClick={() => toggleVisibility('Months', monthYear)}
           >
             <span>{monthYear}</span>

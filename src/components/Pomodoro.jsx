@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, Check, ChevronDown } from "lucide-react";
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  AlarmClockCheck,
+  ChevronDown,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 const workSound = new Audio("dist/assets/sounds/pomo-end.mp3");
@@ -19,6 +25,7 @@ const Pomodoro = () => {
   const [pomodoroCount, setPomodoroCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const intervalRef = useRef(null);
+  const menuRef = useRef(null);
 
   // 🔔 Solicitar permiso para notificaciones al cargar la página
   useEffect(() => {
@@ -85,27 +92,45 @@ const Pomodoro = () => {
       .padStart(2, "0")}`;
   };
 
+  const handleOutsideClick = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setMenuOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    // Cerrar el menú cuando se haga clic fuera de él
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
   return (
     <div className="maincard">
-      <div className="flex justify-between items-center w-full mb-1">
-        {/* Pomodoro e Intervalo a la izquierda */}
-        <h2 className="text-2xl font-bold">
-          🍅Pomodoro ({MODES[modeIndex].label})
-          <h3 className="text-xl font-medium text-left pl-8">
-            {mode === "work" ? "Work Time" : "Break Time"}
-          </h3>
-        </h2>
-
-        {/* Edit Intervals a la derecha */}
+      <div>
+        <div className="text-2xl font-bold mb-4 flex items-center gap-2">
+          {/* Pomodoro e Intervalo a la izquierda */}
+          <h2 className="text-2xl font-bold flex items-center">
+            <AlarmClockCheck size={24} className="mr-2" /> {/* Añadimos un margen a la derecha */}
+            Pomodoro ({MODES[modeIndex].label})
+            <h3 className="text-xl font-medium text-left pl-8">
+              {mode === "work" ? "Work Time" : "Break Time"}
+            </h3>
+          </h2>
+        </div>
         <div className="relative w-auto">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="relative flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 mb-8"
+            className="editbutton"
           >
-            Edit Intervals <ChevronDown size={16} />
+            Edit <ChevronDown size={16} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2  bg-bg-surface rounded-lg shadow-lg ">
+            <div
+              ref={menuRef}
+              className="absolute right-0 top-full  bg-bg-surface rounded-lg shadow-lg z-10"
+            >
               {MODES.map((m, index) => (
                 <button
                   key={index}
@@ -116,7 +141,7 @@ const Pomodoro = () => {
                     setIsRunning(false);
                     setMenuOpen(false);
                   }}
-                  className="block px-4 py-2 w-full text-center hover:bg-bg-tertiary rounded-lg transition-colors duration-200"
+                  className="block px-4 py-2 w-full text-center hover:bg-bg-tertiary rounded-md transition-colors duration-200"
                 >
                   {m.label}
                 </button>
@@ -129,21 +154,14 @@ const Pomodoro = () => {
       <div className="text-5xl font-mono mb-4 text-center">
         {formatTime(timeLeft)}
       </div>
-      <div className="text-center mb-6"></div>
 
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
-          <button
-            onClick={() => setIsRunning(true)}
-            className="button"
-          >
+          <button onClick={() => setIsRunning(true)} className="button">
             <Play size={20} />
           </button>
         ) : (
-          <button
-            onClick={() => setIsRunning(false)}
-            className="button"
-          >
+          <button onClick={() => setIsRunning(false)} className="button">
             <Pause size={20} />
           </button>
         )}
