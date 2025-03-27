@@ -4,19 +4,21 @@ import { toast } from 'react-toastify';
 
 export const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const hasShownToast = useRef(false); // 👈 Evita mostrar el toast varias veces
+  const hasShownToast = useRef(false);
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
+
       if (session && !hasShownToast.current) {
+        toast.dismiss(); // 🔥 Elimina cualquier toast atascado
         toast.success("🔑 You have successfully logged in!", {
           position: "top-right",
           autoClose: 4000,
           theme: "dark"
         });
-        hasShownToast.current = true; // 👈 Marcamos que ya mostramos el toast
+        hasShownToast.current = true;
       }
     };
     checkSession();
@@ -24,12 +26,15 @@ export const useAuth = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
       if (session && !hasShownToast.current) {
+        toast.dismiss(); // 🔥 Limpia toasts antes de mostrar uno nuevo
         toast.success("🔑 You have successfully logged in!", {
           position: "top-right",
           autoClose: 4000,
-          theme: "dark"
+          theme: "dark",
+          hideProgressBar: true // 🔥 Oculta la barra de progreso
         });
-        hasShownToast.current = true; // 👈 Evita que el toast se muestre varias veces
+        
+        hasShownToast.current = true;
       }
     });
 
@@ -40,6 +45,7 @@ export const useAuth = () => {
 
   const loginWithGoogle = async () => {
     try {
+      toast.dismiss(); // 🔥 Limpia cualquier mensaje anterior antes de login
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       });

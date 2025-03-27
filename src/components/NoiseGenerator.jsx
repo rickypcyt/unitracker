@@ -257,7 +257,7 @@ const NoiseGenerator = () => {
   }, [isPlayingBrown, isPlayingRain]);
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-1 ml-1">
+    <div className="maincard">
       <h2 className="text-2xl font-bold mb-6">Noise Generator</h2>
 
       <div className="mb-6 space-y-4">
@@ -381,7 +381,7 @@ const NoiseGenerator = () => {
         {!isPlayingBrown ? (
           <button
             onClick={startBrownNoise}
-            className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
+            className="textbutton"
           >
             <Play size={20} /> Brown Noise
           </button>
@@ -397,7 +397,7 @@ const NoiseGenerator = () => {
         {!isPlayingRain ? (
           <button
             onClick={startRainNoise}
-            className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
+            className="textbutton"
           >
             <Play size={20} /> Rain Noise
           </button>
@@ -413,7 +413,7 @@ const NoiseGenerator = () => {
         {!isPlayingBoth ? (
           <button
             onClick={toggleBothNoises}
-            className="bg-accent-primary text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2"
+            className="textbutton"
           >
             <Play size={20} />
           </button>

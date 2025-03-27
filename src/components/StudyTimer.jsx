@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '../utils/supabaseClient';
 import { resetTimerState, setCurrentSession } from '../redux/LapSlice';
 import { fetchLaps, createLap, updateLap, deleteLap } from '../redux/LapActions';
-import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp,LibraryBig} from 'lucide-react';
 
 const StudyTimer = () => {
   const dispatch = useDispatch();
@@ -143,7 +143,7 @@ const StudyTimer = () => {
     return (
       <div className="max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
         <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
-        <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
+        <div className="plslogin">
           Please log in to use the Study Timer
         </div>
       </div>
@@ -153,15 +153,17 @@ const StudyTimer = () => {
   const groupedLaps = groupSessionsByMonthWeek();
 
   return (
-    <div className="max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
-      <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
+    <div className="maincard">
+      <div className="mb-8">
+      <h2  className="text-2xl font-bold mb-6 flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
+      </div>
 
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(state.time)}</div>
     
       <div className="flex justify-center space-x-4 mb-6">
         {!state.isRunning ? (
-          <button onClick={timerControls.start} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
+          <button onClick={timerControls.start} className="button">
             <Play size={20} />
           </button>
         ) : (
@@ -169,13 +171,13 @@ const StudyTimer = () => {
             <Pause size={20} />
           </button>
         )}
-        <button onClick={timerControls.reset} className="bg-accent-secondary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
+        <button onClick={timerControls.reset} className="button text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
           <RotateCcw size={20} />
         </button>
-        <button onClick={lapHandlers.add} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
+        <button onClick={lapHandlers.add} className="button">
           <Flag size={20} />
         </button>
-        <button onClick={lapHandlers.finish} className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
+        <button onClick={lapHandlers.finish} className="button">
           <Check size={20} />
         </button>
         
@@ -186,7 +188,7 @@ const StudyTimer = () => {
           value={state.description}
           onChange={(e) => setState(prev => ({ ...prev, description: e.target.value }))}
           placeholder="Session description"
-          className="w-full p-2 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary"
+          className="textinput"
         />
       </div>
 

@@ -97,7 +97,7 @@ const Statistics = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+    <div className="maincard">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center gap-2">
           <Activity size={24} /> Study Statistics
@@ -145,14 +145,14 @@ const Statistics = () => {
         </div>
       </div>
 
-      <div className="bg-bg-tertiary p-6 rounded-xl relative">
+      <div className="bg-stats">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
           </h3>
           <button
             onClick={toggleWeek}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+            className="textbutton"
           >
             {isCurrentWeek ? "Last Week" : "This Week"}
           </button>

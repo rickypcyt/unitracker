@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTaskForm } from './useTaskForm';
+import { useTaskForm } from '../redux/useTaskForm';
 
 const TaskForm = () => {
   const {
@@ -26,7 +26,7 @@ const TaskForm = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+    <div className="maincard">
       <h2 className="text-2xl font-bold mb-6 text-text-primary">Add New Task</h2>
       <form className="flex flex-col gap-4" onSubmit={onSubmit}>
         {error && (
@@ -42,7 +42,7 @@ const TaskForm = () => {
           </label>
           <input
             id="title"
-            className={`w-full p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 ${
+            className={`textinput${
               submitted && !newTask.title
                 ? "border-accent-secondary focus:ring-accent-secondary"
                 : ""
@@ -53,7 +53,7 @@ const TaskForm = () => {
           />
           {submitted && !newTask.title && (
             <span className="text-s text-red-600">
-              Falta rellenar el título.
+              Fill the title.
             </span>
           )}
         </div>
@@ -65,7 +65,7 @@ const TaskForm = () => {
           </label>
           <textarea
             id="description"
-            className="w-full p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 min-h-[50px]"
+            className="textinput "
             value={newTask.description}
             onChange={(e) => updateField("description", e.target.value)}
             placeholder="Enter task description"
@@ -81,14 +81,14 @@ const TaskForm = () => {
             <div className="flex gap-2 items-center">
               <button
                 type="button"
-                className="p-3 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+                className="textbutton"
                 onClick={handleSetToday}
               >
                 Today
               </button>
               <input
                 id="date"
-                className={`flex-grow p-3 bg-bg-tertiary border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 text-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 ${
+                className={`textinput text-center${
                   submitted && !newTask.date
                     ? "border-accent-secondary focus:ring-accent-secondary"
                     : ""
@@ -99,7 +99,7 @@ const TaskForm = () => {
               />
               <button
                 type="button"
-                className="p-3 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+                className="textbutton"
                 onClick={handleSetTomorrow}
               >
                 Tomorrow
@@ -115,7 +115,7 @@ const TaskForm = () => {
 
         <button
           type="submit"
-          className="w-full mt-6 p-4 bg-blue-600 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+          className="w-full mt-2 p-3 bg-blue-700 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
         >
           Add Task
         </button>

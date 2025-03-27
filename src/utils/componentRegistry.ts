@@ -1,6 +1,6 @@
 // utils/componentRegistry.ts
-import TaskForm from '../redux/TaskForm';
-import TaskList from '../redux/TaskList';
+import TaskForm from '../components/TaskForm';
+import TaskList from '../components/TaskList';
 import ProgressTracker from '../components/ProgressTracker';
 import Calendar from '../components/Calendar';
 import StudyTimer from '../components/StudyTimer';

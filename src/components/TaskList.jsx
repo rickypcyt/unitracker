@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleTaskStatus, deleteTask, fetchTasks } from './TaskActions';
+import { toggleTaskStatus, deleteTask, fetchTasks } from '../redux/TaskActions';
 import { CheckCircle2, Circle, Calendar, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
@@ -32,9 +32,9 @@ const TaskList = () => {
 
   if (!user) {
     return (
-      <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
+      <div className="maincard">
       <h2 className="text-2xl font-bold mb-6">Your Tasks</h2>
-      <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
+      <div className="plslogin">
         Please log in to view your tasks
       </div>
       </div>
@@ -46,11 +46,11 @@ const TaskList = () => {
   const incompleteTasks = userTasks.filter(task => !task.completed);
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg  mr-2 ml-2">
+    <div className="maincard">
       <h2 className="text-2xl font-bold mb-6">Your Tasks</h2>
 
       {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
-        <div className="text-center text-text-secondary text-xl p-12 bg-bg-tertiary rounded-xl mb-4">
+        <div className="plslogin">
           You have no tasks at the moment.
         </div>
       ) : (
@@ -61,7 +61,7 @@ const TaskList = () => {
               {incompleteTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="group flex justify-between items-center p-4 bg-bg-tertiary border border-border-primary rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-bg-surface"
+                  className="tasks"
                 >
                   {/* Sección izquierda: Checkbox + Título */}
                   <div className="flex items-center flex-1 min-w-0">
@@ -121,7 +121,7 @@ const TaskList = () => {
           {completedTasks.length > 0 && (
             <div>
               <button
-                className="flex items-center justify-between w-full py-2 px-3 bg-bg-surface rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200"
+                className="infomenu mb-3"
                 onClick={toggleCompletedTasks}
               >
                 <span>Completed Tasks ({completedTasks.length})</span>
@@ -132,7 +132,7 @@ const TaskList = () => {
                 {completedTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="group flex justify-between items-center p-4 bg-bg-tertiary border border-border-primary rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-bg-surface"
+                    className="tasks"
                   >
                     {/* Sección izquierda: Checkbox + Título */}
                     <div className="flex items-center flex-1 min-w-0">

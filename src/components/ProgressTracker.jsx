@@ -36,7 +36,7 @@ const ProgressTracker = () => {
 
   return (
     <div>
-      <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+      <div className="maincard">
         <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
           <FaChartLine className="mr-2" /> Progress Tracker
         </h2>

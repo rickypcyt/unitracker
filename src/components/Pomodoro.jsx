@@ -86,7 +86,7 @@ const Pomodoro = () => {
   };
 
   return (
-    <div className="relative max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+    <div className="maincard">
       <div className="flex justify-between items-center w-full mb-1">
         {/* Pomodoro e Intervalo a la izquierda */}
         <h2 className="text-2xl font-bold">
@@ -135,14 +135,14 @@ const Pomodoro = () => {
         {!isRunning ? (
           <button
             onClick={() => setIsRunning(true)}
-            className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
+            className="button"
           >
             <Play size={20} />
           </button>
         ) : (
           <button
             onClick={() => setIsRunning(false)}
-            className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
+            className="button"
           >
             <Pause size={20} />
           </button>
@@ -154,7 +154,7 @@ const Pomodoro = () => {
               mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break
             );
           }}
-          className="bg-accent-primary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200"
+          className="button"
         >
           <RotateCcw size={20} />
         </button>

@@ -4,6 +4,43 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Esto asegura que Tailwind registre los colores personalizados */
+  :root {
+    --bg-primary: #000000;
+    --bg-secondary: #1C1C1E;
+    --border-primary: #3A3A3C;
+  }
+}
+
+@layer components {
+  .maincard {
+    @apply max-w-full mx-auto my-8 bg-black border border-zinc-800 rounded-2xl p-6 shadow-lg mr-2 ml-2;
+  }
+  .button{
+    @apply bg-blue-700 text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200
+  }
+  .textbutton{
+    @apply bg-blue-700 text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2 text-center
+  }
+  .textinput{
+    @apply w-full p-3 bg-neutral-800 border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 
+  }
+  .infomenu{
+    @apply flex items-center justify-between w-full py-2 px-3 bg-neutral-800 rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200
+  }
+  .tasks{
+    @apply flex justify-between items-center p-4 bg-neutral-800 border border-border-primary rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-bg-surface
+  }
+  .bg-stats{
+    @apply bg-neutral-800 p-6 rounded-xl relative
+  }
+  .plslogin{
+    @apply text-center text-text-secondary text-xl p-12 bg-neutral-800 rounded-xl mb-4
+  }
+}
+
+
 body {
   font-family: Arial, sans-serif;
   background-color: #010101;
@@ -21,3 +58,19 @@ h2 {
 .container {
   @apply max-w-7xl;
 }
+
+.Toastify__toast {
+  animation: fadeOut 0.5s ease-out 4s forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    display: none !important;
+  }
+}
+
