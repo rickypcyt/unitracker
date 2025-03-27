@@ -1,9 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Trash2, Plus, Move, Maximize2, Minimize2 } from 'lucide-react';
+import { Trash2, Plus, Move, Maximize2, Minimize2, Settings } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import { useAuth } from './hooks/useAuth';
 import { ComponentRegistry } from './utils/componentRegistry';
 import { GoogleLoginButton } from './components/GoogleLoginButton';
@@ -11,6 +10,7 @@ import { LayoutManager } from './utils/layoutManager';
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const [wideComponents, setWideComponents] = useState<Set<string>>(new Set());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -23,8 +23,8 @@ const Home: React.FC = () => {
   const toggleComponentSize = useCallback((componentKey: string) => {
     setWideComponents(prev => {
       const updated = new Set(prev);
-      updated.has(componentKey) 
-        ? updated.delete(componentKey) 
+      updated.has(componentKey)
+        ? updated.delete(componentKey)
         : updated.add(componentKey);
       return updated;
     });
@@ -33,7 +33,7 @@ const Home: React.FC = () => {
   const removeComponent = useCallback((colIndex: number, itemIndex: number) => {
     const newLayout = LayoutManager.removeComponent(layout, colIndex, itemIndex);
     setLayout(newLayout);
-    
+
     // Remove from wide components if necessary
     const componentKey = newLayout[colIndex].items[itemIndex];
     setWideComponents(prev => {
@@ -48,17 +48,17 @@ const Home: React.FC = () => {
     setLayout(newLayout);
   }, [layout]);
 
-  const renderLayoutColumns = useMemo(() => 
+  const renderLayoutColumns = useMemo(() =>
     layout.map((column, colIndex) => (
       <Droppable key={column.id} droppableId={column.id}>
         {(provided) => (
-          <div 
-            {...provided.droppableProps} 
-            ref={provided.innerRef} 
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
             className="space-y-4"
           >
             {column.items.map((componentKey, index) => (
-              <ComponentRenderer 
+              <ComponentRenderer
                 key={componentKey}
                 componentKey={componentKey}
                 colIndex={colIndex}
@@ -71,15 +71,15 @@ const Home: React.FC = () => {
             ))}
             {provided.placeholder}
             {isEditing && (
-              <AddComponentButton 
-                onClick={() => addComponent(colIndex)} 
+              <AddComponentButton
+                onClick={() => addComponent(colIndex)}
               />
             )}
           </div>
         )}
       </Droppable>
-    )), 
-  [layout, isEditing, wideComponents, toggleComponentSize, removeComponent, addComponent]
+    )),
+    [layout, isEditing, wideComponents, toggleComponentSize, removeComponent, addComponent]
   );
 
   return (
@@ -90,11 +90,13 @@ const Home: React.FC = () => {
         </div>
       </DragDropContext>
 
-      <LayoutControls 
-        isEditing={isEditing} 
+      <LayoutControls
+        isEditing={isEditing}
         onToggleEditing={() => setIsEditing(!isEditing)}
         isLoggedIn={isLoggedIn}
         onLogin={loginWithGoogle}
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
       />
 
       <ToastContainer />
@@ -111,45 +113,45 @@ const ComponentRenderer: React.FC<{
   isWide: boolean;
   onToggleSize: (key: string) => void;
   onRemove: (colIndex: number, itemIndex: number) => void;
-}> = ({ 
-  componentKey, 
-  colIndex, 
-  index, 
-  isEditing, 
-  isWide, 
-  onToggleSize, 
-  onRemove 
+}> = ({
+  componentKey,
+  colIndex,
+  index,
+  isEditing,
+  isWide,
+  onToggleSize,
+  onRemove
 }) => {
-  const Component = ComponentRegistry[componentKey].component;
+    const Component = ComponentRegistry[componentKey].component;
 
-  return (
-    <Draggable
-      draggableId={`${componentKey}-${colIndex}`}
-      index={index}
-      isDragDisabled={!isEditing}
-    >
-      {(provided) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          className={`relative ${isWide ? 'lg:col-span-2' : ''}`}
-        >
-          {isEditing && (
-            <ComponentEditControls 
-              onToggleSize={() => onToggleSize(componentKey)}
-              onRemove={() => onRemove(colIndex, index)}
-              dragHandleProps={provided.dragHandleProps}
-              isWide={isWide}
-            />
-          )}
-          <div className={`rounded-lg shadow-lg ${isEditing ? 'border-2 border-dashed border-gray-700' : ''}`}>
-            <Component />
+    return (
+      <Draggable
+        draggableId={`${componentKey}-${colIndex}`}
+        index={index}
+        isDragDisabled={!isEditing}
+      >
+        {(provided) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            className={`relative ${isWide ? 'lg:col-span-2' : ''}`}
+          >
+            {isEditing && (
+              <ComponentEditControls
+                onToggleSize={() => onToggleSize(componentKey)}
+                onRemove={() => onRemove(colIndex, index)}
+                dragHandleProps={provided.dragHandleProps}
+                isWide={isWide}
+              />
+            )}
+            <div className={`rounded-lg shadow-lg ${isEditing ? 'border-2 border-dashed border-gray-700' : ''}`}>
+              <Component />
+            </div>
           </div>
-        </div>
-      )}
-    </Draggable>
-  );
-};
+        )}
+      </Draggable>
+    );
+  };
 
 const ComponentEditControls: React.FC<{
   onToggleSize: () => void;
@@ -185,19 +187,64 @@ const LayoutControls: React.FC<{
   onToggleEditing: () => void;
   isLoggedIn: boolean;
   onLogin: () => void;
-}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin }) => (
-  <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-    <button
-      onClick={onToggleEditing}
-      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 opacity-75"
-    >
-      {isEditing ? 'Save Layout' : 'Edit Layout'}
-    </button>
-    <GoogleLoginButton 
-      isLoggedIn={isLoggedIn} 
-      onClick={onLogin} 
-    />
-  </div>
-);
+  isPlaying: boolean;
+  setIsPlaying: (value: boolean) => void;
+}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+
+  }, []);
+
+  return (
+    <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2" ref={menuRef}>
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
+        >
+          <Settings size={24} />
+        </button>
+      )}
+      {isOpen && (
+        <div className="flex flex-col gap-2 bg-black p-3 rounded-lg shadow-lg border border-gray-700">
+          {!isOpen && (
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
+            >
+              <Settings size={24} />
+            </button>
+          )}
+          
+          <button
+            //onClick={timerControls.start}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            {isPlaying ? "Pause Sesh" : "Start Sesh"}
+          </button>         
+          <button
+            onClick={onToggleEditing}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            {isEditing ? "Save Layout" : "Edit Layout"}
+          </button>
+
+          <GoogleLoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default Home;
