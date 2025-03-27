@@ -191,7 +191,7 @@ const LayoutControls: React.FC<{
   setIsPlaying: (value: boolean) => void;
 }> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null); 
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

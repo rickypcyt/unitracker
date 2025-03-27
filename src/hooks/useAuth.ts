@@ -1,24 +1,40 @@
-// hooks/useAuth.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { toast } from 'react-toastify';
 
 export const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const hasShownToast = useRef(false); // 👈 Evita mostrar el toast varias veces
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
+      if (session && !hasShownToast.current) {
+        toast.success("🔑 You have successfully logged in!", {
+          position: "top-right",
+          autoClose: 4000,
+          theme: "dark"
+        });
+        hasShownToast.current = true; // 👈 Marcamos que ya mostramos el toast
+      }
     };
     checkSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
+      if (session && !hasShownToast.current) {
+        toast.success("🔑 You have successfully logged in!", {
+          position: "top-right",
+          autoClose: 4000,
+          theme: "dark"
+        });
+        hasShownToast.current = true; // 👈 Evita que el toast se muestre varias veces
+      }
     });
 
     return () => {
-      authListener?.unsubscribe();
+      authListener?.subscription.unsubscribe();
     };
   }, []);
 
@@ -30,14 +46,12 @@ export const useAuth = () => {
 
       if (error) {
         toast.error(`Error: ${error.message}`, {
-          position: toast.POSITION.TOP_RIGHT
+          position: "top-right",
+          autoClose: 4000,
+          theme: "dark"
         });
         throw error;
       }
-
-      toast.success('You have successfully logged in!', {
-        position: toast.POSITION.TOP_RIGHT
-      });
     } catch (error) {
       console.error('Google Login Error:', error);
     }
