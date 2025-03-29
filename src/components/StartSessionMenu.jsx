@@ -6,33 +6,47 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import * as Tone from 'tone';
 
-const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
+const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
   const user = useSelector((state) => state.auth.user);
 
   const [selectedTask, setSelectedTask] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [activeTools, setActiveTools] = useState({
-    pomodoro: false,
-    brownNoise: false,
-    rainNoise: false,
-    oceanNoise: false
+  const [menuIsPlaying, setMenuIsPlaying] = useState(false);
+  const [activeTools, setActiveTools] = useState(() => {
+    // Load saved tools from localStorage or use defaults
+    const savedTools = localStorage.getItem('activeTools');
+    return savedTools ? JSON.parse(savedTools) : {
+      pomodoro: true,
+      brownNoise: true,
+      rainNoise: true,
+      oceanNoise: true
+    };
   });
+
+  // Update menuIsPlaying when tasks change
+  useEffect(() => {
+    setMenuIsPlaying(tasks.some(task => task.activetask));
+  }, [tasks]);
 
   // Reset state when modal is closed
   useEffect(() => {
     if (!isOpen) {
       setSelectedTask('');
-      setIsPlaying(false);
-      setActiveTools({
-        pomodoro: false,
-        brownNoise: false,
-        rainNoise: false,
-        oceanNoise: false
-      });
+      // Don't reset menuIsPlaying or activeTools when closing
+    } else {
+      // Load saved tools when opening the menu
+      const savedTools = localStorage.getItem('activeTools');
+      if (savedTools) {
+        setActiveTools(JSON.parse(savedTools));
+      }
     }
   }, [isOpen]);
+
+  // Save active tools to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('activeTools', JSON.stringify(activeTools));
+  }, [activeTools]);
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -106,7 +120,6 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
 
       // Start selected tools
       if (activeTools.pomodoro) {
-        // Dispatch an action to start the Pomodoro timer
         window.dispatchEvent(new CustomEvent('startPomodoro'));
       }
 
@@ -122,7 +135,10 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
         window.dispatchEvent(new CustomEvent('startOceanWaves'));
       }
 
+      // Start StudyTimer
+      window.dispatchEvent(new CustomEvent('startStudyTimer'));
       setIsPlaying(true);
+      setMenuIsPlaying(true);
       toast.success('Session started successfully');
       onClose();
     } catch (error) {
@@ -147,15 +163,12 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
       window.dispatchEvent(new CustomEvent('stopBrownNoise'));
       window.dispatchEvent(new CustomEvent('stopRainNoise'));
       window.dispatchEvent(new CustomEvent('stopOceanWaves'));
+      window.dispatchEvent(new CustomEvent('stopStudyTimer'));
 
       setIsPlaying(false);
+      setMenuIsPlaying(false);
       setSelectedTask('');
-      setActiveTools({
-        pomodoro: false,
-        brownNoise: false,
-        rainNoise: false,
-        oceanNoise: false
-      });
+      // Don't reset activeTools when stopping session
       toast.success('Session stopped successfully');
       onClose();
     } catch (error) {
@@ -224,7 +237,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
                   value={selectedTask}
                   onChange={(e) => setSelectedTask(e.target.value)}
                   className="textinput"
-                  disabled={isPlaying}
+                  disabled={menuIsPlaying}
                 >
                   <option value="">Choose a task...</option>
                   {userTasks.map(task => (
@@ -242,36 +255,40 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => toggleTool('pomodoro')}
+                    disabled={menuIsPlaying}
                     className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                       activeTools.pomodoro ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    }`}
+                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Play size={16} />
                     Pomodoro
                   </button>
                   <button
                     onClick={() => toggleTool('brownNoise')}
+                    disabled={menuIsPlaying}
                     className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                       activeTools.brownNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    }`}
+                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Cloud size={16} />
                     Brown Noise
                   </button>
                   <button
                     onClick={() => toggleTool('rainNoise')}
+                    disabled={menuIsPlaying}
                     className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                       activeTools.rainNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    }`}
+                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <CloudRain size={16} />
                     Rain Noise
                   </button>
                   <button
                     onClick={() => toggleTool('oceanNoise')}
+                    disabled={menuIsPlaying}
                     className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                       activeTools.oceanNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    }`}
+                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Waves size={16} />
                     Ocean Waves
@@ -280,7 +297,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {} }) => {
               </div>
 
               <div className="flex justify-center mt-6">
-                {!isPlaying ? (
+                {!menuIsPlaying ? (
                   <button
                     onClick={handleStartSession}
                     className="textbutton"

@@ -36,6 +36,25 @@ const StudyTimer = () => {
     return () => clearInterval(intervalRef.current);
   }, [dispatch]);
 
+  // Add event listeners for StudyTimer control
+  useEffect(() => {
+    const handleStartStudyTimer = () => {
+      timerControls.start();
+    };
+
+    const handleStopStudyTimer = () => {
+      timerControls.pause();
+    };
+
+    window.addEventListener('startStudyTimer', handleStartStudyTimer);
+    window.addEventListener('stopStudyTimer', handleStopStudyTimer);
+
+    return () => {
+      window.removeEventListener('startStudyTimer', handleStartStudyTimer);
+      window.removeEventListener('stopStudyTimer', handleStopStudyTimer);
+    };
+  }, []);
+
   // Handle escape key to close modal
   useEffect(() => {
     const handleEscape = (event) => {

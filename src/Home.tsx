@@ -6,7 +6,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
 import { ComponentRegistry } from './utils/componentRegistry';
-import { GoogleLoginButton } from './components/GoogleLoginButton';
 import { LayoutManager } from './utils/layoutManager';
 import StartSessionMenu from './components/StartSessionMenu';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -341,7 +340,7 @@ const LayoutControls: React.FC<{
           >
             {isEditing ? "Save Layout" : "Edit Layout"}
           </button>
-          <GoogleLoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
+          <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
         </div>
       )}
 
@@ -351,12 +350,13 @@ const LayoutControls: React.FC<{
           setShowSessionMenu(false);
           setIsPlaying(false);
         }}
+        setIsPlaying={setIsPlaying}
       />
     </div>
   );
 };
 
-const GoogleLoginButton: React.FC<{ isLoggedIn: boolean; onClick: () => void }> = ({ isLoggedIn, onClick }) => {
+const LoginButton: React.FC<{ isLoggedIn: boolean; onClick: () => void }> = ({ isLoggedIn, onClick }) => {
   const handleLogin = () => {
     onClick();
     // Limpiar toasts después de 2 segundos
