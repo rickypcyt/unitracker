@@ -44,6 +44,8 @@ export const addTask = (newTask) => async (dispatch) => {
       title: newTask.title,
       description: newTask.description,
       deadline: newTask.deadline,
+      difficulty: newTask.difficulty,
+      assignment: newTask.assignment,
       user_id: user.id, // ← Solo campos existentes en la tabla
     };
 
@@ -102,6 +104,55 @@ export const deleteTask = (id) => async (dispatch) => {
   } catch (error) {
     // Manejar errores
     dispatch(taskError(error.message));
+  }
+};
+
+// Acción para actualizar tarea
+export const updateTask = (task) => async (dispatch) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+
+    if (!task || !task.id) {
+      throw new Error('ID de tarea inválido');
+    }
+
+    // Verificar que la tarea pertenece al usuario
+    const { data: taskData, error: taskError } = await supabase
+      .from('tasks')
+      .select('user_id')
+      .eq('id', task.id)
+      .single();
+
+    if (taskError) throw taskError;
+
+    if (!taskData || taskData.user_id !== user.id) {
+      throw new Error('No tienes permiso para editar esta tarea');
+    }
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        title: task.title,
+        description: task.description,
+        deadline: task.deadline,
+        completed: task.completed,
+        difficulty: task.difficulty,
+        assignment: task.assignment,
+        activetask: task.activetask
+      })
+      .eq('id', task.id)
+      .select();
+
+    if (error) throw error;
+
+    dispatch(updateTaskSuccess(data[0]));
+  } catch (error) {
+    dispatch(taskError(error.message));
+    throw error;
   }
 };
 

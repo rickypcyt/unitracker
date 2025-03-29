@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { toast } from 'react-toastify';
+import { useDispatch } from 'react-redux';
+import { setUser, clearUser } from '../redux/authSlice';
 
 export const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const hasShownToast = useRef(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
+      dispatch(session ? setUser(session.user) : clearUser());
 
       if (session && !hasShownToast.current) {
         toast.dismiss(); // 🔥 Elimina cualquier toast atascado
@@ -25,6 +29,8 @@ export const useAuth = () => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session);
+      dispatch(session ? setUser(session.user) : clearUser());
+      
       if (session && !hasShownToast.current) {
         toast.dismiss(); // 🔥 Limpia toasts antes de mostrar uno nuevo
         toast.success("🔑 You have successfully logged in!", {
@@ -41,7 +47,7 @@ export const useAuth = () => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [dispatch]);
 
   const loginWithGoogle = async () => {
     try {

@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '../utils/supabaseClient';
 import { resetTimerState, setCurrentSession } from '../redux/LapSlice';
 import { fetchLaps, createLap, updateLap, deleteLap } from '../redux/LapActions';
-import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp,LibraryBig} from 'lucide-react';
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
+import moment from 'moment';
 
 const StudyTimer = () => {
   const dispatch = useDispatch();
@@ -15,7 +17,11 @@ const StudyTimer = () => {
     description: '',
     localUser: null,
     expandedMonths: {},
-    expandedWeeks: {}
+    expandedWeeks: {},
+    selectedSession: null,
+    isEditingDetails: false,
+    editedSession: null,
+    startPomodoro: localStorage.getItem('startPomodoroWithTimer') === 'true'
   });
 
   const intervalRef = useRef(null);
@@ -29,6 +35,23 @@ const StudyTimer = () => {
     loadUser();
     return () => clearInterval(intervalRef.current);
   }, [dispatch]);
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        handleCloseSessionDetails();
+      }
+    };
+
+    if (state.selectedSession) {
+      window.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [state.selectedSession]);
 
   const toggleVisibility = (type, key) => {
     setState(prev => ({
@@ -49,11 +72,19 @@ const StudyTimer = () => {
         intervalRef.current = setInterval(() => {
           setState(prev => ({ ...prev, time: prev.time + 1 }));
         }, 1000);
+        // Start Pomodoro if checkbox is checked
+        if (state.startPomodoro) {
+          window.dispatchEvent(new CustomEvent('startPomodoro'));
+        }
       }
     },
     pause: () => {
       clearInterval(intervalRef.current);
       setState(prev => ({ ...prev, isRunning: false }));
+      // Stop Pomodoro if it was started
+      if (state.startPomodoro) {
+        window.dispatchEvent(new CustomEvent('stopPomodoro'));
+      }
     },
     reset: () => {
       clearInterval(intervalRef.current);
@@ -61,9 +92,14 @@ const StudyTimer = () => {
         ...prev, 
         isRunning: false, 
         time: 0, 
-        description: '' 
+        description: '',
+        startPomodoro: false 
       }));
       dispatch(resetTimerState());
+      // Stop Pomodoro if it was started
+      if (state.startPomodoro) {
+        window.dispatchEvent(new CustomEvent('stopPomodoro'));
+      }
     }
   };
 
@@ -82,7 +118,7 @@ const StudyTimer = () => {
     finish: async () => {
       if (!currentSession) return;
       const sessionData = {
-        name: `Session ${currentSession}`,
+        name: state.description || `Session ${currentSession}`,
         duration: formatTime(state.time),
         description: state.description,
         session_number: currentSession
@@ -139,6 +175,63 @@ const StudyTimer = () => {
     return `Week ${weekNo}`;
   };
 
+  const handleSessionDoubleClick = (session) => {
+    setState(prev => ({ 
+      ...prev, 
+      selectedSession: session,
+      editedSession: { ...session }
+    }));
+  };
+
+  const handleCloseSessionDetails = () => {
+    setState(prev => ({ 
+      ...prev, 
+      selectedSession: null,
+      isEditingDetails: false,
+      editedSession: null
+    }));
+  };
+
+  const handleStartEditingDetails = () => {
+    setState(prev => ({ ...prev, isEditingDetails: true }));
+  };
+
+  const handleSaveEditDetails = () => {
+    if (state.editedSession) {
+      dispatch(updateLap(state.editedSession.id, {
+        name: state.editedSession.name,
+        description: state.editedSession.description
+      }));
+      setState(prev => ({ 
+        ...prev, 
+        isEditingDetails: false,
+        selectedSession: { ...prev.editedSession }
+      }));
+    }
+  };
+
+  const handleEditChange = (field, value) => {
+    setState(prev => ({
+      ...prev,
+      editedSession: {
+        ...prev.editedSession,
+        [field]: value
+      }
+    }));
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleCloseSessionDetails();
+    }
+  };
+
+  const handlePomodoroToggle = (e) => {
+    const newValue = e.target.checked;
+    localStorage.setItem('startPomodoroWithTimer', newValue);
+    setState(prev => ({ ...prev, startPomodoro: newValue }));
+  };
+
   if (!state.localUser) {
     return (
       <div className="max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
@@ -154,10 +247,22 @@ const StudyTimer = () => {
 
   return (
     <div className="maincard">
-      <div>
-      <h2  className="text-2xl font-bold mb-6 flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
+        <div className="flex items-center">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={state.startPomodoro}
+              onChange={handlePomodoroToggle}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            <span className="ml-3 text-base font-medium text-gray-300">Also start Pomodoro</span>
+          </label>
+        </div>
       </div>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(state.time)}</div>
     
@@ -180,14 +285,13 @@ const StudyTimer = () => {
         <button onClick={lapHandlers.finish} className="button">
           <Check size={20} />
         </button>
-        
       </div>
 
       <div className="mb-4">
         <textarea
           value={state.description}
           onChange={(e) => setState(prev => ({ ...prev, description: e.target.value }))}
-          placeholder="Session description"
+          placeholder="Session title"
           className="textinput"
         />
       </div>
@@ -213,39 +317,28 @@ const StudyTimer = () => {
                     {state.expandedWeeks[`${monthYear}-${weekKey}`] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </button>
                   {state.expandedWeeks[`${monthYear}-${weekKey}`] && sessions.map((lap) => (
-                    <div key={lap.id} className="flex items-center justify-between bg-bg-secondary p-3 rounded-lg mt-2">
+                    <div 
+                      key={lap.id} 
+                      className="flex items-center justify-between bg-bg-secondary p-3 rounded-lg mt-2 cursor-pointer hover:bg-bg-tertiary transition-colors duration-200"
+                      onDoubleClick={() => handleSessionDoubleClick(lap)}
+                    >
                       <div className="flex-1">
+                        <p className="text-base text-text-secondary mb-1">
+                          {moment(lap.created_at).format('MMM D, YYYY h:mm A')}
+                        </p>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm text-accent-primary">Session #{lap.session_number}</span>
-                          {state.isEditing === lap.id ? (
-                            <input
-                              type="text"
-                              value={lap.name}
-                              onChange={(e) => dispatch(updateLap(lap.id, { name: e.target.value }))}
-                              onBlur={() => {
-                                dispatch(updateLap(lap.id, { name: lap.name }));
-                                setState(prev => ({ ...prev, isEditing: null }));
-                              }}
-                              className="bg-bg-surface border border-border-primary rounded px-2 py-1 text-text-primary text-sm"
-                            />
-                          ) : (
-                            <span className="flex items-center gap-2">
-                              <span>{lap.name}</span>
-                              <button onClick={() => setState(prev => ({ ...prev, isEditing: lap.id }))} className="text-text-secondary hover:text-accent-primary">
-                                <Edit2 size={16} />
-                              </button>
-                            </span>
-                          )}
+                          <span className="text-base text-accent-primary">#{lap.session_number}</span>
+                          <span>{lap.name}</span>
                         </div>
                         {lap.description && (
-                          <p className="text-sm text-text-secondary">{lap.description}</p>
+                          <p className="text-base text-text-secondary">{lap.description}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-text-secondary text-sm">{lap.duration}</span>
+                        <span className="text-text-secondary text-base">{lap.duration}</span>
                         <button
                           onClick={() => dispatch(deleteLap(lap.id))}
-                          className="text-accent-secondary transition-all duration-200 hover:text-accent-primary hover:scale-110"
+                          className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -258,6 +351,102 @@ const StudyTimer = () => {
           )}
         </div>
       ))}
+
+      {/* Session Details Modal */}
+      {state.selectedSession && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
+          onClick={handleOverlayClick}
+        >
+          <div className="maincard max-w-2xl w-full mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-center flex-1">
+                Session Details
+              </h3>
+              <div className="flex items-center gap-2">
+                {state.isEditingDetails ? (
+                  <button
+                    onClick={handleSaveEditDetails}
+                    className="text-green-500 hover:text-green-600 transition duration-200 flex items-center gap-2"
+                  >
+                    <Save size={20} />
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStartEditingDetails}
+                    className="text-accent-primary hover:text-accent-secondary transition duration-200 flex items-center gap-2"
+                  >
+                    <Edit2 size={20} />
+                    Edit
+                  </button>
+                )}
+                <button
+                  className="text-gray-400 hover:text-white transition duration-200"
+                  onClick={handleCloseSessionDetails}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-lg font-semibold text-text-primary mb-2">Title</h4>
+                {state.isEditingDetails ? (
+                  <input
+                    type="text"
+                    value={state.editedSession.name}
+                    onChange={(e) => handleEditChange('name', e.target.value)}
+                    className="w-full bg-bg-surface border border-border-primary rounded px-3 py-2 text-text-primary"
+                  />
+                ) : (
+                  <p className="text-text-secondary">{state.selectedSession.name}</p>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold text-text-primary mb-2">Description</h4>
+                {state.isEditingDetails ? (
+                  <textarea
+                    value={state.editedSession.description || ''}
+                    onChange={(e) => handleEditChange('description', e.target.value)}
+                    className="w-full bg-bg-surface border border-border-primary rounded px-3 py-2 text-text-primary min-h-[100px]"
+                    placeholder="Add a description..."
+                  />
+                ) : (
+                  <p className="text-text-secondary whitespace-pre-wrap">{state.selectedSession.description || 'No description'}</p>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold text-text-primary mb-2">Duration</h4>
+                <p className="text-text-secondary">{state.selectedSession.duration}</p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold text-text-primary mb-2">Created At</h4>
+                <p className="text-text-secondary">
+                  {moment(state.selectedSession.created_at).format('MMMM D, YYYY h:mm A')}
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  onClick={() => dispatch(deleteLap(state.selectedSession.id))}
+                  className="text-red-500 hover:text-red-600 transition-colors duration-200 flex items-center gap-2"
+                >
+                  <Trash2 size={20} />
+                  Delete Session
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

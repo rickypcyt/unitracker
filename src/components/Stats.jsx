@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { Clock, Calendar, Zap, Activity } from 'lucide-react';
+import { Clock, Calendar, Zap, Activity, Eye, EyeOff } from 'lucide-react';
 
 const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
@@ -18,6 +18,7 @@ const Statistics = () => {
   const [isCurrentWeek, setIsCurrentWeek] = useState(true);
   const [weeklyTotal, setWeeklyTotal] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
+  const [showChart, setShowChart] = useState(false);
 
   // Convierte duración HH:MM:SS a horas decimales
   const durationToHours = (duration) => {
@@ -99,104 +100,116 @@ const Statistics = () => {
   return (
     <div className="maincard">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center gap-2">
-          <Activity size={24} /> Study Statistics
-        </h2>
+        <div className="flex justify-between items-center">
+          <h2 className="card-title text-white">
+            <Activity size={24} /> Study Statistics
+          </h2>
+          <button
+            onClick={() => setShowChart(!showChart)}
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200"
+          >
+            {showChart ? (
+              <>
+                <EyeOff size={20} />
+                Hide Chart
+              </>
+            ) : (
+              <>
+                <Eye size={20} />
+                Show Chart
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold mb-1 flex items-center gap-2">
-                <Clock size={18} /> Today
-              </div>
-              <div className="text-2xl font-bold">{todayHours} Hrs</div>
+        <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-xl text-white shadow-lg">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="card-text font-bold mb-1 flex items-center gap-2 text-white">
+              <Clock size={16} /> Today
+            </div>
+            <div className="text-2xl font-bold">{todayHours} Hrs</div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-500 to-cyan-600 p-4 rounded-xl text-white shadow-lg">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="card-text font-bold mb-1 flex items-center gap-2 text-white">
+              <Calendar size={16} /> {isCurrentWeek ? "This Week" : "Last Week"} 
+            </div>
+            <div className="text-2xl font-bold">
+              {weeklyTotal} Hrs
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-cyan-600 p-5 rounded-xl text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold mb-1 flex items-center gap-2">
-                <Calendar size={18} /> {isCurrentWeek ? "This Week" : "Last Week"} 
-              </div>
-              <div className="text-2xl font-bold">
-                {weeklyTotal} Hrs
-              </div>
+        <div className="bg-gradient-to-br from-yellow-500 to-red-600 p-4 rounded-xl text-white shadow-lg">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="card-text font-bold mb-1 flex items-center gap-2 text-white">
+              <Calendar size={16} /> Month
             </div>
-
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-yellow-500 to-red-600 p-6 rounded-xl text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-bold mb-1 flex items-center gap-2">
-                <Calendar size={18} /> Month
-              </div>
-              <div className="text-2xl font-bold">
-                {monthlyTotal} Hrs
-              </div>
+            <div className="text-2xl font-bold">
+              {monthlyTotal} Hrs
             </div>
-
           </div>
         </div>
       </div>
 
-      <div className="bg-stats">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
-          </h3>
-          <button
-            onClick={toggleWeek}
-            className="textbutton"
-          >
-            {isCurrentWeek ? "Last Week" : "This Week"}
-          </button>
-        </div>
-        
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weeklyData}>
-              <XAxis 
-                dataKey="dayName" 
-                stroke="#64748b"
-                tick={{ fill: '#94a3b8' }}
-              />
-              <YAxis 
-                stroke="#64748b"
-                tick={{ fill: '#94a3b8' }}
-                tickFormatter={(value) => `${value}h`}
-              />
-              <Bar 
-                dataKey="hours" 
-                fill="#3b82f6" 
-                radius={[4, 4, 0, 0]}
-                animationDuration={400}
-              >
-                {weeklyData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    onMouseEnter={() => handleCellMouseEnter(entry)}
-                    onMouseLeave={handleCellMouseLeave}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Tooltip personalizado */}
-        {hoveredData && (
-          <div className="absolute top-5 right-5 bg-black bg-opacity-60 text-white p-2 rounded pointer-events-none">
-            <div className="text-sm font-semibold">{hoveredData.dayName}</div>
-            <div className="text-xs">{hoveredData.hours} h</div>
+      {showChart && (
+        <div className="bg-stats">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="card-subtitle text-white flex items-center gap-2">
+              {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
+            </h3>
+            <button
+              onClick={toggleWeek}
+              className="textbutton"
+            >
+              {isCurrentWeek ? "Last Week" : "This Week"}
+            </button>
           </div>
-        )}
-      </div>
+          
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <XAxis 
+                  dataKey="dayName" 
+                  stroke="#64748b"
+                  tick={{ fill: '#94a3b8' }}
+                />
+                <YAxis 
+                  stroke="#64748b"
+                  tick={{ fill: '#94a3b8' }}
+                  tickFormatter={(value) => `${value}h`}
+                />
+                <Bar 
+                  dataKey="hours" 
+                  fill="#3b82f6" 
+                  radius={[4, 4, 0, 0]}
+                  animationDuration={400}
+                >
+                  {weeklyData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      onMouseEnter={() => handleCellMouseEnter(entry)}
+                      onMouseLeave={handleCellMouseLeave}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Tooltip personalizado */}
+          {hoveredData && (
+            <div className="absolute top-5 right-5 bg-black bg-opacity-60 text-white p-2 rounded pointer-events-none">
+              <div className="card-text-base font-semibold">{hoveredData.dayName}</div>
+              <div className="card-text-base">{hoveredData.hours} h</div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

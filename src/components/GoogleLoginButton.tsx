@@ -1,5 +1,6 @@
 // components/GoogleLoginButton.tsx
 import React from 'react';
+import { toast } from 'react-toastify';
 
 const GoogleLogo = () => (
   <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="3 0 24 24" width="27">
@@ -11,15 +12,26 @@ const GoogleLogo = () => (
   </svg>
 );
 
-export const GoogleLoginButton: React.FC<{
+interface GoogleLoginButtonProps {
   isLoggedIn: boolean;
   onClick: () => void;
-}> = ({ isLoggedIn, onClick }) => (
-  <button
-    onClick={onClick}
-    className="px-4 py-2 bg-white text-black border-2 border-black rounded hover:bg-gray-100 flex items-center justify-center opacity-75"
-  >
-    <GoogleLogo />
-    {isLoggedIn ? 'Logged In' : 'Login with Google'}
-  </button>
-);
+}
+
+export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ isLoggedIn, onClick }) => {
+  const handleLogin = () => {
+    onClick();
+    // Limpiar toasts después de 2 segundos
+    setTimeout(() => {
+      toast.dismiss();
+    }, 2000);
+  };
+
+  return (
+    <button
+      onClick={handleLogin}
+      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+    >
+      {isLoggedIn ? "Logout" : "Login with Google"}
+    </button>
+  );
+};

@@ -5,6 +5,7 @@ const TaskForm = () => {
   const {
     newTask,
     error,
+    assignments,
     handleSubmit,
     updateField,
     handleSetToday,
@@ -17,9 +18,8 @@ const TaskForm = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
-    // Validamos que los campos obligatorios tengan valor
-    if (!newTask.title || !newTask.date) {
-      return; // Si falta algún campo, no se llama a handleSubmit
+    if (!newTask.title || !newTask.deadline) {
+      return;
     }
     handleSubmit(e);
     setSubmitted(false);
@@ -27,17 +27,17 @@ const TaskForm = () => {
 
   return (
     <div className="maincard">
-    <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center gap-2"><Rows4 size={24} />Add New Task</h2>
+    <h2 className="card-title"><Rows4 size={24} />Add New Task</h2>
     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
       {error && (
-        <div className="text-accent-secondary text-sm mb-3 text-left bg-bg-surface p-3 rounded-lg">
+        <div className="text-accent-secondary card-text-base mb-3 text-left bg-bg-surface p-3 rounded-lg">
           {error}
         </div>
       )}
 
       {/* Campo Título */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="title" className="text-text-secondary text-sm">
+        <label htmlFor="title" className="card-text-base">
           Task Title
         </label>
         <input
@@ -52,7 +52,7 @@ const TaskForm = () => {
           placeholder="Enter task title"
         />
         {submitted && !newTask.title && (
-          <span className="text-s text-red-600">
+          <span className="card-text-base text-red-600">
             Fill the title.
           </span>
         )}
@@ -60,12 +60,12 @@ const TaskForm = () => {
 
       {/* Campo Descripción (opcional) */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="description" className="text-text-secondary text-sm">
+        <label htmlFor="description" className="card-text-base">
           Description (optional)
         </label>
         <textarea
           id="description"
-          className="textinput "
+          className="textinput"
           value={newTask.description}
           onChange={(e) => updateField("description", e.target.value)}
           placeholder="Enter task description"
@@ -74,8 +74,8 @@ const TaskForm = () => {
 
       {/* Campo Fecha límite */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="date" className="text-text-secondary text-sm">
-          
+        <label htmlFor="date" className="card-text-base">
+          Deadline
         </label>
         <div className="flex flex-col gap-2">
           <div className="flex gap-2 items-center">
@@ -89,13 +89,13 @@ const TaskForm = () => {
             <input
               id="date"
               className={`textinput text-center${
-                submitted && !newTask.date
+                submitted && !newTask.deadline
                   ? "border-accent-secondary focus:ring-accent-secondary"
                   : ""
               }`}
               type="date"
-              value={newTask.date}
-              onChange={(e) => updateField("date", e.target.value)}
+              value={newTask.deadline}
+              onChange={(e) => updateField("deadline", e.target.value)}
             />
             <button
               type="button"
@@ -105,17 +105,57 @@ const TaskForm = () => {
               Tomorrow
             </button>
           </div>
-          {submitted && !newTask.date && (
-            <span className="text-s text-red-600 place-self-center">
+          {submitted && !newTask.deadline && (
+            <span className="card-text-base text-red-600 place-self-center">
               Fill the date time.
             </span>
           )}
         </div>
       </div>
 
+      {/* Campos Difficulty y Assignment en la misma fila */}
+      <div className="flex gap-4">
+        {/* Campo Dificultad */}
+        <div className="flex flex-col gap-2 flex-1">
+          <label htmlFor="difficulty" className="card-text-base">
+            Difficulty
+          </label>
+          <select
+            id="difficulty"
+            className="textinput"
+            value={newTask.difficulty}
+            onChange={(e) => updateField("difficulty", e.target.value)}
+          >
+            <option value="easy" className="text-green-500">Easy</option>
+            <option value="medium" className="text-blue-500">Medium</option>
+            <option value="hard" className="text-red-500">Hard</option>
+          </select>
+        </div>
+
+        {/* Campo Assignment */}
+        <div className="flex flex-col gap-2 flex-1">
+          <label htmlFor="assignment" className="card-text-base">
+            Assignment
+          </label>
+          <select
+            id="assignment"
+            className="textinput"
+            value={newTask.assignment || ''}
+            onChange={(e) => updateField("assignment", e.target.value)}
+          >
+            <option value="">Select an assignment</option>
+            {assignments.map((assignment) => (
+              <option key={assignment} value={assignment}>
+                {assignment}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <button
         type="submit"
-        className="w-full mt-2 p-3 bg-blue-700 text-text-primary rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+        className="w-full mt-2 p-3 bg-blue-700 text-text-primary rounded-lg card-text font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
       >
         Add Task
       </button>

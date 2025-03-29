@@ -106,30 +106,49 @@ const Pomodoro = () => {
     };
   }, []);
 
+  // Add event listeners for external control
+  useEffect(() => {
+    const handleStartPomodoro = () => {
+      setIsRunning(true);
+    };
+
+    const handleStopPomodoro = () => {
+      setIsRunning(false);
+    };
+
+    window.addEventListener('startPomodoro', handleStartPomodoro);
+    window.addEventListener('stopPomodoro', handleStopPomodoro);
+
+    return () => {
+      window.removeEventListener('startPomodoro', handleStartPomodoro);
+      window.removeEventListener('stopPomodoro', handleStopPomodoro);
+    };
+  }, []);
+
   return (
     <div className="maincard">
-      <div>
-        <div className="text-2xl font-bold mb-4 flex items-center gap-2">
-          {/* Pomodoro e Intervalo a la izquierda */}
-          <h2 className="text-2xl font-bold flex items-center">
-            <AlarmClockCheck size={24} className="mr-2" /> {/* Añadimos un margen a la derecha */}
-            Pomodoro ({MODES[modeIndex].label})
-            <h3 className="text-xl font-medium text-left pl-8">
+      <div className="relative">
+        <div className="text-2xl font-bold mb-4 flex items-center">
+          <div className="flex items-center">
+            <AlarmClockCheck size={24} className="mr-2" />
+            <span className="text-2xl font-bold">Pomodoro ({MODES[modeIndex].label})</span>
+            <span className="text-xl font-medium text-left pl-8">
               {mode === "work" ? "Work Time" : "Break Time"}
-            </h3>
-          </h2>
+            </span>
+          </div>
         </div>
-        <div className="relative w-auto">
+        <div className="absolute top-0 right-0">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="editbutton"
+            className="flex items-center gap-2 px-3 py-1.5 bg-bg-surface hover:bg-bg-tertiary rounded-lg transition-colors duration-200"
           >
-            Edit <ChevronDown size={16} />
+            <span>Edit</span>
+            <ChevronDown size={16} className={`transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
           </button>
           {menuOpen && (
             <div
               ref={menuRef}
-              className="absolute right-0 top-full  bg-bg-surface rounded-lg shadow-lg z-10"
+              className="absolute right-0 mt-2 w-32 bg-bg-surface rounded-lg shadow-lg z-10 border border-border-primary"
             >
               {MODES.map((m, index) => (
                 <button
@@ -141,7 +160,9 @@ const Pomodoro = () => {
                     setIsRunning(false);
                     setMenuOpen(false);
                   }}
-                  className="block px-4 py-2 w-full text-center hover:bg-bg-tertiary rounded-md transition-colors duration-200"
+                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${
+                    index === modeIndex ? 'bg-bg-tertiary' : ''
+                  }`}
                 >
                   {m.label}
                 </button>
