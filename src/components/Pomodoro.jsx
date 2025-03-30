@@ -128,13 +128,11 @@ const Pomodoro = () => {
   return (
     <div className="maincard">
       <div className="relative">
-        <div className="text-2xl font-bold mb-4 flex items-center">
+        <div className="text-2xl font-bold mb-2 flex items-center">
           <div className="flex items-center">
             <AlarmClockCheck size={24} className="mr-2" />
             <span className="text-2xl font-bold">Pomodoro ({MODES[modeIndex].label})</span>
-            <span className="text-xl font-medium text-left pl-8">
-              {mode === "work" ? "Work Time" : "Break Time"}
-            </span>
+
           </div>
         </div>
         <div className="absolute top-0 right-0">
@@ -160,9 +158,8 @@ const Pomodoro = () => {
                     setIsRunning(false);
                     setMenuOpen(false);
                   }}
-                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${
-                    index === modeIndex ? 'bg-bg-tertiary' : ''
-                  }`}
+                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${index === modeIndex ? 'bg-bg-tertiary' : ''
+                    }`}
                 >
                   {m.label}
                 </button>
@@ -171,7 +168,9 @@ const Pomodoro = () => {
           )}
         </div>
       </div>
-
+      <p className="text-lg font-medium text-left pl-9">
+        {mode === "work" ? "Work Time" : "Break Time"}
+      </p>
       <div className="text-5xl font-mono mb-4 text-center">
         {formatTime(timeLeft)}
       </div>

@@ -107,12 +107,12 @@ const StudyTimer = () => {
     },
     reset: () => {
       clearInterval(intervalRef.current);
-      setState(prev => ({ 
-        ...prev, 
-        isRunning: false, 
-        time: 0, 
+      setState(prev => ({
+        ...prev,
+        isRunning: false,
+        time: 0,
         description: '',
-        startPomodoro: false 
+        startPomodoro: false
       }));
       dispatch(resetTimerState());
       // Stop Pomodoro if it was started
@@ -195,16 +195,16 @@ const StudyTimer = () => {
   };
 
   const handleSessionDoubleClick = (session) => {
-    setState(prev => ({ 
-      ...prev, 
+    setState(prev => ({
+      ...prev,
       selectedSession: session,
       editedSession: { ...session }
     }));
   };
 
   const handleCloseSessionDetails = () => {
-    setState(prev => ({ 
-      ...prev, 
+    setState(prev => ({
+      ...prev,
       selectedSession: null,
       isEditingDetails: false,
       editedSession: null
@@ -221,8 +221,8 @@ const StudyTimer = () => {
         name: state.editedSession.name,
         description: state.editedSession.description
       }));
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         isEditingDetails: false,
         selectedSession: { ...prev.editedSession }
       }));
@@ -268,23 +268,12 @@ const StudyTimer = () => {
     <div className="maincard">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
-        <div className="flex items-center">
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={state.startPomodoro}
-              onChange={handlePomodoroToggle}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            <span className="ml-3 text-base font-medium text-gray-300">Also start Pomodoro</span>
-          </label>
-        </div>
+
       </div>
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(state.time)}</div>
-    
+
       <div className="flex justify-center space-x-4 mb-6">
         {!state.isRunning ? (
           <button onClick={timerControls.start} className="button">
@@ -305,7 +294,18 @@ const StudyTimer = () => {
           <Check size={20} />
         </button>
       </div>
-
+      <div className="flex justify-center mb-6">
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={state.startPomodoro}
+            onChange={handlePomodoroToggle}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          <span className="ml-3 text-base font-medium text-gray-300">Also start Pomodoro</span>
+        </label>
+      </div>
       <div className="mb-4">
         <textarea
           value={state.description}
@@ -336,8 +336,8 @@ const StudyTimer = () => {
                     {state.expandedWeeks[`${monthYear}-${weekKey}`] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </button>
                   {state.expandedWeeks[`${monthYear}-${weekKey}`] && sessions.map((lap) => (
-                    <div 
-                      key={lap.id} 
+                    <div
+                      key={lap.id}
                       className="flex items-center justify-between bg-bg-secondary p-3 rounded-lg mt-2 cursor-pointer hover:bg-bg-tertiary transition-colors duration-200"
                       onDoubleClick={() => handleSessionDoubleClick(lap)}
                     >
