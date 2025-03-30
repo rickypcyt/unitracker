@@ -61,7 +61,11 @@ const TaskList: React.FC = () => {
             key={task.id}
             className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
               task.id === activeTaskId
-                ? 'bg-accent-primary/10 border-2 border-green-500'
+                ? `bg-accent-primary/10 border-2 ${
+                    task.difficulty === 'easy' ? 'border-green-500' :
+                    task.difficulty === 'medium' ? 'border-blue-500' :
+                    'border-red-500'
+                  }`
                 : 'bg-card-bg hover:bg-accent-primary/5 border border-gray-700'
             }`}
             onClick={() => handleTaskClick(task)}

@@ -392,7 +392,11 @@ const TaskList = () => {
                 {sortTasks(incompleteTasks).map((task) => (
                   <div
                     key={task.id}
-                    className={`tasks cursor-pointer ${task.activetask ? 'border-green-500 border-2' : ''}`}
+                    className={`tasks cursor-pointer ${task.activetask ? `border-2 ${
+                      task.difficulty === 'easy' ? 'border-green-500' :
+                      task.difficulty === 'medium' ? 'border-blue-500' :
+                      'border-red-500'
+                    }` : ''}`}
                     onDoubleClick={() => handleTaskDoubleClick(task)}
                     onContextMenu={(e) => handleContextMenu(e, task)}
                   >
@@ -480,7 +484,11 @@ const TaskList = () => {
                 {sortTasks(completedTasks).map((task) => (
                   <div
                     key={task.id}
-                    className={`tasks cursor-pointer ${task.activetask ? 'border-green-500 border-2' : ''}`}
+                    className={`tasks cursor-pointer ${task.activetask ? `border-2 ${
+                      task.difficulty === 'easy' ? 'border-green-500' :
+                      task.difficulty === 'medium' ? 'border-blue-500' :
+                      'border-red-500'
+                    }` : ''}`}
                     onDoubleClick={() => handleTaskDoubleClick(task)}
                     onContextMenu={(e) => handleContextMenu(e, task)}
                   >
