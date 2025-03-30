@@ -33,7 +33,7 @@ const TaskList: React.FC = () => {
           <div className="flex flex-col">
             <h2 className="text-xl font-bold text-text-primary">Task List</h2>
             {selectedAssignment && (
-              <span className="text-base text-gray-400">{selectedAssignment}</span>
+              <span className="text-lg text-gray-400">{selectedAssignment}</span>
             )}
           </div>
           <div className="flex items-center gap-2">

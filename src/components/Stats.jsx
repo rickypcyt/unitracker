@@ -204,8 +204,8 @@ const Statistics = () => {
           {/* Tooltip personalizado */}
           {hoveredData && (
             <div className="absolute top-5 right-5 bg-black bg-opacity-60 text-white p-2 rounded pointer-events-none">
-              <div className="card-text-base font-semibold">{hoveredData.dayName}</div>
-              <div className="card-text-base">{hoveredData.hours} h</div>
+              <div className="card-text-lg font-semibold">{hoveredData.dayName}</div>
+              <div className="card-text-lg">{hoveredData.hours} h</div>
             </div>
           )}
         </div>

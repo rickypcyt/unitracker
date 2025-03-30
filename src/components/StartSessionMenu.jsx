@@ -5,11 +5,12 @@ import { updateTask } from '../redux/TaskActions';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import * as Tone from 'tone';
+import { useAuth } from '../hooks/useAuth';
 
 const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
-  const user = useSelector((state) => state.auth.user);
+  const { user } = useAuth();
 
   const [selectedTask, setSelectedTask] = useState('');
   const [menuIsPlaying, setMenuIsPlaying] = useState(false);
@@ -71,51 +72,45 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       return;
     }
 
-    if (!selectedTask) {
-      toast.error('Please select a task first');
-      return;
-    }
-
     try {
       // Start Tone.js AudioContext
       await Tone.start();
       console.log('AudioContext started');
 
-      // Convert selectedTask to number for comparison
-      const taskId = parseInt(selectedTask);
-      const taskToUpdate = tasks.find(t => t.id === taskId);
-      if (!taskToUpdate) {
-        toast.error('Selected task not found');
-        return;
-      }
+      // If a task is selected, update it to be active
+      if (selectedTask) {
+        const taskId = parseInt(selectedTask);
+        const taskToUpdate = tasks.find(t => t.id === taskId);
+        if (taskToUpdate) {
+          // Update the selected task to be active
+          await dispatch(updateTask({
+            id: taskToUpdate.id,
+            title: taskToUpdate.title,
+            description: taskToUpdate.description || '',
+            deadline: taskToUpdate.deadline,
+            completed: taskToUpdate.completed,
+            difficulty: taskToUpdate.difficulty,
+            assignment: taskToUpdate.assignment || '',
+            activetask: true,
+            user_id: taskToUpdate.user_id
+          }));
 
-      // Update the selected task to be active
-      await dispatch(updateTask({
-        id: taskToUpdate.id,
-        title: taskToUpdate.title,
-        description: taskToUpdate.description || '',
-        deadline: taskToUpdate.deadline,
-        completed: taskToUpdate.completed,
-        difficulty: taskToUpdate.difficulty,
-        assignment: taskToUpdate.assignment || '',
-        activetask: true,
-        user_id: taskToUpdate.user_id
-      }));
-
-      // Deactivate any other active tasks
-      const otherTasks = tasks.filter(t => t.id !== taskId && t.activetask);
-      for (const task of otherTasks) {
-        await dispatch(updateTask({
-          id: task.id,
-          title: task.title,
-          description: task.description || '',
-          deadline: task.deadline,
-          completed: task.completed,
-          difficulty: task.difficulty,
-          assignment: task.assignment || '',
-          activetask: false,
-          user_id: task.user_id
-        }));
+          // Deactivate any other active tasks
+          const otherTasks = tasks.filter(t => t.id !== taskId && t.activetask);
+          for (const task of otherTasks) {
+            await dispatch(updateTask({
+              id: task.id,
+              title: task.title,
+              description: task.description || '',
+              deadline: task.deadline,
+              completed: task.completed,
+              difficulty: task.difficulty,
+              assignment: task.assignment || '',
+              activetask: false,
+              user_id: task.user_id
+            }));
+          }
+        }
       }
 
       // Start selected tools
@@ -193,7 +188,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[9999] backdrop-blur-xl"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -230,7 +225,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
           ) : (
             <>
               <div>
-                <label className="block text-base font-medium text-text-secondary mb-2">
+                <label className="block text-lg font-medium text-text-secondary mb-2">
                   Select Task
                 </label>
                 <select
@@ -249,7 +244,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
               </div>
 
               <div>
-                <label className="block text-base font-medium text-text-secondary mb-2">
+                <label className="block text-lg font-medium text-text-secondary mb-2">
                   Tools
                 </label>
                 <div className="grid grid-cols-2 gap-2">

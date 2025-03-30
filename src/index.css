@@ -103,11 +103,11 @@
     color: var(--text-primary);
   }
   .card-text {
-    @apply text-base;
+    @apply text-lg;
     color: var(--text-secondary);
   }
-  .card-text-base {
-    @apply text-base;
+  .card-text-lg {
+    @apply text-lg;
     color: var(--text-secondary);
   }
   .button {
@@ -127,7 +127,7 @@
     background-color: var(--accent-deep);
   }
   .textinput {
-    @apply w-full p-3 rounded-lg text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     color: var(--text-primary);

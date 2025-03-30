@@ -200,7 +200,7 @@ const Calendar = () => {
 
       {hoveredEvent && (
         <div className="absolute bg-neutral-900 p-4 rounded-lg shadow-lg z-50 max-w-xs border border-neutral-800">
-          <div className="text-base text-neutral-300 mb-2">
+          <div className="text-lg text-neutral-300 mb-2">
             Tasks for {moment(hoveredEvent.start).format("LL")}
           </div>
           {hoveredEvent.tasks.map((task, index) => (
@@ -209,7 +209,7 @@ const Calendar = () => {
                 {task.title}
               </div>
               {task.description && (
-                <div className="text-base text-neutral-400">
+                <div className="text-lg text-neutral-400">
                   {task.description}
                 </div>
               )}

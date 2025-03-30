@@ -303,7 +303,7 @@ const StudyTimer = () => {
             className="sr-only peer"
           />
           <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          <span className="ml-3 text-base font-medium text-gray-300">Also start Pomodoro</span>
+          <span className="ml-3 text-lg font-medium text-gray-300">Also start Pomodoro</span>
         </label>
       </div>
       <div className="mb-4">
@@ -342,19 +342,19 @@ const StudyTimer = () => {
                       onDoubleClick={() => handleSessionDoubleClick(lap)}
                     >
                       <div className="flex-1">
-                        <p className="text-base text-text-secondary mb-1">
+                        <p className="text-lg text-text-secondary mb-1">
                           {moment(lap.created_at).format('MMM D, YYYY h:mm A')}
                         </p>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-base text-accent-primary">#{lap.session_number}</span>
+                          <span className="text-lg text-accent-primary">#{lap.session_number}</span>
                           <span>{lap.name}</span>
                         </div>
                         {lap.description && (
-                          <p className="text-base text-text-secondary">{lap.description}</p>
+                          <p className="text-lg text-text-secondary">{lap.description}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-text-secondary text-base">{lap.duration}</span>
+                        <span className="text-text-secondary text-lg">{lap.duration}</span>
                         <button
                           onClick={() => dispatch(deleteLap(lap.id))}
                           className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"

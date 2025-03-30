@@ -367,7 +367,7 @@ const TaskList = () => {
           </div>
         </div>
         {selectedAssignment && (
-          <span className="text-base text-gray-400">{selectedAssignment}</span>
+          <span className="text-lg text-gray-400">{selectedAssignment}</span>
         )}
       </div>
 
@@ -427,7 +427,7 @@ const TaskList = () => {
                       </div>
                       {task.description && (
                         <div
-                          className="ml-12 mt-1 text-base text-text-secondary line-clamp-2 group relative"
+                          className="ml-12 mt-1 text-lg text-text-secondary line-clamp-2 group relative"
                           title={task.description}
                         >
                           {task.description}
@@ -435,7 +435,7 @@ const TaskList = () => {
                       )}
                       {task.assignment && (
                         <div
-                          className="ml-12 mt-1 text-base text-text-secondary line-clamp-2 group relative"
+                          className="ml-12 mt-1 text-lg text-text-secondary line-clamp-2 group relative"
                           title={task.assignment}
                         >
                           {task.assignment}
@@ -447,7 +447,7 @@ const TaskList = () => {
                     <div className="flex items-center flex-shrink-0 ml-4">
                       <div className="flex items-center mr-4">
                         <Calendar size={14} className="text-text-secondary" />
-                        <span className="ml-2 text-base text-text-secondary">
+                        <span className="ml-2 text-lg text-text-secondary">
                           {new Date(task.deadline).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -510,7 +510,7 @@ const TaskList = () => {
                           )}
                         </button>
                         <span
-                          className={`ml-4 font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed ? 'line-through text-text-secondary' : 'text-text-primary'
+                          className={`ml-4 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed ? 'line-through text-text-secondary' : 'text-text-primary'
                           }`}
                           title={task.title}
                         >
@@ -519,7 +519,7 @@ const TaskList = () => {
                       </div>
                       {task.description && (
                         <div
-                          className="ml-12 mt-1 text-base text-text-secondary line-clamp-2 group relative"
+                          className="ml-12 mt-1 text-lg text-text-secondary line-clamp-2 group relative"
                           title={task.description}
                         >
                           {task.description}
@@ -531,7 +531,7 @@ const TaskList = () => {
                     <div className="flex items-center flex-shrink-0 ml-4">
                       <div className="flex items-center mr-4">
                         <Calendar size={14} className="text-text-secondary" />
-                        <span className="ml-2 text-base text-text-secondary">
+                        <span className="ml-2 text-lg text-text-secondary">
                           {new Date(task.deadline).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',

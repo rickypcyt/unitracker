@@ -30,14 +30,14 @@ const TaskForm = () => {
     <h2 className="card-title"><Rows4 size={24} />Add New Task</h2>
     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
       {error && (
-        <div className="text-accent-secondary card-text-base mb-3 text-left bg-bg-surface p-3 rounded-lg">
+        <div className="text-accent-secondary card-text-lg mb-3 text-left bg-bg-surface p-3 rounded-lg">
           {error}
         </div>
       )}
 
       {/* Campo Título */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="title" className="card-text-base">
+        <label htmlFor="title" className="card-text-lg">
           Task Title
         </label>
         <input
@@ -52,7 +52,7 @@ const TaskForm = () => {
           placeholder="Enter task title"
         />
         {submitted && !newTask.title && (
-          <span className="card-text-base text-red-600">
+          <span className="card-text-lg text-red-600">
             Fill the title.
           </span>
         )}
@@ -60,7 +60,7 @@ const TaskForm = () => {
 
       {/* Campo Descripción (opcional) */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="description" className="card-text-base">
+        <label htmlFor="description" className="card-text-lg">
           Description (optional)
         </label>
         <textarea
@@ -74,7 +74,7 @@ const TaskForm = () => {
 
       {/* Campo Fecha límite */}
       <div className="flex flex-col gap-2">
-        <label htmlFor="date" className="card-text-base">
+        <label htmlFor="date" className="card-text-lg">
           Deadline
         </label>
         <div className="flex flex-col gap-2">
@@ -106,7 +106,7 @@ const TaskForm = () => {
             </button>
           </div>
           {submitted && !newTask.deadline && (
-            <span className="card-text-base text-red-600 place-self-center">
+            <span className="card-text-lg text-red-600 place-self-center">
               Fill the date time.
             </span>
           )}
@@ -117,7 +117,7 @@ const TaskForm = () => {
       <div className="flex gap-4">
         {/* Campo Dificultad */}
         <div className="flex flex-col gap-2 flex-1">
-          <label htmlFor="difficulty" className="card-text-base">
+          <label htmlFor="difficulty" className="card-text-lg">
             Difficulty
           </label>
           <select
@@ -134,7 +134,7 @@ const TaskForm = () => {
 
         {/* Campo Assignment */}
         <div className="flex flex-col gap-2 flex-1">
-          <label htmlFor="assignment" className="card-text-base">
+          <label htmlFor="assignment" className="card-text-lg">
             Assignment
           </label>
           <select
