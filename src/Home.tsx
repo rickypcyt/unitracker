@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import type { DroppableProvided, DraggableProvided } from 'react-beautiful-dnd';
-import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, Save } from 'lucide-react';
+import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, Save, Palette } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
@@ -35,6 +35,31 @@ const Home: React.FC = () => {
   const [wideComponents, setWideComponents] = useState<Set<string>>(new Set());
   const { isLoggedIn, loginWithGoogle } = useAuth();
   const [hoveredComponent, setHoveredComponent] = useState<string | null>(null);
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') || 'default';
+    }
+    return 'default';
+  });
+
+  // Handle theme changes
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove(
+      'theme-dracula', 
+      'theme-catppuccin', 
+      'theme-monokai', 
+      'theme-default',
+      'theme-solarized',
+      'theme-gruvbox'
+    );
+    root.classList.add(`theme-${currentTheme}`);
+  }, [currentTheme]);
+
+  const handleThemeChange = (theme: string) => {
+    setCurrentTheme(theme);
+    localStorage.setItem('theme', theme);
+  };
 
   const handleDragEnd = useCallback((result: DragResult) => {
     if (!result.destination) return;
@@ -168,6 +193,8 @@ const Home: React.FC = () => {
         onLogin={loginWithGoogle}
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
       />
 
       <StartSessionMenu 
@@ -273,23 +300,38 @@ const LayoutControls: React.FC<{
   onLogin: () => void;
   isPlaying: boolean;
   setIsPlaying: (value: boolean) => void;
-}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying }) => {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying, currentTheme, onThemeChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSessionMenu, setShowSessionMenu] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        // Solo cerrar el menú si no estamos en modo de edición
+        // Solo cerrar los menús si no estamos en modo de edición
         if (!isEditing) {
           setIsOpen(false);
+          setShowThemeMenu(false);
         }
       }
     };
+
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        setShowThemeMenu(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscKey);
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscKey);
     };
   }, [isEditing]);
 
@@ -324,23 +366,134 @@ const LayoutControls: React.FC<{
         </button>
       )}
       {(isOpen || isEditing) && (
-        <div className="flex flex-col gap-2 bg-black p-3 rounded-lg shadow-lg border border-gray-700">
+        <div className="flex flex-col gap-2 p-3 rounded-lg shadow-lg border" style={{ 
+          backgroundColor: 'var(--bg-secondary)',
+          borderColor: 'var(--border-primary)'
+        }}>
           <button
             onClick={() => {
               setShowSessionMenu(true);
               setIsOpen(false);
+              setShowThemeMenu(false);
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
+            style={{ 
+              backgroundColor: 'var(--accent-primary)',
+              color: 'var(--text-primary)'
+            }}
           >
             {isPlaying ? "Pause Sesh" : "Start Sesh"}
           </button>
           <button
             onClick={handleToggleEditing}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
+            style={{ 
+              backgroundColor: 'var(--accent-primary)',
+              color: 'var(--text-primary)'
+            }}
           >
             {isEditing ? "Save Layout" : "Edit Layout"}
           </button>
+          <button
+            onClick={() => {
+              setShowThemeMenu(!showThemeMenu);
+              setIsOpen(false);
+            }}
+            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
+            style={{ 
+              backgroundColor: 'var(--accent-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Themes
+          </button>
           <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
+        </div>
+      )}
+
+      {showThemeMenu && (
+        <div className="flex flex-col gap-2 p-3 rounded-lg shadow-lg border" style={{ 
+          backgroundColor: 'var(--bg-secondary)',
+          borderColor: 'var(--border-primary)'
+        }}>
+          <button
+            onClick={() => {
+              onThemeChange('default');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'default' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Default
+          </button>
+          <button
+            onClick={() => {
+              onThemeChange('dracula');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'dracula' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Dracula
+          </button>
+          <button
+            onClick={() => {
+              onThemeChange('catppuccin');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'catppuccin' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Catppuccin
+          </button>
+          <button
+            onClick={() => {
+              onThemeChange('monokai');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'monokai' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Monokai
+          </button>
+          <button
+            onClick={() => {
+              onThemeChange('solarized');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'solarized' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Solarized
+          </button>
+          <button
+            onClick={() => {
+              onThemeChange('gruvbox');
+              setShowThemeMenu(false);
+            }}
+            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
+            style={{ 
+              backgroundColor: currentTheme === 'gruvbox' ? 'var(--accent-primary)' : 'var(--bg-primary)',
+              color: 'var(--text-primary)'
+            }}
+          >
+            Gruvbox
+          </button>
         </div>
       )}
 

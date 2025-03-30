@@ -4,12 +4,83 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme Classes */
+.theme-dracula {
+  --bg-primary: #282A36;
+  --bg-secondary: #44475a;
+  --border-primary: #6272a4;
+  --text-primary: #F8F8F2;
+  --text-secondary: #BD93F9;
+  --accent-primary: #FF79C6;
+  --accent-deep: #FF5555;
+  --today-bg: #373844;
+}
+
+.theme-catppuccin {
+  --bg-primary: #1E1E2E;
+  --bg-secondary: #313244;
+  --border-primary: #45475a;
+  --text-primary: #CDD6F4;
+  --text-secondary: #F5E0DC;
+  --accent-primary: #96CDFB;
+  --accent-deep: #F28FAD;
+  --today-bg: #3a3b4f;
+}
+
+.theme-monokai {
+  --bg-primary: #272822;
+  --bg-secondary: #383830;
+  --border-primary: #49483e;
+  --text-primary: #F8F8F2;
+  --text-secondary: #A6E22E;
+  --accent-primary: #F92672;
+  --accent-deep: #FD971F;
+  --today-bg: #3d3d35;
+}
+
+.theme-solarized {
+  --bg-primary: #002B36;
+  --bg-secondary: #073642;
+  --border-primary: #586E75;
+  --text-primary: #839496;
+  --text-secondary: #93A1A1;
+  --accent-primary: #268BD2;
+  --accent-deep: #DC322F;
+  --today-bg: #073642;
+}
+
+.theme-gruvbox {
+  --bg-primary: #282828;
+  --bg-secondary: #32302F;
+  --border-primary: #504945;
+  --text-primary: #EBDBB2;
+  --text-secondary: #D5C4A1;
+  --accent-primary: #83A598;
+  --accent-deep: #CC241D;
+  --today-bg: #32302F;
+}
+
+.theme-default {
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --border-primary: #3A3A3C;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --accent-primary: #0466C8;
+  --accent-deep: #023E7D;
+  --today-bg: #1a1a1a;
+}
+
 @layer base {
   /* Esto asegura que Tailwind registre los colores personalizados */
   :root {
     --bg-primary: #000000;
     --bg-secondary: #1C1C1E;
     --border-primary: #3A3A3C;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A0A0A0;
+    --accent-primary: #0466C8;
+    --accent-deep: #023E7D;
   }
   
   * {
@@ -19,69 +90,113 @@
 
 @layer components {
   .maincard {
-    @apply max-w-full mx-auto my-8 bg-black border border-zinc-800 rounded-2xl p-6 shadow-lg mr-2 ml-2;
+    @apply max-w-full mx-auto my-8 rounded-2xl p-6 shadow-lg mr-2 ml-2;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
   }
   .card-title {
-    @apply text-2xl font-bold text-text-primary mb-6 flex items-center gap-2;
+    @apply text-2xl font-bold mb-6 flex items-center gap-2;
+    color: var(--text-primary);
   }
   .card-subtitle {
-    @apply text-lg font-semibold text-text-primary mb-2;
+    @apply text-lg font-semibold mb-2;
+    color: var(--text-primary);
   }
   .card-text {
-    @apply text-base text-text-secondary;
+    @apply text-base;
+    color: var(--text-secondary);
   }
   .card-text-base {
-    @apply text-base text-text-secondary;
+    @apply text-base;
+    color: var(--text-secondary);
   }
-  .button{
-    @apply bg-blue-700 text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200
+  .button {
+    @apply px-4 py-2 rounded-lg transition-colors duration-200;
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
   }
-  .textbutton{
-    @apply bg-blue-700 text-text-primary px-6 py-3 rounded-lg hover:bg-accent-deep transition-colors duration-200 flex items-center gap-2 text-center
+  .button:hover {
+    background-color: var(--accent-deep);
   }
-  .textinput{
-    @apply w-full p-3 bg-neutral-800 border border-border-primary rounded-lg text-text-primary text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 
+  .textbutton {
+    @apply px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
   }
-  .infomenu{
-    @apply flex items-center justify-between w-full py-2 px-3 bg-neutral-800 rounded-lg text-left font-semibold hover:bg-bg-tertiary transition-colors duration-200
+  .textbutton:hover {
+    background-color: var(--accent-deep);
   }
-  .tasks{
-    @apply flex justify-between items-center p-4 bg-neutral-800 border border-border-primary rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-bg-surface
+  .textinput {
+    @apply w-full p-3 rounded-lg text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
   }
-  .bg-stats{
-    @apply bg-neutral-800 p-6 rounded-xl relative
+  .textinput:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-primary);
   }
-  .plslogin{
-    @apply text-center text-text-secondary text-xl p-12 bg-neutral-800 rounded-xl mb-4
+  .infomenu {
+    @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
   }
-  .editbutton{
-    @apply absolute right-0 flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 bottom-9
+  .infomenu:hover {
+    background-color: var(--bg-primary);
   }
-  .cancelbutton{
-    @apply flex items-center py-2 px-3 bg-bg-surface rounded-lg font-semibold hover:bg-bg-tertiary transition-colors duration-200 
+  .tasks {
+    @apply flex justify-between items-center p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+  }
+  .tasks:hover {
+    background-color: var(--bg-primary);
+  }
+  .bg-stats {
+    @apply p-6 rounded-xl relative;
+    background-color: var(--bg-secondary);
+  }
+  .plslogin {
+    @apply text-center text-xl p-12 rounded-xl mb-4;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+  }
+  .editbutton {
+    @apply absolute right-0 flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200 bottom-9;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .editbutton:hover {
+    background-color: var(--bg-primary);
+  }
+  .cancelbutton {
+    @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .cancelbutton:hover {
+    background-color: var(--bg-primary);
   }
 }
 
-
 body {
   font-family: Arial, sans-serif;
-  background-color: #000000;
-  color: #FFFFFF;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   margin: 0;
   padding: 0;
 }
 
 html {
-  background-color: #000000;
+  background-color: var(--bg-primary);
   min-height: 100vh;
 }
 
 h1 {
-  @apply text-4xl font-bold mb-8 text-text-primary;
+  @apply text-4xl font-bold mb-8;
+  color: var(--text-primary);
 }
-
-
 
 .container {
   @apply max-w-7xl;
@@ -89,21 +204,21 @@ h1 {
 
 .Toastify__toast {
   animation: fadeOut 0.5s ease-out 4s forwards;
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
-  border: 1px solid #3A3A3C !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
 }
 
 .Toastify__toast-body {
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
 }
 
 .Toastify__close-button {
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
 }
 
 .Toastify__progress-bar {
-  background: #3A3A3C !important;
+  background: var(--border-primary) !important;
 }
 
 @keyframes fadeOut {
@@ -117,21 +232,21 @@ h1 {
   }
 }
 
-/* Calendar Dark Theme */
+/* Calendar Theme */
 .dark-calendar {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-calendar {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   border: none !important;
 }
 
 .dark-calendar .rbc-header {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   padding: 12px 8px !important;
   border: none !important;
   font-weight: normal !important;
@@ -142,8 +257,8 @@ h1 {
 }
 
 .dark-calendar .rbc-toolbar {
-  background-color: #000000 !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   padding: 12px 8px !important;
   margin-bottom: 20px !important;
   display: flex !important;
@@ -153,7 +268,7 @@ h1 {
 
 .dark-calendar .rbc-toolbar button {
   background-color: transparent !important;
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
   border: none !important;
   padding: 6px 12px !important;
   border-radius: 6px !important;
@@ -162,12 +277,12 @@ h1 {
 }
 
 .dark-calendar .rbc-toolbar button:hover {
-  background-color: #1C1C1E !important;
+  background-color: var(--bg-secondary) !important;
 }
 
 .dark-calendar .rbc-toolbar button.rbc-active {
-  background-color: #1C1C1E !important;
-  color: #FFFFFF !important;
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-toolbar .rbc-btn-group {
@@ -180,10 +295,11 @@ h1 {
   font-weight: 500 !important;
   flex: 1 !important;
   text-align: center !important;
+  color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-month-view {
-  background-color: #000000 !important;
+  background-color: var(--bg-primary) !important;
   border: none !important;
   border-radius: 12px !important;
   overflow: hidden !important;
@@ -214,27 +330,28 @@ h1 {
 }
 
 .dark-calendar .rbc-date-cell {
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
   padding: 8px !important;
   font-size: 0.9rem !important;
   text-align: center !important;
 }
 
 .dark-calendar .rbc-off-range {
-  color: rgba(255, 255, 255, 0.3) !important;
+  color: var(--text-secondary) !important;
+  opacity: 0.3 !important;
 }
 
 .dark-calendar .rbc-off-range-bg {
-  background-color: #000000 !important;
+  background-color: var(--bg-primary) !important;
 }
 
 .dark-calendar .rbc-today {
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: var(--today-bg) !important;
   border: none !important;
 }
 
 .dark-calendar .rbc-selected {
-  background-color: #1C1C1E !important;
+  background-color: var(--bg-secondary) !important;
 }
 
 .dark-calendar .rbc-event {
@@ -248,18 +365,18 @@ h1 {
 }
 
 .dark-calendar .rbc-event.rbc-selected {
-  background-color: #023E7D !important;
+  background-color: var(--accent-primary) !important;
 }
 
 .dark-calendar .rbc-show-more {
   background-color: transparent !important;
-  color: #0466C8 !important;
+  color: var(--accent-primary) !important;
   font-size: 0.8rem !important;
   padding: 2px 4px !important;
 }
 
 .dark-calendar .rbc-slot-selection {
-  background-color: #1C1C1E !important;
+  background-color: var(--bg-secondary) !important;
   animation: none !important;
   transition: none !important;
 }
@@ -283,11 +400,11 @@ h1 {
 }
 
 .dark-calendar .rbc-day-bg:hover {
-  background-color: #1C1C1E !important;
+  background-color: var(--bg-secondary) !important;
 }
 
 .dark-calendar .rbc-time-view {
-  background-color: #000000 !important;
+  background-color: var(--bg-primary) !important;
   border: none !important;
   border-radius: 12px !important;
   overflow: hidden !important;
@@ -339,7 +456,7 @@ h1 {
 .dark-calendar .task-dot {
   width: 8px !important;
   height: 8px !important;
-  background-color: #0466C8 !important;
+  background-color: var(--accent-primary) !important;
   border-radius: 50% !important;
   margin: 2px auto !important;
   cursor: pointer !important;
@@ -364,10 +481,10 @@ h1 {
 }
 
 .dark-calendar .task-title {
-  background-color: #0466C8 !important;
+  background-color: var(--accent-primary) !important;
   border-radius: 6px !important;
   padding: 4px 8px !important;
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
   font-size: 0.875rem !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
   margin: 2px !important;
@@ -379,7 +496,7 @@ h1 {
   box-shadow: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  color: #FFFFFF !important;
+  color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-row-segment {
