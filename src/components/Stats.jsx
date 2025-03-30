@@ -106,7 +106,7 @@ const Statistics = () => {
           </h2>
           <button
             onClick={() => setShowChart(!showChart)}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 mb-6"
           >
             {showChart ? (
               <>
