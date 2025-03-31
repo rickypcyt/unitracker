@@ -376,7 +376,7 @@ const LayoutControls: React.FC<{
               setIsOpen(false);
               setShowThemeMenu(false);
             }}
-            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
+            className="px-4 py-2 rounded hover:opacity-100 transition-colors duration-200"
             style={{ 
               backgroundColor: 'var(--accent-primary)',
               color: 'var(--text-primary)'

@@ -37,7 +37,18 @@ export const addTask = (newTask) => async (dispatch) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('Usuario no autenticado');
+      // If no user, generate a local ID and store in localStorage
+      const localTasks = JSON.parse(localStorage.getItem('localTasks') || '[]');
+      const localTask = {
+        ...newTask,
+        id: Date.now(), // Use timestamp as local ID
+        created_at: new Date().toISOString(),
+        completed: false,
+        activetask: false
+      };
+      localTasks.push(localTask);
+      localStorage.setItem('localTasks', JSON.stringify(localTasks));
+      return localTask;
     }
 
     const taskWithUser = {
@@ -58,9 +69,11 @@ export const addTask = (newTask) => async (dispatch) => {
 
     // Despachar la acción de éxito con la tarea creada
     dispatch(addTaskSuccess(data[0]));
+    return data[0];
   } catch (error) {
     // Despachar la acción de error
     dispatch(taskError(error.message));
+    throw error;
   }
 };
 

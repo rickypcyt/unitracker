@@ -9,8 +9,9 @@ import { useAuth } from '../hooks/useAuth';
 
 const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) => {
   const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.tasks);
+  const reduxTasks = useSelector((state) => state.tasks.tasks);
   const { user } = useAuth();
+  const [localTasks, setLocalTasks] = useState([]);
 
   const [selectedTask, setSelectedTask] = useState('');
   const [menuIsPlaying, setMenuIsPlaying] = useState(false);
@@ -24,6 +25,41 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       oceanNoise: true
     };
   });
+
+  // Load local tasks from localStorage
+  useEffect(() => {
+    const savedTasks = localStorage.getItem('localTasks');
+    if (savedTasks) {
+      setLocalTasks(JSON.parse(savedTasks));
+    }
+  }, []);
+
+  // Listen for changes in localStorage
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'localTasks') {
+        const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
+        setLocalTasks(newTasks);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('localTasksUpdated', () => {
+      const savedTasks = localStorage.getItem('localTasks');
+      if (savedTasks) {
+        setLocalTasks(JSON.parse(savedTasks));
+      }
+    });
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localTasksUpdated', handleStorageChange);
+    };
+  }, []);
+
+  // Get the appropriate tasks based on user status
+  const tasks = user ? reduxTasks : localTasks;
+  const userTasks = user ? tasks.filter(task => task.user_id === user.id && !task.completed) : tasks.filter(task => !task.completed);
 
   // Update menuIsPlaying when tasks change
   useEffect(() => {
@@ -67,11 +103,6 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
   }, [isOpen, onClose]);
 
   const handleStartSession = async () => {
-    if (!user) {
-      toast.error('Please log in to start a session');
-      return;
-    }
-
     try {
       // Start Tone.js AudioContext
       await Tone.start();
@@ -82,33 +113,44 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
         const taskId = parseInt(selectedTask);
         const taskToUpdate = tasks.find(t => t.id === taskId);
         if (taskToUpdate) {
-          // Update the selected task to be active
-          await dispatch(updateTask({
-            id: taskToUpdate.id,
-            title: taskToUpdate.title,
-            description: taskToUpdate.description || '',
-            deadline: taskToUpdate.deadline,
-            completed: taskToUpdate.completed,
-            difficulty: taskToUpdate.difficulty,
-            assignment: taskToUpdate.assignment || '',
-            activetask: true,
-            user_id: taskToUpdate.user_id
-          }));
-
-          // Deactivate any other active tasks
-          const otherTasks = tasks.filter(t => t.id !== taskId && t.activetask);
-          for (const task of otherTasks) {
+          if (user) {
+            // Handle remote storage update
+            // Update the selected task to be active
             await dispatch(updateTask({
-              id: task.id,
-              title: task.title,
-              description: task.description || '',
-              deadline: task.deadline,
-              completed: task.completed,
-              difficulty: task.difficulty,
-              assignment: task.assignment || '',
-              activetask: false,
-              user_id: task.user_id
+              id: taskToUpdate.id,
+              title: taskToUpdate.title,
+              description: taskToUpdate.description || '',
+              deadline: taskToUpdate.deadline,
+              completed: taskToUpdate.completed,
+              difficulty: taskToUpdate.difficulty,
+              assignment: taskToUpdate.assignment || '',
+              activetask: true,
+              user_id: taskToUpdate.user_id
             }));
+
+            // Deactivate any other active tasks
+            const otherTasks = tasks.filter(t => t.id !== taskId && t.activetask);
+            for (const task of otherTasks) {
+              await dispatch(updateTask({
+                id: task.id,
+                title: task.title,
+                description: task.description || '',
+                deadline: task.deadline,
+                completed: task.completed,
+                difficulty: task.difficulty,
+                assignment: task.assignment || '',
+                activetask: false,
+                user_id: task.user_id
+              }));
+            }
+          } else {
+            // Handle local storage update
+            const updatedTasks = localTasks.map(t => ({
+              ...t,
+              activetask: t.id === taskId
+            }));
+            localStorage.setItem('localTasks', JSON.stringify(updatedTasks));
+            setLocalTasks(updatedTasks);
           }
         }
       }
@@ -147,10 +189,21 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       // Deactivate the current active task
       const activeTask = tasks.find(t => t.activetask);
       if (activeTask) {
-        await dispatch(updateTask({
-          ...activeTask,
-          activetask: false
-        }));
+        if (user) {
+          // Handle remote storage update
+          await dispatch(updateTask({
+            ...activeTask,
+            activetask: false
+          }));
+        } else {
+          // Handle local storage update
+          const updatedTasks = localTasks.map(t => ({
+            ...t,
+            activetask: false
+          }));
+          localStorage.setItem('localTasks', JSON.stringify(updatedTasks));
+          setLocalTasks(updatedTasks);
+        }
       }
 
       // Stop all tools
@@ -181,14 +234,12 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
 
   if (!isOpen) return null;
 
-  const userTasks = user ? tasks.filter(task => task.user_id === user.id && !task.completed) : [];
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[9999] backdrop-blur-xl"
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-xl"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -212,106 +263,92 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
         </div>
         
         <div className="space-y-4">
-          {!user ? (
-            <div className="text-center py-8">
-              <p className="text-text-secondary text-lg mb-4">Please log in to start a session</p>
+          <div>
+            <label className="block text-lg font-medium text-text-secondary mb-2">
+              Select Task
+            </label>
+            <select
+              value={selectedTask}
+              onChange={(e) => setSelectedTask(e.target.value)}
+              className="textinput"
+              disabled={menuIsPlaying}
+            >
+              <option value="">Choose a task...</option>
+              {userTasks.map(task => (
+                <option key={task.id} value={task.id}>
+                  {task.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-lg font-medium text-text-secondary mb-2">
+              Tools
+            </label>
+            <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={onClose}
-                className="textbutton"
+                onClick={() => toggleTool('pomodoro')}
+                disabled={menuIsPlaying}
+                className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
+                  activeTools.pomodoro ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
+                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Close
+                <Play size={16} />
+                Pomodoro
+              </button>
+              <button
+                onClick={() => toggleTool('brownNoise')}
+                disabled={menuIsPlaying}
+                className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
+                  activeTools.brownNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
+                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Cloud size={16} />
+                Brown Noise
+              </button>
+              <button
+                onClick={() => toggleTool('rainNoise')}
+                disabled={menuIsPlaying}
+                className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
+                  activeTools.rainNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
+                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <CloudRain size={16} />
+                Rain Noise
+              </button>
+              <button
+                onClick={() => toggleTool('oceanNoise')}
+                disabled={menuIsPlaying}
+                className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
+                  activeTools.oceanNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
+                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <Waves size={16} />
+                Ocean Waves
               </button>
             </div>
-          ) : (
-            <>
-              <div>
-                <label className="block text-lg font-medium text-text-secondary mb-2">
-                  Select Task
-                </label>
-                <select
-                  value={selectedTask}
-                  onChange={(e) => setSelectedTask(e.target.value)}
-                  className="textinput"
-                  disabled={menuIsPlaying}
-                >
-                  <option value="">Choose a task...</option>
-                  {userTasks.map(task => (
-                    <option key={task.id} value={task.id}>
-                      {task.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          </div>
 
-              <div>
-                <label className="block text-lg font-medium text-text-secondary mb-2">
-                  Tools
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => toggleTool('pomodoro')}
-                    disabled={menuIsPlaying}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
-                      activeTools.pomodoro ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <Play size={16} />
-                    Pomodoro
-                  </button>
-                  <button
-                    onClick={() => toggleTool('brownNoise')}
-                    disabled={menuIsPlaying}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
-                      activeTools.brownNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <Cloud size={16} />
-                    Brown Noise
-                  </button>
-                  <button
-                    onClick={() => toggleTool('rainNoise')}
-                    disabled={menuIsPlaying}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
-                      activeTools.rainNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <CloudRain size={16} />
-                    Rain Noise
-                  </button>
-                  <button
-                    onClick={() => toggleTool('oceanNoise')}
-                    disabled={menuIsPlaying}
-                    className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
-                      activeTools.oceanNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                    } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <Waves size={16} />
-                    Ocean Waves
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-center mt-6">
-                {!menuIsPlaying ? (
-                  <button
-                    onClick={handleStartSession}
-                    className="textbutton"
-                  >
-                    <Play size={20} />
-                    Start Session
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleStopSession}
-                    className="textbutton bg-red-600 hover:bg-red-700"
-                  >
-                    <Pause size={20} />
-                    Stop Session
-                  </button>
-                )}
-              </div>
-            </>
-          )}
+          <div className="flex justify-center mt-6">
+            {!menuIsPlaying ? (
+              <button
+                onClick={handleStartSession}
+                className="textbutton"
+              >
+                <Play size={20} />
+                Start Session
+              </button>
+            ) : (
+              <button
+                onClick={handleStopSession}
+                className="textbutton bg-red-600 hover:bg-red-700"
+              >
+                <Pause size={20} />
+                Stop Session
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
     </motion.div>

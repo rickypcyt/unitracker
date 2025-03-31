@@ -1,13 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaTrophy, FaCheckCircle, FaChartLine } from "react-icons/fa";
+import { useAuth } from '../hooks/useAuth';
 
 const milestones = [5, 10, 15, 20, 25];
 
 const ProgressTracker = () => {
-  const tasks = useSelector((state) => state.tasks.tasks);
-  const completedTasks = tasks.filter((task) => task.completed).length;
-  const totalTasks = tasks.length;
+  const reduxTasks = useSelector((state) => state.tasks.tasks);
+  const { user } = useAuth();
+  const [localTasks, setLocalTasks] = useState([]);
+
+  // Load local tasks from localStorage
+  useEffect(() => {
+    const savedTasks = localStorage.getItem('localTasks');
+    if (savedTasks) {
+      setLocalTasks(JSON.parse(savedTasks));
+    }
+  }, []);
+
+  // Listen for changes in localStorage and custom events
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'localTasks') {
+        const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
+        setLocalTasks(newTasks);
+      }
+    };
+
+    const handleLocalUpdate = () => {
+      const savedTasks = localStorage.getItem('localTasks');
+      if (savedTasks) {
+        setLocalTasks(JSON.parse(savedTasks));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('localTasksUpdated', handleLocalUpdate);
+    window.addEventListener('taskCompleted', handleLocalUpdate);
+    window.addEventListener('taskUncompleted', handleLocalUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localTasksUpdated', handleLocalUpdate);
+      window.removeEventListener('taskCompleted', handleLocalUpdate);
+      window.removeEventListener('taskUncompleted', handleLocalUpdate);
+    };
+  }, []);
+
+  // Get the appropriate tasks based on user status
+  const tasks = user ? reduxTasks : localTasks;
+  const userTasks = user ? tasks.filter(task => task.user_id === user.id) : tasks;
+  const completedTasks = userTasks.filter((task) => task.completed).length;
+  const totalTasks = userTasks.length;
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
   
   const [toast, setToast] = useState({ visible: false, message: "" });
@@ -28,7 +72,7 @@ const ProgressTracker = () => {
 
   const getProductivity = () => {
     const today = new Date();
-    const tasksCompletedToday = tasks.filter(task => 
+    const tasksCompletedToday = userTasks.filter(task => 
       task.completed && new Date(task.completedAt).toDateString() === today.toDateString()
     ).length;
     return tasksCompletedToday;
@@ -80,8 +124,6 @@ const ProgressTracker = () => {
               Today's productivity: {getProductivity()} tasks
             </div>
           </div>
-
-
         </div>
       </div>
 

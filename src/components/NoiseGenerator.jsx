@@ -19,6 +19,7 @@ const NoiseGenerator = () => {
     const [isPlayingBrown, setIsPlayingBrown] = useState(false);
     const [isPlayingRain, setIsPlayingRain] = useState(false);
     const [isPlayingOcean, setIsPlayingOcean] = useState(false);
+    const [isPlayingAll, setIsPlayingAll] = useState(false);
 
     const brownNoiseRef = useRef(null);
     const rainNoiseRef = useRef(null);
@@ -147,6 +148,31 @@ const NoiseGenerator = () => {
         setIsPlayingOcean(false);
     };
 
+    // Función para controlar todos los sonidos
+    const toggleAllSounds = () => {
+        if (isPlayingAll) {
+            stopBrownNoise();
+            stopRainNoise();
+            stopOceanWaves();
+            setIsPlayingAll(false);
+        } else {
+            startBrownNoise();
+            startRainNoise();
+            startOceanWaves();
+            setIsPlayingAll(true);
+        }
+    };
+
+    // Actualizar isPlayingAll cuando se detiene un sonido individualmente
+    useEffect(() => {
+        if (!isPlayingBrown || !isPlayingRain || !isPlayingOcean) {
+            setIsPlayingAll(false);
+        }
+        if (isPlayingBrown && isPlayingRain && isPlayingOcean) {
+            setIsPlayingAll(true);
+        }
+    }, [isPlayingBrown, isPlayingRain, isPlayingOcean]);
+
     // Limpieza al desmontar el componente
     useEffect(() => {
         return () => {
@@ -204,15 +230,33 @@ const NoiseGenerator = () => {
 
     return (
         <div className="maincard">
-            <h2 className="text-2xl font-bold mb-6">Noise Generator</h2>
-            <div className="mb-6 space-y-4">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Noise Generator</h2>
+                <button
+                    onClick={toggleAllSounds}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
+                >
+                    {isPlayingAll ? (
+                        <>
+                            <Pause size={16} />
+                            <span className="text-base">Stop All</span>
+                        </>
+                    ) : (
+                        <>
+                            <Play size={16} />
+                            <span className="text-base">Play All</span>
+                        </>
+                    )}
+                </button>
+            </div>
+            <div className="mb-6 space-y-6 pr-2">
                 {/* Control para Brown Noise */}
-                <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <label className="flex items-center gap-2 min-w-[120px]">
                         <Cloud size={18} />
                         <span className="card-text font-medium text-white">Brown Noise</span>
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1 max-w-md">
                         <input
                             type="range"
                             min="0"
@@ -220,33 +264,35 @@ const NoiseGenerator = () => {
                             step="0.01"
                             value={brownVolume}
                             onChange={(e) => setBrownVolume(parseFloat(e.target.value))}
-                            className="w-64"
+                            className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-accent-primary"
                         />
-                        {!isPlayingBrown ? (
-                            <button
-                                onClick={startBrownNoise}
-                                className="text-white hover:text-accent-secondary"
-                            >
-                                <Play size={20} />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={stopBrownNoise}
-                                className="text-accent-tertiary hover:text-accent-secondary"
-                            >
-                                <Pause size={20} />
-                            </button>
-                        )}
+                        <div className="w-8 flex justify-center">
+                            {!isPlayingBrown ? (
+                                <button
+                                    onClick={startBrownNoise}
+                                    className="text-white hover:text-accent-secondary"
+                                >
+                                    <Play size={20} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={stopBrownNoise}
+                                    className="text-accent-tertiary hover:text-accent-secondary"
+                                >
+                                    <Pause size={20} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Control para Rain Sound */}
-                <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <label className="flex items-center gap-2 min-w-[120px]">
                         <CloudRain size={18} />
                         <span className="card-text font-medium text-white">Rain Sound</span>
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1 max-w-md">
                         <input
                             type="range"
                             min="0"
@@ -254,33 +300,35 @@ const NoiseGenerator = () => {
                             step="0.01"
                             value={rainVolume}
                             onChange={(e) => setRainVolume(parseFloat(e.target.value))}
-                            className="w-64"
+                            className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-accent-primary"
                         />
-                        {!isPlayingRain ? (
-                            <button
-                                onClick={startRainNoise}
-                                className="text-white hover:text-accent-secondary"
-                            >
-                                <Play size={20} />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={stopRainNoise}
-                                className="text-accent-tertiary hover:text-accent-secondary"
-                            >
-                                <Pause size={20} />
-                            </button>
-                        )}
+                        <div className="w-8 flex justify-center">
+                            {!isPlayingRain ? (
+                                <button
+                                    onClick={startRainNoise}
+                                    className="text-white hover:text-accent-secondary"
+                                >
+                                    <Play size={20} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={stopRainNoise}
+                                    className="text-accent-tertiary hover:text-accent-secondary"
+                                >
+                                    <Pause size={20} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Control para Ocean Waves */}
-                <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <label className="flex items-center gap-2 min-w-[120px]">
                         <Waves size={18} />
                         <span className="card-text font-medium text-white">Ocean Waves</span>
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1 max-w-md">
                         <input
                             type="range"
                             min="0"
@@ -288,23 +336,25 @@ const NoiseGenerator = () => {
                             step="0.01"
                             value={oceanVolume}
                             onChange={(e) => setOceanVolume(parseFloat(e.target.value))}
-                            className="w-64"
+                            className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-accent-primary"
                         />
-                        {!isPlayingOcean ? (
-                            <button
-                                onClick={startOceanWaves}
-                                className="text-white hover:text-accent-secondary"
-                            >
-                                <Play size={20} />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={stopOceanWaves}
-                                className="text-accent-tertiary hover:text-accent-secondary"
-                            >
-                                <Pause size={20} />
-                            </button>
-                        )}
+                        <div className="w-8 flex justify-center">
+                            {!isPlayingOcean ? (
+                                <button
+                                    onClick={startOceanWaves}
+                                    className="text-white hover:text-accent-secondary"
+                                >
+                                    <Play size={20} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={stopOceanWaves}
+                                    className="text-accent-tertiary hover:text-accent-secondary"
+                                >
+                                    <Pause size={20} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

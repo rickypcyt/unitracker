@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addTask } from './TaskActions';
 import { supabase } from '../utils/supabaseClient'; // Importa el cliente de Supabase
+import { toast } from 'react-toastify';
 
 export const useTaskForm = (initialdate = '') => {
   const dispatch = useDispatch();
@@ -43,30 +44,72 @@ export const useTaskForm = (initialdate = '') => {
     fetchAssignments();
   }, []);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      // Obtener el usuario autenticado
-      const { data: { user } } = await supabase.auth.getUser();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newTask.title || !newTask.deadline) return;
 
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
-        throw new Error('Usuario no autenticado');
+        // Modo local
+        const localTasks = JSON.parse(localStorage.getItem('localTasks') || '[]');
+        const newLocalTask = {
+          id: Date.now(), // Usar timestamp como ID
+          title: newTask.title,
+          description: newTask.description || '',
+          deadline: newTask.deadline,
+          completed: false,
+          difficulty: newTask.difficulty || 'medium',
+          assignment: newTask.assignment || '',
+          created_at: new Date().toISOString()
+        };
+        
+        localTasks.push(newLocalTask);
+        localStorage.setItem('localTasks', JSON.stringify(localTasks));
+        
+        // Disparar evento de actualización
+        window.dispatchEvent(new CustomEvent('localTasksUpdated'));
+        
+        // Resetear el formulario
+        setNewTask({
+          title: '',
+          description: '',
+          deadline: '',
+          difficulty: 'medium',
+          assignment: ''
+        });
+        
+        toast.success('Task added successfully');
+        return;
       }
 
-      // Agregar el user_id al objeto newTask
-      const taskWithUser = {
-        ...newTask,
-        user_id: user.id, // Asociar la tarea al usuario
+      // Si hay usuario, continuar con la lógica existente
+      const taskData = {
+        title: newTask.title,
+        description: newTask.description || '',
+        deadline: newTask.deadline,
+        completed: false,
+        difficulty: newTask.difficulty || 'medium',
+        assignment: newTask.assignment || '',
+        user_id: user.id
       };
 
-      // Llamada a la acción para agregar la tarea
-      await dispatch(addTask(taskWithUser));
-
-      // Limpiar el formulario
-      setNewTask({ title: '', description: '', deadline: '', difficulty: 'medium', assignment: '' });
-      setError(''); // Limpiar el error si la operación fue exitosa
+      await dispatch(addTask(taskData));
+      
+      // Resetear el formulario
+      setNewTask({
+        title: '',
+        description: '',
+        deadline: '',
+        difficulty: 'medium',
+        assignment: ''
+      });
+      
+      toast.success('Task added successfully');
     } catch (error) {
-      setError("Error adding task: " + error.message);
+      console.error('Error:', error);
+      toast.error('Failed to add task');
     }
   };
 

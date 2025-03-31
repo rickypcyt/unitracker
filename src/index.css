@@ -145,7 +145,7 @@
     background-color: var(--bg-primary);
   }
   .tasks {
-    @apply flex justify-between items-center p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
+    @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
   }
@@ -282,7 +282,8 @@ h1 {
 
 .dark-calendar .rbc-toolbar button.rbc-active {
   background-color: var(--bg-secondary) !important;
-  color: var(--text-primary) !important;
+  color: rgb(10, 132, 255) !important;
+  font-size: 1.125rem !important;
 }
 
 .dark-calendar .rbc-toolbar .rbc-btn-group {
@@ -302,7 +303,9 @@ h1 {
   background-color: var(--bg-primary) !important;
   border: none !important;
   border-radius: 12px !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .dark-calendar .rbc-month-row + .rbc-month-row {
@@ -322,11 +325,12 @@ h1 {
 }
 
 .dark-calendar .rbc-row-content {
-  border: none !important;
+  position: relative !important;
+  z-index: 4 !important;
 }
 
 .dark-calendar .rbc-row-bg {
-  border: none !important;
+  z-index: 1 !important;
 }
 
 .dark-calendar .rbc-date-cell {
@@ -334,6 +338,8 @@ h1 {
   padding: 8px !important;
   font-size: 0.9rem !important;
   text-align: center !important;
+  position: relative !important;
+  z-index: 3 !important;
 }
 
 .dark-calendar .rbc-off-range {
@@ -362,6 +368,8 @@ h1 {
   box-shadow: none !important;
   width: auto !important;
   height: auto !important;
+  position: relative !important;
+  z-index: 4 !important;
 }
 
 .dark-calendar .rbc-event.rbc-selected {
@@ -373,6 +381,25 @@ h1 {
   color: var(--accent-primary) !important;
   font-size: 0.8rem !important;
   padding: 2px 4px !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+.dark-calendar .rbc-overlay {
+  position: absolute !important;
+  z-index: 10 !important;
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-primary) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  padding: 10px !important;
+  border-radius: 8px !important;
+}
+
+.dark-calendar .rbc-overlay-header {
+  color: var(--text-primary) !important;
+  padding: 8px !important;
+  border-bottom: 1px solid var(--border-primary) !important;
+  margin-bottom: 8px !important;
 }
 
 .dark-calendar .rbc-slot-selection {
@@ -462,6 +489,8 @@ h1 {
   cursor: pointer !important;
   transition: transform 0.2s ease !important;
   display: block !important;
+  position: relative !important;
+  z-index: 4 !important;
 }
 
 .dark-calendar .task-dot:hover {
@@ -489,6 +518,8 @@ h1 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
   margin: 2px !important;
   display: block !important;
+  position: relative !important;
+  z-index: 2 !important;
 }
 
 .dark-calendar .rbc-agenda-view .task-title {

@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { supabase } from '../utils/supabaseClient';
 import { resetTimerState, setCurrentSession } from '../redux/LapSlice';
 import { fetchLaps, createLap, updateLap, deleteLap } from '../redux/LapActions';
-import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save } from 'lucide-react';
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save, CheckCircle2, Circle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import moment from 'moment';
+import { toast } from 'react-toastify';
 
 const StudyTimer = () => {
   const dispatch = useDispatch();
@@ -215,17 +216,35 @@ const StudyTimer = () => {
     setState(prev => ({ ...prev, isEditingDetails: true }));
   };
 
-  const handleSaveEditDetails = () => {
+  const handleSaveEditDetails = async () => {
     if (state.editedSession) {
-      dispatch(updateLap(state.editedSession.id, {
-        name: state.editedSession.name,
-        description: state.editedSession.description
-      }));
-      setState(prev => ({
-        ...prev,
-        isEditingDetails: false,
-        selectedSession: { ...prev.editedSession }
-      }));
+      try {
+        // Create update object with all necessary fields
+        const updateData = {
+          name: state.editedSession.name,
+          description: state.editedSession.description || '', // Ensure description is at least an empty string
+          session_number: state.editedSession.session_number,
+          duration: state.editedSession.duration
+        };
+
+        // Update in database through Redux action
+        await dispatch(updateLap(state.editedSession.id, updateData));
+
+        // Update local state
+        setState(prev => ({
+          ...prev,
+          isEditingDetails: false,
+          selectedSession: { ...state.editedSession }
+        }));
+
+        // Fetch updated laps to refresh the list
+        await dispatch(fetchLaps());
+
+        toast.success('Session updated successfully');
+      } catch (error) {
+        console.error('Error updating session:', error);
+        toast.error('Failed to update session');
+      }
     }
   };
 
@@ -266,10 +285,34 @@ const StudyTimer = () => {
 
   return (
     <div className="maincard">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold flex items-center gap-2"><LibraryBig size={24} /> Study Timer</h2>
-
+      <div className="text-2xl font-bold mb-6 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <LibraryBig size={24} />
+          <span>Study Timer</span>
+        </div>
+        <div className="flex justify-center">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-lg text-text-secondary">Start Pomodoro</span>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                handlePomodoroToggle({ target: { checked: !state.startPomodoro } });
+              }}
+              className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
+              aria-label={state.startPomodoro ? "Disable Pomodoro" : "Enable Pomodoro"}
+            >
+              {state.startPomodoro ? (
+                <CheckCircle2 className="text-accent-primary" size={24} />
+              ) : (
+                <Circle className="text-accent-primary" size={24} />
+              )}
+            </button>
+          </label>
+        </div>
       </div>
+
+
+
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div className="text-5xl font-mono mb-6 text-center">{formatTime(state.time)}</div>
@@ -294,18 +337,7 @@ const StudyTimer = () => {
           <Check size={20} />
         </button>
       </div>
-      <div className="flex justify-center mb-6">
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={state.startPomodoro}
-            onChange={handlePomodoroToggle}
-            className="sr-only peer"
-          />
-          <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-          <span className="ml-3 text-lg font-medium text-gray-300">Also start Pomodoro</span>
-        </label>
-      </div>
+
       <div className="mb-4">
         <textarea
           value={state.description}
