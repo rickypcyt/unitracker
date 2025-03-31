@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Play, Pause, Cloud, CloudRain, Waves, X } from 'lucide-react';
 import { updateTask } from '../redux/TaskActions';
+import { setCalendarVisibility } from '../redux/uiSlice';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import * as Tone from 'tone';
@@ -101,6 +102,15 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       window.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
+
+  // Add effect to handle calendar visibility when modal is shown/hidden
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(setCalendarVisibility(false));
+    } else {
+      dispatch(setCalendarVisibility(true));
+    }
+  }, [isOpen, dispatch]);
 
   const handleStartSession = async () => {
     try {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleTaskStatus, deleteTask, fetchTasks, updateTask } from '../redux/TaskActions';
+import { setCalendarVisibility } from '../redux/uiSlice';
 import { CheckCircle2, Circle, Calendar, Trash2, ChevronDown, ChevronUp, ClipboardCheck, Download, X, Edit2, Save, Info, Play, ArrowUpDown } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 import { motion } from 'framer-motion';
@@ -63,21 +64,23 @@ const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContext
         {task.description || ' '}
       </div>
 
-      {/* Assignment and Date in same line */}
-      <div className="flex items-center ml-1 gap-4">
+      {/* Assignment */}
+      <div className="flex items-center ml-1">
         <span className="text-lg text-text-secondary">
           {task.assignment || 'No assignment'}
         </span>
-        <div className="flex items-center">
-          <Calendar size={16} className="text-text-secondary" />
-          <span className="ml-2 text-lg text-text-secondary">
-            {new Date(task.deadline).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
-          </span>
-        </div>
+      </div>
+
+      {/* Date */}
+      <div className="flex items-center ml-1">
+        <Calendar size={16} className="text-text-secondary" />
+        <span className="ml-2 text-lg text-text-secondary">
+          {new Date(task.deadline).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })}
+        </span>
       </div>
     </div>
   </div>
@@ -199,6 +202,15 @@ const TaskList = () => {
     };
   }, [selectedTask]);
 
+  // Add effect to handle calendar visibility when modals are shown/hidden
+  useEffect(() => {
+    if (showTaskMenu || selectedTask) {
+      dispatch(setCalendarVisibility(false));
+    } else {
+      dispatch(setCalendarVisibility(true));
+    }
+  }, [showTaskMenu, selectedTask, dispatch]);
+
   const handleToggleCompletion = async (task) => {
     if (!user) {
       // Handle local storage update
@@ -284,6 +296,7 @@ const TaskList = () => {
     setSelectedTask(null);
     setIsEditing(false);
     setEditedTask(null);
+    dispatch(setCalendarVisibility(true));
   };
 
   const handleOverlayClick = (e) => {
@@ -872,83 +885,6 @@ const TaskList = () => {
                 </button>
               </div>
             </div>
-          )}
-
-          {/* Start Session Modal */}
-          {showTaskMenu && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
-              onClick={() => setShowTaskMenu(false)}
-            >
-              <div className="maincard max-w-2xl w-full mx-4">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-2xl font-bold text-center flex-1">
-                    Start Session
-                  </h3>
-                  <button
-                    className="text-gray-400 hover:text-white transition duration-200"
-                    onClick={() => setShowTaskMenu(false)}
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-lg font-semibold text-text-primary mb-2">Select Task</h4>
-                    <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                      {tasks.filter(task => !task.completed && task.user_id === user.id).map((task) => (
-                        <button
-                          key={task.id}
-                          onClick={() => {
-                            handleSetActiveTask(task);
-                            setShowTaskMenu(false);
-                          }}
-                          className={`w-full p-4 rounded-lg text-left transition-colors duration-200 ${
-                            task.activetask
-                              ? 'bg-accent-primary bg-opacity-10 border border-accent-primary'
-                              : 'hover:bg-neutral-800 border border-neutral-800'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Circle className={`${
-                                task.difficulty === 'easy' ? 'text-green-500' :
-                                task.difficulty === 'medium' ? 'text-blue-500' :
-                                'text-red-500'
-                              }`} size={20} />
-                              <span className="font-medium text-text-primary">{task.title}</span>
-                            </div>
-                            {task.activetask && (
-                              <span className="text-accent-primary text-sm">Active</span>
-                            )}
-                          </div>
-                          {task.description && (
-                            <p className="mt-2 text-text-secondary text-sm line-clamp-2">{task.description}</p>
-                          )}
-                          <div className="mt-2 flex items-center gap-4 text-sm text-text-secondary">
-                            <div className="flex items-center gap-1">
-                              <Calendar size={14} />
-                              <span>{new Date(task.deadline).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}</span>
-                            </div>
-                            {task.assignment && (
-                              <span>{task.assignment}</span>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           )}
         </>
       )}

@@ -85,6 +85,7 @@ const CustomDayPropGetter = (date) => {
 const Calendar = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
+  const isCalendarVisible = useSelector((state) => state.ui.isCalendarVisible);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [hoveredEvent, setHoveredEvent] = useState(null);
@@ -221,7 +222,7 @@ const Calendar = () => {
 
   return (
     <div className="maincard relative">
-      <div style={{ display: showModal || selectedTask ? 'none' : 'block' }}>
+      <div style={{ display: isCalendarVisible ? 'block' : 'none' }}>
         <BigCalendar
           localizer={localizer}
           events={events}
