@@ -127,12 +127,42 @@ const NoiseGenerator = () => {
     const startOceanWaves = () => {
         if (!oceanNoiseRef.current) {
             const oceanNoise = new Tone.Noise('pink').start();
-            const filter = new Tone.Filter(500, 'lowpass');
+            
+            // Create a low-pass filter with a lower frequency for more bass
+            const filter = new Tone.Filter(300, 'lowpass');
+            
+            // Create an LFO to modulate the filter frequency
+            const lfo = new Tone.LFO({
+                frequency: 0.1, // Very slow modulation
+                min: 200,
+                max: 400,
+                type: 'sine'
+            }).start();
+            
+            // Connect the LFO to the filter frequency
+            lfo.connect(filter.frequency);
+            
+            // Add some reverb for more space
+            const reverb = new Tone.Reverb({
+                decay: 4,
+                wet: 0.3,
+                preDelay: 0.2
+            }).toDestination();
+            
             const gainNode = new Tone.Gain(oceanVolume * 0.03);
+            
+            // Connect the nodes
             oceanNoise.connect(filter);
             filter.connect(gainNode);
-            gainNode.connect(masterGainRef.current);
-            oceanNoiseRef.current = { noise: oceanNoise, filter, gain: gainNode };
+            gainNode.connect(reverb);
+            
+            oceanNoiseRef.current = { 
+                noise: oceanNoise, 
+                filter, 
+                gain: gainNode,
+                lfo,
+                reverb
+            };
         }
         setIsPlayingOcean(true);
     };
@@ -143,6 +173,8 @@ const NoiseGenerator = () => {
             oceanNoiseRef.current.noise.dispose();
             oceanNoiseRef.current.filter.dispose();
             oceanNoiseRef.current.gain.dispose();
+            oceanNoiseRef.current.lfo.dispose();
+            oceanNoiseRef.current.reverb.dispose();
             oceanNoiseRef.current = null;
         }
         setIsPlayingOcean(false);
