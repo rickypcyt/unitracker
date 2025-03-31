@@ -29,9 +29,9 @@ export const LayoutManager = {
         return JSON.parse(savedLayout);
       }
       return [
-        { id: 'col-1', items: ['Pomodoro', 'TaskForm', 'ProgressTracker' ] },
-        { id: 'col-2', items: ['StudyTimer', 'NoiseGenerator', ] },
-        { id: 'col-3', items: ['TaskList', 'Statistics'] }
+        { id: 'col-1', items: ['Pomodoro', 'StudyTimer', 'NoiseGenerator' ] },
+        { id: 'col-2', items: ['TaskForm', 'ProgressTracker', 'Statistics'] },
+        { id: 'col-3', items: ['TaskList', 'Calendar'] }
       ];
     },
   
