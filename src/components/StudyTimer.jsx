@@ -292,7 +292,7 @@ const StudyTimer = () => {
         </div>
         <div className="flex justify-center">
           <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-lg text-text-secondary">Start Pomodoro</span>
+            <span className="text-lg text-text-secondary font-normal">Start Pomodoro</span>
             <button
               onClick={(e) => {
                 e.preventDefault();
