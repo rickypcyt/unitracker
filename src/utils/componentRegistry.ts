@@ -10,7 +10,7 @@ import Pomodoro from '../components/Pomodoro';
 import StartSessionMenu from '../components/StartSessionMenu';
 
 interface ComponentConfig {
-  component: () => JSX.Element;
+  component: (props?: any) => JSX.Element;
   name: string;
   isWide: boolean;
 }

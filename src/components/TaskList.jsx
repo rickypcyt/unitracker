@@ -8,23 +8,20 @@ import { motion } from 'framer-motion';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 
-const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContextMenu }) => (
+const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContextMenu, isEditing }) => (
   <div
-    className="tasks cursor-pointer relative"
+    className={`relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg ${
+      task.activetask 
+        ? task.difficulty === 'easy' 
+          ? 'border-2 border-green-500' 
+          : task.difficulty === 'medium'
+            ? 'border-2 border-blue-500'
+            : 'border-2 border-red-500'
+        : 'border border-border-primary'
+    }`}
     onDoubleClick={() => onDoubleClick(task)}
     onContextMenu={(e) => onContextMenu(e, task)}
   >
-    {/* Delete button - Top right corner */}
-    <div className="absolute top-2 right-2">
-      <button
-        onClick={() => onDelete(task.id)}
-        className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full p-1"
-        aria-label="Delete task"
-      >
-        <Trash2 size={16} />
-      </button>
-    </div>
-
     <div className="flex flex-col gap-2">
       {/* First row: Checkbox and Title */}
       <div className="flex items-center mt-1">
@@ -44,7 +41,7 @@ const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContext
         </button>
         <button
           onClick={() => onDoubleClick(task)}
-          className="flex items-center focus:outline-none"
+          className="flex items-center focus:outline-none flex-1"
         >
           <span
             className={`ml-2 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed ? 'line-through text-text-secondary' : 'text-text-primary'
@@ -53,6 +50,13 @@ const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContext
           >
             {task.title}
           </span>
+        </button>
+        <button
+          onClick={() => onDelete(task.id)}
+          className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full p-1 ml-2"
+          aria-label="Delete task"
+        >
+          <Trash2 size={16} />
         </button>
       </div>
 
@@ -86,7 +90,7 @@ const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContext
   </div>
 );
 
-const TaskList = () => {
+const TaskList = ({ isEditing }) => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
   const [user, setUser] = useState(null);
@@ -95,10 +99,9 @@ const TaskList = () => {
   const [showIncomplete, setShowIncomplete] = useState(true);
   const [showTaskMenu, setShowTaskMenu] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(null);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, task: null });
+  const [contextMenu, setContextMenu] = useState(null);
   const [sortBy, setSortBy] = useState('default');
   const [showSortMenu, setShowSortMenu] = useState(false);
 
@@ -358,16 +361,11 @@ const TaskList = () => {
 
   const handleContextMenu = (e, task) => {
     e.preventDefault();
-    setContextMenu({
-      show: true,
-      x: e.clientX,
-      y: e.clientY,
-      task: task
-    });
+    setContextMenu({ x: e.clientX, y: e.clientY, task });
   };
 
   const handleCloseContextMenu = () => {
-    setContextMenu({ show: false, x: 0, y: 0, task: null });
+    setContextMenu(null);
   };
 
   const handleSetActiveTask = async (task) => {
@@ -405,7 +403,7 @@ const TaskList = () => {
   // Add click outside listener for context menu
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (contextMenu.show) {
+      if (contextMenu) {
         handleCloseContextMenu();
       }
     };
@@ -414,7 +412,7 @@ const TaskList = () => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [contextMenu.show]);
+  }, [contextMenu]);
 
   // Add click outside listener for sort menu
   useEffect(() => {
@@ -493,6 +491,7 @@ const TaskList = () => {
                       onDelete={handleDeleteTask}
                       onDoubleClick={handleTaskDoubleClick}
                       onContextMenu={handleContextMenu}
+                      isEditing={isEditing}
                     />
                   ))}
                 </div>
@@ -519,6 +518,7 @@ const TaskList = () => {
                       onDelete={handleDeleteTask}
                       onDoubleClick={handleTaskDoubleClick}
                       onContextMenu={handleContextMenu}
+                      isEditing={isEditing}
                     />
                   ))}
                 </div>
@@ -649,6 +649,7 @@ const TaskList = () => {
                     onDelete={handleDeleteTask}
                     onDoubleClick={handleTaskDoubleClick}
                     onContextMenu={handleContextMenu}
+                    isEditing={isEditing}
                   />
                 ))}
               </div>
@@ -675,6 +676,7 @@ const TaskList = () => {
                     onDelete={handleDeleteTask}
                     onDoubleClick={handleTaskDoubleClick}
                     onContextMenu={handleContextMenu}
+                    isEditing={isEditing}
                   />
                 ))}
               </div>
@@ -833,7 +835,7 @@ const TaskList = () => {
           )}
 
           {/* Context Menu */}
-          {contextMenu.show && (
+          {contextMenu && (
             <div
               className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800"
               style={{

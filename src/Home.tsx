@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import type { DroppableProvided, DraggableProvided } from 'react-beautiful-dnd';
-import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, Save, Palette } from 'lucide-react';
+import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, Save, Palette, ArrowsInSimple } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
@@ -9,6 +9,14 @@ import { ComponentRegistry } from './utils/componentRegistry';
 import { LayoutManager } from './utils/layoutManager';
 import StartSessionMenu from './components/StartSessionMenu';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from './redux/store';
+import { setLayout } from './redux/layoutSlice';
+import { setTheme } from './redux/themeSlice';
+import { setCalendarVisibility } from './redux/uiSlice';
+import { Layout } from './types/layout';
+import { Theme } from './types/theme';
+import { ComponentKey } from './types/component';
 
 interface LayoutColumn {
   id: string;
@@ -50,14 +58,7 @@ const Home: React.FC = () => {
     }
     return 'default';
   });
-  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
-    show: false,
-    x: 0,
-    y: 0,
-    componentKey: '',
-    colIndex: 0,
-    itemIndex: 0
-  });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; componentId: string } | null>(null);
 
   // Handle theme changes
   useEffect(() => {
@@ -93,15 +94,19 @@ const Home: React.FC = () => {
     });
   }, []);
 
-  const removeComponent = useCallback((colIndex: number, itemIndex: number) => {
+  const removeComponent = useCallback((componentId: string) => {
+    // Find the column and index of the component
+    const colIndex = layout.findIndex(col => col.items.includes(componentId));
+    if (colIndex === -1) return;
+
+    const itemIndex = layout[colIndex].items.indexOf(componentId);
     const newLayout = LayoutManager.removeComponent(layout, colIndex, itemIndex);
     setLayout(newLayout);
 
     // Remove from wide components if necessary
-    const componentKey = newLayout[colIndex].items[itemIndex];
     setWideComponents(prev => {
       const updated = new Set(prev);
-      updated.delete(componentKey);
+      updated.delete(componentId);
       return updated;
     });
   }, [layout]);
@@ -111,33 +116,20 @@ const Home: React.FC = () => {
     setLayout(newLayout);
   }, [layout]);
 
-  const handleContextMenu = (e: React.MouseEvent, componentKey: string, colIndex: number, itemIndex: number) => {
+  const handleContextMenu = (e: React.MouseEvent, componentId: string) => {
     e.preventDefault();
-    setContextMenu({
-      show: true,
-      x: e.clientX,
-      y: e.clientY,
-      componentKey,
-      colIndex,
-      itemIndex
-    });
+    if (!isEditing) return;
+    setContextMenu({ x: e.clientX, y: e.clientY, componentId });
   };
 
   const handleCloseContextMenu = () => {
-    setContextMenu({
-      show: false,
-      x: 0,
-      y: 0,
-      componentKey: '',
-      colIndex: 0,
-      itemIndex: 0
-    });
+    setContextMenu(null);
   };
 
   // Add click outside listener for context menu
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (contextMenu.show) {
+      if (contextMenu) {
         handleCloseContextMenu();
       }
     };
@@ -146,7 +138,7 @@ const Home: React.FC = () => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [contextMenu.show]);
+  }, [contextMenu]);
 
   const renderLayoutColumns = useMemo(() =>
     layout.map((column, colIndex) => (
@@ -170,10 +162,10 @@ const Home: React.FC = () => {
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     className={`${wideComponents.has(componentKey) ? 'md:col-span-2 lg:col-span-2' : ''}`}
-                    onContextMenu={(e) => handleContextMenu(e, componentKey, colIndex, index)}
+                    onContextMenu={(e) => handleContextMenu(e, componentKey)}
                   >
                     <div className="rounded-lg shadow-lg">
-                      {React.createElement(ComponentRegistry[componentKey as ComponentKey].component)}
+                      {renderComponent(componentKey)}
                     </div>
                   </div>
                 )}
@@ -193,8 +185,23 @@ const Home: React.FC = () => {
     [layout, isEditing, wideComponents, toggleComponentSize, removeComponent, addComponent, handleContextMenu]
   );
 
+  const renderComponent = (componentId: string) => {
+    const config = ComponentRegistry[componentId];
+    if (!config) return null;
+
+    const Component = config.component;
+    return (
+      <div
+        onContextMenu={(e) => handleContextMenu(e, componentId)}
+        className="relative"
+      >
+        <Component isEditing={isEditing} />
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary">
+    <div className="min-h-screen bg-neutral-950 text-text-primary p-4">
       <ToastContainer />
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-[95%] max-w-[1800px] mx-auto py-4">
@@ -205,7 +212,7 @@ const Home: React.FC = () => {
       </DragDropContext>
 
       {/* Context Menu */}
-      {contextMenu.show && (
+      {contextMenu && (
         <div
           className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800"
           style={{
@@ -216,13 +223,13 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <button
               onClick={() => {
-                removeComponent(contextMenu.colIndex, contextMenu.itemIndex);
+                removeComponent(contextMenu.componentId);
                 handleCloseContextMenu();
               }}
               className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
             >
               <Trash2 size={16} />
-              Delete Component
+              Remove Component
             </button>
           </div>
         </div>

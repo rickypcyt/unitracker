@@ -18,14 +18,38 @@ const MODES = [
 ];
 
 const Pomodoro = () => {
-  const [modeIndex, setModeIndex] = useState(0);
-  const [mode, setMode] = useState("work");
-  const [timeLeft, setTimeLeft] = useState(MODES[modeIndex].work);
-  const [isRunning, setIsRunning] = useState(false);
-  const [pomodoroCount, setPomodoroCount] = useState(0);
+  const [modeIndex, setModeIndex] = useState(() => {
+    const savedModeIndex = localStorage.getItem('pomodoroModeIndex');
+    return savedModeIndex ? parseInt(savedModeIndex) : 0;
+  });
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('pomodoroMode');
+    return savedMode || 'work';
+  });
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const savedTimeLeft = localStorage.getItem('pomodoroTimeLeft');
+    return savedTimeLeft ? parseInt(savedTimeLeft) : MODES[modeIndex].work;
+  });
+  const [isRunning, setIsRunning] = useState(() => {
+    const savedIsRunning = localStorage.getItem('pomodoroIsRunning');
+    return savedIsRunning === 'true';
+  });
+  const [pomodoroCount, setPomodoroCount] = useState(() => {
+    const savedCount = localStorage.getItem('pomodoroCount');
+    return savedCount ? parseInt(savedCount) : 0;
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const intervalRef = useRef(null);
   const menuRef = useRef(null);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('pomodoroModeIndex', modeIndex.toString());
+    localStorage.setItem('pomodoroMode', mode);
+    localStorage.setItem('pomodoroTimeLeft', timeLeft.toString());
+    localStorage.setItem('pomodoroIsRunning', isRunning.toString());
+    localStorage.setItem('pomodoroCount', pomodoroCount.toString());
+  }, [modeIndex, mode, timeLeft, isRunning, pomodoroCount]);
 
   // 🔔 Solicitar permiso para notificaciones al cargar la página
   useEffect(() => {

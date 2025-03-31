@@ -11,21 +11,65 @@ import { toast } from 'react-toastify';
 const StudyTimer = () => {
   const dispatch = useDispatch();
   const { laps, error, currentSession } = useSelector((state) => state.laps);
-  const [state, setState] = useState({
-    isEditing: null,
-    time: 0,
-    isRunning: false,
-    description: '',
-    localUser: null,
-    expandedMonths: {},
-    expandedWeeks: {},
-    selectedSession: null,
-    isEditingDetails: false,
-    editedSession: null,
-    startPomodoro: localStorage.getItem('startPomodoroWithTimer') === 'true'
+  const [state, setState] = useState(() => {
+    // Load saved state from localStorage or use defaults
+    const savedState = localStorage.getItem('studyTimerState');
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      return {
+        ...parsed,
+        localUser: null, // Don't restore user state, it will be loaded separately
+        expandedMonths: {},
+        expandedWeeks: {},
+        selectedSession: null,
+        isEditingDetails: false,
+        editedSession: null,
+        startPomodoro: localStorage.getItem('startPomodoroWithTimer') === 'true'
+      };
+    }
+    return {
+      isEditing: null,
+      time: 0,
+      isRunning: false,
+      description: '',
+      localUser: null,
+      expandedMonths: {},
+      expandedWeeks: {},
+      selectedSession: null,
+      isEditingDetails: false,
+      editedSession: null,
+      startPomodoro: localStorage.getItem('startPomodoroWithTimer') === 'true'
+    };
   });
 
   const intervalRef = useRef(null);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    const stateToSave = {
+      time: state.time,
+      isRunning: state.isRunning,
+      description: state.description,
+      startPomodoro: state.startPomodoro
+    };
+    localStorage.setItem('studyTimerState', JSON.stringify(stateToSave));
+  }, [state.time, state.isRunning, state.description, state.startPomodoro]);
+
+  // Restore timer if it was running
+  useEffect(() => {
+    if (state.isRunning) {
+      intervalRef.current = setInterval(() => {
+        setState(prev => ({ ...prev, time: prev.time + 1 }));
+      }, 1000);
+      // Restart Pomodoro if it was enabled
+      if (state.startPomodoro) {
+        window.dispatchEvent(new CustomEvent('startPomodoro'));
+      }
+      // Update StartSessionMenu state
+      window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: true } }));
+    }
+    return () => clearInterval(intervalRef.current);
+  }, []); // Only run once on mount
 
   useEffect(() => {
     const loadUser = async () => {
@@ -34,7 +78,6 @@ const StudyTimer = () => {
       if (user) dispatch(fetchLaps());
     };
     loadUser();
-    return () => clearInterval(intervalRef.current);
   }, [dispatch]);
 
   // Add event listeners for StudyTimer control
@@ -96,6 +139,8 @@ const StudyTimer = () => {
         if (state.startPomodoro) {
           window.dispatchEvent(new CustomEvent('startPomodoro'));
         }
+        // Dispatch event to update StartSessionMenu state
+        window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: true } }));
       }
     },
     pause: () => {
@@ -105,6 +150,8 @@ const StudyTimer = () => {
       if (state.startPomodoro) {
         window.dispatchEvent(new CustomEvent('stopPomodoro'));
       }
+      // Dispatch event to update StartSessionMenu state
+      window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
     },
     reset: () => {
       clearInterval(intervalRef.current);
@@ -120,6 +167,8 @@ const StudyTimer = () => {
       if (state.startPomodoro) {
         window.dispatchEvent(new CustomEvent('stopPomodoro'));
       }
+      // Dispatch event to update StartSessionMenu state
+      window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
     }
   };
 
@@ -310,8 +359,6 @@ const StudyTimer = () => {
           </label>
         </div>
       </div>
-
-
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
 

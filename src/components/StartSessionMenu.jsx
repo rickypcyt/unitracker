@@ -15,7 +15,15 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
   const [localTasks, setLocalTasks] = useState([]);
 
   const [selectedTask, setSelectedTask] = useState('');
-  const [menuIsPlaying, setMenuIsPlaying] = useState(false);
+  const [menuIsPlaying, setMenuIsPlaying] = useState(() => {
+    // Load saved state from localStorage or use default
+    const savedState = localStorage.getItem('menuState');
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      return parsed.menuIsPlaying;
+    }
+    return false;
+  });
   const [activeTools, setActiveTools] = useState(() => {
     // Load saved tools from localStorage or use defaults
     const savedTools = localStorage.getItem('activeTools');
@@ -26,6 +34,11 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       oceanNoise: true
     };
   });
+
+  // Save menu state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('menuState', JSON.stringify({ menuIsPlaying }));
+  }, [menuIsPlaying]);
 
   // Load local tasks from localStorage
   useEffect(() => {
@@ -66,6 +79,18 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
   useEffect(() => {
     setMenuIsPlaying(tasks.some(task => task.activetask));
   }, [tasks]);
+
+  // Listen for study timer state changes
+  useEffect(() => {
+    const handleStudyTimerStateChange = (event) => {
+      setMenuIsPlaying(event.detail.isRunning);
+    };
+
+    window.addEventListener('studyTimerStateChanged', handleStudyTimerStateChange);
+    return () => {
+      window.removeEventListener('studyTimerStateChanged', handleStudyTimerStateChange);
+    };
+  }, []);
 
   // Reset state when modal is closed
   useEffect(() => {
