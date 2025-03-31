@@ -1,22 +1,14 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import type { DroppableProvided, DraggableProvided } from 'react-beautiful-dnd';
-import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, Save, Palette, ArrowsInSimple } from 'lucide-react';
+import type {DraggableProvided } from 'react-beautiful-dnd';
+import { Trash2, Plus, Move, Maximize2, Minimize2, Settings} from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
 import { ComponentRegistry } from './utils/componentRegistry';
 import { LayoutManager } from './utils/layoutManager';
 import StartSessionMenu from './components/StartSessionMenu';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from './redux/store';
-import { setLayout } from './redux/layoutSlice';
-import { setTheme } from './redux/themeSlice';
-import { setCalendarVisibility } from './redux/uiSlice';
-import { Layout } from './types/layout';
-import { Theme } from './types/theme';
-import { ComponentKey } from './types/component';
+
 
 interface LayoutColumn {
   id: string;
