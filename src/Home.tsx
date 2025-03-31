@@ -201,11 +201,11 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-text-primary p-4">
+    <div className="min-h-screen bg-neutral-950 text-text-primary">
       <ToastContainer />
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="w-[95%] max-w-[1800px] mx-auto py-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="w-full min-h-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {renderLayoutColumns}
           </div>
         </div>

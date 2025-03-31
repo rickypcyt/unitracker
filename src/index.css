@@ -90,7 +90,7 @@
 
 @layer components {
   .maincard {
-    @apply max-w-full mx-auto my-8 rounded-2xl p-6 shadow-lg mr-2 ml-2;
+    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg mt-1;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
   }
