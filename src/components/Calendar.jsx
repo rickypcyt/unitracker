@@ -7,6 +7,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { useTaskForm } from "../redux/useTaskForm";
 import { X, ChevronLeft, ChevronRight, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import { updateTask, deleteTask, toggleTaskStatus } from "../redux/TaskActions";
+import TaskDetailsModal from "./TaskDetailsModal";
+import { toast } from "react-toastify";
+import { supabase } from "../utils/supabaseClient";
+import { addTask } from "../redux/TaskActions";
 
 const localizer = momentLocalizer(moment);
 
@@ -132,6 +136,7 @@ const Calendar = () => {
       await dispatch(updateTask(editedTask));
       setSelectedTask(editedTask);
       setIsEditing(false);
+      setSelectedTask(null);
     } catch (error) {
       console.error('Error updating task:', error);
     }
@@ -192,10 +197,71 @@ const Calendar = () => {
   };
 
   const handleCalendarSubmit = async (e) => {
-    const success = await handleSubmit(e);
-    if (success) {
+    e.preventDefault();
+    if (!newTask.title || !newTask.deadline) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // Modo local
+        const localTasks = JSON.parse(localStorage.getItem('localTasks') || '[]');
+        const newLocalTask = {
+          id: Date.now(),
+          title: newTask.title,
+          description: newTask.description || '',
+          deadline: newTask.deadline,
+          completed: false,
+          difficulty: newTask.difficulty || 'medium',
+          assignment: newTask.assignment || '',
+          created_at: new Date().toISOString()
+        };
+        
+        localTasks.push(newLocalTask);
+        localStorage.setItem('localTasks', JSON.stringify(localTasks));
+        
+        // Disparar evento de actualización
+        window.dispatchEvent(new CustomEvent('localTasksUpdated'));
+        
+        // Resetear el formulario y cerrar el modal
+        setNewTask({
+          title: '',
+          description: '',
+          deadline: '',
+          difficulty: 'medium',
+          assignment: ''
+        });
+        setShowModal(false);
+        toast.success('Task added successfully');
+        return;
+      }
+
+      // Si hay usuario, continuar con la lógica existente
+      const taskData = {
+        title: newTask.title,
+        description: newTask.description || '',
+        deadline: newTask.deadline,
+        completed: false,
+        difficulty: newTask.difficulty || 'medium',
+        assignment: newTask.assignment || '',
+        user_id: user.id
+      };
+
+      await dispatch(addTask(taskData));
+      
+      // Resetear el formulario y cerrar el modal
+      setNewTask({
+        title: '',
+        description: '',
+        deadline: '',
+        difficulty: 'medium',
+        assignment: ''
+      });
       setShowModal(false);
-      setNewTask({ title: "", description: "", deadline: "" });
+      toast.success('Task added successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to add task');
     }
   };
 
@@ -277,213 +343,21 @@ const Calendar = () => {
       )}
 
       {selectedTask && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              if (isEditing) {
-                setIsEditing(false);
-                setEditedTask(null);
-              } else {
-                setSelectedTask(null);
-              }
-            }
+        <TaskDetailsModal
+          selectedTask={selectedTask}
+          editedTask={editedTask}
+          isEditing={true}
+          onClose={() => setSelectedTask(null)}
+          onEdit={setIsEditing}
+          onSave={handleSaveEdit}
+          onDelete={handleDeleteTask}
+          onToggleCompletion={handleToggleCompletion}
+          onSetActiveTask={(task) => {
+            dispatch(updateTask(task));
+            setSelectedTask(null);
           }}
-        >
-          <div className="maincard max-w-2xl w-full mx-4">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-center flex-1">
-                Task Details
-              </h3>
-              <button
-                className="text-gray-400 hover:text-white transition duration-200"
-                onClick={() => {
-                  if (isEditing) {
-                    setIsEditing(false);
-                    setEditedTask(null);
-                  } else {
-                    setSelectedTask(null);
-                  }
-                }}
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Title</h4>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editedTask.title}
-                    onChange={(e) => handleEditChange('title', e.target.value)}
-                    className="textinput w-full"
-                  />
-                ) : (
-                  <p className="text-text-secondary">{selectedTask.title}</p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Description</h4>
-                {isEditing ? (
-                  <textarea
-                    value={editedTask.description || ''}
-                    onChange={(e) => handleEditChange('description', e.target.value)}
-                    className="textinput w-full"
-                    rows="4"
-                  />
-                ) : (
-                  <p className="text-text-secondary whitespace-pre-wrap">{selectedTask.description || 'No description'}</p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Status</h4>
-                <p className="text-text-secondary">
-                  {selectedTask.completed ? 'Completed' : 'Pending'}
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Difficulty</h4>
-                {isEditing ? (
-                  <select
-                    value={editedTask.difficulty}
-                    onChange={(e) => handleEditChange('difficulty', e.target.value)}
-                    className="textinput w-full"
-                  >
-                    <option value="easy" className="text-green-500">Easy</option>
-                    <option value="medium" className="text-blue-500">Medium</option>
-                    <option value="hard" className="text-red-500">Hard</option>
-                  </select>
-                ) : (
-                  <p className={`text-text-secondary ${selectedTask.difficulty === 'easy' ? 'text-green-500' :
-                    selectedTask.difficulty === 'medium' ? 'text-blue-500' :
-                      'text-red-500'
-                    }`}>
-                    {selectedTask.difficulty.charAt(0).toUpperCase() + selectedTask.difficulty.slice(1)}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Assignment</h4>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editedTask.assignment || ''}
-                    onChange={(e) => handleEditChange('assignment', e.target.value)}
-                    className="textinput w-full"
-                    placeholder="Enter assignment name"
-                  />
-                ) : (
-                  <p className="text-text-secondary">
-                    {selectedTask.assignment || 'No assignment'}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Deadline</h4>
-                {isEditing ? (
-                  <input
-                    type="date"
-                    value={editedTask.deadline}
-                    onChange={(e) => handleEditChange('deadline', e.target.value)}
-                    className="textinput w-full"
-                  />
-                ) : (
-                  <p className="text-text-secondary">
-                    {new Date(selectedTask.deadline).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">Created At</h4>
-                <p className="text-text-secondary">
-                  {moment(selectedTask.created_at).format('MMMM D, YYYY h:mm A')}
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-4 mt-6">
-                <button
-                  onClick={() => handleDeleteTask(selectedTask.id)}
-                  className="text-red-500 hover:text-red-600 transition-colors duration-200 flex items-center gap-2"
-                >
-                  <Trash2 size={20} />
-                  Delete Task
-                </button>
-                {selectedTask.activetask ? (
-                  <button
-                    onClick={() => {
-                      const updatedTask = { ...selectedTask, activetask: false };
-                      dispatch(updateTask(updatedTask));
-                      setSelectedTask(null);
-                    }}
-                    className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
-                  >
-                    <Play size={20} className="rotate-180" />
-                    Deactivate Task
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      const updatedTask = { ...selectedTask, activetask: true };
-                      dispatch(updateTask(updatedTask));
-                      setSelectedTask(null);
-                    }}
-                    className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
-                  >
-                    <Play size={20} />
-                    Set as Active Task
-                  </button>
-                )}
-                <button
-                  onClick={() => handleToggleCompletion(selectedTask)}
-                  className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
-                >
-                  {selectedTask.completed ? (
-                    <>
-                      <Circle size={20} />
-                      Mark as Incomplete
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 size={20} />
-                      Mark as Complete
-                    </>
-                  )}
-                </button>
-                {isEditing ? (
-                  <button
-                    onClick={handleSaveEdit}
-                    className="text-green-500 hover:text-green-600 transition-colors duration-200 flex items-center gap-2"
-                  >
-                    <Save size={20} />
-                    Save Changes
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200 flex items-center gap-2"
-                  >
-                    Edit Task
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
+          onEditChange={handleEditChange}
+        />
       )}
 
       {showModal && (

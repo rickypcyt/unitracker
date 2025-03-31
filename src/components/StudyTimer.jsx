@@ -38,7 +38,7 @@ const StudyTimer = () => {
       selectedSession: null,
       isEditingDetails: false,
       editedSession: null,
-      startPomodoro: localStorage.getItem('startPomodoroWithTimer') === 'true'
+      startPomodoro: true // Changed to true by default
     };
   });
 
@@ -53,7 +53,15 @@ const StudyTimer = () => {
       startPomodoro: state.startPomodoro
     };
     localStorage.setItem('studyTimerState', JSON.stringify(stateToSave));
+    localStorage.setItem('startPomodoroWithTimer', state.startPomodoro.toString());
   }, [state.time, state.isRunning, state.description, state.startPomodoro]);
+
+  // Set default value in localStorage on mount
+  useEffect(() => {
+    if (!localStorage.getItem('startPomodoroWithTimer')) {
+      localStorage.setItem('startPomodoroWithTimer', 'true');
+    }
+  }, []);
 
   // Restore timer if it was running
   useEffect(() => {
@@ -90,14 +98,38 @@ const StudyTimer = () => {
       timerControls.pause();
     };
 
+    const handlePomodoroPause = () => {
+      if (state.startPomodoro) {
+        timerControls.pause();
+      }
+    };
+
+    const handlePomodoroReset = () => {
+      if (state.startPomodoro) {
+        timerControls.reset();
+      }
+    };
+
+    const handlePomodoroPlay = () => {
+      if (state.startPomodoro) {
+        timerControls.start();
+      }
+    };
+
     window.addEventListener('startStudyTimer', handleStartStudyTimer);
     window.addEventListener('stopStudyTimer', handleStopStudyTimer);
+    window.addEventListener('pomodoroPause', handlePomodoroPause);
+    window.addEventListener('pomodoroReset', handlePomodoroReset);
+    window.addEventListener('pomodoroPlay', handlePomodoroPlay);
 
     return () => {
       window.removeEventListener('startStudyTimer', handleStartStudyTimer);
       window.removeEventListener('stopStudyTimer', handleStopStudyTimer);
+      window.removeEventListener('pomodoroPause', handlePomodoroPause);
+      window.removeEventListener('pomodoroReset', handlePomodoroReset);
+      window.removeEventListener('pomodoroPlay', handlePomodoroPlay);
     };
-  }, []);
+  }, [state.startPomodoro]);
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -159,13 +191,13 @@ const StudyTimer = () => {
         ...prev,
         isRunning: false,
         time: 0,
-        description: '',
-        startPomodoro: false
+        description: ''
       }));
       dispatch(resetTimerState());
-      // Stop Pomodoro if it was started
+      // Stop and reset Pomodoro if it was started
       if (state.startPomodoro) {
         window.dispatchEvent(new CustomEvent('stopPomodoro'));
+        window.dispatchEvent(new CustomEvent('resetPomodoro'));
       }
       // Dispatch event to update StartSessionMenu state
       window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
@@ -341,7 +373,7 @@ const StudyTimer = () => {
         </div>
         <div className="flex justify-center">
           <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-lg text-text-secondary font-normal">Start Pomodoro</span>
+            <span className="text-lg text-text-secondary font-normal">Sync with Pomodoro</span>
             <button
               onClick={(e) => {
                 e.preventDefault();

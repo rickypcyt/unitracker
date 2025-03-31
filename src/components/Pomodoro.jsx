@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-const workSound = new Audio("dist/assets/sounds/pomo-end.mp3");
-const breakSound = new Audio("dist/assets/sounds/break-end.mp3");
+const workSound = new Audio("/sounds/pomo-end.mp3");
+const breakSound = new Audio("/sounds/break-end.mp3");
 
 const MODES = [
   { label: "50/10", work: 50 * 60, break: 10 * 60 },
@@ -140,14 +140,23 @@ const Pomodoro = () => {
       setIsRunning(false);
     };
 
+    const handleResetPomodoro = () => {
+      setIsRunning(false);
+      setTimeLeft(MODES[modeIndex].work);
+      setMode('work');
+      setPomodoroCount(0);
+    };
+
     window.addEventListener('startPomodoro', handleStartPomodoro);
     window.addEventListener('stopPomodoro', handleStopPomodoro);
+    window.addEventListener('resetPomodoro', handleResetPomodoro);
 
     return () => {
       window.removeEventListener('startPomodoro', handleStartPomodoro);
       window.removeEventListener('stopPomodoro', handleStopPomodoro);
+      window.removeEventListener('resetPomodoro', handleResetPomodoro);
     };
-  }, []);
+  }, [modeIndex]);
 
   return (
     <div className="maincard">
@@ -201,20 +210,25 @@ const Pomodoro = () => {
 
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
-          <button onClick={() => setIsRunning(true)} className="button">
+          <button onClick={() => {
+            setIsRunning(true);
+            window.dispatchEvent(new CustomEvent('pomodoroPlay'));
+          }} className="button">
             <Play size={20} />
           </button>
         ) : (
-          <button onClick={() => setIsRunning(false)} className="button">
+          <button onClick={() => {
+            setIsRunning(false);
+            window.dispatchEvent(new CustomEvent('pomodoroPause'));
+          }} className="button">
             <Pause size={20} />
           </button>
         )}
         <button
           onClick={() => {
             setIsRunning(false);
-            setTimeLeft(
-              mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break
-            );
+            setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
+            window.dispatchEvent(new CustomEvent('pomodoroReset'));
           }}
           className="button"
         >
