@@ -27,7 +27,7 @@ const TaskItem = ({ task, onToggleCompletion, onDelete, onDoubleClick, onContext
 
     <div className="flex flex-col gap-2">
       {/* First row: Checkbox and Title */}
-      <div className="flex items-center">
+      <div className="flex items-center mt-1">
         <button
           onClick={() => onToggleCompletion(task)}
           className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"

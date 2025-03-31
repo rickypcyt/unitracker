@@ -15,6 +15,15 @@ interface LayoutColumn {
   items: string[];
 }
 
+interface ContextMenuState {
+  show: boolean;
+  x: number;
+  y: number;
+  componentKey: string;
+  colIndex: number;
+  itemIndex: number;
+}
+
 interface DragResult {
   source: {
     droppableId: string;
@@ -40,6 +49,14 @@ const Home: React.FC = () => {
       return localStorage.getItem('theme') || 'default';
     }
     return 'default';
+  });
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    show: false,
+    x: 0,
+    y: 0,
+    componentKey: '',
+    colIndex: 0,
+    itemIndex: 0
   });
 
   // Handle theme changes
@@ -89,10 +106,47 @@ const Home: React.FC = () => {
     });
   }, [layout]);
 
-  const addComponent = useCallback((colIndex: number) => {
-    const newLayout = LayoutManager.addComponent(layout, colIndex);
+  const addComponent = useCallback((colIndex: number, componentKey: string) => {
+    const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey);
     setLayout(newLayout);
   }, [layout]);
+
+  const handleContextMenu = (e: React.MouseEvent, componentKey: string, colIndex: number, itemIndex: number) => {
+    e.preventDefault();
+    setContextMenu({
+      show: true,
+      x: e.clientX,
+      y: e.clientY,
+      componentKey,
+      colIndex,
+      itemIndex
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu({
+      show: false,
+      x: 0,
+      y: 0,
+      componentKey: '',
+      colIndex: 0,
+      itemIndex: 0
+    });
+  };
+
+  // Add click outside listener for context menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (contextMenu.show) {
+        handleCloseContextMenu();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [contextMenu.show]);
 
   const renderLayoutColumns = useMemo(() =>
     layout.map((column, colIndex) => (
@@ -116,6 +170,7 @@ const Home: React.FC = () => {
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     className={`${wideComponents.has(componentKey) ? 'md:col-span-2 lg:col-span-2' : ''}`}
+                    onContextMenu={(e) => handleContextMenu(e, componentKey, colIndex, index)}
                   >
                     <div className="rounded-lg shadow-lg">
                       {React.createElement(ComponentRegistry[componentKey as ComponentKey].component)}
@@ -127,14 +182,15 @@ const Home: React.FC = () => {
             {provided.placeholder}
             {isEditing && (
               <AddComponentButton
-                onClick={() => addComponent(colIndex)}
+                onClick={(componentKey) => addComponent(colIndex, componentKey)}
+                layout={layout}
               />
             )}
           </div>
         )}
       </Droppable>
     )),
-    [layout, isEditing, wideComponents, toggleComponentSize, removeComponent, addComponent]
+    [layout, isEditing, wideComponents, toggleComponentSize, removeComponent, addComponent, handleContextMenu]
   );
 
   return (
@@ -143,48 +199,34 @@ const Home: React.FC = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-[95%] max-w-[1800px] mx-auto py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {layout.map((column, colIndex) => (
-              <Droppable key={column.id} droppableId={column.id}>
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-4"
-                  >
-                    {column.items.map((componentKey, index) => (
-                      <Draggable
-                        key={componentKey}
-                        draggableId={componentKey}
-                        index={index}
-                        isDragDisabled={!isEditing}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${wideComponents.has(componentKey) ? 'md:col-span-2 lg:col-span-2' : ''}`}
-                          >
-                            <div className="rounded-lg shadow-lg">
-                              {React.createElement(ComponentRegistry[componentKey as ComponentKey].component)}
-                            </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                    {isEditing && (
-                      <AddComponentButton
-                        onClick={() => addComponent(colIndex)}
-                      />
-                    )}
-                  </div>
-                )}
-              </Droppable>
-            ))}
+            {renderLayoutColumns}
           </div>
         </div>
       </DragDropContext>
+
+      {/* Context Menu */}
+      {contextMenu.show && (
+        <div
+          className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800"
+          style={{
+            left: contextMenu.x,
+            top: contextMenu.y,
+          }}
+        >
+          <div className="space-y-1">
+            <button
+              onClick={() => {
+                removeComponent(contextMenu.colIndex, contextMenu.itemIndex);
+                handleCloseContextMenu();
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Delete Component
+            </button>
+          </div>
+        </div>
+      )}
 
       <LayoutControls
         isEditing={isEditing}
@@ -202,6 +244,7 @@ const Home: React.FC = () => {
         onClose={() => {
           setIsPlaying(false);
         }}
+        setIsPlaying={setIsPlaying}
       />
     </div>
   );
@@ -284,14 +327,71 @@ const ComponentEditControls: React.FC<{
   </div>
 );
 
-const AddComponentButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="w-full p-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-colors duration-200"
-  >
-    <Plus size={24} className="mx-auto" />
-  </button>
-);
+const AddComponentButton: React.FC<{ 
+  onClick: (componentKey: string) => void;
+  layout: LayoutColumn[];
+}> = ({ onClick, layout }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Get all currently used components
+  const usedComponents = useMemo(() => {
+    const used = new Set<string>();
+    layout.forEach((column: LayoutColumn) => {
+      column.items.forEach((item: string) => used.add(item));
+    });
+    return used;
+  }, [layout]);
+
+  // Get available components (not currently used)
+  const availableComponents = useMemo(() => {
+    return Object.entries(ComponentRegistry)
+      .filter(([key]) => !usedComponents.has(key))
+      .map(([key, value]) => ({ key, name: value.name }));
+  }, [usedComponents]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setShowMenu(!showMenu)}
+        className="w-full p-4 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-600 transition-colors duration-200"
+      >
+        <Plus size={24} className="mx-auto" />
+      </button>
+      {showMenu && availableComponents.length > 0 && (
+        <div className="absolute left-0 mt-2 w-48 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800">
+          <div className="py-1">
+            {availableComponents.map(({ key, name }) => (
+              <button
+                key={key}
+                onClick={() => {
+                  onClick(key);
+                  setShowMenu(false);
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 transition-colors duration-200"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const LayoutControls: React.FC<{
   isEditing: boolean;

@@ -23,54 +23,47 @@ interface DragResult {
 }
 
 export const LayoutManager = {
-    getInitialLayout: (): Layout[] => {
-      const savedLayout = localStorage.getItem('appLayout');
+    getInitialLayout: (): LayoutColumn[] => {
+      const savedLayout = localStorage.getItem('layout');
       if (savedLayout) {
         return JSON.parse(savedLayout);
       }
       return [
-        { id: 'col-1', items: ['Pomodoro', 'StudyTimer', 'NoiseGenerator' ] },
-        { id: 'col-2', items: ['TaskForm', 'ProgressTracker', 'Statistics'] },
-        { id: 'col-3', items: ['TaskList', 'Calendar'] }
+        { id: 'column-1', items: ['TaskForm', 'TaskList'] },
+        { id: 'column-2', items: ['Calendar', 'StudyTimer'] },
+        { id: 'column-3', items: ['Pomodoro', 'NoiseGenerator'] }
       ];
     },
   
-    updateLayoutAfterDrag: (layout: Layout[], result: DragResult): Layout[] => {
-      const newLayout = JSON.parse(JSON.stringify(layout));
+    saveLayout: (layout: LayoutColumn[]) => {
+      localStorage.setItem('layout', JSON.stringify(layout));
+    },
+  
+    updateLayoutAfterDrag: (layout: LayoutColumn[], result: any): LayoutColumn[] => {
       const { source, destination } = result;
+      if (!destination) return layout;
   
-      const sourceCol = newLayout.find((col: LayoutColumn) => col.id === source.droppableId);
-      const destCol = newLayout.find((col: LayoutColumn) => col.id === destination.droppableId);
+      const newLayout = [...layout];
+      const sourceColumn = newLayout.find(col => col.id === source.droppableId);
+      const destColumn = newLayout.find(col => col.id === destination.droppableId);
+      const [movedItem] = sourceColumn.items.splice(source.index, 1);
+      destColumn.items.splice(destination.index, 0, movedItem);
   
-      if (!sourceCol || !destCol) return layout;
-  
-      const [removed] = sourceCol.items.splice(source.index, 1);
-      destCol.items.splice(destination.index, 0, removed);
-  
-      // Save the new layout to localStorage
-      localStorage.setItem('appLayout', JSON.stringify(newLayout));
+      LayoutManager.saveLayout(newLayout);
       return newLayout;
     },
   
-    removeComponent: (layout: Layout[], colIndex: number, itemIndex: number): Layout[] => {
+    removeComponent: (layout: LayoutColumn[], colIndex: number, itemIndex: number): LayoutColumn[] => {
       const newLayout = [...layout];
       newLayout[colIndex].items.splice(itemIndex, 1);
-      // Save the new layout to localStorage
-      localStorage.setItem('appLayout', JSON.stringify(newLayout));
+      LayoutManager.saveLayout(newLayout);
       return newLayout;
     },
   
-    addComponent: (layout: Layout[], colIndex: number): Layout[] => {
-      const usedComponents = layout.flatMap((col: LayoutColumn) => col.items);
-      const availableComponents = Object.keys(ComponentRegistry)
-        .filter(comp => !usedComponents.includes(comp));
-  
-      if (availableComponents.length === 0) return layout;
-  
+    addComponent: (layout: LayoutColumn[], colIndex: number, componentKey: string): LayoutColumn[] => {
       const newLayout = [...layout];
-      newLayout[colIndex].items.push(availableComponents[0]);
-      // Save the new layout to localStorage
-      localStorage.setItem('appLayout', JSON.stringify(newLayout));
+      newLayout[colIndex].items.push(componentKey);
+      LayoutManager.saveLayout(newLayout);
       return newLayout;
     }
   };
