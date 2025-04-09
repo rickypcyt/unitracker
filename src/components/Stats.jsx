@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { Clock, Calendar, Zap, Activity, Eye, EyeOff } from 'lucide-react';
+import { Clock, Calendar, Activity, Eye, EyeOff } from 'lucide-react';
 
 const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
@@ -23,7 +23,7 @@ const Statistics = () => {
   // Convierte duración HH:MM:SS a horas decimales
   const durationToHours = (duration) => {
     const [hours, minutes] = duration.split(':');
-    return parseInt(hours) + parseInt(minutes) / 60;
+    return parseInt(hours) + parseInt(minutes)  / 100;
   };
 
   // Procesar datos cuando cambian los laps o la semana seleccionada
@@ -212,7 +212,7 @@ const Statistics = () => {
 
             {/* Tooltip personalizado */}
             {hoveredData && (
-              <div className="absolute top-5 right-5 bg-black bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
+              <div className="absolute mt-16  top-5 right-5 bg-gray-900 bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
                 <div className="text-sm sm:text-base font-semibold">{hoveredData.dayName}</div>
                 <div className="text-lg sm:text-xl font-bold">{hoveredData.hours} h</div>
               </div>
