@@ -21,22 +21,9 @@ const Statistics = () => {
   const [showChart, setShowChart] = useState(false);
 
   // Convierte duración HH:MM:SS a horas decimales
-  // Corregir esta función
   const durationToHours = (duration) => {
-    const parts = duration.split(':');
-    let hours = parseInt(parts[0]) || 0;
-    let minutes = parseInt(parts[1]) || 0;
-    let seconds = parseInt(parts[2]) || 0;
-  
-    // Normalizar segundos a minutos
-    minutes += Math.floor(seconds / 60);
-    seconds = seconds % 60;
-  
-    // Normalizar minutos a horas
-    hours += Math.floor(minutes / 60);
-    minutes = minutes % 60;
-  
-    return hours + (minutes / 60) + (seconds / 3600);
+    const [hours, minutes] = duration.split(':');
+    return parseInt(hours) + parseInt(minutes)  / 60;
   };
 
   // Procesar datos cuando cambian los laps o la semana seleccionada
