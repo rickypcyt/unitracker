@@ -210,7 +210,7 @@ const TaskForm = () => {
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "easy")}
-                className="flex flex-col items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
+                className="flex flex-col items-center gap-1 rounded-full group"
                 aria-label="Set Easy Difficulty"
               >
                 {newTask.difficulty === "easy" ? (
@@ -223,7 +223,7 @@ const TaskForm = () => {
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "medium")}
-                className="flex flex-col items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
+                className="flex flex-col items-center gap-1 rounded-full group"
                 aria-label="Set Medium Difficulty"
               >
                 {newTask.difficulty === "medium" ? (
@@ -236,7 +236,7 @@ const TaskForm = () => {
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "hard")}
-                className="flex flex-col items-center gap-1 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
+                className="flex flex-col items-center gap-1  rounded-full group"
                 aria-label="Set Hard Difficulty"
               >
                 {newTask.difficulty === "hard" ? (

@@ -379,7 +379,7 @@ const StudyTimer = () => {
                 e.preventDefault();
                 handlePomodoroToggle({ target: { checked: !state.startPomodoro } });
               }}
-              className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
+              className="bg-transparent border-none cursor-pointer flex items-center rounded-full group"
               aria-label={state.startPomodoro ? "Disable Pomodoro" : "Enable Pomodoro"}
             >
               {state.startPomodoro ? (
