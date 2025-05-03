@@ -26,8 +26,8 @@ module.exports = {
         'text-tertiary': '#636366',     // Disabled/inactive text
 
         // Border colors
-        'border-primary': '#3A3A3C',    // Prominent borders
-        'border-secondary': '#2C2C2E'   // Subtle borders
+        'border-primary': '#4A4A4C',    // Prominent borders (slightly grayer)
+        'border-secondary': '#3C3C3E'   // Subtle borders (slightly grayer)
       },
     },
   },

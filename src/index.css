@@ -92,7 +92,7 @@
   .maincard {
     @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
     background-color: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
+    border: 1.5px solid var(--border-primary);
   }
   .card-title {
     @apply text-2xl font-bold mb-6 flex items-center gap-2;
@@ -147,7 +147,7 @@
   .tasks {
     @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
     background-color: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
+    border: 1.5px solid var(--border-primary);
   }
   .tasks:hover {
     background-color: var(--bg-primary);
