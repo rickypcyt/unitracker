@@ -123,103 +123,80 @@ const Statistics = () => {
         </div>
       </div>
 
-      <div className="relative flex flex-col gap-12 mb-8">
-        {/* Primera fila de tarjetas */}
-        <div className="flex justify-center gap-8">
-          {/* Today Card - Left */}
-          <div className="w-[160px] bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform">
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <div className="card-text font-bold mb-2 flex items-center gap-2 text-white">
-                <Clock size={20} />
-                <span className="text-base">Today</span>
-              </div>
-              <div className="text-xl font-bold">{todayHours} Hrs</div>
-            </div>
+      {/* Lista simple de estadísticas */}
+      <ul className="space-y-4 mb-8">
+        <li className="flex items-center gap-4 text-lg text-white">
+          <Clock size={22} />
+          <span className="font-semibold">Today:</span>
+          <span>{todayHours} H</span>
+        </li>
+        <li className="flex items-center gap-4 text-lg text-white">
+          <Calendar size={22} />
+          <span className="font-semibold">Week:</span>
+          <span>{weeklyTotal} H</span>
+        </li>
+        <li className="flex items-center gap-4 text-lg text-white">
+          <Calendar size={22} />
+          <span className="font-semibold">Month:</span>
+          <span>{monthlyTotal} H</span>
+        </li>
+      </ul>
+
+      {/* Segunda fila con el gráfico */}
+      {showChart && (
+        <div className="bg-stats p-6 rounded-lg w-full">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
+              {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
+            </h3>
+            <button
+              onClick={toggleWeek}
+              className="textbutton w-full sm:w-auto"
+            >
+              {isCurrentWeek ? "Show Last Week" : "Show This Week"}
+            </button>
           </div>
 
-          {/* Week Card - Center */}
-          <div className="w-[160px] bg-gradient-to-br from-green-500 to-cyan-600 p-4 rounded-xl text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <div className="card-text font-bold mb-2 flex items-center gap-2 text-white">
-                <Calendar size={20} />
-                <span className="text-base">Week</span>
-              </div>
-              <div className="text-xl font-bold">
-                {weeklyTotal} Hrs
-              </div>
-            </div>
+          <div className="h-64 sm:h-72 lg:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
+                <XAxis
+                  dataKey="dayName"
+                  stroke="#64748b"
+                  tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
+                />
+                <YAxis
+                  stroke="#64748b"
+                  tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
+                  tickFormatter={(value) => `${value}h`}
+                />
+                <Bar
+                  dataKey="hours"
+                  fill="#3b82f6"
+                  radius={[4, 4, 0, 0]}
+                  animationDuration={400}
+                >
+                  {weeklyData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      onMouseEnter={() => handleCellMouseEnter(entry)}
+                      onMouseLeave={handleCellMouseLeave}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
-          {/* Month Card - Right */}
-          <div className="w-[160px] bg-gradient-to-br from-yellow-500 to-red-600 p-4 rounded-xl text-white shadow-lg hover:shadow-xl transition-all duration-300 transform">
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <div className="card-text font-bold mb-2 flex items-center gap-2 text-white">
-                <Calendar size={20} />
-                <span className="text-base">Month</span>
-              </div>
-              <div className="text-xl font-bold">
-                {monthlyTotal} Hrs
-              </div>
+          {/* Tooltip personalizado */}
+          {hoveredData && (
+            <div className="absolute mt-16  top-5 right-5 bg-gray-900 bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
+              <div className="text-sm sm:text-base font-semibold">{hoveredData.dayName}</div>
+              <div className="text-lg sm:text-xl font-bold">{hoveredData.hours} h</div>
             </div>
-          </div>
+          )}
         </div>
-
-        {/* Segunda fila con el gráfico */}
-        {showChart && (
-          <div className="bg-stats p-6 rounded-lg w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-              <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
-                {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
-              </h3>
-              <button
-                onClick={toggleWeek}
-                className="textbutton w-full sm:w-auto"
-              >
-                {isCurrentWeek ? "Show Last Week" : "Show This Week"}
-              </button>
-            </div>
-
-            <div className="h-64 sm:h-72 lg:h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-                  <XAxis
-                    dataKey="dayName"
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
-                  />
-                  <YAxis
-                    stroke="#64748b"
-                    tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
-                    tickFormatter={(value) => `${value}h`}
-                  />
-                  <Bar
-                    dataKey="hours"
-                    fill="#3b82f6"
-                    radius={[4, 4, 0, 0]}
-                    animationDuration={400}
-                  >
-                    {weeklyData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        onMouseEnter={() => handleCellMouseEnter(entry)}
-                        onMouseLeave={handleCellMouseLeave}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Tooltip personalizado */}
-            {hoveredData && (
-              <div className="absolute mt-16  top-5 right-5 bg-gray-900 bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
-                <div className="text-sm sm:text-base font-semibold">{hoveredData.dayName}</div>
-                <div className="text-lg sm:text-xl font-bold">{hoveredData.hours} h</div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

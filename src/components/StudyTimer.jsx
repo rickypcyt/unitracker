@@ -402,7 +402,7 @@ const StudyTimer = () => {
             <Play size={20} />
           </button>
         ) : (
-          <button onClick={timerControls.pause} className="bg-accent-tertiary text-text-primary px-4 py-2 rounded-lg hover:bg-accent-secondary transition-colors duration-200">
+          <button onClick={timerControls.pause} className="button text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
             <Pause size={20} />
           </button>
         )}

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import type {DraggableProvided } from 'react-beautiful-dnd';
-import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, X } from 'lucide-react';
+import { Trash2, Plus, Move, Maximize2, Minimize2, Settings, X, LogOut } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from './hooks/useAuth';
@@ -53,15 +53,24 @@ const Home: React.FC = () => {
   });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; componentId: string } | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const [accentPalette, setAccentPalette] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accentPalette') || 'blue';
+    }
+    return 'blue';
+  });
 
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (showWelcomeModal) {
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
     } else {
+      document.documentElement.style.overflow = 'auto';
       document.body.style.overflow = 'auto';
     }
     return () => {
+      document.documentElement.style.overflow = 'auto';
       document.body.style.overflow = 'auto';
     };
   }, [showWelcomeModal]);
@@ -79,6 +88,21 @@ const Home: React.FC = () => {
     );
     root.classList.add(`theme-${currentTheme}`);
   }, [currentTheme]);
+
+  useEffect(() => {
+    // Set CSS variable for accent color and hover
+    const paletteColors: Record<string, { primary: string, hover: string }> = {
+      blue:   { primary: '#2563eb', hover: '#1d4ed8' },
+      green:  { primary: '#22c55e', hover: '#16a34a' },
+      orange: { primary: '#f59e42', hover: '#ea580c' },
+      pink:   { primary: '#ec4899', hover: '#db2777' },
+      purple: { primary: '#a21caf', hover: '#7c1fa0' },
+      white:  { primary: '#fff',    hover: '#e5e5e5' },
+    };
+    document.documentElement.style.setProperty('--accent-primary', paletteColors[accentPalette]?.primary || paletteColors.blue.primary);
+    document.documentElement.style.setProperty('--accent-hover', paletteColors[accentPalette]?.hover || paletteColors.blue.hover);
+    localStorage.setItem('accentPalette', accentPalette);
+  }, [accentPalette]);
 
   const handleThemeChange = (theme: string) => {
     setCurrentTheme(theme);
@@ -299,14 +323,26 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <button
               onClick={() => {
-                removeComponent(contextMenu.componentId);
+                setIsEditing(!isEditing);
                 handleCloseContextMenu();
               }}
-              className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+              className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
             >
-              <Trash2 size={16} />
-              Remove Component
+              <Settings size={16} />
+              {isEditing ? "Exit Edit Mode" : "Edit Mode"}
             </button>
+            {isEditing && (
+              <button
+                onClick={() => {
+                  removeComponent(contextMenu.componentId);
+                  handleCloseContextMenu();
+                }}
+                className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Delete Component
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -320,6 +356,8 @@ const Home: React.FC = () => {
         setIsPlaying={setIsPlaying}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
+        accentPalette={accentPalette}
+        setAccentPalette={setAccentPalette}
       />
 
       <StartSessionMenu 
@@ -485,42 +523,47 @@ const LayoutControls: React.FC<{
   setIsPlaying: (value: boolean) => void;
   currentTheme: string;
   onThemeChange: (theme: string) => void;
-}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying, currentTheme, onThemeChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  accentPalette: string;
+  setAccentPalette: (palette: string) => void;
+}> = ({ isEditing, onToggleEditing, isLoggedIn, onLogin, isPlaying, setIsPlaying, currentTheme, onThemeChange, accentPalette, setAccentPalette }) => {
+  const [showControlsModal, setShowControlsModal] = useState(false);
   const [showSessionMenu, setShowSessionMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        // Solo cerrar los menús si no estamos en modo de edición
-        if (!isEditing) {
-          setIsOpen(false);
-          setShowThemeMenu(false);
+    if (showControlsModal) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+    };
+  }, [showControlsModal]);
+
+  // Handle ESC key to toggle modal
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showControlsModal) {
+          setShowControlsModal(false);
+        } else if (!isEditing) {
+          setShowControlsModal(true);
         }
       }
     };
 
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        setShowThemeMenu(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscKey);
-
+    document.addEventListener('keydown', handleEscKey);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscKey);
+      document.removeEventListener('keydown', handleEscKey);
     };
-  }, [isEditing]);
+  }, [showControlsModal, isEditing]);
 
   const handleToggleEditing = () => {
     onToggleEditing();
-    // Limpiar todos los toasts existentes
     toast.dismiss();
     
     if (!isEditing) {
@@ -539,146 +582,141 @@ const LayoutControls: React.FC<{
   };
 
   return (
-    <div className="fixed bottom-4 right-4 flex flex-col items-end gap-2" ref={menuRef}>
-      {!isOpen && !isEditing && (
+    <>
+      {!isEditing && (
         <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
+          onClick={() => setShowControlsModal(true)}
+          className="fixed bottom-4 right-4 p-2 bg-gray-800 text-white rounded-full hover:bg-gray-700"
         >
           <Settings size={24} />
         </button>
       )}
-      {(isOpen || isEditing) && (
-        <div className="flex flex-col gap-2 p-3 rounded-lg shadow-lg border" style={{ 
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border-primary)'
-        }}>
-          <button
-            onClick={() => {
-              setShowSessionMenu(true);
-              setIsOpen(false);
-              setShowThemeMenu(false);
-            }}
-            className="px-4 py-2 rounded hover:opacity-100 transition-colors duration-200"
-            style={{ 
-              backgroundColor: 'var(--accent-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            {isPlaying ? "Pause Sesh" : "Start Sesh"}
-          </button>
-          <button
-            onClick={handleToggleEditing}
-            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
-            style={{ 
-              backgroundColor: 'var(--accent-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            {isEditing ? "Save Layout" : "Edit Layout"}
-          </button>
-          <button
-            onClick={() => {
-              setShowThemeMenu(!showThemeMenu);
-              setIsOpen(false);
-            }}
-            className="px-4 py-2 rounded hover:opacity-80 transition-colors duration-200"
-            style={{ 
-              backgroundColor: 'var(--accent-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Themes
-          </button>
-          <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
-        </div>
-      )}
 
-      {showThemeMenu && (
-        <div className="flex flex-col gap-2 p-3 rounded-lg shadow-lg border" style={{ 
-          backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border-primary)'
-        }}>
-          <button
-            onClick={() => {
-              onThemeChange('default');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'default' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
+      <AnimatePresence>
+        {showControlsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowControlsModal(false);
+              }
             }}
           >
-            Default
-          </button>
-          <button
-            onClick={() => {
-              onThemeChange('dracula');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'dracula' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Dracula
-          </button>
-          <button
-            onClick={() => {
-              onThemeChange('catppuccin');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'catppuccin' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Catppuccin
-          </button>
-          <button
-            onClick={() => {
-              onThemeChange('monokai');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'monokai' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Monokai
-          </button>
-          <button
-            onClick={() => {
-              onThemeChange('solarized');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'solarized' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Solarized
-          </button>
-          <button
-            onClick={() => {
-              onThemeChange('gruvbox');
-              setShowThemeMenu(false);
-            }}
-            className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200`}
-            style={{ 
-              backgroundColor: currentTheme === 'gruvbox' ? 'var(--accent-primary)' : 'var(--bg-primary)',
-              color: 'var(--text-primary)'
-            }}
-          >
-            Gruvbox
-          </button>
-        </div>
-      )}
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="maincard max-w-md w-full mx-4 rounded-2xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-center">Settings</h2>
+                <button
+                  className="text-gray-400 hover:text-white transition duration-200"
+                  onClick={() => setShowControlsModal(false)}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Session Controls */}
+                {!isPlaying ? (
+                  <button
+                    onClick={() => {
+                      setShowSessionMenu(true);
+                      setShowControlsModal(false);
+                    }}
+                    className="w-full px-4 py-2 rounded transition-colors duration-200"
+                    style={{
+                      backgroundColor: 'var(--accent-primary)',
+                      color: accentPalette === 'white' ? '#222' : '#fff'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+                  >
+                    Start Sesh
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setIsPlaying(false)}
+                      className="w-full px-4 py-2 rounded transition-colors duration-200"
+                      style={{
+                        backgroundColor: 'var(--accent-primary)',
+                        color: accentPalette === 'white' ? '#222' : '#fff'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+                    >
+                      Pause
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsPlaying(false);
+                        // lógica extra si quieres
+                      }}
+                      className="w-full px-4 py-2 rounded transition-colors duration-200"
+                      style={{
+                        backgroundColor: 'var(--accent-primary)',
+                        color: accentPalette === 'white' ? '#222' : '#fff'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+                    >
+                      Stop
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleToggleEditing}
+                  className="w-full px-4 py-2 rounded transition-colors duration-200"
+                  style={{
+                    backgroundColor: 'var(--accent-primary)',
+                    color: accentPalette === 'white' ? '#222' : '#fff'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+                >
+                  {isEditing ? "Save Layout" : "Edit Layout"}
+                </button>
+
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Color Palette</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'blue', label: 'Blue', color: '#2563eb', text: '#fff' },
+                      { key: 'green', label: 'Green', color: '#22c55e', text: '#fff' },
+                      { key: 'orange', label: 'Orange', color: '#f59e42', text: '#fff' },
+                      { key: 'pink', label: 'Pink', color: '#ec4899', text: '#fff' },
+                      { key: 'purple', label: 'Purple', color: '#a21caf', text: '#fff' },
+                      { key: 'white', label: 'White', color: '#fff', text: '#222' },
+                    ].map(({ key, label, color, text }) => (
+                      <button
+                        key={key}
+                        onClick={() => setAccentPalette(key)}
+                        className={`px-4 py-2 rounded hover:opacity-80 transition-colors duration-200 border-2 ${accentPalette === key ? 'border-black' : 'border-transparent'}`}
+                        style={{
+                          backgroundColor: color,
+                          color: text,
+                          fontWeight: accentPalette === key ? 'bold' : 'normal',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <StartSessionMenu 
         isOpen={showSessionMenu} 
@@ -688,7 +726,7 @@ const LayoutControls: React.FC<{
         }}
         setIsPlaying={setIsPlaying}
       />
-    </div>
+    </>
   );
 };
 
@@ -704,9 +742,30 @@ const LoginButton: React.FC<{ isLoggedIn: boolean; onClick: () => void }> = ({ i
   return (
     <button
       onClick={handleLogin}
-      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      className="w-full px-4 py-2 rounded flex items-center justify-center gap-2 transition-colors duration-200"
+      style={{
+        backgroundColor: 'var(--accent-primary)',
+        color: accentPalette === 'white' ? '#222' : '#fff'
+      }}
+      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+      onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
     >
-      {isLoggedIn ? "Logout" : "Login with Google"}
+      {isLoggedIn ? (
+        <>
+          <LogOut className="w-5 h-5" />
+          Logout
+        </>
+      ) : (
+        <>
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Login with Google
+        </>
+      )}
     </button>
   );
 };
