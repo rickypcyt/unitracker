@@ -99,7 +99,7 @@ const Statistics = () => {
 
   return (
     <div className="maincard">
-      <div className="mb-8">
+      <div className="mb-4">
         <div className="flex justify-between items-center">
           <h2 className="card-title text-white">
             <Activity size={24} /> Study Statistics
@@ -124,7 +124,7 @@ const Statistics = () => {
       </div>
 
       {/* Lista simple de estadísticas */}
-      <ul className="space-y-4 mb-8">
+      <ul className="space-y-4 mb-4">
         <li className="flex items-center gap-4 text-lg text-white">
           <Clock size={22} />
           <span className="font-semibold">Today:</span>

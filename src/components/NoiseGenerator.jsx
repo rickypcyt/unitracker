@@ -281,7 +281,7 @@ const NoiseGenerator = () => {
                     )}
                 </button>
             </div>
-            <div className="mb-6 space-y-6 pr-2">
+            <div className="mb-3 space-y-6 pr-2">
                 {/* Control para Brown Noise */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <label className="flex items-center gap-2 min-w-[120px]">
