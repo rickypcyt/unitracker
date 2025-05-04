@@ -52,7 +52,12 @@ const Home: React.FC = () => {
     return 'default';
   });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; componentId: string } | null>(null);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('hasSeenWelcomeModal');
+    }
+    return true;
+  });
   const [accentPalette, setAccentPalette] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('accentPalette') || 'blue';
@@ -98,6 +103,7 @@ const Home: React.FC = () => {
       pink:   { primary: '#ec4899', hover: '#db2777' },
       purple: { primary: '#a21caf', hover: '#7c1fa0' },
       white:  { primary: '#fff',    hover: '#e5e5e5' },
+      gray:   { primary: '#27272a', hover: '#3f3f46' },
     };
     document.documentElement.style.setProperty('--accent-primary', paletteColors[accentPalette]?.primary || paletteColors.blue.primary);
     document.documentElement.style.setProperty('--accent-hover', paletteColors[accentPalette]?.hover || paletteColors.blue.hover);
@@ -172,6 +178,7 @@ const Home: React.FC = () => {
 
   const handleCloseWelcome = () => {
     setShowWelcomeModal(false);
+    localStorage.setItem('hasSeenWelcomeModal', 'true');
   };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -694,6 +701,7 @@ const LayoutControls: React.FC<{
                       { key: 'pink', label: 'Pink', color: '#ec4899', text: '#fff' },
                       { key: 'purple', label: 'Purple', color: '#a21caf', text: '#fff' },
                       { key: 'white', label: 'White', color: '#fff', text: '#222' },
+                      { key: 'gray', label: 'Gray', color: '#27272a', text: '#f4f4f5' },
                     ].map(({ key, label, color, text }) => (
                       <button
                         key={key}
@@ -711,7 +719,7 @@ const LayoutControls: React.FC<{
                   </div>
                 </div>
 
-                <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} />
+                <LoginButton isLoggedIn={isLoggedIn} onClick={onLogin} accentPalette={accentPalette} />
               </div>
             </motion.div>
           </motion.div>
@@ -730,7 +738,7 @@ const LayoutControls: React.FC<{
   );
 };
 
-const LoginButton: React.FC<{ isLoggedIn: boolean; onClick: () => void }> = ({ isLoggedIn, onClick }) => {
+const LoginButton: React.FC<{ isLoggedIn: boolean; onClick: () => void; accentPalette: string }> = ({ isLoggedIn, onClick, accentPalette }) => {
   const handleLogin = () => {
     onClick();
     // Limpiar toasts después de 2 segundos

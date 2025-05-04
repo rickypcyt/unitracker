@@ -99,6 +99,10 @@ const TaskForm = () => {
     setSubmitted(false);
   };
 
+  // Detectar accentPalette para color de texto del botón
+  const accentPalette = typeof window !== 'undefined' ? (localStorage.getItem('accentPalette') || 'blue') : 'blue';
+  const buttonTextColor = accentPalette === 'white' ? '#222' : 'var(--text-primary)';
+
   return (
     <div className="maincard relative">
       <div className="">
@@ -294,7 +298,13 @@ const TaskForm = () => {
 
         <button
           type="submit"
-          className="w-full mt-2 p-3 bg-blue-700 text-text-primary rounded-lg card-text font-semibold cursor-pointer transition-all duration-200 hover:bg-accent-deep hover:shadow-lg active:translate-y-0.5"
+          className="w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer transition-all duration-200 hover:shadow-lg active:translate-y-0.5"
+          style={{
+            backgroundColor: 'var(--accent-primary)',
+            color: buttonTextColor
+          }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
         >
           Add Task
         </button>

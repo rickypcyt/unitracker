@@ -42,6 +42,10 @@ const Pomodoro = () => {
   const intervalRef = useRef(null);
   const menuRef = useRef(null);
 
+  // Detectar accentPalette para color de íconos
+  const accentPalette = typeof window !== 'undefined' ? (localStorage.getItem('accentPalette') || 'blue') : 'blue';
+  const iconColor = accentPalette === 'white' ? '#222' : 'var(--accent-primary)';
+
   // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('pomodoroModeIndex', modeIndex.toString());
@@ -164,8 +168,12 @@ const Pomodoro = () => {
         <div className="text-2xl font-bold mb-2 flex items-center">
           <div className="flex items-center">
             <AlarmClockCheck size={24} className="mr-2" />
-            <span className="text-2xl font-bold">Pomodoro ({MODES[modeIndex].label})</span>
-
+            <span className="text-2xl font-bold">
+              Pomodoro ({MODES[modeIndex].label})
+              <span style={{ color: 'var(--accent-primary)', marginLeft: 8, fontWeight: 500 }}>
+                [{mode === 'work' ? 'Work' : 'Break'}]
+              </span>
+            </span>
           </div>
         </div>
         <div className="absolute top-0 right-0">
@@ -201,27 +209,36 @@ const Pomodoro = () => {
           )}
         </div>
       </div>
-      <p className="text-lg font-medium text-left pl-9">
-        {mode === "work" ? "Work Time" : "Break Time"}
-      </p>
       <div className="text-5xl font-mono mb-4 text-center">
         {formatTime(timeLeft)}
       </div>
 
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
-          <button onClick={() => {
-            setIsRunning(true);
-            window.dispatchEvent(new CustomEvent('pomodoroPlay'));
-          }} className="button">
-            <Play size={20} />
+          <button
+            onClick={() => {
+              setIsRunning(true);
+              window.dispatchEvent(new CustomEvent('pomodoroPlay'));
+            }}
+            className="button"
+            style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+          >
+            <Play size={20} style={{ color: iconColor }} />
           </button>
         ) : (
-          <button onClick={() => {
-            setIsRunning(false);
-            window.dispatchEvent(new CustomEvent('pomodoroPause'));
-          }} className="button">
-            <Pause size={20} />
+          <button
+            onClick={() => {
+              setIsRunning(false);
+              window.dispatchEvent(new CustomEvent('pomodoroPause'));
+            }}
+            className="button"
+            style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+          >
+            <Pause size={20} style={{ color: iconColor }} />
           </button>
         )}
         <button
@@ -231,8 +248,11 @@ const Pomodoro = () => {
             window.dispatchEvent(new CustomEvent('pomodoroReset'));
           }}
           className="button"
+          style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
         >
-          <RotateCcw size={20} />
+          <RotateCcw size={20} style={{ color: iconColor }} />
         </button>
       </div>
 

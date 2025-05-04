@@ -351,6 +351,10 @@ const StudyTimer = () => {
     setState(prev => ({ ...prev, startPomodoro: newValue }));
   };
 
+  // Detectar tema/accentPalette
+  const accentPalette = typeof window !== 'undefined' ? (localStorage.getItem('accentPalette') || 'blue') : 'blue';
+  const iconColor = accentPalette === 'white' ? '#222' : (accentPalette === 'gray' ? '#f4f4f5' : 'var(--accent-primary)');
+
   if (!state.localUser) {
     return (
       <div className="max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
@@ -383,9 +387,9 @@ const StudyTimer = () => {
               aria-label={state.startPomodoro ? "Disable Pomodoro" : "Enable Pomodoro"}
             >
               {state.startPomodoro ? (
-                <CheckCircle2 className="text-accent-primary" size={24} />
+                <CheckCircle2 size={24} style={{ color: iconColor }} />
               ) : (
-                <Circle className="text-accent-primary" size={24} />
+                <Circle size={24} style={{ color: iconColor }} />
               )}
             </button>
           </label>
@@ -398,22 +402,42 @@ const StudyTimer = () => {
 
       <div className="flex justify-center space-x-4 mb-6">
         {!state.isRunning ? (
-          <button onClick={timerControls.start} className="button">
-            <Play size={20} />
+          <button onClick={timerControls.start} className="button"
+            style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+          >
+            <Play size={20} style={{ color: iconColor }} />
           </button>
         ) : (
-          <button onClick={timerControls.pause} className="button text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
-            <Pause size={20} />
+          <button onClick={timerControls.pause} className="button"
+            style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+          >
+            <Pause size={20} style={{ color: iconColor }} />
           </button>
         )}
-        <button onClick={timerControls.reset} className="button text-text-primary px-4 py-2 rounded-lg hover:bg-accent-deep transition-colors duration-200">
-          <RotateCcw size={20} />
+        <button onClick={timerControls.reset} className="button"
+          style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+        >
+          <RotateCcw size={20} style={{ color: iconColor }} />
         </button>
-        <button onClick={lapHandlers.add} className="button">
-          <Flag size={20} />
+        <button onClick={lapHandlers.add} className="button"
+          style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+        >
+          <Flag size={20} style={{ color: iconColor }} />
         </button>
-        <button onClick={lapHandlers.finish} className="button">
-          <Check size={20} />
+        <button onClick={lapHandlers.finish} className="button"
+          style={{ color: 'var(--text-primary)', backgroundColor: 'var(--accent-primary)' }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+        >
+          <Check size={20} style={{ color: iconColor }} />
         </button>
       </div>
 

@@ -29,12 +29,11 @@ const CustomToolbar = (toolbar) => {
         <button onClick={goToBack} className="hover:bg-bg-tertiary p-2 rounded-lg">
           <ChevronLeft size={24} />
         </button>
-        <span className="text-lg">{toolbar.label}</span>
+        <span className="text-lg font-medium">{toolbar.label}</span>
         <button onClick={goToNext} className="hover:bg-bg-tertiary p-2 rounded-lg">
           <ChevronRight size={24} />
         </button>
       </div>
-
     </div>
   );
 };

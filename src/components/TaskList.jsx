@@ -550,7 +550,9 @@ const TaskList = ({ isEditing }) => {
             >
               <ArrowUpDown size={16} />
               Sort by{' '}
-              <span className="text-accent-primary">
+              <span
+                style={{ color: 'var(--accent-primary)' }}
+              >
                 {sortBy === 'default' ? 'Default' :
                  sortBy === 'assignment' ? 'Assignment' :
                  sortBy === 'deadline' ? 'Deadline' :
