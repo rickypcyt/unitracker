@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useTaskForm } from '../redux/useTaskForm';
-import { Rows4, Circle, CheckCircle2 } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect, useRef } from "react";
+import { useTaskForm } from "../redux/useTaskForm";
+import { Rows4, Circle, CheckCircle2 } from "lucide-react";
+import { supabase } from "../utils/supabaseClient";
+import { toast } from "react-toastify";
 
 const TaskForm = () => {
   const {
@@ -12,7 +12,7 @@ const TaskForm = () => {
     handleSubmit,
     updateField,
     handleSetToday,
-    handleSetTomorrow
+    handleSetTomorrow,
   } = useTaskForm();
 
   // Estado para determinar si se intentó enviar el formulario
@@ -26,10 +26,12 @@ const TaskForm = () => {
 
   // Cargar assignments del localStorage
   useEffect(() => {
-    const savedTasks = localStorage.getItem('localTasks');
+    const savedTasks = localStorage.getItem("localTasks");
     if (savedTasks) {
       const tasks = JSON.parse(savedTasks);
-      const uniqueAssignments = [...new Set(tasks.map(task => task.assignment).filter(Boolean))];
+      const uniqueAssignments = [
+        ...new Set(tasks.map((task) => task.assignment).filter(Boolean)),
+      ];
       setLocalAssignments(uniqueAssignments);
     }
   }, []);
@@ -37,11 +39,11 @@ const TaskForm = () => {
   const handleAssignmentChange = (e) => {
     const value = e.target.value;
     updateField("assignment", value);
-    
+
     // Filtrar sugerencias de ambas fuentes (DB y localStorage)
     const allAssignments = [...new Set([...assignments, ...localAssignments])];
-    const filtered = allAssignments.filter(assignment => 
-      assignment.toLowerCase().includes(value.toLowerCase())
+    const filtered = allAssignments.filter((assignment) =>
+      assignment.toLowerCase().includes(value.toLowerCase()),
     );
     setFilteredAssignments(filtered);
     setShowSuggestions(true);
@@ -56,19 +58,19 @@ const TaskForm = () => {
     if (!showSuggestions || filteredAssignments.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < filteredAssignments.length - 1 ? prev + 1 : 0
+        setSelectedIndex((prev) =>
+          prev < filteredAssignments.length - 1 ? prev + 1 : 0,
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : filteredAssignments.length - 1
+        setSelectedIndex((prev) =>
+          prev > 0 ? prev - 1 : filteredAssignments.length - 1,
         );
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         e.stopPropagation();
         if (selectedIndex >= 0 && selectedIndex < filteredAssignments.length) {
@@ -76,12 +78,12 @@ const TaskForm = () => {
           setShowSuggestions(false);
         }
         break;
-      case 'Escape':
+      case "Escape":
         e.preventDefault();
         setShowSuggestions(false);
         setSelectedIndex(-1);
         break;
-      case 'Tab':
+      case "Tab":
         if (e.shiftKey) {
           setShowSuggestions(false);
         }
@@ -100,8 +102,12 @@ const TaskForm = () => {
   };
 
   // Detectar accentPalette para color de texto del botón
-  const accentPalette = typeof window !== 'undefined' ? (localStorage.getItem('accentPalette') || 'blue') : 'blue';
-  const buttonTextColor = accentPalette === 'white' ? '#222' : 'var(--text-primary)';
+  const accentPalette =
+    typeof window !== "undefined"
+      ? localStorage.getItem("accentPalette") || "blue"
+      : "blue";
+  const buttonTextColor =
+    accentPalette === "white" ? "#222" : "var(--text-primary)";
 
   return (
     <div className="maincard relative">
@@ -126,26 +132,20 @@ const TaskForm = () => {
           </label>
           <input
             id="title"
-            className={`textinput${
-              submitted && !newTask.title
-                ? ""
-                : ""
-            }`}
+            className={`textinput${submitted && !newTask.title ? "" : ""}`}
             value={newTask.title}
             onChange={(e) => updateField("title", e.target.value)}
             placeholder="Enter task title"
           />
           {submitted && !newTask.title && (
-            <span className="card-text-sm text-red-600">
-              Fill the title.
-            </span>
+            <span className="card-text-sm text-red-600">Fill the title.</span>
           )}
         </div>
 
         {/* Campo Descripción (opcional) */}
         <div className="flex flex-col gap-2">
           <label htmlFor="description" className="card-text-lg">
-            Description (optional)
+            Description
           </label>
           <textarea
             id="description"
@@ -189,7 +189,7 @@ const TaskForm = () => {
               tabIndex={newTask.deadline ? 0 : 1}
               onClick={(e) => e.target.showPicker()}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   e.target.showPicker();
                 }
@@ -273,7 +273,7 @@ const TaskForm = () => {
                 placeholder="Choose an assignment"
               />
               {showSuggestions && filteredAssignments.length > 0 && (
-                <div 
+                <div
                   ref={suggestionsRef}
                   className="absolute w-full mt-1 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
                 >
@@ -282,7 +282,7 @@ const TaskForm = () => {
                       key={index}
                       type="button"
                       className={`w-full px-4 py-2 text-left hover:bg-neutral-800 transition-colors duration-200 ${
-                        index === selectedIndex ? 'bg-neutral-800' : ''
+                        index === selectedIndex ? "bg-neutral-800" : ""
                       }`}
                       onClick={() => handleSuggestionClick(suggestion)}
                       onMouseEnter={() => setSelectedIndex(index)}
@@ -300,11 +300,15 @@ const TaskForm = () => {
           type="submit"
           className="w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer transition-all duration-200 hover:shadow-lg active:translate-y-0.5"
           style={{
-            backgroundColor: 'var(--accent-primary)',
-            color: buttonTextColor
+            backgroundColor: "var(--accent-primary)",
+            color: buttonTextColor,
           }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
+          }
         >
           Add Task
         </button>
