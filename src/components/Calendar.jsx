@@ -133,13 +133,16 @@ const Calendar = () => {
         </div>
       </div>
 
-      <div className="bg-black rounded-lg text-white pb-2">
+      <div className="bg-black rounded-lg text-white">
         {/* Month and Year header with navigation icons */}
 
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 text-center mb-2">
+        <div className="grid grid-cols-7 text-center ">
           {weekdays.map((day, index) => (
-            <div key={index} className="text-neutral-500 text-sm">
+            <div
+              key={index}
+              className="text-neutral-500 text-base w-full py-4 flex items-center justify-center "
+            >
               {day}
             </div>
           ))}
@@ -157,12 +160,9 @@ const Calendar = () => {
                 // Aquí agregas otras propiedades si es necesario
                 fontWeight: "bold", // Ejemplo de propiedad adicional
               }}
-              className={`
-              py-2 w-10 h-10 mx-auto flex items-center justify-center cursor-pointer
-              rounded-full
-              ${dayObj.currentMonth ? "font-bold" : ""}
-              ${dayObj.isToday ? "text-white" : ""}
-            `}
+              className={`text-neutral-500 select-none hover:text-gray-600 cursor-default text-base w-full py-4 flex items-center justify-center  ${dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-blue-600 "} ${!dayObj.currentMonth ? "text-black font-bold" : ""}
+
+              ${dayObj.isToday ? "select-none hover:text-gray-600 cursor-default " : ""}`}
             >
               {dayObj.day}
             </div>
