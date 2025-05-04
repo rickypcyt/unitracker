@@ -154,7 +154,7 @@
 
 @layer components {
   .maincard {
-    @apply max-w-full mx-auto rounded-2xl p-4 shadow-lg;
+    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
     background-color: var(--bg-secondary);
     border: 1.5px solid var(--border-primary);
   }
@@ -323,8 +323,8 @@ h1 {
 .dark-calendar .rbc-toolbar {
   background-color: var(--bg-primary) !important;
   color: var(--text-primary) !important;
-  padding: 8px 4px !important;
-  margin-bottom: 10px !important;
+  padding: 16px 8px !important;
+  margin-bottom: 20px !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -380,6 +380,7 @@ h1 {
 .dark-calendar .rbc-month-row {
   border: none !important;
   min-height: 0 !important;
+  height: 36px !important;
 }
 
 .dark-calendar .rbc-row {
@@ -434,7 +435,7 @@ h1 {
 }
 
 .dark-calendar .rbc-header {
-  padding: 0px 0 !important;
+  padding: 4px 0 !important;
   font-size: 0.95rem !important;
   height: 32px !important;
 }
@@ -444,7 +445,9 @@ h1 {
   padding-bottom: 0 !important;
 }
 
-
+.dark-calendar .rbc-month-row + .rbc-month-row {
+  border-top: none !important;
+}
 
 .dark-calendar .rbc-day-bg + .rbc-day-bg {
   border-left: none !important;
@@ -455,6 +458,9 @@ h1 {
   z-index: 4 !important;
 }
 
+.dark-calendar .rbc-row-bg {
+  z-index: 1 !important;
+}
 
 .dark-calendar .rbc-event {
   background: none !important;
