@@ -19,6 +19,9 @@ const Statistics = () => {
   const [weeklyTotal, setWeeklyTotal] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [showChart, setShowChart] = useState(false);
+  const accentColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--accent-primary")
+    .trim();
 
   // Convierte duración HH:MM:SS a horas decimales
   const durationToHours = (duration) => {
@@ -182,7 +185,7 @@ const Statistics = () => {
                 />
                 <Bar
                   dataKey="hours"
-                  fill="#3b82f6"
+                  fill={accentColor}
                   radius={[4, 4, 0, 0]}
                   animationDuration={400}
                 >
