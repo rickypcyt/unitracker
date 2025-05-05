@@ -432,7 +432,7 @@ const StudyTimer = () => {
         <div className="flex justify-center">
           <label className="flex items-center gap-2 cursor-pointer">
             <span className="text-lg text-text-secondary font-normal">
-              Sync with Pomodoro
+              Sync with Pomodoro?
             </span>
             <button
               onClick={(e) => {
@@ -449,7 +449,7 @@ const StudyTimer = () => {
               {state.startPomodoro ? (
                 <CheckCircle2 size={24} style={{ color: iconColor }} />
               ) : (
-                <Circle size={24} style={{ color: iconColor }} />
+                <Circle size={24} style={{ color: "var" }} />
               )}
             </button>
           </label>
