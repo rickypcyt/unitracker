@@ -413,7 +413,7 @@ const StudyTimer = () => {
 
   if (!state.localUser) {
     return (
-      <div className="max-w-full mx-auto my-8 bg-secondary border border-border-primary rounded-2xl p-6 shadow-lg mr-2 ml-2">
+      <div className="maincard">
         <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
         <div className="plslogin">Please log in to use the Study Timer</div>
       </div>
@@ -486,7 +486,7 @@ const StudyTimer = () => {
             className="button"
             style={{
               color: "var(--text-primary)",
-              backgroundColor: "var(--accent-primary)",
+              backgroundColor,
             }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
