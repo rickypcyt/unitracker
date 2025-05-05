@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   ResponsiveContainer,
-  Cell
-} from 'recharts';
-import { Clock, Calendar, Activity, Eye, EyeOff } from 'lucide-react';
+  Cell,
+} from "recharts";
+import { Clock, Calendar, Activity, Eye, EyeOff } from "lucide-react";
 
 const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
@@ -22,8 +22,8 @@ const Statistics = () => {
 
   // Convierte duración HH:MM:SS a horas decimales
   const durationToHours = (duration) => {
-    const [hours, minutes] = duration.split(':');
-    return parseInt(hours) + parseInt(minutes)  / 60;
+    const [hours, minutes] = duration.split(":");
+    return parseInt(hours) + parseInt(minutes) / 60;
   };
 
   // Procesar datos cuando cambian los laps o la semana seleccionada
@@ -42,18 +42,22 @@ const Statistics = () => {
       const weekDays = Array.from({ length: 7 }, (_, i) => {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        return date.toISOString().split('T')[0];
+        return date.toISOString().split("T")[0];
       });
 
       const dailyHours = laps.reduce((acc, lap) => {
         const lapDate = new Date(lap.created_at);
-        const date = lapDate.toISOString().split('T')[0];
+        const date = lapDate.toISOString().split("T")[0];
         const hours = durationToHours(lap.duration);
 
-        if (isCurrentWeek && date === today.toISOString().split('T')[0]) todayTotal += hours;
+        if (isCurrentWeek && date === today.toISOString().split("T")[0])
+          todayTotal += hours;
 
         // Calcular el total mensual
-        if (lapDate.getMonth() === today.getMonth() && lapDate.getFullYear() === today.getFullYear()) {
+        if (
+          lapDate.getMonth() === today.getMonth() &&
+          lapDate.getFullYear() === today.getFullYear()
+        ) {
           monthTotal += hours;
         }
 
@@ -64,16 +68,19 @@ const Statistics = () => {
       }, {});
 
       // Formatear datos para la gráfica
-      const formattedWeeklyData = weekDays.map(date => {
+      const formattedWeeklyData = weekDays.map((date) => {
         const dayDate = new Date(date);
         return {
           date,
           hours: dailyHours[date]?.toFixed(2) || 0,
-          dayName: dayDate.toLocaleDateString('en-US', { weekday: 'short' })
+          dayName: dayDate.toLocaleDateString("en-US", { weekday: "short" }),
         };
       });
 
-      const weekTotal = formattedWeeklyData.reduce((sum, day) => sum + parseFloat(day.hours), 0);
+      const weekTotal = formattedWeeklyData.reduce(
+        (sum, day) => sum + parseFloat(day.hours),
+        0,
+      );
 
       setTodayHours(isCurrentWeek ? todayTotal.toFixed(2) : 0);
       setWeeklyData(formattedWeeklyData);
@@ -99,7 +106,7 @@ const Statistics = () => {
 
   return (
     <div className="maincard">
-      <div className="mb-4">
+      <div className="">
         <div className="flex justify-between items-center">
           <h2 className="card-title text-white">
             <Activity size={24} /> Study Statistics
@@ -159,15 +166,18 @@ const Statistics = () => {
 
           <div className="h-64 sm:h-72 lg:h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
+              <BarChart
+                data={weeklyData}
+                margin={{ top: 5, right: 5, bottom: 5, left: 0 }}
+              >
                 <XAxis
                   dataKey="dayName"
                   stroke="#64748b"
-                  tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
+                  tick={{ fill: "#94a3b8", fontSize: "0.875rem" }}
                 />
                 <YAxis
                   stroke="#64748b"
-                  tick={{ fill: '#94a3b8', fontSize: '0.875rem' }}
+                  tick={{ fill: "#94a3b8", fontSize: "0.875rem" }}
                   tickFormatter={(value) => `${value}h`}
                 />
                 <Bar
@@ -191,8 +201,12 @@ const Statistics = () => {
           {/* Tooltip personalizado */}
           {hoveredData && (
             <div className="absolute mt-16  top-5 right-5 bg-gray-900 bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
-              <div className="text-sm sm:text-base font-semibold">{hoveredData.dayName}</div>
-              <div className="text-lg sm:text-xl font-bold">{hoveredData.hours} h</div>
+              <div className="text-sm sm:text-base font-semibold">
+                {hoveredData.dayName}
+              </div>
+              <div className="text-lg sm:text-xl font-bold">
+                {hoveredData.hours} h
+              </div>
             </div>
           )}
         </div>
