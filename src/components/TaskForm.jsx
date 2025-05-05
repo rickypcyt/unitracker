@@ -156,33 +156,40 @@ const TaskForm = () => {
           />
         </div>
 
-        {/* Campo Fecha límite */}
+        {/* Campo Fecha límite - Versión mejorada */}
         <div className="flex flex-col gap-4">
           <label htmlFor="date" className="card-text-lg">
             Deadline
           </label>
-          <div className="flex gap-2">
-            <div className="flex justify-start gap-2 items-center">
+          <div className="flex gap-4">
+            {" "}
+            {/* Mismo gap que la fila de Difficulty/Assignment */}
+            {/* Botones Today/Tomorrow - Ahora con flex-1 para ocupar espacio proporcional */}
+            <div className="flex-1 flex gap-2">
               {" "}
+              {/* flex-1 para distribución equitativa */}
               <button
                 onClick={handleSetToday}
-                className="px-6 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200"
+                className="flex-1 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200 text-center"
                 type="button"
               >
                 Today
               </button>
               <button
                 onClick={handleSetTomorrow}
-                className="px-6 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200"
+                className="flex-1 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200 text-center"
                 type="button"
               >
                 Tomorrow
               </button>
             </div>
-            <div className="flex flex-col gap-2 flex-1">
+            {/* Input Date - Ahora con flex-1 para igualar el ancho */}
+            <div className="flex-1">
+              {" "}
+              {/* Mismo peso que el contenedor de botones */}
               <input
                 id="date"
-                className={`textinput text-center flex-1 cursor-pointer${
+                className={`textinput w-full text-center cursor-pointer ${
                   submitted && !newTask.deadline
                     ? "border-accent-secondary focus:ring-accent-secondary"
                     : ""
@@ -190,14 +197,7 @@ const TaskForm = () => {
                 type="date"
                 value={newTask.deadline}
                 onChange={(e) => updateField("deadline", e.target.value)}
-                tabIndex={newTask.deadline ? 0 : 1}
                 onClick={(e) => e.target.showPicker()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.target.showPicker();
-                  }
-                }}
               />
             </div>
           </div>
@@ -207,7 +207,6 @@ const TaskForm = () => {
             </span>
           )}
         </div>
-
         {/* Campos Difficulty y Assignment en la misma fila */}
         <div className="flex gap-4">
           {/* Campo Dificultad */}
