@@ -1,12 +1,12 @@
 // utils/componentRegistry.ts
-import TaskForm from "../components/TaskForm";
-import TaskList from "../components/TaskList";
-import ProgressTracker from "../components/ProgressTracker";
-import Calendar from "../components/Calendar";
-import StudyTimer from "../components/StudyTimer";
-import NoiseGenerator from "../components/NoiseGenerator";
-import Statistics from "../components/Stats";
-import Pomodoro from "../components/Pomodoro";
+import TaskForm from "../components/tools/TaskForm";
+import TaskList from "../components/tools/TaskList";
+import ProgressTracker from "../components/tools/ProgressTracker";
+import Calendar from "../components/tools/Calendar";
+import StudyTimer from "../components/tools/StudyTimer";
+import NoiseGenerator from "../components/tools/NoiseGenerator";
+import Statistics from "../components/tools/Stats";
+import Pomodoro from "../components/tools/Pomodoro";
 import StartSessionMenu from "../components/StartSessionMenu";
 
 interface ComponentConfig {

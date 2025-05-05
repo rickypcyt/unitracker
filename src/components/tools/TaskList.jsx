@@ -5,8 +5,8 @@ import {
   deleteTask,
   fetchTasks,
   updateTask,
-} from "../redux/TaskActions";
-import { setCalendarVisibility } from "../redux/uiSlice";
+} from "../../redux/TaskActions";
+import { setCalendarVisibility } from "../../redux/uiSlice";
 import {
   CheckCircle2,
   Circle,
@@ -23,11 +23,11 @@ import {
   Play,
   ArrowUpDown,
 } from "lucide-react";
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../../utils/supabaseClient";
 import { motion } from "framer-motion";
 import moment from "moment";
 import { toast } from "react-toastify";
-import TaskDetailsModal from "./TaskDetailsModal";
+import TaskDetailsModal from "../TaskDetailsModal";
 
 const TaskItem = ({
   task,

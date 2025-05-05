@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useTaskForm } from "../redux/useTaskForm";
+import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../../utils/supabaseClient";
 import { toast } from "react-toastify";
 
 const TaskForm = () => {

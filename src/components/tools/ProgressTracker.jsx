@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FaTrophy, FaCheckCircle, FaChartLine } from "react-icons/fa";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 
 const milestones = [5, 10, 15, 20, 25];
 const accentPalette =

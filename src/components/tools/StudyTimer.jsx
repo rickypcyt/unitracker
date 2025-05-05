@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { supabase } from "../utils/supabaseClient";
-import { resetTimerState, setCurrentSession } from "../redux/LapSlice";
+import { supabase } from "../../utils/supabaseClient";
+import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
 import {
   fetchLaps,
   createLap,
   updateLap,
   deleteLap,
-} from "../redux/LapActions";
+} from "../../redux/LapActions";
 import {
   Play,
   Pause,
