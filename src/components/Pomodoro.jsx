@@ -174,7 +174,7 @@ const Pomodoro = () => {
     return (
         <div className="maincard">
             <div className="relative">
-                <div className="text-2xl font-bold mb-2 flex items-center">
+                <div className="text-2xl font-bold mb-6 flex items-center">
                     <div className="flex items-center">
                         <AlarmClockCheck size={24} className="mr-2" />
                         <span className="text-2xl font-bold">
