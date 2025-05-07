@@ -6,653 +6,652 @@
 
 /* Theme Classes */
 .theme-dracula {
-  --bg-primary: #282A36;
-  --bg-secondary: #44475a;
-  --border-primary: #6272a4;
-  --text-primary: #F8F8F2;
-  --text-secondary: #BD93F9;
-  --accent-primary: #FF79C6;
-  --accent-deep: #FF5555;
-  --today-bg: #373844;
+    --bg-primary: #282a36;
+    --bg-secondary: #44475a;
+    --border-primary: #6272a4;
+    --text-primary: #f8f8f2;
+    --text-secondary: #bd93f9;
+    --accent-primary: #ff79c6;
+    --accent-deep: #ff5555;
+    --today-bg: #373844;
 }
 
 .theme-catppuccin {
-  --bg-primary: #1E1E2E;
-  --bg-secondary: #313244;
-  --border-primary: #45475a;
-  --text-primary: #CDD6F4;
-  --text-secondary: #F5E0DC;
-  --accent-primary: #96CDFB;
-  --accent-deep: #F28FAD;
-  --today-bg: #3a3b4f;
+    --bg-primary: #1e1e2e;
+    --bg-secondary: #313244;
+    --border-primary: #45475a;
+    --text-primary: #cdd6f4;
+    --text-secondary: #f5e0dc;
+    --accent-primary: #96cdfb;
+    --accent-deep: #f28fad;
+    --today-bg: #3a3b4f;
 }
 
 .theme-monokai {
-  --bg-primary: #272822;
-  --bg-secondary: #383830;
-  --border-primary: #49483e;
-  --text-primary: #F8F8F2;
-  --text-secondary: #A6E22E;
-  --accent-primary: #F92672;
-  --accent-deep: #FD971F;
-  --today-bg: #3d3d35;
+    --bg-primary: #272822;
+    --bg-secondary: #383830;
+    --border-primary: #49483e;
+    --text-primary: #f8f8f2;
+    --text-secondary: #a6e22e;
+    --accent-primary: #f92672;
+    --accent-deep: #fd971f;
+    --today-bg: #3d3d35;
 }
 
 .theme-solarized {
-  --bg-primary: #002B36;
-  --bg-secondary: #073642;
-  --border-primary: #586E75;
-  --text-primary: #839496;
-  --text-secondary: #93A1A1;
-  --accent-primary: #268BD2;
-  --accent-deep: #DC322F;
-  --today-bg: #073642;
+    --bg-primary: #002b36;
+    --bg-secondary: #073642;
+    --border-primary: #586e75;
+    --text-primary: #839496;
+    --text-secondary: #93a1a1;
+    --accent-primary: #268bd2;
+    --accent-deep: #dc322f;
+    --today-bg: #073642;
 }
 
 .theme-gruvbox {
-  --bg-primary: #282828;
-  --bg-secondary: #32302F;
-  --border-primary: #504945;
-  --text-primary: #EBDBB2;
-  --text-secondary: #D5C4A1;
-  --accent-primary: #83A598;
-  --accent-deep: #CC241D;
-  --today-bg: #32302F;
+    --bg-primary: #282828;
+    --bg-secondary: #32302f;
+    --border-primary: #504945;
+    --text-primary: #ebdbb2;
+    --text-secondary: #d5c4a1;
+    --accent-primary: #83a598;
+    --accent-deep: #cc241d;
+    --today-bg: #32302f;
 }
 
 .theme-default {
-  --bg-primary: #000000;
-  --bg-secondary: #000000;
-  --border-primary: #3A3A3C;
-  --text-primary: #FFFFFF;
-  --text-secondary: #A0A0A0;
-  --accent-primary: #0466C8;
-  --accent-deep: #023E7D;
-  --today-bg: #1a1a1a;
+    --bg-primary: #000000;
+    --bg-secondary: #000000;
+    --border-primary: #3a3a3c;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent-primary: #0466c8;
+    --accent-deep: #023e7d;
+    --today-bg: #1a1a1a;
 }
 
 .theme-gray {
-  --bg-primary: #18181b;
-  --bg-secondary: #232326;
-  --border-primary: #27272a;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --accent-primary: #27272a; /* similar to bg-neutral-800 */
-  --accent-hover: #3f3f46;   /* similar to bg-neutral-700 */
-  --accent-deep: #52525b;
-  --accent-tertiary: #71717a;
-  --today-bg: #232326;
+    --bg-primary: #18181b;
+    --bg-secondary: #232326;
+    --border-primary: #27272a;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --accent-primary: #27272a; /* similar to bg-neutral-800 */
+    --accent-hover: #3f3f46; /* similar to bg-neutral-700 */
+    --accent-deep: #52525b;
+    --accent-tertiary: #71717a;
+    --today-bg: #232326;
 }
 
 @layer base {
-  /* Esto asegura que Tailwind registre los colores personalizados */
-  :root {
-    --bg-primary: #000000;
-    --bg-secondary: #1C1C1E;
-    --border-primary: #3A3A3C;
-    --text-primary: #FFFFFF;
-    --text-secondary: #A0A0A0;
-    --accent-primary: #0466C8;
-    --accent-deep: #023E7D;
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  
-  * {
-    font-family: Arial, sans-serif;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+    /* Esto asegura que Tailwind registre los colores personalizados */
+    :root {
+        --bg-primary: #000000;
+        --bg-secondary: #1c1c1e;
+        --border-primary: #3a3a3c;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --accent-primary: #0466c8;
+        --accent-deep: #023e7d;
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3.9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+    }
+
+    * {
+        font-family: Arial, sans-serif;
+    }
+    .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 0 0% 83.1%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+    }
 }
 
 @layer components {
-  .maincard {
-    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
-    background-color: var(--bg-secondary);
-    border: 1.5px solid var(--border-primary);
-  }
-  .card-title {
-    @apply text-2xl font-bold mb-6 flex items-center gap-2;
-    color: var(--text-primary);
-  }
-  .card-subtitle {
-    @apply text-lg font-semibold mb-2;
-    color: var(--text-primary);
-  }
-  .card-text {
-    @apply text-lg;
-    color: var(--text-secondary);
-  }
-  .card-text-lg {
-    @apply text-lg;
-    color: var(--text-secondary);
-  }
-  .button {
-    @apply px-4 py-2 rounded-lg transition-colors duration-200;
-    background-color: var(--accent-primary);
-    color: var(--text-primary);
-  }
-  .button:hover {
-    background-color: var(--accent-deep);
-  }
-  .textbutton {
-    @apply px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
-    background-color: var(--accent-primary);
-    color: var(--text-primary);
-  }
-  .textbutton:hover {
-    background-color: var(--accent-deep);
-  }
-  .textinput {
-    @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-primary);
-    color: var(--text-primary);
-  }
-  .textinput:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary);
-  }
-  .infomenu {
-    @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-  .infomenu:hover {
-    background-color: var(--bg-primary);
-  }
-  .tasks {
-    @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
-    background-color: var(--bg-secondary);
-    border: 1.5px solid var(--border-primary);
-  }
-  .tasks:hover {
-    background-color: var(--bg-primary);
-  }
-  .bg-stats {
-    @apply p-6 rounded-xl relative;
-    background-color: var(--bg-secondary);
-  }
-  .plslogin {
-    @apply text-center text-xl p-12 rounded-xl mb-4;
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-  }
-  .editbutton {
-    @apply absolute right-0 flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200 bottom-9;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-  .editbutton:hover {
-    background-color: var(--bg-primary);
-  }
-  .cancelbutton {
-    @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-  .cancelbutton:hover {
-    background-color: var(--bg-primary);
-  }
+    .maincard {
+        @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
+        background-color: var(--bg-primary);
+        border: 1.5px solid var(--border-primary);
+    }
+    .card-title {
+        @apply text-2xl font-bold mb-6 flex items-center gap-2;
+        color: var(--text-primary);
+    }
+    .card-subtitle {
+        @apply text-lg font-semibold mb-2;
+        color: var(--text-primary);
+    }
+    .card-text {
+        @apply text-lg;
+        color: var(--text-secondary);
+    }
+    .card-text-lg {
+        @apply text-lg;
+        color: var(--text-secondary);
+    }
+    .button {
+        @apply px-4 py-2 rounded-lg transition-colors duration-200;
+        background-color: var(--accent-primary);
+        color: var(--text-primary);
+    }
+    .button:hover {
+        background-color: var(--accent-deep);
+    }
+    .textbutton {
+        @apply px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
+        background-color: var(--accent-primary);
+        color: var(--text-primary);
+    }
+    .textbutton:hover {
+        background-color: var(--accent-deep);
+    }
+    .textinput {
+        @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+        background-color: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+    }
+    .textinput:focus {
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px var(--accent-primary);
+    }
+    .infomenu {
+        @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    .infomenu:hover {
+        background-color: var(--bg-primary);
+    }
+    .tasks {
+        @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
+        background-color: var(--bg-secondary);
+        border: 1.5px solid var(--border-primary);
+    }
+    .tasks:hover {
+        background-color: var(--bg-primary);
+    }
+    .bg-stats {
+        @apply p-6 rounded-xl relative;
+        background-color: var(--bg-secondary);
+    }
+    .plslogin {
+        @apply text-center text-xl p-12 rounded-xl mb-4;
+        background-color: var(--bg-secondary);
+        color: var(--text-secondary);
+    }
+    .editbutton {
+        @apply absolute right-0 flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200 bottom-9;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    .editbutton:hover {
+        background-color: var(--bg-primary);
+    }
+    .cancelbutton {
+        @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+    .cancelbutton:hover {
+        background-color: var(--bg-primary);
+    }
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
 }
 
 html {
-  background-color: var(--bg-primary);
-  min-height: 100vh;
+    background-color: var(--bg-primary);
+    min-height: 100vh;
 }
 
 h1 {
-  @apply text-4xl font-bold mb-8;
-  color: var(--text-primary);
+    @apply text-4xl font-bold mb-8;
+    color: var(--text-primary);
 }
 
 .container {
-  @apply max-w-7xl;
+    @apply max-w-7xl;
 }
 
 .Toastify__toast {
-  animation: fadeOut 0.5s ease-out 4s forwards;
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-primary) !important;
+    animation: fadeOut 0.5s ease-out 4s forwards;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-primary) !important;
 }
 
 .Toastify__toast-body {
-  color: var(--text-primary) !important;
+    color: var(--text-primary) !important;
 }
 
 .Toastify__close-button {
-  color: var(--text-primary) !important;
+    color: var(--text-primary) !important;
 }
 
 .Toastify__progress-bar {
-  background: var(--border-primary) !important;
+    background: var(--border-primary) !important;
 }
 
 @keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10px);
-    display: none !important;
-  }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+        display: none !important;
+    }
 }
 
 /* Calendar Theme */
 .dark-calendar {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-calendar {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  border: none !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
 }
 
 .dark-calendar .rbc-header {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  padding: 12px 8px !important;
-  border: none !important;
-  font-weight: normal !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    padding: 12px 8px !important;
+    border: none !important;
+    font-weight: normal !important;
 }
 
 .dark-calendar .rbc-header + .rbc-header {
-  border-left: none !important;
+    border-left: none !important;
 }
 
 .dark-calendar .rbc-toolbar {
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  padding: 16px 8px !important;
-  margin-bottom: 20px !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  width: 100% !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    padding: 16px 8px !important;
+    margin-bottom: 20px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 
 .dark-calendar .rbc-toolbar .rbc-toolbar-label {
-  font-size: 1.25rem !important;
-  font-weight: 500 !important;
-  color: var(--text-primary) !important;
-  margin: 0 16px !important;
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+    margin: 0 16px !important;
 }
 
 .dark-calendar .rbc-toolbar button {
-  background-color: transparent !important;
-  color: var(--text-primary) !important;
-  border: none !important;
-  padding: 8px !important;
-  border-radius: 8px !important;
-  transition: all 0.2s ease !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .dark-calendar .rbc-toolbar button:hover {
-  background-color: var(--bg-secondary) !important;
-  transform: scale(1.05) !important;
+    background-color: var(--bg-secondary) !important;
+    transform: scale(1.05) !important;
 }
 
 .dark-calendar .rbc-toolbar button.rbc-active {
-  background-color: var(--bg-secondary) !important;
-  color: rgb(10, 132, 255) !important;
-  font-size: 1.125rem !important;
+    background-color: var(--bg-secondary) !important;
+    color: rgb(10, 132, 255) !important;
+    font-size: 1.125rem !important;
 }
 
 .dark-calendar .rbc-toolbar .rbc-btn-group {
-  display: flex !important;
-  gap: 4px !important;
+    display: flex !important;
+    gap: 4px !important;
 }
 
 .dark-calendar .rbc-month-view {
-  background-color: var(--bg-primary) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  overflow: visible !important;
-  position: relative !important;
-  z-index: 1 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+    background-color: var(--bg-primary) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .dark-calendar .rbc-month-row {
-  border: none !important;
-  min-height: 0 !important;
-  height: 36px !important;
+    border: none !important;
+    min-height: 0 !important;
+    height: 36px !important;
 }
 
 .dark-calendar .rbc-row {
-  border: none !important;
-  min-height: 0 !important;
-  height: 36px !important;
+    border: none !important;
+    min-height: 0 !important;
+    height: 36px !important;
 }
 
 .dark-calendar .rbc-date-cell {
-  color: var(--text-primary) !important;
-  padding: 0 !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-  position: relative !important;
-  z-index: 3 !important;
-  width: 36px !important;
-  height: 36px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 auto !important;
+    color: var(--text-primary) !important;
+    padding: 0 !important;
+    font-size: 1rem !important;
+    text-align: center !important;
+    position: relative !important;
+    z-index: 3 !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
 }
 
 .dark-calendar .rbc-date-cell > a,
 .dark-calendar .rbc-date-cell > span {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 50% !important;
-  transition: background 0.2s, color 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    transition:
+        background 0.2s,
+        color 0.2s !important;
 }
 
 .dark-calendar .rbc-today > a,
 .dark-calendar .rbc-today > span {
-  background-color: var(--today-bg) !important;
-  color: var(--accent-primary) !important;
-  border-radius: 50% !important;
+    background-color: var(--today-bg) !important;
+    color: var(--accent-primary) !important;
+    border-radius: 50% !important;
 }
 
 .dark-calendar .rbc-selected > a,
 .dark-calendar .rbc-selected > span {
-  background-color: var(--accent-primary) !important;
-  color: var(--text-primary) !important;
-  border-radius: 50% !important;
+    background-color: var(--accent-primary) !important;
+    color: var(--text-primary) !important;
+    border-radius: 50% !important;
 }
 
 .dark-calendar .rbc-off-range {
-  color: var(--text-secondary) !important;
-  opacity: 0.3 !important;
+    color: var(--text-secondary) !important;
+    opacity: 0.3 !important;
 }
 
 .dark-calendar .rbc-header {
-  padding: 4px 0 !important;
-  font-size: 0.95rem !important;
-  height: 32px !important;
+    padding: 4px 0 !important;
+    font-size: 0.95rem !important;
+    height: 32px !important;
 }
 
 .dark-calendar .rbc-month-header {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 .dark-calendar .rbc-month-row + .rbc-month-row {
-  border-top: none !important;
+    border-top: none !important;
 }
 
 .dark-calendar .rbc-day-bg + .rbc-day-bg {
-  border-left: none !important;
+    border-left: none !important;
 }
 
 .dark-calendar .rbc-row-content {
-  position: relative !important;
-  z-index: 4 !important;
+    position: relative !important;
+    z-index: 4 !important;
 }
 
 .dark-calendar .rbc-row-bg {
-  z-index: 1 !important;
+    z-index: 1 !important;
 }
 
 .dark-calendar .rbc-event {
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  box-shadow: none !important;
-  width: auto !important;
-  height: auto !important;
-  position: relative !important;
-  z-index: 4 !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    width: auto !important;
+    height: auto !important;
+    position: relative !important;
+    z-index: 4 !important;
 }
 
 .dark-calendar .rbc-event.rbc-selected {
-  background-color: var(--accent-primary) !important;
+    background-color: var(--accent-primary) !important;
 }
 
 .dark-calendar .rbc-show-more {
-  background-color: transparent !important;
-  color: var(--accent-primary) !important;
-  font-size: 0.8rem !important;
-  padding: 2px 4px !important;
-  position: relative !important;
-  z-index: 5 !important;
+    background-color: transparent !important;
+    color: var(--accent-primary) !important;
+    font-size: 0.8rem !important;
+    padding: 2px 4px !important;
+    position: relative !important;
+    z-index: 5 !important;
 }
 
 .dark-calendar .rbc-overlay {
-  position: absolute !important;
-  z-index: 10 !important;
-  background-color: var(--bg-secondary) !important;
-  border: 1px solid var(--border-primary) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
-  padding: 10px !important;
-  border-radius: 8px !important;
+    position: absolute !important;
+    z-index: 10 !important;
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-primary) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    padding: 10px !important;
+    border-radius: 8px !important;
 }
 
 .dark-calendar .rbc-overlay-header {
-  color: var(--text-primary) !important;
-  padding: 8px !important;
-  border-bottom: 1px solid var(--border-primary) !important;
-  margin-bottom: 8px !important;
+    color: var(--text-primary) !important;
+    padding: 8px !important;
+    border-bottom: 1px solid var(--border-primary) !important;
+    margin-bottom: 8px !important;
 }
 
 .dark-calendar .rbc-slot-selection {
-  background-color: var(--bg-secondary) !important;
-  animation: none !important;
-  transition: none !important;
+    background-color: var(--bg-secondary) !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .dark-calendar .rbc-slot {
-  animation: none !important;
-  transition: none !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .dark-calendar .rbc-slot-selecting {
-  animation: none !important;
-  transition: none !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .dark-calendar .rbc-day-slot .rbc-event {
-  border: none !important;
+    border: none !important;
 }
 
 .dark-calendar .rbc-day-bg {
-  transition: background-color 0.2s ease !important;
+    transition: background-color 0.2s ease !important;
 }
 
 .dark-calendar .rbc-day-bg:hover {
-  background-color: var(--bg-secondary) !important;
+    background-color: var(--bg-secondary) !important;
 }
 
 .dark-calendar .rbc-time-view {
-  background-color: var(--bg-primary) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
+    background-color: var(--bg-primary) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
 }
 
 .dark-calendar .rbc-time-header {
-  border: none !important;
+    border: none !important;
 }
 
 .dark-calendar .rbc-time-header-content {
-  border: none !important;
+    border: none !important;
 }
 
 .dark-calendar .rbc-time-gutter {
-  display: none !important;
+    display: none !important;
 }
 
 .dark-calendar .rbc-time-content {
-  display: none !important;
+    display: none !important;
 }
 
 .dark-calendar .rbc-allday-cell {
-  height: auto !important;
-  min-height: 100px !important;
+    height: auto !important;
+    min-height: 100px !important;
 }
 
 .dark-calendar .rbc-time-view .rbc-row {
-  min-height: 100px !important;
+    min-height: 100px !important;
 }
 
 .dark-calendar .rbc-time-header-cell {
-  height: auto !important;
+    height: auto !important;
 }
 
 .dark-calendar .rbc-time-view .rbc-header {
-  border-bottom: none !important;
-  padding: 12px 8px !important;
+    border-bottom: none !important;
+    padding: 12px 8px !important;
 }
 
 .dark-calendar .rbc-time-view .rbc-events-container {
-  margin: 0 !important;
+    margin: 0 !important;
 }
 
 .dark-calendar .rbc-time-view .rbc-event {
-  padding: 4px 8px !important;
-  margin: 2px !important;
+    padding: 4px 8px !important;
+    margin: 2px !important;
 }
 
 .dark-calendar .task-dot {
-  width: 8px !important;
-  height: 8px !important;
-  background-color: var(--accent-primary) !important;
-  border-radius: 50% !important;
-  margin: 2px auto !important;
-  cursor: pointer !important;
-  transition: transform 0.2s ease !important;
-  display: block !important;
-  position: relative !important;
-  z-index: 4 !important;
+    width: 8px !important;
+    height: 8px !important;
+    background-color: var(--accent-primary) !important;
+    border-radius: 50% !important;
+    margin: 2px auto !important;
+    cursor: pointer !important;
+    transition: transform 0.2s ease !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 4 !important;
 }
 
 .dark-calendar .task-dot:hover {
-  transform: scale(1.5) !important;
+    transform: scale(1.5) !important;
 }
 
 .dark-calendar .task-dot .sr-only {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
 .dark-calendar .task-title {
-  background-color: var(--accent-primary) !important;
-  border-radius: 6px !important;
-  padding: 4px 8px !important;
-  color: var(--text-primary) !important;
-  font-size: 0.875rem !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-  margin: 2px !important;
-  display: block !important;
-  position: relative !important;
-  z-index: 2 !important;
+    background-color: var(--accent-primary) !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    color: var(--text-primary) !important;
+    font-size: 0.875rem !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    margin: 2px !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 2 !important;
 }
 
 .dark-calendar .rbc-agenda-view .task-title {
-  background: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  color: var(--text-primary) !important;
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: var(--text-primary) !important;
 }
 
 .dark-calendar .rbc-row-segment {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
 }
 
 .dark-calendar .rbc-event-content {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
-
-
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }
-
