@@ -14,7 +14,6 @@ const Home: React.FC = () => {
 const toggleEditMode = () => setIsEditing(e => !e);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
-  const [wideComponents, setWideComponents] = useState<Set<string>>(new Set());
   const { isLoggedIn, loginWithGoogle } = useAuth();
   const [currentTheme, setCurrentTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -46,15 +45,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
     [layout],
   );
 
-  const toggleComponentSize = useCallback((componentKey: string) => {
-    setWideComponents((prev) => {
-      const updated = new Set(prev);
-      updated.has(componentKey)
-        ? updated.delete(componentKey)
-        : updated.add(componentKey);
-      return updated;
-    });
-  }, []);
+
 
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
@@ -81,13 +72,6 @@ const toggleEditMode = () => setIsEditing(e => !e);
   
       // Actualizar el estado
       setLayout(newLayout);
-  
-      // Si tienes componentes "wide", también actualiza eso
-      setWideComponents(prev => {
-        const updated = new Set(prev);
-        updated.delete(componentId);
-        return updated;
-      });
     },
     [layout]
   );
@@ -136,8 +120,6 @@ const toggleEditMode = () => setIsEditing(e => !e);
                   colIndex={colIndex}
                   index={index}
                   isEditing={isEditing}
-                  isWide={wideComponents.has(componentKey)}
-                  onToggleSize={toggleComponentSize}
                   onRemove={removeComponent}
                   onContextMenu={handleContextMenu}
                 />

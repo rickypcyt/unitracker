@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { ComponentRegistry } from "../../utils/componentRegistry";
+import { ComponentRegistry } from "../../utils/layoutManager";
 import { toast } from "react-toastify";
 
 interface AddComponentButtonProps {

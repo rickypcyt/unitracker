@@ -1,10 +1,9 @@
 import React from "react";
-import { ComponentRegistry } from "../../utils/componentRegistry";
+import { ComponentRegistry } from "../../utils/layoutManager";
 
 interface ComponentRendererProps {
   componentKey: string;
   isEditing: boolean;
-  isWide: boolean;
   onToggleSize: (key: string) => void;
   onRemove: (colIndex: number, itemIndex: number) => void;
   onContextMenu: (e: React.MouseEvent, componentId: string) => void;
@@ -15,12 +14,7 @@ interface ComponentRendererProps {
 const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   componentKey,
   isEditing,
-  isWide,
-  onToggleSize,
-  onRemove,
   onContextMenu,
-  colIndex,
-  index,
 }) => {
   const Component = ComponentRegistry[componentKey]?.component;
   if (!Component) return null;
@@ -29,7 +23,7 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
     <div
       className={`rounded-2xl shadow-lg ${
         isEditing ? "border-2 border-dashed border-gray-500" : ""
-      } ${isWide ? "lg:col-span-2" : ""}`}
+      } `}
       onContextMenu={(e) => onContextMenu(e, componentKey)}
     >
       <Component />

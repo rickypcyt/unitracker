@@ -1,26 +1,32 @@
-// utils/layoutManager.ts
-import { ComponentRegistry } from "./componentRegistry";
+import TaskForm from "../components/tools/TaskForm";
+import TaskList from "../components/tools/TaskList";
+import ProgressTracker from "../components/tools/ProgressTracker";
+import Calendar from "../components/tools/Calendar";
+import StudyTimer from "../components/tools/StudyTimer";
+import NoiseGenerator from "../components/tools/NoiseGenerator";
+import Statistics from "../components/tools/Stats";
+import Pomodoro from "../components/tools/Pomodoro";
 
 interface LayoutColumn {
     id: string;
     items: string[];
 }
 
-interface Layout {
-    id: string;
-    items: string[];
-}
-
-interface DragResult {
-    source: {
-        droppableId: string;
-        index: number;
-    };
-    destination: {
-        droppableId: string;
-        index: number;
-    };
-}
+export interface ComponentConfig {
+    name: string;
+    component: React.FC<any>;
+  }
+  
+  export const ComponentRegistry: Record<string, ComponentConfig> = {
+    TaskForm: { component: TaskForm, name: "Task Form" },
+    TaskList: { component: TaskList, name: "Task List" },
+    ProgressTracker: { component: ProgressTracker, name: "Progress Tracker" },
+    Calendar: { component: Calendar, name: "Calendar" },
+    StudyTimer: { component: StudyTimer, name: "Study Timer" },
+    NoiseGenerator: { component: NoiseGenerator, name: "Noise Generator" },
+    Statistics: { component: Statistics, name: "Statistics" },
+    Pomodoro: { component: Pomodoro, name: "Pomodoro" },
+  };
 
 export const LayoutManager = {
     getInitialLayout: (): LayoutColumn[] => {

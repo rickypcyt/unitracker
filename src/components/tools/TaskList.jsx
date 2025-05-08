@@ -400,10 +400,13 @@ const TaskList = ({ isEditing }) => {
     }));
   };
 
-  const handleContextMenu = (e, task) => {
+  const handleTaskContextMenu = (e, task) => {
     e.preventDefault();
+    e.stopPropagation(); // <-- Esto es CLAVE
+    // Aquí abres el menú contextual específico del task, si quieres
     setContextMenu({ x: e.clientX, y: e.clientY, task });
   };
+  
 
   const handleCloseContextMenu = () => {
     setContextMenu(null);
@@ -549,7 +552,7 @@ const TaskList = ({ isEditing }) => {
                       onToggleCompletion={handleToggleCompletion}
                       onDelete={handleDeleteTask}
                       onDoubleClick={handleTaskDoubleClick}
-                      onContextMenu={handleContextMenu}
+                      onContextMenu={handleTaskContextMenu}
                       isEditing={isEditing}
                     />
                   ))}
@@ -584,7 +587,7 @@ const TaskList = ({ isEditing }) => {
                       onToggleCompletion={handleToggleCompletion}
                       onDelete={handleDeleteTask}
                       onDoubleClick={handleTaskDoubleClick}
-                      onContextMenu={handleContextMenu}
+                      onContextMenu={handleTaskContextMenu}
                       isEditing={isEditing}
                     />
                   ))}
@@ -727,7 +730,7 @@ const TaskList = ({ isEditing }) => {
                     onToggleCompletion={handleToggleCompletion}
                     onDelete={handleDeleteTask}
                     onDoubleClick={handleTaskDoubleClick}
-                    onContextMenu={handleContextMenu}
+                    onContextMenu={handleTaskContextMenu}
                     isEditing={isEditing}
                   />
                 ))}
@@ -759,7 +762,7 @@ const TaskList = ({ isEditing }) => {
                     onToggleCompletion={handleToggleCompletion}
                     onDelete={handleDeleteTask}
                     onDoubleClick={handleTaskDoubleClick}
-                    onContextMenu={handleContextMenu}
+                    onContextMenu={handleTaskContextMenu}
                     isEditing={isEditing}
                   />
                 ))}

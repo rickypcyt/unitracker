@@ -11,7 +11,6 @@ interface LayoutColumn {
 interface LayoutColumnsProps {
   layout: LayoutColumn[]; // Debe tener 3 elementos
   isEditing: boolean;
-  wideComponents: Set<string>;
   onToggleSize: (componentKey: string) => void;
   onRemove: (colIndex: number, itemIndex: number) => void;
   onAdd: (colIndex: number, componentKey: string) => void;
@@ -21,7 +20,6 @@ interface LayoutColumnsProps {
 const LayoutColumns: React.FC<LayoutColumnsProps> = ({
   layout,
   isEditing,
-  wideComponents,
   onToggleSize,
   onRemove,
   onAdd,
@@ -49,7 +47,6 @@ const LayoutColumns: React.FC<LayoutColumnsProps> = ({
                   colIndex={colIndex}
                   index={index}
                   isEditing={isEditing}
-                  isWide={wideComponents.has(componentKey)}
                   onToggleSize={onToggleSize}
                   onRemove={onRemove}
                   onContextMenu={onContextMenu}

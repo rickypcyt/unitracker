@@ -4,7 +4,6 @@ import type { LayoutColumn, DragResult, ContextMenuState } from "../types";
 
 const useLayout = () => {
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
-  const [wideComponents, setWideComponents] = useState(new Set<string>());
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
   const handleDragEnd = useCallback((result: DragResult) => {
@@ -18,7 +17,6 @@ const useLayout = () => {
 
     const itemIndex = layout[colIndex].items.indexOf(componentId);
     setLayout(LayoutManager.removeComponent(layout, colIndex, itemIndex));
-    setWideComponents(prev => new Set([...prev].filter(k => k !== componentId)));
   }, [layout]);
 
   const addComponent = useCallback((colIndex: number, componentKey: string) => {
@@ -29,7 +27,6 @@ const useLayout = () => {
 
   return {
     layout,
-    wideComponents,
     handleDragEnd,
     removeComponent,
     addComponent,
