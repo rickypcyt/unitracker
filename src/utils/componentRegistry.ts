@@ -7,9 +7,10 @@ import StudyTimer from "../components/tools/StudyTimer";
 import NoiseGenerator from "../components/tools/NoiseGenerator";
 import Statistics from "../components/tools/Stats";
 import Pomodoro from "../components/tools/Pomodoro";
-import StartSessionMenu from "../components/StartSessionMenu";
+
 
 interface ComponentConfig {
+  title: string;
   component: (props?: any) => JSX.Element;
   name: string;
   isWide: boolean;

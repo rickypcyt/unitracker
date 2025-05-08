@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useAuth } from "./hooks/useAuth";
-import LayoutColumns from "./components/home/LayoutColumns";
 import ContextMenu from "./components/home/ContextMenu";
 import WelcomeModal from "./components/home/WelcomeModal";
 import LayoutControls from "./components/home/LayoutControls";
@@ -12,6 +11,8 @@ import AddComponentButton from "./components/home/AddComponentButton";
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+const toggleEditMode = () => setIsEditing(e => !e);
+
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const [wideComponents, setWideComponents] = useState<Set<string>>(new Set());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -55,19 +56,42 @@ const Home: React.FC = () => {
     });
   }, []);
 
-  const removeComponent = useCallback(
-    (componentId: string) => {
-      // lógica para eliminar componente del layout
-    },
-    [layout],
-  );
-
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
-      // lógica para agregar componente al layout
+      // Agregar el componente usando LayoutManager
+      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey);
+  
+      // Actualizar el estado
+      setLayout(newLayout);
     },
-    [layout],
+    [layout]
   );
+  
+  const removeComponent = useCallback(
+    (componentId: string) => {
+      // Buscar en qué columna está el componente
+      const colIndex = layout.findIndex(col => col.items.includes(componentId));
+      if (colIndex === -1) return; // No existe, no hacer nada
+  
+      // Buscar el índice del componente dentro de la columna
+      const itemIndex = layout[colIndex].items.indexOf(componentId);
+  
+      // Removerlo usando LayoutManager
+      const newLayout = LayoutManager.removeComponent(layout, colIndex, itemIndex);
+  
+      // Actualizar el estado
+      setLayout(newLayout);
+  
+      // Si tienes componentes "wide", también actualiza eso
+      setWideComponents(prev => {
+        const updated = new Set(prev);
+        updated.delete(componentId);
+        return updated;
+      });
+    },
+    [layout]
+  );
+  
 
   const handleContextMenu = useCallback(
     (e, componentId) => {
@@ -139,14 +163,15 @@ const Home: React.FC = () => {
 
       {contextMenu && (
         <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          componentId={contextMenu.componentId}
-          isEditing={isEditing}
-          onClose={handleCloseContextMenu}
-          onRemove={removeComponent}
-          onToggleEdit={() => setIsEditing(!isEditing)}
-        />
+  x={contextMenu.x}
+  y={contextMenu.y}
+  componentId={contextMenu.componentId}
+  isEditing={isEditing}
+  onClose={handleCloseContextMenu}
+  onRemove={removeComponent}
+  onToggleEdit={toggleEditMode}
+/>
+
       )}
 
       {showWelcomeModal && (
