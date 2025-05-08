@@ -23,6 +23,11 @@ const formatMinutesToHHMM = (minutes) => {
 };
 
 const Statistics = () => {
+  const { tasks } = useSelector((state) => state.tasks); // Ajusta si tu slice se llama diferente
+  const [doneToday, setDoneToday] = useState(0);
+  const [doneWeek, setDoneWeek] = useState(0);
+  const [doneMonth, setDoneMonth] = useState(0);
+  
   const { laps } = useSelector((state) => state.laps);
   const [todayMinutes, setTodayMinutes] = useState(0);
   const [weeklyData, setWeeklyData] = useState([]);
@@ -101,7 +106,46 @@ const Statistics = () => {
     };
 
     processData(isCurrentWeek);
-  }, [laps, isCurrentWeek]);
+
+// Lógica para tareas completadas
+if (tasks && Array.isArray(tasks)) {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  // Calcular el lunes de la semana actual
+  const currentDay = today.getDay();
+  const mondayOffset = currentDay === 0 ? 6 : currentDay - 1;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - mondayOffset);
+
+  let countToday = 0, countWeek = 0, countMonth = 0;
+
+  tasks.forEach((task) => {
+    if (!task.completed_at) return;
+    const completedDate = new Date(task.completed_at);
+    const completedStr = completedDate.toISOString().split("T")[0];
+
+    // Hoy
+    if (completedStr === todayStr) countToday++;
+
+    // Mes
+    if (
+      completedDate.getMonth() === currentMonth &&
+      completedDate.getFullYear() === currentYear
+    ) countMonth++;
+
+    // Semana (desde lunes)
+    if (completedDate >= monday && completedDate <= today) countWeek++;
+  });
+
+  setDoneToday(countToday);
+  setDoneWeek(countWeek);
+  setDoneMonth(countMonth);
+}
+
+  }, [laps, isCurrentWeek,tasks]);
 
   // Controladores de eventos para cada barra
   const handleCellMouseEnter = (entry) => {
@@ -142,24 +186,50 @@ const Statistics = () => {
         </div>
       </div>
 
-      {/* Lista simple de estadísticas */}
-      <ul className="space-y-4 mb-4">
-        <li className="flex items-center gap-4 text-lg text-white">
-          <Clock size={22} />
-          <span className="font-semibold">Today:</span>
-          <span>{formatMinutesToHHMM(todayMinutes)}H</span>
-        </li>
-        <li className="flex items-center gap-4 text-lg text-white">
-          <Calendar size={22} />
-          <span className="font-semibold">Week:</span>
-          <span>{formatMinutesToHHMM(weeklyTotalMinutes)}H</span>
-        </li>
-        <li className="flex items-center gap-4 text-lg text-white">
-          <Calendar size={22} />
-          <span className="font-semibold">Month:</span>
-          <span>{formatMinutesToHHMM(monthlyTotalMinutes)}H</span>
-        </li>
-      </ul>
+
+
+      <ul className="space-y-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:space-y-0 sm:gap-8">
+  {/* Estadísticas de tiempo */}
+  <div className="flex flex-col sm:flex-row items-center justify-center gap-6 p-4">
+  {/* Sección de tiempo */}
+  <ul className="space-y-2">
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">Today:</span>
+      <span>{formatMinutesToHHMM(todayMinutes)}H</span>
+    </li>
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">Week:</span>
+      <span>{formatMinutesToHHMM(weeklyTotalMinutes)}H</span>
+    </li>
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">Month:</span>
+      <span>{formatMinutesToHHMM(monthlyTotalMinutes)}H</span>
+    </li>
+  </ul>
+
+  {/* Separador vertical en pantallas grandes y línea en móviles */}
+  <div className="hidden sm:block h-20 border-l border-gray-500 mx-4"></div>
+  <span className="block sm:hidden text-gray-500 text-center">|</span>
+
+  {/* Sección de tareas completadas */}
+  <ul className="space-y-2">
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">Tasks Today:</span>
+      <span>{doneToday}</span>
+    </li>
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">This Week:</span>
+      <span>{doneWeek}</span>
+    </li>
+    <li className="flex items-center gap-4 text-lg text-white">
+      <span className="font-semibold">This Month:</span>
+      <span>{doneMonth}</span>
+    </li>
+  </ul>
+</div>
+
+</ul>
+
 
       {/* Segunda fila con el gráfico */}
       {showChart && (

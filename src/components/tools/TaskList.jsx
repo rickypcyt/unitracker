@@ -29,6 +29,33 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import TaskDetailsModal from "../TaskDetailsModal";
 
+const ASSIGNMENT_COLORS = [
+  "#34a853", // verde
+  "#4285f4", // azul
+  "#fbbc05", // amarillo
+  "#ea4335", // rojo
+  "#ab47bc", // violeta
+  "#00bcd4", // celeste
+  "#ff7043", // naranja
+  "#8d6e63", // marrón
+  "#cddc39", // lima
+  "#607d8b", // gris azulado
+];
+
+function getAssignmentColor(assignment) {
+  if (!assignment) return "#bdbdbd"; // gris para "No assignment"
+  // Hash simple: suma los códigos de los caracteres
+  let hash = 0;
+  for (let i = 0; i < assignment.length; i++) {
+    hash = assignment.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  // Asegúrate de que el hash sea positivo
+  hash = Math.abs(hash);
+  // Elige un color de la paleta
+  return ASSIGNMENT_COLORS[hash % ASSIGNMENT_COLORS.length];
+}
+
+
 const TaskItem = ({
   task,
   onToggleCompletion,
@@ -104,27 +131,52 @@ const TaskItem = ({
         className="ml-1 text-lg text-text-secondary line-clamp-2 group relative min-h-[0.5rem]"
         title={task.description}
       >
-        {task.description || " "}
+        {task.description || "No description"}
       </div>
 
-      {/* Assignment */}
-      <div className="flex items-center ml-1">
-        <span className="text-lg text-text-secondary">
-          {task.assignment || "No assignment"}
-        </span>
-      </div>
+{/* Assignment + Date in one row */}
+<div className="flex items-center ml-1 gap-4 flex-wrap">
+  {/* Assignment */}
+  <span
+  className="text-base font-semibold"
+  style={{
+    color: getAssignmentColor(task.assignment),
+    background: "#000",
+    borderRadius: "0.5rem",
+    display: "inline-block",
+    minWidth: "20px",
+    textAlign: "left",
+  }}
+>
+  {task.assignment || "No assignment"}
+</span>
 
-      {/* Date */}
-      <div className="flex items-center ml-1">
-        <Calendar size={16} className="text-text-secondary" />
-        <span className="ml-2 text-lg text-text-secondary">
-          {new Date(task.deadline).toLocaleDateString("en-US", {
+
+  {/* Date */}
+  <span className="flex items-center gap-2">
+    <Calendar size={16} className="text-text-secondary" />
+    {!task.completed ? (
+      <span className="text-xs text-blue-400">
+        Deadline: {new Date(task.deadline).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </span>
+    ) : (
+      task.completed_at && (
+        <span className="text-xs text-green-400">
+          Completed: {new Date(task.completed_at).toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",
             day: "numeric",
           })}
         </span>
-      </div>
+      )
+    )}
+  </span>
+</div>
+
     </div>
   </div>
 );
@@ -260,9 +312,16 @@ const TaskList = ({ isEditing }) => {
       // Handle local storage update
       setLocalTasks((prevTasks) =>
         prevTasks.map((t) =>
-          t.id === task.id ? { ...t, completed: !t.completed } : t
+          t.id === task.id
+            ? {
+                ...t,
+                completed: !t.completed,
+                completed_at: !t.completed ? new Date().toISOString() : null,
+              }
+            : t
         )
       );
+      
     } else {
       // Handle remote storage update
       dispatch(toggleTaskStatus(task.id, !task.completed));

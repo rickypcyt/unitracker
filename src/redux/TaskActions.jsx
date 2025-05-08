@@ -58,6 +58,7 @@ export const addTask = (newTask) => async (dispatch) => {
       difficulty: newTask.difficulty,
       assignment: newTask.assignment,
       user_id: user.id, // ← Solo campos existentes en la tabla
+      color:newTask.color,
     };
 
     const { data, error } = await supabase
@@ -83,16 +84,17 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
     // Actualización optimista
     dispatch(toggleTaskStatusOptimistic({ id, completed }));
 
-    // Actualizar la tarea en la base de datos
+    // Nueva lógica para completed_at
+    const completed_at = completed ? new Date().toISOString() : null;
+
     const { data, error } = await supabase
       .from('tasks')
-      .update({ completed })
+      .update({ completed, completed_at })
       .eq('id', id)
       .select();
 
     if (error) throw error;
 
-    // Despachar la tarea actualizada
     dispatch(updateTaskSuccess(data[0]));
   } catch (error) {
     // Revertir en caso de error
@@ -100,6 +102,7 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
     dispatch(taskError(error.message));
   }
 };
+
 
 // Acción para eliminar tarea
 export const deleteTask = (id) => async (dispatch) => {

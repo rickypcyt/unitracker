@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { addTask } from "./TaskActions";
-import { supabase } from "../utils/supabaseClient"; // Importa el cliente de Supabase
+import { supabase } from "../utils/supabaseClient";
 import { toast } from "react-toastify";
 
 const formatDate = (date) => {
@@ -16,13 +16,22 @@ export const useTaskForm = () => {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    deadline: formatDate(new Date()), // Fecha actual por defecto    difficulty: "medium", // Add default difficulty
-    assignment: "", // Add assignment field
+    deadline: formatDate(new Date()),
+    difficulty: "medium",
+    assignment: "",
+    color: "",
   });
   const [error, setError] = useState("");
   const [assignments, setAssignments] = useState([]);
+  const [assignmentColors, setAssignmentColors] = useState({});
 
-  // Fetch assignments when component mounts
+  // Cargar colores guardados en localStorage al montar (modo local)
+  useEffect(() => {
+    const savedColors = JSON.parse(localStorage.getItem("assignmentColors") || "{}");
+    setAssignmentColors(savedColors);
+  }, []);
+
+  // Fetch assignments y colores desde Supabase
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
@@ -33,7 +42,7 @@ export const useTaskForm = () => {
 
         const { data, error } = await supabase
           .from("tasks")
-          .select("assignment")
+          .select("assignment, color")
           .eq("user_id", user.id)
           .not("assignment", "is", null)
           .not("assignment", "eq", "")
@@ -41,10 +50,16 @@ export const useTaskForm = () => {
 
         if (error) throw error;
 
-        // Get unique assignments and remove duplicates
-        const uniqueAssignments = [
-          ...new Set(data.map((task) => task.assignment)),
-        ];
+        // Extrae colores únicos por asignatura
+        const colorsMap = {};
+        data.forEach((task) => {
+          if (task.assignment && task.color) {
+            colorsMap[task.assignment] = task.color;
+          }
+        });
+        setAssignmentColors(colorsMap);
+
+        const uniqueAssignments = [...new Set(data.map((task) => task.assignment))];
         setAssignments(uniqueAssignments);
       } catch (error) {
         console.error("Error fetching assignments:", error);
@@ -53,6 +68,16 @@ export const useTaskForm = () => {
 
     fetchAssignments();
   }, []);
+
+  // updateField mejorado
+  const updateField = (field, value) => {
+    setNewTask((prev) => {
+      if (field === "assignment" && assignmentColors[value]) {
+        return { ...prev, assignment: value, color: assignmentColors[value] };
+      }
+      return { ...prev, [field]: value };
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,22 +90,28 @@ export const useTaskForm = () => {
 
       if (!user) {
         // Modo local
-        const localTasks = JSON.parse(
-          localStorage.getItem("localTasks") || "[]",
-        );
+        const localTasks = JSON.parse(localStorage.getItem("localTasks") || "[]");
         const newLocalTask = {
-          id: Date.now(), // Usar timestamp como ID
+          id: Date.now(),
           title: newTask.title,
           description: newTask.description || "",
           deadline: newTask.deadline,
           completed: false,
           difficulty: newTask.difficulty || "medium",
           assignment: newTask.assignment || "",
+          color: newTask.color || "#8888ff",
           created_at: new Date().toISOString(),
         };
 
         localTasks.push(newLocalTask);
         localStorage.setItem("localTasks", JSON.stringify(localTasks));
+
+        // Guardar el color de la asignatura en localStorage
+        const localAssignmentsColors = JSON.parse(localStorage.getItem("assignmentColors") || "{}");
+        if (newTask.assignment && newTask.color) {
+          localAssignmentsColors[newTask.assignment] = newTask.color;
+          localStorage.setItem("assignmentColors", JSON.stringify(localAssignmentsColors));
+        }
 
         // Disparar evento de actualización
         window.dispatchEvent(new CustomEvent("localTasksUpdated"));
@@ -92,6 +123,7 @@ export const useTaskForm = () => {
           deadline: "",
           difficulty: "medium",
           assignment: "",
+          color: "",
         });
 
         toast.success("Task added successfully");
@@ -106,6 +138,7 @@ export const useTaskForm = () => {
         completed: false,
         difficulty: newTask.difficulty || "medium",
         assignment: newTask.assignment || "",
+        color: newTask.color || assignmentColors[newTask.assignment] || "#8888ff",
         user_id: user.id,
       };
 
@@ -115,8 +148,10 @@ export const useTaskForm = () => {
       setNewTask({
         title: "",
         description: "",
-        deadline: formatDate(new Date()), // Resetear a hoy        difficulty: "medium",
+        deadline: formatDate(new Date()),
+        difficulty: "medium",
         assignment: "",
+        color: "",
       });
 
       toast.success("Task added successfully");
@@ -126,14 +161,11 @@ export const useTaskForm = () => {
     }
   };
 
-  const updateField = (field, value) => {
-    setNewTask((prev) => ({ ...prev, [field]: value }));
-  };
-
   return {
     newTask,
     error,
     assignments,
+    assignmentColors, 
     handleSubmit,
     updateField,
     setNewTask,

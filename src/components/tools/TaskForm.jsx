@@ -9,15 +9,17 @@ const TaskForm = () => {
     newTask,
     error,
     assignments,
+    assignmentColors,
     handleSubmit,
     updateField,
     handleSetToday,
     handleSetTomorrow,
   } = useTaskForm();
 
+
+
   // Estado para determinar si se intentó enviar el formulario
   const [submitted, setSubmitted] = useState(false);
-  const [showToolsMenu, setShowToolsMenu] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
   const [localAssignments, setLocalAssignments] = useState([]);
@@ -125,22 +127,63 @@ const TaskForm = () => {
           </div>
         )}
 
-        {/* Campo Título */}
-        <div className="flex flex-col gap-2">
-          <label htmlFor="title" className="card-text-lg">
-            Task Title
-          </label>
-          <input
-            id="title"
-            className={`textinput${submitted && !newTask.title ? "" : ""}`}
-            value={newTask.title}
-            onChange={(e) => updateField("title", e.target.value)}
-            placeholder="Enter task title"
-          />
-          {submitted && !newTask.title && (
-            <span className="card-text-sm text-red-600">Fill the title.</span>
-          )}
+        <div className="flex gap-4 items-center">
+          {/* Assignment input */}
+          <div className="relative flex-1">
+            <input
+              type="text"
+              id="assignment"
+              className="textinput pr-10"
+              value={newTask.assignment}
+              onChange={handleAssignmentChange}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onKeyDown={handleKeyDown}
+              placeholder="Assignment"
+            />
+            {/* Círculo color, alineado a la derecha del input */}
+            <button
+              type="button"
+              className="absolute top-1/2 right-2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer mr-1" 
+              style={{
+                backgroundColor:
+                  assignmentColors[newTask.assignment] ||
+                  newTask.color ||
+                  "#8888ff",
+              }}
+              title="Change assignment color"
+              onClick={() => {
+                // Abre el input de color oculto
+                document.getElementById("color-picker").click();
+              }}
+              tabIndex={-1}
+            >
+              {/* Empty, just the circle */}
+            </button>
+            {/* Input color oculto */}
+            <input
+              type="color"
+              id="color-picker"
+              value={newTask.color || assignmentColors[newTask.assignment] || "#8888ff"}
+              onChange={(e) => updateField("color", e.target.value)}
+              style={{ display: "none" }}
+            />
+          </div>
+          {/* Título */}
+          <div className="flex-1">
+            <input
+              id="title"
+              className={`textinput`}
+              value={newTask.title}
+              onChange={(e) => updateField("title", e.target.value)}
+              placeholder="Task title"
+            />
+            {submitted && !newTask.title && (
+              <span className="card-text-sm text-red-600">Fill the title.</span>
+            )}
+          </div>
         </div>
+
 
         {/* Campo Descripción (opcional) */}
         <div className="flex flex-col gap-2">
@@ -156,69 +199,19 @@ const TaskForm = () => {
           />
         </div>
 
-        {/* Campo Fecha límite - Versión mejorada */}
-        <div className="flex flex-col gap-4">
-          <label htmlFor="date" className="card-text-lg">
-            Deadline
-          </label>
-          <div className="flex gap-4">
-            {" "}
-            {/* Mismo gap que la fila de Difficulty/Assignment */}
-            {/* Botones Today/Tomorrow - Ahora con flex-1 para ocupar espacio proporcional */}
-            <div className="flex-1 flex gap-2">
-              {" "}
-              {/* flex-1 para distribución equitativa */}
-              <button
-                onClick={handleSetToday}
-                className="flex-1 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200 text-center"
-                type="button"
-              >
-                Today
-              </button>
-              <button
-                onClick={handleSetTomorrow}
-                className="flex-1 py-4 bg-neutral-800 text-text-primary rounded-lg hover:bg-neutral-700 transition-colors duration-200 text-center"
-                type="button"
-              >
-                Tomorrow
-              </button>
-            </div>
-            {/* Input Date - Ahora con flex-1 para igualar el ancho */}
-            <div className="flex-1">
-              {" "}
-              {/* Mismo peso que el contenedor de botones */}
-              <input
-                id="date"
-                className={`textinput w-full text-center cursor-pointer ${
-                  submitted && !newTask.deadline
-                    ? "border-accent-secondary focus:ring-accent-secondary"
-                    : ""
-                }`}
-                type="date"
-                value={newTask.deadline}
-                onChange={(e) => updateField("deadline", e.target.value)}
-                onClick={(e) => e.target.showPicker()}
-              />
-            </div>
-          </div>
-          {submitted && !newTask.deadline && (
-            <span className="card-text-sm text-red-600 place-self-center">
-              Fill the date time.
-            </span>
-          )}
-        </div>
-        {/* Campos Difficulty y Assignment en la misma fila */}
-        <div className="flex gap-4">
-          {/* Campo Dificultad */}
+        <div className="flex gap-4 items-end">
+          {/* Difficulty */}
           <div className="flex flex-col gap-2 flex-1">
             <label htmlFor="difficulty" className="card-text-lg">
               Difficulty
             </label>
             <div className="flex justify-start gap-8 items-center">
+              {/* Easy */}
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "easy")}
-                className="flex flex-col items-center gap-1 rounded-full group"
+                className={`flex flex-col items-center gap-1 rounded-full group 
+        ${newTask.difficulty === "easy" ? "" : ""}`}
                 aria-label="Set Easy Difficulty"
               >
                 {newTask.difficulty === "easy" ? (
@@ -228,10 +221,12 @@ const TaskForm = () => {
                 )}
                 <span className="text-green-500 text-md">Easy</span>
               </button>
+              {/* Medium */}
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "medium")}
-                className="flex flex-col items-center gap-1 rounded-full group"
+                className={`flex flex-col items-center gap-1 rounded-full group 
+        ${newTask.difficulty === "medium" ? "" : ""}`}
                 aria-label="Set Medium Difficulty"
               >
                 {newTask.difficulty === "medium" ? (
@@ -241,10 +236,12 @@ const TaskForm = () => {
                 )}
                 <span className="text-blue-500 text-md">Medium</span>
               </button>
+              {/* Hard */}
               <button
                 type="button"
                 onClick={() => updateField("difficulty", "hard")}
-                className="flex flex-col items-center gap-1  rounded-full group"
+                className={`flex flex-col items-center gap-1 rounded-full group 
+        ${newTask.difficulty === "hard" ? "" : ""}`}
                 aria-label="Set Hard Difficulty"
               >
                 {newTask.difficulty === "hard" ? (
@@ -257,48 +254,31 @@ const TaskForm = () => {
             </div>
           </div>
 
-          {/* Campo Assignment con Autocompletado */}
+          {/* Deadline */}
           <div className="flex flex-col gap-2 flex-1">
-            <label htmlFor="assignment" className="card-text-lg">
-              Assignment
+            <label htmlFor="difficulty" className="card-text-lg">
+              Deadline
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="assignment"
-                className="textinput hover:bg-neutral-800 transition-colors duration-1000"
-                value={newTask.assignment}
-                onChange={handleAssignmentChange}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => {
-                  setTimeout(() => setShowSuggestions(false), 500);
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Choose an assignment"
-              />
-              {showSuggestions && filteredAssignments.length > 0 && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute w-full mt-1 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
-                >
-                  {filteredAssignments.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      className={`w-full px-4 py-2 text-left hover:bg-neutral-800 transition-colors duration-200 ${
-                        index === selectedIndex ? "bg-neutral-800" : ""
-                      }`}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <input
+              id="date"
+              className={`textinput w-full text-center cursor-pointer ${submitted && !newTask.deadline
+                  ? "border-accent-secondary focus:ring-accent-secondary"
+                  : ""
+                }`}
+              type="date"
+              value={newTask.deadline}
+              onChange={(e) => updateField("deadline", e.target.value)}
+              onClick={(e) => e.target.showPicker()}
+            />
+            {submitted && !newTask.deadline && (
+              <span className="card-text-sm text-red-600 place-self-center">
+                Fill the date time.
+              </span>
+            )}
           </div>
         </div>
+
+
 
         <button
           type="submit"
