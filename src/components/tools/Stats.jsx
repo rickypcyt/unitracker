@@ -10,26 +10,31 @@ import {
 } from "recharts";
 import { Clock, Calendar, Activity, Eye, EyeOff } from "lucide-react";
 
+// Utilidades para sumar y formatear
+const durationToMinutes = (duration) => {
+  const [h, m, s] = duration.split(":").map(Number);
+  return h * 60 + m + Math.round(s / 60);
+};
+
+const formatMinutesToHHMM = (minutes) => {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}:${m.toString().padStart(2, "0")}`;
+};
+
 const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
-  const [todayHours, setTodayHours] = useState(0);
+  const [todayMinutes, setTodayMinutes] = useState(0);
   const [weeklyData, setWeeklyData] = useState([]);
   const [hoveredData, setHoveredData] = useState(null);
   const [isCurrentWeek, setIsCurrentWeek] = useState(true);
-  const [weeklyTotal, setWeeklyTotal] = useState(0);
-  const [monthlyTotal, setMonthlyTotal] = useState(0);
+  const [weeklyTotalMinutes, setWeeklyTotalMinutes] = useState(0);
+  const [monthlyTotalMinutes, setMonthlyTotalMinutes] = useState(0);
   const [showChart, setShowChart] = useState(false);
   const accentColor = getComputedStyle(document.documentElement)
     .getPropertyValue("--accent-primary")
     .trim();
 
-  // Convierte duración HH:MM:SS a horas decimales
-  const durationToHours = (duration) => {
-    const [hours, minutes] = duration.split(":");
-    return parseInt(hours) + parseInt(minutes) / 60;
-  };
-
-  // Procesar datos cuando cambian los laps o la semana seleccionada
   useEffect(() => {
     const processData = (isCurrentWeek) => {
       const today = new Date();
@@ -38,34 +43,36 @@ const Statistics = () => {
       const monday = new Date(today);
       monday.setDate(today.getDate() - mondayOffset - (isCurrentWeek ? 0 : 7));
 
-      let todayTotal = 0;
-      let monthTotal = 0;
+      let todayTotalMinutes = 0;
+      let monthTotalMinutes = 0;
 
-      // Crear un arreglo con los días de lunes a domingo de la semana seleccionada
+      // Días de la semana seleccionada (lunes a domingo)
       const weekDays = Array.from({ length: 7 }, (_, i) => {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
         return date.toISOString().split("T")[0];
       });
 
-      const dailyHours = laps.reduce((acc, lap) => {
+      const dailyMinutes = laps.reduce((acc, lap) => {
         const lapDate = new Date(lap.created_at);
         const date = lapDate.toISOString().split("T")[0];
-        const hours = durationToHours(lap.duration);
+        const minutes = durationToMinutes(lap.duration);
 
+        // Suma para hoy
         if (isCurrentWeek && date === today.toISOString().split("T")[0])
-          todayTotal += hours;
+          todayTotalMinutes += minutes;
 
-        // Calcular el total mensual
+        // Suma para el mes
         if (
           lapDate.getMonth() === today.getMonth() &&
           lapDate.getFullYear() === today.getFullYear()
         ) {
-          monthTotal += hours;
+          monthTotalMinutes += minutes;
         }
 
+        // Suma para la semana (chart)
         if (weekDays.includes(date)) {
-          acc[date] = (acc[date] || 0) + hours;
+          acc[date] = (acc[date] || 0) + minutes;
         }
         return acc;
       }, {});
@@ -73,22 +80,24 @@ const Statistics = () => {
       // Formatear datos para la gráfica
       const formattedWeeklyData = weekDays.map((date) => {
         const dayDate = new Date(date);
+        const minutes = dailyMinutes[date] || 0;
         return {
           date,
-          hours: dailyHours[date]?.toFixed(2) || 0,
+          minutes,
+          hoursLabel: formatMinutesToHHMM(minutes),
           dayName: dayDate.toLocaleDateString("en-US", { weekday: "short" }),
         };
       });
 
-      const weekTotal = formattedWeeklyData.reduce(
-        (sum, day) => sum + parseFloat(day.hours),
+      const weekTotalMinutes = formattedWeeklyData.reduce(
+        (sum, day) => sum + day.minutes,
         0,
       );
 
-      setTodayHours(isCurrentWeek ? todayTotal.toFixed(2) : 0);
+      setTodayMinutes(todayTotalMinutes);
       setWeeklyData(formattedWeeklyData);
-      setWeeklyTotal(weekTotal.toFixed(2));
-      setMonthlyTotal(monthTotal.toFixed(2));
+      setWeeklyTotalMinutes(weekTotalMinutes);
+      setMonthlyTotalMinutes(monthTotalMinutes);
     };
 
     processData(isCurrentWeek);
@@ -138,26 +147,26 @@ const Statistics = () => {
         <li className="flex items-center gap-4 text-lg text-white">
           <Clock size={22} />
           <span className="font-semibold">Today:</span>
-          <span>{todayHours} H</span>
+          <span>{formatMinutesToHHMM(todayMinutes)}H</span>
         </li>
         <li className="flex items-center gap-4 text-lg text-white">
           <Calendar size={22} />
           <span className="font-semibold">Week:</span>
-          <span>{weeklyTotal} H</span>
+          <span>{formatMinutesToHHMM(weeklyTotalMinutes)}H</span>
         </li>
         <li className="flex items-center gap-4 text-lg text-white">
           <Calendar size={22} />
           <span className="font-semibold">Month:</span>
-          <span>{monthlyTotal} H</span>
+          <span>{formatMinutesToHHMM(monthlyTotalMinutes)}H</span>
         </li>
       </ul>
 
       {/* Segunda fila con el gráfico */}
       {showChart && (
-        <div className="bg-stats p-6 rounded-lg w-full">
+        <div className="bg-black maincard p-3 rounded-lg w-full relative">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
             <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
-              {isCurrentWeek ? "This Week's" : "Last Week's"} Daily Study Hours
+              {isCurrentWeek ? "This Week's" : "Last Week's"} Chart
             </h3>
             <button
               onClick={toggleWeek}
@@ -181,10 +190,10 @@ const Statistics = () => {
                 <YAxis
                   stroke="#64748b"
                   tick={{ fill: "#94a3b8", fontSize: "0.875rem" }}
-                  tickFormatter={(value) => `${value}h`}
+                  tickFormatter={(value) => formatMinutesToHHMM(value)}
                 />
                 <Bar
-                  dataKey="hours"
+                  dataKey="minutes"
                   fill={accentColor}
                   radius={[4, 4, 0, 0]}
                   animationDuration={400}
@@ -203,15 +212,20 @@ const Statistics = () => {
 
           {/* Tooltip personalizado */}
           {hoveredData && (
-            <div className="absolute mt-16  top-5 right-5 bg-gray-900 bg-opacity-80 backdrop-blur-sm text-white p-3 rounded-lg shadow-xl pointer-events-none">
-              <div className="text-sm sm:text-base font-semibold">
-                {hoveredData.dayName}
-              </div>
-              <div className="text-lg sm:text-xl font-bold">
-                {hoveredData.hours} h
-              </div>
-            </div>
-          )}
+  <div className="absolute left-1/2 -translate-x-1/2 top-4 z-50
+      bg-gray-900 bg-opacity-90 backdrop-blur-md text-white
+      px-4 py-2 rounded-xl shadow-2xl border border-accent-primary
+      pointer-events-none">
+    <div className="text-base font-semibold text-accent-primary mb-1 text-center">
+      {hoveredData.dayName}
+    </div>
+    <div className="text-xl font-bold tracking-wide">
+      {hoveredData.hoursLabel}h
+    </div>
+
+  </div>
+)}
+
         </div>
       )}
     </div>
