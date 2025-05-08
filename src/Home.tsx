@@ -85,58 +85,54 @@ const Home: React.FC = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-            {layout.map((column, colIndex) => (
-              <Droppable key={column.id} droppableId={column.id}>
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="space-y-4"
-                  >
-                    {column.items.map((componentKey, index) => (
-                      <Draggable
-                        key={componentKey}
-                        draggableId={componentKey}
-                        index={index}
-                        isDragDisabled={!isEditing}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={` rounded-lg shadow-lg ${wideComponents.has(componentKey) ? "md:col-span-2 lg:col-span-2" : ""}`}
-                            onContextMenu={(e) =>
-                              handleContextMenu(e, componentKey)
-                            }
-                          >
-                            <ComponentRenderer
-                              componentKey={componentKey}
-                              colIndex={colIndex}
-                              index={index}
-                              isEditing={isEditing}
-                              isWide={wideComponents.has(componentKey)}
-                              onToggleSize={toggleComponentSize}
-                              onRemove={removeComponent}
-                              onContextMenu={handleContextMenu}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                    {isEditing && (
-                      <AddComponentButton
-                        onClick={(componentKey) =>
-                          addComponent(colIndex, componentKey)
-                        }
-                        layout={layout}
-                      />
-                    )}
-                  </div>
-                )}
-              </Droppable>
-            ))}
+          {layout.map((column, colIndex) => (
+  <Droppable key={column.id} droppableId={column.id}>
+    {(provided) => (
+      <div
+        {...provided.droppableProps}
+        ref={provided.innerRef}
+        className="space-y-4"
+      >
+        {column.items.map((componentKey, index) => (
+          <Draggable
+            key={`${componentKey}-${colIndex}-${index}`}
+            draggableId={`${componentKey}-${colIndex}-${index}`}
+            index={index}
+            isDragDisabled={!isEditing}
+          >
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                onContextMenu={(e) => handleContextMenu(e, componentKey)}
+              >
+                <ComponentRenderer
+                  componentKey={componentKey}
+                  colIndex={colIndex}
+                  index={index}
+                  isEditing={isEditing}
+                  isWide={wideComponents.has(componentKey)}
+                  onToggleSize={toggleComponentSize}
+                  onRemove={removeComponent}
+                  onContextMenu={handleContextMenu}
+                />
+              </div>
+            )}
+          </Draggable>
+        ))}
+        {provided.placeholder}
+        {isEditing && (
+          <AddComponentButton
+            onClick={(componentKey) => addComponent(colIndex, componentKey)}
+            layout={layout}
+          />
+        )}
+      </div>
+    )}
+  </Droppable>
+))}
+
           </div>
         </div>
       </DragDropContext>

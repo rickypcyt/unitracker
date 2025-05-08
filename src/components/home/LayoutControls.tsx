@@ -65,7 +65,7 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-center flex-1">
-                  Settings
+                  Menu
                 </h2>
                 <button
                   className="text-gray-400 hover:text-white transition duration-200"
