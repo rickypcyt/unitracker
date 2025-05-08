@@ -122,11 +122,11 @@
     }
     .infomenu {
         @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
-        background-color: var(--bg-secondary);
+        background-color: var(--bg-primary);
         color: var(--text-primary);
     }
     .infomenu:hover {
-        background-color: var(--bg-primary);
+        background-color: var(--bg-secondary);
     }
     .tasks {
         @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
