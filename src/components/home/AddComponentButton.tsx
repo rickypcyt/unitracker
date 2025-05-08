@@ -54,12 +54,12 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative max-w-full mx-auto rounded-2xl  shadow-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]"
+      className=""
       style={{ width: "100%" }}
     >
       <button
         type="button"
-        className="flex items-center gap-2 px-6 py-4 bg-black hover:bg-accent-primary/80 text-accent-primary hover:text-white rounded-2xl border border-accent-primary transition w-full justify-center font-semibold"
+        className="flex items-center gap-2 px-6 py-4 bg-black hover:bg-accent-primary/80 text-accent-primary hover:text-white rounded-xl border border-accent-primary transition w-full justify-center font-semibold"
         onClick={handleButtonClick}
         aria-haspopup="true"
         aria-expanded={showMenu}

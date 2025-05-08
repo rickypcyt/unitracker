@@ -47,20 +47,19 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           className="w-full px-4 py-2 text-left text-sm bg-neutral-800 hover:bg-neutral-700 rounded-md bg-opacity-60 flex items-center gap-2"
         >
           <Settings size={16} />
-          {isEditing ? "Exit Edit Mode" : "Edit Mode"}
+          {isEditing ? "Exit Edit Layout" : "Edit Layout"}
         </button>
-        {isEditing && (
-          <button
-            onClick={() => {
-              onRemove(componentId);
-              onClose();
-            }}
-            className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
-          >
-            <Trash2 size={16} />
-            Delete Component
-          </button>
-        )}
+
+        <button
+          onClick={() => {
+            onRemove(componentId);
+            onClose();
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+        >
+          <Trash2 size={16} />
+          Delete Component
+        </button>
       </div>
     </div>
   );

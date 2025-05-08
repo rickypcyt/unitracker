@@ -72,11 +72,11 @@ const Home: React.FC = () => {
   const handleContextMenu = useCallback(
     (e, componentId) => {
       e.preventDefault();
-      if (!isEditing) return;
       setContextMenu({ x: e.clientX, y: e.clientY, componentId });
     },
-    [isEditing],
+    [],
   );
+  
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
