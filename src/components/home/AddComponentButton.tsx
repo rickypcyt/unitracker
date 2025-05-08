@@ -43,19 +43,30 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
 
   // 4. Manejar el click para mostrar menú o toast
   const handleButtonClick = () => {
-    if (availableComponents.length === 0) {
-      toast.info("All components are being used.");
+    const activeComponents = new Set(layout.flatMap((col) => col.items));
+    const available = Object.entries(ComponentRegistry).filter(
+      ([key]) => !activeComponents.has(key)
+    );
+  
+    if (available.length === 0) {
+      toast.info("All components are being used.", {
+        autoClose: 2000,
+        pauseOnHover: false,
+        containerId: "main-toast-container", // opcional, solo si usas varios contenedores
+      });
       setShowMenu(false);
-    } else {
-      setShowMenu((s) => !s);
+      return;
     }
+  
+    setShowMenu((s) => !s);
   };
+  
+  
 
   return (
     <div
       ref={containerRef}
-      className=""
-      style={{ width: "100%" }}
+      className="relative w-full" // <- ¡Esto es clave!
     >
       <button
         type="button"
@@ -73,7 +84,7 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
         <div
           id="add-component-menu"
           role="menu"
-          className="absolute z-50 mt-3 w-full max-w-full rounded-2xl p-4 shadow-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]"
+          className="absolute left-0 z-50 mt-3 w-full rounded-2xl p-4 shadow-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]"
           style={{ maxHeight: "300px", overflowY: "auto" }}
         >
           {availableComponents.map(([key, config]) => (

@@ -1,217 +1,210 @@
 /* src/index.css */
 
+/* Importa las capas base, componentes y utilidades de Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   1. Variables CSS Globales
+   ========================= */
 @layer base {
-    /* Esto asegura que Tailwind registre los colores personalizados */
-    :root {
-        --bg-primary: #000000;
-        --bg-secondary: #1c1c1e;
-        --border-primary: #3a3a3c;
-        --text-primary: #ffffff;
-        --text-secondary: #a0a0a0;
-        --accent-primary: #0466c8;
-        --accent-deep: #023e7d;
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
+  :root {
+    /* Paleta principal */
+    --bg-primary: #000;
+    --bg-secondary: #1c1c1e;
+    --border-primary: #3a3a3c;
+    --text-primary: #fff;
+    --text-secondary: #a0a0a0;
+    --accent-primary: #0466c8;
+    --accent-deep: #023e7d;
 
-    * {
-        font-family: Arial, sans-serif;
-    }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
-}
+    /* Paleta extendida (HSL para compatibilidad con Tailwind) */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
 
-@layer components {
-    .maincard {
-        @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
-        background-color: var(--bg-primary);
-        border: 1.5px solid var(--border-primary);
-    }
-    .card-title {
-        @apply text-2xl font-bold mb-6 flex items-center gap-2;
-        color: var(--text-primary);
-    }
-    .card-subtitle {
-        @apply text-lg font-semibold mb-2;
-        color: var(--text-primary);
-    }
-    .card-text {
-        @apply text-lg;
-        color: var(--text-secondary);
-    }
-    .card-text-lg {
-        @apply text-lg;
-        color: var(--text-secondary);
-    }
-    .button {
-        @apply px-4 py-2 rounded-lg transition-colors duration-200;
-        background-color: var(--accent-primary);
-        color: var(--text-primary);
-    }
-    .button:hover {
-        background-color: var(--accent-deep);
-    }
-    .textbutton {
-        @apply px-6 py-3 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
-        background-color: var(--accent-primary);
-        color: var(--text-primary);
-    }
-    .textbutton:hover {
-        background-color: var(--accent-deep);
-    }
-    .textinput {
-        @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
-        background-color: var(--bg-primary);
-        border: 1px solid var(--border-primary);
-        color: var(--text-primary);
-    }
-    .textinput:focus {
-        border-color: var(--accent-primary);
-        box-shadow: 0 0 0 2px var(--accent-primary);
-    }
-    .infomenu {
-        @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
-        background-color: var(--bg-primary);
-        color: var(--text-primary);
-    }
-    .infomenu:hover {
-        background-color: var(--bg-secondary);
-    }
-    .tasks {
-        @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
-        background-color: var(--bg-secondary);
-        border: 1.5px solid var(--border-primary);
-    }
-    .tasks:hover {
-        background-color: var(--bg-primary);
-    }
-    .bg-stats {
-        @apply p-6 rounded-xl relative;
-        background-color: var(--bg-secondary);
-    }
-    .plslogin {
-        @apply text-center text-xl p-12 rounded-xl mb-4;
-        background-color: var(--bg-secondary);
-        color: var(--text-secondary);
-    }
-    .editbutton {
-        @apply absolute right-0 flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200 bottom-9;
-        background-color: var(--bg-secondary);
-        color: var(--text-primary);
-    }
-    .editbutton:hover {
-        background-color: var(--bg-primary);
-    }
-    .cancelbutton {
-        @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
-        background-color: var(--bg-secondary);
-        color: var(--text-primary);
-    }
-    .cancelbutton:hover {
-        background-color: var(--bg-primary);
-    }
-}
+  .dark {
+    /* Sobrescribe variables para modo oscuro */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 
-body {
+  /* Fuente base */
+  html {
     font-family: Arial, sans-serif;
+    background-color: var(--bg-primary);
+    min-height: 100vh;
+  }
+  body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
     margin: 0;
     padding: 0;
+  }
+  * {
+    @apply border-border;
+    font-family: inherit;
+  }
 }
 
-html {
+/* =========================
+   2. Componentes Personalizados
+   ========================= */
+@layer components {
+  .maincard {
+    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
     background-color: var(--bg-primary);
-    min-height: 100vh;
+    border: 1.5px solid var(--border-primary);
+  }
+  .card-title {
+    @apply text-2xl font-bold mb-6 flex items-center gap-2;
+    color: var(--text-primary);
+  }
+  .card-subtitle {
+    @apply text-lg font-semibold mb-2;
+    color: var(--text-primary);
+  }
+  .card-text, .card-text-lg {
+    @apply text-lg;
+    color: var(--text-secondary);
+  }
+  .button, .textbutton {
+    @apply px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+  .button:hover, .textbutton:hover {
+    background-color: var(--accent-deep);
+  }
+  .textinput {
+    @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+  }
+  .textinput:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-primary);
+  }
+  .infomenu {
+    @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+  .infomenu:hover {
+    background-color: var(--bg-secondary);
+  }
+  .tasks {
+    @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
+    background-color: var(--bg-secondary);
+    border: 1.5px solid var(--border-primary);
+  }
+  .tasks:hover {
+    background-color: var(--bg-primary);
+  }
+  .bg-stats {
+    @apply p-6 rounded-xl relative;
+    background-color: var(--bg-secondary);
+  }
+  .plslogin {
+    @apply text-center text-xl p-12 rounded-xl mb-4;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+  }
+  .editbutton, .cancelbutton {
+    @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+  .editbutton {
+    @apply absolute right-0 bottom-9;
+  }
+  .editbutton:hover, .cancelbutton:hover {
+    background-color: var(--bg-primary);
+  }
 }
 
+/* =========================
+   3. Utilidades Generales
+   ========================= */
 h1 {
-    @apply text-4xl font-bold mb-8;
-    color: var(--text-primary);
+  @apply text-4xl font-bold mb-8;
+  color: var(--text-primary);
 }
 
 .container {
-    @apply max-w-7xl;
+  @apply max-w-7xl;
 }
 
+/* =========================
+   4. Toastify Custom Styles
+   ========================= */
 .Toastify__toast {
-    animation: fadeOut 0.5s ease-out 4s forwards;
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-primary) !important;
+  animation: fadeOut 0.5s ease-out 4s forwards;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-primary) !important;
 }
-
-.Toastify__toast-body {
-    color: var(--text-primary) !important;
+.Toastify__toast-body, .Toastify__close-button {
+  color: var(--text-primary) !important;
 }
-
-.Toastify__close-button {
-    color: var(--text-primary) !important;
-}
-
 .Toastify__progress-bar {
-    background: var(--border-primary) !important;
+  background: var(--border-primary) !important;
 }
 
+/* =========================
+   5. Accesibilidad y Reset
+   ========================= */
+/* Puedes agregar resets y mejoras de accesibilidad aquí si lo deseas */
 
-
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
-}
+/* =========================
+   6. Extra: Mejor integración con Tailwind
+   ========================= */
+/* Si usas Tailwind 3+, puedes mapear tus variables en tailwind.config.js para usar clases como bg-[color:var(--bg-primary)] directamente en JSX/HTML */
