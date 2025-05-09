@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
-import { colorClasses } from "../../utils/colors"; // Importa el objeto de colores
+import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -20,7 +20,7 @@ const MODES = [
 ];
 
 const Pomodoro = () => {
-  const { iconColor, accentPalette } = useTheme(); // Usa el contexto
+  const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
   const [modeIndex, setModeIndex] = useState(() => {
     const savedModeIndex = localStorage.getItem("pomodoroModeIndex");
     return savedModeIndex ? parseInt(savedModeIndex) : 0;
@@ -229,7 +229,7 @@ const Pomodoro = () => {
               setIsRunning(true);
               window.dispatchEvent(new CustomEvent("pomodoroPlay"));
             }}
-            className={`button ${colorClasses[accentPalette]}`}
+            className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
           >
             <Play size={20} style={{ color: iconColor }} />
           </button>
@@ -239,7 +239,7 @@ const Pomodoro = () => {
               setIsRunning(false);
               window.dispatchEvent(new CustomEvent("pomodoroPause"));
             }}
-            className={`button ${colorClasses[accentPalette]}`}
+            className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
           >
             <Pause size={20} style={{ color: iconColor }} />
           </button>
@@ -252,7 +252,7 @@ const Pomodoro = () => {
             );
             window.dispatchEvent(new CustomEvent("pomodoroReset"));
           }}
-          className={`button ${colorClasses[accentPalette]}`}
+          className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
         >
           <RotateCcw size={20} style={{ color: iconColor }} />
         </button>
