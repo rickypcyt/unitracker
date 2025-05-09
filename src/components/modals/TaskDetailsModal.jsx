@@ -4,7 +4,7 @@ import { X, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { updateTask } from "../redux/TaskActions";
+import { updateTask } from "../../redux/TaskActions";
 
 const TaskDetailsModal = ({
   selectedTask,

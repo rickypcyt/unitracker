@@ -27,7 +27,7 @@ import { supabase } from "../../utils/supabaseClient";
 import { motion } from "framer-motion";
 import moment from "moment";
 import { toast } from "react-toastify";
-import TaskDetailsModal from "../TaskDetailsModal";
+import TaskDetailsModal from "../modals/TaskDetailsModal";
 
 const TaskItem = ({
     task,

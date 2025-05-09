@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Settings, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "../../utils/ThemeContext";
 
 interface LayoutControlsProps {
   isEditing: boolean;
@@ -29,6 +30,7 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
   setAccentPalette,
   loginWithGoogle,
 }) => {
+  const { accentPalette: themeAccentPalette, setAccentPalette: setThemeAccentPalette, iconColor } = useTheme();
   const [showControlsModal, setShowControlsModal] = useState(false);
   const [showSessionMenu, setShowSessionMenu] = useState(false);
 
@@ -88,14 +90,6 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
                       backgroundColor: "var(--accent-primary)",
                       color: accentPalette === "white" ? "#222" : "#fff",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor =
-                        "var(--accent-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor =
-                        "var(--accent-primary)")
-                    }
                   >
                     Start Sesh
                   </button>
@@ -108,35 +102,18 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
                         backgroundColor: "var(--accent-primary)",
                         color: accentPalette === "white" ? "#222" : "#fff",
                       }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--accent-hover)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--accent-primary)")
-                      }
                     >
                       Pause
                     </button>
                     <button
                       onClick={() => {
                         setIsPlaying(false);
-                        // lógica extra si quieres
                       }}
                       className="w-full px-4 py-2 rounded transition-colors duration-200"
                       style={{
                         backgroundColor: "var(--accent-primary)",
                         color: accentPalette === "white" ? "#222" : "#fff",
                       }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--accent-hover)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor =
-                          "var(--accent-primary)")
-                      }
                     >
                       Stop
                     </button>
@@ -153,14 +130,6 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
                     backgroundColor: "var(--accent-primary)",
                     color: accentPalette === "white" ? "#222" : "#fff",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "var(--accent-hover)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "var(--accent-primary)")
-                  }
                 >
                   {isEditing ? "Save Layout" : "Edit Layout"}
                 </button>
@@ -239,14 +208,6 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
                     backgroundColor: "var(--accent-primary)",
                     color: accentPalette === "white" ? "#222" : "#fff",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "var(--accent-hover)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      "var(--accent-primary)")
-                  }
                 >
                   {isLoggedIn ? "Logged In" : "Login"}
                 </button>

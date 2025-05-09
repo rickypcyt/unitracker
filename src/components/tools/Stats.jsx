@@ -242,7 +242,7 @@ const Statistics = () => {
 
             {/* Segunda fila con el gráfico */}
             {showChart && (
-                <div className="bg-black maincard p-3 rounded-lg w-full relative">
+                <div className="mt-6 bg-black p-3 rounded-lg w-full relative">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
                             {isCurrentWeek ? "This Week's" : "Last Week's"} Chart

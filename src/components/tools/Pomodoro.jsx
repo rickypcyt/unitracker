@@ -7,6 +7,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
+import { colorClasses } from "../../utils/colors"; // Importa el objeto de colores
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -18,6 +20,7 @@ const MODES = [
 ];
 
 const Pomodoro = () => {
+  const { iconColor, accentPalette } = useTheme(); // Usa el contexto
   const [modeIndex, setModeIndex] = useState(() => {
     const savedModeIndex = localStorage.getItem("pomodoroModeIndex");
     return savedModeIndex ? parseInt(savedModeIndex) : 0;
@@ -42,19 +45,6 @@ const Pomodoro = () => {
   const intervalRef = useRef(null);
   const menuRef = useRef(null);
 
-  // Obtener la paleta de acentos del localStorage (con soporte para SSR)
-  const accentPalette =
-    typeof window !== "undefined"
-      ? localStorage.getItem("accentPalette") || "blue"
-      : "blue";
-
-  // Determinar el color del ícono según la paleta
-  const iconColor =
-    accentPalette === "white"
-      ? "#000000" // Negro para white
-      : accentPalette === "gray"
-        ? "#ffffff" // Blanco para gray
-        : "#ffffff"; // Blanco para otras paletas (blue, green, etc.)
   // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("pomodoroModeIndex", modeIndex.toString());
@@ -239,17 +229,7 @@ const Pomodoro = () => {
               setIsRunning(true);
               window.dispatchEvent(new CustomEvent("pomodoroPlay"));
             }}
-            className="button"
-            style={{
-              color: "var(--text-primary)",
-              backgroundColor: "var(--accent-primary)",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-            }
+            className={`button ${colorClasses[accentPalette]}`}
           >
             <Play size={20} style={{ color: iconColor }} />
           </button>
@@ -259,17 +239,7 @@ const Pomodoro = () => {
               setIsRunning(false);
               window.dispatchEvent(new CustomEvent("pomodoroPause"));
             }}
-            className="button"
-            style={{
-              color: "var(--text-primary)",
-              backgroundColor: "var(--accent-primary)",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-            }
+            className={`button ${colorClasses[accentPalette]}`}
           >
             <Pause size={20} style={{ color: iconColor }} />
           </button>
@@ -282,17 +252,7 @@ const Pomodoro = () => {
             );
             window.dispatchEvent(new CustomEvent("pomodoroReset"));
           }}
-          className="button"
-          style={{
-            color: "var(--text-primary)",
-            backgroundColor: "var(--accent-primary)",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-          }
+          className={`button ${colorClasses[accentPalette]}`}
         >
           <RotateCcw size={20} style={{ color: iconColor }} />
         </button>

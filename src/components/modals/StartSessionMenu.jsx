@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Play, Pause, Cloud, CloudRain, Waves, X } from 'lucide-react';
-import { updateTask } from '../redux/TaskActions';
-import { setCalendarVisibility } from '../redux/uiSlice';
+import { updateTask } from '../../redux/TaskActions';
+import { setCalendarVisibility } from '../../redux/uiSlice';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import * as Tone from 'tone';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) => {
   const dispatch = useDispatch();

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useAuth } from "./hooks/useAuth";
-import ContextMenu from "./components/home/ContextMenu";
-import WelcomeModal from "./components/home/WelcomeModal";
-import LayoutControls from "./components/home/LayoutControls";
-import StartSessionMenu from "./components/StartSessionMenu";
+import ContextMenu from "./components/modals/ContextMenu";
+import WelcomeModal from "./components/modals/WelcomeModal";
+import Settings from "./components/modals/Settings";
+import StartSessionMenu from "./components/modals/StartSessionMenu";
 import ComponentRenderer from "./components/home/ComponentRenderer";
 import { LayoutManager } from "./utils/layoutManager";
 import AddComponentButton from "./components/home/AddComponentButton";
@@ -35,7 +35,25 @@ const toggleEditMode = () => setIsEditing(e => !e);
     return "blue";
   });
 
-  // Aquí van los useEffect para tema, scroll modal, etc.
+  // Estado para manejar el audio
+  const [audioState, setAudioState] = useState({ isPlaying: false, currentTime: 0 });
+  const [audio] = useState(new Audio('path/to/your/audio/file.mp3')); // Crea el audio una vez
+
+  useEffect(() => {
+    // Configura el audio
+    audio.loop = true; // Por ejemplo, si quieres que el audio se repita
+
+    // Maneja el estado del audio
+    if (audioState.isPlaying) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+
+    return () => {
+      audio.pause(); // Asegúrate de pausar el audio al desmontar
+    };
+  }, [audio, audioState]);
 
   const handleDragEnd = useCallback(
     (result) => {
@@ -167,7 +185,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
         />
       )}
 
-      <LayoutControls
+      <Settings
         isEditing={isEditing}
         onToggleEditing={() => setIsEditing(!isEditing)}
         isLoggedIn={isLoggedIn}

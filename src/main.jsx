@@ -12,6 +12,7 @@ import { store } from './redux/store';
 import Home from './Home';
 import './index.css';
 import "react-toastify/dist/ReactToastify.css";
+import { ThemeProvider } from './utils/ThemeContext';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -45,13 +46,14 @@ class ErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}> 
     <ChakraProvider value={defaultSystem}> 
-      <ErrorBoundary>
-
-        <Home />
-        <ToastContainer />
-        <Analytics />
-        <SpeedInsights />
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <Home />
+          <ToastContainer />
+          <Analytics />
+          <SpeedInsights />
+        </ErrorBoundary>
+      </ThemeProvider>
     </ChakraProvider>
   </Provider>
 );

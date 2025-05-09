@@ -4,7 +4,6 @@ import taskReducer from "./TaskSlice";
 import lapReducer from "./LapSlice";
 import uiReducer from "./uiSlice";
 import layoutReducer from "./layoutSlice";
-import themeReducer from "./themeSlice";
 import assignmentReducer from "./AssignmentSlice"; // importa tu nuevo slice
 
 export const store = configureStore({
@@ -14,7 +13,6 @@ export const store = configureStore({
         laps: lapReducer,
         ui: uiReducer,
         layout: layoutReducer,
-        theme: themeReducer,
         assignments: assignmentReducer, // <-- agrégalo aquí
     },
     middleware: (getDefaultMiddleware) =>
