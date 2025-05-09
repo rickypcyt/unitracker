@@ -183,7 +183,12 @@ const NoiseGenerator = () => {
     };
 
     // Función para controlar todos los sonidos
-    const toggleAllSounds = () => {
+    const toggleAllSounds = async () => {
+        // Inicializa el audio si no se ha hecho
+        if (!masterGainRef.current) {
+            await initAudioContext();
+        }
+
         if (isPlayingAll) {
             stopBrownNoise();
             stopRainNoise();
@@ -264,9 +269,6 @@ const NoiseGenerator = () => {
 
     return (
         <div className="maincard">
-            <button onClick={initAudioContext} className="init-audio-button">
-                Iniciar Audio
-            </button>
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Noise Generator</h2>
                 <button

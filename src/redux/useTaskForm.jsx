@@ -163,7 +163,6 @@ export const useTaskForm = () => {
                     color: "",
                 });
 
-                toast.success("Task added successfully");
                 return;
             }
 
@@ -191,8 +190,6 @@ export const useTaskForm = () => {
                 assignment: "",
                 color: "",
             });
-
-            toast.success("Task added successfully");
         } catch (error) {
             console.error("Error:", error);
             toast.error("Failed to add task");
