@@ -573,6 +573,7 @@ const StudyTimer = () => {
 
             {showMonthsList &&
                 Object.entries(groupedLaps).map(([monthYear, weeks]) => (
+                    
                     <div className="mt-2">
                         {" "}
                         <div key={monthYear} className="mb-4">
@@ -589,7 +590,7 @@ const StudyTimer = () => {
                             </button>
                         </div>
                         {state.expandedMonths[monthYear] && (
-                            <div className="space-y-4 mt-2">
+                            <div className="space-y-4 mt-3">
                                 {Object.entries(weeks).map(([weekKey, sessions]) => (
                                     <div key={`${monthYear}-${weekKey}`} className="mb-2 ml-2">
                                         <button

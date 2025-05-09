@@ -6,6 +6,7 @@ import StudyTimer from "../components/tools/StudyTimer";
 import NoiseGenerator from "../components/tools/NoiseGenerator";
 import Statistics from "../components/tools/Stats";
 import Pomodoro from "../components/tools/Pomodoro";
+import KanbanBoard from "../components/tools/KanbanBoard";
 
 interface LayoutColumn {
     id: string;
@@ -26,6 +27,7 @@ export interface ComponentConfig {
     NoiseGenerator: { component: NoiseGenerator, name: "Noise Generator" },
     Statistics: { component: Statistics, name: "Statistics" },
     Pomodoro: { component: Pomodoro, name: "Pomodoro" },
+    KanbanBoard: { component: KanbanBoard, name: "Kanban Board" },
   };
 
 export const LayoutManager = {
@@ -36,7 +38,7 @@ export const LayoutManager = {
         }
         return [
             { id: "column-1", items: ["StudyTimer", "NoiseGenerator", "Calendar"] },
-            { id: "column-2", items: ["Pomodoro", "TaskForm"] },
+            { id: "column-2", items: ["Pomodoro", "TaskForm", "KanbanBoard"] },
             { id: "column-3", items: ["TaskList", "Stats", "ProgressTracker"] },
         ];
     },
