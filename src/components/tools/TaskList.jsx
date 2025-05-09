@@ -150,7 +150,7 @@ const TaskItem = ({
     </div>
 );
 
-const TaskList = ({ isEditing }) => {
+const TaskList = ({ isEditing, setIsEditing }) => {
     const dispatch = useDispatch();
     const tasks = useSelector((state) => state.tasks.tasks);
     const [user, setUser] = useState(null);
@@ -327,11 +327,6 @@ const TaskList = ({ isEditing }) => {
             // Handle remote storage update
             try {
                 await dispatch(updateTask(task));
-                const { error } = await supabase
-                    .from("tasks")
-                    .update(task)
-                    .eq("id", task.id);
-                if (error) throw error;
             } catch (error) {
                 await dispatch(updateTask(selectedTask));
                 console.error("Error updating task:", error);
