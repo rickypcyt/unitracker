@@ -2,6 +2,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { X, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import moment from "moment";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { updateTask } from "../redux/TaskActions";
 
 const TaskDetailsModal = ({
   selectedTask,
@@ -15,6 +18,8 @@ const TaskDetailsModal = ({
   onSetActiveTask,
   onEditChange,
 }) => {
+  const dispatch = useDispatch();
+
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       if (isEditing) {
@@ -26,8 +31,29 @@ const TaskDetailsModal = ({
   };
 
   const handleSave = async () => {
-    await onSave();
-    onClose();
+    try {
+      console.log("Edited Task before update:", editedTask);
+      
+      await onSave(editedTask);
+      onClose();
+    } catch (error) {
+      console.error("Error saving task:", error);
+      toast.error("Failed to save task: " + error.message);
+    }
+  };
+
+  const handleEditChange = (field, value) => {
+    onEditChange(field, value);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await dispatch(updateTask(editedTask));
+      onClose();
+    } catch (error) {
+      console.error("Error updating task:", error);
+      toast.error("Failed to update task: " + error.message);
+    }
   };
 
   return (
@@ -60,7 +86,7 @@ const TaskDetailsModal = ({
               <input
                 type="text"
                 value={editedTask?.title || ""}
-                onChange={(e) => onEditChange("title", e.target.value)}
+                onChange={(e) => handleEditChange("title", e.target.value)}
                 className="textinput w-full"
               />
             ) : (
@@ -75,15 +101,14 @@ const TaskDetailsModal = ({
             {isEditing ? (
               <textarea
                 value={editedTask?.description || ""}
-                onChange={(e) => onEditChange("description", e.target.value)}
+                onChange={(e) => handleEditChange("description", e.target.value)}
                 className="textinput w-full"
                 rows="4"
               />
             ) : (
               <p className="text-text-secondary whitespace-pre-wrap">
                 {selectedTask.description || "No description"}
-              </p>
-            )}
+              </p>            )}
           </div>
 
           {/* Grouped Inputs */}
@@ -96,7 +121,7 @@ const TaskDetailsModal = ({
               {isEditing ? (
                 <select
                   value={editedTask?.difficulty || "easy"}
-                  onChange={(e) => onEditChange("difficulty", e.target.value)}
+                  onChange={(e) => handleEditChange("difficulty", e.target.value)}
                   className="textinput w-full h-[60%]"
                 >
                   <option value="easy">Easy</option>
@@ -128,7 +153,7 @@ const TaskDetailsModal = ({
                 <input
                   type="text"
                   value={editedTask?.assignment || ""}
-                  onChange={(e) => onEditChange("assignment", e.target.value)}
+                  onChange={(e) => handleEditChange("assignment", e.target.value)}
                   className="textinput w-full"
                   placeholder="Enter assignment name"
                 />
@@ -148,7 +173,7 @@ const TaskDetailsModal = ({
                 <input
                   type="date"
                   value={editedTask?.deadline || ""}
-                  onChange={(e) => onEditChange("deadline", e.target.value)}
+                  onChange={(e) => handleEditChange("deadline", e.target.value)}
                   className="textinput w-full"
                 />
               ) : (
@@ -238,7 +263,7 @@ const TaskDetailsModal = ({
 
             {isEditing ? (
               <button
-                onClick={handleSave}
+                onClick={handleSaveEdit}
                 className="text-green-500 hover:text-green-600 transition-colors duration-200 flex items-center gap-2"
               >
                 <Save size={20} />
