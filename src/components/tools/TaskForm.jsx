@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
-import { supabase } from "../../utils/supabaseClient";
-import { toast } from "react-toastify";
 
 const TaskForm = () => {
     const {
         newTask,
         error,
         assignments,
-        assignmentColors,
         handleSubmit,
         updateField,
         handleSetToday,
@@ -18,10 +15,6 @@ const TaskForm = () => {
 
     // Estado para asignaturas locales (offline)
     const [localAssignments, setLocalAssignments] = useState([]);
-
-    // Estado para el color temporal y para mostrar el picker
-    const [showColorPicker, setShowColorPicker] = useState(false);
-    const [tempColor, setTempColor] = useState("#8888ff");
 
     // Cargar assignments del localStorage
     useEffect(() => {
@@ -40,33 +33,6 @@ const TaskForm = () => {
         new Set([...assignments, ...localAssignments]),
     );
 
-    // Cuando cambia la asignatura, si no tiene color, pide uno
-    useEffect(() => {
-        if (newTask.assignment && !assignmentColors[newTask.assignment]) {
-            setShowColorPicker(true);
-            setTempColor("#8888ff");
-        } else {
-            setShowColorPicker(false);
-        }
-    }, [newTask.assignment, assignmentColors]);
-
-    // Guardar color para la asignatura seleccionada
-    const handleSaveAssignmentColor = () => {
-        // Actualiza en localStorage
-        const assignmentColorsLS = JSON.parse(
-            localStorage.getItem("assignmentColors") || "{}",
-        );
-        assignmentColorsLS[newTask.assignment] = tempColor;
-        localStorage.setItem(
-            "assignmentColors",
-            JSON.stringify(assignmentColorsLS),
-        );
-        // Actualiza en el estado global (si tienes acción para ello)
-        updateField("color", tempColor);
-        setShowColorPicker(false);
-        toast.success("Assignment color saved");
-    };
-
     // Detectar accentPalette para color de texto del botón
     const accentPalette =
         typeof window !== "undefined"
@@ -74,6 +40,63 @@ const TaskForm = () => {
             : "blue";
     const buttonTextColor =
         accentPalette === "white" ? "#222" : "var(--text-primary)";
+
+    // ----------- AUTOCOMPLETE LOGIC -----------
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [filteredAssignments, setFilteredAssignments] = useState([]);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const suggestionsRef = useRef(null);
+
+    useEffect(() => {
+        if (newTask.assignment) {
+            const filtered = allAssignments.filter((a) =>
+                a.toLowerCase().includes(newTask.assignment.toLowerCase()),
+            );
+            setFilteredAssignments(filtered);
+            setSelectedIndex(filtered.length > 0 ? 0 : -1);
+        } else {
+            setFilteredAssignments(allAssignments);
+            setSelectedIndex(-1);
+        }
+    }, [newTask.assignment, allAssignments]);
+
+    const handleAssignmentChange = (e) => {
+        updateField("assignment", e.target.value);
+        setShowSuggestions(true);
+    };
+
+    const handleKeyDown = (e) => {
+        if (!showSuggestions) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setSelectedIndex((prev) =>
+                prev < filteredAssignments.length - 1 ? prev + 1 : prev,
+            );
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+        } else if (e.key === "Enter" || e.key === "Tab") {
+            if (selectedIndex >= 0 && filteredAssignments[selectedIndex]) {
+                e.preventDefault();
+                handleSuggestionClick(filteredAssignments[selectedIndex]);
+            } else if (
+                newTask.assignment &&
+                !filteredAssignments.includes(newTask.assignment)
+            ) {
+                e.preventDefault();
+                handleSuggestionClick(newTask.assignment);
+            }
+        } else if (e.key === "Escape") {
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSuggestionClick = (suggestion) => {
+        updateField("assignment", suggestion);
+        setShowSuggestions(false);
+    };
+    // ----------- END AUTOCOMPLETE LOGIC -----------
 
     return (
         <div className="maincard relative">
@@ -91,54 +114,61 @@ const TaskForm = () => {
                     </div>
                 )}
 
-                <div className="flex gap-4 items-center">
-                    {/* Assignment select + color */}
-                    <div className="relative flex-1 flex items-center gap-2">
-                        <select
-                            className="textinput pr-10 flex-1"
-                            value={newTask.assignment || ""}
-                            onChange={(e) => updateField("assignment", e.target.value)}
-                        >
-                            <option value="">Assignment</option>
-                            {allAssignments.map((assignment) => (
-                                <option key={assignment} value={assignment}>
-                                    {assignment}
-                                </option>
-                            ))}
-                        </select>
+                <div className="flex gap-4">
+                    {/* Assignment */}
+                    <div className="flex flex-col gap-2 flex-1">
+                        <label htmlFor="assignment" className="card-text-lg">
+                            Assignment
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="assignment"
+                                className="textinput hover:bg-neutral-800 transition-colors duration-1000"
+                                value={newTask.assignment}
+                                onChange={handleAssignmentChange}
+                                onFocus={() => setShowSuggestions(true)}
+                                onBlur={() => {
+                                    setTimeout(() => setShowSuggestions(false), 500);
+                                }}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Choose an assignment"
+                            />
+                            {showSuggestions && filteredAssignments.length > 0 && (
+                                <div
+                                    ref={suggestionsRef}
+                                    className="absolute w-full mt-1 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
+                                >
+                                    {filteredAssignments.map((suggestion, index) => (
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            className={`w-full px-4 py-2 text-left hover:bg-neutral-800 transition-colors duration-200 ${index === selectedIndex ? "bg-neutral-800" : ""}`}
+                                            onClick={() => handleSuggestionClick(suggestion)}
+                                            onMouseEnter={() => setSelectedIndex(index)}
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    {/* Título */}
-                    <div className="flex-1">
+
+                    {/* Title */}
+                    <div className="flex flex-col gap-2 flex-1">
+                        <label htmlFor="title" className="card-text-lg">
+                            Title
+                        </label>
                         <input
                             id="title"
-                            className={`textinput`}
+                            className="textinput"
                             value={newTask.title}
                             onChange={(e) => updateField("title", e.target.value)}
                             placeholder="Task title"
                         />
                     </div>
                 </div>
-
-                {/* Si la asignatura no tiene color, muestra el picker */}
-                {showColorPicker && newTask.assignment && (
-                    <div className="flex gap-2 items-center mt-2 text-base">
-                        <label className="teext-base">
-                            Choose a color for <b>{newTask.assignment}</b>:
-                        </label>
-                        <input
-                            type="color"
-                            value={tempColor}
-                            onChange={(e) => setTempColor(e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            className="btn btn-primary border rounded-xl p-2 ml-5"
-                            onClick={handleSaveAssignmentColor}
-                        >
-                            Save Color
-                        </button>
-                    </div>
-                )}
 
                 {/* Campo Descripción */}
                 <div className="flex flex-col gap-2">
