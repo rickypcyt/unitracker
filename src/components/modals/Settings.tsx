@@ -112,16 +112,6 @@ const Settings: React.FC<LayoutControlsProps> = ({
                 )}
 
                 <button
-                  onClick={() => {
-                    onToggleEditing();
-                    setShowSettings(false);
-                  }}
-                  className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
-                >
-                  {isEditing ? "Save Layout" : "Edit Layout"}
-                </button>
-
-                <button
                   onClick={loginWithGoogle}
                   className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                 >

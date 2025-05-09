@@ -29,6 +29,14 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import TaskDetailsModal from "../modals/TaskDetailsModal";
 
+// Define a mapping of assignments to colors
+const assignmentColors = {
+    "Assignment 1": "#FF5733", // Example color for Assignment 1
+    "Assignment 2": "#33FF57", // Example color for Assignment 2
+    "Assignment 3": "#3357FF", // Example color for Assignment 3
+    // Add more assignments and their corresponding colors as needed
+};
+
 const TaskItem = ({
     task,
     onToggleCompletion,
@@ -110,7 +118,7 @@ const TaskItem = ({
                 <span
                     className="text-base font-semibold px-2 py-1"
                     style={{
-                        color: task.color || "#bdbdbd", // Usa el color real de la tarea
+                        color: assignmentColors[task.assignment] || "#bdbdbd", // Use the color from the mapping
                         borderRadius: "0.5rem",
                         display: "inline-block",
                         minWidth: "20px",

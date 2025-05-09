@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import moment from "moment";
@@ -55,6 +55,19 @@ const TaskDetailsModal = ({
       toast.error("Failed to update task: " + error.message);
     }
   };
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose(); // Cierra el modal
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
 
   return (
     <motion.div

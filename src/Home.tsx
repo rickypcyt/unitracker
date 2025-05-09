@@ -13,6 +13,8 @@ const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showStartSession, setShowStartSession] = useState(false);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -45,9 +47,15 @@ const Home: React.FC = () => {
           setShowWelcomeModal(false);
         } else if (isEditing) {
           setIsEditing(false);
-        } else {
-          setShowSettings((prev) => !prev);
+        } else if (showSettings) {
+          setShowSettings(false);
+        } else if (showStartSession) {
+          setShowStartSession(false);
+        } else if (showTaskDetails) {
+          setShowTaskDetails(false);
         }
+      } else if (e.key === "m") {
+        setShowSettings(true);
       }
     };
 
@@ -55,7 +63,7 @@ const Home: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [showWelcomeModal, isEditing]);
+  }, [showWelcomeModal, isEditing, showSettings, showStartSession, showTaskDetails]);
 
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
@@ -174,7 +182,7 @@ const Home: React.FC = () => {
 
       <Settings
         isEditing={isEditing}
-        onToggleEditing={setIsEditing}
+        onToggleEditing={(value) => setIsEditing(value)}
         isLoggedIn={isLoggedIn}
         onLogin={loginWithGoogle}
         currentTheme={currentTheme}
