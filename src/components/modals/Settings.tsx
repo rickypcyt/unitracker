@@ -127,7 +127,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                         setShowControlsModal(false);
                         onLogin(); // Aquí podrías usar logout() si lo prefieres
                       }}
-                      className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['green']} hover:${colorClasses['green']}`}
+                      className={`w-full rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                     >
                       Logged In
                     </button>
@@ -137,9 +137,9 @@ const Settings: React.FC<LayoutControlsProps> = ({
                         loginWithGoogle();
                         setShowControlsModal(false);
                       }}
-                      className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
+                      className={`w-full rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                     >
-                      Iniciar sesión con Google
+                      Log In
                     </button>
                   )}
                 </button>
