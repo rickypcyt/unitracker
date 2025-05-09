@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Settings as SettingsIcon, X } from "lucide-react";
+import { Settings, Settings as SettingsIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses } from "../../utils/colors";
 import StartSessionMenu from './StartSessionMenu';
+import { useAuth } from '../hooks/useAuth';
 
 interface LayoutControlsProps {
   isEditing: boolean;
@@ -19,17 +20,13 @@ interface LayoutControlsProps {
   loginWithGoogle: () => void;
 }
 
-const LayoutControls: React.FC<LayoutControlsProps> = ({
+const Settings: React.FC<LayoutControlsProps> = ({
   isEditing,
   onToggleEditing,
   isLoggedIn,
   onLogin,
   isPlaying,
   setIsPlaying,
-  currentTheme,
-  onThemeChange,
-  accentPalette,
-  setAccentPalette,
   loginWithGoogle,
 }) => {
   const { accentPalette: themeAccentPalette } = useTheme();
@@ -124,7 +121,27 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
                   onClick={loginWithGoogle}
                   className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                 >
-                  {isLoggedIn ? "Logged In" : "Login"}
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => {
+                        setShowControlsModal(false);
+                        onLogin(); // Aquí podrías usar logout() si lo prefieres
+                      }}
+                      className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['green']} hover:${colorClasses['green']}`}
+                    >
+                      Logged In
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        loginWithGoogle();
+                        setShowControlsModal(false);
+                      }}
+                      className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
+                    >
+                      Iniciar sesión con Google
+                    </button>
+                  )}
                 </button>
               </div>
             </motion.div>
@@ -145,4 +162,4 @@ const LayoutControls: React.FC<LayoutControlsProps> = ({
   );
 };
 
-export default LayoutControls;
+export default Settings;

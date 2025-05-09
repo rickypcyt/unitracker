@@ -11,7 +11,6 @@ import AddComponentButton from "./components/home/AddComponentButton";
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isTaskEditing, setTaskEditing] = useState(false);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -188,6 +187,7 @@ const Home: React.FC = () => {
         setIsPlaying={() => {}}
         showSettings={showSettings}
         setShowSettings={setShowSettings}
+        loginWithGoogle={loginWithGoogle}
       />
 
       <StartSessionMenu
