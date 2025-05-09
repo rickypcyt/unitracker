@@ -88,6 +88,8 @@ const toggleEditMode = () => setIsEditing(e => !e);
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
+  const MemoizedComponentRenderer = React.memo(ComponentRenderer);
+
   return (
     <div className="">
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -115,7 +117,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
                 {...provided.dragHandleProps}
                 onContextMenu={(e) => handleContextMenu(e, componentKey)}
               >
-                <ComponentRenderer
+                <MemoizedComponentRenderer
                   componentKey={componentKey}
                   colIndex={colIndex}
                   index={index}

@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Cloud, CloudRain, Waves } from 'lucide-react';
-import * as Tone from 'tone';
+import React, { useState, useRef, useEffect } from "react";
+import { Play, Pause, Cloud, CloudRain, Waves } from "lucide-react";
+import * as Tone from "tone";
 
 const NoiseGenerator = () => {
     // Load saved volumes from localStorage or use defaults
     const [brownVolume, setBrownVolume] = useState(() => {
-        const saved = localStorage.getItem('brownVolume');
+        const saved = localStorage.getItem("brownVolume");
         return saved ? parseFloat(saved) : 1.0; // Default to middle (1.0)
     });
     const [rainVolume, setRainVolume] = useState(() => {
-        const saved = localStorage.getItem('rainVolume');
+        const saved = localStorage.getItem("rainVolume");
         return saved ? parseFloat(saved) : 12.5;
     });
     const [oceanVolume, setOceanVolume] = useState(() => {
-        const saved = localStorage.getItem('oceanVolume');
+        const saved = localStorage.getItem("oceanVolume");
         return saved ? parseFloat(saved) : 12.5;
     });
     const [isPlayingBrown, setIsPlayingBrown] = useState(false);
@@ -26,27 +26,24 @@ const NoiseGenerator = () => {
     const oceanNoiseRef = useRef(null);
     const masterGainRef = useRef(null);
 
-    // Initialize Tone.js context and create master gain
-    useEffect(() => {
-        const initTone = async () => {
-            await Tone.start();
-            masterGainRef.current = new Tone.Gain(1).toDestination();
-            Tone.context.latencyHint = 'interactive';
-        };
-        initTone();
-    }, []);
+    // Nueva función para inicializar Tone.js
+    const initAudioContext = async () => {
+        await Tone.start();
+        masterGainRef.current = new Tone.Gain(1).toDestination();
+        Tone.context.latencyHint = "interactive";
+    };
 
     // Save volumes to localStorage when they change
     useEffect(() => {
-        localStorage.setItem('brownVolume', brownVolume.toString());
+        localStorage.setItem("brownVolume", brownVolume.toString());
     }, [brownVolume]);
 
     useEffect(() => {
-        localStorage.setItem('rainVolume', rainVolume.toString());
+        localStorage.setItem("rainVolume", rainVolume.toString());
     }, [rainVolume]);
 
     useEffect(() => {
-        localStorage.setItem('oceanVolume', oceanVolume.toString());
+        localStorage.setItem("oceanVolume", oceanVolume.toString());
     }, [oceanVolume]);
 
     // Effect for brown noise volume
@@ -73,8 +70,8 @@ const NoiseGenerator = () => {
     // Función para iniciar Brown Noise
     const startBrownNoise = () => {
         if (!brownNoiseRef.current) {
-            const brownNoise = new Tone.Noise('brown').start();
-            const filter = new Tone.Filter(200, 'lowpass');
+            const brownNoise = new Tone.Noise("brown").start();
+            const filter = new Tone.Filter(200, "lowpass");
             const gainNode = new Tone.Gain(brownVolume);
             brownNoise.connect(filter);
             filter.connect(gainNode);
@@ -98,15 +95,20 @@ const NoiseGenerator = () => {
     // Función para iniciar Rain Noise
     const startRainNoise = () => {
         if (!rainNoiseRef.current) {
-            const rainNoise = new Tone.Noise('pink').start();
-            const highpassFilter = new Tone.Filter(200, 'highpass');
-            const lowpassFilter = new Tone.Filter(2000, 'lowpass');
+            const rainNoise = new Tone.Noise("pink").start();
+            const highpassFilter = new Tone.Filter(200, "highpass");
+            const lowpassFilter = new Tone.Filter(2000, "lowpass");
             const gainNode = new Tone.Gain(rainVolume * 0.02);
             rainNoise.connect(highpassFilter);
             highpassFilter.connect(lowpassFilter);
             lowpassFilter.connect(gainNode);
             gainNode.connect(masterGainRef.current);
-            rainNoiseRef.current = { noise: rainNoise, highpassFilter, lowpassFilter, gain: gainNode };
+            rainNoiseRef.current = {
+                noise: rainNoise,
+                highpassFilter,
+                lowpassFilter,
+                gain: gainNode,
+            };
         }
         setIsPlayingRain(true);
     };
@@ -126,42 +128,42 @@ const NoiseGenerator = () => {
     // Función para iniciar Ocean Waves
     const startOceanWaves = () => {
         if (!oceanNoiseRef.current) {
-            const oceanNoise = new Tone.Noise('pink').start();
-            
+            const oceanNoise = new Tone.Noise("pink").start();
+
             // Create a low-pass filter with a lower frequency for more bass
-            const filter = new Tone.Filter(300, 'lowpass');
-            
+            const filter = new Tone.Filter(300, "lowpass");
+
             // Create an LFO to modulate the filter frequency
             const lfo = new Tone.LFO({
                 frequency: 0.1, // Very slow modulation
                 min: 200,
                 max: 400,
-                type: 'sine'
+                type: "sine",
             }).start();
-            
+
             // Connect the LFO to the filter frequency
             lfo.connect(filter.frequency);
-            
+
             // Add some reverb for more space
             const reverb = new Tone.Reverb({
                 decay: 4,
                 wet: 0.3,
-                preDelay: 0.2
+                preDelay: 0.2,
             }).toDestination();
-            
+
             const gainNode = new Tone.Gain(oceanVolume * 0.03);
-            
+
             // Connect the nodes
             oceanNoise.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(reverb);
-            
-            oceanNoiseRef.current = { 
-                noise: oceanNoise, 
-                filter, 
+
+            oceanNoiseRef.current = {
+                noise: oceanNoise,
+                filter,
                 gain: gainNode,
                 lfo,
-                reverb
+                reverb,
             };
         }
         setIsPlayingOcean(true);
@@ -243,25 +245,28 @@ const NoiseGenerator = () => {
             stopOceanWaves();
         };
 
-        window.addEventListener('startBrownNoise', handleStartBrownNoise);
-        window.addEventListener('startRainNoise', handleStartRainNoise);
-        window.addEventListener('startOceanWaves', handleStartOceanWaves);
-        window.addEventListener('stopBrownNoise', handleStopBrownNoise);
-        window.addEventListener('stopRainNoise', handleStopRainNoise);
-        window.addEventListener('stopOceanWaves', handleStopOceanWaves);
+        window.addEventListener("startBrownNoise", handleStartBrownNoise);
+        window.addEventListener("startRainNoise", handleStartRainNoise);
+        window.addEventListener("startOceanWaves", handleStartOceanWaves);
+        window.addEventListener("stopBrownNoise", handleStopBrownNoise);
+        window.addEventListener("stopRainNoise", handleStopRainNoise);
+        window.addEventListener("stopOceanWaves", handleStopOceanWaves);
 
         return () => {
-            window.removeEventListener('startBrownNoise', handleStartBrownNoise);
-            window.removeEventListener('startRainNoise', handleStartRainNoise);
-            window.removeEventListener('startOceanWaves', handleStartOceanWaves);
-            window.removeEventListener('stopBrownNoise', handleStopBrownNoise);
-            window.removeEventListener('stopRainNoise', handleStopRainNoise);
-            window.removeEventListener('stopOceanWaves', handleStopOceanWaves);
+            window.removeEventListener("startBrownNoise", handleStartBrownNoise);
+            window.removeEventListener("startRainNoise", handleStartRainNoise);
+            window.removeEventListener("startOceanWaves", handleStartOceanWaves);
+            window.removeEventListener("stopBrownNoise", handleStopBrownNoise);
+            window.removeEventListener("stopRainNoise", handleStopRainNoise);
+            window.removeEventListener("stopOceanWaves", handleStopOceanWaves);
         };
     }, []);
 
     return (
         <div className="maincard">
+            <button onClick={initAudioContext} className="init-audio-button">
+                Iniciar Audio
+            </button>
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Noise Generator</h2>
                 <button
@@ -286,7 +291,9 @@ const NoiseGenerator = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <label className="flex items-center gap-2 min-w-[120px]">
                         <Cloud size={18} />
-                        <span className="card-text font-medium text-white">Brown Noise</span>
+                        <span className="card-text font-medium text-white">
+                            Brown Noise
+                        </span>
                     </label>
                     <div className="flex items-center gap-4 flex-1 max-w-md">
                         <input
@@ -358,7 +365,9 @@ const NoiseGenerator = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <label className="flex items-center gap-2 min-w-[120px]">
                         <Waves size={18} />
-                        <span className="card-text font-medium text-white">Ocean Waves</span>
+                        <span className="card-text font-medium text-white">
+                            Ocean Waves
+                        </span>
                     </label>
                     <div className="flex items-center gap-4 flex-1 max-w-md">
                         <input

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
 
@@ -29,9 +29,9 @@ const TaskForm = () => {
     }, []);
 
     // Unifica asignaturas de Supabase y localStorage
-    const allAssignments = Array.from(
-        new Set([...assignments, ...localAssignments]),
-    );
+    const allAssignments = useMemo(() => {
+        return Array.from(new Set([...assignments, ...localAssignments]));
+    }, [assignments, localAssignments]);
 
     // Detectar accentPalette para color de texto del botón
     const accentPalette =
