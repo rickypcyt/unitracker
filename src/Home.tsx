@@ -11,6 +11,7 @@ import AddComponentButton from "./components/home/AddComponentButton";
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -33,7 +34,6 @@ const Home: React.FC = () => {
     }
     return "blue";
   });
-  const [showSettings, setShowSettings] = useState(false);
 
   const handleDragEnd = useCallback(
     (result) => {

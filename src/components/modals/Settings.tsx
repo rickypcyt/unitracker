@@ -18,6 +18,8 @@ interface LayoutControlsProps {
   accentPalette: string;
   setAccentPalette: (palette: string) => void;
   loginWithGoogle: () => void;
+  showSettings: boolean;
+  setShowSettings: (show: boolean) => void;
 }
 
 const Settings: React.FC<LayoutControlsProps> = ({
@@ -28,6 +30,8 @@ const Settings: React.FC<LayoutControlsProps> = ({
   isPlaying,
   setIsPlaying,
   loginWithGoogle,
+  showSettings,
+  setShowSettings,
 }) => {
   const { accentPalette: themeAccentPalette } = useTheme();
   const [showControlsModal, setShowControlsModal] = useState(false);
@@ -46,7 +50,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
 
       {/* Modal */}
       <AnimatePresence>
-        {showControlsModal && (
+        {showSettings && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -54,7 +58,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
             className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-sm"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
-                setShowControlsModal(false);
+                setShowSettings(false);
               }
             }}
           >
@@ -70,7 +74,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                 </h2>
                 <button
                   className="text-gray-400 hover:text-white transition duration-200"
-                  onClick={() => setShowControlsModal(false)}
+                  onClick={() => setShowSettings(false)}
                 >
                   <X size={24} />
                 </button>
@@ -82,7 +86,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                   <button
                     onClick={() => {
                       setShowSessionMenu(true);
-                      setShowControlsModal(false);
+                      setShowSettings(false);
                     }}
                     className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                   >
@@ -110,7 +114,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                 <button
                   onClick={() => {
                     onToggleEditing();
-                    setShowControlsModal(false);
+                    setShowSettings(false);
                   }}
                   className={`w-full px-4 py-2 rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                 >
@@ -124,7 +128,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                   {isLoggedIn ? (
                     <button
                       onClick={() => {
-                        setShowControlsModal(false);
+                        setShowSettings(false);
                         onLogin(); // Aquí podrías usar logout() si lo prefieres
                       }}
                       className={`w-full rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
@@ -135,7 +139,7 @@ const Settings: React.FC<LayoutControlsProps> = ({
                     <button
                       onClick={() => {
                         loginWithGoogle();
-                        setShowControlsModal(false);
+                        setShowSettings(false);
                       }}
                       className={`w-full rounded transition-colors duration-200 ${colorClasses['blue']} hover:${colorClasses['blue']}`}
                     >
