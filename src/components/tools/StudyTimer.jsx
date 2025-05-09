@@ -637,7 +637,6 @@ const StudyTimer = () => {
                                                     </div>
                                                 </div>
                                             ))}
-// ... existing code ...
                                     </div>
                                 ))}
                             </div>
