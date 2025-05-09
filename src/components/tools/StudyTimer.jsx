@@ -591,9 +591,9 @@ const StudyTimer = () => {
                         {state.expandedMonths[monthYear] && (
                             <div className="space-y-4 mt-2">
                                 {Object.entries(weeks).map(([weekKey, sessions]) => (
-                                    <div key={`${monthYear}-${weekKey}`} className="mb-2 ml-4">
+                                    <div key={`${monthYear}-${weekKey}`} className="mb-2 ml-2">
                                         <button
-                                            className="flex items-center justify-between w-full py-2 px-3 bg-bg-tertiary rounded-lg text-left font-semibold hover:bg-bg-secondary transition-colors duration-200"
+                                            className="infomenu"
                                             onClick={() =>
                                                 toggleVisibility("Weeks", `${monthYear}-${weekKey}`)
                                             }
@@ -609,40 +609,35 @@ const StudyTimer = () => {
                                             sessions.map((lap) => (
                                                 <div
                                                     key={lap.id}
-                                                    className="flex items-center justify-between bg-bg-secondary p-3 rounded-lg mt-2 cursor-pointer hover:bg-bg-tertiary transition-colors duration-200"
+                                                    className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
                                                     onDoubleClick={() => handleSessionDoubleClick(lap)}
                                                 >
-                                                    <div className="flex-1">
-                                                        <p className="text-lg text-text-secondary mb-1">
-                                                            {moment(lap.created_at).format(
-                                                                "MMM D, YYYY h:mm A",
-                                                            )}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-lg text-accent-primary">
-                                                                #{lap.session_number}
-                                                            </span>
-                                                            <span>{lap.name}</span>
-                                                        </div>
-                                                        {lap.description && (
-                                                            <p className="text-lg text-text-secondary">
-                                                                {lap.description}
+                                                    <div className="flex justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-lg text-accent-primary">
+                                                                    #{lap.session_number} {lap.name}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-lg text-text-secondary mb-1">
+                                                                {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
                                                             </p>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-4">
-                                                        <span className="text-text-secondary text-lg">
-                                                            {lap.duration}
-                                                        </span>
-                                                        <button
-                                                            onClick={() => dispatch(deleteLap(lap.id))}
-                                                            className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
+                                                        </div>
+                                                        <div className="flex items-center gap-4">
+                                                            <span className="text-text-secondary text-lg">
+                                                                {lap.duration}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => dispatch(deleteLap(lap.id))}
+                                                                className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
+// ... existing code ...
                                     </div>
                                 ))}
                             </div>

@@ -34,26 +34,7 @@ const Home: React.FC = () => {
     }
     return "blue";
   });
-
-  // Estado para manejar el audio
-  const [audioState, setAudioState] = useState({ isPlaying: false, currentTime: 0 });
-  const [audio] = useState(new Audio('path/to/your/audio/file.mp3')); // Crea el audio una vez
-
-  useEffect(() => {
-    // Configura el audio
-    audio.loop = true; // Por ejemplo, si quieres que el audio se repita
-
-    // Maneja el estado del audio
-    if (audioState.isPlaying) {
-      audio.play();
-    } else {
-      audio.pause();
-    }
-
-    return () => {
-      audio.pause(); // Asegúrate de pausar el audio al desmontar
-    };
-  }, [audio, audioState]);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleDragEnd = useCallback(
     (result) => {
@@ -63,7 +44,18 @@ const Home: React.FC = () => {
     [layout],
   );
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowSettings((prev) => !prev);
+      }
+    };
 
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
@@ -103,8 +95,6 @@ const Home: React.FC = () => {
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
-  const MemoizedComponentRenderer = React.memo(ComponentRenderer);
-
   return (
     <div className="">
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -132,7 +122,7 @@ const Home: React.FC = () => {
                 {...provided.dragHandleProps}
                 onContextMenu={(e) => handleContextMenu(e, componentKey)}
               >
-                <MemoizedComponentRenderer
+                <ComponentRenderer
                   componentKey={componentKey}
                   colIndex={colIndex}
                   index={index}
@@ -196,6 +186,8 @@ const Home: React.FC = () => {
         setAccentPalette={setAccentPalette}
         isPlaying={false}
         setIsPlaying={() => {}}
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
       />
 
       <StartSessionMenu
