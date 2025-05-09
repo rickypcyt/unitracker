@@ -78,7 +78,7 @@ const TaskItem = ({
                     className="flex items-center focus:outline-none flex-1"
                 >
                     <span
-                        className={`ml-2 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed
+                        className={`text-left ml-2 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed
                                 ? "line-through text-text-secondary"
                                 : "text-text-primary"
                             }`}
@@ -98,7 +98,7 @@ const TaskItem = ({
 
             {/* Second row: Description or empty space for consistent layout */}
             <div
-                className="ml-1 text-lg text-text-secondary line-clamp-2 group relative min-h-[0.5rem]"
+                className="text-left ml-1 text-base text-text-secondary line-clamp-2 group relative min-h-[0.5rem]"
                 title={task.description}
             >
                 {task.description || "No description"}
