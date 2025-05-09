@@ -11,7 +11,7 @@ import AddComponentButton from "./components/home/AddComponentButton";
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
-const toggleEditMode = () => setIsEditing(e => !e);
+  const [isTaskEditing, setTaskEditing] = useState(false);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -77,16 +77,13 @@ const toggleEditMode = () => setIsEditing(e => !e);
   );
   
   const removeComponent = useCallback(
-    (componentId: string) => {
+    (colIndex: number, itemIndex: number) => {
       // Buscar en qué columna está el componente
-      const colIndex = layout.findIndex(col => col.items.includes(componentId));
-      if (colIndex === -1) return; // No existe, no hacer nada
-  
-      // Buscar el índice del componente dentro de la columna
-      const itemIndex = layout[colIndex].items.indexOf(componentId);
+      const foundColIndex = layout.findIndex(col => col.items.includes(layout[colIndex].items[itemIndex]));
+      if (foundColIndex === -1) return; // No existe, no hacer nada
   
       // Removerlo usando LayoutManager
-      const newLayout = LayoutManager.removeComponent(layout, colIndex, itemIndex);
+      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex);
   
       // Actualizar el estado
       setLayout(newLayout);
@@ -171,7 +168,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
   isEditing={isEditing}
   onClose={handleCloseContextMenu}
   onRemove={removeComponent}
-  onToggleEdit={toggleEditMode}
+  onToggleEdit={setIsEditing}
 />
 
       )}
@@ -187,7 +184,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
 
       <Settings
         isEditing={isEditing}
-        onToggleEditing={() => setIsEditing(!isEditing)}
+        onToggleEditing={setIsEditing}
         isLoggedIn={isLoggedIn}
         onLogin={loginWithGoogle}
         currentTheme={currentTheme}
@@ -197,6 +194,8 @@ const toggleEditMode = () => setIsEditing(e => !e);
         }}
         accentPalette={accentPalette}
         setAccentPalette={setAccentPalette}
+        isPlaying={false}
+        setIsPlaying={() => {}}
       />
 
       <StartSessionMenu
@@ -204,6 +203,7 @@ const toggleEditMode = () => setIsEditing(e => !e);
         onClose={() => {}}
         setIsPlaying={() => {}}
       />
+
     </div>
   );
 };

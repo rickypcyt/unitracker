@@ -150,7 +150,7 @@ const TaskItem = ({
     </div>
 );
 
-const TaskList = ({ isEditing, setIsEditing }) => {
+const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
     const dispatch = useDispatch();
     const tasks = useSelector((state) => state.tasks.tasks);
     const [user, setUser] = useState(null);
@@ -356,12 +356,12 @@ const TaskList = ({ isEditing, setIsEditing }) => {
             user_id: task.user_id,
             color: task.color,
         });
-        setIsEditing(true);
+        setTaskEditing(true);
     };
 
     const handleCloseTaskDetails = () => {
         setSelectedTask(null);
-        setIsEditing(false);
+        setTaskEditing(false);
         setEditedTask(null);
         dispatch(setCalendarVisibility(true));
     };
@@ -369,8 +369,8 @@ const TaskList = ({ isEditing, setIsEditing }) => {
     const handleOverlayClick = (e) => {
         // Only close if clicking the overlay itself, not its children
         if (e.target === e.currentTarget) {
-            if (isEditing) {
-                setIsEditing(false);
+            if (taskDetailsEdit) {
+                setTaskEditing(false);
                 setEditedTask(null);
             } else {
                 handleCloseTaskDetails();
@@ -393,7 +393,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
             user_id: selectedTask.user_id,
             color: task.color,
         });
-        setIsEditing(true);
+        setTaskEditing(true);
     };
 
     const handleSaveEdit = async () => {
@@ -401,7 +401,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
             // Optimistic update
             await dispatch(updateTask(editedTask));
             setSelectedTask(editedTask);
-            setIsEditing(false);
+            setTaskEditing(false);
             handleCloseTaskDetails(); // Close the modal after saving
 
             const { error } = await supabase
@@ -575,7 +575,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
                                             onDelete={handleDeleteTask}
                                             onDoubleClick={handleTaskDoubleClick}
                                             onContextMenu={handleTaskContextMenu}
-                                            isEditing={isEditing}
+                                            isEditing={taskDetailsEdit}
                                         />
                                     ))}
                                 </div>
@@ -609,7 +609,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
                                             onDelete={handleDeleteTask}
                                             onDoubleClick={handleTaskDoubleClick}
                                             onContextMenu={handleTaskContextMenu}
-                                            isEditing={isEditing}
+                                            isEditing={taskDetailsEdit}
                                         />
                                     ))}
                                 </div>
@@ -746,7 +746,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
                                         onDelete={handleDeleteTask}
                                         onDoubleClick={handleTaskDoubleClick}
                                         onContextMenu={handleTaskContextMenu}
-                                        isEditing={isEditing}
+                                        isEditing={taskDetailsEdit}
                                     />
                                 ))}
                             </div>
@@ -777,7 +777,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
                                         onDelete={handleDeleteTask}
                                         onDoubleClick={handleTaskDoubleClick}
                                         onContextMenu={handleTaskContextMenu}
-                                        isEditing={isEditing}
+                                        isEditing={taskDetailsEdit}
                                     />
                                 ))}
                             </div>
@@ -792,7 +792,7 @@ const TaskList = ({ isEditing, setIsEditing }) => {
                             isEditing={true}
                             onClose={handleCloseTaskDetails}
                             onEdit={(value) => {
-                                setIsEditing(value);
+                                setTaskEditing(value);
                                 if (!value) {
                                     setEditedTask(null);
                                 }

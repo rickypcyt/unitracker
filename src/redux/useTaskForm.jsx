@@ -252,7 +252,7 @@ export const useTaskForm = () => {
         setShowNewAssignment(false);
         setNewAssignmentName("");
         setNewAssignmentColor("#8888ff");
-        toast.success("Asignatura creada");
+        toast.success("Assigment created!");
     };
 
     return {
