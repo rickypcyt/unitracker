@@ -12,6 +12,7 @@ import AddComponentButton from "./components/home/AddComponentButton";
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
@@ -22,12 +23,6 @@ const Home: React.FC = () => {
     return "default";
   });
   const [contextMenu, setContextMenu] = useState(null);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("hasSeenWelcomeModal");
-    }
-    return true;
-  });
   const [accentPalette, setAccentPalette] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("accentPalette") || "blue";
@@ -46,7 +41,13 @@ const Home: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setShowSettings((prev) => !prev);
+        if (showWelcomeModal) {
+          setShowWelcomeModal(false);
+        } else if (isEditing) {
+          setIsEditing(false);
+        } else {
+          setShowSettings((prev) => !prev);
+        }
       }
     };
 
@@ -54,7 +55,7 @@ const Home: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [showWelcomeModal, isEditing]);
 
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
@@ -157,7 +158,7 @@ const Home: React.FC = () => {
   isEditing={isEditing}
   onClose={handleCloseContextMenu}
   onRemove={removeComponent}
-  onToggleEdit={setIsEditing}
+  onToggleEdit={() => setIsEditing((prev) => !prev)}
 />
 
       )}
