@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
+import { supabase } from "../../utils/supabaseClient";
 
 const TaskForm = () => {
     const {
@@ -11,7 +12,8 @@ const TaskForm = () => {
         updateField,
         handleSetToday,
         handleSetTomorrow,
-        user,
+        setAssignments,
+        setUser,
     } = useTaskForm();
 
     // Estado para asignaturas locales (offline)
@@ -49,20 +51,17 @@ const TaskForm = () => {
     const suggestionsRef = useRef(null);
 
     useEffect(() => {
-        // Supongamos que tienes acceso a `user` y `assignments` desde tu contexto o props
-        const userAssignments = assignments.filter(assignment => assignment.userId === user.id);
-        
         if (newTask.assignment) {
-            const filtered = userAssignments.filter((a) =>
+            const filtered = allAssignments.filter((a) =>
                 a.toLowerCase().includes(newTask.assignment.toLowerCase()),
             );
             setFilteredAssignments(filtered);
             setSelectedIndex(filtered.length > 0 ? 0 : -1);
         } else {
-            setFilteredAssignments(userAssignments);
+            setFilteredAssignments(allAssignments);
             setSelectedIndex(-1);
         }
-    }, [newTask.assignment, assignments, user]);
+    }, [newTask.assignment, allAssignments]);
 
     const handleAssignmentChange = (e) => {
         updateField("assignment", e.target.value);
@@ -101,6 +100,35 @@ const TaskForm = () => {
         setShowSuggestions(false);
     };
     // ----------- END AUTOCOMPLETE LOGIC -----------
+
+    useEffect(() => {
+        const fetchAssignments = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data, error } = await supabase
+                    .from("tasks")
+                    .select("assignment, color")
+                    .eq("user_id", user.id)
+                    .not("assignment", "is", null)
+                    .not("assignment", "eq", "")
+                    .order("assignment");
+
+                if (error) throw error;
+
+                const uniqueAssignments = [
+                    ...new Set(data.map((task) => task.assignment)),
+                ];
+                setAssignments(uniqueAssignments);
+                setUser(user);
+            } catch (error) {
+                console.error("Error fetching assignments:", error);
+            }
+        };
+
+        fetchAssignments();
+    }, []);
 
     return (
         <div className="maincard relative">
