@@ -44,7 +44,9 @@ const Home: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Verifica si el foco está en un input o textarea
-      const isInputFocused = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
+      const isInputFocused =
+        document.activeElement.tagName === "INPUT" ||
+        document.activeElement.tagName === "TEXTAREA";
 
       if (e.key === "Escape") {
         if (showWelcomeModal) {
@@ -58,7 +60,8 @@ const Home: React.FC = () => {
         } else if (showTaskDetails) {
           setShowTaskDetails(false);
         }
-      } else if (e.key === "m" && !isInputFocused) { // Solo abrir el menú si no hay un input enfocado
+      } else if (e.key === "m" && !isInputFocused) {
+        // Solo abrir el menú si no hay un input enfocado
         setShowSettings(true);
       }
     };
@@ -67,43 +70,54 @@ const Home: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [showWelcomeModal, isEditing, showSettings, showStartSession, showTaskDetails]);
+  }, [
+    showWelcomeModal,
+    isEditing,
+    showSettings,
+    showStartSession,
+    showTaskDetails,
+  ]);
 
   const addComponent = useCallback(
     (colIndex: number, componentKey: string) => {
       // Agregar el componente usando LayoutManager
-      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey);
-  
+      const newLayout = LayoutManager.addComponent(
+        layout,
+        colIndex,
+        componentKey,
+      );
+
       // Actualizar el estado
       setLayout(newLayout);
     },
-    [layout]
+    [layout],
   );
-  
+
   const removeComponent = useCallback(
     (colIndex: number, itemIndex: number) => {
       // Buscar en qué columna está el componente
-      const foundColIndex = layout.findIndex(col => col.items.includes(layout[colIndex].items[itemIndex]));
+      const foundColIndex = layout.findIndex((col) =>
+        col.items.includes(layout[colIndex].items[itemIndex]),
+      );
       if (foundColIndex === -1) return; // No existe, no hacer nada
-  
+
       // Removerlo usando LayoutManager
-      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex);
-  
+      const newLayout = LayoutManager.removeComponent(
+        layout,
+        foundColIndex,
+        itemIndex,
+      );
+
       // Actualizar el estado
       setLayout(newLayout);
     },
-    [layout]
+    [layout],
   );
-  
 
-  const handleContextMenu = useCallback(
-    (e, componentId) => {
-      e.preventDefault();
-      setContextMenu({ x: e.clientX, y: e.clientY, componentId });
-    },
-    [],
-  );
-  
+  const handleContextMenu = useCallback((e, componentId) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, componentId });
+  }, []);
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
@@ -112,67 +126,69 @@ const Home: React.FC = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-          {layout.map((column, colIndex) => (
-  <Droppable key={column.id} droppableId={column.id}>
-    {(provided) => (
-      <div
-        {...provided.droppableProps}
-        ref={provided.innerRef}
-        className="space-y-4"
-      >
-        {column.items.map((componentKey, index) => (
-          <Draggable
-            key={`${componentKey}-${colIndex}-${index}`}
-            draggableId={`${componentKey}-${colIndex}-${index}`}
-            index={index}
-            isDragDisabled={!isEditing}
-          >
-            {(provided) => (
-              <div
-                ref={provided.innerRef}
-                {...provided.draggableProps}
-                {...provided.dragHandleProps}
-                onContextMenu={(e) => handleContextMenu(e, componentKey)}
-              >
-                <ComponentRenderer
-                  componentKey={componentKey}
-                  colIndex={colIndex}
-                  index={index}
-                  isEditing={isEditing}
-                  onRemove={removeComponent}
-                  onContextMenu={handleContextMenu}
-                />
-              </div>
-            )}
-          </Draggable>
-        ))}
-        {provided.placeholder}
-        {isEditing && (
-          <AddComponentButton
-            onClick={(componentKey) => addComponent(colIndex, componentKey)}
-            layout={layout}
-          />
-        )}
-      </div>
-    )}
-  </Droppable>
-))}
-
+            {layout.map((column, colIndex) => (
+              <Droppable key={column.id} droppableId={column.id}>
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className=""
+                  >
+                    {column.items.map((componentKey, index) => (
+                      <Draggable
+                        key={`${componentKey}-${colIndex}-${index}`}
+                        draggableId={`${componentKey}-${colIndex}-${index}`}
+                        index={index}
+                        isDragDisabled={!isEditing}
+                      >
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            onContextMenu={(e) =>
+                              handleContextMenu(e, componentKey)
+                            }
+                          >
+                            <ComponentRenderer
+                              componentKey={componentKey}
+                              colIndex={colIndex}
+                              index={index}
+                              isEditing={isEditing}
+                              onRemove={removeComponent}
+                              onContextMenu={handleContextMenu}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    {isEditing && (
+                      <AddComponentButton
+                        onClick={(componentKey) =>
+                          addComponent(colIndex, componentKey)
+                        }
+                        layout={layout}
+                      />
+                    )}
+                  </div>
+                )}
+              </Droppable>
+            ))}
           </div>
         </div>
       </DragDropContext>
 
       {contextMenu && (
         <ContextMenu
-  x={contextMenu.x}
-  y={contextMenu.y}
-  componentId={contextMenu.componentId}
-  isEditing={isEditing}
-  onClose={handleCloseContextMenu}
-  onRemove={removeComponent}
-  onToggleEdit={() => setIsEditing((prev) => !prev)}
-/>
-
+          x={contextMenu.x}
+          y={contextMenu.y}
+          componentId={contextMenu.componentId}
+          isEditing={isEditing}
+          onClose={handleCloseContextMenu}
+          onRemove={removeComponent}
+          onToggleEdit={() => setIsEditing((prev) => !prev)}
+        />
       )}
 
       {showWelcomeModal && (
@@ -219,7 +235,6 @@ const Home: React.FC = () => {
       >
         <SettingsIcon size={20} />
       </button>
-
     </div>
   );
 };

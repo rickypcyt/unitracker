@@ -99,7 +99,7 @@
    ========================= */
 @layer components {
   .maincard {
-    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg;
+    @apply mb-5 max-w-full mx-auto rounded-2xl p-6 shadow-lg;
     background-color: var(--bg-primary);
     border: 1.5px solid var(--border-primary);
   }
@@ -111,16 +111,19 @@
     @apply text-lg font-semibold mb-2;
     color: var(--text-primary);
   }
-  .card-text, .card-text-lg {
+  .card-text,
+  .card-text-lg {
     @apply text-lg;
     color: var(--text-secondary);
   }
-  .button, .textbutton {
+  .button,
+  .textbutton {
     @apply px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
     background-color: var(--accent-primary);
     color: var(--text-primary);
   }
-  .button:hover, .textbutton:hover {
+  .button:hover,
+  .textbutton:hover {
     background-color: var(--accent-deep);
   }
   .textinput {
@@ -158,7 +161,8 @@
     background-color: var(--bg-secondary);
     color: var(--text-secondary);
   }
-  .editbutton, .cancelbutton {
+  .editbutton,
+  .cancelbutton {
     @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
@@ -166,7 +170,8 @@
   .editbutton {
     @apply absolute right-0 bottom-9;
   }
-  .editbutton:hover, .cancelbutton:hover {
+  .editbutton:hover,
+  .cancelbutton:hover {
     background-color: var(--bg-primary);
   }
 }
@@ -192,7 +197,8 @@ h1 {
   color: var(--text-primary) !important;
   border: 1px solid var(--border-primary) !important;
 }
-.Toastify__toast-body, .Toastify__close-button {
+.Toastify__toast-body,
+.Toastify__close-button {
   color: var(--text-primary) !important;
 }
 .Toastify__progress-bar {
