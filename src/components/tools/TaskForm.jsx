@@ -11,6 +11,7 @@ const TaskForm = () => {
         updateField,
         handleSetToday,
         handleSetTomorrow,
+        user,
     } = useTaskForm();
 
     // Estado para asignaturas locales (offline)
@@ -48,17 +49,20 @@ const TaskForm = () => {
     const suggestionsRef = useRef(null);
 
     useEffect(() => {
+        // Supongamos que tienes acceso a `user` y `assignments` desde tu contexto o props
+        const userAssignments = assignments.filter(assignment => assignment.userId === user.id);
+        
         if (newTask.assignment) {
-            const filtered = allAssignments.filter((a) =>
+            const filtered = userAssignments.filter((a) =>
                 a.toLowerCase().includes(newTask.assignment.toLowerCase()),
             );
             setFilteredAssignments(filtered);
             setSelectedIndex(filtered.length > 0 ? 0 : -1);
         } else {
-            setFilteredAssignments(allAssignments);
+            setFilteredAssignments(userAssignments);
             setSelectedIndex(-1);
         }
-    }, [newTask.assignment, allAssignments]);
+    }, [newTask.assignment, assignments, user]);
 
     const handleAssignmentChange = (e) => {
         updateField("assignment", e.target.value);

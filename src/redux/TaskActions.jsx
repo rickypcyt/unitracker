@@ -58,7 +58,6 @@ export const addTask = (newTask) => async (dispatch) => {
       difficulty: newTask.difficulty,
       assignment: newTask.assignment,
       user_id: user.id, // ← Solo campos existentes en la tabla
-      color:newTask.color,
     };
 
     const { data, error } = await supabase

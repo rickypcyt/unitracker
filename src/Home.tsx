@@ -8,6 +8,7 @@ import StartSessionMenu from "./components/modals/StartSessionMenu";
 import ComponentRenderer from "./components/home/ComponentRenderer";
 import { LayoutManager } from "./utils/layoutManager";
 import AddComponentButton from "./components/home/AddComponentButton";
+import { Settings as SettingsIcon } from "lucide-react";
 
 const Home: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -42,6 +43,9 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Verifica si el foco está en un input o textarea
+      const isInputFocused = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
+
       if (e.key === "Escape") {
         if (showWelcomeModal) {
           setShowWelcomeModal(false);
@@ -54,7 +58,7 @@ const Home: React.FC = () => {
         } else if (showTaskDetails) {
           setShowTaskDetails(false);
         }
-      } else if (e.key === "m") {
+      } else if (e.key === "m" && !isInputFocused) { // Solo abrir el menú si no hay un input enfocado
         setShowSettings(true);
       }
     };
@@ -204,6 +208,17 @@ const Home: React.FC = () => {
         onClose={() => {}}
         setIsPlaying={() => {}}
       />
+
+      <button
+        onClick={() => {
+          console.log("Settings button clicked");
+          setShowSettings(true);
+        }}
+        className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
+        aria-label="Open Settings"
+      >
+        <SettingsIcon size={20} />
+      </button>
 
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Settings, Settings as SettingsIcon, X } from "lucide-react";
+import { Settings as SettingsIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses } from "../../utils/colors";
