@@ -18,8 +18,8 @@
     --border-primary: #29292ac7;
     --text-primary: #fff;
     --text-secondary: #a0a0a0;
-    --accent-primary: #1B56FD ;
-    --accent-deep: #1b57fdb5;
+    --accent-primary: #006eff ;
+    --accent-deep: #006effbd;
 
     /* Paleta extendida (HSL para compatibilidad con Tailwind) */
     --background: 0 0% 100%;

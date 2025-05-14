@@ -147,7 +147,7 @@ const TaskDetailsModal = ({
                     selectedTask.difficulty === "easy"
                       ? "text-green-500"
                       : selectedTask.difficulty === "medium"
-                        ? "text-blue-500"
+                        ? "text-[var(--accent-primary)]"
                         : "text-red-500"
                   }`}
                 >
@@ -285,7 +285,7 @@ const TaskDetailsModal = ({
             ) : (
               <button
                 onClick={() => onEdit(true)}
-                className="text-blue-500 hover:text-blue-600 transition-colors duration-200 flex items-center gap-2"
+                className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors duration-200 flex items-center gap-2"
               >
                 Edit Task
               </button>

@@ -237,11 +237,11 @@ const TaskForm = () => {
                                 aria-label="Set Medium Difficulty"
                             >
                                 {newTask.difficulty === "medium" ? (
-                                    <CheckCircle2 className="text-blue-500" size={24} />
+                                    <CheckCircle2 className="text-[var(--accent-primary)]" size={24} />
                                 ) : (
-                                    <Circle className="text-blue-500" size={24} />
+                                    <Circle className="text-[var(--accent-primary)]" size={24} />
                                 )}
-                                <span className="text-blue-500 text-md">Medium</span>
+                                <span className="text-[var(--accent-primary)] text-md">Medium</span>
                             </button>
                             {/* Hard */}
                             <button

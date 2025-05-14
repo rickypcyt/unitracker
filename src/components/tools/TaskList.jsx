@@ -74,7 +74,7 @@ const TaskItem = ({
                             className={`${task.difficulty === "easy"
                                 ? "text-green-500"
                                 : task.difficulty === "medium"
-                                    ? "text-blue-500"
+                                    ? "text-[var(--accent-primary)]"
                                     : "text-red-500"
                                 }`}
                             size={24}
