@@ -27,8 +27,12 @@ import {
 import { motion } from "framer-motion";
 import moment from "moment";
 import { toast } from "react-toastify";
+import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
+import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
 
 const StudyTimer = () => {
+    const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
+
     const dispatch = useDispatch();
     const { laps, error, currentSession } = useSelector((state) => state.laps);
 
@@ -397,24 +401,10 @@ const StudyTimer = () => {
         setState((prev) => ({ ...prev, startPomodoro: newValue }));
     };
 
-    // Detectar tema/accentPalette
-    const accentPalette =
-        typeof window !== "undefined"
-            ? localStorage.getItem("accentPalette") || "blue"
-            : "blue";
-
-    // Determinar el color del ícono según la paleta
-    const iconColor =
-        accentPalette === "white"
-            ? "#000000" // Negro para white
-            : accentPalette === "gray"
-                ? "#ffffff" // Blanco para gray
-                : "#ffffff"; // Blanco para otras paletas (blue, green, etc.)
-
     if (!state.localUser) {
         return (
             <div className="maincard">
-                <h2 className="text-2xl font-bold mb-6">Study Timer</h2>
+                <h2 className="text-2xl font-bold mb-6">Session</h2>
                 <div className="plslogin">Please log in to use the Study Timer</div>
             </div>
         );
@@ -427,7 +417,7 @@ const StudyTimer = () => {
             <div className="text-2xl font-bold mb-6 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <LibraryBig size={24} />
-                    <span>Study Timer</span>
+                    <span>Session</span>
                 </div>
                 <div className="flex justify-center">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -449,7 +439,7 @@ const StudyTimer = () => {
                             {state.startPomodoro ? (
                                 <CheckCircle2 size={24} style={{ color: iconColor }} />
                             ) : (
-                                <Circle size={24} style={{ color: "var" }} />
+                                <Circle size={24} style={{ color: iconColor }}  />
                             )}
                         </button>
                     </label>
@@ -466,83 +456,38 @@ const StudyTimer = () => {
                 {!state.isRunning ? (
                     <button
                         onClick={timerControls.start}
-                        className="button"
-                        style={{
-                            color: "var(--text-primary)",
-                            backgroundColor: "var(--accent-primary)",
-                        }}
-                        onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                        }
-                        onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                        }
+                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
                     >
                         <Play size={20} style={{ color: iconColor }} />
                     </button>
                 ) : (
                     <button
                         onClick={timerControls.pause}
-                        className="button"
-                        style={{
-                            color: "var(--text-primary)",
-                            backgroundColor: "var(--accent-primary)",
-                        }}
-                        onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                        }
-                        onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                        }
+                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
                     >
                         <Pause size={20} style={{ color: iconColor }} />
                     </button>
                 )}
                 <button
                     onClick={timerControls.reset}
-                    className="button"
-                    style={{
-                        color: "var(--text-primary)",
-                        backgroundColor: "var(--accent-primary)",
-                    }}
-                    onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                    }
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
                 >
                     <RotateCcw size={20} style={{ color: iconColor }} />
                 </button>
                 <button
                     onClick={lapHandlers.add}
-                    className="button"
-                    style={{
-                        color: "var(--text-primary)",
-                        backgroundColor: "var(--accent-primary)",
-                    }}
-                    onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                    }
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
                 >
                     <Flag size={20} style={{ color: iconColor }} />
                 </button>
                 <button
                     onClick={lapHandlers.finish}
-                    className="button"
-                    style={{
-                        color: "var(--text-primary)",
-                        backgroundColor: "var(--accent-primary)",
-                    }}
-                    onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                    }
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
                 >
                     <Check size={20} style={{ color: iconColor }} />
                 </button>
@@ -573,7 +518,7 @@ const StudyTimer = () => {
 
             {showMonthsList &&
                 Object.entries(groupedLaps).map(([monthYear, weeks]) => (
-                    
+
                     <div className="mt-2">
                         {" "}
                         <div key={monthYear} className="mb-4">

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
 import { supabase } from "../../utils/supabaseClient";
+import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
+import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
 
 const TaskForm = () => {
     const {
@@ -37,18 +39,15 @@ const TaskForm = () => {
     }, [assignments, localAssignments]);
 
     // Detectar accentPalette para color de texto del botón
-    const accentPalette =
-        typeof window !== "undefined"
-            ? localStorage.getItem("accentPalette") || "blue"
-            : "blue";
-    const buttonTextColor =
-        accentPalette === "white" ? "#222" : "var(--text-primary)";
+  const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
+
 
     // ----------- AUTOCOMPLETE LOGIC -----------
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredAssignments, setFilteredAssignments] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const suggestionsRef = useRef(null);
+    
 
     useEffect(() => {
         if (newTask.assignment) {
@@ -149,9 +148,7 @@ const TaskForm = () => {
                 <div className="flex gap-4">
                     {/* Assignment */}
                     <div className="flex flex-col gap-2 flex-1">
-                        <label htmlFor="assignment" className="card-text-lg">
-                            Assignment
-                        </label>
+
                         <div className="relative">
                             <input
                                 type="text"
@@ -189,9 +186,7 @@ const TaskForm = () => {
 
                     {/* Title */}
                     <div className="flex flex-col gap-2 flex-1">
-                        <label htmlFor="title" className="card-text-lg">
-                            Title
-                        </label>
+
                         <input
                             id="title"
                             className="textinput"
@@ -204,9 +199,7 @@ const TaskForm = () => {
 
                 {/* Campo Descripción */}
                 <div className="flex flex-col gap-2">
-                    <label htmlFor="description" className="card-text-lg">
-                        Description
-                    </label>
+
                     <textarea
                         id="description"
                         className="textinput"
@@ -220,9 +213,7 @@ const TaskForm = () => {
                 <div className="flex gap-4 items-end">
                     {/* Difficulty */}
                     <div className="flex flex-col gap-2 flex-1">
-                        <label htmlFor="difficulty" className="card-text-lg">
-                            Difficulty
-                        </label>
+
                         <div className="flex justify-between items-center w-full gap-4">
                             {/* Easy */}
                             <button
@@ -271,9 +262,7 @@ const TaskForm = () => {
 
                     {/* Deadline */}
                     <div className="flex flex-col gap-2 flex-1">
-                        <label htmlFor="difficulty" className="card-text-lg">
-                            Deadline
-                        </label>
+
                         <input
                             id="date"
                             className={`textinput w-full text-center cursor-pointer`}
@@ -287,17 +276,10 @@ const TaskForm = () => {
 
                 <button
                     type="submit"
-                    className="w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer transition-all duration-200 hover:shadow-lg active:translate-y-0.5"
-                    style={{
-                        backgroundColor: "var(--accent-primary)",
-                        color: buttonTextColor,
-                    }}
-                    onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-hover)")
-                    }
-                    onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "var(--accent-primary)")
-                    }
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} bigaddtask `}
+
+                    style={{ color: iconColor }}
+
                 >
                     Add Task
                 </button>

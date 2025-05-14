@@ -5,6 +5,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* #1793d1 archlinux color */
+
 /* =========================
    1. Variables CSS Globales
    ========================= */
@@ -13,11 +15,11 @@
     /* Paleta principal */
     --bg-primary: #000;
     --bg-secondary: #1c1c1e;
-    --border-primary: #39393c;
+    --border-primary: #29292ac7;
     --text-primary: #fff;
     --text-secondary: #a0a0a0;
-    --accent-primary: #0466c8;
-    --accent-deep: #023e7d;
+    --accent-primary: #1B56FD ;
+    --accent-deep: #1b57fdb5;
 
     /* Paleta extendida (HSL para compatibilidad con Tailwind) */
     --background: 0 0% 100%;
@@ -103,6 +105,10 @@
     background-color: var(--bg-primary);
     border: 2px solid var(--border-primary);
   }
+  .deadline {
+    @apply text-base;
+    color: var(--accent-primary);
+  }
   .maincard.editing {
     border-style: dotted !important;
     border-color: var(--border-primary) !important;
@@ -126,7 +132,7 @@
   }
   .button,
   .textbutton {
-    @apply px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 text-center;
+    @apply px-4 py-2 rounded-lg transition-colors duration-200  items-center gap-2 text-center;
     background-color: var(--accent-primary);
     color: var(--text-primary);
   }
@@ -190,6 +196,9 @@
   }
   .slider {
     @apply flex items-center gap-4;
+  }
+  .bigaddtask {
+    @apply w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer;
   }
 }
 

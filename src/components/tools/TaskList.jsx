@@ -131,7 +131,7 @@ const TaskItem = ({
                 {/* Date */}
                 <span className="flex items-center gap-2 ml-auto">
                     {!task.completed ? (
-                        <span className="text-base text-blue-400">
+                        <span className="deadline">
                             Deadline:{" "}
                             {new Date(task.deadline).toLocaleDateString("en-US", {
                                 year: "numeric",
@@ -640,7 +640,7 @@ const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold flex items-center gap-2">
                         <ClipboardCheck size={24} />
-                        Your Tasks
+                        Task List
                     </h2>
                     <div className="relative">
                         <button

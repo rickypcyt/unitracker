@@ -1,5 +1,5 @@
 export const colorClasses = {
-  blue: "bg-blue-500 text-white",
+  blue: "--accent-primary text-white",
   green: "bg-green-500 text-white",
   orange: "bg-orange-500 text-white",
   pink: "bg-pink-500 text-white",

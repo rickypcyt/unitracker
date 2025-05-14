@@ -168,7 +168,7 @@ const Pomodoro = () => {
           <div className="flex items-center">
             <AlarmClockCheck size={24} className="mr-2" />
             <span className="text-2xl font-bold">
-              Pomodoro ({MODES[modeIndex].label})
+              Pomo ({MODES[modeIndex].label})
               <span
                 style={{
                   color: "var(--accent-primary)",
