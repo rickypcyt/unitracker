@@ -46,7 +46,7 @@ const TaskItem = ({
     isEditing,
 }) => (
     <div
-        className={`relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg ${task.activetask
+        className={`relative p-4 rounded-xl shadow-md transition-all duration-300 border-2 hover:shadow-lg ${task.activetask
                 ? task.difficulty === "easy"
                     ? "border-2 border-green-500"
                     : task.difficulty === "medium"

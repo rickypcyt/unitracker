@@ -5,9 +5,11 @@ interface ContextMenuProps {
   x: number;
   y: number;
   componentId: string;
+  colIndex: number;
+  itemIndex: number;
   isEditing: boolean;
   onClose: () => void;
-  onRemove: (componentId: string) => void;
+  onRemove: (colIndex: number, itemIndex: number) => void;
   onToggleEdit: () => void;
 }
 
@@ -15,6 +17,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   componentId,
+  colIndex,
+  itemIndex,
   isEditing,
   onClose,
   onRemove,
@@ -22,6 +26,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Cierra el menú si se hace click fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -52,7 +57,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
         <button
           onClick={() => {
-            onRemove(componentId);
+            onRemove(colIndex, itemIndex);
             onClose();
           }}
           className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"

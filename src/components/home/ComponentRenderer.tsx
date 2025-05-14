@@ -4,16 +4,25 @@ import { ComponentRegistry } from "../../utils/layoutManager";
 interface ComponentRendererProps {
   componentKey: string;
   isEditing: boolean;
-  onToggleSize: (key: string) => void;
-  onRemove: (colIndex: number, itemIndex: number) => void;
-  onContextMenu: (e: React.MouseEvent, componentId: string) => void;
   colIndex: number;
   index: number;
+  onToggleSize?: (key: string) => void;
+  onRemove?: (colIndex: number, itemIndex: number) => void;
+  onContextMenu: (
+    e: React.MouseEvent,
+    componentKey: string,
+    colIndex: number,
+    itemIndex: number
+  ) => void;
 }
 
 const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   componentKey,
   isEditing,
+  colIndex,
+  index,
+  onToggleSize,
+  onRemove,
   onContextMenu,
 }) => {
   const Component = ComponentRegistry[componentKey]?.component;
@@ -23,10 +32,19 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
     <div
       className={`rounded-2xl shadow-lg ${
         isEditing ? "border-2 border-dashed border-gray-500" : ""
-      } `}
-      onContextMenu={(e) => onContextMenu(e, componentKey)}
+      }`}
+      onContextMenu={(e) =>
+        onContextMenu(e, componentKey, colIndex, index)
+      }
     >
       <Component />
+      {/* Si quieres poner un botón de eliminar dentro del componente, descomenta esto:
+      {isEditing && onRemove && (
+        <button onClick={() => onRemove(colIndex, index)}>
+          Eliminar
+        </button>
+      )}
+      */}
     </div>
   );
 };

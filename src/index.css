@@ -13,7 +13,7 @@
     /* Paleta principal */
     --bg-primary: #000;
     --bg-secondary: #1c1c1e;
-    --border-primary: #3a3a3c;
+    --border-primary: #39393c;
     --text-primary: #fff;
     --text-secondary: #a0a0a0;
     --accent-primary: #0466c8;
@@ -101,7 +101,7 @@
   .maincard {
     @apply mb-5 max-w-full mx-auto rounded-2xl p-6 shadow-lg;
     background-color: var(--bg-primary);
-    border: 1.5px solid var(--border-primary);
+    border: 2px solid var(--border-primary);
   }
   .card-title {
     @apply text-2xl font-bold mb-6 flex items-center gap-2;
@@ -127,9 +127,9 @@
     background-color: var(--accent-deep);
   }
   .textinput {
-    @apply w-full p-3 rounded-lg text-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    @apply w-full p-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50;
     background-color: var(--bg-primary);
-    border: 1.5px solid var(--border-primary);
+    border: 2px solid var(--border-primary);
     color: var(--text-primary);
   }
   .textinput:focus {
@@ -147,7 +147,7 @@
   .tasks {
     @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
     background-color: var(--bg-secondary);
-    border: 1.5px solid var(--border-primary);
+    border: 2px solid var(--border-primary);
   }
   .tasks:hover {
     background-color: var(--bg-primary);

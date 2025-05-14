@@ -38,7 +38,7 @@ const Home: React.FC = () => {
       if (!result.destination) return;
       setLayout(LayoutManager.updateLayoutAfterDrag(layout, result));
     },
-    [layout],
+    [layout]
   );
 
   useEffect(() => {
@@ -84,40 +84,47 @@ const Home: React.FC = () => {
       const newLayout = LayoutManager.addComponent(
         layout,
         colIndex,
-        componentKey,
+        componentKey
       );
 
       // Actualizar el estado
       setLayout(newLayout);
     },
-    [layout],
+    [layout]
   );
 
   const removeComponent = useCallback(
     (colIndex: number, itemIndex: number) => {
-      // Buscar en qué columna está el componente
-      const foundColIndex = layout.findIndex((col) =>
-        col.items.includes(layout[colIndex].items[itemIndex]),
-      );
-      if (foundColIndex === -1) return; // No existe, no hacer nada
+      if (!layout[colIndex] || !layout[colIndex].items) return; // <-- Añade esta línea
 
-      // Removerlo usando LayoutManager
+      const foundColIndex = layout.findIndex((col) =>
+        col.items.includes(layout[colIndex].items[itemIndex])
+      );
+      if (foundColIndex === -1) return;
+
       const newLayout = LayoutManager.removeComponent(
         layout,
         foundColIndex,
-        itemIndex,
+        itemIndex
       );
-
-      // Actualizar el estado
       setLayout(newLayout);
     },
-    [layout],
+    [layout]
   );
 
-  const handleContextMenu = useCallback((e, componentId) => {
-    e.preventDefault();
-    setContextMenu({ x: e.clientX, y: e.clientY, componentId });
-  }, []);
+  const handleContextMenu = useCallback(
+    (e, componentKey, colIndex, itemIndex) => {
+      e.preventDefault();
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        componentId: componentKey, // Usa siempre el mismo nombre de prop
+        colIndex,
+        itemIndex,
+      });
+    },
+    []
+  );
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
@@ -147,7 +154,12 @@ const Home: React.FC = () => {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             onContextMenu={(e) =>
-                              handleContextMenu(e, componentKey)
+                              handleContextMenu(
+                                e,
+                                componentKey,
+                                colIndex,
+                                index
+                              )
                             }
                           >
                             <ComponentRenderer
@@ -156,7 +168,7 @@ const Home: React.FC = () => {
                               index={index}
                               isEditing={isEditing}
                               onRemove={removeComponent}
-                              onContextMenu={handleContextMenu}
+                              onContextMenu={handleContextMenu} // Este se usa si quieres menú contextual dentro del componente
                             />
                           </div>
                         )}
@@ -186,6 +198,8 @@ const Home: React.FC = () => {
           componentId={contextMenu.componentId}
           isEditing={isEditing}
           onClose={handleCloseContextMenu}
+          colIndex={contextMenu.colIndex}
+          itemIndex={contextMenu.itemIndex}
           onRemove={removeComponent}
           onToggleEdit={() => setIsEditing((prev) => !prev)}
         />
