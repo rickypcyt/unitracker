@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { ComponentRegistry } from "../../utils/layoutManager";
 import { toast } from "react-toastify";
@@ -15,16 +15,23 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 1. Obtener todos los componentes activos en el layout
-  const activeComponents = new Set(layout.flatMap((col) => col.items));
-
-  // 2. Filtrar solo los componentes que NO están activos
-  const availableComponents = Object.entries(ComponentRegistry).filter(
-    ([key]) => !activeComponents.has(key)
+  // Memoizar los componentes activos y disponibles para evitar cálculos innecesarios
+  const activeComponents = useMemo(
+    () => new Set(layout.flatMap((col) => col.items)),
+    [layout]
   );
 
-  // 3. Manejar click fuera para cerrar menú
+  const availableComponents = useMemo(
+    () =>
+      Object.entries(ComponentRegistry).filter(
+        ([key]) => !activeComponents.has(key)
+      ),
+    [activeComponents]
+  );
+
+  // Cerrar menú al hacer click fuera
   useEffect(() => {
+    if (!showMenu) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
@@ -33,41 +40,32 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
         setShowMenu(false);
       }
     };
-    if (showMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
-  // 4. Manejar el click para mostrar menú o toast
+  // Manejar click en el botón principal
   const handleButtonClick = () => {
-    const activeComponents = new Set(layout.flatMap((col) => col.items));
-    const available = Object.entries(ComponentRegistry).filter(
-      ([key]) => !activeComponents.has(key)
-    );
-  
-    if (available.length === 0) {
+    if (availableComponents.length === 0) {
       toast.info("All components are being used.", {
         autoClose: 2000,
         pauseOnHover: false,
-        containerId: "main-toast-container", // opcional, solo si usas varios contenedores
+        containerId: "main-toast-container",
       });
       setShowMenu(false);
-      return;
+    } else {
+      setShowMenu((prev) => !prev);
     }
-  
-    setShowMenu((s) => !s);
   };
-  
-  
+
+  // Manejar selección de componente
+  const handleSelectComponent = (key: string) => {
+    onClick(key);
+    setShowMenu(false);
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full" // <- ¡Esto es clave!
-    >
+    <div ref={containerRef} className="relative w-full">
       <button
         type="button"
         className="flex items-center gap-2 px-6 py-4 bg-black hover:bg-accent-primary/80 text-accent-primary hover:text-white rounded-xl border border-accent-primary transition w-full justify-center font-semibold"
@@ -92,10 +90,7 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
               key={key}
               role="menuitem"
               className="w-full text-left px-4 py-2 rounded-lg hover:bg-accent-primary/20 transition font-medium"
-              onClick={() => {
-                onClick(key);
-                setShowMenu(false);
-              }}
+              onClick={() => handleSelectComponent(key)}
             >
               {config.title || key}
             </button>

@@ -94,8 +94,6 @@ export const useTaskForm = () => {
           assignment: "",
         });
 
-        toast.success("Task added successfully");
-        return;
       }
 
       // Si hay usuario, continuar con la lógica existente
@@ -119,7 +117,6 @@ export const useTaskForm = () => {
         assignment: "",
       });
 
-      toast.success("Task added successfully");
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to add task");
