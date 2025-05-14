@@ -47,12 +47,12 @@ const TaskItem = ({
 }) => (
     <div
         className={`relative p-4 rounded-xl shadow-md transition-all duration-300 border-2 hover:shadow-lg ${task.activetask
-                ? task.difficulty === "easy"
-                    ? "border-2 border-green-500"
-                    : task.difficulty === "medium"
-                        ? "border-2 border-blue-500"
-                        : "border-2 border-red-500"
-                : "border border-border-primary"
+            ? task.difficulty === "easy"
+                ? "border-2 border-green-500"
+                : task.difficulty === "medium"
+                    ? "border-2 border-blue-500"
+                    : "border-2 border-red-500"
+            : "border border-border-primary"
             }`}
         onDoubleClick={() => onDoubleClick(task)}
         onContextMenu={(e) => onContextMenu(e, task)}
@@ -72,10 +72,10 @@ const TaskItem = ({
                     ) : (
                         <Circle
                             className={`${task.difficulty === "easy"
-                                    ? "text-green-500"
-                                    : task.difficulty === "medium"
-                                        ? "text-blue-500"
-                                        : "text-red-500"
+                                ? "text-green-500"
+                                : task.difficulty === "medium"
+                                    ? "text-blue-500"
+                                    : "text-red-500"
                                 }`}
                             size={24}
                         />
@@ -87,8 +87,8 @@ const TaskItem = ({
                 >
                     <span
                         className={`text-left ml-2 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed
-                                ? "line-through text-text-secondary"
-                                : "text-text-primary"
+                            ? "line-through text-text-secondary"
+                            : "text-text-primary"
                             }`}
                         title={task.title}
                     >
@@ -113,12 +113,12 @@ const TaskItem = ({
             </div>
 
             {/* Assignment + Date in one row */}
-            <div className="flex items-center ml-1 gap-4 flex-wrap">
+            <div className="flex items-center ml-1 gap-4 flex-wrap justify-between w-full">
                 {/* Assignment */}
                 <span
-                    className="text-base font-semibold px-2 py-1"
+                    className="text-base font-semibold "
                     style={{
-                        color: assignmentColors[task.assignment] || "#bdbdbd", // Use the color from the mapping
+                        color: assignmentColors[task.assignment] || "#bdbdbd",
                         borderRadius: "0.5rem",
                         display: "inline-block",
                         minWidth: "20px",
@@ -129,10 +129,9 @@ const TaskItem = ({
                 </span>
 
                 {/* Date */}
-                <span className="flex items-center gap-2">
-                    <Calendar size={16} className="text-text-secondary" />
+                <span className="flex items-center gap-2 ml-auto">
                     {!task.completed ? (
-                        <span className="text-xs text-blue-400">
+                        <span className="text-base text-blue-400">
                             Deadline:{" "}
                             {new Date(task.deadline).toLocaleDateString("en-US", {
                                 year: "numeric",
@@ -142,7 +141,7 @@ const TaskItem = ({
                         </span>
                     ) : (
                         task.completed_at && (
-                            <span className="text-xs text-green-400">
+                            <span className="text-base text-green-400">
                                 Completed:{" "}
                                 {new Date(task.completed_at).toLocaleDateString("en-US", {
                                     year: "numeric",
@@ -152,8 +151,10 @@ const TaskItem = ({
                             </span>
                         )
                     )}
+                    <Calendar size={16} className="text-text-secondary" />
                 </span>
             </div>
+
         </div>
     </div>
 );
@@ -831,10 +832,10 @@ const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
                                         handleTaskDoubleClick(contextMenu.task);
                                         handleCloseContextMenu();
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+                                    className="w-full px-2 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
                                 >
                                     <Info size={16} />
-                                    Task Info
+                                    Edit Task
                                 </button>
                                 {contextMenu.task.activetask ? (
                                     <button
@@ -846,7 +847,7 @@ const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
                                             dispatch(updateTask(updatedTask));
                                             handleCloseContextMenu();
                                         }}
-                                        className="w-full px-4 py-2 text-left text-sm text-yellow-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+                                        className="w-full px-2 py-2 text-left text-sm text-yellow-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
                                     >
                                         <Play size={16} className="rotate-180" />
                                         Deactivate Task
@@ -854,7 +855,7 @@ const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
                                 ) : (
                                     <button
                                         onClick={() => handleSetActiveTask(contextMenu.task)}
-                                        className="w-full px-4 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+                                        className="w-full px-2 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
                                     >
                                         <Play size={16} />
                                         Set as Active Task
@@ -865,7 +866,7 @@ const TaskList = ({ taskDetailsEdit, setIsEditing, setTaskEditing }) => {
                                         handleDeleteTask(contextMenu.task.id);
                                         handleCloseContextMenu();
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+                                    className="w-full px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
                                 >
                                     <Trash2 size={16} />
                                     Delete Task

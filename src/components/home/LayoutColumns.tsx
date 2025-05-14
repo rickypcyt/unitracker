@@ -25,13 +25,12 @@ const LayoutColumns: React.FC<LayoutColumnsProps> = ({
   onAdd,
   onContextMenu,
 }) => {
-  // Aseguramos que el layout tenga 3 columnas
-  if (layout.length !== 3) {
-    console.warn("LayoutColumns expects exactly 3 columns.");
-  }
+  React.useEffect(() => {
+    console.log("Cantidad de columnas:", layout.length);
+  }, [layout]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
       {layout.map((column, colIndex) => (
         <Droppable key={column.id} droppableId={column.id}>
           {(provided) => (

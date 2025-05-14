@@ -99,9 +99,13 @@
    ========================= */
 @layer components {
   .maincard {
-    @apply mb-5 max-w-full mx-auto rounded-2xl p-6 shadow-lg;
+    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg mb-4;
     background-color: var(--bg-primary);
     border: 2px solid var(--border-primary);
+  }
+  .maincard.editing {
+    border-style: dotted !important;
+    border-color: var(--border-primary) !important;
   }
   .card-title {
     @apply text-2xl font-bold mb-6 flex items-center gap-2;
@@ -111,6 +115,10 @@
     @apply text-lg font-semibold mb-2;
     color: var(--text-primary);
   }
+  .border-dotted {
+    border-style: dotted !important;
+  }
+
   .card-text,
   .card-text-lg {
     @apply text-lg;

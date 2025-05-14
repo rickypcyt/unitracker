@@ -30,21 +30,10 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
 
   return (
     <div
-      className={`rounded-2xl shadow-lg ${
-        isEditing ? "border-2 border-dashed border-gray-500" : ""
-      }`}
-      onContextMenu={(e) =>
-        onContextMenu(e, componentKey, colIndex, index)
-      }
+      className={` ${isEditing ? "editing" : ""}`}
+      onContextMenu={(e) => onContextMenu(e, componentKey, colIndex, index)}
     >
       <Component />
-      {/* Si quieres poner un botón de eliminar dentro del componente, descomenta esto:
-      {isEditing && onRemove && (
-        <button onClick={() => onRemove(colIndex, index)}>
-          Eliminar
-        </button>
-      )}
-      */}
     </div>
   );
 };
