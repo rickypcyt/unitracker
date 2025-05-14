@@ -223,7 +223,7 @@ const TaskForm = () => {
                         <label htmlFor="difficulty" className="card-text-lg">
                             Difficulty
                         </label>
-                        <div className="flex justify-start gap-8 items-center">
+                        <div className="flex justify-between items-center w-full gap-4">
                             {/* Easy */}
                             <button
                                 type="button"

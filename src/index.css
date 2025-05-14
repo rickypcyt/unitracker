@@ -182,6 +182,15 @@
   .cancelbutton:hover {
     background-color: var(--bg-primary);
   }
+  .bar {
+    @apply flex flex-col;
+  }
+  .noisegentitle {
+    @apply flex items-center gap-2 min-w-[120px] mb-4;
+  }
+  .slider {
+    @apply flex items-center gap-4;
+  }
 }
 
 /* =========================

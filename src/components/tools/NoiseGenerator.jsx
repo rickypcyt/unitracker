@@ -6,7 +6,7 @@ const NoiseGenerator = () => {
     // Load saved volumes from localStorage or use defaults
     const [brownVolume, setBrownVolume] = useState(() => {
         const saved = localStorage.getItem("brownVolume");
-        return saved ? parseFloat(saved) : 1.0; // Default to middle (1.0)
+        return saved ? parseFloat(saved) : 2.5; // Default to middle (1.0)
     });
     const [rainVolume, setRainVolume] = useState(() => {
         const saved = localStorage.getItem("rainVolume");
@@ -68,7 +68,10 @@ const NoiseGenerator = () => {
     }, [oceanVolume]);
 
     // Función para iniciar Brown Noise
-    const startBrownNoise = () => {
+    const startBrownNoise = async () => {
+        if (!masterGainRef.current) {
+            await initAudioContext();
+        }
         if (!brownNoiseRef.current) {
             const brownNoise = new Tone.Noise("brown").start();
             const filter = new Tone.Filter(200, "lowpass");
@@ -93,7 +96,10 @@ const NoiseGenerator = () => {
     };
 
     // Función para iniciar Rain Noise
-    const startRainNoise = () => {
+    const startRainNoise = async () => {
+        if (!masterGainRef.current) {
+            await initAudioContext();
+        }
         if (!rainNoiseRef.current) {
             const rainNoise = new Tone.Noise("pink").start();
             const highpassFilter = new Tone.Filter(200, "highpass");
@@ -126,7 +132,10 @@ const NoiseGenerator = () => {
     };
 
     // Función para iniciar Ocean Waves
-    const startOceanWaves = () => {
+    const startOceanWaves = async () => {
+        if (!masterGainRef.current) {
+            await initAudioContext();
+        }
         if (!oceanNoiseRef.current) {
             const oceanNoise = new Tone.Noise("pink").start();
 
@@ -190,11 +199,13 @@ const NoiseGenerator = () => {
         }
 
         if (isPlayingAll) {
+
             stopBrownNoise();
             stopRainNoise();
             stopOceanWaves();
             setIsPlayingAll(false);
         } else {
+
             startBrownNoise();
             startRainNoise();
             startOceanWaves();
@@ -290,18 +301,18 @@ const NoiseGenerator = () => {
             </div>
             <div className="mb-3 space-y-6 pr-2">
                 {/* Control para Brown Noise */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <label className="flex items-center gap-2 min-w-[120px]">
+                <div className="bar">
+                    <label className="noisegentitle">
                         <Cloud size={18} />
-                        <span className="card-text font-medium text-white">
+                        <span className="card-text font-medium text-white text-md">
                             Brown Noise
                         </span>
                     </label>
-                    <div className="flex items-center gap-4 flex-1 max-w-md">
+                    <div className="slider">
                         <input
                             type="range"
                             min="0"
-                            max="2"
+                            max="5"
                             step="0.01"
                             value={brownVolume}
                             onChange={(e) => setBrownVolume(parseFloat(e.target.value))}
@@ -328,12 +339,12 @@ const NoiseGenerator = () => {
                 </div>
 
                 {/* Control para Rain Sound */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <label className="flex items-center gap-2 min-w-[120px]">
+                <div className="bar">
+                    <label className="noisegentitle">
                         <CloudRain size={18} />
-                        <span className="card-text font-medium text-white">Rain Sound</span>
+                        <span className="card-text font-medium text-white text-md">Rain Sound</span>
                     </label>
-                    <div className="flex items-center gap-4 flex-1 max-w-md">
+                    <div className="slider">
                         <input
                             type="range"
                             min="0"
@@ -364,14 +375,14 @@ const NoiseGenerator = () => {
                 </div>
 
                 {/* Control para Ocean Waves */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <label className="flex items-center gap-2 min-w-[120px]">
+                <div className="bar">
+                    <label className="noisegentitle">
                         <Waves size={18} />
-                        <span className="card-text font-medium text-white">
+                        <span className="card-text font-medium text-white text-md">
                             Ocean Waves
                         </span>
                     </label>
-                    <div className="flex items-center gap-4 flex-1 max-w-md">
+                    <div className="slider">
                         <input
                             type="range"
                             min="0"
