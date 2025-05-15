@@ -1,6 +1,7 @@
 import React from "react";
 import { CheckCircle2, Circle, Calendar, Trash2 } from "lucide-react";
 
+
 const assignmentColors = {
     "Assignment 1": "#FF5733",
     "Assignment 2": "#33FF57",

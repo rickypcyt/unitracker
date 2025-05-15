@@ -7,6 +7,7 @@ import { useTaskManager } from "../../hooks/useTaskManager";
 import { useSorting } from "../../hooks/useSorting";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { ClipboardCheck, ChevronUp, ChevronDown } from "lucide-react";
+import TaskDetailsModal from "../modals/TaskDetailsModal";
 
 export const TaskList = ({ onComponentContextMenu }) => {
   const {
