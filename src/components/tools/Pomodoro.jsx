@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Play,
   Pause,
@@ -7,8 +7,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
-import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
+import { useTheme } from "../../utils/ThemeContext";
+import { colorClasses, hoverClasses } from "../../utils/colors";
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -19,65 +19,128 @@ const MODES = [
   { label: "90/30", work: 90 * 60, break: 30 * 60 },
 ];
 
+// --- Utilidades DRY ---
+const getLocal = (key, fallback) => {
+  const value = localStorage.getItem(key);
+  if (value === null || value === undefined) return fallback;
+  if (typeof fallback === "boolean") return value === "true";
+  if (typeof fallback === "number") return parseInt(value);
+  return value;
+};
+
+const setLocal = (key, value) => localStorage.setItem(key, value.toString());
+
+const formatTime = (totalSeconds) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+const sendNotification = (title, body) => {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body, icon: "🍅" });
+  }
+};
+
+// --- Custom Hook (Single Responsibility) ---
+function usePomodoroState() {
+  const [modeIndex, setModeIndex] = useState(() => getLocal("pomodoroModeIndex", 0));
+  const [mode, setMode] = useState(() => getLocal("pomodoroMode", "work"));
+  const [timeLeft, setTimeLeft] = useState(() =>
+    getLocal("pomodoroTimeLeft", MODES[modeIndex].work)
+  );
+  const [isRunning, setIsRunning] = useState(() => getLocal("pomodoroIsRunning", false));
+  const [pomodoroCount, setPomodoroCount] = useState(() => getLocal("pomodoroCount", 0));
+
+  // Persistir en localStorage
+  useEffect(() => {
+    setLocal("pomodoroModeIndex", modeIndex);
+    setLocal("pomodoroMode", mode);
+    setLocal("pomodoroTimeLeft", timeLeft);
+    setLocal("pomodoroIsRunning", isRunning);
+    setLocal("pomodoroCount", pomodoroCount);
+  }, [modeIndex, mode, timeLeft, isRunning, pomodoroCount]);
+
+  // Cambiar modo y resetear tiempo
+  const changeMode = useCallback(
+    (newIndex) => {
+      setModeIndex(newIndex);
+      setMode("work");
+      setTimeLeft(MODES[newIndex].work);
+      setIsRunning(false);
+    },
+    []
+  );
+
+  // Resetear temporizador
+  const resetTimer = useCallback(() => {
+    setIsRunning(false);
+    setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
+    setMode("work");
+    setPomodoroCount(0);
+  }, [mode, modeIndex]);
+
+  return {
+    modeIndex,
+    mode,
+    timeLeft,
+    isRunning,
+    pomodoroCount,
+    setModeIndex,
+    setMode,
+    setTimeLeft,
+    setIsRunning,
+    setPomodoroCount,
+    changeMode,
+    resetTimer,
+  };
+}
+
+// --- Botones DRY ---
+const TimerControlButton = ({ onClick, icon: Icon, label, className }) => (
+  <button onClick={onClick} className={className} aria-label={label}>
+    <Icon size={20} />
+  </button>
+);
+
+// --- Componente principal ---
 const Pomodoro = () => {
-  const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
-  const [modeIndex, setModeIndex] = useState(() => {
-    const savedModeIndex = localStorage.getItem("pomodoroModeIndex");
-    return savedModeIndex ? parseInt(savedModeIndex) : 0;
-  });
-  const [mode, setMode] = useState(() => {
-    const savedMode = localStorage.getItem("pomodoroMode");
-    return savedMode || "work";
-  });
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const savedTimeLeft = localStorage.getItem("pomodoroTimeLeft");
-    return savedTimeLeft ? parseInt(savedTimeLeft) : MODES[modeIndex].work;
-  });
-  const [isRunning, setIsRunning] = useState(() => {
-    const savedIsRunning = localStorage.getItem("pomodoroIsRunning");
-    return savedIsRunning === "true";
-  });
-  const [pomodoroCount, setPomodoroCount] = useState(() => {
-    const savedCount = localStorage.getItem("pomodoroCount");
-    return savedCount ? parseInt(savedCount) : 0;
-  });
+  const { accentPalette, iconColor } = useTheme();
+  const {
+    modeIndex,
+    mode,
+    timeLeft,
+    isRunning,
+    pomodoroCount,
+    setModeIndex,
+    setMode,
+    setTimeLeft,
+    setIsRunning,
+    setPomodoroCount,
+    changeMode,
+    resetTimer,
+  } = usePomodoroState();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const intervalRef = useRef(null);
   const menuRef = useRef(null);
 
-  // Save state to localStorage whenever it changes
+  // Solicitar permiso de notificaciones
   useEffect(() => {
-    localStorage.setItem("pomodoroModeIndex", modeIndex.toString());
-    localStorage.setItem("pomodoroMode", mode);
-    localStorage.setItem("pomodoroTimeLeft", timeLeft.toString());
-    localStorage.setItem("pomodoroIsRunning", isRunning.toString());
-    localStorage.setItem("pomodoroCount", pomodoroCount.toString());
-  }, [modeIndex, mode, timeLeft, isRunning, pomodoroCount]);
-
-  // 🔔 Solicitar permiso para notificaciones al cargar la página
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission();
-    }
+    if ("Notification" in window) Notification.requestPermission();
   }, []);
 
-  // 📌 Función para enviar notificación al sistema
-  const sendNotification = (title, body) => {
-    if (Notification.permission === "granted") {
-      new Notification(title, { body, icon: "🍅" });
-    }
-  };
-
+  // Temporizador
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(
-        () => setTimeLeft((prev) => prev - 1),
-        1000,
-      );
+      intervalRef.current = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     }
     return () => clearInterval(intervalRef.current);
   }, [isRunning, timeLeft]);
 
+  // Al llegar a cero
   useEffect(() => {
     if (timeLeft === 0) {
       const sound =
@@ -91,10 +154,7 @@ const Pomodoro = () => {
           ? "🍅 Pomodoro finished. ¡Take a break!"
           : "⏳ Break finished. ¡Time to work!";
 
-      // 🚀 Notificación visual con react-toastify
       toast(message, { position: "top-right", autoClose: 4000, theme: "dark" });
-
-      // 🔔 Notificación al sistema
       sendNotification("Pomodoro Timer", message);
 
       setTimeout(() => {
@@ -109,77 +169,51 @@ const Pomodoro = () => {
         setIsRunning(true);
       }, 100);
     }
-  }, [timeLeft, mode, modeIndex]);
+  }, [timeLeft, mode, modeIndex, setMode, setTimeLeft, setPomodoroCount, setIsRunning]);
 
-  const formatTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${seconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const handleOutsideClick = (e) => {
-    if (menuRef.current && !menuRef.current.contains(e.target)) {
-      setMenuOpen(false);
-    }
-  };
-
+  // Cerrar menú al hacer click fuera
   useEffect(() => {
-    // Cerrar el menú cuando se haga clic fuera de él
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
+    const handleOutsideClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // Add event listeners for external control
+  // Eventos externos
   useEffect(() => {
-    const handleStartPomodoro = () => {
-      setIsRunning(true);
-    };
+    const handleStart = () => setIsRunning(true);
+    const handleStop = () => setIsRunning(false);
+    const handleReset = () => resetTimer();
 
-    const handleStopPomodoro = () => {
-      setIsRunning(false);
-    };
-
-    const handleResetPomodoro = () => {
-      setIsRunning(false);
-      setTimeLeft(MODES[modeIndex].work);
-      setMode("work");
-      setPomodoroCount(0);
-    };
-
-    window.addEventListener("startPomodoro", handleStartPomodoro);
-    window.addEventListener("stopPomodoro", handleStopPomodoro);
-    window.addEventListener("resetPomodoro", handleResetPomodoro);
-
+    window.addEventListener("startPomodoro", handleStart);
+    window.addEventListener("stopPomodoro", handleStop);
+    window.addEventListener("resetPomodoro", handleReset);
     return () => {
-      window.removeEventListener("startPomodoro", handleStartPomodoro);
-      window.removeEventListener("stopPomodoro", handleStopPomodoro);
-      window.removeEventListener("resetPomodoro", handleResetPomodoro);
+      window.removeEventListener("startPomodoro", handleStart);
+      window.removeEventListener("stopPomodoro", handleStop);
+      window.removeEventListener("resetPomodoro", handleReset);
     };
-  }, [modeIndex]);
+  }, [resetTimer]);
 
+  // --- Render ---
   return (
     <div className="maincard">
       <div className="relative">
         <div className="text-2xl font-bold mb-6 flex items-center">
-          <div className="flex items-center">
-            <AlarmClockCheck size={24} className="mr-2" />
-            <span className="text-2xl font-bold">
-              Pomo ({MODES[modeIndex].label})
-              <span
-                style={{
-                  color: "var(--accent-primary)",
-                  marginLeft: 8,
-                  fontWeight: 500,
-                }}
-              >
-                [{mode === "work" ? "Work" : "Break"}]
-              </span>
+          <AlarmClockCheck size={24} className="mr-2" />
+          <span>
+            Pomo ({MODES[modeIndex].label})
+            <span
+              style={{
+                color: "var(--accent-primary)",
+                marginLeft: 8,
+                fontWeight: 500,
+              }}
+            >
+              [{mode === "work" ? "Work" : "Break"}]
             </span>
-          </div>
+          </span>
         </div>
         <div className="absolute top-0 right-0">
           <button
@@ -200,13 +234,7 @@ const Pomodoro = () => {
               {MODES.map((m, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    setModeIndex(index);
-                    setMode("work");
-                    setTimeLeft(MODES[index].work);
-                    setIsRunning(false);
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => changeMode(index)}
                   className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${
                     index === modeIndex ? "bg-bg-tertiary" : ""
                   }`}
@@ -221,43 +249,39 @@ const Pomodoro = () => {
       <div className="text-5xl font-mono mb-4 text-center">
         {formatTime(timeLeft)}
       </div>
-
       <div className="flex justify-center space-x-4 mb-6">
         {!isRunning ? (
-          <button
+          <TimerControlButton
             onClick={() => {
               setIsRunning(true);
               window.dispatchEvent(new CustomEvent("pomodoroPlay"));
             }}
+            icon={Play}
+            label="Play"
             className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-          >
-            <Play size={20} style={{ color: iconColor }} />
-          </button>
+          />
         ) : (
-          <button
+          <TimerControlButton
             onClick={() => {
               setIsRunning(false);
               window.dispatchEvent(new CustomEvent("pomodoroPause"));
             }}
+            icon={Pause}
+            label="Pause"
             className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-          >
-            <Pause size={20} style={{ color: iconColor }} />
-          </button>
+          />
         )}
-        <button
+        <TimerControlButton
           onClick={() => {
             setIsRunning(false);
-            setTimeLeft(
-              mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break,
-            );
+            setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
             window.dispatchEvent(new CustomEvent("pomodoroReset"));
           }}
+          icon={RotateCcw}
+          label="Reset"
           className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-        >
-          <RotateCcw size={20} style={{ color: iconColor }} />
-        </button>
+        />
       </div>
-
       <div className="text-center text-lg font-medium">
         Completed Pomodoros: {pomodoroCount}
       </div>

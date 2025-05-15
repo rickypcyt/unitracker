@@ -1,58 +1,39 @@
-import React, { useState, useEffect, useRef } from "react";
+// src/components/StudyTimer.jsx
+import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "../../utils/supabaseClient";
 import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
-import {
-    fetchLaps,
-    createLap,
-    updateLap,
-    deleteLap,
-} from "../../redux/LapActions";
-import {
-    Play,
-    Pause,
-    RotateCcw,
-    Flag,
-    Edit2,
-    Check,
-    Trash2,
-    ChevronDown,
-    ChevronUp,
-    LibraryBig,
-    X,
-    Save,
-    CheckCircle2,
-    Circle,
-} from "lucide-react";
+import { fetchLaps, createLap, updateLap } from "../../redux/LapActions";
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save, CheckCircle2, Circle } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
 import { toast } from "react-toastify";
-import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
-import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
+import { useTheme } from "../../utils/ThemeContext";
+import { colorClasses, hoverClasses } from "../../utils/colors";
+import { formatTime, getMonthYear, getWeekKey } from "../../utils/timeUtils";
+import useInterval from "../../hooks/useInterval";
+import useEventListener from "../../hooks/useEventListener";
 
 const StudyTimer = () => {
-    const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
-
+    const { accentPalette, iconColor } = useTheme();
     const dispatch = useDispatch();
     const { laps, error, currentSession } = useSelector((state) => state.laps);
 
     const [showMonthsList, setShowMonthsList] = useState(false);
 
     const [state, setState] = useState(() => {
-        // Load saved state from localStorage or use defaults
         const savedState = localStorage.getItem("studyTimerState");
         if (savedState) {
             const parsed = JSON.parse(savedState);
             return {
                 ...parsed,
-                localUser: null, // Don't restore user state, it will be loaded separately
+                localUser: null,
                 expandedMonths: {},
                 expandedWeeks: {},
                 selectedSession: null,
                 isEditingDetails: false,
                 editedSession: null,
-                startPomodoro:
-                    localStorage.getItem("startPomodoroWithTimer") === "true",
+                startPomodoro: localStorage.getItem("startPomodoroWithTimer") === "true",
             };
         }
         return {
@@ -66,11 +47,9 @@ const StudyTimer = () => {
             selectedSession: null,
             isEditingDetails: false,
             editedSession: null,
-            startPomodoro: true, // Changed to true by default
+            startPomodoro: true,
         };
     });
-
-    const intervalRef = useRef(null);
 
     // Save state to localStorage whenever it changes
     useEffect(() => {
@@ -81,13 +60,9 @@ const StudyTimer = () => {
             startPomodoro: state.startPomodoro,
         };
         localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
-        localStorage.setItem(
-            "startPomodoroWithTimer",
-            state.startPomodoro.toString(),
-        );
+        localStorage.setItem("startPomodoroWithTimer", state.startPomodoro.toString());
     }, [state.time, state.isRunning, state.description, state.startPomodoro]);
 
-    // Set default value in localStorage on mount
     useEffect(() => {
         if (!localStorage.getItem("startPomodoroWithTimer")) {
             localStorage.setItem("startPomodoroWithTimer", "true");
@@ -95,78 +70,26 @@ const StudyTimer = () => {
     }, []);
 
     // Restore timer if it was running
-    useEffect(() => {
-        if (state.isRunning) {
-            intervalRef.current = setInterval(() => {
-                setState((prev) => ({ ...prev, time: prev.time + 1 }));
-            }, 1000);
-            // Restart Pomodoro if it was enabled
-            if (state.startPomodoro) {
-                window.dispatchEvent(new CustomEvent("startPomodoro"));
-            }
-            // Update StartSessionMenu state
-            window.dispatchEvent(
-                new CustomEvent("studyTimerStateChanged", {
-                    detail: { isRunning: true },
-                }),
-            );
-        }
-        return () => clearInterval(intervalRef.current);
-    }, []); // Only run once on mount
+    const tick = useCallback(() => {
+        setState((prev) => ({ ...prev, time: prev.time + 1 }));
+    }, []);
+    useInterval(tick, state.isRunning);
 
     useEffect(() => {
         const loadUser = async () => {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
             setState((prev) => ({ ...prev, localUser: user }));
             if (user) dispatch(fetchLaps());
         };
         loadUser();
     }, [dispatch]);
 
-    // Add event listeners for StudyTimer control
-    useEffect(() => {
-        const handleStartStudyTimer = () => {
-            timerControls.start();
-        };
-
-        const handleStopStudyTimer = () => {
-            timerControls.pause();
-        };
-
-        const handlePomodoroPause = () => {
-            if (state.startPomodoro) {
-                timerControls.pause();
-            }
-        };
-
-        const handlePomodoroReset = () => {
-            if (state.startPomodoro) {
-                timerControls.reset();
-            }
-        };
-
-        const handlePomodoroPlay = () => {
-            if (state.startPomodoro) {
-                timerControls.start();
-            }
-        };
-
-        window.addEventListener("startStudyTimer", handleStartStudyTimer);
-        window.addEventListener("stopStudyTimer", handleStopStudyTimer);
-        window.addEventListener("pomodoroPause", handlePomodoroPause);
-        window.addEventListener("pomodoroReset", handlePomodoroReset);
-        window.addEventListener("pomodoroPlay", handlePomodoroPlay);
-
-        return () => {
-            window.removeEventListener("startStudyTimer", handleStartStudyTimer);
-            window.removeEventListener("stopStudyTimer", handleStopStudyTimer);
-            window.removeEventListener("pomodoroPause", handlePomodoroPause);
-            window.removeEventListener("pomodoroReset", handlePomodoroReset);
-            window.removeEventListener("pomodoroPlay", handlePomodoroPlay);
-        };
-    }, [state.startPomodoro]);
+    // Centralized event listeners
+    useEventListener("startStudyTimer", () => timerControls.start(), [state.startPomodoro]);
+    useEventListener("stopStudyTimer", () => timerControls.pause(), [state.startPomodoro]);
+    useEventListener("pomodoroPause", () => { if (state.startPomodoro) timerControls.pause(); }, [state.startPomodoro]);
+    useEventListener("pomodoroReset", () => { if (state.startPomodoro) timerControls.reset(); }, [state.startPomodoro]);
+    useEventListener("pomodoroPlay", () => { if (state.startPomodoro) timerControls.start(); }, [state.startPomodoro]);
 
     // Handle escape key to close modal
     useEffect(() => {
@@ -175,11 +98,9 @@ const StudyTimer = () => {
                 handleCloseSessionDetails();
             }
         };
-
         if (state.selectedSession) {
             window.addEventListener("keydown", handleEscape);
         }
-
         return () => {
             window.removeEventListener("keydown", handleEscape);
         };
@@ -201,37 +122,25 @@ const StudyTimer = () => {
                 const sessionNum = await getCurrentSessionNumber();
                 dispatch(setCurrentSession(sessionNum));
                 setState((prev) => ({ ...prev, isRunning: true }));
-                intervalRef.current = setInterval(() => {
-                    setState((prev) => ({ ...prev, time: prev.time + 1 }));
-                }, 1000);
                 // Start Pomodoro if checkbox is checked
                 if (state.startPomodoro) {
                     window.dispatchEvent(new CustomEvent("startPomodoro"));
                 }
-                // Dispatch event to update StartSessionMenu state
                 window.dispatchEvent(
-                    new CustomEvent("studyTimerStateChanged", {
-                        detail: { isRunning: true },
-                    }),
+                    new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
                 );
             }
         },
         pause: () => {
-            clearInterval(intervalRef.current);
             setState((prev) => ({ ...prev, isRunning: false }));
-            // Stop Pomodoro if it was started
             if (state.startPomodoro) {
                 window.dispatchEvent(new CustomEvent("stopPomodoro"));
             }
-            // Dispatch event to update StartSessionMenu state
             window.dispatchEvent(
-                new CustomEvent("studyTimerStateChanged", {
-                    detail: { isRunning: false },
-                }),
+                new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
             );
         },
         reset: () => {
-            clearInterval(intervalRef.current);
             setState((prev) => ({
                 ...prev,
                 isRunning: false,
@@ -239,16 +148,12 @@ const StudyTimer = () => {
                 description: "",
             }));
             dispatch(resetTimerState());
-            // Stop and reset Pomodoro if it was started
             if (state.startPomodoro) {
                 window.dispatchEvent(new CustomEvent("stopPomodoro"));
                 window.dispatchEvent(new CustomEvent("resetPomodoro"));
             }
-            // Dispatch event to update StartSessionMenu state
             window.dispatchEvent(
-                new CustomEvent("studyTimerStateChanged", {
-                    detail: { isRunning: false },
-                }),
+                new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
             );
         },
     };
@@ -256,8 +161,7 @@ const StudyTimer = () => {
     const lapHandlers = {
         add: async () => {
             if (!currentSession) return;
-            const lapNumber =
-                laps.filter((l) => l.session_number === currentSession).length + 1;
+            const lapNumber = laps.filter((l) => l.session_number === currentSession).length + 1;
             const lapData = {
                 name: `Lap ${lapNumber}`,
                 duration: formatTime(state.time),
@@ -288,42 +192,18 @@ const StudyTimer = () => {
             .lte("created_at", `${today}T23:59:59`)
             .order("session_number", { ascending: false })
             .limit(1);
-
         return error || !data.length ? 1 : data[0].session_number + 1;
-    };
-
-    const formatTime = (totalSeconds) => {
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     };
 
     const groupSessionsByMonthWeek = () => {
         return laps.reduce((groups, lap) => {
             const monthYear = getMonthYear(lap.created_at);
             const weekKey = getWeekKey(lap.created_at);
-
             groups[monthYear] = groups[monthYear] || {};
             groups[monthYear][weekKey] = groups[monthYear][weekKey] || [];
             groups[monthYear][weekKey].push(lap);
-
             return groups;
         }, {});
-    };
-
-    const getMonthYear = (date) => {
-        const d = new Date(date);
-        return `${d.toLocaleString("default", { month: "long" })} ${d.getFullYear()}`;
-    };
-
-    const getWeekKey = (date) => {
-        const d = new Date(date);
-        d.setHours(0, 0, 0, 0);
-        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-        const yearStart = new Date(d.getFullYear(), 0, 1);
-        const weekNo = Math.ceil((d - yearStart) / 86400000 / 7);
-        return `Week ${weekNo}`;
     };
 
     const handleSessionDoubleClick = (session) => {
@@ -350,27 +230,19 @@ const StudyTimer = () => {
     const handleSaveEditDetails = async () => {
         if (state.editedSession) {
             try {
-                // Create update object with all necessary fields
                 const updateData = {
                     name: state.editedSession.name,
-                    description: state.editedSession.description || "", // Ensure description is at least an empty string
+                    description: state.editedSession.description || "",
                     session_number: state.editedSession.session_number,
                     duration: state.editedSession.duration,
                 };
-
-                // Update in database through Redux action
                 await dispatch(updateLap(state.editedSession.id, updateData));
-
-                // Update local state
                 setState((prev) => ({
                     ...prev,
                     isEditingDetails: false,
                     selectedSession: { ...state.editedSession },
                 }));
-
-                // Fetch updated laps to refresh the list
                 await dispatch(fetchLaps());
-
                 toast.success("Session updated successfully");
             } catch (error) {
                 console.error("Error updating session:", error);
@@ -396,7 +268,7 @@ const StudyTimer = () => {
     };
 
     const handlePomodoroToggle = (e) => {
-        const newValue = e.target.checked;
+        const newValue = e.target.checked ?? !state.startPomodoro;
         localStorage.setItem("startPomodoroWithTimer", newValue);
         setState((prev) => ({ ...prev, startPomodoro: newValue }));
     };

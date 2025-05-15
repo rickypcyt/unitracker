@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
@@ -10,7 +10,7 @@ import { LayoutManager } from "./utils/layoutManager";
 import AddComponentButton from "./components/home/AddComponentButton";
 import { Settings as SettingsIcon } from "lucide-react";
 
-const Home: React.FC = () => {
+const Home = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -19,20 +19,21 @@ const Home: React.FC = () => {
 
   const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "default";
-    }
-    return "default";
-  });
-  const [contextMenu, setContextMenu] = useState(null);
-  const [accentPalette, setAccentPalette] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("accentPalette") || "blue";
-    }
-    return "blue";
-  });
+  const [currentTheme, setCurrentTheme] = useState(() =>
+    typeof window !== "undefined"
+      ? localStorage.getItem("theme") || "default"
+      : "default"
+  );
+  const [accentPalette, setAccentPalette] = useState(() =>
+    typeof window !== "undefined"
+      ? localStorage.getItem("accentPalette") || "blue"
+      : "blue"
+  );
 
+  // Estado único para el menú contextual de componentes/layouts
+  const [contextMenu, setContextMenu] = useState(null);
+
+  // Drag & Drop
   const handleDragEnd = useCallback(
     (result) => {
       if (!result.destination) return;
@@ -41,35 +42,24 @@ const Home: React.FC = () => {
     [layout]
   );
 
+  // Teclas rápidas (Escape, etc)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Verifica si el foco está en un input o textarea
+    const handleKeyDown = (e) => {
       const isInputFocused =
         document.activeElement.tagName === "INPUT" ||
         document.activeElement.tagName === "TEXTAREA";
-
       if (e.key === "Escape") {
-        if (showWelcomeModal) {
-          setShowWelcomeModal(false);
-        } else if (isEditing) {
-          setIsEditing(false);
-        } else if (showSettings) {
-          setShowSettings(false);
-        } else if (showStartSession) {
-          setShowStartSession(false);
-        } else if (showTaskDetails) {
-          setShowTaskDetails(false);
-        }
+        if (showWelcomeModal) setShowWelcomeModal(false);
+        else if (isEditing) setIsEditing(false);
+        else if (showSettings) setShowSettings(false);
+        else if (showStartSession) setShowStartSession(false);
+        else if (showTaskDetails) setShowTaskDetails(false);
       } else if (e.key === "m" && !isInputFocused) {
-        // Solo abrir el menú si no hay un input enfocado
         setShowSettings(true);
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     showWelcomeModal,
     isEditing,
@@ -78,47 +68,38 @@ const Home: React.FC = () => {
     showTaskDetails,
   ]);
 
+  // Añadir componente
   const addComponent = useCallback(
-    (colIndex: number, componentKey: string) => {
-      // Agregar el componente usando LayoutManager
-      const newLayout = LayoutManager.addComponent(
-        layout,
-        colIndex,
-        componentKey
-      );
-
-      // Actualizar el estado
+    (colIndex, componentKey) => {
+      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey);
       setLayout(newLayout);
     },
     [layout]
   );
 
+  // Eliminar componente
   const removeComponent = useCallback(
-    (colIndex: number, itemIndex: number) => {
-      if (!layout[colIndex] || !layout[colIndex].items) return; // <-- Añade esta línea
-
+    (colIndex, itemIndex) => {
+      if (!layout[colIndex] || !layout[colIndex].items) return;
       const foundColIndex = layout.findIndex((col) =>
         col.items.includes(layout[colIndex].items[itemIndex])
       );
       if (foundColIndex === -1) return;
-
-      const newLayout = LayoutManager.removeComponent(
-        layout,
-        foundColIndex,
-        itemIndex
-      );
+      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex);
       setLayout(newLayout);
     },
     [layout]
   );
 
+  // Menú contextual de componente/layout
   const handleContextMenu = useCallback(
     (e, componentKey, colIndex, itemIndex) => {
       e.preventDefault();
       setContextMenu({
+        type: "component",
         x: e.clientX,
         y: e.clientY,
-        componentId: componentKey, // Usa siempre el mismo nombre de prop
+        componentId: componentKey,
         colIndex,
         itemIndex,
       });
@@ -129,18 +110,14 @@ const Home: React.FC = () => {
   const handleCloseContextMenu = () => setContextMenu(null);
 
   return (
-    <div className="">
+    <div>
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {layout.map((column, colIndex) => (
               <Droppable key={column.id} droppableId={column.id}>
                 {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className=""
-                  >
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
                     {column.items.map((componentKey, index) => (
                       <Draggable
                         key={`${componentKey}-${colIndex}-${index}`}
@@ -153,13 +130,9 @@ const Home: React.FC = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
+                            // Aquí pasas el handler de menú contextual
                             onContextMenu={(e) =>
-                              handleContextMenu(
-                                e,
-                                componentKey,
-                                colIndex,
-                                index
-                              )
+                              handleContextMenu(e, componentKey, colIndex, index)
                             }
                           >
                             <ComponentRenderer
@@ -168,7 +141,8 @@ const Home: React.FC = () => {
                               index={index}
                               isEditing={isEditing}
                               onRemove={removeComponent}
-                              onContextMenu={handleContextMenu} // Este se usa si quieres menú contextual dentro del componente
+                              // Si quieres menú contextual DENTRO del componente, pásalo también aquí
+                              onContextMenu={handleContextMenu}
                             />
                           </div>
                         )}
@@ -191,7 +165,8 @@ const Home: React.FC = () => {
         </div>
       </DragDropContext>
 
-      {contextMenu && (
+      {/* Menú contextual de componente/layout */}
+      {contextMenu && contextMenu.type === "component" && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
@@ -205,6 +180,7 @@ const Home: React.FC = () => {
         />
       )}
 
+      {/* Otros modales */}
       {showWelcomeModal && (
         <WelcomeModal
           onClose={() => {
@@ -216,7 +192,7 @@ const Home: React.FC = () => {
 
       <Settings
         isEditing={isEditing}
-        onToggleEditing={(value) => setIsEditing(value)}
+        onToggleEditing={setIsEditing}
         isLoggedIn={isLoggedIn}
         onLogin={loginWithGoogle}
         currentTheme={currentTheme}
@@ -240,10 +216,7 @@ const Home: React.FC = () => {
       />
 
       <button
-        onClick={() => {
-          console.log("Settings button clicked");
-          setShowSettings(true);
-        }}
+        onClick={() => setShowSettings(true)}
         className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
         aria-label="Open Settings"
       >

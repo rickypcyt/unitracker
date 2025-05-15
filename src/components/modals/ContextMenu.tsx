@@ -1,19 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Trash2, Settings } from "lucide-react";
 
-interface ContextMenuProps {
-  x: number;
-  y: number;
-  componentId: string;
-  colIndex: number;
-  itemIndex: number;
-  isEditing: boolean;
-  onClose: () => void;
-  onRemove: (colIndex: number, itemIndex: number) => void;
-  onToggleEdit: () => void;
-}
-
-const ContextMenu: React.FC<ContextMenuProps> = ({
+const ContextMenu = ({
   x,
   y,
   componentId,
@@ -24,12 +12,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   onRemove,
   onToggleEdit,
 }) => {
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef(null);
 
-  // Cierra el menú si se hace click fuera
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         onClose();
       }
     };
@@ -54,7 +41,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           <Settings size={16} />
           {isEditing ? "Exit Edit Layout" : "Edit Layout"}
         </button>
-
         <button
           onClick={() => {
             onRemove(colIndex, itemIndex);
