@@ -100,11 +100,19 @@
    2. Componentes Personalizados
    ========================= */
 @layer components {
-  .maincard {
-    @apply max-w-full mx-auto rounded-2xl p-6 shadow-lg mb-4;
-    background-color: var(--bg-primary);
-    border: 2px solid var(--border-primary);
-  }
+.maincard {
+  width: auto;         /* Tamaño fijo, puedes ajustar */
+  aspect-ratio: 1/1;    /* Hace que sea cuadrada */
+  /* Tus estilos previos */
+  max-width: none;      /* Sobrescribe max-w-full si usas Tailwind */
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-primary);
+  margin-bottom: 5%
+}
+
   .deadline {
     @apply text-base;
     color: var(--accent-primary);
