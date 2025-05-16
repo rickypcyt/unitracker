@@ -178,7 +178,7 @@ export const TaskList = ({ onComponentContextMenu }) => {
           </div>
 
           {/* Completed Tasks (plegable) */}
-          <div className="space-y-5 mb-4">
+          <div className="space-y-5">
             <button
               className="infomenu mb-3"
               onClick={() => setShowCompleted((v) => !v)}

@@ -13,13 +13,21 @@ import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
 
 const Home = () => {
+  // --- Cambios aquí ---
+  const columns = useResponsiveColumns(); // 1 a 4 según el ancho
+
+  const [layout, setLayout] = useState(() => LayoutManager.getInitialLayout(columns));
+  const responsiveLayout = useMemo(
+    () => distributeItems(layout, columns),
+    [layout, columns]
+  );
+  // --- Fin cambios aquí ---
+
   const [isEditing, setIsEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showStartSession, setShowStartSession] = useState(false);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
-
-  const [layout, setLayout] = useState(LayoutManager.getInitialLayout());
   const { isLoggedIn, loginWithGoogle } = useAuth();
   const [currentTheme, setCurrentTheme] = useState(() =>
     typeof window !== "undefined"
@@ -31,22 +39,22 @@ const Home = () => {
       ? localStorage.getItem("accentPalette") || "blue"
       : "blue"
   );
-
   const [contextMenu, setContextMenu] = useState(null);
 
-const columns = useResponsiveColumns(); // 1 a 4 según el ancho
-const responsiveLayout = useMemo(
-  () => distributeItems(layout, columns),
-  [layout, columns]
-);
+  // --- Cambios aquí ---
+  // Recarga el layout cuando cambian las columnas
+  useEffect(() => {
+    setLayout(LayoutManager.getInitialLayout(columns));
+  }, [columns]);
+  // --- Fin cambios aquí ---
 
   // Drag & Drop
   const handleDragEnd = useCallback(
     (result) => {
       if (!result.destination) return;
-      setLayout(LayoutManager.updateLayoutAfterDrag(layout, result));
+      setLayout(LayoutManager.updateLayoutAfterDrag(layout, result, columns));
     },
-    [layout]
+    [layout, columns] // <-- columns agregado aquí
   );
 
   // Teclas rápidas (Escape, etc)
@@ -78,10 +86,10 @@ const responsiveLayout = useMemo(
   // Añadir componente
   const addComponent = useCallback(
     (colIndex, componentKey) => {
-      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey);
+      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey, columns);
       setLayout(newLayout);
     },
-    [layout]
+    [layout, columns] // <-- columns agregado aquí
   );
 
   // Eliminar componente
@@ -92,10 +100,10 @@ const responsiveLayout = useMemo(
         col.items.includes(layout[colIndex].items[itemIndex])
       );
       if (foundColIndex === -1) return;
-      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex);
+      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex, columns);
       setLayout(newLayout);
     },
-    [layout]
+    [layout, columns] // <-- columns agregado aquí
   );
 
   // Menú contextual de componente/layout

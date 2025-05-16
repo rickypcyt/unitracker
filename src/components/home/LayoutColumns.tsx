@@ -31,7 +31,7 @@ const LayoutColumns: React.FC<LayoutColumnsProps> = ({
 
   // Cambia a 4 columnas en desktop
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4 rows-2">
       {layout.map((column, colIndex) => (
         <Droppable key={column.id} droppableId={column.id}>
           {(provided) => (
