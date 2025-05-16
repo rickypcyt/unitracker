@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, Cloud, CloudRain, Waves } from "lucide-react";
+import { AudioLines, Play, Pause, Cloud, CloudRain, Waves } from "lucide-react";
 import * as Tone from "tone";
 
 // Configuración de cada sonido
@@ -186,7 +186,8 @@ export default function NoiseGenerator() {
   return (
     <div className="maincard">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Noise Generator</h2>
+
+        <h2 className="text-2xl font-bold flex items-center gap-2"><AudioLines size={24} />Noise Generator</h2>
         <button
           type="button"
           onClick={toggleAllSounds}

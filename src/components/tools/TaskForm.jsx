@@ -134,7 +134,7 @@ const TaskForm = () => {
             <div>
                 <h2 className="text-2xl font-bold text-text-primary mb-6 flex items-center">
                     <Rows4 size={24} className="mr-2" />
-                    Add New Task
+                    Task Form
                 </h2>
             </div>
 

@@ -218,7 +218,7 @@ const Pomodoro = () => {
         <div className="absolute top-0 right-0">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-bg-surface hover:bg-bg-tertiary rounded-lg transition-colors duration-200"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
           >
             <span>Edit</span>
             <ChevronDown
@@ -229,7 +229,7 @@ const Pomodoro = () => {
           {menuOpen && (
             <div
               ref={menuRef}
-              className="absolute right-0 mt-2 w-32 bg-bg-surface rounded-lg shadow-lg z-10 border border-border-primary"
+              className="sort-menu absolute right-0 mt-2 w-35 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
             >
               {MODES.map((m, index) => (
                 <button

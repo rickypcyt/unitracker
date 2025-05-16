@@ -6,7 +6,7 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
     <div className="relative">
       <button
         onClick={() => setShowSortMenu(!showSortMenu)}
-        className="sort-button flex items-center gap-2 px-3 py-1.5 bg-neutral-800 text-text-secondary hover:bg-neutral-700 rounded-lg transition-colors duration-200 text-base"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
       >
         <ArrowUpDown size={16} />
         Sort by{" "}
