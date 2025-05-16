@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "concurrently \"bun vite\" \"bun run backend/server.js\"",
     "build": "vite build",
-    "server": "bun run backend/server.js",
     "vite": "vite"
   },
   "dependencies": {

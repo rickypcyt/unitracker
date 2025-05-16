@@ -15,7 +15,6 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Memoizar los componentes activos y disponibles para evitar cálculos innecesarios
   const activeComponents = useMemo(
     () => new Set(layout.flatMap((col) => col.items)),
     [layout]
@@ -29,7 +28,6 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
     [activeComponents]
   );
 
-  // Cerrar menú al hacer click fuera
   useEffect(() => {
     if (!showMenu) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,7 +42,6 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
-  // Manejar click en el botón principal
   const handleButtonClick = () => {
     if (availableComponents.length === 0) {
       toast.info("All components are being used.", {
@@ -58,7 +55,6 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
     }
   };
 
-  // Manejar selección de componente
   const handleSelectComponent = (key: string) => {
     onClick(key);
     setShowMenu(false);
@@ -92,7 +88,7 @@ const AddComponentButton: React.FC<AddComponentButtonProps> = ({
               className="w-full text-left px-4 py-2 rounded-lg hover:bg-accent-primary/20 transition font-medium"
               onClick={() => handleSelectComponent(key)}
             >
-              {config.title || key}
+              {config.name || key}
             </button>
           ))}
         </div>

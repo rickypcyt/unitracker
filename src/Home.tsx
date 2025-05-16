@@ -113,7 +113,8 @@ const Home = () => {
     <div>
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          {/* Cambiado a 4 columnas en desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
             {layout.map((column, colIndex) => (
               <Droppable key={column.id} droppableId={column.id}>
                 {(provided) => (
@@ -130,7 +131,6 @@ const Home = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            // Aquí pasas el handler de menú contextual
                             onContextMenu={(e) =>
                               handleContextMenu(e, componentKey, colIndex, index)
                             }
@@ -141,7 +141,6 @@ const Home = () => {
                               index={index}
                               isEditing={isEditing}
                               onRemove={removeComponent}
-                              // Si quieres menú contextual DENTRO del componente, pásalo también aquí
                               onContextMenu={handleContextMenu}
                             />
                           </div>

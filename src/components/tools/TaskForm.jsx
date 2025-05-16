@@ -161,7 +161,7 @@ const TaskForm = () => {
                                     setTimeout(() => setShowSuggestions(false), 500);
                                 }}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Choose an assignment"
+                                placeholder="Assignment"
                             />
                             {showSuggestions && filteredAssignments.length > 0 && (
                                 <div
@@ -205,7 +205,7 @@ const TaskForm = () => {
                         className="textinput"
                         value={newTask.description}
                         onChange={(e) => updateField("description", e.target.value)}
-                        placeholder="Enter task description"
+                        placeholder="Task description"
                     />
                 </div>
 

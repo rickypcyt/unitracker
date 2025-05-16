@@ -6,9 +6,9 @@ import StudyTimer from "../components/tools/StudyTimer";
 import NoiseGenerator from "../components/tools/NoiseGenerator";
 import Statistics from "../components/tools/Stats";
 import Pomodoro from "../components/tools/Pomodoro";
-import KanbanBoard from "../components/tools/KanbanBoard";
+// import KanbanBoard from "../components/tools/KanbanBoard";
 
-interface LayoutColumn {
+export interface LayoutColumn {
     id: string;
     items: string[];
 }
@@ -16,19 +16,19 @@ interface LayoutColumn {
 export interface ComponentConfig {
     name: string;
     component: React.FC<any>;
-  }
-  
-  export const ComponentRegistry: Record<string, ComponentConfig> = {
-    TaskForm: { component: TaskForm, name: "Task Form" },
-    TaskList: { component: TaskList, name: "Task List" },
-    ProgressTracker: { component: ProgressTracker, name: "Progress Tracker" },
-    Calendar: { component: Calendar, name: "Calendar" },
-    StudyTimer: { component: StudyTimer, name: "Study Timer" },
-    NoiseGenerator: { component: NoiseGenerator, name: "Noise Generator" },
-    Statistics: { component: Statistics, name: "Statistics" },
-    Pomodoro: { component: Pomodoro, name: "Pomodoro" },
-    /*KanbanBoard: { component: KanbanBoard, name: "Kanban Board" },*/
-  };
+}
+
+export const ComponentRegistry: Record<string, ComponentConfig> = {
+    TaskForm: { component: TaskForm, name: "TF" },
+    TaskList: { component: TaskList, name: "TL" },
+    ProgressTracker: { component: ProgressTracker, name: "PT" },
+    Calendar: { component: Calendar, name: "Cal" },
+    StudyTimer: { component: StudyTimer, name: "ST" },
+    NoiseGenerator: { component: NoiseGenerator, name: "NoiseGen" },
+    Statistics: { component: Statistics, name: "Stats" },
+    Pomodoro: { component: Pomodoro, name: "Pomo" },
+    // KanbanBoard: { component: KanbanBoard, name: "Kanban Board" },
+};
 
 export const LayoutManager = {
     getInitialLayout: (): LayoutColumn[] => {
@@ -36,10 +36,12 @@ export const LayoutManager = {
         if (savedLayout) {
             return JSON.parse(savedLayout);
         }
+        // Ahora 4 columnas
         return [
-            { id: "column-1", items: ["StudyTimer", "NoiseGenerator", "Calendar"] },
-            { id: "column-2", items: ["Pomodoro", "TaskForm"] },
-            { id: "column-3", items: ["TaskList", "Stats", "ProgressTracker"] },
+            { id: "column-1", items: ["ST", "Pomo"] },
+            { id: "column-2", items: ["TF", "NoiseGen"] },
+            { id: "column-3", items: ["Stats", "Cal"] },
+            { id: "column-4", items: ["TL", "PT"] },
         ];
     },
 

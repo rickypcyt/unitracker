@@ -9,7 +9,7 @@ interface LayoutColumn {
 }
 
 interface LayoutColumnsProps {
-  layout: LayoutColumn[]; // Debe tener 3 elementos
+  layout: LayoutColumn[]; // Puede tener 4 elementos ahora
   isEditing: boolean;
   onToggleSize: (componentKey: string) => void;
   onRemove: (colIndex: number, itemIndex: number) => void;
@@ -29,15 +29,16 @@ const LayoutColumns: React.FC<LayoutColumnsProps> = ({
     console.log("Cantidad de columnas:", layout.length);
   }, [layout]);
 
+  // Cambia a 4 columnas en desktop
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
       {layout.map((column, colIndex) => (
         <Droppable key={column.id} droppableId={column.id}>
           {(provided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className=" flex flex-col gap-4 min-h-[300px]"
+              className="flex flex-col gap-4 min-h-[300px]"
             >
               {column.items.map((componentKey, index) => (
                 <ComponentRenderer
