@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
@@ -34,11 +34,11 @@ const Home = () => {
 
   const [contextMenu, setContextMenu] = useState(null);
 
-  // Responsive columns
-  const columns = useResponsiveColumns();
-
-  // Distribuye los items en el número de columnas adecuado
-  const responsiveLayout = distributeItems(layout, columns);
+const columns = useResponsiveColumns(); // 1 a 4 según el ancho
+const responsiveLayout = useMemo(
+  () => distributeItems(layout, columns),
+  [layout, columns]
+);
 
   // Drag & Drop
   const handleDragEnd = useCallback(
