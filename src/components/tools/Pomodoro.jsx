@@ -200,7 +200,7 @@ const Pomodoro = () => {
   return (
     <div className="maincard">
       <div className="relative">
-        <div className="text-2xl font-bold mb-6 flex items-center">
+        <div className="text-2xl font-bold  flex items-center">
           <AlarmClockCheck size={24} className="mr-2" />
           <span>
             Pomo ({MODES[modeIndex].label})
@@ -246,7 +246,7 @@ const Pomodoro = () => {
           )}
         </div>
       </div>
-      <div className="text-5xl font-mono mb-4 text-center">
+      <div className="text-5xl font-mono mb-4 text-center mt-20">
         {formatTime(timeLeft)}
       </div>
       <div className="flex justify-center space-x-4 mb-6">

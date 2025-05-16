@@ -86,8 +86,30 @@ export const TaskList = ({ onComponentContextMenu }) => {
     }));
   };
 
+  // --- PROGRESS TRACKER LOGIC ---
+  const milestones = [5, 10, 15, 20, 25];
+  const completedCount = completedTasks.length;
+  const totalCount = allTasks.length;
+  const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+  const getNextMilestone = () => {
+    return milestones.find((milestone) => milestone > completedCount) || "All";
+  };
+
+  const getProductivity = () => {
+    const today = new Date();
+    return allTasks.filter(
+      (task) =>
+        task.completed &&
+        task.completedAt &&
+        new Date(task.completedAt).toDateString() === today.toDateString()
+    ).length;
+  };
+
+  // --- END PROGRESS TRACKER LOGIC ---
+
   return (
-    <div className="maincard relative">
+    <div className="maincard relative flex flex-col gap-2 p-6">
       <div className="flex flex-col gap-2 mb-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -156,7 +178,7 @@ export const TaskList = ({ onComponentContextMenu }) => {
           </div>
 
           {/* Completed Tasks (plegable) */}
-          <div className="space-y-4 mb-4">
+          <div className="space-y-5 mb-4">
             <button
               className="infomenu mb-3"
               onClick={() => setShowCompleted((v) => !v)}
@@ -195,6 +217,30 @@ export const TaskList = ({ onComponentContextMenu }) => {
           </div>
         </>
       )}
+
+      {/* PROGRESS TRACKER (integrado al final de la tarjeta) */}
+      <div className=" px-3 rounded-lg bg-black/80 ">
+
+        <div className="flex items-center mb-2">
+          <div className="flex-1 h-2 bg-neutral-800 rounded overflow-hidden">
+            <div
+              style={{
+                width: `${progressPercentage}%`,
+                backgroundColor: "#2563eb",
+              }}
+              className="h-2 transition-all duration-500 rounded"
+            ></div>
+          </div>
+          <span className="ml-3 text-blue-500 font-semibold text-sm">{progressPercentage.toFixed(0)}%</span>
+        </div>
+        <div className="flex items-end gap-2 justify-center mb-2">
+          <span className="text-2xl font-bold text-blue-500">{completedCount}</span>
+          <span className="text-lg font-medium text-white">out of</span>
+          <span className="text-2xl font-bold text-white">{totalCount}</span>
+          <span className="text-lg font-medium text-white">tasks completed</span>
+        </div>
+
+      </div>
 
       {/* Task Details Modal */}
       {selectedTask && (

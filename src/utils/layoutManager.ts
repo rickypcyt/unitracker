@@ -41,7 +41,7 @@ return [
     { id: "column-1", items: ["StudyTimer", "Pomodoro"] },
     { id: "column-2", items: ["TaskForm", "NoiseGenerator"] },
     { id: "column-3", items: ["Statistics", "Calendar"] },
-    { id: "column-4", items: ["TaskList", "ProgressTracker"] },
+    { id: "column-4", items: ["TaskList"] },
 ];
 
     },

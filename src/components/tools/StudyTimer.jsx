@@ -274,7 +274,7 @@ const StudyTimer = () => {
     if (!state.localUser) {
         return (
             <div className="maincard">
-                <h2 className="text-2xl font-bold mb-6">Session</h2>
+                <h2 className="text-2xl font-bold mb-12">Session</h2>
                 <div className="plslogin">Please log in to use the Study Timer</div>
             </div>
         );
@@ -346,13 +346,6 @@ const StudyTimer = () => {
 
                 >
                     <RotateCcw size={20} style={{ color: iconColor }} />
-                </button>
-                <button
-                    onClick={lapHandlers.add}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
-                >
-                    <Flag size={20} style={{ color: iconColor }} />
                 </button>
                 <button
                     onClick={lapHandlers.finish}

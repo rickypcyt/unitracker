@@ -253,7 +253,7 @@ const Statistics = () => {
 
       {/* Tabla de estadísticas */}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-black">
+        <table className="min-w-full bg-black mt-10">
           <thead>
             <tr>
               <th className="border-b border-black px-4 py-2 text-center"></th>
