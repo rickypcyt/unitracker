@@ -37,12 +37,13 @@ export const LayoutManager = {
             return JSON.parse(savedLayout);
         }
         // Ahora 4 columnas
-        return [
-            { id: "column-1", items: ["ST", "Pomo"] },
-            { id: "column-2", items: ["TF", "NoiseGen"] },
-            { id: "column-3", items: ["Stats", "Cal"] },
-            { id: "column-4", items: ["TL", "PT"] },
-        ];
+return [
+    { id: "column-1", items: ["StudyTimer", "Pomodoro"] },
+    { id: "column-2", items: ["TaskForm", "NoiseGenerator"] },
+    { id: "column-3", items: ["Statistics", "Calendar"] },
+    { id: "column-4", items: ["TaskList", "ProgressTracker"] },
+];
+
     },
 
     saveLayout: (layout: LayoutColumn[]) => {

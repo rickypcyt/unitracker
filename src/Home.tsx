@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
 import WelcomeModal from "./components/modals/WelcomeModal";
@@ -9,6 +9,8 @@ import ComponentRenderer from "./components/home/ComponentRenderer";
 import { LayoutManager } from "./utils/layoutManager";
 import AddComponentButton from "./components/home/AddComponentButton";
 import { Settings as SettingsIcon } from "lucide-react";
+import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
+import { distributeItems } from "./utils/distributeItems";
 
 const Home = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -30,8 +32,13 @@ const Home = () => {
       : "blue"
   );
 
-  // Estado único para el menú contextual de componentes/layouts
   const [contextMenu, setContextMenu] = useState(null);
+
+  // Responsive columns
+  const columns = useResponsiveColumns();
+
+  // Distribuye los items en el número de columnas adecuado
+  const responsiveLayout = distributeItems(layout, columns);
 
   // Drag & Drop
   const handleDragEnd = useCallback(
@@ -113,9 +120,11 @@ const Home = () => {
     <div>
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
-          {/* Cambiado a 4 columnas en desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-            {layout.map((column, colIndex) => (
+          <div
+            className="grid gap-4 p-4"
+            style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+          >
+            {responsiveLayout.map((column, colIndex) => (
               <Droppable key={column.id} droppableId={column.id}>
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
