@@ -16,7 +16,7 @@ export const TaskItem = ({
     onContextMenu,
 }) => (
     <div
-        className={`relative p-4 rounded-xl shadow-md transition-all duration-300 border-2 hover:shadow-lg ${
+        className={`relative p-2 rounded-xl shadow-md transition-all duration-300 border-2 hover:shadow-lg ${
             task.activetask
                 ? task.difficulty === "easy"
                     ? "border-2 border-green-500"
@@ -101,7 +101,7 @@ export const TaskItem = ({
                 </span>
 
                 {/* Date */}
-                <span className="flex items-center gap-2 ml-auto">
+                <span className="flex items-center gap-2 ml-auto px-2">
                     {!task.completed ? (
                         <span className="deadline">
                             Deadline:{" "}

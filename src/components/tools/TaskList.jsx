@@ -1,13 +1,22 @@
 import React, { useState } from "react";
 import { TaskItem } from "./TaskItem";
 import { TaskListMenu } from "../modals/TaskListMenu";
-import ContextMenu from "../modals/ContextMenu";
 import { SortMenu } from "../modals/SortMenu";
 import { useTaskManager } from "../../hooks/useTaskManager";
 import { useSorting } from "../../hooks/useSorting";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { ClipboardCheck, ChevronUp, ChevronDown } from "lucide-react";
 import TaskDetailsModal from "../modals/TaskDetailsModal";
+
+// Agrupa tareas por assignment
+const groupTasksByAssignment = (tasks) => {
+  return tasks.reduce((acc, task) => {
+    const assignment = task.assignment || "No assignment";
+    if (!acc[assignment]) acc[assignment] = [];
+    acc[assignment].push(task);
+    return acc;
+  }, {});
+};
 
 export const TaskList = ({ onComponentContextMenu }) => {
   const {
@@ -39,17 +48,21 @@ export const TaskList = ({ onComponentContextMenu }) => {
     handleEditChange,
   } = useTaskDetails();
 
-  // Estado único para menús contextuales
   const [contextMenu, setContextMenu] = useState(null);
 
-  // Visibilidad de secciones
-  const [showIncomplete, setShowIncomplete] = useState(true);
+  // Estado para mostrar/ocultar assignments dentro de la sección incompleta
+  const [openAssignments, setOpenAssignments] = useState({});
+  // Estado para plegar/desplegar la sección de completadas
   const [showCompleted, setShowCompleted] = useState(false);
 
   // Definir tareas según usuario
   const allTasks = user ? tasks : localTasks;
   const completedTasks = allTasks.filter((task) => task.completed);
-  const incompleteTasks = allTasks.filter((task) => !task.completed);
+  const incompletedTasks = allTasks.filter((task) => !task.completed);
+
+  // Agrupar por assignment
+  const incompletedByAssignment = groupTasksByAssignment(incompletedTasks);
+  const completedByAssignment = groupTasksByAssignment(completedTasks);
 
   // Handlers para menús contextuales
   const handleTaskContextMenu = (e, task) => {
@@ -64,6 +77,14 @@ export const TaskList = ({ onComponentContextMenu }) => {
   };
 
   const handleCloseContextMenu = () => setContextMenu(null);
+
+  // Toggle para cada assignment en la sección incompleta
+  const handleToggleAssignment = (assignment) => {
+    setOpenAssignments((prev) => ({
+      ...prev,
+      [assignment]: !prev[assignment],
+    }));
+  };
 
   return (
     <div className="maincard relative">
@@ -88,63 +109,90 @@ export const TaskList = ({ onComponentContextMenu }) => {
       </div>
 
       {/* Mensaje si no hay tareas */}
-      {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
+      {incompletedTasks.length === 0 && completedTasks.length === 0 ? (
         <div className="plslogin">You have no tasks at the moment.</div>
       ) : (
         <>
-          {/* Incomplete Tasks */}
-          {incompleteTasks.length > 0 && (
-            <div className="space-y-4 mb-4">
-              <button className="infomenu mb-3" onClick={() => setShowIncomplete((v) => !v)}>
-                <span>Incomplete Tasks ({incompleteTasks.length})</span>
-                {showIncomplete ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
-              <div
-                className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${
-                  showIncomplete ? "visible" : "hidden"
-                }`}
-              >
-                {sortTasks(incompleteTasks).map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletion}
-                    onDelete={handleDeleteTask}
-                    onDoubleClick={handleOpenTaskDetails}
-                    onContextMenu={(e) => handleTaskContextMenu(e, task)}
-                    isEditing={taskDetailsEdit}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Assignments (incomplete tasks) */}
+          <div className="space-y-4 mb-4">
+            {Object.keys(incompletedByAssignment).length === 0 ? (
+              <div className="text-text-secondary">No incomplete assignments.</div>
+            ) : (
+              Object.entries(incompletedByAssignment).map(([assignment, tasks]) => (
+                <div key={assignment} className="mb-2">
+                  <button
+                    className="infomenu mb-1"
+                    onClick={() => handleToggleAssignment(assignment)}
+                  >
+                    <span>
+                      {assignment} ({tasks.length})
+                    </span>
+                    {openAssignments[assignment] ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
+                  </button>
+                  <div
+                    className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${
+                      openAssignments[assignment] ? "visible" : "hidden"
+                    }`}
+                  >
+                    {sortTasks(tasks).map((task) => (
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onToggleCompletion={handleToggleCompletion}
+                        onDelete={handleDeleteTask}
+                        onDoubleClick={handleOpenTaskDetails}
+                        onContextMenu={(e) => handleTaskContextMenu(e, task)}
+                        isEditing={taskDetailsEdit}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
 
-          {/* Completed Tasks */}
-          {completedTasks.length > 0 && (
-            <div>
-              <button className="infomenu mb-3" onClick={() => setShowCompleted((v) => !v)}>
-                <span>Completed Tasks ({completedTasks.length})</span>
-                {showCompleted ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
-              <div
-                className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${
-                  showCompleted ? "visible" : "hidden"
-                }`}
-              >
-                {sortTasks(completedTasks).map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletion}
-                    onDelete={handleDeleteTask}
-                    onDoubleClick={handleOpenTaskDetails}
-                    onContextMenu={(e) => handleTaskContextMenu(e, task)}
-                    isEditing={taskDetailsEdit}
-                  />
-                ))}
-              </div>
+          {/* Completed Tasks (plegable) */}
+          <div className="space-y-4 mb-4">
+            <button
+              className="infomenu mb-3"
+              onClick={() => setShowCompleted((v) => !v)}
+            >
+              <span>Completed Tasks ({completedTasks.length})</span>
+              {showCompleted ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            <div
+              className={`transition-all duration-300 ${
+                showCompleted ? "visible" : "hidden"
+              }`}
+            >
+              {Object.keys(completedByAssignment).length === 0 ? (
+                <div className="text-text-secondary ml-2">No completed tasks.</div>
+              ) : (
+                Object.entries(completedByAssignment).map(([assignment, tasks]) => (
+                  <div key={assignment} className="mb-2 ml-2">
+                    <div className="font-semibold text-base mb-1">{assignment} ({tasks.length})</div>
+                    <div className="space-y-2">
+                      {sortTasks(tasks).map((task) => (
+                        <TaskItem
+                          key={task.id}
+                          task={task}
+                          onToggleCompletion={handleToggleCompletion}
+                          onDelete={handleDeleteTask}
+                          onDoubleClick={handleOpenTaskDetails}
+                          onContextMenu={(e) => handleTaskContextMenu(e, task)}
+                          isEditing={taskDetailsEdit}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          )}
+          </div>
         </>
       )}
 
@@ -177,7 +225,6 @@ export const TaskList = ({ onComponentContextMenu }) => {
           onDeleteTask={handleDeleteTask}
         />
       )}
-      {/* El de componentes/layouts se maneja desde Home */}
     </div>
   );
 };
