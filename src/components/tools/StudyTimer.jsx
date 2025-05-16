@@ -10,7 +10,7 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
-import { formatTime, getMonthYear, getWeekKey } from "../../utils/timeUtils";
+import { formatTime, getMonthYear } from "../../utils/timeUtils";
 import useInterval from "../../hooks/useInterval";
 import useEventListener from "../../hooks/useEventListener";
 
@@ -29,7 +29,6 @@ const StudyTimer = () => {
                 ...parsed,
                 localUser: null,
                 expandedMonths: {},
-                expandedWeeks: {},
                 selectedSession: null,
                 isEditingDetails: false,
                 editedSession: null,
@@ -43,7 +42,6 @@ const StudyTimer = () => {
             description: "",
             localUser: null,
             expandedMonths: {},
-            expandedWeeks: {},
             selectedSession: null,
             isEditingDetails: false,
             editedSession: null,
@@ -195,13 +193,13 @@ const StudyTimer = () => {
         return error || !data.length ? 1 : data[0].session_number + 1;
     };
 
-    const groupSessionsByMonthWeek = () => {
+    const groupSessionsByMonth = () => {
         return laps.reduce((groups, lap) => {
             const monthYear = getMonthYear(lap.created_at);
-            const weekKey = getWeekKey(lap.created_at);
-            groups[monthYear] = groups[monthYear] || {};
-            groups[monthYear][weekKey] = groups[monthYear][weekKey] || [];
-            groups[monthYear][weekKey].push(lap);
+            if (!groups[monthYear]) {
+                groups[monthYear] = [];
+            }
+            groups[monthYear].push(lap);
             return groups;
         }, {});
     };
@@ -282,7 +280,7 @@ const StudyTimer = () => {
         );
     }
 
-    const groupedLaps = groupSessionsByMonthWeek();
+    const groupedLaps = groupSessionsByMonth();
 
     return (
         <div className="maincard">
@@ -311,7 +309,7 @@ const StudyTimer = () => {
                             {state.startPomodoro ? (
                                 <CheckCircle2 size={24} style={{ color: iconColor }} />
                             ) : (
-                                <Circle size={24} style={{ color: iconColor }}  />
+                                <Circle size={24} style={{ color: iconColor }} />
                             )}
                         </button>
                     </label>
@@ -389,78 +387,63 @@ const StudyTimer = () => {
             </div>
 
             {showMonthsList &&
-                Object.entries(groupedLaps).map(([monthYear, weeks]) => (
-
-                    <div className="mt-2">
-                        {" "}
-                        <div key={monthYear} className="mb-4">
-                            <button
-                                className="infomenu"
-                                onClick={() => toggleVisibility("Months", monthYear)}
-                            >
-                                <span className="text-base">{monthYear}</span>
-                                {state.expandedMonths[monthYear] ? (
-                                    <ChevronUp size={22} />
-                                ) : (
-                                    <ChevronDown size={22} />
-                                )}
-                            </button>
-                        </div>
+                Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => (
+                    <div key={monthYear} className="mb-4">
+                        <button
+                            className="infomenu"
+                            onClick={() => toggleVisibility("Months", monthYear)}
+                        >
+                            <span className="text-base">{monthYear}</span>
+                            {state.expandedMonths[monthYear] ? (
+                                <ChevronUp size={22} />
+                            ) : (
+                                <ChevronDown size={22} />
+                            )}
+                        </button>
                         {state.expandedMonths[monthYear] && (
                             <div className="space-y-4 mt-3">
-                                {Object.entries(weeks).map(([weekKey, sessions]) => (
-                                    <div key={`${monthYear}-${weekKey}`} className="mb-2 ml-2">
-                                        <button
-                                            className="infomenu"
-                                            onClick={() =>
-                                                toggleVisibility("Weeks", `${monthYear}-${weekKey}`)
-                                            }
+                                {lapsOfMonth.length === 0 ? (
+                                    <div className="text-gray-400 ml-4">No logs this month</div>
+                                ) : (
+                                    lapsOfMonth.map((lap) => (
+                                        <div
+                                            key={lap.id}
+                                            className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
+                                            onDoubleClick={() => handleSessionDoubleClick(lap)}
                                         >
-                                            <span>{weekKey}</span>
-                                            {state.expandedWeeks[`${monthYear}-${weekKey}`] ? (
-                                                <ChevronUp size={20} />
-                                            ) : (
-                                                <ChevronDown size={20} />
-                                            )}
-                                        </button>
-                                        {state.expandedWeeks[`${monthYear}-${weekKey}`] &&
-                                            sessions.map((lap) => (
-                                                <div
-                                                    key={lap.id}
-                                                    className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
-                                                    onDoubleClick={() => handleSessionDoubleClick(lap)}
-                                                >
-                                                    <div className="flex justify-between">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                <span className="text-lg text-accent-primary">
-                                                                    #{lap.session_number} {lap.name}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-lg text-text-secondary mb-1">
-                                                                {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex items-center gap-4">
-                                                            <span className="text-text-secondary text-lg">
-                                                                {lap.duration}
-                                                            </span>
-                                                            <button
-                                                                onClick={() => dispatch(deleteLap(lap.id))}
-                                                                className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </div>
+                                            <div className="flex justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-lg text-accent-primary">
+                                                            #{lap.session_number} {lap.name}
+                                                        </span>
                                                     </div>
+                                                    <p className="text-lg text-text-secondary mb-1">
+                                                        {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
+                                                    </p>
                                                 </div>
-                                            ))}
-                                    </div>
-                                ))}
+                                                <div className="flex items-center gap-4">
+                                                    <span className="text-text-secondary text-lg">
+                                                        {lap.duration}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => dispatch(deleteLap(lap.id))}
+                                                        className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
-                ))}
+                ))
+            }
+
+
 
             {/* Session Details Modal */}
             {state.selectedSession && (
