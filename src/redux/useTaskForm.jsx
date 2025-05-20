@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { addTask } from "./TaskActions";
-import { supabase } from "../utils/supabaseClient"; // Importa el cliente de Supabase
+import { supabase } from "../utils/supabaseClient";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+
+
+
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -16,107 +20,105 @@ export const useTaskForm = () => {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    deadline: formatDate(new Date()), // Fecha actual por defecto    difficulty: "medium", // Add default difficulty
-    assignment: "", // Add assignment field
+    deadline: formatDate(new Date()),
+    difficulty: "medium",
+    assignment: "",
   });
   const [error, setError] = useState("");
   const [assignments, setAssignments] = useState([]);
+  const tasks = useSelector((state) => state.tasks.tasks); // Tareas remotas
+  const [localTasks, setLocalTasks] = useState([]); // Tareas locales
+  const [user, setUser] = useState(null);
 
-  // Fetch assignments when component mounts
-  useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
 
-        const { data, error } = await supabase
-          .from("tasks")
-          .select("assignment")
-          .eq("user_id", user.id)
-          .not("assignment", "is", null)
-          .not("assignment", "eq", "")
-          .order("assignment");
-
-        if (error) throw error;
-
-        // Get unique assignments and remove duplicates
-        const uniqueAssignments = [
-          ...new Set(data.map((task) => task.assignment)),
-        ];
-        setAssignments(uniqueAssignments);
-      } catch (error) {
-        console.error("Error fetching assignments:", error);
-      }
-    };
-
-    fetchAssignments();
+  // Extrae fetchAssignments para reutilizarla
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("assignment")
+        .eq("user_id", user.id)
+        .not("assignment", "is", null)
+        .not("assignment", "eq", "")
+        .order("assignment");
+      if (error) throw error;
+      setAssignments([...new Set(data.map((task) => task.assignment))]);
+    } catch (error) {
+      console.error("Error fetching assignments:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [fetchAssignments]);
+
+  useEffect(() => {
+  const sourceTasks = user ? tasks : localTasks;
+  const uniqueAssignments = [
+    ...new Set(sourceTasks.map((task) => task.assignment).filter(Boolean)),
+  ];
+  setAssignments(uniqueAssignments);
+}, [tasks, localTasks, user]);
+
+
+  // Cargar tareas locales al montar
+  useEffect(() => {
+    if (!user) {
+      const savedTasks = localStorage.getItem("localTasks");
+      if (savedTasks) setLocalTasks(JSON.parse(savedTasks));
+    }
+  }, [user]);
+
+  // Actualiza assignments cada vez que cambian las tareas
+  useEffect(() => {
+    const sourceTasks = user ? tasks : localTasks;
+    const uniqueAssignments = [
+      ...new Set(sourceTasks.map((task) => task.assignment).filter(Boolean)),
+    ];
+    setAssignments(uniqueAssignments);
+  }, [tasks, localTasks, user]);
+
+  // Centraliza el reseteo del formulario
+  const resetForm = () => setNewTask({
+    title: "",
+    description: "",
+    deadline: formatDate(new Date()),
+    difficulty: "medium",
+    assignment: "",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newTask.title || !newTask.deadline) return;
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Modo local
-        const localTasks = JSON.parse(
-          localStorage.getItem("localTasks") || "[]",
-        );
+        // Lógica local
+        const localTasks = JSON.parse(localStorage.getItem("localTasks") || "[]");
         const newLocalTask = {
-          id: Date.now(), // Usar timestamp como ID
-          title: newTask.title,
-          description: newTask.description || "",
-          deadline: newTask.deadline,
+          ...newTask,
+          id: Date.now(),
           completed: false,
-          difficulty: newTask.difficulty || "medium",
-          assignment: newTask.assignment || "",
           created_at: new Date().toISOString(),
         };
-
         localTasks.push(newLocalTask);
         localStorage.setItem("localTasks", JSON.stringify(localTasks));
-
-        // Disparar evento de actualización
         window.dispatchEvent(new CustomEvent("localTasksUpdated"));
-
-        // Resetear el formulario
-        setNewTask({
-          title: "",
-          description: "",
-          deadline: "",
-          difficulty: "medium",
-          assignment: "",
-        });
-
+        resetForm();
+        await fetchAssignments();
+        return;
       }
-
-      // Si hay usuario, continuar con la lógica existente
-      const taskData = {
-        title: newTask.title,
-        description: newTask.description || "",
-        deadline: newTask.deadline,
+      // Lógica remota
+      await dispatch(addTask({
+        ...newTask,
         completed: false,
-        difficulty: newTask.difficulty || "medium",
-        assignment: newTask.assignment || "",
         user_id: user.id,
-      };
-
-      await dispatch(addTask(taskData));
-
-      // Resetear el formulario
-      setNewTask({
-        title: "",
-        description: "",
-        deadline: formatDate(new Date()), // Resetear a hoy        difficulty: "medium",
-        assignment: "",
-      });
-
+      }));
+      resetForm();
+      await fetchAssignments();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to add task");
@@ -134,16 +136,11 @@ export const useTaskForm = () => {
     handleSubmit,
     updateField,
     setNewTask,
-    handleSetToday: () => {
-      const today = new Date();
-      const isoDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-      updateField("deadline", isoDate);
-    },
+    handleSetToday: () => updateField("deadline", formatDate(new Date())),
     handleSetTomorrow: () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const isoDate = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-      updateField("deadline", isoDate);
+      updateField("deadline", formatDate(tomorrow));
     },
   };
 };

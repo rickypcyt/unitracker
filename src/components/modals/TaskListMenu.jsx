@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Info, Play, Trash2 } from "lucide-react";
 
 export const TaskListMenu = ({
@@ -8,10 +8,38 @@ export const TaskListMenu = ({
   onSetActiveTask,
   onDeleteTask,
 }) => {
+  const menuRef = useRef(null);
+
+  // Cerrar con click fuera y Escape
+  useEffect(() => {
+    if (!contextMenu) return;
+
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [contextMenu, onClose]);
+
   if (!contextMenu) return null;
 
   return (
     <div
+      ref={menuRef}
       className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800"
       style={{
         left: contextMenu.x,

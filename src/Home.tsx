@@ -13,15 +13,23 @@ import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
 
 const Home = () => {
-  // --- Cambios aquí ---
-  const columns = useResponsiveColumns(); // 1 a 4 según el ancho
+  const [userColumnCount, setUserColumnCount] = useState(() => {
+    // Puedes guardar la preferencia en localStorage si quieres
+    const stored =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userColumnCount")
+        : null;
+    return stored ? Number(stored) : 4; // Por defecto 4 columnas
+  });
+  const columns = userColumnCount || useResponsiveColumns();
 
-  const [layout, setLayout] = useState(() => LayoutManager.getInitialLayout(columns));
+  const [layout, setLayout] = useState(() =>
+    LayoutManager.getInitialLayout(columns)
+  );
   const responsiveLayout = useMemo(
     () => distributeItems(layout, columns),
     [layout, columns]
   );
-  // --- Fin cambios aquí ---
 
   const [isEditing, setIsEditing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -59,6 +67,12 @@ const Home = () => {
 
   // Teclas rápidas (Escape, etc)
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasSeen = localStorage.getItem("hasSeenWelcomeModal");
+      if (!hasSeen) {
+        setShowWelcomeModal(true);
+      }
+    }
     const handleKeyDown = (e) => {
       const isInputFocused =
         document.activeElement.tagName === "INPUT" ||
@@ -86,7 +100,12 @@ const Home = () => {
   // Añadir componente
   const addComponent = useCallback(
     (colIndex, componentKey) => {
-      const newLayout = LayoutManager.addComponent(layout, colIndex, componentKey, columns);
+      const newLayout = LayoutManager.addComponent(
+        layout,
+        colIndex,
+        componentKey,
+        columns
+      );
       setLayout(newLayout);
     },
     [layout, columns] // <-- columns agregado aquí
@@ -100,7 +119,12 @@ const Home = () => {
         col.items.includes(layout[colIndex].items[itemIndex])
       );
       if (foundColIndex === -1) return;
-      const newLayout = LayoutManager.removeComponent(layout, foundColIndex, itemIndex, columns);
+      const newLayout = LayoutManager.removeComponent(
+        layout,
+        foundColIndex,
+        itemIndex,
+        columns
+      );
       setLayout(newLayout);
     },
     [layout, columns] // <-- columns agregado aquí
@@ -122,6 +146,19 @@ const Home = () => {
     []
   );
 
+  const [userPadding, setUserPadding] = useState(() => {
+    const stored =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userPadding")
+        : null;
+    return stored ? Number(stored) : 2; // Por defecto 40px
+  });
+  const [userGap, setUserGap] = useState(() => {
+    const stored =
+      typeof window !== "undefined" ? localStorage.getItem("userGap") : null;
+    return stored ? Number(stored) : 1; // Por defecto 12px
+  });
+
   const handleCloseContextMenu = () => setContextMenu(null);
 
   return (
@@ -129,8 +166,12 @@ const Home = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="w-full min-h-full">
           <div
-            className="grid gap-4 p-4"
-            style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+            className={`grid`}
+            style={{
+              gridTemplateColumns: `repeat(${columns}, 1fr)`,
+              gap: `${userGap}rem`,
+              padding: `${userPadding}rem`,
+            }}
           >
             {responsiveLayout.map((column, colIndex) => (
               <Droppable key={column.id} droppableId={column.id}>
@@ -149,7 +190,12 @@ const Home = () => {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             onContextMenu={(e) =>
-                              handleContextMenu(e, componentKey, colIndex, index)
+                              handleContextMenu(
+                                e,
+                                componentKey,
+                                colIndex,
+                                index
+                              )
                             }
                           >
                             <ComponentRenderer
@@ -223,6 +269,21 @@ const Home = () => {
         showSettings={showSettings}
         setShowSettings={setShowSettings}
         loginWithGoogle={loginWithGoogle}
+        userColumnCount={userColumnCount}
+        setUserColumnCount={(count) => {
+          setUserColumnCount(count);
+          localStorage.setItem("userColumnCount", count);
+        }}
+        userPadding={userPadding}
+        setUserPadding={(val) => {
+          setUserPadding(val);
+          localStorage.setItem("userPadding", val);
+        }}
+        userGap={userGap}
+        setUserGap={(val) => {
+          setUserGap(val);
+          localStorage.setItem("userGap", val);
+        }}
       />
 
       <StartSessionMenu

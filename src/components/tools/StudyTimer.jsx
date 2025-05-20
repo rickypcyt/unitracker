@@ -4,14 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "../../utils/supabaseClient";
 import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
 import { fetchLaps, createLap, updateLap, deleteLap } from "../../redux/LapActions";
-import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save, CheckCircle2, Circle } from "lucide-react";
+import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save, CheckCircle2, Circle, Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { formatTime, getMonthYear } from "../../utils/timeUtils";
-import useInterval from "../../hooks/useInterval";
+import useInterval from "../../hooks/useAccurateStopwatch";
 import useEventListener from "../../hooks/useEventListener";
 
 const StudyTimer = () => {
@@ -181,6 +181,15 @@ const StudyTimer = () => {
         },
     };
 
+    const changeTime = (deltaSeconds) => {
+        setState((prev) => {
+            let newTime = prev.time + deltaSeconds;
+            if (newTime < 0) newTime = 0;
+            return { ...prev, time: newTime };
+        });
+    };
+
+
     const getCurrentSessionNumber = async () => {
         const today = new Date().toISOString().split("T")[0];
         const { data, error } = await supabase
@@ -307,10 +316,8 @@ const StudyTimer = () => {
                             }
                         >
                             {state.startPomodoro ? (
-                                <CheckCircle2 size={24} style={{ color: iconColor }} />
-                            ) : (
-                                <Circle size={24} style={{ color: iconColor }} />
-                            )}
+                                <CheckCircle2 size={24} style={{ color: "var(--accent-primary)" }} />) : (
+                                <Circle size={24} style={{ color: "var(--accent-primary)" }} />)}
                         </button>
                     </label>
                 </div>
@@ -322,7 +329,29 @@ const StudyTimer = () => {
                 {formatTime(state.time)}
             </div>
 
-            <div className="flex justify-center space-x-4 mb-6">
+            <div className="flex justify-center space-x-4 mb-8">
+                <button
+                    onClick={timerControls.reset}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+
+                >
+                    <RotateCcw size={20} style={{ color: iconColor }} />
+                </button>
+                <button
+                    onClick={() => changeTime(-600)}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    title="Rewind 10 mins"
+                >
+                    -10
+                </button>
+                <button
+                    onClick={() => changeTime(-300)}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    title="Rewind 5 mins"
+                >
+                    -5
+                </button>
+
                 {!state.isRunning ? (
                     <button
                         onClick={timerControls.start}
@@ -341,12 +370,22 @@ const StudyTimer = () => {
                     </button>
                 )}
                 <button
-                    onClick={timerControls.reset}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
+                    onClick={() => changeTime(300)}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    title="Add 5 mins"
                 >
-                    <RotateCcw size={20} style={{ color: iconColor }} />
+                    +5
                 </button>
+                <button
+                    onClick={() => changeTime(600)}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    title="Add 10 mins"
+                >
+                    +10
+                </button>
+
+
+
                 <button
                     onClick={lapHandlers.finish}
                     className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
@@ -356,7 +395,7 @@ const StudyTimer = () => {
                 </button>
             </div>
 
-            <div className="mb-4">
+            <div className="py-4">
                 <input
                     value={state.description}
                     onChange={(e) =>
@@ -368,7 +407,7 @@ const StudyTimer = () => {
             </div>
 
             {/* Botón y lista de meses colapsable */}
-            <div className="py-2">
+            <div className="py-4">
                 {" "}
                 <button
                     className="infomenu"

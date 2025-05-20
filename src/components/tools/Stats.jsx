@@ -229,7 +229,7 @@ const Statistics = () => {
     <div className="maincard">
       <div>
         <div className="flex justify-between items-center">
-          <h2 className="card-title text-white">
+          <h2 className="cardtitle text-white">
             <Activity size={24} /> Study Statistics
           </h2>
           <button
@@ -253,7 +253,7 @@ const Statistics = () => {
 
       {/* Tabla de estadísticas */}
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-black mt-10">
+        <table className="min-w-full bg-black">
           <thead>
             <tr>
               <th className="border-b border-black px-4 py-2 text-center"></th>

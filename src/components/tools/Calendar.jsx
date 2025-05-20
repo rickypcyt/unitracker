@@ -108,13 +108,13 @@ const Calendar = () => {
   };
 
   return (
-    <div className="maincard">
+    <div className="maincard" >
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
+        <h2 className="caltitle">
           <FaCalendarAlt size={24} />
           Calendar
         </h2>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-0 hover:bg-neutral-0 text-white transition-colors duration-200">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-0 hover:bg-neutral-0 text-white transition-colors duration-200 mb-6">
           <button
             onClick={goToPreviousMonth}
             className="text-white hover:text-gray-300 focus:outline-none"
@@ -160,7 +160,7 @@ const Calendar = () => {
                 // Aquí agregas otras propiedades si es necesario
                 fontWeight: "bold", // Ejemplo de propiedad adicional
               }}
-              className={`text-neutral-500 select-none hover:text-gray-600 cursor-default text-base w-full py-4 flex items-center justify-center  ${dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-[var(--accent-primary)] "} ${!dayObj.currentMonth ? "text-black font-bold" : ""}
+              className={`text-neutral-500 select-none hover:text-gray-600 cursor-default text-base w-full py-3 flex items-center justify-center  ${dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-[var(--accent-primary)] "} ${!dayObj.currentMonth ? "text-black font-bold" : ""}
 
               ${dayObj.isToday ? "select-none hover:text-gray-600 cursor-default " : ""}`}
             >

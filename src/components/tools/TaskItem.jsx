@@ -1,13 +1,6 @@
 import React from "react";
 import { CheckCircle2, Circle, Calendar, Trash2 } from "lucide-react";
 
-
-const assignmentColors = {
-    "Assignment 1": "#FF5733",
-    "Assignment 2": "#33FF57",
-    "Assignment 3": "#3357FF",
-};
-
 export const TaskItem = ({
     task,
     onToggleCompletion,
@@ -16,15 +9,24 @@ export const TaskItem = ({
     onContextMenu,
 }) => (
     <div
-        className={`relative p-2 rounded-xl shadow-md transition-all duration-300 border-2 hover:shadow-lg ${
-            task.activetask
+        className={`    relative
+            ml-4
+            mr-4
+    p-2
+    rounded-xl
+    shadow-md
+    transition-all
+    duration-300
+    border-2
+    border-[var(--border-primary)]
+    hover:shadow-lg ${task.activetask
                 ? task.difficulty === "easy"
                     ? "border-2 border-green-500"
                     : task.difficulty === "medium"
                         ? "border-2 border-blue-500"
                         : "border-2 border-red-500"
                 : "border border-border-primary"
-        }`}
+            }`}
         onDoubleClick={() => onDoubleClick(task)}
         onContextMenu={(e) => onContextMenu(e, task)}
         tabIndex={0} // Para accesibilidad si quieres
@@ -58,11 +60,10 @@ export const TaskItem = ({
                     className="flex items-center focus:outline-none flex-1"
                 >
                     <span
-                        className={`text-left ml-2 font-medium text-lg transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
-                            task.completed
-                                ? "line-through text-text-secondary"
-                                : "text-text-primary"
-                        }`}
+                        className={`text-left ml-2 font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed
+                            ? "line-through text-text-secondary"
+                            : "text-text-primary"
+                            }`}
                         title={task.title}
                     >
                         {task.title}
@@ -90,7 +91,7 @@ export const TaskItem = ({
                 <span
                     className="text-base font-semibold"
                     style={{
-                        color: assignmentColors[task.assignment] || "#bdbdbd",
+                        color: "#bdbdbd",
                         borderRadius: "0.5rem",
                         display: "inline-block",
                         minWidth: "20px",

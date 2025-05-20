@@ -14,11 +14,12 @@
   :root {
     /* Paleta principal */
     --bg-primary: #000;
-    --bg-secondary: #1c1c1e;
     --border-primary: #29292ac7;
     --text-primary: #fff;
+    --accent-primary: #006eff;
+
+    --bg-secondary: #1c1c1e;
     --text-secondary: #a0a0a0;
-    --accent-primary: #006eff ;
     --accent-deep: #006effbd;
 
     /* Paleta extendida (HSL para compatibilidad con Tailwind) */
@@ -101,18 +102,42 @@
    ========================= */
 @layer components {
 .maincard {
-  width: auto;         /* Tamaño fijo, puedes ajustar */
-  aspect-ratio: 1/1;    /* Hace que sea cuadrada */
-  /* Tus estilos previos */
-  max-width: none;      /* Sobrescribe max-w-full si usas Tailwind */
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: 0 4px 24px rgba(0,0,0,0.1);
   background-color: var(--bg-primary);
   border: 2px solid var(--border-primary);
-  margin-bottom: 5%
+  margin-bottom: 1rem;
+  transition: width 0.2s, aspect-ratio 0.2s, max-width 0.2s;
 }
 
+/* 1 columna: ancho grande, aspecto rectangular */
+.card-cols-1 .maincard {
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 16/9;
+}
+
+/* 2 columnas: ancho medio, aspecto cuadrado */
+.card-cols-2 .maincard {
+  width: 100%;
+  max-width: 450px;
+  aspect-ratio: 1/1;
+}
+
+/* 3 columnas: más compacto */
+.card-cols-3 .maincard {
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 4/5;
+}
+
+/* 4 columnas: aún más compacto */
+.card-cols-4 .maincard {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 4/5;
+}
 
 
   .deadline {
@@ -123,8 +148,12 @@
     border-style: dotted !important;
     border-color: var(--border-primary) !important;
   }
-  .card-title {
+  .cardtitle {
     @apply text-2xl font-bold mb-6 flex items-center gap-2;
+    color: var(--text-primary);
+  }
+  .caltitle {
+    @apply text-2xl font-bold flex items-center gap-2 mb-6;
     color: var(--text-primary);
   }
   .card-subtitle {
@@ -140,16 +169,17 @@
     @apply text-lg;
     color: var(--text-secondary);
   }
-  .button,
-  .textbutton {
-    @apply px-4 py-2 rounded-lg transition-colors duration-200  items-center gap-2 text-center;
-    background-color: var(--accent-primary);
-    color: var(--text-primary);
-  }
-  .button:hover,
-  .textbutton:hover {
-    background-color: var(--accent-deep);
-  }
+.button,
+.textbutton {
+  @apply px-4 py-2 rounded-lg transition-colors duration-200 items-center gap-2 text-center;
+  background-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+.button:hover,
+.textbutton:hover {
+  background-color: var(--accent-deep);
+}
+
   .textinput {
     @apply w-full p-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50;
     background-color: var(--bg-primary);

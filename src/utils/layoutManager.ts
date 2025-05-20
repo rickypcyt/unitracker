@@ -1,7 +1,7 @@
 // Importa tus componentes
 import TaskForm from "../components/tools/TaskForm";
 import TaskList from "../components/tools/TaskList";
-import ProgressTracker from "../components/tools/ProgressTracker";
+
 import Calendar from "../components/tools/Calendar";
 import StudyTimer from "../components/tools/StudyTimer";
 import NoiseGenerator from "../components/tools/NoiseGenerator";
@@ -24,7 +24,6 @@ export interface ComponentConfig {
 export const ComponentRegistry: Record<string, ComponentConfig> = {
     TaskForm: { component: TaskForm, name: "TF" },
     TaskList: { component: TaskList, name: "TL" },
-    ProgressTracker: { component: ProgressTracker, name: "PT" },
     Calendar: { component: Calendar, name: "Cal" },
     StudyTimer: { component: StudyTimer, name: "ST" },
     NoiseGenerator: { component: NoiseGenerator, name: "NoiseGen" },

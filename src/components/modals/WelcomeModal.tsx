@@ -27,7 +27,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
       onClick={handleOverlayClick}
     >
       <div className="maincard max-w-4xl w-full mx-4 p-6 rounded-lg text-text-primary">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-5">
           <h3 className="text-2xl font-bold text-center flex-1 text-accent-primary">
             Welcome to UniTracker
           </h3>

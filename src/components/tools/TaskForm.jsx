@@ -4,6 +4,8 @@ import { Rows4, Circle, CheckCircle2 } from "lucide-react";
 import { supabase } from "../../utils/supabaseClient";
 import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
 import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const TaskForm = () => {
     const {
@@ -12,8 +14,7 @@ const TaskForm = () => {
         assignments,
         handleSubmit,
         updateField,
-        handleSetToday,
-        handleSetTomorrow,
+
         setAssignments,
         setUser,
     } = useTaskForm();
@@ -39,7 +40,7 @@ const TaskForm = () => {
     }, [assignments, localAssignments]);
 
     // Detectar accentPalette para color de texto del botón
-  const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
+    const { accentPalette, iconColor } = useTheme(); // Access accentPalette from theme context
 
 
     // ----------- AUTOCOMPLETE LOGIC -----------
@@ -47,7 +48,7 @@ const TaskForm = () => {
     const [filteredAssignments, setFilteredAssignments] = useState([]);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const suggestionsRef = useRef(null);
-    
+
 
     useEffect(() => {
         if (newTask.assignment) {
@@ -94,40 +95,43 @@ const TaskForm = () => {
         }
     };
 
+    function useDebounce(value, delay) {
+        const [debouncedValue, setDebouncedValue] = useState(value);
+
+        const debouncedAssignment = useDebounce(newTask.assignment, 200);
+
+        useEffect(() => {
+            if (debouncedAssignment) {
+                const filtered = allAssignments.filter((a) =>
+                    a.toLowerCase().includes(debouncedAssignment.toLowerCase())
+                );
+                setFilteredAssignments(filtered);
+                setSelectedIndex(filtered.length > 0 ? 0 : -1);
+            } else {
+                setFilteredAssignments(allAssignments);
+                setSelectedIndex(-1);
+            }
+        }, [debouncedAssignment]);
+
+        const filteredAssignments = useMemo(() => {
+            if (!debouncedAssignment) return allAssignments;
+            return allAssignments.filter((a) =>
+                a.toLowerCase().includes(debouncedAssignment.toLowerCase())
+            );
+        }, [debouncedAssignment]);
+
+        useEffect(() => {
+            const handler = setTimeout(() => setDebouncedValue(value), delay);
+            return () => clearTimeout(handler);
+        }, [value, delay]);
+
+        return debouncedValue;
+    }
+
     const handleSuggestionClick = (suggestion) => {
         updateField("assignment", suggestion);
         setShowSuggestions(false);
     };
-    // ----------- END AUTOCOMPLETE LOGIC -----------
-
-    useEffect(() => {
-        const fetchAssignments = async () => {
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
-
-                const { data, error } = await supabase
-                    .from("tasks")
-                    .select("assignment, color")
-                    .eq("user_id", user.id)
-                    .not("assignment", "is", null)
-                    .not("assignment", "eq", "")
-                    .order("assignment");
-
-                if (error) throw error;
-
-                const uniqueAssignments = [
-                    ...new Set(data.map((task) => task.assignment)),
-                ];
-                setAssignments(uniqueAssignments);
-                setUser(user);
-            } catch (error) {
-                console.error("Error fetching assignments:", error);
-            }
-        };
-
-        fetchAssignments();
-    }, []);
 
     return (
         <div className="maincard relative">
