@@ -12,6 +12,7 @@ import { colorClasses, hoverClasses } from "../../utils/colors";
 import { useEventListener } from 'usehooks-ts'
 import PropTypes from 'prop-types';
 import { formatPomodoroTime } from '../../utils/timeUtils';
+import useAccurateTimer from "../../hooks/useAccurateTimer";
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -106,7 +107,6 @@ const Pomodoro = ({ syncPomo = true }) => {
     setIsRunning,
     setPomodoroCount,
     changeMode,
-    resetTimer,
   } = usePomodoroState();
   // Funciones de control
   const startPomodoro = () => setIsRunning(true);
@@ -143,61 +143,13 @@ const Pomodoro = ({ syncPomo = true }) => {
 
   const startTimestamp = useRef(null);
   const lastTimeLeft = useRef(MODES[modeIndex][mode]);
-  const intervalRef = useRef(null);
-  const lastHiddenTime = useRef(null);
-  const deadlineRef = useRef(null);
+
 
   // Solicitar permisos de notificación
   useEffect(() => {
 
     if ("Notification" in window) Notification.requestPermission();
   }, []);
-
-  // Manejo del temporizador preciso
-useEffect(() => {
-  if (!isRunning) {
-    if (intervalRef.current) cancelAnimationFrame(intervalRef.current);
-    intervalRef.current = null;
-    return;
-  }
-
-  // deadline solo se calcula al iniciar/reanudar
-  deadlineRef.current = Date.now() + timeLeft * 1000;
-
-  function tick() {
-    const now = Date.now();
-    let remaining = (deadlineRef.current - now) / 1000;
-    if (remaining < 0) remaining = 0;
-    setTimeLeft(remaining);
-    if (remaining > 0) {
-      intervalRef.current = requestAnimationFrame(tick);
-    }
-  }
-  intervalRef.current = requestAnimationFrame(tick);
-
-  return () => {
-    if (intervalRef.current) cancelAnimationFrame(intervalRef.current);
-    intervalRef.current = null;
-  };
-// ¡OJO! Solo depende de isRunning, mode y modeIndex
-}, [isRunning, mode, modeIndex]);
-
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        lastHiddenTime.current = Date.now();
-      } else if (lastHiddenTime.current && isRunning) {
-        const hiddenDuration = Date.now() - lastHiddenTime.current;
-        // Ajusta el timestamp de inicio para compensar el tiempo oculto
-        startTimestamp.current += hiddenDuration;
-        lastHiddenTime.current = null; // Limpia el registro
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    // eslint-disable-next-line
-  }, [isRunning]);
 
   // Lógica de fin de ciclo
   useEffect(() => {
@@ -245,6 +197,14 @@ useEffect(() => {
   }, []);
 
 
+  useAccurateTimer(
+    (remainingSeconds) => {
+      setTimeLeft(remainingSeconds);
+    },
+    isRunning,
+    mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break,
+    timeLeft
+  );
 
   // --- Render ---
   return (

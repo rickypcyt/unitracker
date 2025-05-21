@@ -14,6 +14,7 @@ import { formatTime, getMonthYear } from "../../utils/timeUtils";
 import useInterval from "../../hooks/useAccurateStopwatch";
 import useEventListener from "../../hooks/useEventListener";
 
+
 const StudyTimer = () => {
     const { accentPalette, iconColor } = useTheme();
     const dispatch = useDispatch();
