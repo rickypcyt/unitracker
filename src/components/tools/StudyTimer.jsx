@@ -33,6 +33,8 @@ const StudyTimer = () => {
                 isEditingDetails: false,
                 editedSession: null,
                 syncPomo: localStorage.getItem("syncPomoWithTimer") === "true",
+                lastStart: parsed.lastStart || null,
+                timeAtStart: parsed.timeAtStart || 0,
             };
         }
         return {
@@ -46,6 +48,8 @@ const StudyTimer = () => {
             isEditingDetails: false,
             editedSession: null,
             syncPomo: true,
+            lastStart: null,
+            timeAtStart: 0,
         };
     });
 
@@ -56,10 +60,20 @@ const StudyTimer = () => {
             isRunning: state.isRunning,
             description: state.description,
             syncPomo: state.syncPomo,
+            lastStart: state.lastStart,      // <-- Añadido
+            timeAtStart: state.timeAtStart,  // <-- Añadido
         };
         localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
         localStorage.setItem("syncPomoWithTimer", state.syncPomo.toString());
-    }, [state.time, state.isRunning, state.description, state.syncPomo]);
+    }, [
+        state.time,
+        state.isRunning,
+        state.description,
+        state.syncPomo,
+        state.lastStart,
+        state.timeAtStart,
+    ]);
+
 
     useEffect(() => {
         if (!localStorage.getItem("syncPomoWithTimer")) {
@@ -68,10 +82,20 @@ const StudyTimer = () => {
     }, []);
 
     // Restore timer if it was running
-    const tick = useCallback(() => {
-        setState((prev) => ({ ...prev, time: prev.time + 1 }));
+    const tick = useCallback((elapsed) => {
+        setState(prev => ({
+            ...prev,
+            time: elapsed,
+        }));
     }, []);
-    useInterval(tick, state.isRunning);
+
+
+    useInterval(
+        tick,
+        state.isRunning,
+        state.timeAtStart
+    );
+
 
     useEffect(() => {
         const loadUser = async () => {
@@ -120,8 +144,12 @@ const StudyTimer = () => {
             if (!state.isRunning) {
                 const sessionNum = await getCurrentSessionNumber();
                 dispatch(setCurrentSession(sessionNum));
-                setState((prev) => ({ ...prev, isRunning: true }));
-                // Start Pomodoro if checkbox is checked
+                setState((prev) => ({
+                    ...prev,
+                    isRunning: true,
+                    lastStart: Date.now(),        // Marca el momento de inicio/reanudación
+                    timeAtStart: prev.time,       // Guarda el tiempo acumulado antes de este inicio
+                }));
                 if (state.syncPomo) {
                     window.dispatchEvent(new CustomEvent("playPomoSync"));
                 }
@@ -131,13 +159,25 @@ const StudyTimer = () => {
             }
         },
         pause: () => {
-            setState((prev) => ({ ...prev, isRunning: false }));
-            if (state.syncPomo) {
-                window.dispatchEvent(new CustomEvent("pausePomoSync"));
+            if (state.isRunning) {
+                setState((prev) => {
+                    const now = Date.now();
+                    const elapsed = prev.timeAtStart + ((now - prev.lastStart) / 1000);
+                    return {
+                        ...prev,
+                        isRunning: false,
+                        time: elapsed,           // Actualiza el tiempo total acumulado
+                        lastStart: null,         // Limpia el marcador de inicio
+                        timeAtStart: elapsed,    // Actualiza el acumulado para la próxima reanudación
+                    };
+                });
+                if (state.syncPomo) {
+                    window.dispatchEvent(new CustomEvent("pausePomoSync"));
+                }
+                window.dispatchEvent(
+                    new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
+                );
             }
-            window.dispatchEvent(
-                new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
-            );
         },
         reset: () => {
             setState((prev) => ({
@@ -145,6 +185,8 @@ const StudyTimer = () => {
                 isRunning: false,
                 time: 0,
                 description: "",
+                lastStart: null,
+                timeAtStart: 0,
             }));
             dispatch(resetTimerState());
             if (state.syncPomo) {
@@ -155,6 +197,7 @@ const StudyTimer = () => {
             );
         },
     };
+
 
     const lapHandlers = {
         add: async () => {

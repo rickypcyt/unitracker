@@ -11,6 +11,7 @@ import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { useEventListener } from 'usehooks-ts'
 import PropTypes from 'prop-types';
+import { formatPomodoroTime } from '../../utils/timeUtils';
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -30,14 +31,6 @@ const getLocal = (key, fallback) => {
 };
 
 const setLocal = (key, value) => localStorage.setItem(key, value.toString());
-
-const formatTime = (totalSeconds) => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
-};
 
 const sendNotification = (title, body) => {
   if ("Notification" in window && Notification.permission === "granted") {
@@ -147,10 +140,12 @@ const Pomodoro = ({ syncPomo = true }) => {
   const menuRef = useRef(null);
 
   // Precise timer references
+
   const startTimestamp = useRef(null);
-  const lastTimeLeft = useRef(timeLeft);
+  const lastTimeLeft = useRef(MODES[modeIndex][mode]);
   const intervalRef = useRef(null);
   const lastHiddenTime = useRef(null);
+  const deadlineRef = useRef(null);
 
   // Solicitar permisos de notificación
   useEffect(() => {
@@ -159,28 +154,35 @@ const Pomodoro = ({ syncPomo = true }) => {
   }, []);
 
   // Manejo del temporizador preciso
-  useEffect(() => {
-    if (isRunning) {
-      // Si es la primera vez o tras pausa, calcula el timestamp de inicio
-      if (!startTimestamp.current) {
-        startTimestamp.current = Date.now() - (MODES[modeIndex][mode] - lastTimeLeft.current) * 1000;
-      }
-      intervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTimestamp.current) / 1000);
-        const newTime = MODES[modeIndex][mode] - elapsed;
-        setTimeLeft(newTime > 0 ? newTime : 0);
-        lastTimeLeft.current = newTime > 0 ? newTime : 0;
-      }, 250);
-    } else {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-      startTimestamp.current = null;
-    }
-    return () => clearInterval(intervalRef.current);
-    // eslint-disable-next-line
-  }, [isRunning, mode, modeIndex]);
+useEffect(() => {
+  if (!isRunning) {
+    if (intervalRef.current) cancelAnimationFrame(intervalRef.current);
+    intervalRef.current = null;
+    return;
+  }
 
-  // Ajuste al cambiar de pestaña
+  // deadline solo se calcula al iniciar/reanudar
+  deadlineRef.current = Date.now() + timeLeft * 1000;
+
+  function tick() {
+    const now = Date.now();
+    let remaining = (deadlineRef.current - now) / 1000;
+    if (remaining < 0) remaining = 0;
+    setTimeLeft(remaining);
+    if (remaining > 0) {
+      intervalRef.current = requestAnimationFrame(tick);
+    }
+  }
+  intervalRef.current = requestAnimationFrame(tick);
+
+  return () => {
+    if (intervalRef.current) cancelAnimationFrame(intervalRef.current);
+    intervalRef.current = null;
+  };
+// ¡OJO! Solo depende de isRunning, mode y modeIndex
+}, [isRunning, mode, modeIndex]);
+
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -189,6 +191,7 @@ const Pomodoro = ({ syncPomo = true }) => {
         const hiddenDuration = Date.now() - lastHiddenTime.current;
         // Ajusta el timestamp de inicio para compensar el tiempo oculto
         startTimestamp.current += hiddenDuration;
+        lastHiddenTime.current = null; // Limpia el registro
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -296,7 +299,7 @@ const Pomodoro = ({ syncPomo = true }) => {
       {/* Contenido centrado */}
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="text-5xl font-mono mb-5 text-center">
-          {formatTime(timeLeft)}
+          {formatPomodoroTime(timeLeft)}
         </div>
         <div className="flex justify-center space-x-4 mb-6">
           {!isRunning ? (
