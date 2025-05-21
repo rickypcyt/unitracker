@@ -15,7 +15,7 @@ export function useResponsiveColumns(maxColumns = 4) {
 
       newColumns = Math.min(newColumns, maxColumns); // Nunca más que maxColumns
 
-      setColumns(prev => (prev !== newColumns ? newColumns : prev));
+      setColumns((prev) => (prev !== newColumns ? newColumns : prev));
     }
     updateColumns();
     window.addEventListener("resize", updateColumns);

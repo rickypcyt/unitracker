@@ -21,6 +21,9 @@ const Home = () => {
         : null;
     return stored ? Number(stored) : 4; // Por defecto 4 columnas
   });
+
+  const responsiveColumns = useResponsiveColumns();
+
   const columns = userColumnCount || useResponsiveColumns();
 
   const [layout, setLayout] = useState(() =>
