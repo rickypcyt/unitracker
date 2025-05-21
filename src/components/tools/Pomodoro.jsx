@@ -9,6 +9,8 @@ import {
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
+import { useEventListener } from 'usehooks-ts'
+import PropTypes from 'prop-types';
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -99,8 +101,7 @@ const TimerControlButton = ({ onClick, icon: Icon, label, className }) => (
   </button>
 );
 
-const Pomodoro = () => {
-  const { accentPalette } = useTheme();
+const Pomodoro = ({ syncPomo = true }) => {
   const {
     modeIndex,
     mode,
@@ -114,6 +115,33 @@ const Pomodoro = () => {
     changeMode,
     resetTimer,
   } = usePomodoroState();
+  // Funciones de control
+  const startPomodoro = () => setIsRunning(true);
+  const pausePomodoro = () => setIsRunning(false);
+  const resetPomodoro = () => {
+    setIsRunning(false);
+    setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
+    lastTimeLeft.current = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
+    startTimestamp.current = null;
+  };
+
+  // Escucha los eventos de StudyTimer SOLO si syncPomo está activo
+  useEventListener("studyPlay", () => {
+    if (syncPomo) startPomodoro();
+  }, [syncPomo]);
+
+
+  useEventListener("studyPause", () => {
+    if (syncPomo) pausePomodoro();
+  }, [syncPomo]);
+
+  useEventListener("studyReset", () => {
+    if (syncPomo) resetPomodoro();
+  }, [syncPomo, mode, modeIndex]);
+
+
+  const { accentPalette } = useTheme();
+
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -126,6 +154,7 @@ const Pomodoro = () => {
 
   // Solicitar permisos de notificación
   useEffect(() => {
+
     if ("Notification" in window) Notification.requestPermission();
   }, []);
 
@@ -212,7 +241,7 @@ const Pomodoro = () => {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  
+
 
   // --- Render ---
   return (
@@ -274,12 +303,15 @@ const Pomodoro = () => {
             <TimerControlButton
               onClick={() => {
                 setIsRunning(true);
-                window.dispatchEvent(new CustomEvent("pomodoroPlay"));
+                if (syncPomo) {
+                  window.dispatchEvent(new CustomEvent("pomodoroPlay"));
+                }
               }}
               icon={Play}
               label="Play"
               className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
             />
+
           ) : (
             <TimerControlButton
               onClick={() => {
@@ -310,6 +342,10 @@ const Pomodoro = () => {
       </div>
     </div>
   );
+};
+Pomodoro.propTypes = {
+  syncPomo: PropTypes.bool,
+  // ...otras props si tienes
 };
 
 export default Pomodoro;

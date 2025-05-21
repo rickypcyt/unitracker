@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
@@ -12,7 +18,12 @@ import { Settings as SettingsIcon } from "lucide-react";
 import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
 
+
+
+
 const Home = () => {
+const pomodoroRef = useRef<any>(null);
+
   const [userColumnCount, setUserColumnCount] = useState(() => {
     // Puedes guardar la preferencia en localStorage si quieres
     const stored =
@@ -208,6 +219,7 @@ const Home = () => {
                               isEditing={isEditing}
                               onRemove={removeComponent}
                               onContextMenu={handleContextMenu}
+                              pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
                             />
                           </div>
                         )}

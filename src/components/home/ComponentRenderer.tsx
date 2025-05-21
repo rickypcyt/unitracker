@@ -1,7 +1,7 @@
 import React from "react";
 import { ComponentRegistry } from "../../utils/layoutManager";
 
-interface ComponentRendererProps {
+export interface ComponentRendererProps {
   componentKey: string;
   isEditing: boolean;
   colIndex: number;
@@ -14,19 +14,30 @@ interface ComponentRendererProps {
     colIndex: number,
     itemIndex: number
   ) => void;
+  pomodoroRef?: React.RefObject<any>;
 }
 
 const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   componentKey,
+  pomodoroRef,
   isEditing,
   colIndex,
   index,
   onToggleSize,
   onRemove,
   onContextMenu,
+  ...props
 }) => {
   const Component = ComponentRegistry[componentKey]?.component;
   if (!Component) return null;
+
+  // Pasa el ref solo si corresponde
+  if (componentKey === "Pomodoro") {
+    return <Component ref={pomodoroRef} {...props} />;
+  }
+  if (componentKey === "StudyTimer") {
+    return <Component pomodoroRef={pomodoroRef} {...props} />;
+  }
 
   return (
     <div

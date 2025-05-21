@@ -32,7 +32,7 @@ const StudyTimer = () => {
                 selectedSession: null,
                 isEditingDetails: false,
                 editedSession: null,
-                startPomodoro: localStorage.getItem("startPomodoroWithTimer") === "true",
+                syncPomo: localStorage.getItem("syncPomoWithTimer") === "true",
             };
         }
         return {
@@ -45,7 +45,7 @@ const StudyTimer = () => {
             selectedSession: null,
             isEditingDetails: false,
             editedSession: null,
-            startPomodoro: true,
+            syncPomo: true,
         };
     });
 
@@ -55,15 +55,15 @@ const StudyTimer = () => {
             time: state.time,
             isRunning: state.isRunning,
             description: state.description,
-            startPomodoro: state.startPomodoro,
+            syncPomo: state.syncPomo,
         };
         localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
-        localStorage.setItem("startPomodoroWithTimer", state.startPomodoro.toString());
-    }, [state.time, state.isRunning, state.description, state.startPomodoro]);
+        localStorage.setItem("syncPomoWithTimer", state.syncPomo.toString());
+    }, [state.time, state.isRunning, state.description, state.syncPomo]);
 
     useEffect(() => {
-        if (!localStorage.getItem("startPomodoroWithTimer")) {
-            localStorage.setItem("startPomodoroWithTimer", "true");
+        if (!localStorage.getItem("syncPomoWithTimer")) {
+            localStorage.setItem("syncPomoWithTimer", "true");
         }
     }, []);
 
@@ -82,12 +82,13 @@ const StudyTimer = () => {
         loadUser();
     }, [dispatch]);
 
-    // Centralized event listeners
-    useEventListener("startStudyTimer", () => timerControls.start(), [state.startPomodoro]);
-    useEventListener("stopStudyTimer", () => timerControls.pause(), [state.startPomodoro]);
-    useEventListener("pomodoroPause", () => { if (state.startPomodoro) timerControls.pause(); }, [state.startPomodoro]);
-    useEventListener("pomodoroReset", () => { if (state.startPomodoro) timerControls.reset(); }, [state.startPomodoro]);
-    useEventListener("pomodoroPlay", () => { if (state.startPomodoro) timerControls.start(); }, [state.startPomodoro]);
+
+
+    useEventListener("startStudyTimer", () => timerControls.start(), [state.syncPomo]);
+    useEventListener("stopStudyTimer", () => timerControls.pause(), [state.syncPomo]);
+    useEventListener("pomodoroPause", () => { if (state.syncPomo) timerControls.pause(); }, [state.syncPomo]);
+    useEventListener("pomodoroReset", () => { if (state.syncPomo) timerControls.reset(); }, [state.syncPomo]);
+    useEventListener("pomodoroPlay", () => { if (state.syncPomo) timerControls.start(); }, [state.syncPomo]);
 
     // Handle escape key to close modal
     useEffect(() => {
@@ -121,8 +122,8 @@ const StudyTimer = () => {
                 dispatch(setCurrentSession(sessionNum));
                 setState((prev) => ({ ...prev, isRunning: true }));
                 // Start Pomodoro if checkbox is checked
-                if (state.startPomodoro) {
-                    window.dispatchEvent(new CustomEvent("startPomodoro"));
+                if (state.syncPomo) {
+                    window.dispatchEvent(new CustomEvent("syncPomo"));
                 }
                 window.dispatchEvent(
                     new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
@@ -131,7 +132,7 @@ const StudyTimer = () => {
         },
         pause: () => {
             setState((prev) => ({ ...prev, isRunning: false }));
-            if (state.startPomodoro) {
+            if (state.syncPomo) {
                 window.dispatchEvent(new CustomEvent("stopPomodoro"));
             }
             window.dispatchEvent(
@@ -146,7 +147,7 @@ const StudyTimer = () => {
                 description: "",
             }));
             dispatch(resetTimerState());
-            if (state.startPomodoro) {
+            if (state.syncPomo) {
                 window.dispatchEvent(new CustomEvent("stopPomodoro"));
                 window.dispatchEvent(new CustomEvent("resetPomodoro"));
             }
@@ -275,9 +276,9 @@ const StudyTimer = () => {
     };
 
     const handlePomodoroToggle = (e) => {
-        const newValue = e.target.checked ?? !state.startPomodoro;
-        localStorage.setItem("startPomodoroWithTimer", newValue);
-        setState((prev) => ({ ...prev, startPomodoro: newValue }));
+        const newValue = e.target.checked ?? !state.syncPomo;
+        localStorage.setItem("syncPomoWithTimer", newValue);
+        setState((prev) => ({ ...prev, syncPomo: newValue }));
     };
 
     if (!state.localUser) {
@@ -307,15 +308,15 @@ const StudyTimer = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 handlePomodoroToggle({
-                                    target: { checked: !state.startPomodoro },
+                                    target: { checked: !state.syncPomo },
                                 });
                             }}
                             className="bg-transparent border-none cursor-pointer flex items-center rounded-full group"
                             aria-label={
-                                state.startPomodoro ? "Disable Pomodoro" : "Enable Pomodoro"
+                                state.syncPomo ? "Disable Pomodoro" : "Enable Pomodoro"
                             }
                         >
-                            {state.startPomodoro ? (
+                            {state.syncPomo ? (
                                 <CheckCircle2 size={24} style={{ color: "var(--accent-primary)" }} />) : (
                                 <Circle size={24} style={{ color: "var(--accent-primary)" }} />)}
                         </button>
@@ -354,12 +355,17 @@ const StudyTimer = () => {
 
                 {!state.isRunning ? (
                     <button
-                        onClick={timerControls.start}
-                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
+                        onClick={() => {
+                            timerControls.start(); // Tu lógica local
+                            if (state.syncPomo) {
+                                window.dispatchEvent(new CustomEvent("studyPlay"));
+                            }
+                        }}
+                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
                     >
                         <Play size={20} style={{ color: iconColor }} />
                     </button>
+
                 ) : (
                     <button
                         onClick={timerControls.pause}
