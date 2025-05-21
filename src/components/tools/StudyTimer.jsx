@@ -86,9 +86,9 @@ const StudyTimer = () => {
 
     useEventListener("startStudyTimer", () => timerControls.start(), [state.syncPomo]);
     useEventListener("stopStudyTimer", () => timerControls.pause(), [state.syncPomo]);
-    useEventListener("pomodoroPause", () => { if (state.syncPomo) timerControls.pause(); }, [state.syncPomo]);
-    useEventListener("pomodoroReset", () => { if (state.syncPomo) timerControls.reset(); }, [state.syncPomo]);
-    useEventListener("pomodoroPlay", () => { if (state.syncPomo) timerControls.start(); }, [state.syncPomo]);
+    useEventListener("pauseTimerSync", () => { if (state.syncPomo) timerControls.pause(); }, [state.syncPomo]);
+    useEventListener("resetTimerSync", () => { if (state.syncPomo) timerControls.reset(); }, [state.syncPomo]);
+    useEventListener("playTimerSync", () => { if (state.syncPomo) timerControls.start(); }, [state.syncPomo]);
 
     // Handle escape key to close modal
     useEffect(() => {
@@ -123,7 +123,7 @@ const StudyTimer = () => {
                 setState((prev) => ({ ...prev, isRunning: true }));
                 // Start Pomodoro if checkbox is checked
                 if (state.syncPomo) {
-                    window.dispatchEvent(new CustomEvent("syncPomo"));
+                    window.dispatchEvent(new CustomEvent("playPomoSync"));
                 }
                 window.dispatchEvent(
                     new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
@@ -133,7 +133,7 @@ const StudyTimer = () => {
         pause: () => {
             setState((prev) => ({ ...prev, isRunning: false }));
             if (state.syncPomo) {
-                window.dispatchEvent(new CustomEvent("stopPomodoro"));
+                window.dispatchEvent(new CustomEvent("pausePomoSync"));
             }
             window.dispatchEvent(
                 new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
@@ -148,8 +148,7 @@ const StudyTimer = () => {
             }));
             dispatch(resetTimerState());
             if (state.syncPomo) {
-                window.dispatchEvent(new CustomEvent("stopPomodoro"));
-                window.dispatchEvent(new CustomEvent("resetPomodoro"));
+                window.dispatchEvent(new CustomEvent("resetPomoSync"));
             }
             window.dispatchEvent(
                 new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })

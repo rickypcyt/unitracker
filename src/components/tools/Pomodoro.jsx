@@ -126,16 +126,16 @@ const Pomodoro = ({ syncPomo = true }) => {
   };
 
   // Escucha los eventos de StudyTimer SOLO si syncPomo está activo
-  useEventListener("studyPlay", () => {
+  useEventListener("playPomoSync", () => {
     if (syncPomo) startPomodoro();
   }, [syncPomo]);
 
 
-  useEventListener("studyPause", () => {
+  useEventListener("pausePomoSync", () => {
     if (syncPomo) pausePomodoro();
   }, [syncPomo]);
 
-  useEventListener("studyReset", () => {
+  useEventListener("resetPomoSync", () => {
     if (syncPomo) resetPomodoro();
   }, [syncPomo, mode, modeIndex]);
 
@@ -304,7 +304,7 @@ const Pomodoro = ({ syncPomo = true }) => {
               onClick={() => {
                 setIsRunning(true);
                 if (syncPomo) {
-                  window.dispatchEvent(new CustomEvent("pomodoroPlay"));
+                  window.dispatchEvent(new CustomEvent("playTimerSync"));
                 }
               }}
               icon={Play}
@@ -316,7 +316,7 @@ const Pomodoro = ({ syncPomo = true }) => {
             <TimerControlButton
               onClick={() => {
                 setIsRunning(false);
-                window.dispatchEvent(new CustomEvent("pomodoroPause"));
+                window.dispatchEvent(new CustomEvent("pauseTimerSync"));
               }}
               icon={Pause}
               label="Pause"
@@ -329,7 +329,7 @@ const Pomodoro = ({ syncPomo = true }) => {
               setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
               lastTimeLeft.current = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
               startTimestamp.current = null;
-              window.dispatchEvent(new CustomEvent("pomodoroReset"));
+              window.dispatchEvent(new CustomEvent("resetTimerSync"));
             }}
             icon={RotateCcw}
             label="Reset"
