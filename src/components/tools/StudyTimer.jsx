@@ -16,6 +16,7 @@ import useEventListener from "../../hooks/useEventListener";
 
 
 const StudyTimer = () => {
+
     const { accentPalette, iconColor } = useTheme();
     const dispatch = useDispatch();
     const { laps, error, currentSession } = useSelector((state) => state.laps);
@@ -26,8 +27,13 @@ const StudyTimer = () => {
         const savedState = localStorage.getItem("studyTimerState");
         if (savedState) {
             const parsed = JSON.parse(savedState);
+            let time = parsed.timeAtStart || 0;
+            if (parsed.isRunning && parsed.lastStart) {
+                time += (Date.now() - parsed.lastStart) / 1000;
+            }
             return {
                 ...parsed,
+                time,
                 localUser: null,
                 expandedMonths: {},
                 selectedSession: null,
@@ -75,6 +81,23 @@ const StudyTimer = () => {
         state.timeAtStart,
     ]);
 
+    const [isRunning, setIsRunning] = useState(false);
+    const [startTime, setStartTime] = useState(() => {
+        const saved = localStorage.getItem("interval_start");
+        return saved ? parseInt(saved, 10) : null;
+    });
+
+    useEffect(() => {
+        if (isRunning && !startTime) {
+            const now = Date.now();
+            setStartTime(now);
+            localStorage.setItem("interval_start", now);
+        }
+    }, [isRunning, startTime]);
+
+    useInterval((elapsed) => {
+        console.log("Elapsed:", elapsed);
+    }, isRunning, startTime);
 
     useEffect(() => {
         if (!localStorage.getItem("syncPomoWithTimer")) {
@@ -94,8 +117,10 @@ const StudyTimer = () => {
     useInterval(
         tick,
         state.isRunning,
-        state.timeAtStart
+        state.timeAtStart,
+        state.lastStart
     );
+
 
 
     useEffect(() => {
@@ -189,7 +214,12 @@ const StudyTimer = () => {
                 lastStart: null,
                 timeAtStart: 0,
             }));
+
             dispatch(resetTimerState());
+
+            localStorage.removeItem("interval_start");
+            localStorage.removeItem("interval_elapsed");
+
             if (state.syncPomo) {
                 window.dispatchEvent(new CustomEvent("resetPomoSync"));
             }

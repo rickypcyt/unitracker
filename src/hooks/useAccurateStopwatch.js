@@ -1,36 +1,33 @@
 import { useRef, useEffect } from "react";
 
 /**
- * Hook de intervalo ultra preciso usando setInterval y Date.now().
- * 
- * @param {Function} callback - Recibe el tiempo total transcurrido en segundos (float).
- * @param {boolean} isRunning - Si el intervalo está activo.
- * @param {number} initialElapsed - Tiempo ya transcurrido (en segundos), útil para restaurar.
+ * Ultra-precise interval hook with Date.now() and localStorage support.
+ * @param {Function} callback - Receives elapsed time in seconds (float).
+ * @param {boolean} isRunning - Whether the interval is active.
+ * @param {number} timeAtStart - Accumulated time before last start (in seconds).
+ * @param {number|null} lastStart - Timestamp (ms) when timer was last started, or null if paused.
  */
-export default function useInterval(callback, isRunning, initialElapsed = 0) {
-  const savedCallback = useRef();
-  const lastTimeRef = useRef(null);
-  const elapsedRef = useRef(initialElapsed);
+export default function useInterval(callback, isRunning, timeAtStart = 0, lastStart = null) {
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  useEffect(() => {
-    if (!isRunning) return;
-
-    lastTimeRef.current = Date.now();
-    elapsedRef.current = initialElapsed;
-
-    function tick() {
-      const now = Date.now();
-      const delta = (now - lastTimeRef.current) / 1000;
-      elapsedRef.current += delta;
-      lastTimeRef.current = now;
-      savedCallback.current(elapsedRef.current);
+    if (!isRunning) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      return;
     }
 
-    const id = setInterval(tick, 50);
-    return () => clearInterval(id);
-  }, [isRunning, initialElapsed]);
+    intervalRef.current = setInterval(() => {
+      // Si lastStart es null, solo muestra el tiempo acumulado
+      const elapsed = lastStart
+        ? timeAtStart + (Date.now() - lastStart) / 1000
+        : timeAtStart;
+      callback(elapsed);
+    }, 50);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+  }, [isRunning, callback, timeAtStart, lastStart]);
 }

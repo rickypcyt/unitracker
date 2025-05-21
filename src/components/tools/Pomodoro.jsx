@@ -71,6 +71,7 @@ function usePomodoroState() {
     setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
     setMode("work");
     setPomodoroCount(0);
+    localStorage.removeItem("interval_start"); // o "timer_start"
   }, [mode, modeIndex]);
 
   return {
@@ -143,6 +144,21 @@ const Pomodoro = ({ syncPomo = true }) => {
 
   const startTimestamp = useRef(null);
   const lastTimeLeft = useRef(MODES[modeIndex][mode]);
+
+
+  const [startTime, setStartTime] = useState(() => {
+    const saved = localStorage.getItem("timer_start");
+    return saved ? parseInt(saved, 10) : null;
+  });
+
+  useEffect(() => {
+    if (isRunning && !startTime) {
+      const now = Date.now();
+      setStartTime(now);
+      localStorage.setItem("timer_start", now);
+      localStorage.setItem("timer_duration", lastTimeLeft);
+    }
+  }, [isRunning, startTime]);
 
 
   // Solicitar permisos de notificación

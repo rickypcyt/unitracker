@@ -14,6 +14,7 @@ export function formatTime(totalSeconds) {
   );
 }
 
+
 export function getMonthYear(date) {
   const d = new Date(date);
   return `${d.toLocaleString("default", { month: "long" })} ${d.getFullYear()}`;
