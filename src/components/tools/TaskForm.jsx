@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTaskForm } from "../../redux/useTaskForm";
 import { Rows4, Circle, CheckCircle2 } from "lucide-react";
-import { supabase } from "../../utils/supabaseClient";
 import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
 import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
+
+
+
 
 const TaskForm = () => {
     const {
@@ -269,7 +269,7 @@ const TaskForm = () => {
 
                         <input
                             id="date"
-                            className={`textinput w-full text-center cursor-pointer`}
+                            className={`textinput w-full text-center cursor-pointer `}
                             type="date"
                             value={newTask.deadline}
                             onChange={(e) => updateField("deadline", e.target.value)}

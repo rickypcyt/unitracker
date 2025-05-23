@@ -31,13 +31,7 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   const Component = ComponentRegistry[componentKey]?.component;
   if (!Component) return null;
 
-  // Pasa el ref solo si corresponde
-  if (componentKey === "Pomodoro") {
-    return <Component ref={pomodoroRef} {...props} />;
-  }
-  if (componentKey === "StudyTimer") {
-    return <Component pomodoroRef={pomodoroRef} {...props} />;
-  }
+
 
   return (
     <div

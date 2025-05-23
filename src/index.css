@@ -5,6 +5,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 /* #1793d1 archlinux color */
 
 /* =========================
@@ -101,44 +103,43 @@
    2. Componentes Personalizados
    ========================= */
 @layer components {
-.maincard {
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-  background-color: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  margin-bottom: 1rem;
-  transition: width 0.2s, aspect-ratio 0.2s, max-width 0.2s;
-}
+  .maincard {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-primary);
+    border: 2px solid var(--border-primary);
+    margin-bottom: 1rem;
+    transition: width 0.2s, aspect-ratio 0.2s, max-width 0.2s;
+  }
 
-/* 1 columna: ancho grande, aspecto rectangular */
-.card-cols-1 .maincard {
-  width: 100%;
-  max-width: 700px;
-  aspect-ratio: 16/9;
-}
+  /* 1 columna: ancho grande, aspecto rectangular */
+  .card-cols-1 .maincard {
+    width: 100%;
+    max-width: 700px;
+    aspect-ratio: 16/9;
+  }
 
-/* 2 columnas: ancho medio, aspecto cuadrado */
-.card-cols-2 .maincard {
-  width: 100%;
-  max-width: 450px;
-  aspect-ratio: 1/1;
-}
+  /* 2 columnas: ancho medio, aspecto cuadrado */
+  .card-cols-2 .maincard {
+    width: 100%;
+    max-width: 450px;
+    aspect-ratio: 1/1;
+  }
 
-/* 3 columnas: más compacto */
-.card-cols-3 .maincard {
-  width: 100%;
-  max-width: 350px;
-  aspect-ratio: 4/5;
-}
+  /* 3 columnas: más compacto */
+  .card-cols-3 .maincard {
+    width: 100%;
+    max-width: 350px;
+    aspect-ratio: 4/5;
+  }
 
-/* 4 columnas: aún más compacto */
-.card-cols-4 .maincard {
-  width: 100%;
-  max-width: 300px;
-  aspect-ratio: 4/5;
-}
-
+  /* 4 columnas: aún más compacto */
+  .card-cols-4 .maincard {
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 4/5;
+  }
 
   .deadline {
     @apply text-base;
@@ -169,16 +170,16 @@
     @apply text-lg;
     color: var(--text-secondary);
   }
-.button,
-.textbutton {
-  @apply px-4 py-2 rounded-lg transition-colors duration-200 items-center gap-2 text-center;
-  background-color: var(--accent-primary);
-  color: var(--text-primary);
-}
-.button:hover,
-.textbutton:hover {
-  background-color: var(--accent-deep);
-}
+  .button,
+  .textbutton {
+    @apply px-4 py-2 rounded-lg transition-colors duration-200 items-center gap-2 text-center;
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+  .button:hover,
+  .textbutton:hover {
+    background-color: var(--accent-deep);
+  }
 
   .textinput {
     @apply w-full p-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50;
@@ -240,6 +241,9 @@
   .bigaddtask {
     @apply w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer;
   }
+
+  
+
 }
 
 /* =========================

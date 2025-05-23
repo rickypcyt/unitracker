@@ -46,15 +46,39 @@ function usePomodoroState() {
     getLocal("pomodoroTimeLeft", MODES[modeIndex].work)
   );
   const [isRunning, setIsRunning] = useState(() => getLocal("pomodoroIsRunning", false));
-  const [pomodoroCount, setPomodoroCount] = useState(() => getLocal("pomodoroCount", 0));
+
+  // Utilidad para obtener la fecha de hoy en formato YYYY-MM-DD
+  const getToday = () => new Date().toISOString().slice(0, 10);
+
+  // Obtener el contador de hoy desde localStorage
+  const getTodayPomodoroCount = () => {
+    const data = JSON.parse(localStorage.getItem("pomodoroDailyCount") || "{}");
+    const today = getToday();
+    return data[today] || 0;
+  };
+
+  // Guardar el contador actualizado
+  const setTodayPomodoroCount = (count) => {
+    const data = JSON.parse(localStorage.getItem("pomodoroDailyCount") || "{}");
+    const today = getToday();
+    data[today] = count;
+    localStorage.setItem("pomodoroDailyCount", JSON.stringify(data));
+  };
+
+  const [pomodoroToday, setPomodoroToday] = useState(getTodayPomodoroCount());
+
+  useEffect(() => {
+    setTodayPomodoroCount(pomodoroToday);
+  }, [pomodoroToday]);
+
 
   useEffect(() => {
     setLocal("pomodoroModeIndex", modeIndex);
     setLocal("pomodoroMode", mode);
     setLocal("pomodoroTimeLeft", timeLeft);
     setLocal("pomodoroIsRunning", isRunning);
-    setLocal("pomodoroCount", pomodoroCount);
-  }, [modeIndex, mode, timeLeft, isRunning, pomodoroCount]);
+    setLocal("pomodoroToday", pomodoroToday);
+  }, [modeIndex, mode, timeLeft, isRunning, pomodoroToday]);
 
   const changeMode = useCallback(
     (newIndex) => {
@@ -70,7 +94,7 @@ function usePomodoroState() {
     setIsRunning(false);
     setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
     setMode("work");
-    setPomodoroCount(0);
+    setPomodoroToday(0);
     localStorage.removeItem("interval_start"); // o "timer_start"
   }, [mode, modeIndex]);
 
@@ -79,12 +103,12 @@ function usePomodoroState() {
     mode,
     timeLeft,
     isRunning,
-    pomodoroCount,
+    pomodoroToday,
     setModeIndex,
     setMode,
     setTimeLeft,
     setIsRunning,
-    setPomodoroCount,
+    setPomodoroToday,
     changeMode,
     resetTimer,
   };
@@ -102,11 +126,11 @@ const Pomodoro = ({ syncPomo = true }) => {
     mode,
     timeLeft,
     isRunning,
-    pomodoroCount,
+    pomodoroToday,
     setMode,
     setTimeLeft,
     setIsRunning,
-    setPomodoroCount,
+    setPomodoroToday,
     changeMode,
   } = usePomodoroState();
   // Funciones de control
@@ -190,7 +214,7 @@ const Pomodoro = ({ syncPomo = true }) => {
           setTimeLeft(MODES[modeIndex].break);
           lastTimeLeft.current = MODES[modeIndex].break;
           startTimestamp.current = null;
-          setPomodoroCount((prev) => prev + 1);
+          setPomodoroToday((prev) => prev + 1);
         } else {
           setMode("work");
           setTimeLeft(MODES[modeIndex].work);
@@ -201,7 +225,7 @@ const Pomodoro = ({ syncPomo = true }) => {
       }, 100);
     }
     // eslint-disable-next-line
-  }, [timeLeft, mode, modeIndex, setMode, setTimeLeft, setPomodoroCount, setIsRunning]);
+  }, [timeLeft, mode, modeIndex, setMode, setTimeLeft, setPomodoroToday, setIsRunning]);
 
   // Manejo del menú
   useEffect(() => {
@@ -316,7 +340,7 @@ const Pomodoro = ({ syncPomo = true }) => {
           />
         </div>
         <div className="text-center text-lg font-medium">
-          Completed Pomodoros: {pomodoroCount}
+          Completed Pomodoros: {pomodoroToday}
         </div>
       </div>
     </div>
