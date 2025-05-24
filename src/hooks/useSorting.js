@@ -18,11 +18,11 @@ export const useSorting = () => {
           (a, b) => new Date(a.deadline) - new Date(b.deadline)
         );
       case "difficulty":
-        const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
+        { const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
         return [...tasks].sort(
           (a, b) =>
             difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]
-        );
+        ); }
       case "alphabetical":
         return [...tasks].sort((a, b) => a.title.localeCompare(b.title));
       default:

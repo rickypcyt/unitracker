@@ -10,8 +10,7 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
-import { formatTime, getMonthYear } from "../../utils/timeUtils";
-import usePreciseTimer from "../../hooks/useAccurateStopwatch";
+import { useStudyTimer, formatTime, getMonthYear } from "../../hooks/useTimers";
 import useEventListener from "../../hooks/useEventListener";
 
 
@@ -110,7 +109,7 @@ const StudyTimer = () => {
     }, []);
 
 
-    usePreciseTimer(
+    useStudyTimer(
         tick,
         state.isRunning,
         state.timeAtStart,
