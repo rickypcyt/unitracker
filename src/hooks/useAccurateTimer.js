@@ -8,7 +8,12 @@ import { useRef, useEffect } from "react";
  * @param {number} duration - Duración total del timer en segundos.
  * @param {number} initialRemaining - Tiempo restante inicial (en segundos), útil para restaurar pausas.
  */
-export default function useAccurateTimer(callback, isRunning, duration, initialRemaining = duration) {
+export default function useAccurateTimer(
+  callback,
+  isRunning,
+  duration,
+  initialRemaining = duration
+) {
   const savedCallback = useRef();
   const startTimeRef = useRef(null);
   const endTimeRef = useRef(null);
@@ -40,4 +45,3 @@ export default function useAccurateTimer(callback, isRunning, duration, initialR
     return () => clearInterval(id);
   }, [isRunning, initialRemaining, duration]);
 }
-

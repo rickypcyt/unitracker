@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { formatTime, getMonthYear } from "../../utils/timeUtils";
-import useInterval from "../../hooks/useAccurateStopwatch";
+import usePreciseTimer from "../../hooks/useAccurateStopwatch";
 import useEventListener from "../../hooks/useEventListener";
 
 
@@ -29,7 +29,7 @@ const StudyTimer = () => {
             const parsed = JSON.parse(savedState);
             let time = parsed.timeAtStart || 0;
             if (parsed.isRunning && parsed.lastStart) {
-                time += (Date.now() - parsed.lastStart) / 1000;
+                time += (performance.now() - parsed.lastStart) / 1000;
             }
             return {
                 ...parsed,
@@ -89,15 +89,11 @@ const StudyTimer = () => {
 
     useEffect(() => {
         if (isRunning && !startTime) {
-            const now = Date.now();
+            const now = performance.now();
             setStartTime(now);
             localStorage.setItem("interval_start", now);
         }
     }, [isRunning, startTime]);
-
-    useInterval((elapsed) => {
-        console.log("Elapsed:", elapsed);
-    }, isRunning, startTime);
 
     useEffect(() => {
         if (!localStorage.getItem("syncPomoWithTimer")) {
@@ -114,7 +110,7 @@ const StudyTimer = () => {
     }, []);
 
 
-    useInterval(
+    usePreciseTimer(
         tick,
         state.isRunning,
         state.timeAtStart,
@@ -173,7 +169,7 @@ const StudyTimer = () => {
                 setState((prev) => ({
                     ...prev,
                     isRunning: true,
-                    lastStart: Date.now(),        // Marca el momento de inicio/reanudación
+                    lastStart: performance.now(),        // Marca el momento de inicio/reanudación
                     timeAtStart: prev.time,       // Guarda el tiempo acumulado antes de este inicio
                 }));
                 if (state.syncPomo) {
@@ -187,7 +183,7 @@ const StudyTimer = () => {
         pause: () => {
             if (state.isRunning) {
                 setState((prev) => {
-                    const now = Date.now();
+                    const now = performance.now();
                     const elapsed = prev.timeAtStart + ((now - prev.lastStart) / 1000);
                     return {
                         ...prev,
@@ -400,7 +396,7 @@ const StudyTimer = () => {
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
             <div className="text-5xl font-mono mb-6 text-center">
-                {formatTime(state.time)}
+                {formatTime(Math.max(0, Math.ceil(state.time)), false)}
             </div>
 
             <div className="flex justify-center space-x-4 mb-8">

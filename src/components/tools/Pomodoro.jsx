@@ -134,12 +134,33 @@ const Pomodoro = ({ syncPomo = true }) => {
     changeMode,
   } = usePomodoroState();
   // Funciones de control
-  const startPomodoro = () => setIsRunning(true);
-  const pausePomodoro = () => setIsRunning(false);
+  // Start or resume
+  const startPomodoro = () => {
+    if (!isRunning) {
+      startTimestamp.current = performance.now();
+      setIsRunning(true);
+    }
+  };
+
+  // Pause
+  const pausePomodoro = () => {
+    if (isRunning) {
+      const now = performance.now();
+      // Calculate how much time has passed since last start
+      const elapsed = (now - startTimestamp.current) / 1000;
+      lastTimeLeft.current = Math.max(0, lastTimeLeft.current - elapsed);
+      setTimeLeft(lastTimeLeft.current);
+      setIsRunning(false);
+      startTimestamp.current = null;
+    }
+  };
+
+  // Reset
   const resetPomodoro = () => {
     setIsRunning(false);
-    setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
-    lastTimeLeft.current = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
+    const initial = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
+    setTimeLeft(initial);
+    lastTimeLeft.current = initial;
     startTimestamp.current = null;
   };
 
@@ -177,7 +198,7 @@ const Pomodoro = ({ syncPomo = true }) => {
 
   useEffect(() => {
     if (isRunning && !startTime) {
-      const now = Date.now();
+      const now = performance.now();
       setStartTime(now);
       localStorage.setItem("timer_start", now);
       localStorage.setItem("timer_duration", lastTimeLeft);
