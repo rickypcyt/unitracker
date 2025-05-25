@@ -330,9 +330,19 @@ const StudyTimer = () => {
 
     if (!state.localUser) {
         return (
-            <div className="maincard">
+            <div 
+                className="maincard"
+                role="region"
+                aria-label="Study Timer"
+            >
                 <h2 className="text-2xl font-bold mb-12">Session</h2>
-                <div className="plslogin">Please log in to use the Study Timer</div>
+                <div 
+                    className="plslogin"
+                    role="alert"
+                    aria-live="polite"
+                >
+                    Please log in to use the Study Timer
+                </div>
             </div>
         );
     }
@@ -340,7 +350,12 @@ const StudyTimer = () => {
     const groupedLaps = groupSessionsByMonth();
 
     return (
-        <div className="maincard" onContextMenu={(e) => e.preventDefault()}>
+        <div 
+            className="maincard" 
+            onContextMenu={(e) => e.preventDefault()}
+            role="region"
+            aria-label="Study Timer"
+        >
             <div className="text-2xl font-bold mb-6 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <LibraryBig size={24} />
@@ -359,9 +374,7 @@ const StudyTimer = () => {
                                 });
                             }}
                             className="bg-transparent border-none cursor-pointer flex items-center rounded-full group"
-                            aria-label={
-                                state.syncPomo ? "Disable Pomodoro" : "Enable Pomodoro"
-                            }
+                            aria-label={state.syncPomo ? "Disable Pomodoro sync" : "Enable Pomodoro sync"}
                         >
                             {state.syncPomo ? (
                                 <CheckCircle2 size={24} style={{ color: "var(--accent-primary)" }} />
@@ -373,30 +386,46 @@ const StudyTimer = () => {
                 </div>
             </div>
 
-            {error && <div className="text-red-500 mb-4">{error}</div>}
+            {error && (
+                <div 
+                    className="text-red-500 mb-4"
+                    role="alert"
+                    aria-live="assertive"
+                >
+                    {error}
+                </div>
+            )}
 
-            <div className="text-5xl font-mono mb-6 text-center">
+            <div 
+                className="text-5xl font-mono mb-6 text-center"
+                role="timer"
+                aria-label="Current session time"
+            >
                 {formatStudyTime(Math.max(0, state.time), false)}
             </div>
 
-            <div className="flex justify-center space-x-4 mb-8">
+            {/* Single row of buttons */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4 justify-items-center">
                 <button
                     onClick={timerControls.reset}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                    aria-label="Reset timer"
                 >
                     <RotateCcw size={20} style={{ color: iconColor }} />
                 </button>
                 <button
                     onClick={() => changeTime(-600)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
                     title="Rewind 10 mins"
+                    aria-label="Subtract 10 minutes"
                 >
                     -10
                 </button>
                 <button
                     onClick={() => changeTime(-300)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
                     title="Rewind 5 mins"
+                    aria-label="Subtract 5 minutes"
                 >
                     -5
                 </button>
@@ -409,36 +438,40 @@ const StudyTimer = () => {
                                 window.dispatchEvent(new CustomEvent("studyPlay"));
                             }
                         }}
-                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
+                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                        aria-label="Start timer"
                     >
                         <Play size={20} style={{ color: iconColor }} />
                     </button>
                 ) : (
                     <button
                         onClick={timerControls.pause}
-                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                        aria-label="Pause timer"
                     >
                         <Pause size={20} style={{ color: iconColor }} />
                     </button>
                 )}
                 <button
                     onClick={() => changeTime(300)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
                     title="Add 5 mins"
+                    aria-label="Add 5 minutes"
                 >
                     +5
                 </button>
                 <button
                     onClick={() => changeTime(600)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold`}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
                     title="Add 10 mins"
+                    aria-label="Add 10 minutes"
                 >
                     +10
                 </button>
-
-                <button
+                 <button
                     onClick={lapHandlers.finish}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
+                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                    aria-label="Finish session"
                 >
                     <Check size={20} style={{ color: iconColor }} />
                 </button>
@@ -452,87 +485,108 @@ const StudyTimer = () => {
                     }
                     placeholder="Session title"
                     className="textinput"
+                    aria-label="Session title"
                 />
             </div>
 
-            {/* Botón y lista de meses colapsable */}
             <div className="py-4">
                 <button
                     className="infomenu"
                     onClick={() => setShowMonthsList(!showMonthsList)}
+                    aria-expanded={showMonthsList}
+                    aria-controls="months-list"
                 >
                     <span className="text-xl">Months</span>
                     {showMonthsList ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                 </button>
             </div>
 
-            {showMonthsList &&
-                Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => (
-                    <div key={monthYear} className="mb-4">
-                        <button
-                            className="infomenu"
-                            onClick={() => toggleVisibility("Months", monthYear)}
-                        >
-                            <span className="text-base">{monthYear}</span>
-                            {state.expandedMonths[monthYear] ? (
-                                <ChevronUp size={22} />
-                            ) : (
-                                <ChevronDown size={22} />
-                            )}
-                        </button>
-                        {state.expandedMonths[monthYear] && (
-                            <div className="space-y-4 mt-3">
-                                {lapsOfMonth.length === 0 ? (
-                                    <div className="text-gray-400 ml-4">No logs this month</div>
+            {showMonthsList && (
+                <div id="months-list" role="region" aria-label="Study sessions by month">
+                    {Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => (
+                        <div key={monthYear} className="mb-4">
+                            <button
+                                className="infomenu"
+                                onClick={() => toggleVisibility("Months", monthYear)}
+                                aria-expanded={state.expandedMonths[monthYear]}
+                                aria-controls={`sessions-${monthYear}`}
+                            >
+                                <span className="text-base">{monthYear}</span>
+                                {state.expandedMonths[monthYear] ? (
+                                    <ChevronUp size={22} />
                                 ) : (
-                                    lapsOfMonth.map((lap) => (
-                                        <div
-                                            key={lap.id}
-                                            className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
-                                            onDoubleClick={() => handleSessionDoubleClick(lap)}
-                                            onContextMenu={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleSessionDoubleClick(lap);
-                                            }}
-                                        >
-                                            <div className="flex justify-between">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-lg text-accent-primary">
-                                                            #{lap.session_number} {lap.name}
-                                                        </span>
+                                    <ChevronDown size={22} />
+                                )}
+                            </button>
+                            {state.expandedMonths[monthYear] && (
+                                <div 
+                                    id={`sessions-${monthYear}`}
+                                    className="space-y-4 mt-3"
+                                    role="list"
+                                    aria-label={`Sessions for ${monthYear}`}
+                                >
+                                    {lapsOfMonth.length === 0 ? (
+                                        <div className="text-gray-400 ml-4">No logs this month</div>
+                                    ) : (
+                                        lapsOfMonth.map((lap) => (
+                                            <div
+                                                key={lap.id}
+                                                className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
+                                                onDoubleClick={() => handleSessionDoubleClick(lap)}
+                                                onContextMenu={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleSessionDoubleClick(lap);
+                                                }}
+                                                role="listitem"
+                                                tabIndex={0}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        handleSessionDoubleClick(lap);
+                                                    }
+                                                }}
+                                            >
+                                                <div className="flex justify-between">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-lg text-accent-primary">
+                                                                #{lap.session_number} {lap.name}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-lg text-text-secondary mb-1">
+                                                            {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
+                                                        </p>
                                                     </div>
-                                                    <p className="text-lg text-text-secondary mb-1">
-                                                        {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-text-secondary text-lg">
-                                                        {lap.duration}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => dispatch(deleteLap(lap.id))}
-                                                        className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    <div className="flex items-center gap-4">
+                                                        <span className="text-text-secondary text-lg">
+                                                            {lap.duration}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => dispatch(deleteLap(lap.id))}
+                                                            className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110"
+                                                            aria-label={`Delete session ${lap.name}`}
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
-                ))
-            }
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
 
-            {/* Session Details Modal */}
             {state.selectedSession && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
                     onClick={handleOverlayClick}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Session details"
                 >
                     <div 
                         className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
@@ -547,6 +601,7 @@ const StudyTimer = () => {
                                     <button
                                         onClick={handleSaveEditDetails}
                                         className="text-green-500 hover:text-green-600 transition duration-200 flex items-center gap-2"
+                                        aria-label="Save changes"
                                     >
                                         <Save size={20} />
                                         Save
@@ -555,6 +610,7 @@ const StudyTimer = () => {
                                     <button
                                         onClick={handleStartEditingDetails}
                                         className="text-accent-primary hover:text-accent-secondary transition duration-200 flex items-center gap-2"
+                                        aria-label="Edit session details"
                                     >
                                         <Edit2 size={20} />
                                         Edit
@@ -563,6 +619,7 @@ const StudyTimer = () => {
                                 <button
                                     className="text-gray-400 hover:text-white transition duration-200"
                                     onClick={handleCloseSessionDetails}
+                                    aria-label="Close session details"
                                 >
                                     <X size={24} />
                                 </button>
@@ -580,6 +637,7 @@ const StudyTimer = () => {
                                         value={state.editedSession.name}
                                         onChange={(e) => handleEditChange("name", e.target.value)}
                                         className="w-full bg-bg-surface border border-border-primary rounded px-3 py-2 text-text-primary"
+                                        aria-label="Session title"
                                     />
                                 ) : (
                                     <p className="text-text-secondary">
@@ -600,6 +658,7 @@ const StudyTimer = () => {
                                         }
                                         className="w-full bg-bg-surface border border-border-primary rounded px-3 py-2 text-text-primary min-h-[100px]"
                                         placeholder="Add a description..."
+                                        aria-label="Session description"
                                     />
                                 ) : (
                                     <p className="text-text-secondary whitespace-pre-wrap">
@@ -623,7 +682,7 @@ const StudyTimer = () => {
                                 </h4>
                                 <p className="text-text-secondary">
                                     {moment(state.selectedSession.created_at).format(
-                                        "MMMM D, YYYY h:mm A",
+                                        "MMMM D, YYYY h:mm A"
                                     )}
                                 </p>
                             </div>
@@ -632,6 +691,7 @@ const StudyTimer = () => {
                                 <button
                                     onClick={() => dispatch(deleteLap(state.selectedSession.id))}
                                     className="text-red-500 hover:text-red-600 transition-colors duration-200 flex items-center gap-2"
+                                    aria-label="Delete session"
                                 >
                                     <Trash2 size={20} />
                                     Delete Session

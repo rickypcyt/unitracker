@@ -111,7 +111,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
     <div className="bar">
       <label className="noisegentitle">
         <Icon size={18} />
-        <span className="card-text font-medium text-white text-md">{label}</span>
+        <span className="card-text font-medium text-white text-sm sm:text-md">{label}</span>
       </label>
       <div className="slider">
         <input
@@ -186,22 +186,21 @@ export default function NoiseGenerator() {
   return (
     <div className="maincard">
       <div className="flex justify-between items-center mb-6">
-
-        <h2 className="text-2xl font-bold flex items-center gap-2"><AudioLines size={24} />Noise Generator</h2>
+        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2"><AudioLines size={24} />Noise Generator</h2>
         <button
           type="button"
           onClick={toggleAllSounds}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
         >
           {allPlaying ? (
             <>
               <Pause size={16} />
-              <span className="text-base">Stop All</span>
+              <span>Stop All</span>
             </>
           ) : (
             <>
               <Play size={16} />
-              <span className="text-base">Play All</span>
+              <span>Play All</span>
             </>
           )}
         </button>

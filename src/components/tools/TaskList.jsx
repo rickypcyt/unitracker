@@ -178,9 +178,10 @@ export const TaskList = ({ onComponentContextMenu }) => {
                       className="infomenu mb-1"
                       onClick={() => handleToggleAssignment(assignment)}
                     >
-                      <span>
-                        {assignment} ({tasks.length})
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span>{assignment}</span>
+                        <span className="text-text-secondary">({tasks.length})</span>
+                      </div>
                       {openAssignments[assignment] ? (
                         <ChevronUp size={20} />
                       ) : (
@@ -237,9 +238,10 @@ export const TaskList = ({ onComponentContextMenu }) => {
                       className="infomenu mb-1"
                       onClick={() => handleToggleCompletedAssignment(assignment)}
                     >
-                      <span>
-                        {assignment} ({tasks.length})
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span>{assignment}</span>
+                        <span className="text-text-secondary">({tasks.length})</span>
+                      </div>
                       {openCompletedAssignments[assignment] ? (
                         <ChevronUp size={20} />
                       ) : (
@@ -248,10 +250,9 @@ export const TaskList = ({ onComponentContextMenu }) => {
                     </button>
 
                     <div
-                      className={`space-y-2 mt-2 overflow-hidden transition-all duration-300 ${openCompletedAssignments[assignment] ? "visible" : "hidden"
+                      className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${openCompletedAssignments[assignment] ? "visible" : "hidden"
                         }`}
                     >
-
                       {sortTasks(tasks).map((task) => (
                         <TaskItem
                           key={task.id}
@@ -267,83 +268,10 @@ export const TaskList = ({ onComponentContextMenu }) => {
                   </div>
                 ))
               )}
-
-              {completedTasks.length > 0 && (
-                <button
-                  className="block max-w-md mx-auto mb-2 px-3 py-1 bg-red-700 hover:bg-red-800 text-white rounded transition"
-                  onClick={() => setShowDeleteCompletedModal(true)}
-                >
-                  Delete All Completed Tasks
-                </button>
-              )}
-
-              {showDeleteCompletedModal && (
-                <DeleteCompletedModal
-                  onClose={() => setShowDeleteCompletedModal(false)}
-                  onConfirm={handleDeleteAllCompletedTasks}
-                />
-              )}
             </div>
           </div>
-
         </>
-      )}
-
-      {/* PROGRESS TRACKER (integrado al final de la tarjeta) */}
-      <div className=" px-3 rounded-lg bg-black/80 ">
-
-        <div className="flex items-center mb-2">
-          <div className="flex-1 h-2 bg-neutral-800 rounded overflow-hidden">
-            <div
-              style={{
-                width: `${progressPercentage}%`,
-                backgroundColor: "#2563eb",
-              }}
-              className="h-2 transition-all duration-500 rounded"
-            ></div>
-          </div>
-          <span className="ml-3 text-blue-500 font-semibold text-sm">{progressPercentage.toFixed(0)}%</span>
-        </div>
-        <div className="flex items-end gap-2 justify-center mb-2">
-          <span className="text-2xl font-bold text-blue-500">{completedCount}</span>
-          <span className="text-lg font-medium text-white">out of</span>
-          <span className="text-2xl font-bold text-white">{totalCount}</span>
-          <span className="text-lg font-medium text-white">tasks completed</span>
-        </div>
-
-      </div>
-
-      {/* Task Details Modal */}
-      {selectedTask && (
-        <TaskDetailsModal
-          selectedTask={selectedTask}
-          editedTask={editedTask}
-          isEditing={taskDetailsEdit}
-          onClose={handleCloseTaskDetails}
-          onEdit={(value) => {
-            setTaskEditing(value);
-            if (!value) setEditedTask(null);
-          }}
-          onSave={handleSaveEdit}
-          onDelete={handleDeleteTask}
-          onToggleCompletion={handleToggleCompletion}
-          onSetActiveTask={handleUpdateTask}
-          onEditChange={handleEditChange}
-        />
-      )}
-
-      {/* Renderiza SOLO el menú contextual adecuado */}
-      {contextMenu && contextMenu.type === "task" && (
-        <TaskListMenu
-          contextMenu={contextMenu}
-          onClose={handleCloseContextMenu}
-          onDoubleClick={handleOpenTaskDetails}
-          onSetActiveTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
       )}
     </div>
   );
 };
-
-export default TaskList;

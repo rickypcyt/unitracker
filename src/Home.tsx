@@ -63,6 +63,10 @@ const pomodoroRef = useRef<any>(null);
   );
   const [contextMenu, setContextMenu] = useState(null);
 
+  const toggleEditing = useCallback(() => {
+    setIsEditing(prev => !prev);
+  }, []);
+
   // --- Cambios aquí ---
   // Recarga el layout cuando cambian las columnas
   useEffect(() => {
@@ -253,7 +257,7 @@ const pomodoroRef = useRef<any>(null);
           colIndex={contextMenu.colIndex}
           itemIndex={contextMenu.itemIndex}
           onRemove={removeComponent}
-          onToggleEdit={() => setIsEditing((prev) => !prev)}
+          onToggleEdit={toggleEditing}
         />
       )}
 
@@ -269,7 +273,7 @@ const pomodoroRef = useRef<any>(null);
 
       <Settings
         isEditing={isEditing}
-        onToggleEditing={setIsEditing}
+        onToggleEditing={toggleEditing}
         isLoggedIn={isLoggedIn}
         onLogin={loginWithGoogle}
         currentTheme={currentTheme}
@@ -287,17 +291,17 @@ const pomodoroRef = useRef<any>(null);
         userColumnCount={userColumnCount}
         setUserColumnCount={(count) => {
           setUserColumnCount(count);
-          localStorage.setItem("userColumnCount", count);
+          localStorage.setItem("userColumnCount", count.toString());
         }}
         userPadding={userPadding}
         setUserPadding={(val) => {
           setUserPadding(val);
-          localStorage.setItem("userPadding", val);
+          localStorage.setItem("userPadding", val.toString());
         }}
         userGap={userGap}
         setUserGap={(val) => {
           setUserGap(val);
-          localStorage.setItem("userGap", val);
+          localStorage.setItem("userGap", val.toString());
         }}
       />
 

@@ -5,6 +5,7 @@ import lapReducer from "./LapSlice";
 import uiReducer from "./uiSlice";
 import layoutReducer from "./layoutSlice";
 import assignmentReducer from "./AssignmentSlice"; // importa tu nuevo slice
+import { createErrorMiddleware } from './errorMiddleware';
 
 export const store = configureStore({
     reducer: {
@@ -18,5 +19,8 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: false,
-        }),
+        }).concat(createErrorMiddleware({
+            maxRetries: 3,
+            retryDelay: 1000
+        })),
 });

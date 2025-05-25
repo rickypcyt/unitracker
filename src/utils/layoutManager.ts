@@ -1,6 +1,6 @@
 // Importa tus componentes
 import TaskForm from "../components/tools/TaskForm";
-import TaskList from "../components/tools/TaskList";
+import { TaskList } from "../components/tools/TaskList";
 
 import Calendar from "../components/tools/Calendar";
 import StudyTimer from "../components/tools/StudyTimer";

@@ -4,6 +4,11 @@ import { Rows4, Circle, CheckCircle2 } from "lucide-react";
 import { useTheme } from "../../utils/ThemeContext"; // Importa el contexto
 import { colorClasses, hoverClasses } from "../../utils/colors"; // Importa el objeto de colores
 
+// Importar react-datepicker
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import moment from "moment";
+
 
 
 
@@ -214,7 +219,7 @@ const TaskForm = () => {
                 </div>
 
                 {/* Dificultad y Deadline */}
-                <div className="flex gap-4 items-end">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
                     {/* Difficulty */}
                     <div className="flex flex-col gap-2 flex-1">
 
@@ -265,15 +270,16 @@ const TaskForm = () => {
                     </div>
 
                     {/* Deadline */}
-                    <div className="flex flex-col gap-2 flex-1">
-
-                        <input
+                    <div className="flex flex-col gap-2 flex-1 relative">
+                        <DatePicker
                             id="date"
-                            className={`textinput w-full text-center cursor-pointer `}
-                            type="date"
-                            value={newTask.deadline}
-                            onChange={(e) => updateField("deadline", e.target.value)}
-                            onClick={(e) => e.target.showPicker()}
+                            selected={newTask.deadline ? moment(newTask.deadline, "YYYY-MM-DD").toDate() : null}
+                            onChange={(date) => updateField("deadline", moment(date).format("YYYY-MM-DD"))}
+                            dateFormat="dd/MM/yyyy"
+                            className="textinput w-full text-center cursor-pointer"
+                            placeholderText="DDMMYYYY"
+                            calendarClassName="taskform-datepicker"
+                            popperPlacement="bottom-end"
                         />
                     </div>
                 </div>

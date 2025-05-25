@@ -324,6 +324,7 @@ const Pomodoro = ({ syncPomo = true }) => {
                 marginLeft: 8,
                 fontWeight: 500,
               }}
+              className="text-base sm:text-lg"
             >
               [{mode === "work" ? "Work" : "Break"}]
             </span>
@@ -332,7 +333,7 @@ const Pomodoro = ({ syncPomo = true }) => {
         <div className="absolute top-0 right-0">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
           >
             <span>Edit</span>
             <ChevronDown
@@ -349,7 +350,7 @@ const Pomodoro = ({ syncPomo = true }) => {
                 <button
                   key={index}
                   onClick={() => changeMode(index)}
-                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${
+                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 text-sm sm:text-base ${
                     index === modeIndex ? "bg-bg-tertiary" : ""
                   }`}
                 >
@@ -362,7 +363,7 @@ const Pomodoro = ({ syncPomo = true }) => {
       </div>
       {/* Contenido centrado */}
       <div className="flex-1 flex flex-col justify-center items-center">
-        <div className="text-5xl font-mono mb-5 text-center">
+        <div className="text-4xl sm:text-5xl font-mono mb-5 text-center">
           {formatPomoTime(timeLeft)}
         </div>
         <div className="flex justify-center space-x-4 mb-6">
@@ -403,7 +404,7 @@ const Pomodoro = ({ syncPomo = true }) => {
             className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
           />
         </div>
-        <div className="text-center text-lg font-medium">
+        <div className="text-center text-base sm:text-lg font-medium">
           Completed Pomodoros: {pomodoroToday}
         </div>
       </div>

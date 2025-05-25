@@ -72,16 +72,33 @@ export function usePomoTimer(callback, isRunning, duration, initialRemaining) {
 }
 // Funciones de utilidad mejoradas
 export const formatStudyTime = (totalSeconds, roundUp = false) => {
-  const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
-  return new Date(s * 1000).toISOString().substr(11, 8); // Formato HH:MM:SS
+  try {
+    const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
+    const hours = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = Math.floor(s % 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  } catch (error) {
+    console.error('Error formatting study time:', error);
+    return '00:00:00';
+  }
 };
 
 export const formatPomoTime = (totalSeconds, roundUp = false) => {
-  const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
-  const date = new Date(s * 1000);
-  return s >= 3600
-    ? date.toISOString().substr(11, 8)
-    : date.toISOString().substr(14, 5); // MM:SS o HH:MM:SS
+  try {
+    const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
+    const hours = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = Math.floor(s % 60);
+    
+    if (s >= 3600) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  } catch (error) {
+    console.error('Error formatting pomo time:', error);
+    return '00:00';
+  }
 };
 
 export const getMonthYear = (date, locale = "default") => {
