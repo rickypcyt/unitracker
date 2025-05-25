@@ -28,9 +28,13 @@ const StudyTimer = () => {
         if (savedState) {
             const parsed = JSON.parse(savedState);
             let time = parsed.timeAtStart || 0;
+
+            // Cambiar a Date.now() para cálculo persistente
             if (parsed.isRunning && parsed.lastStart) {
-                time += (performance.now() - parsed.lastStart) / 1000;
+                const secondsElapsed = (Date.now() - parsed.lastStart) / 1000;
+                time += secondsElapsed;
             }
+
             return {
                 ...parsed,
                 time,
@@ -169,7 +173,7 @@ const StudyTimer = () => {
                 setState((prev) => ({
                     ...prev,
                     isRunning: true,
-                    lastStart: performance.now(),        // Marca el momento de inicio/reanudación
+                    lastStart: Date.now(),        // Marca el momento de inicio/reanudación
                     timeAtStart: prev.time,       // Guarda el tiempo acumulado antes de este inicio
                 }));
                 if (state.syncPomo) {
@@ -183,7 +187,7 @@ const StudyTimer = () => {
         pause: () => {
             if (state.isRunning) {
                 setState((prev) => {
-                    const now = performance.now();
+                    const now = Date.now();
                     const elapsed = prev.timeAtStart + ((now - prev.lastStart) / 1000);
                     return {
                         ...prev,
