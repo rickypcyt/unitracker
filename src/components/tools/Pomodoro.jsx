@@ -11,8 +11,7 @@ import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { useEventListener } from 'usehooks-ts'
 import PropTypes from 'prop-types';
-import { usePomoTimer, formatPomoTime } from "../../hooks/useTimers";
-
+import { formatPomoTime } from "../../hooks/useTimers";
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -22,6 +21,80 @@ const MODES = [
   { label: "25/5", work: 25 * 60, break: 5 * 60 },
   { label: "90/30", work: 90 * 60, break: 30 * 60 },
 ];
+
+// Unified timer hook for synchronization
+function useSynchronizedTimer(callback, isRunning, duration, mode = 'countdown') {
+  const rafRef = useRef();
+  const savedCallback = useRef();
+  const startTimeRef = useRef(null);
+  const accumulatedTimeRef = useRef(0);
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    if (!isRunning) {
+      return;
+    }
+
+    // Set start time when timer begins
+    if (startTimeRef.current === null) {
+      startTimeRef.current = performance.now();
+    }
+
+    const tick = (currentTime) => {
+      const elapsed = (currentTime - startTimeRef.current) / 1000;
+      const totalTime = accumulatedTimeRef.current + elapsed;
+      
+      if (mode === 'countdown') {
+        const remaining = Math.max(0, duration - totalTime);
+        savedCallback.current(remaining);
+        
+        if (remaining > 0) {
+          rafRef.current = requestAnimationFrame(tick);
+        }
+      } else {
+        // Stopwatch mode
+        savedCallback.current(totalTime);
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [isRunning, duration, mode]);
+
+  // Handle pause/resume
+  useEffect(() => {
+    if (!isRunning && startTimeRef.current !== null) {
+      // Timer was paused, save accumulated time
+      const elapsed = (performance.now() - startTimeRef.current) / 1000;
+      accumulatedTimeRef.current += elapsed;
+      startTimeRef.current = null;
+    }
+  }, [isRunning]);
+
+  // Reset function
+  const reset = useCallback(() => {
+    accumulatedTimeRef.current = 0;
+    startTimeRef.current = null;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+  }, []);
+
+  return { reset };
+}
 
 const getLocal = (key, fallback) => {
   const value = localStorage.getItem(key);
@@ -71,7 +144,6 @@ function usePomodoroState() {
     setTodayPomodoroCount(pomodoroToday);
   }, [pomodoroToday]);
 
-
   useEffect(() => {
     setLocal("pomodoroModeIndex", modeIndex);
     setLocal("pomodoroMode", mode);
@@ -95,7 +167,6 @@ function usePomodoroState() {
     setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
     setMode("work");
     setPomodoroToday(0);
-    localStorage.removeItem("interval_start"); // o "timer_start"
   }, [mode, modeIndex]);
 
   return {
@@ -133,93 +204,76 @@ const Pomodoro = ({ syncPomo = true }) => {
     setPomodoroToday,
     changeMode,
   } = usePomodoroState();
+
+  const { accentPalette } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Get current duration based on mode
+  const currentDuration = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
+
+  // Use synchronized timer
+  const { reset: resetTimer } = useSynchronizedTimer(
+    (remaining) => {
+      setTimeLeft(Math.floor(remaining));
+    },
+    isRunning,
+    currentDuration,
+    'countdown'
+  );
+
   // Funciones de control
-  // Start or resume
   const startPomodoro = () => {
     if (!isRunning) {
-      startTimestamp.current = performance.now();
       setIsRunning(true);
     }
   };
 
-  // Pause
   const pausePomodoro = () => {
     if (isRunning) {
-      const now = performance.now();
-      // Calculate how much time has passed since last start
-      const elapsed = (now - startTimestamp.current) / 1000;
-      lastTimeLeft.current = Math.max(0, lastTimeLeft.current - elapsed);
-      setTimeLeft(lastTimeLeft.current);
       setIsRunning(false);
-      startTimestamp.current = null;
     }
   };
 
-  // Reset
   const resetPomodoro = () => {
     setIsRunning(false);
     const initial = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
     setTimeLeft(initial);
-    lastTimeLeft.current = initial;
-    startTimestamp.current = null;
+    resetTimer();
   };
 
   // Escucha los eventos de StudyTimer SOLO si syncPomo está activo
   useEventListener("playPomoSync", () => {
-    if (syncPomo) startPomodoro();
-  }, [syncPomo]);
-
-
-  useEventListener("pausePomoSync", () => {
-    if (syncPomo) pausePomodoro();
-  }, [syncPomo]);
-
-  useEventListener("resetPomoSync", () => {
-    if (syncPomo) resetPomodoro();
-  }, [syncPomo, mode, modeIndex]);
-
-
-  const { accentPalette } = useTheme();
-
-
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  // Precise timer references
-
-  const startTimestamp = useRef(null);
-  const lastTimeLeft = useRef(MODES[modeIndex][mode]);
-
-
-  const [startTime, setStartTime] = useState(() => {
-    const saved = localStorage.getItem("timer_start");
-    return saved ? parseInt(saved, 10) : null;
+    if (syncPomo) {
+      requestAnimationFrame(() => startPomodoro());
+    }
   });
 
-  useEffect(() => {
-    if (isRunning && !startTime) {
-      const now = performance.now();
-      setStartTime(now);
-      localStorage.setItem("timer_start", now);
-      localStorage.setItem("timer_duration", lastTimeLeft);
+  useEventListener("pausePomoSync", () => {
+    if (syncPomo) {
+      requestAnimationFrame(() => pausePomodoro());
     }
-  }, [isRunning, startTime]);
+  });
 
+  useEventListener("resetPomoSync", () => {
+    if (syncPomo) {
+      requestAnimationFrame(() => resetPomodoro());
+    }
+  });
 
   // Solicitar permisos de notificación
   useEffect(() => {
-
     if ("Notification" in window) Notification.requestPermission();
   }, []);
 
   // Lógica de fin de ciclo
   useEffect(() => {
-    if (timeLeft === 0 && isRunning) {
+    if (timeLeft <= 0 && isRunning) {
       const sound =
         mode === "work"
           ? workSound.cloneNode(true)
           : breakSound.cloneNode(true);
-      sound.play();
+      sound.play().catch(() => {}); // Handle play errors silently
 
       const message =
         mode === "work"
@@ -233,20 +287,16 @@ const Pomodoro = ({ syncPomo = true }) => {
         if (mode === "work") {
           setMode("break");
           setTimeLeft(MODES[modeIndex].break);
-          lastTimeLeft.current = MODES[modeIndex].break;
-          startTimestamp.current = null;
           setPomodoroToday((prev) => prev + 1);
         } else {
           setMode("work");
           setTimeLeft(MODES[modeIndex].work);
-          lastTimeLeft.current = MODES[modeIndex].work;
-          startTimestamp.current = null;
         }
+        resetTimer();
         setIsRunning(true);
       }, 100);
     }
-    // eslint-disable-next-line
-  }, [timeLeft, mode, modeIndex, setMode, setTimeLeft, setPomodoroToday, setIsRunning]);
+  }, [timeLeft, mode, modeIndex, isRunning, setMode, setTimeLeft, setPomodoroToday, resetTimer]);
 
   // Manejo del menú
   useEffect(() => {
@@ -256,16 +306,6 @@ const Pomodoro = ({ syncPomo = true }) => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-
-  usePomoTimer(
-    (remainingSeconds) => {
-      setTimeLeft(remainingSeconds);
-    },
-    isRunning,
-    mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break,
-    timeLeft
-  );
 
   // --- Render ---
   return (
@@ -307,8 +347,9 @@ const Pomodoro = ({ syncPomo = true }) => {
                 <button
                   key={index}
                   onClick={() => changeMode(index)}
-                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${index === modeIndex ? "bg-bg-tertiary" : ""
-                    }`}
+                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 ${
+                    index === modeIndex ? "bg-bg-tertiary" : ""
+                  }`}
                 >
                   {m.label}
                 </button>
@@ -326,7 +367,7 @@ const Pomodoro = ({ syncPomo = true }) => {
           {!isRunning ? (
             <TimerControlButton
               onClick={() => {
-                setIsRunning(true);
+                startPomodoro();
                 if (syncPomo) {
                   window.dispatchEvent(new CustomEvent("playTimerSync"));
                 }
@@ -335,12 +376,13 @@ const Pomodoro = ({ syncPomo = true }) => {
               label="Play"
               className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
             />
-
           ) : (
             <TimerControlButton
               onClick={() => {
-                setIsRunning(false);
-                window.dispatchEvent(new CustomEvent("pauseTimerSync"));
+                pausePomodoro();
+                if (syncPomo) {
+                  window.dispatchEvent(new CustomEvent("pauseTimerSync"));
+                }
               }}
               icon={Pause}
               label="Pause"
@@ -349,11 +391,10 @@ const Pomodoro = ({ syncPomo = true }) => {
           )}
           <TimerControlButton
             onClick={() => {
-              setIsRunning(false);
-              setTimeLeft(mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break);
-              lastTimeLeft.current = mode === "work" ? MODES[modeIndex].work : MODES[modeIndex].break;
-              startTimestamp.current = null;
-              window.dispatchEvent(new CustomEvent("resetTimerSync"));
+              resetPomodoro();
+              if (syncPomo) {
+                window.dispatchEvent(new CustomEvent("resetTimerSync"));
+              }
             }}
             icon={RotateCcw}
             label="Reset"
@@ -367,9 +408,9 @@ const Pomodoro = ({ syncPomo = true }) => {
     </div>
   );
 };
+
 Pomodoro.propTypes = {
   syncPomo: PropTypes.bool,
-  // ...otras props si tienes
 };
 
 export default Pomodoro;

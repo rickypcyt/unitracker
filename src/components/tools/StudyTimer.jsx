@@ -11,41 +11,28 @@ import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { useStudyTimer, formatStudyTime, getMonthYear } from "../../hooks/useTimers";
-
 import useEventListener from "../../hooks/useEventListener";
 
-
 const StudyTimer = () => {
-
     const { accentPalette, iconColor } = useTheme();
     const dispatch = useDispatch();
     const { laps, error, currentSession } = useSelector((state) => state.laps);
 
     const [showMonthsList, setShowMonthsList] = useState(false);
 
+    // Estado simplificado y mejorado
     const [state, setState] = useState(() => {
         const savedState = localStorage.getItem("studyTimerState");
         if (savedState) {
             const parsed = JSON.parse(savedState);
-            let time = parsed.timeAtStart || 0;
-
-            // Cambiar a Date.now() para cálculo persistente
-            if (parsed.isRunning && parsed.lastStart) {
-                const secondsElapsed = (Date.now() - parsed.lastStart) / 1000;
-                time += secondsElapsed;
-            }
-
             return {
                 ...parsed,
-                time,
                 localUser: null,
                 expandedMonths: {},
                 selectedSession: null,
                 isEditingDetails: false,
                 editedSession: null,
                 syncPomo: localStorage.getItem("syncPomoWithTimer") === "true",
-                lastStart: parsed.lastStart || null,
-                timeAtStart: parsed.timeAtStart || 0,
             };
         }
         return {
@@ -64,15 +51,15 @@ const StudyTimer = () => {
         };
     });
 
-    // Save state to localStorage whenever it changes
+    // Guardar estado en localStorage cuando cambie
     useEffect(() => {
         const stateToSave = {
             time: state.time,
             isRunning: state.isRunning,
             description: state.description,
             syncPomo: state.syncPomo,
-            lastStart: state.lastStart,      // <-- Añadido
-            timeAtStart: state.timeAtStart,  // <-- Añadido
+            lastStart: state.lastStart,
+            timeAtStart: state.timeAtStart,
         };
         localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
         localStorage.setItem("syncPomoWithTimer", state.syncPomo.toString());
@@ -85,27 +72,13 @@ const StudyTimer = () => {
         state.timeAtStart,
     ]);
 
-    const [isRunning, setIsRunning] = useState(false);
-    const [startTime, setStartTime] = useState(() => {
-        const saved = localStorage.getItem("interval_start");
-        return saved ? parseInt(saved, 10) : null;
-    });
-
-    useEffect(() => {
-        if (isRunning && !startTime) {
-            const now = performance.now();
-            setStartTime(now);
-            localStorage.setItem("interval_start", now);
-        }
-    }, [isRunning, startTime]);
-
     useEffect(() => {
         if (!localStorage.getItem("syncPomoWithTimer")) {
             localStorage.setItem("syncPomoWithTimer", "true");
         }
     }, []);
 
-    // Restore timer if it was running
+    // Callback para actualizar el tiempo
     const tick = useCallback((elapsed) => {
         setState(prev => ({
             ...prev,
@@ -113,15 +86,13 @@ const StudyTimer = () => {
         }));
     }, []);
 
-
+    // Hook del timer corregido
     useStudyTimer(
         tick,
         state.isRunning,
         state.timeAtStart,
         state.lastStart
     );
-
-
 
     useEffect(() => {
         const loadUser = async () => {
@@ -131,8 +102,6 @@ const StudyTimer = () => {
         };
         loadUser();
     }, [dispatch]);
-
-
 
     useEventListener("startStudyTimer", () => timerControls.start(), [state.syncPomo]);
     useEventListener("stopStudyTimer", () => timerControls.pause(), [state.syncPomo]);
@@ -168,14 +137,18 @@ const StudyTimer = () => {
     const timerControls = {
         start: async () => {
             if (!state.isRunning) {
+                const now = Date.now();
                 const sessionNum = await getCurrentSessionNumber();
                 dispatch(setCurrentSession(sessionNum));
+
                 setState((prev) => ({
                     ...prev,
                     isRunning: true,
-                    lastStart: Date.now(),        // Marca el momento de inicio/reanudación
-                    timeAtStart: prev.time,       // Guarda el tiempo acumulado antes de este inicio
+                    lastStart: now,
+                    timeAtStart: prev.time,
                 }));
+
+                // Dispatch events in parallel
                 if (state.syncPomo) {
                     window.dispatchEvent(new CustomEvent("playPomoSync"));
                 }
@@ -192,11 +165,13 @@ const StudyTimer = () => {
                     return {
                         ...prev,
                         isRunning: false,
-                        time: elapsed,           // Actualiza el tiempo total acumulado
-                        lastStart: null,         // Limpia el marcador de inicio
-                        timeAtStart: elapsed,    // Actualiza el acumulado para la próxima reanudación
+                        time: elapsed,
+                        lastStart: null,
+                        timeAtStart: elapsed,
                     };
                 });
+
+                // Dispatch events in parallel
                 if (state.syncPomo) {
                     window.dispatchEvent(new CustomEvent("pausePomoSync"));
                 }
@@ -217,9 +192,7 @@ const StudyTimer = () => {
 
             dispatch(resetTimerState());
 
-            localStorage.removeItem("interval_start");
-            localStorage.removeItem("interval_elapsed");
-
+            // Dispatch events in parallel
             if (state.syncPomo) {
                 window.dispatchEvent(new CustomEvent("resetPomoSync"));
             }
@@ -228,7 +201,6 @@ const StudyTimer = () => {
             );
         },
     };
-
 
     const lapHandlers = {
         add: async () => {
@@ -257,12 +229,14 @@ const StudyTimer = () => {
 
     const changeTime = (deltaSeconds) => {
         setState((prev) => {
-            let newTime = prev.time + deltaSeconds;
-            if (newTime < 0) newTime = 0;
-            return { ...prev, time: newTime };
+            let newTime = Math.max(0, prev.time + deltaSeconds);
+            return {
+                ...prev,
+                time: newTime,
+                timeAtStart: newTime // Actualizar también timeAtStart para mantener consistencia
+            };
         });
     };
-
 
     const getCurrentSessionNumber = async () => {
         const today = new Date().toISOString().split("T")[0];
@@ -390,8 +364,10 @@ const StudyTimer = () => {
                             }
                         >
                             {state.syncPomo ? (
-                                <CheckCircle2 size={24} style={{ color: "var(--accent-primary)" }} />) : (
-                                <Circle size={24} style={{ color: "var(--accent-primary)" }} />)}
+                                <CheckCircle2 size={24} style={{ color: "var(--accent-primary)" }} />
+                            ) : (
+                                <Circle size={24} style={{ color: "var(--accent-primary)" }} />
+                            )}
                         </button>
                     </label>
                 </div>
@@ -400,14 +376,13 @@ const StudyTimer = () => {
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
             <div className="text-5xl font-mono mb-6 text-center">
-                {formatStudyTime(Math.max(0, Math.ceil(state.time)), false)}
+                {formatStudyTime(Math.max(0, state.time), false)}
             </div>
 
             <div className="flex justify-center space-x-4 mb-8">
                 <button
                     onClick={timerControls.reset}
                     className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
                 >
                     <RotateCcw size={20} style={{ color: iconColor }} />
                 </button>
@@ -429,7 +404,7 @@ const StudyTimer = () => {
                 {!state.isRunning ? (
                     <button
                         onClick={() => {
-                            timerControls.start(); // Tu lógica local
+                            timerControls.start();
                             if (state.syncPomo) {
                                 window.dispatchEvent(new CustomEvent("studyPlay"));
                             }
@@ -438,12 +413,10 @@ const StudyTimer = () => {
                     >
                         <Play size={20} style={{ color: iconColor }} />
                     </button>
-
                 ) : (
                     <button
                         onClick={timerControls.pause}
                         className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
                     >
                         <Pause size={20} style={{ color: iconColor }} />
                     </button>
@@ -463,12 +436,9 @@ const StudyTimer = () => {
                     +10
                 </button>
 
-
-
                 <button
                     onClick={lapHandlers.finish}
                     className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} `}
-
                 >
                     <Check size={20} style={{ color: iconColor }} />
                 </button>
@@ -487,7 +457,6 @@ const StudyTimer = () => {
 
             {/* Botón y lista de meses colapsable */}
             <div className="py-4">
-                {" "}
                 <button
                     className="infomenu"
                     onClick={() => setShowMonthsList(!showMonthsList)}
@@ -553,8 +522,6 @@ const StudyTimer = () => {
                     </div>
                 ))
             }
-
-
 
             {/* Session Details Modal */}
             {state.selectedSession && (
