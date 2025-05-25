@@ -24,25 +24,14 @@ import { distributeItems } from "./utils/distributeItems";
 const Home = () => {
 const pomodoroRef = useRef<any>(null);
 
-  const [userColumnCount, setUserColumnCount] = useState(() => {
-    // Puedes guardar la preferencia en localStorage si quieres
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("userColumnCount")
-        : null;
-    return stored ? Number(stored) : 4; // Por defecto 4 columnas
-  });
-
   const responsiveColumns = useResponsiveColumns();
 
-  const columns = userColumnCount || useResponsiveColumns();
-
   const [layout, setLayout] = useState(() =>
-    LayoutManager.getInitialLayout(columns)
+    LayoutManager.getInitialLayout(responsiveColumns)
   );
   const responsiveLayout = useMemo(
-    () => distributeItems(layout, columns),
-    [layout, columns]
+    () => distributeItems(layout, responsiveColumns),
+    [layout, responsiveColumns]
   );
 
   const [isEditing, setIsEditing] = useState(false);
@@ -70,17 +59,17 @@ const pomodoroRef = useRef<any>(null);
   // --- Cambios aquí ---
   // Recarga el layout cuando cambian las columnas
   useEffect(() => {
-    setLayout(LayoutManager.getInitialLayout(columns));
-  }, [columns]);
+    setLayout(LayoutManager.getInitialLayout(responsiveColumns));
+  }, [responsiveColumns]);
   // --- Fin cambios aquí ---
 
   // Drag & Drop
   const handleDragEnd = useCallback(
     (result) => {
       if (!result.destination) return;
-      setLayout(LayoutManager.updateLayoutAfterDrag(layout, result, columns));
+      setLayout(LayoutManager.updateLayoutAfterDrag(layout, result, responsiveColumns));
     },
-    [layout, columns] // <-- columns agregado aquí
+    [layout, responsiveColumns]
   );
 
   // Teclas rápidas (Escape, etc)
@@ -122,11 +111,11 @@ const pomodoroRef = useRef<any>(null);
         layout,
         colIndex,
         componentKey,
-        columns
+        responsiveColumns
       );
       setLayout(newLayout);
     },
-    [layout, columns] // <-- columns agregado aquí
+    [layout, responsiveColumns] // <-- columns agregado aquí
   );
 
   // Eliminar componente
@@ -141,11 +130,11 @@ const pomodoroRef = useRef<any>(null);
         layout,
         foundColIndex,
         itemIndex,
-        columns
+        responsiveColumns
       );
       setLayout(newLayout);
     },
-    [layout, columns] // <-- columns agregado aquí
+    [layout, responsiveColumns] // <-- columns agregado aquí
   );
 
   // Menú contextual de componente/layout
@@ -186,7 +175,7 @@ const pomodoroRef = useRef<any>(null);
           <div
             className={`grid`}
             style={{
-              gridTemplateColumns: `repeat(${columns}, 1fr)`,
+              gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
               gap: `${userGap}rem`,
               padding: `${userPadding}rem`,
             }}
@@ -288,11 +277,6 @@ const pomodoroRef = useRef<any>(null);
         showSettings={showSettings}
         setShowSettings={setShowSettings}
         loginWithGoogle={loginWithGoogle}
-        userColumnCount={userColumnCount}
-        setUserColumnCount={(count) => {
-          setUserColumnCount(count);
-          localStorage.setItem("userColumnCount", count.toString());
-        }}
         userPadding={userPadding}
         setUserPadding={(val) => {
           setUserPadding(val);

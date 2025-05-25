@@ -405,7 +405,7 @@ const StudyTimer = () => {
             </div>
 
             {/* Single row of buttons */}
-            <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4 justify-items-center">
+            <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-4 justify-items-center">
                 <button
                     onClick={timerControls.reset}
                     className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}

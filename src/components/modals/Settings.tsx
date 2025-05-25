@@ -20,8 +20,6 @@ interface LayoutControlsProps {
   loginWithGoogle: () => void;
   showSettings: boolean;
   setShowSettings: (show: boolean) => void;
-  userColumnCount: number;
-  setUserColumnCount: (count: number) => void;
   userPadding: number;
   setUserPadding: (val: number) => void;
   userGap: number;
@@ -38,8 +36,6 @@ const Settings: React.FC<LayoutControlsProps> = ({
   loginWithGoogle,
   showSettings,
   setShowSettings,
-  userColumnCount,
-  setUserColumnCount,
   userPadding,
   setUserPadding,
   userGap,
@@ -158,32 +154,6 @@ const Settings: React.FC<LayoutControlsProps> = ({
                   >
                     {isEditing ? "Exit Layout Edit Mode" : "Edit Layout"}
                   </button>
-
-                  {/* Columns */}
-                  <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-2">
-                      Number of Columns
-                    </label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[1, 2, 3, 4].map((count) => (
-                        <button
-                          key={count}
-                          onClick={() => setUserColumnCount(count)}
-                          className={`px-2 sm:px-4 py-2 rounded-lg border-2 transition-colors duration-200 font-semibold text-sm sm:text-base
-                            ${
-                              userColumnCount === count
-                                ? "border-accent-primary bg-accent-primary text-white"
-                                : "border-border-primary bg-bg-tertiary text-text-primary hover:border-accent-primary"
-                            }
-                          `}
-                          aria-pressed={userColumnCount === count}
-                          aria-label={`Set columns to ${count}`}
-                        >
-                          {count}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Spacing Controls */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

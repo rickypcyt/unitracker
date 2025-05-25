@@ -110,7 +110,6 @@
     background-color: var(--bg-primary);
     border: 2px solid var(--border-primary);
     margin-bottom: 1rem;
-
   }
 
   /* 1 columna: ancho grande, aspecto rectangular */
@@ -131,13 +130,6 @@
   .card-cols-3 .maincard {
     width: 100%;
     max-width: 350px;
-    aspect-ratio: 4/5;
-  }
-
-  /* 4 columnas: aún más compacto */
-  .card-cols-4 .maincard {
-    width: 100%;
-    max-width: 300px;
     aspect-ratio: 4/5;
   }
 
@@ -353,12 +345,6 @@ h1 {
   }
 }
 
-@media (min-width: 1280px) {
-  .layout-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
 /* Focus Styles */
 :focus-visible {
   outline: 2px solid var(--accent-primary);
@@ -385,7 +371,7 @@ h1 {
 }
 
 .control-button {
-  @apply p-3 rounded-full transition-colors duration-200;
+  @apply p-2 rounded-full transition-colors duration-200;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
@@ -407,7 +393,7 @@ h1 {
 }
 
 .time-adjust-button {
-  @apply p-2 rounded-full transition-colors duration-200;
+  @apply p-1 rounded-full transition-colors duration-200;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
