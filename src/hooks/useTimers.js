@@ -43,12 +43,14 @@ export function useStudyTimer(
   }, [isRunning, callback, timeAtStart, lastStart, rounding]);
 }
 
+// src/hooks/useAccurateTimer.js
+
 /**
- * Ultra-precise countdown timer.
- * @param {Function} callback - Receives the remaining time in seconds (float).
- * @param {boolean} isRunning - Whether the timer is active.
- * @param {number} duration - Total duration in seconds.
- * @param {number} initialRemaining - Initial remaining time (in seconds), useful for pause/resume.
+ * Temporizador ultra preciso.
+ * @param {Function} callback - Recibe el tiempo restante en segundos (float).
+ * @param {boolean} isRunning - Si el temporizador está activo.
+ * @param {number} duration - Duración total del timer en segundos.
+ * @param {number} initialRemaining - Tiempo restante inicial (en segundos), útil para restaurar pausas.
  */
 export function usePomoTimer(
   callback,
@@ -88,13 +90,7 @@ export function usePomoTimer(
   }, [isRunning, initialRemaining, duration]);
 }
 
-/**
- * Format seconds as HH:MM:SS.
- * @param {number} totalSeconds
- * @param {boolean} roundUp - If true, rounds up, otherwise down.
- * @returns {string}
- */
-export function formatTime(totalSeconds, roundUp = false) {
+export function formatStudyTime(totalSeconds, roundUp = false) {
   const s = Math.max(
     0,
     roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds)
@@ -110,24 +106,12 @@ export function formatTime(totalSeconds, roundUp = false) {
   );
 }
 
-/**
- * Get month and year string from a date.
- * @param {string|Date} date
- * @param {string} locale
- * @returns {string}
- */
 export function getMonthYear(date, locale = "default") {
   const d = new Date(date);
   return `${d.toLocaleString(locale, { month: "long" })} ${d.getFullYear()}`;
 }
 
-/**
- * Format seconds as MM:SS or HH:MM:SS for Pomodoro timers.
- * @param {number} totalSeconds
- * @param {boolean} roundUp
- * @returns {string}
- */
-export function formatPomodoroTime(totalSeconds, roundUp = false) {
+export function formatPomoTime(totalSeconds, roundUp = false) {
   const s = Math.max(
     0,
     roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds)

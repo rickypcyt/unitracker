@@ -11,7 +11,8 @@ import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
 import { useEventListener } from 'usehooks-ts'
 import PropTypes from 'prop-types';
-import { usePomoTimer, formatTime } from "../../hooks/useTimers";
+import { usePomoTimer, formatPomoTime } from "../../hooks/useTimers";
+
 
 const workSound = new Audio("/sounds/pomo-end.mp3");
 const breakSound = new Audio("/sounds/break-end.mp3");
@@ -319,7 +320,7 @@ const Pomodoro = ({ syncPomo = true }) => {
       {/* Contenido centrado */}
       <div className="flex-1 flex flex-col justify-center items-center">
         <div className="text-5xl font-mono mb-5 text-center">
-          {formatTime(timeLeft)}
+          {formatPomoTime(timeLeft)}
         </div>
         <div className="flex justify-center space-x-4 mb-6">
           {!isRunning ? (

@@ -10,7 +10,8 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import { useTheme } from "../../utils/ThemeContext";
 import { colorClasses, hoverClasses } from "../../utils/colors";
-import { useStudyTimer, formatTime, getMonthYear } from "../../hooks/useTimers";
+import { useStudyTimer, formatStudyTime, getMonthYear } from "../../hooks/useTimers";
+
 import useEventListener from "../../hooks/useEventListener";
 
 
@@ -231,7 +232,7 @@ const StudyTimer = () => {
             const lapNumber = laps.filter((l) => l.session_number === currentSession).length + 1;
             const lapData = {
                 name: `Lap ${lapNumber}`,
-                duration: formatTime(state.time),
+                duration: formatStudyTime(state.time),
                 description: state.description,
                 session_number: currentSession,
             };
@@ -241,7 +242,7 @@ const StudyTimer = () => {
             if (!currentSession) return;
             const sessionData = {
                 name: state.description || `Session ${currentSession}`,
-                duration: formatTime(state.time),
+                duration: formatStudyTime(state.time),
                 description: state.description,
                 session_number: currentSession,
             };
@@ -395,7 +396,7 @@ const StudyTimer = () => {
             {error && <div className="text-red-500 mb-4">{error}</div>}
 
             <div className="text-5xl font-mono mb-6 text-center">
-                {formatTime(Math.max(0, Math.ceil(state.time)), false)}
+                {formatStudyTime(Math.max(0, Math.ceil(state.time)), false)}
             </div>
 
             <div className="flex justify-center space-x-4 mb-8">
