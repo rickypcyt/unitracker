@@ -270,10 +270,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-xl"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -281,11 +278,9 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
         }
       }}
     >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        className="maincard max-w-2xl w-full mx-4"
+      <div 
+        className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Start Session</h2>
@@ -385,8 +380,8 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
             )}
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

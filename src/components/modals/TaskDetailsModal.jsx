@@ -70,14 +70,14 @@ const TaskDetailsModal = ({
   }, [onClose]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
+    <div
       className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
       onClick={handleOverlayClick}
     >
-      <div className="maincard max-w-2xl w-full mx-4">
+      <div 
+        className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-2xl font-bold text-center flex-1">
             Task Details
@@ -293,7 +293,7 @@ const TaskDetailsModal = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

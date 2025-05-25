@@ -340,7 +340,7 @@ const StudyTimer = () => {
     const groupedLaps = groupSessionsByMonth();
 
     return (
-        <div className="maincard">
+        <div className="maincard" onContextMenu={(e) => e.preventDefault()}>
             <div className="text-2xl font-bold mb-6 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <LibraryBig size={24} />
@@ -490,6 +490,11 @@ const StudyTimer = () => {
                                             key={lap.id}
                                             className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
                                             onDoubleClick={() => handleSessionDoubleClick(lap)}
+                                            onContextMenu={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleSessionDoubleClick(lap);
+                                            }}
                                         >
                                             <div className="flex justify-between">
                                                 <div className="flex-1">
@@ -525,14 +530,14 @@ const StudyTimer = () => {
 
             {/* Session Details Modal */}
             {state.selectedSession && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
+                <div
                     className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
                     onClick={handleOverlayClick}
                 >
-                    <div className="maincard max-w-2xl w-full mx-4">
+                    <div 
+                        className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-2xl font-bold text-center flex-1">
                                 Session Details
@@ -634,7 +639,7 @@ const StudyTimer = () => {
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             )}
         </div>
     );
