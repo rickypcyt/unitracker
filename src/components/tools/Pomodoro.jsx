@@ -225,7 +225,9 @@ const Pomodoro = ({ syncPomo = true }) => {
   // Funciones de control
   const startPomodoro = () => {
     if (!isRunning) {
-      setIsRunning(true);
+      setTimeout(() => {
+        setIsRunning(true);
+      }, 1000);
     }
   };
 
