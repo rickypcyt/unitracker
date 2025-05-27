@@ -130,8 +130,8 @@ export const TaskList = ({ onComponentContextMenu }) => {
   // --- END PROGRESS TRACKER LOGIC ---
 
   return (
-    <div className="maincard relative flex flex-col gap-2 p-6">
-      <div className="flex flex-col gap-2 mb-6">
+    <div className="maincard relative flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 mb-3">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <ClipboardCheck size={24} />
@@ -157,9 +157,9 @@ export const TaskList = ({ onComponentContextMenu }) => {
       ) : (
         <>
           {/* Incomplete Tasks (plegable) */}
-          <div className="space-y-5 mb-1">
+          <div className="space-y-3 mb-1">
             <button
-              className="infomenu mb-3"
+              className="infomenu mb-2"
               onClick={() => setShowIncomplete((v) => !v)}
             >
               <span>Incomplete Tasks ({incompletedTasks.length})</span>
@@ -173,7 +173,7 @@ export const TaskList = ({ onComponentContextMenu }) => {
                 <div className="text-text-secondary">No incomplete assignments.</div>
               ) : (
                 Object.entries(incompletedByAssignment).map(([assignment, tasks]) => (
-                  <div key={assignment} className="mb-2">
+                  <div key={assignment} className="mb-1">
                     <button
                       className="infomenu mb-1"
                       onClick={() => handleToggleAssignment(assignment)}
@@ -189,7 +189,7 @@ export const TaskList = ({ onComponentContextMenu }) => {
                       )}
                     </button>
                     <div
-                      className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${openAssignments[assignment] ? "visible" : "hidden"
+                      className={`space-y-2 mt-1 overflow-hidden transition-all duration-300 ${openAssignments[assignment] ? "visible" : "hidden"
                         }`}
                     >
                       {sortTasks(tasks).map((task) => (
@@ -212,9 +212,9 @@ export const TaskList = ({ onComponentContextMenu }) => {
 
 
           {/* Completed Tasks (plegable) */}
-          <div className="space-y-5 mb-2">
+          <div className="space-y-3 mb-1">
             <button
-              className="infomenu mb-3"
+              className="infomenu mb-2"
               onClick={() => setShowCompleted((v) => !v)}
             >
               <span>Completed Tasks ({completedTasks.length})</span>
@@ -225,15 +225,11 @@ export const TaskList = ({ onComponentContextMenu }) => {
               className={`transition-all duration-300 ${showCompleted ? "visible" : "hidden"
                 }`}
             >
-
-
-
-
               {Object.keys(completedByAssignment).length === 0 ? (
                 <div className="text-text-secondary ml-2">No completed tasks.</div>
               ) : (
                 Object.entries(completedByAssignment).map(([assignment, tasks]) => (
-                  <div key={assignment} className="mb-2 ml-2">
+                  <div key={assignment} className="mb-1 ml-2">
                     <button
                       className="infomenu mb-1"
                       onClick={() => handleToggleCompletedAssignment(assignment)}
@@ -250,7 +246,7 @@ export const TaskList = ({ onComponentContextMenu }) => {
                     </button>
 
                     <div
-                      className={`space-y-4 mt-2 overflow-hidden transition-all duration-300 ${openCompletedAssignments[assignment] ? "visible" : "hidden"
+                      className={`space-y-2 mt-1 overflow-hidden transition-all duration-300 ${openCompletedAssignments[assignment] ? "visible" : "hidden"
                         }`}
                     >
                       {sortTasks(tasks).map((task) => (

@@ -356,48 +356,41 @@ const Pomodoro = ({ syncPomo = true }) => {
       </div>
       {/* Contenido centrado */}
       <div className="flex-1 flex flex-col justify-center items-center">
-        <div className="text-4xl sm:text-5xl font-mono mb-5 text-center">
-          {formatPomoTime(timeLeft)}
-        </div>
-        <div className="flex justify-center space-x-4 mb-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={resetPomodoro}
+            className="control-button w-10 h-10 flex items-center justify-center"
+            aria-label="Reset timer"
+          >
+            <RotateCcw size={20} style={{ color: "white" }} />
+          </button>
+          <div className="text-4xl sm:text-5xl font-mono text-center">
+            {formatPomoTime(timeLeft)}
+          </div>
           {!isRunning ? (
-            <TimerControlButton
+            <button
               onClick={() => {
                 startPomodoro();
                 if (syncPomo) {
-                  window.dispatchEvent(new CustomEvent("playTimerSync"));
+                  window.dispatchEvent(new CustomEvent("studyPlay"));
                 }
               }}
-              icon={Play}
-              label="Play"
-              className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-            />
+              className="control-button w-10 h-10 flex items-center justify-center"
+              aria-label="Start timer"
+            >
+              <Play size={20} style={{ color: "white" }} />
+            </button>
           ) : (
-            <TimerControlButton
-              onClick={() => {
-                pausePomodoro();
-                if (syncPomo) {
-                  window.dispatchEvent(new CustomEvent("pauseTimerSync"));
-                }
-              }}
-              icon={Pause}
-              label="Pause"
-              className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-            />
+            <button
+              onClick={pausePomodoro}
+              className="control-button w-10 h-10 flex items-center justify-center"
+              aria-label="Pause timer"
+            >
+              <Pause size={20} style={{ color: "white" }} />
+            </button>
           )}
-          <TimerControlButton
-            onClick={() => {
-              resetPomodoro();
-              if (syncPomo) {
-                window.dispatchEvent(new CustomEvent("resetTimerSync"));
-              }
-            }}
-            icon={RotateCcw}
-            label="Reset"
-            className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]}`}
-          />
         </div>
-        <div className="text-center text-base sm:text-lg font-medium">
+        <div className="text-center text-base sm:text-lg font-medium mt-3">
           Completed Pomodoros: {pomodoroToday}
         </div>
       </div>

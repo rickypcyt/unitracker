@@ -246,101 +246,67 @@ const Statistics = () => {
   return (
     <div className="maincard">
       <div>
-        <div className="flex justify-between items-center mb-6 gap-2">
-          <h2 className="cardtitle mb-1 text-white flex items-center gap-2">
+        <div className="flex justify-between items-center mb-3 gap-2">
+          <h2 className="cardtitle mb-0 text-white flex items-center gap-2">
             <Activity size={24} />
-            <span>Study Statistics</span>
+            Statistics
           </h2>
           <button
-            onClick={() => setShowChart((v) => !v)}
-            className="flex mb-1 items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 px-4 py-2 text-base font-semibold rounded-lg h-12 min-h-[3rem]"
+            onClick={() => setShowChart(!showChart)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
           >
             {showChart ? (
               <>
-                <EyeOff size={20} />
-                <span className="hidden sm:inline">Hide Chart</span>
+                <EyeOff size={16} />
+                <span>Hide Chart</span>
               </>
             ) : (
               <>
-                <Eye size={20} />
-                <span className="hidden sm:inline">Show Chart</span>
+                <Eye size={16} />
+                <span>Show Chart</span>
               </>
             )}
           </button>
         </div>
-      </div>
 
-      {showChart && (
-        <div className="mb-6 bg-black p-3 rounded-lg w-full relative">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-            <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
-              {isCurrentWeek ? "This Week's" : "Last Week's"} Chart
-            </h3>
-            <button
-              onClick={toggleWeek}
-              className="textbutton w-full sm:w-auto"
-            >
-              {isCurrentWeek ? "Show Last Week" : "Show This Week"}
-            </button>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
+            <div className="text-text-secondary text-sm">Today (h)</div>
+            <div className="text-2xl font-bold">{formatMinutesToHHMM(todayMinutes)}</div>
+            <div className="text-text-secondary text-sm">{doneToday} tasks</div>
           </div>
-          <WeeklyBarChart
-            data={weeklyData}
-            accentColor={accentColor}
-            onBarEnter={setHoveredData}
-            onBarLeave={() => setHoveredData(null)}
-            hoveredData={hoveredData}
-          />
-        </div>
-      )}
-
-      {/* Tabla de estadísticas */}
-      <div className="overflow-x-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {/* Today Stats */}
-          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
-            <div className="text-sm text-neutral-400 mb-2">Today</div>
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Tasks:</span>
-                <span className="text-xl font-bold text-white">{doneToday}</span>
-              </div>
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Hours:</span>
-                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(todayMinutes)}</span>
-              </div>
-            </div>
+          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
+            <div className="text-text-secondary text-sm">This Week (h)</div>
+            <div className="text-2xl font-bold">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
+            <div className="text-text-secondary text-sm">{doneWeek} tasks</div>
           </div>
-
-          {/* This Week Stats */}
-          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
-            <div className="text-sm text-neutral-400 mb-2">This Week</div>
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Tasks:</span>
-                <span className="text-xl font-bold text-white">{doneWeek}</span>
-              </div>
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Hours:</span>
-                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(weeklyTotalMinutes)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* This Month Stats */}
-          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
-            <div className="text-sm text-neutral-400 mb-2">This Month</div>
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Tasks:</span>
-                <span className="text-xl font-bold text-white">{doneMonth}</span>
-              </div>
-              <div className="flex flex-row justify-between items-center w-full">
-                <span className="text-base text-neutral-400">Hours:</span>
-                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(monthlyTotalMinutes)}</span>
-              </div>
-            </div>
+          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
+            <div className="text-text-secondary text-sm">This Month (h)</div>
+            <div className="text-2xl font-bold">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
+            <div className="text-text-secondary text-sm">{doneMonth} tasks</div>
           </div>
         </div>
+
+        {showChart && (
+          <div className="relative">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-semibold">Weekly Progress</h3>
+              <button
+                onClick={toggleWeek}
+                className="text-sm text-text-secondary hover:text-white transition-colors duration-200"
+              >
+                {isCurrentWeek ? "Last Week" : "This Week"}
+              </button>
+            </div>
+            <WeeklyBarChart
+              data={weeklyData}
+              accentColor={accentColor}
+              onBarEnter={setHoveredData}
+              onBarLeave={() => setHoveredData(null)}
+              hoveredData={hoveredData}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
