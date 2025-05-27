@@ -82,6 +82,12 @@ export default defineConfig({
     watch: {
       usePolling: false,
       interval: 100
-    }
+    },
+    // Configure history fallback
+    historyApiFallback: true
+  },
+  preview: {
+    // Configure history fallback for preview server
+    historyApiFallback: true
   }
 });
