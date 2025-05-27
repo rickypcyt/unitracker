@@ -106,9 +106,9 @@ function useSound(config, masterGain) {
 }
 
 // Componente de control para cada sonido
-function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlaying, start, stop }) {
+function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlaying, start, stop, className }) {
   return (
-    <div className="bar">
+    <div className={`bar ${className || ''}`}>
       <label className="noisegentitle">
         <Icon size={18} />
         <span className="card-text font-medium text-white text-sm sm:text-md">{label}</span>
@@ -206,20 +206,23 @@ export default function NoiseGenerator() {
         </button>
       </div>
       <div className="mb-3 space-y-6 pr-2">
-        {SOUND_CONFIGS.map((config, idx) => (
-          <SoundControl
-            key={config.key}
-            label={config.label}
-            icon={config.icon}
-            min={config.min}
-            max={config.max}
-            volume={soundHooks[idx].volume}
-            setVolume={soundHooks[idx].setVolume}
-            isPlaying={soundHooks[idx].isPlaying}
-            start={soundHooks[idx].start}
-            stop={soundHooks[idx].stop}
-          />
-        ))}
+        <div className="mt-10 mb-5">
+          {SOUND_CONFIGS.map((config, idx) => (
+            <SoundControl
+              key={config.key}
+              label={config.label}
+              icon={config.icon}
+              min={config.min}
+              max={config.max}
+              volume={soundHooks[idx].volume}
+              setVolume={soundHooks[idx].setVolume}
+              isPlaying={soundHooks[idx].isPlaying}
+              start={soundHooks[idx].start}
+              stop={soundHooks[idx].stop}
+              className={`mt-3 mb-3 ${config.key === 'ocean' ? 'mb-10' : ''}`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

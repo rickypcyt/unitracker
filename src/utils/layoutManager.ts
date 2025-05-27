@@ -61,9 +61,9 @@ export const LayoutManager = {
         { id: "column-2", items: ["Statistics", "TaskList"] },
       ],
       3: [
-        { id: "column-1", items: ["TaskForm", "Calendar", "TaskList"] },
-        { id: "column-2", items: ["Pomodoro", "NoiseGenerator"] },
-        { id: "column-3", items: ["Statistics", "TaskList"] },
+        { id: "column-1", items: ["TaskForm", "Calendar"] },
+        { id: "column-2", items: ["StudyTimer", "NoiseGenerator"] },
+        { id: "column-3", items: ["TaskList", "Statistics","Pomodoro"] },
       ],
       4: [
         { id: "column-1", items: ["StudyTimer", "Pomodoro"] },

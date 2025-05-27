@@ -335,7 +335,7 @@ const StudyTimer = () => {
                 role="region"
                 aria-label="Study Timer"
             >
-                <h2 className="text-2xl font-bold mb-12">Session</h2>
+                <h2 className="text-2xl font-bold mb-4">Session</h2>
                 <div 
                     className="plslogin"
                     role="alert"
@@ -356,7 +356,7 @@ const StudyTimer = () => {
             role="region"
             aria-label="Study Timer"
         >
-            <div className="text-2xl font-bold mb-6 flex items-center justify-between gap-2">
+            <div className="text-2xl font-bold mb-9 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <LibraryBig size={24} />
                     <span>Session</span>
