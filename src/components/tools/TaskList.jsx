@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TaskItem } from "./TaskItem";
 import { TaskListMenu } from "../modals/TaskListMenu";
 import { SortMenu } from "../modals/SortMenu";
@@ -7,7 +7,9 @@ import { useSorting } from "../../hooks/useSorting";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { ClipboardCheck, ChevronUp, ChevronDown } from "lucide-react";
 import TaskDetailsModal from "../modals/TaskDetailsModal";
-import DeleteCompletedModal from "../modals/DeleteTasksPop"
+import DeleteCompletedModal from "../modals/DeleteTasksPop";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTasks, forceTaskRefresh } from "../../redux/TaskActions";
 
 // Agrupa tareas por assignment
 const groupTasksByAssignment = (tasks) => {
@@ -20,6 +22,7 @@ const groupTasksByAssignment = (tasks) => {
 };
 
 export const TaskList = ({ onComponentContextMenu }) => {
+  const dispatch = useDispatch();
   const {
     user,
     tasks,
@@ -69,8 +72,21 @@ export const TaskList = ({ onComponentContextMenu }) => {
 
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
 
-
   const [showIncomplete, setShowIncomplete] = useState(true);
+
+  // Cargar tareas al montar el componente
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchTasks());
+    }
+  }, [dispatch, user]);
+
+  // Forzar actualización cuando se agrega una nueva tarea
+  useEffect(() => {
+    if (user) {
+      dispatch(forceTaskRefresh());
+    }
+  }, [dispatch, user, allTasks.length]);
 
   // Handlers para menús contextuales
   const handleTaskContextMenu = (e, task) => {
@@ -95,7 +111,6 @@ export const TaskList = ({ onComponentContextMenu }) => {
     completedTasks.forEach((task) => handleDeleteTask(task.id));
     setShowDeleteCompletedModal(false);
   };
-
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
@@ -130,11 +145,11 @@ export const TaskList = ({ onComponentContextMenu }) => {
   // --- END PROGRESS TRACKER LOGIC ---
 
   return (
-    <div className="maincard relative flex flex-col gap-2 p-4">
+    <div className="maincard relative flex flex-col gap-2 p-4 max-w-4xl mx-auto">
       <div className="flex flex-col gap-2 mb-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <ClipboardCheck size={24} />
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <ClipboardCheck size={20} />
             Task List
           </h2>
           <div className="relative">
@@ -157,17 +172,16 @@ export const TaskList = ({ onComponentContextMenu }) => {
       ) : (
         <>
           {/* Incomplete Tasks (plegable) */}
-          <div className="space-y-3 mb-1">
+          <div className="space-y-2 mb-1">
             <button
-              className="infomenu mb-2"
+              className="infomenu mb-1"
               onClick={() => setShowIncomplete((v) => !v)}
             >
               <span>Incomplete Tasks ({incompletedTasks.length})</span>
-              {showIncomplete ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {showIncomplete ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
             <div
-              className={`transition-all duration-300 ${showIncomplete ? "visible" : "hidden"
-                }`}
+              className={`transition-all duration-300 ${showIncomplete ? "visible" : "hidden"}`}
             >
               {Object.keys(incompletedByAssignment).length === 0 ? (
                 <div className="text-text-secondary">No incomplete assignments.</div>
@@ -183,14 +197,15 @@ export const TaskList = ({ onComponentContextMenu }) => {
                         <span className="text-text-secondary">({tasks.length})</span>
                       </div>
                       {openAssignments[assignment] ? (
-                        <ChevronUp size={20} />
+                        <ChevronUp size={18} />
                       ) : (
-                        <ChevronDown size={20} />
+                        <ChevronDown size={18} />
                       )}
                     </button>
                     <div
-                      className={`space-y-2 mt-1 overflow-hidden transition-all duration-300 ${openAssignments[assignment] ? "visible" : "hidden"
-                        }`}
+                      className={`space-y-1 mt-1 overflow-hidden transition-all duration-300 ${
+                        openAssignments[assignment] ? "visible" : "hidden"
+                      }`}
                     >
                       {sortTasks(tasks).map((task) => (
                         <TaskItem
@@ -210,20 +225,18 @@ export const TaskList = ({ onComponentContextMenu }) => {
             </div>
           </div>
 
-
           {/* Completed Tasks (plegable) */}
-          <div className="space-y-3 mb-1">
+          <div className="space-y-2 mb-1">
             <button
-              className="infomenu mb-2"
+              className="infomenu mb-1"
               onClick={() => setShowCompleted((v) => !v)}
             >
               <span>Completed Tasks ({completedTasks.length})</span>
-              {showCompleted ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {showCompleted ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
 
             <div
-              className={`transition-all duration-300 ${showCompleted ? "visible" : "hidden"
-                }`}
+              className={`transition-all duration-300 ${showCompleted ? "visible" : "hidden"}`}
             >
               {Object.keys(completedByAssignment).length === 0 ? (
                 <div className="text-text-secondary ml-2">No completed tasks.</div>
@@ -239,15 +252,16 @@ export const TaskList = ({ onComponentContextMenu }) => {
                         <span className="text-text-secondary">({tasks.length})</span>
                       </div>
                       {openCompletedAssignments[assignment] ? (
-                        <ChevronUp size={20} />
+                        <ChevronUp size={18} />
                       ) : (
-                        <ChevronDown size={20} />
+                        <ChevronDown size={18} />
                       )}
                     </button>
 
                     <div
-                      className={`space-y-2 mt-1 overflow-hidden transition-all duration-300 ${openCompletedAssignments[assignment] ? "visible" : "hidden"
-                        }`}
+                      className={`space-y-1 mt-1 overflow-hidden transition-all duration-300 ${
+                        openCompletedAssignments[assignment] ? "visible" : "hidden"
+                      }`}
                     >
                       {sortTasks(tasks).map((task) => (
                         <TaskItem
@@ -267,6 +281,38 @@ export const TaskList = ({ onComponentContextMenu }) => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <TaskListMenu
+          contextMenu={contextMenu}
+          onClose={handleCloseContextMenu}
+          onDoubleClick={handleOpenTaskDetails}
+          onSetActiveTask={handleUpdateTask}
+          onDeleteTask={handleDeleteTask}
+        />
+      )}
+
+      {/* Task Details Modal */}
+      {selectedTask && (
+        <TaskDetailsModal
+          isOpen={!!selectedTask}
+          onClose={handleCloseTaskDetails}
+          task={selectedTask}
+          onSave={handleSaveEdit}
+          onEditChange={handleEditChange}
+          editedTask={editedTask}
+        />
+      )}
+
+      {/* Delete Completed Modal */}
+      {showDeleteCompletedModal && (
+        <DeleteCompletedModal
+          isOpen={showDeleteCompletedModal}
+          onClose={() => setShowDeleteCompletedModal(false)}
+          onConfirm={handleDeleteAllCompletedTasks}
+        />
       )}
     </div>
   );

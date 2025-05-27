@@ -9,39 +9,38 @@ export const TaskItem = ({
     onContextMenu,
 }) => (
     <div
-        className={`    relative
-            ml-4
-            mr-4
-    p-2
-    rounded-xl
-    shadow-md
-    transition-all
-    duration-300
-    border-2
-    border-[var(--border-primary)]
-    hover:shadow-lg ${task.activetask
+        className={`relative
+            ml-2
+            mr-2
+            p-2
+            rounded-lg
+            shadow-sm
+            transition-all
+            duration-200
+            border
+            hover:shadow-md ${task.activetask
                 ? task.difficulty === "easy"
-                    ? "border-2 border-green-500"
+                    ? "border-green-500"
                     : task.difficulty === "medium"
-                        ? "border-2 border-blue-500"
-                        : "border-2 border-red-500"
-                : "border border-border-primary"
+                        ? "border-blue-500"
+                        : "border-red-500"
+                : "border-border-primary"
             }`}
         onDoubleClick={() => onDoubleClick(task)}
         onContextMenu={(e) => onContextMenu(e, task)}
-        tabIndex={0} // Para accesibilidad si quieres
+        tabIndex={0}
         role="listitem"
     >
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
             {/* First row: Checkbox and Title */}
-            <div className="flex items-center mt-1">
+            <div className="flex items-center">
                 <button
                     onClick={() => onToggleCompletion(task)}
                     className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group"
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
-                        <CheckCircle2 className="text-accent-primary" size={24} />
+                        <CheckCircle2 className="text-accent-primary" size={20} />
                     ) : (
                         <Circle
                             className={
@@ -51,7 +50,7 @@ export const TaskItem = ({
                                         ? "text-[var(--accent-primary)]"
                                         : "text-red-500"
                             }
-                            size={24}
+                            size={20}
                         />
                     )}
                 </button>
@@ -60,7 +59,7 @@ export const TaskItem = ({
                     className="flex items-center focus:outline-none flex-1"
                 >
                     <span
-                        className={`text-left ml-2 font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${task.completed
+                        className={`text-left ml-2 font-medium text-sm transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${task.completed
                             ? "line-through text-text-secondary"
                             : "text-text-primary"
                             }`}
@@ -74,24 +73,26 @@ export const TaskItem = ({
                     className="text-red-500 transition-all duration-200 hover:text-red-600 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full p-1 ml-2"
                     aria-label="Delete task"
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                 </button>
             </div>
-            {/* Second row: Description or empty space for consistent layout */}
-            <div
-                className="text-left ml-1 text-base text-text-secondary line-clamp-2 group relative min-h-[0.5rem]"
-                title={task.description}
-            >
-                {task.description || "No description"}
-            </div>
 
-            {/* Assignment + Date in one row */}
-            <div className="flex items-center ml-1 gap-4 flex-wrap justify-between w-full">
+            {/* Second row: Description */}
+            {task.description && (
+                <div
+                    className="text-left ml-1 text-sm text-text-secondary line-clamp-1 group relative min-h-[0.5rem]"
+                    title={task.description}
+                >
+                    {task.description}
+                </div>
+            )}
+
+            {/* Third row: Assignment + Date */}
+            <div className="flex items-center ml-1 gap-2 flex-wrap justify-between w-full text-xs">
                 {/* Assignment */}
                 <span
-                    className="text-base font-semibold"
+                    className="text-text-secondary"
                     style={{
-                        color: "#bdbdbd",
                         borderRadius: "0.5rem",
                         display: "inline-block",
                         minWidth: "20px",
@@ -102,29 +103,25 @@ export const TaskItem = ({
                 </span>
 
                 {/* Date */}
-                <span className="flex items-center gap-2 ml-auto px-2">
+                <span className="flex items-center gap-1 ml-auto">
                     {!task.completed ? (
-                        <span className="deadline">
-                            Deadline:{" "}
+                        <span className="text-text-secondary">
                             {new Date(task.deadline).toLocaleDateString("en-US", {
-                                year: "numeric",
                                 month: "short",
                                 day: "numeric",
                             })}
                         </span>
                     ) : (
                         task.completed_at && (
-                            <span className="text-base text-green-400">
-                                Completed:{" "}
+                            <span className="text-green-400">
                                 {new Date(task.completed_at).toLocaleDateString("en-US", {
-                                    year: "numeric",
                                     month: "short",
                                     day: "numeric",
                                 })}
                             </span>
                         )
                     )}
-                    <Calendar size={16} className="text-text-secondary" />
+                    <Calendar size={14} className="text-text-secondary" />
                 </span>
             </div>
         </div>

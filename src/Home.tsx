@@ -17,12 +17,10 @@ import AddComponentButton from "./components/home/AddComponentButton";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
-
-
-
+import Navbar from "./components/Navbar";
 
 const Home = () => {
-const pomodoroRef = useRef<any>(null);
+  const pomodoroRef = useRef<any>(null);
 
   const responsiveColumns = useResponsiveColumns();
 
@@ -169,139 +167,142 @@ const pomodoroRef = useRef<any>(null);
   const handleCloseContextMenu = () => setContextMenu(null);
 
   return (
-    <div>
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="w-full min-h-full">
-          <div
-            className={`grid`}
-            style={{
-              gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
-              gap: `${userGap}rem`,
-              padding: `${userPadding}rem`,
-            }}
-          >
-            {responsiveLayout.map((column, colIndex) => (
-              <Droppable key={column.id} droppableId={column.id}>
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef}>
-                    {column.items.map((componentKey, index) => (
-                      <Draggable
-                        key={`${componentKey}-${colIndex}-${index}`}
-                        draggableId={`${componentKey}-${colIndex}-${index}`}
-                        index={index}
-                        isDragDisabled={!isEditing}
-                      >
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onContextMenu={(e) =>
-                              handleContextMenu(
-                                e,
-                                componentKey,
-                                colIndex,
-                                index
-                              )
-                            }
-                          >
-                            <ComponentRenderer
-                              componentKey={componentKey}
-                              colIndex={colIndex}
-                              index={index}
-                              isEditing={isEditing}
-                              onRemove={removeComponent}
-                              onContextMenu={handleContextMenu}
-                              pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                    {isEditing && (
-                      <AddComponentButton
-                        onClick={(componentKey) =>
-                          addComponent(colIndex, componentKey)
-                        }
-                        layout={layout}
-                      />
-                    )}
-                  </div>
-                )}
-              </Droppable>
-            ))}
+    <div className="min-h-screen bg-neutral-950">
+      <Navbar />
+      <div className="pt-12"> {/* Reduced padding-top to match new navbar height */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="w-full min-h-full">
+            <div
+              className={`grid`}
+              style={{
+                gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
+                gap: `${userGap}rem`,
+                padding: `${userPadding}rem`,
+              }}
+            >
+              {responsiveLayout.map((column, colIndex) => (
+                <Droppable key={column.id} droppableId={column.id}>
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                      {column.items.map((componentKey, index) => (
+                        <Draggable
+                          key={`${componentKey}-${colIndex}-${index}`}
+                          draggableId={`${componentKey}-${colIndex}-${index}`}
+                          index={index}
+                          isDragDisabled={!isEditing}
+                        >
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onContextMenu={(e) =>
+                                handleContextMenu(
+                                  e,
+                                  componentKey,
+                                  colIndex,
+                                  index
+                                )
+                              }
+                            >
+                              <ComponentRenderer
+                                componentKey={componentKey}
+                                colIndex={colIndex}
+                                index={index}
+                                isEditing={isEditing}
+                                onRemove={removeComponent}
+                                onContextMenu={handleContextMenu}
+                                pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {isEditing && (
+                        <AddComponentButton
+                          onClick={(componentKey) =>
+                            addComponent(colIndex, componentKey)
+                          }
+                          layout={layout}
+                        />
+                      )}
+                    </div>
+                  )}
+                </Droppable>
+              ))}
+            </div>
           </div>
-        </div>
-      </DragDropContext>
+        </DragDropContext>
 
-      {/* Menú contextual de componente/layout */}
-      {contextMenu && contextMenu.type === "component" && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          componentId={contextMenu.componentId}
+        {/* Menú contextual de componente/layout */}
+        {contextMenu && contextMenu.type === "component" && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            componentId={contextMenu.componentId}
+            isEditing={isEditing}
+            onClose={handleCloseContextMenu}
+            colIndex={contextMenu.colIndex}
+            itemIndex={contextMenu.itemIndex}
+            onRemove={removeComponent}
+            onToggleEdit={toggleEditing}
+          />
+        )}
+
+        {/* Otros modales */}
+        {showWelcomeModal && (
+          <WelcomeModal
+            onClose={() => {
+              setShowWelcomeModal(false);
+              localStorage.setItem("hasSeenWelcomeModal", "true");
+            }}
+          />
+        )}
+
+        <Settings
           isEditing={isEditing}
-          onClose={handleCloseContextMenu}
-          colIndex={contextMenu.colIndex}
-          itemIndex={contextMenu.itemIndex}
-          onRemove={removeComponent}
-          onToggleEdit={toggleEditing}
-        />
-      )}
-
-      {/* Otros modales */}
-      {showWelcomeModal && (
-        <WelcomeModal
-          onClose={() => {
-            setShowWelcomeModal(false);
-            localStorage.setItem("hasSeenWelcomeModal", "true");
+          onToggleEditing={toggleEditing}
+          isLoggedIn={isLoggedIn}
+          onLogin={loginWithGoogle}
+          currentTheme={currentTheme}
+          onThemeChange={(theme) => {
+            setCurrentTheme(theme);
+            localStorage.setItem("theme", theme);
+          }}
+          accentPalette={accentPalette}
+          setAccentPalette={setAccentPalette}
+          isPlaying={false}
+          setIsPlaying={() => {}}
+          showSettings={showSettings}
+          setShowSettings={setShowSettings}
+          loginWithGoogle={loginWithGoogle}
+          userPadding={userPadding}
+          setUserPadding={(val) => {
+            setUserPadding(val);
+            localStorage.setItem("userPadding", val.toString());
+          }}
+          userGap={userGap}
+          setUserGap={(val) => {
+            setUserGap(val);
+            localStorage.setItem("userGap", val.toString());
           }}
         />
-      )}
 
-      <Settings
-        isEditing={isEditing}
-        onToggleEditing={toggleEditing}
-        isLoggedIn={isLoggedIn}
-        onLogin={loginWithGoogle}
-        currentTheme={currentTheme}
-        onThemeChange={(theme) => {
-          setCurrentTheme(theme);
-          localStorage.setItem("theme", theme);
-        }}
-        accentPalette={accentPalette}
-        setAccentPalette={setAccentPalette}
-        isPlaying={false}
-        setIsPlaying={() => {}}
-        showSettings={showSettings}
-        setShowSettings={setShowSettings}
-        loginWithGoogle={loginWithGoogle}
-        userPadding={userPadding}
-        setUserPadding={(val) => {
-          setUserPadding(val);
-          localStorage.setItem("userPadding", val.toString());
-        }}
-        userGap={userGap}
-        setUserGap={(val) => {
-          setUserGap(val);
-          localStorage.setItem("userGap", val.toString());
-        }}
-      />
+        <StartSessionMenu
+          isOpen={false}
+          onClose={() => {}}
+          setIsPlaying={() => {}}
+        />
 
-      <StartSessionMenu
-        isOpen={false}
-        onClose={() => {}}
-        setIsPlaying={() => {}}
-      />
-
-      <button
-        onClick={() => setShowSettings(true)}
-        className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
-        aria-label="Open Settings"
-      >
-        <SettingsIcon size={20} />
-      </button>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
+          aria-label="Open Settings"
+        >
+          <SettingsIcon size={20} />
+        </button>
+      </div>
     </div>
   );
 };

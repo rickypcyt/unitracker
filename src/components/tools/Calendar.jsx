@@ -1,9 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import AddTaskModal from "./AddTaskModal";
+import { CheckCircle2, Clock } from 'lucide-react';
+
+const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const completedTasks = tasks?.filter(task => task.completed) || [];
+  const totalTasks = tasks?.length || 0;
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 max-w-md w-full mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-white">
+            {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-neutral-400 hover:text-white transition-colors"
+          >
+            ×
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 text-neutral-300">
+            <CheckCircle2 size={20} className="text-green-500" />
+            <span>{completedTasks.length} of {totalTasks} tasks completed</span>
+          </div>
+          <div className="flex items-center gap-3 text-neutral-300">
+            <Clock size={20} className="text-blue-500" />
+            <span>{studiedHours || 0} hours studied</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  
+  // Get data from Redux store
+  const { tasks } = useSelector((state) => state.tasks);
+  const { laps } = useSelector((state) => state.laps);
+
+  // Agregar manejo de teclas para navegación
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'ArrowLeft') {
+        goToPreviousMonth();
+      } else if (event.key === 'ArrowRight') {
+        goToNextMonth();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   // Days of the week in English
   const weekdays = ["M", "T", "W", "T", "F", "S", "S"];
@@ -52,6 +132,51 @@ const Calendar = () => {
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
+  };
+
+  const handleDateDoubleClick = (date) => {
+    setSelectedDate(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    if (date < today) {
+      setIsInfoModalOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleAddTask = (task) => {
+    // This will be handled by Redux actions
+    console.log("Task added:", task);
+  };
+
+  const getTasksForDate = (date) => {
+    return tasks.filter(task => {
+      const taskDate = new Date(task.created_at);
+      return (
+        taskDate.getDate() === date.getDate() &&
+        taskDate.getMonth() === date.getMonth() &&
+        taskDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
+
+  const getStudiedHoursForDate = (date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const dayLaps = laps.filter(lap => {
+      const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
+      return lapDate === dateStr;
+    });
+
+    const totalMinutes = dayLaps.reduce((total, lap) => {
+      const duration = lap.duration;
+      const [hours, minutes] = duration.split(':').map(Number);
+      return total + (hours * 60 + minutes);
+    }, 0);
+
+    return (totalMinutes / 60).toFixed(1);
   };
 
   const goToPreviousMonth = () => {
@@ -114,34 +239,35 @@ const Calendar = () => {
           <FaCalendarAlt size={24} />
           Calendar
         </h2>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-0 hover:bg-neutral-0 text-white transition-colors duration-200 mb-6">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-0 hover:bg-neutral-0 text-white transition-colors duration-200 mb-6 group relative">
           <button
             onClick={goToPreviousMonth}
             className="text-white hover:text-gray-300 focus:outline-none"
           >
-            <FaChevronLeft />
+            <FaChevronLeft size={18} />
           </button>
-          <div className="text-lg font-medium mx-4 ">
+          <div className="text-lg font-medium mx-4">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
           <button
             onClick={goToNextMonth}
             className="text-white hover:text-gray-300 focus:outline-none"
           >
-            <FaChevronRight />
+            <FaChevronRight size={18} />
           </button>
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-neutral-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            Use ← → to navigate
+          </div>
         </div>
       </div>
 
       <div className="bg-black rounded-lg text-white">
-        {/* Month and Year header with navigation icons */}
-
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 text-center ">
+        <div className="grid grid-cols-7 text-center">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-neutral-500 text-base w-full py-4 flex items-center justify-center "
+              className="text-neutral-500 text-base w-full py-4 flex items-center justify-center"
             >
               {day}
             </div>
@@ -154,21 +280,45 @@ const Calendar = () => {
             <div
               key={index}
               onClick={() => handleDateClick(dayObj.date)}
+              onDoubleClick={() => dayObj.currentMonth && handleDateDoubleClick(dayObj.date)}
               style={{
                 ...(dayObj.isToday ? { color: "var(--accent-primary)" } : {}),
                 ...(dayObj.currentMonth ? {} : { color: "grey" }),
-                // Aquí agregas otras propiedades si es necesario
-                fontWeight: "bold", // Ejemplo de propiedad adicional
+                fontWeight: "bold",
               }}
-              className={`text-neutral-500 select-none hover:text-gray-600 cursor-default text-base w-full py-3 flex items-center justify-center  ${dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-[var(--accent-primary)] "} ${!dayObj.currentMonth ? "text-black font-bold" : ""}
-
-              ${dayObj.isToday ? "select-none hover:text-gray-600 cursor-default " : ""}`}
+              className={`text-neutral-500 select-none hover:text-gray-600 cursor-pointer text-base w-full py-4 flex items-center justify-center relative ${
+                dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-[var(--accent-primary)]"
+              } ${!dayObj.currentMonth ? "text-black font-bold" : ""} ${
+                dayObj.isToday ? "select-none hover:text-gray-600" : ""
+              }`}
             >
-              {dayObj.day}
+              <div className="flex flex-col items-center">
+                <span>{dayObj.day}</span>
+                {dayObj.currentMonth && (
+                  <span className="text-xs text-neutral-500 mt-1">
+                    {getStudiedHoursForDate(dayObj.date)}h
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
+
+      <AddTaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedDate={selectedDate}
+        onAddTask={handleAddTask}
+      />
+
+      <DayInfoModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        date={selectedDate}
+        tasks={getTasksForDate(selectedDate)}
+        studiedHours={getStudiedHoursForDate(selectedDate)}
+      />
     </div>
   );
 };

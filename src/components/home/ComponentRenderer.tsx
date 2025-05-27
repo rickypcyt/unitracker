@@ -31,14 +31,17 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
   const Component = ComponentRegistry[componentKey]?.component;
   if (!Component) return null;
 
-
-
   return (
     <div
-      className={` ${isEditing ? "editing" : ""}`}
+      className={`relative ${isEditing ? "ring-2 ring-accent-primary ring-opacity-50 rounded-lg" : ""}`}
       onContextMenu={(e) => onContextMenu(e, componentKey, colIndex, index)}
     >
-      <Component />
+      <Component ref={pomodoroRef} {...props} />
+      {isEditing && (
+        <div className="absolute top-2 right-2 text-xs text-accent-primary bg-neutral-900 px-2 py-1 rounded-full">
+          {ComponentRegistry[componentKey]?.name}
+        </div>
+      )}
     </div>
   );
 };

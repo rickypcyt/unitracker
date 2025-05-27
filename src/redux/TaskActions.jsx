@@ -5,12 +5,23 @@ import {
   toggleTaskStatusOptimistic,
   updateTaskSuccess,
   deleteTaskSuccess,
-  taskError
+  taskError,
+  invalidateCache
 } from './TaskSlice';
 
+// Cache duration in milliseconds (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
+
 // En tu archivo TaskActions.js
-export const fetchTasks = () => async (dispatch) => {
+export const fetchTasks = () => async (dispatch, getState) => {
   try {
+    const { tasks } = getState();
+    
+    // Check if we have a valid cache
+    if (tasks.isCached && tasks.lastFetch && (Date.now() - tasks.lastFetch < CACHE_DURATION)) {
+      return; // Use cached data
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -21,7 +32,7 @@ export const fetchTasks = () => async (dispatch) => {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('user_id', user.id); // <- Filtro clave
+      .eq('user_id', user.id);
 
     if (error) throw error;
 
@@ -57,7 +68,7 @@ export const addTask = (newTask) => async (dispatch) => {
       deadline: newTask.deadline,
       difficulty: newTask.difficulty,
       assignment: newTask.assignment,
-      user_id: user.id, // ← Solo campos existentes en la tabla
+      user_id: user.id,
     };
 
     const { data, error } = await supabase
@@ -67,11 +78,9 @@ export const addTask = (newTask) => async (dispatch) => {
 
     if (error) throw error;
 
-    // Despachar la acción de éxito con la tarea creada
     dispatch(addTaskSuccess(data[0]));
     return data[0];
   } catch (error) {
-    // Despachar la acción de error
     dispatch(taskError(error.message));
     throw error;
   }
@@ -102,7 +111,6 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
   }
 };
 
-
 // Acción para eliminar tarea
 export const deleteTask = (id) => async (dispatch) => {
   try {
@@ -114,10 +122,8 @@ export const deleteTask = (id) => async (dispatch) => {
 
     if (error) throw error;
 
-    // Despachar la tarea eliminada
     dispatch(deleteTaskSuccess(id));
   } catch (error) {
-    // Manejar errores
     dispatch(taskError(error.message));
   }
 };
@@ -169,5 +175,11 @@ export const updateTask = (task) => async (dispatch) => {
     dispatch(taskError(error.message));
     throw error;
   }
+};
+
+// Acción para forzar una actualización de las tareas
+export const forceTaskRefresh = () => async (dispatch) => {
+  dispatch(invalidateCache());
+  return dispatch(fetchTasks());
 };
 

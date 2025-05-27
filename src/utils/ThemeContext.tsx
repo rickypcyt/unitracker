@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface ThemeContextType {
   accentPalette: string;
@@ -8,14 +8,24 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [accentPalette, setAccentPalette] = useState("blue");
 
   const iconColor = accentPalette === "white" ? "#000000" : 
                     accentPalette === "gray" ? "#ffffff" : "#ffffff";
 
+  const value = {
+    accentPalette,
+    setAccentPalette,
+    iconColor
+  };
+
   return (
-    <ThemeContext.Provider value={{ accentPalette, setAccentPalette, iconColor }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
@@ -23,7 +33,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;

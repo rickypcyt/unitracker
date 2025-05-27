@@ -2,43 +2,46 @@ import { useRef, useEffect } from "react";
 
 // Hook corregido para StudyTimer
 export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = null) {
-  const rafRef = useRef();
+  const intervalRef = useRef();
   const savedCallback = useRef();
+  const startTimeRef = useRef(null);
 
+  // Guardar el callback actual
   useEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
 
+  // Efecto principal del timer
   useEffect(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
 
     if (!isRunning) {
       return;
     }
 
-    const tick = () => {
-      const now = Date.now();
-      const elapsed = timeAtStart + ((now - lastStart) / 1000);
-      savedCallback.current(elapsed);
-      rafRef.current = requestAnimationFrame(tick);
-    };
+    // Inicializar el tiempo de inicio
+    startTimeRef.current = Date.now() - (timeAtStart * 1000);
 
-    rafRef.current = requestAnimationFrame(tick);
+    // Actualizar cada 100ms para mantener la precisión
+    intervalRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      savedCallback.current(elapsed);
+    }, 100);
 
     return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeAtStart, lastStart]);
+  }, [isRunning, timeAtStart]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
   }, []);

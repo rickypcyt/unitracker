@@ -4,6 +4,8 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   tasks: [],
   error: null,
+  lastFetch: null,
+  isCached: false
 };
 
 const taskSlice = createSlice({
@@ -12,9 +14,12 @@ const taskSlice = createSlice({
   reducers: {
     fetchTasksSuccess: (state, action) => {
       state.tasks = action.payload;
+      state.lastFetch = Date.now();
+      state.isCached = true;
     },
     addTaskSuccess: (state, action) => {
       state.tasks.push(action.payload);
+      state.isCached = true;
     },
     toggleTaskStatusOptimistic: (state, action) => {
       const task = state.tasks.find(t => t.id === action.payload.id);
@@ -33,6 +38,9 @@ const taskSlice = createSlice({
     },
     taskError: (state, action) => {
       state.error = action.payload;
+    },
+    invalidateCache: (state) => {
+      state.isCached = false;
     }
   }
 });
@@ -43,7 +51,8 @@ export const {
   toggleTaskStatusOptimistic,
   deleteTaskSuccess,
   updateTaskSuccess,
-  taskError
+  taskError,
+  invalidateCache
 } = taskSlice.actions;
 
 export default taskSlice.reducer;

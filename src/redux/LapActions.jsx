@@ -4,11 +4,22 @@ import {
   addLapSuccess, 
   updateLapSuccess, 
   deleteLapSuccess, 
-  lapError 
+  lapError,
+  invalidateCache
 } from './LapSlice';
 
-export const fetchLaps = () => async (dispatch) => {
+// Cache duration in milliseconds (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
+
+export const fetchLaps = () => async (dispatch, getState) => {
   try {
+    const { laps } = getState();
+    
+    // Check if we have a valid cache
+    if (laps.isCached && laps.lastFetch && (Date.now() - laps.lastFetch < CACHE_DURATION)) {
+      return; // Use cached data
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
@@ -77,4 +88,10 @@ export const deleteLap = (id) => async (dispatch) => {
   } catch (error) {
     dispatch(lapError(error.message));
   }
+};
+
+// Action to force a refresh of laps
+export const forceLapRefresh = () => async (dispatch) => {
+  dispatch(invalidateCache());
+  return dispatch(fetchLaps());
 };

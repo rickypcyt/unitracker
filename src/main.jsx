@@ -6,10 +6,11 @@ import { Provider } from 'react-redux';
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import { ToastContainer } from "react-toastify";
+import { BrowserRouter } from 'react-router-dom';
 
 // Import local files
 import { store } from './redux/store';
-import Home from './Home';
+import App from './App';
 import './index.css';
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from './utils/ThemeContext';
@@ -44,16 +45,18 @@ class ErrorBoundary extends React.Component {
 
 // Render the React application
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <Provider store={store}> 
-    <ChakraProvider value={defaultSystem}> 
-      <ThemeProvider>
-        <ErrorBoundary>
-          <Home />
-          <ToastContainer />
-          <Analytics />
-          <SpeedInsights />
-        </ErrorBoundary>
-      </ThemeProvider>
-    </ChakraProvider>
-  </Provider>
+  <ErrorBoundary>
+    <Provider store={store}> 
+      <ChakraProvider value={defaultSystem}> 
+        <BrowserRouter>
+          <ThemeProvider>
+            <App />
+            <ToastContainer />
+            <Analytics />
+            <SpeedInsights />
+          </ThemeProvider>
+        </BrowserRouter>
+      </ChakraProvider>
+    </Provider>
+  </ErrorBoundary>
 );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   BarChart,
@@ -101,6 +101,7 @@ function useLapStats(laps, isCurrentWeek) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [weeklyTotalMinutes, setWeeklyTotalMinutes] = useState(0);
   const [monthlyTotalMinutes, setMonthlyTotalMinutes] = useState(0);
+  const prevDataRef = useRef(null);
 
   useEffect(() => {
     if (!laps) return;
@@ -149,10 +150,14 @@ function useLapStats(laps, isCurrentWeek) {
       0
     );
 
-    setTodayMinutes(todayTotalMinutes);
-    setWeeklyData(formattedWeeklyData);
-    setWeeklyTotalMinutes(weekTotalMinutes);
-    setMonthlyTotalMinutes(monthTotalMinutes);
+    // Solo actualizar si los datos han cambiado
+    if (JSON.stringify(formattedWeeklyData) !== JSON.stringify(prevDataRef.current)) {
+      setTodayMinutes(todayTotalMinutes);
+      setWeeklyData(formattedWeeklyData);
+      setWeeklyTotalMinutes(weekTotalMinutes);
+      setMonthlyTotalMinutes(monthTotalMinutes);
+      prevDataRef.current = formattedWeeklyData;
+    }
   }, [laps, isCurrentWeek]);
 
   return { todayMinutes, weeklyData, weeklyTotalMinutes, monthlyTotalMinutes };
@@ -166,6 +171,15 @@ function WeeklyBarChart({
   onBarLeave,
   hoveredData,
 }) {
+  const chartRef = useRef(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (chartRef.current && !hasAnimated) {
+      setHasAnimated(true);
+    }
+  }, [hasAnimated]);
+
   return (
     <div className="h-40 sm:h-48 lg:h-56 rounded-lg bg-neutral-950 p-2">
       <ResponsiveContainer width="100%" height="100%">
@@ -184,13 +198,15 @@ function WeeklyBarChart({
             axisLine={false}
             tickLine={false}
             width={40}
+            domain={[0, 'auto']}
           />
           <Bar
             dataKey="minutes"
             fill={accentColor}
             radius={[6, 6, 0, 0]}
             barSize={18}
-            animationDuration={350}
+            animationDuration={hasAnimated ? 0 : 350}
+            ref={chartRef}
           >
             {data.map((entry, index) => (
               <Cell
@@ -226,7 +242,6 @@ const Statistics = () => {
   const { tasks } = useSelector((state) => state.tasks);
   const { laps } = useSelector((state) => state.laps);
 
-  const [showChart, setShowChart] = useState(false);
   const [isCurrentWeek, setIsCurrentWeek] = useState(true);
   const [hoveredData, setHoveredData] = useState(null);
 
@@ -251,25 +266,9 @@ const Statistics = () => {
             <Activity size={24} />
             Statistics
           </h2>
-          <button
-            onClick={() => setShowChart(!showChart)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
-          >
-            {showChart ? (
-              <>
-                <EyeOff size={16} />
-                <span>Hide Chart</span>
-              </>
-            ) : (
-              <>
-                <Eye size={16} />
-                <span>Show Chart</span>
-              </>
-            )}
-          </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
             <div className="text-text-secondary text-sm">Today (h)</div>
             <div className="text-2xl font-bold">{formatMinutesToHHMM(todayMinutes)}</div>
@@ -287,17 +286,17 @@ const Statistics = () => {
           </div>
         </div>
 
-        {showChart && (
-          <div className="relative">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold">Weekly Progress</h3>
-              <button
-                onClick={toggleWeek}
-                className="text-sm text-text-secondary hover:text-white transition-colors duration-200"
-              >
-                {isCurrentWeek ? "Last Week" : "This Week"}
-              </button>
-            </div>
+        <div className="bg-black rounded-lg text-white p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Weekly Progress</h3>
+            <button
+              onClick={toggleWeek}
+              className="text-sm text-text-secondary hover:text-white transition-colors duration-200"
+            >
+              {isCurrentWeek ? "Last Week" : "This Week"}
+            </button>
+          </div>
+          <div className="mb-4">
             <WeeklyBarChart
               data={weeklyData}
               accentColor={accentColor}
@@ -306,7 +305,7 @@ const Statistics = () => {
               hoveredData={hoveredData}
             />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

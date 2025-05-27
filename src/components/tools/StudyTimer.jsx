@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "../../utils/supabaseClient";
 import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
-import { fetchLaps, createLap, updateLap, deleteLap } from "../../redux/LapActions";
+import { fetchLaps, createLap, updateLap, deleteLap, forceLapRefresh } from "../../redux/LapActions";
 import { Play, Pause, RotateCcw, Flag, Edit2, Check, Trash2, ChevronDown, ChevronUp, LibraryBig, X, Save, CheckCircle2, Circle, Minus, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import moment from "moment";
@@ -102,6 +102,13 @@ const StudyTimer = () => {
         };
         loadUser();
     }, [dispatch]);
+
+    // Forzar actualización cuando se agrega una nueva sesión
+    useEffect(() => {
+        if (state.localUser) {
+            dispatch(forceLapRefresh());
+        }
+    }, [dispatch, state.localUser, laps.length]);
 
     useEventListener("startStudyTimer", () => timerControls.start(), [state.syncPomo]);
     useEventListener("stopStudyTimer", () => timerControls.pause(), [state.syncPomo]);
