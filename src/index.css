@@ -126,11 +126,17 @@
     aspect-ratio: 1/1;
   }
 
-  /* 3 columnas: más compacto */
+  /* 3 columnas: más compacto y perfectamente cuadrado */
   .card-cols-3 .maincard {
     width: 100%;
-    max-width: 350px;
-    aspect-ratio: 4/5;
+    max-width: 320px;
+    min-width: 250px;
+    aspect-ratio: 1/1;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .deadline {
@@ -316,6 +322,8 @@ h1 {
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
+  align-items: center;
+  justify-items: center;
 }
 
 .layout-column {
@@ -373,11 +381,12 @@ h1 {
 .control-button {
   @apply p-2 rounded-full transition-colors duration-200;
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  color: #fff;
 }
 
 .control-button:hover:not(:disabled) {
   background-color: var(--accent-primary);
+  color: #fff;
 }
 
 .control-button:disabled {
@@ -395,11 +404,12 @@ h1 {
 .time-adjust-button {
   @apply p-1 rounded-full transition-colors duration-200;
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  color: #fff;
 }
 
 .time-adjust-button:hover {
   background-color: var(--accent-primary);
+  color: #fff;
 }
 
 .session-controls {

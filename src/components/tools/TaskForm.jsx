@@ -219,10 +219,9 @@ const TaskForm = () => {
                 </div>
 
                 {/* Dificultad y Deadline */}
-                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                <div className="flex flex-col sm:flex-row gap-4">
                     {/* Difficulty */}
                     <div className="flex flex-col gap-2 flex-1">
-
                         <div className="flex justify-between items-center w-full gap-4">
                             {/* Easy */}
                             <button
@@ -270,7 +269,7 @@ const TaskForm = () => {
                     </div>
 
                     {/* Deadline */}
-                    <div className="flex flex-col gap-2 flex-1 relative">
+                    <div className="flex flex-col gap-2 flex-1">
                         <DatePicker
                             id="date"
                             selected={newTask.deadline ? moment(newTask.deadline, "YYYY-MM-DD").toDate() : null}

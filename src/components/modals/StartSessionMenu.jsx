@@ -330,7 +330,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
               <button
                 onClick={() => toggleTool('brownNoise')}
                 disabled={menuIsPlaying}
-                className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
+                className={`flex items-center justify-center gap-2 p-2 rounded-lg text-base transition-colors duration-200 ${
                   activeTools.brownNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
                 } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
               >

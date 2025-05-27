@@ -1,7 +1,6 @@
 // Importa tus componentes
 import TaskForm from "../components/tools/TaskForm";
 import { TaskList } from "../components/tools/TaskList";
-
 import Calendar from "../components/tools/Calendar";
 import StudyTimer from "../components/tools/StudyTimer";
 import NoiseGenerator from "../components/tools/NoiseGenerator";
@@ -24,11 +23,11 @@ export interface ComponentConfig {
 export const ComponentRegistry: Record<string, ComponentConfig> = {
   TaskForm: { component: TaskForm, name: "TF" },
   TaskList: { component: TaskList, name: "TL" },
-  Calendar: { component: Calendar, name: "Cal" },
   StudyTimer: { component: StudyTimer, name: "ST" },
   NoiseGenerator: { component: NoiseGenerator, name: "NoiseGen" },
   Statistics: { component: Statistics, name: "Stats" },
   Pomodoro: { component: Pomodoro, name: "Pomo" },
+  Calendar: { component: Calendar, name: "Calendar" },
   // KanbanBoard: { component: KanbanBoard, name: "Kanban Board" },
 };
 
@@ -47,9 +46,9 @@ export const LayoutManager = {
             "StudyTimer",
             "Pomodoro",
             "TaskForm",
+            "Calendar",
             "NoiseGenerator",
             "Statistics",
-            "Calendar",
             "TaskList",
           ],
         },
@@ -57,19 +56,19 @@ export const LayoutManager = {
       2: [
         {
           id: "column-1",
-          items: ["StudyTimer", "Pomodoro", "TaskForm", "NoiseGenerator"],
+          items: ["StudyTimer", "Pomodoro", "TaskForm", "Calendar", "NoiseGenerator"],
         },
-        { id: "column-2", items: ["Statistics", "Calendar", "TaskList"] },
+        { id: "column-2", items: ["Statistics", "TaskList"] },
       ],
       3: [
-        { id: "column-1", items: ["StudyTimer", "Pomodoro"] },
-        { id: "column-2", items: ["TaskForm", "NoiseGenerator", "Statistics"] },
-        { id: "column-3", items: ["Calendar", "TaskList"] },
+        { id: "column-1", items: ["TaskForm", "Calendar", "TaskList"] },
+        { id: "column-2", items: ["Pomodoro", "NoiseGenerator"] },
+        { id: "column-3", items: ["Statistics", "TaskList"] },
       ],
       4: [
         { id: "column-1", items: ["StudyTimer", "Pomodoro"] },
-        { id: "column-2", items: ["TaskForm", "NoiseGenerator"] },
-        { id: "column-3", items: ["Statistics", "Calendar"] },
+        { id: "column-2", items: ["TaskForm", "Calendar", "NoiseGenerator"] },
+        { id: "column-3", items: ["Statistics"] },
         { id: "column-4", items: ["TaskList"] },
       ],
     };

@@ -314,51 +314,44 @@ const Pomodoro = ({ syncPomo = true }) => {
     <div className="maincard flex flex-col h-full">
       {/* Header */}
       <div className="relative">
-        <div className="cardtitle">
+        <div className="cardtitle flex flex-wrap items-center gap-2">
           <AlarmClockCheck size={24} className="mr-2" />
-          <span>
+          <span className="flex-1 min-w-0 truncate">
             Pomo ({MODES[modeIndex].label})
-            <span
-              style={{
-                color: "var(--accent-primary)",
-                marginLeft: 8,
-                fontWeight: 500,
-              }}
-              className="text-base sm:text-lg"
-            >
-              [{mode === "work" ? "Work" : "Break"}]
+            <span className="ml-1 text-2xl font-semibold" style={{ color: "var(--accent-primary)" }}>
+              {mode === "work" ? "Work" : "Break"}
             </span>
           </span>
-        </div>
-        <div className="absolute top-0 right-0">
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
-          >
-            <span>Edit</span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-          {menuOpen && (
-            <div
-              ref={menuRef}
-              className="sort-menu absolute right-0 mt-2 w-35 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
+          <div className="shrink-0 mt-0 sm:mt-0 w-auto">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
             >
-              {MODES.map((m, index) => (
-                <button
-                  key={index}
-                  onClick={() => changeMode(index)}
-                  className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 text-sm sm:text-base ${
-                    index === modeIndex ? "bg-bg-tertiary" : ""
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          )}
+              <span>Edit</span>
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {menuOpen && (
+              <div
+                ref={menuRef}
+                className="sort-menu absolute right-0 mt-2 w-35 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800"
+              >
+                {MODES.map((m, index) => (
+                  <button
+                    key={index}
+                    onClick={() => changeMode(index)}
+                    className={`block px-4 py-2 w-full text-center hover:bg-bg-tertiary transition-colors duration-200 text-sm sm:text-base ${
+                      index === modeIndex ? "bg-bg-tertiary" : ""
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {/* Contenido centrado */}

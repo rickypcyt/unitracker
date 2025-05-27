@@ -405,17 +405,17 @@ const StudyTimer = () => {
             </div>
 
             {/* Single row of buttons */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-4 justify-items-center">
+            <div className="timer-controls">
                 <button
                     onClick={timerControls.reset}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                    className="control-button w-10 h-10 flex items-center justify-center"
                     aria-label="Reset timer"
                 >
                     <RotateCcw size={20} style={{ color: iconColor }} />
                 </button>
                 <button
                     onClick={() => changeTime(-600)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
+                    className="time-adjust-button w-10 h-10 flex items-center justify-center text-base"
                     title="Rewind 10 mins"
                     aria-label="Subtract 10 minutes"
                 >
@@ -423,13 +423,12 @@ const StudyTimer = () => {
                 </button>
                 <button
                     onClick={() => changeTime(-300)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
+                    className="time-adjust-button w-10 h-10 flex items-center justify-center text-base"
                     title="Rewind 5 mins"
                     aria-label="Subtract 5 minutes"
                 >
-                    -5
+                    -5&nbsp;
                 </button>
-
                 {!state.isRunning ? (
                     <button
                         onClick={() => {
@@ -438,7 +437,7 @@ const StudyTimer = () => {
                                 window.dispatchEvent(new CustomEvent("studyPlay"));
                             }
                         }}
-                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                        className="control-button w-10 h-10 flex items-center justify-center"
                         aria-label="Start timer"
                     >
                         <Play size={20} style={{ color: iconColor }} />
@@ -446,7 +445,7 @@ const StudyTimer = () => {
                 ) : (
                     <button
                         onClick={timerControls.pause}
-                        className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                        className="control-button w-10 h-10 flex items-center justify-center"
                         aria-label="Pause timer"
                     >
                         <Pause size={20} style={{ color: iconColor }} />
@@ -454,23 +453,23 @@ const StudyTimer = () => {
                 )}
                 <button
                     onClick={() => changeTime(300)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
+                    className="time-adjust-button w-10 h-10 flex items-center justify-center text-base"
                     title="Add 5 mins"
                     aria-label="Add 5 minutes"
                 >
-                    +5
+                    +5&nbsp;
                 </button>
                 <button
                     onClick={() => changeTime(600)}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} flex items-center justify-center gap-1 text-lg font-bold col-span-1 w-12 h-12 mx-auto`}
+                    className="time-adjust-button w-10 h-10 flex items-center justify-center text-base"
                     title="Add 10 mins"
                     aria-label="Add 10 minutes"
                 >
                     +10
                 </button>
-                 <button
+                <button
                     onClick={lapHandlers.finish}
-                    className={`button ${colorClasses[accentPalette]} text-white hover:${hoverClasses[accentPalette]} col-span-1 flex items-center justify-center w-12 h-12 mx-auto`}
+                    className="control-button w-10 h-10 flex items-center justify-center"
                     aria-label="Finish session"
                 >
                     <Check size={20} style={{ color: iconColor }} />
@@ -592,11 +591,11 @@ const StudyTimer = () => {
                         className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold text-center flex-1">
+                        <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+                            <h3 className="text-2xl font-bold text-center flex-1 truncate min-w-0">
                                 Session Details
                             </h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0">
                                 {state.isEditingDetails ? (
                                     <button
                                         onClick={handleSaveEditDetails}

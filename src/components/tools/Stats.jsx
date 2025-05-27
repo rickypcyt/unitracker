@@ -12,20 +12,30 @@ import { Activity, Eye, EyeOff } from "lucide-react";
 
 // --- Utilidades DRY ---
 const durationToMinutes = (duration) => {
-  const [h, m, s] = duration.split(":").map(Number);
-  return h * 60 + m + Math.round(s / 60);
+  if (!duration) return 0;
+  const parts = duration.split(":").map(Number);
+  let h = 0, m = 0, s = 0;
+  if (parts.length === 3) {
+    [h, m, s] = parts;
+  } else if (parts.length === 2) {
+    [h, m] = parts;
+  } else if (parts.length === 1) {
+    [h] = parts;
+  }
+  return h * 60 + m + Math.round((s || 0) / 60);
 };
 
 const formatMinutesToHHMM = (minutes) => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return `${h}:${m.toString().padStart(2, "0")}`;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 };
 
 const getMonday = (date, offset = 0) => {
   const d = new Date(date);
   const day = d.getDay();
-  const mondayOffset = day === 0 ? 6 : day - 1;
+  // 0 (domingo) -> 6, 1 (lunes) -> 0, ..., 6 (sábado) -> 5
+  const mondayOffset = (day + 6) % 7;
   d.setDate(d.getDate() - mondayOffset - offset);
   d.setHours(0, 0, 0, 0);
   return d;
@@ -37,6 +47,8 @@ const getWeekDays = (monday) =>
     date.setDate(monday.getDate() + i);
     return date.toISOString().split("T")[0];
   });
+
+const weekDayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const getAccentColor = () =>
   getComputedStyle(document.documentElement)
@@ -121,14 +133,14 @@ function useLapStats(laps, isCurrentWeek) {
       return acc;
     }, {});
 
-    const formattedWeeklyData = weekDays.map((date) => {
+    const formattedWeeklyData = weekDays.map((date, idx) => {
       const dayDate = new Date(date);
       const minutes = dailyMinutes[date] || 0;
       return {
         date,
         minutes,
         hoursLabel: formatMinutesToHHMM(minutes),
-        dayName: dayDate.toLocaleDateString("en-US", { weekday: "short" }),
+        dayName: weekDayLabels[idx],
       };
     });
 
@@ -155,24 +167,30 @@ function WeeklyBarChart({
   hoveredData,
 }) {
   return (
-    <div className="h-64 sm:h-72 lg:h-80">
+    <div className="h-40 sm:h-48 lg:h-56 rounded-lg bg-neutral-950 p-2">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
+        <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={12}>
           <XAxis
             dataKey="dayName"
             stroke="#64748b"
-            tick={{ fill: "#94a3b8", fontSize: "0.875rem" }}
+            tick={{ fill: "#94a3b8", fontSize: "0.75rem" }}
+            axisLine={false}
+            tickLine={false}
           />
           <YAxis
             stroke="#64748b"
-            tick={{ fill: "#94a3b8", fontSize: "0.875rem" }}
-            tickFormatter={formatMinutesToHHMM}
+            tick={{ fill: "#94a3b8", fontSize: "0.75rem" }}
+            tickFormatter={(v) => formatMinutesToHHMM(v)}
+            axisLine={false}
+            tickLine={false}
+            width={40}
           />
           <Bar
             dataKey="minutes"
             fill={accentColor}
-            radius={[4, 4, 0, 0]}
-            animationDuration={400}
+            radius={[6, 6, 0, 0]}
+            barSize={18}
+            animationDuration={350}
           >
             {data.map((entry, index) => (
               <Cell
@@ -186,15 +204,15 @@ function WeeklyBarChart({
       </ResponsiveContainer>
       {hoveredData && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-4 z-50
-          bg-gray-900 bg-opacity-90 backdrop-blur-md text-white
-          px-4 py-2 rounded-xl shadow-2xl border border-accent-primary
-          pointer-events-none"
+          className="absolute left-1/2 -translate-x-1/2 top-2 z-50
+          bg-neutral-900 bg-opacity-95 text-white
+          px-3 py-1 rounded-lg shadow-lg border border-accent-primary
+          text-base pointer-events-none min-w-[60px] text-center"
         >
-          <div className="text-base font-semibold text-accent-primary mb-1 text-center">
+          <div className="font-semibold text-accent-primary mb-0.5">
             {hoveredData.dayName}
           </div>
-          <div className="text-xl font-bold tracking-wide">
+          <div className="font-bold tracking-wide">
             {hoveredData.hoursLabel}h
           </div>
         </div>
@@ -228,13 +246,14 @@ const Statistics = () => {
   return (
     <div className="maincard">
       <div>
-        <div className="flex justify-between items-center">
-          <h2 className="cardtitle text-white">
-            <Activity size={24} /> Study Statistics
+        <div className="flex justify-between items-center mb-6 gap-2">
+          <h2 className="cardtitle mb-1 text-white flex items-center gap-2">
+            <Activity size={24} />
+            <span>Study Statistics</span>
           </h2>
           <button
             onClick={() => setShowChart((v) => !v)}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 mb-6"
+            className="flex mb-1 items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200 px-4 py-2 text-base font-semibold rounded-lg h-12 min-h-[3rem]"
           >
             {showChart ? (
               <>
@@ -251,61 +270,8 @@ const Statistics = () => {
         </div>
       </div>
 
-      {/* Tabla de estadísticas */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-black">
-          <thead>
-            <tr>
-              <th className="border-b border-black px-4 py-2 text-center"></th>
-              <th className="border-b border-black px-4 py-2 text-center">
-                Tasks Completed
-              </th>
-              <th className="border-b border-black px-4 py-2 text-center">
-                Hours Studied
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border-b border-black px-4 py-2 text-center">
-                Today
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {doneToday}
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {formatMinutesToHHMM(todayMinutes)}
-              </td>
-            </tr>
-            <tr>
-              <td className="border-b border-black px-4 py-2 text-center">
-                This Week
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {doneWeek}
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {formatMinutesToHHMM(weeklyTotalMinutes)}
-              </td>
-            </tr>
-            <tr>
-              <td className="border-b border-black px-4 py-2 text-center">
-                This Month
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {doneMonth}
-              </td>
-              <td className="border-b border-black px-4 py-2 text-center">
-                {formatMinutesToHHMM(monthlyTotalMinutes)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Gráfico semanal */}
       {showChart && (
-        <div className="mt-6 bg-black p-3 rounded-lg w-full relative">
+        <div className="mb-6 bg-black p-3 rounded-lg w-full relative">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
             <h3 className="card-subtitle text-white flex items-center gap-2 text-lg">
               {isCurrentWeek ? "This Week's" : "Last Week's"} Chart
@@ -326,6 +292,56 @@ const Statistics = () => {
           />
         </div>
       )}
+
+      {/* Tabla de estadísticas */}
+      <div className="overflow-x-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {/* Today Stats */}
+          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
+            <div className="text-sm text-neutral-400 mb-2">Today</div>
+            <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Tasks:</span>
+                <span className="text-xl font-bold text-white">{doneToday}</span>
+              </div>
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Hours:</span>
+                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(todayMinutes)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* This Week Stats */}
+          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
+            <div className="text-sm text-neutral-400 mb-2">This Week</div>
+            <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Tasks:</span>
+                <span className="text-xl font-bold text-white">{doneWeek}</span>
+              </div>
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Hours:</span>
+                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(weeklyTotalMinutes)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* This Month Stats */}
+          <div className="bg-neutral-900 rounded-lg p-4 border border-neutral-800 flex flex-col items-center">
+            <div className="text-sm text-neutral-400 mb-2">This Month</div>
+            <div className="flex flex-col gap-4 w-full">
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Tasks:</span>
+                <span className="text-xl font-bold text-white">{doneMonth}</span>
+              </div>
+              <div className="flex flex-row justify-between items-center w-full">
+                <span className="text-base text-neutral-400">Hours:</span>
+                <span className="text-xl font-bold text-white">{formatMinutesToHHMM(monthlyTotalMinutes)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
