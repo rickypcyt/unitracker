@@ -175,7 +175,7 @@ const StudyTimer = ({ onSyncChange }) => {
           name: sessionData.title,
           description: sessionData.description,
           session_number: sessionNum,
-          task_ids: sessionData.taskIds,
+          tasks: sessionData.taskIds
         }
       ]);
 

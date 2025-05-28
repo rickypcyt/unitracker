@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addTask, fetchTasks } from "../redux/TaskActions";
+import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../redux/TaskSlice";
 import { supabase } from "../utils/supabaseClient";
 import { toast } from "react-toastify";
 
@@ -60,6 +61,8 @@ export const useTaskStorage = () => {
   useEffect(() => {
     if (!user) return;
 
+    let lastProcessedEvent = null;
+
     const subscription = supabase
       .channel("tasks_changes")
       .on(
@@ -70,8 +73,20 @@ export const useTaskStorage = () => {
           table: "tasks",
           filter: `user_id=eq.${user.id}`,
         },
-        () => {
-          dispatch(fetchTasks());
+        (payload) => {
+          // Evitar procesar el mismo evento múltiples veces
+          const eventKey = `${payload.eventType}-${payload.new?.id || payload.old?.id}-${Date.now()}`;
+          if (lastProcessedEvent === eventKey) return;
+          lastProcessedEvent = eventKey;
+
+          // Solo actualizar si el cambio no fue causado por nosotros
+          if (payload.eventType === 'INSERT' && payload.new.user_id === user.id) {
+            dispatch(addTaskSuccess(payload.new));
+          } else if (payload.eventType === 'UPDATE' && payload.new.user_id === user.id) {
+            dispatch(updateTaskSuccess(payload.new));
+          } else if (payload.eventType === 'DELETE' && payload.old.user_id === user.id) {
+            dispatch(deleteTaskSuccess(payload.old.id));
+          }
         }
       )
       .subscribe();
@@ -106,7 +121,7 @@ export const useTaskStorage = () => {
 
         if (error) throw error;
 
-        dispatch(addTask(data));
+        // No necesitamos dispatch aquí porque la suscripción en tiempo real lo hará
         return data;
       } catch (error) {
         console.error("Error adding task:", error);
