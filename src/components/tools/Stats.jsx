@@ -167,9 +167,6 @@ function useLapStats(laps, isCurrentWeek) {
 function WeeklyBarChart({
   data,
   accentColor,
-  onBarEnter,
-  onBarLeave,
-  hoveredData,
 }) {
   const chartRef = useRef(null);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -211,28 +208,11 @@ function WeeklyBarChart({
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                onMouseEnter={() => onBarEnter(entry)}
-                onMouseLeave={onBarLeave}
               />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      {hoveredData && (
-        <div
-          className="absolute left-1/2 -translate-x-1/2 top-2 z-50
-          bg-neutral-900 bg-opacity-95 text-white
-          px-3 py-1 rounded-lg shadow-lg border border-accent-primary
-          text-base pointer-events-none min-w-[60px] text-center"
-        >
-          <div className="font-semibold text-accent-primary mb-0.5">
-            {hoveredData.dayName}
-          </div>
-          <div className="font-bold tracking-wide">
-            {hoveredData.hoursLabel}h
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -243,7 +223,6 @@ const Statistics = () => {
   const { laps } = useSelector((state) => state.laps);
 
   const [isCurrentWeek, setIsCurrentWeek] = useState(true);
-  const [hoveredData, setHoveredData] = useState(null);
 
   const accentColor = useMemo(getAccentColor, []);
 
@@ -300,9 +279,6 @@ const Statistics = () => {
             <WeeklyBarChart
               data={weeklyData}
               accentColor={accentColor}
-              onBarEnter={setHoveredData}
-              onBarLeave={() => setHoveredData(null)}
-              hoveredData={hoveredData}
             />
           </div>
         </div>

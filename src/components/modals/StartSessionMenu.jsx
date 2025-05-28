@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Play, Pause, Cloud, CloudRain, Waves, X } from 'lucide-react';
 import { updateTask } from '../../redux/TaskActions';
 import { setCalendarVisibility } from '../../redux/uiSlice';
@@ -7,13 +7,11 @@ import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import * as Tone from 'tone';
 import { useAuth } from '../../hooks/useAuth';
+import { useTaskManager } from '../../hooks/useTaskManager';
 
 const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) => {
   const dispatch = useDispatch();
-  const reduxTasks = useSelector((state) => state.tasks.tasks);
-  const { user } = useAuth();
-  const [localTasks, setLocalTasks] = useState([]);
-
+  const { user, tasks, localTasks } = useTaskManager();
   const [selectedTask, setSelectedTask] = useState('');
   const [menuIsPlaying, setMenuIsPlaying] = useState(() => {
     // Load saved state from localStorage or use default
@@ -40,45 +38,13 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
     localStorage.setItem('menuState', JSON.stringify({ menuIsPlaying }));
   }, [menuIsPlaying]);
 
-  // Load local tasks from localStorage
-  useEffect(() => {
-    const savedTasks = localStorage.getItem('localTasks');
-    if (savedTasks) {
-      setLocalTasks(JSON.parse(savedTasks));
-    }
-  }, []);
-
-  // Listen for changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'localTasks') {
-        const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
-        setLocalTasks(newTasks);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('localTasksUpdated', () => {
-      const savedTasks = localStorage.getItem('localTasks');
-      if (savedTasks) {
-        setLocalTasks(JSON.parse(savedTasks));
-      }
-    });
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('localTasksUpdated', handleStorageChange);
-    };
-  }, []);
-
-  // Get the appropriate tasks based on user status
-  const tasks = user ? reduxTasks : localTasks;
-  const userTasks = user ? tasks.filter(task => task.user_id === user.id && !task.completed) : tasks.filter(task => !task.completed);
+  // Define tasks based on user authentication
+  const allTasks = user ? tasks : localTasks;
 
   // Update menuIsPlaying when tasks change
   useEffect(() => {
-    setMenuIsPlaying(tasks.some(task => task.activetask));
-  }, [tasks]);
+    setMenuIsPlaying(allTasks.some(task => task.activetask));
+  }, [allTasks]);
 
   // Listen for study timer state changes
   useEffect(() => {
@@ -146,7 +112,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       // If a task is selected, update it to be active
       if (selectedTask) {
         const taskId = parseInt(selectedTask);
-        const taskToUpdate = tasks.find(t => t.id === taskId);
+        const taskToUpdate = allTasks.find(t => t.id === taskId);
         if (taskToUpdate) {
           if (user) {
             // Handle remote storage update
@@ -164,7 +130,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
             }));
 
             // Deactivate any other active tasks
-            const otherTasks = tasks.filter(t => t.id !== taskId && t.activetask);
+            const otherTasks = allTasks.filter(t => t.id !== taskId && t.activetask);
             for (const task of otherTasks) {
               await dispatch(updateTask({
                 id: task.id,
@@ -185,7 +151,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
               activetask: t.id === taskId
             }));
             localStorage.setItem('localTasks', JSON.stringify(updatedTasks));
-            setLocalTasks(updatedTasks);
+            localStorage.setItem('localTasks', JSON.stringify(updatedTasks));
           }
         }
       }
@@ -222,7 +188,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
   const handleStopSession = async () => {
     try {
       // Deactivate the current active task
-      const activeTask = tasks.find(t => t.activetask);
+      const activeTask = allTasks.find(t => t.activetask);
       if (activeTask) {
         if (user) {
           // Handle remote storage update
@@ -237,7 +203,6 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
             activetask: false
           }));
           localStorage.setItem('localTasks', JSON.stringify(updatedTasks));
-          setLocalTasks(updatedTasks);
         }
       }
 
@@ -304,7 +269,7 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
               disabled={menuIsPlaying}
             >
               <option value="">Choose a task...</option>
-              {userTasks.map(task => (
+              {allTasks.map(task => (
                 <option key={task.id} value={task.id}>
                   {task.title}
                 </option>

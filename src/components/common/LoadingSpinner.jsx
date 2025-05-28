@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const LoadingSpinner = () => {
   return (
     <div 
-      className="loading-spinner-container"
+      className="loading-spinner-container flex items-center justify-center w-full h-full"
       role="status"
       aria-label="Loading"
     >

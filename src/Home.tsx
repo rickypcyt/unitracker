@@ -4,14 +4,14 @@ import React, {
   useEffect,
   useCallback,
   useMemo,
+  lazy,
+  Suspense
 } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
 import WelcomeModal from "./components/modals/WelcomeModal";
 import Settings from "./components/modals/Settings";
 import StartSessionMenu from "./components/modals/StartSessionMenu";
-import ComponentRenderer from "./components/home/ComponentRenderer";
 import { LayoutManager } from "./utils/layoutManager";
 import AddComponentButton from "./components/home/AddComponentButton";
 import { Settings as SettingsIcon } from "lucide-react";
@@ -19,284 +19,237 @@ import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
 import Navbar from "./components/Navbar";
 
+// Lazy load the ComponentRenderer
+const ComponentRenderer = lazy(() => import("./components/home/ComponentRenderer"));
+
 const Home = () => {
   const pomodoroRef = useRef<any>(null);
-
   const responsiveColumns = useResponsiveColumns();
 
-  const [layout, setLayout] = useState(() =>
-    LayoutManager.getInitialLayout(responsiveColumns)
+  // Memoize initial layout
+  const initialLayout = useMemo(() => 
+    LayoutManager.getInitialLayout(responsiveColumns),
+    [responsiveColumns]
   );
+
+  const [layout, setLayout] = useState(initialLayout);
+  
+  // Memoize responsive layout
   const responsiveLayout = useMemo(
     () => distributeItems(layout, responsiveColumns),
     [layout, responsiveColumns]
   );
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const [showStartSession, setShowStartSession] = useState(false);
-  const [showTaskDetails, setShowTaskDetails] = useState(false);
+  // Combine related state into a single object
+  const [uiState, setUiState] = useState({
+    isEditing: false,
+    showSettings: false,
+    showWelcomeModal: false,
+    showStartSession: false,
+    showTaskDetails: false,
+    contextMenu: null
+  });
+
   const { isLoggedIn, loginWithGoogle } = useAuth();
-  const [currentTheme, setCurrentTheme] = useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("theme") || "default"
-      : "default"
-  );
-  const [accentPalette, setAccentPalette] = useState(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem("accentPalette") || "blue"
-      : "blue"
-  );
-  const [contextMenu, setContextMenu] = useState(null);
+
+  // Memoize theme and accent palette
+  const [themeState, setThemeState] = useState(() => ({
+    currentTheme: typeof window !== "undefined" ? localStorage.getItem("theme") || "default" : "default",
+    accentPalette: typeof window !== "undefined" ? localStorage.getItem("accentPalette") || "blue" : "blue"
+  }));
+
+  // Memoize layout settings
+  const [layoutSettings, setLayoutSettings] = useState(() => ({
+    userPadding: typeof window !== "undefined" ? Number(localStorage.getItem("userPadding")) || 1 : 1,
+    userGap: typeof window !== "undefined" ? Number(localStorage.getItem("userGap")) || 1 : 1
+  }));
 
   const toggleEditing = useCallback(() => {
-    setIsEditing(prev => !prev);
+    setUiState(prev => ({ ...prev, isEditing: !prev.isEditing }));
   }, []);
 
-  // --- Cambios aquí ---
-  // Recarga el layout cuando cambian las columnas
+  // Optimize layout updates
   useEffect(() => {
     setLayout(LayoutManager.getInitialLayout(responsiveColumns));
   }, [responsiveColumns]);
-  // --- Fin cambios aquí ---
 
-  // Drag & Drop
-  const handleDragEnd = useCallback(
-    (result) => {
-      if (!result.destination) return;
-      setLayout(LayoutManager.updateLayoutAfterDrag(layout, result, responsiveColumns));
-    },
-    [layout, responsiveColumns]
-  );
-
-  // Teclas rápidas (Escape, etc)
+  // Optimize keyboard event handling
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hasSeen = localStorage.getItem("hasSeenWelcomeModal");
       if (!hasSeen) {
-        setShowWelcomeModal(true);
+        setUiState(prev => ({ ...prev, showWelcomeModal: true }));
       }
     }
+
     const handleKeyDown = (e) => {
       const isInputFocused =
         document.activeElement.tagName === "INPUT" ||
         document.activeElement.tagName === "TEXTAREA";
+
       if (e.key === "Escape") {
-        if (showWelcomeModal) setShowWelcomeModal(false);
-        else if (isEditing) setIsEditing(false);
-        else if (showSettings) setShowSettings(false);
-        else if (showStartSession) setShowStartSession(false);
-        else if (showTaskDetails) setShowTaskDetails(false);
+        setUiState(prev => ({
+          ...prev,
+          showWelcomeModal: false,
+          isEditing: false,
+          showSettings: false,
+          showStartSession: false,
+          showTaskDetails: false
+        }));
       } else if (e.key === "m" && !isInputFocused) {
-        setShowSettings(true);
+        setUiState(prev => ({ ...prev, showSettings: true }));
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    showWelcomeModal,
-    isEditing,
-    showSettings,
-    showStartSession,
-    showTaskDetails,
-  ]);
+  }, []);
 
-  // Añadir componente
+  // Memoize component handlers
   const addComponent = useCallback(
     (colIndex, componentKey) => {
-      const newLayout = LayoutManager.addComponent(
-        layout,
-        colIndex,
-        componentKey,
-        responsiveColumns
-      );
-      setLayout(newLayout);
+      setLayout(prev => LayoutManager.addComponent(prev, colIndex, componentKey, responsiveColumns));
     },
-    [layout, responsiveColumns] // <-- columns agregado aquí
+    [responsiveColumns]
   );
 
-  // Eliminar componente
   const removeComponent = useCallback(
     (colIndex, itemIndex) => {
-      if (!layout[colIndex] || !layout[colIndex].items) return;
-      const foundColIndex = layout.findIndex((col) =>
-        col.items.includes(layout[colIndex].items[itemIndex])
-      );
-      if (foundColIndex === -1) return;
-      const newLayout = LayoutManager.removeComponent(
-        layout,
-        foundColIndex,
-        itemIndex,
-        responsiveColumns
-      );
-      setLayout(newLayout);
+      setLayout(prev => {
+        if (!prev[colIndex] || !prev[colIndex].items) return prev;
+        const foundColIndex = prev.findIndex((col) =>
+          col.items.includes(prev[colIndex].items[itemIndex])
+        );
+        if (foundColIndex === -1) return prev;
+        return LayoutManager.removeComponent(prev, foundColIndex, itemIndex, responsiveColumns);
+      });
     },
-    [layout, responsiveColumns] // <-- columns agregado aquí
+    [responsiveColumns]
   );
 
-  // Menú contextual de componente/layout
   const handleContextMenu = useCallback(
     (e, componentKey, colIndex, itemIndex) => {
       e.preventDefault();
-      setContextMenu({
-        type: "component",
-        x: e.clientX,
-        y: e.clientY,
-        componentId: componentKey,
-        colIndex,
-        itemIndex,
-      });
+      setUiState(prev => ({
+        ...prev,
+        contextMenu: {
+          type: "component",
+          x: e.clientX,
+          y: e.clientY,
+          componentId: componentKey,
+          colIndex,
+          itemIndex,
+        }
+      }));
     },
     []
   );
 
-  const [userPadding, setUserPadding] = useState(() => {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem("userPadding")
-        : null;
-    return stored ? Number(stored) : 2; // Por defecto 40px
-  });
-  const [userGap, setUserGap] = useState(() => {
-    const stored =
-      typeof window !== "undefined" ? localStorage.getItem("userGap") : null;
-    return stored ? Number(stored) : 1; // Por defecto 12px
-  });
-
-  const handleCloseContextMenu = () => setContextMenu(null);
+  const handleCloseContextMenu = useCallback(() => {
+    setUiState(prev => ({ ...prev, contextMenu: null }));
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <Navbar />
-      <div className="pt-12"> {/* Reduced padding-top to match new navbar height */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="w-full min-h-full">
-            <div
-              className={`grid`}
-              style={{
-                gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
-                gap: `${userGap}rem`,
-                padding: `${userPadding}rem`,
-              }}
-            >
-              {responsiveLayout.map((column, colIndex) => (
-                <Droppable key={column.id} droppableId={column.id}>
-                  {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef}>
-                      {column.items.map((componentKey, index) => (
-                        <Draggable
-                          key={`${componentKey}-${colIndex}-${index}`}
-                          draggableId={`${componentKey}-${colIndex}-${index}`}
-                          index={index}
-                          isDragDisabled={!isEditing}
-                        >
-                          {(provided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              onContextMenu={(e) =>
-                                handleContextMenu(
-                                  e,
-                                  componentKey,
-                                  colIndex,
-                                  index
-                                )
-                              }
-                            >
-                              <ComponentRenderer
-                                componentKey={componentKey}
-                                colIndex={colIndex}
-                                index={index}
-                                isEditing={isEditing}
-                                onRemove={removeComponent}
-                                onContextMenu={handleContextMenu}
-                                pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                      {isEditing && (
-                        <AddComponentButton
-                          onClick={(componentKey) =>
-                            addComponent(colIndex, componentKey)
-                          }
-                          layout={layout}
-                        />
-                      )}
-                    </div>
-                  )}
-                </Droppable>
-              ))}
-            </div>
+      <div style={{ paddingLeft: `${layoutSettings.userPadding}rem`, paddingRight: `${layoutSettings.userPadding}rem` }}>
+        <Navbar />
+      </div>
+      <div className="pt-12">
+        <div className="w-full min-h-full">
+          <div
+            className="grid w-full"
+            style={{
+              gridTemplateColumns: `repeat(${responsiveColumns}, 1fr)`,
+              gap: `${layoutSettings.userGap}rem`,
+              padding: `${layoutSettings.userPadding}rem`,
+            }}
+          >
+            {responsiveLayout.map((column, colIndex) => (
+              <div
+                key={column.id}
+                className="min-h-[200px] bg-neutral-900 rounded-lg p-4"
+              >
+                {column.items.map((componentKey, index) => (
+                  <div
+                    key={`${componentKey}-${colIndex}-${index}`}
+                    onContextMenu={(e) =>
+                      handleContextMenu(e, componentKey, colIndex, index)
+                    }
+                    className="mb-4"
+                  >
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <ComponentRenderer
+                        componentKey={componentKey}
+                        colIndex={colIndex}
+                        index={index}
+                        isEditing={uiState.isEditing}
+                        onRemove={removeComponent}
+                        onContextMenu={handleContextMenu}
+                        pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
+                      />
+                    </Suspense>
+                  </div>
+                ))}
+                {uiState.isEditing && (
+                  <AddComponentButton
+                    onClick={(componentKey) => addComponent(colIndex, componentKey)}
+                    layout={layout}
+                  />
+                )}
+              </div>
+            ))}
           </div>
-        </DragDropContext>
+        </div>
 
-        {/* Menú contextual de componente/layout */}
-        {contextMenu && contextMenu.type === "component" && (
+        {uiState.contextMenu && uiState.contextMenu.type === "component" && (
           <ContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            componentId={contextMenu.componentId}
-            isEditing={isEditing}
+            x={uiState.contextMenu.x}
+            y={uiState.contextMenu.y}
+            componentId={uiState.contextMenu.componentId}
+            isEditing={uiState.isEditing}
             onClose={handleCloseContextMenu}
-            colIndex={contextMenu.colIndex}
-            itemIndex={contextMenu.itemIndex}
+            colIndex={uiState.contextMenu.colIndex}
+            itemIndex={uiState.contextMenu.itemIndex}
             onRemove={removeComponent}
             onToggleEdit={toggleEditing}
           />
         )}
 
-        {/* Otros modales */}
-        {showWelcomeModal && (
-          <WelcomeModal
-            onClose={() => {
-              setShowWelcomeModal(false);
-              localStorage.setItem("hasSeenWelcomeModal", "true");
-            }}
+        {uiState.showWelcomeModal && (
+          <WelcomeModal onClose={() => setUiState(prev => ({ ...prev, showWelcomeModal: false }))} />
+        )}
+
+        {uiState.showSettings && (
+          <Settings
+            isEditing={uiState.isEditing}
+            onToggleEditing={toggleEditing}
+            isLoggedIn={isLoggedIn}
+            onLogin={loginWithGoogle}
+            currentTheme={themeState.currentTheme}
+            onThemeChange={(theme) => setThemeState(prev => ({ ...prev, currentTheme: theme }))}
+            accentPalette={themeState.accentPalette}
+            setAccentPalette={(palette) => setThemeState(prev => ({ ...prev, accentPalette: palette }))}
+            isPlaying={false}
+            setIsPlaying={() => {}}
+            showSettings={uiState.showSettings}
+            setShowSettings={(show) => setUiState(prev => ({ ...prev, showSettings: show }))}
+            loginWithGoogle={loginWithGoogle}
+            userPadding={layoutSettings.userPadding}
+            setUserPadding={(val) => setLayoutSettings(prev => ({ ...prev, userPadding: val }))}
+            userGap={layoutSettings.userGap}
+            setUserGap={(val) => setLayoutSettings(prev => ({ ...prev, userGap: val }))}
           />
         )}
 
-        <Settings
-          isEditing={isEditing}
-          onToggleEditing={toggleEditing}
-          isLoggedIn={isLoggedIn}
-          onLogin={loginWithGoogle}
-          currentTheme={currentTheme}
-          onThemeChange={(theme) => {
-            setCurrentTheme(theme);
-            localStorage.setItem("theme", theme);
-          }}
-          accentPalette={accentPalette}
-          setAccentPalette={setAccentPalette}
-          isPlaying={false}
-          setIsPlaying={() => {}}
-          showSettings={showSettings}
-          setShowSettings={setShowSettings}
-          loginWithGoogle={loginWithGoogle}
-          userPadding={userPadding}
-          setUserPadding={(val) => {
-            setUserPadding(val);
-            localStorage.setItem("userPadding", val.toString());
-          }}
-          userGap={userGap}
-          setUserGap={(val) => {
-            setUserGap(val);
-            localStorage.setItem("userGap", val.toString());
-          }}
-        />
-
-        <StartSessionMenu
-          isOpen={false}
-          onClose={() => {}}
-          setIsPlaying={() => {}}
-        />
+        {uiState.showStartSession && (
+          <StartSessionMenu
+            onClose={() => setUiState(prev => ({ ...prev, showStartSession: false }))}
+            pomodoroRef={pomodoroRef}
+          />
+        )}
 
         <button
-          onClick={() => setShowSettings(true)}
+          onClick={() => setUiState(prev => ({ ...prev, showSettings: true }))}
           className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
           aria-label="Open Settings"
         >
@@ -307,4 +260,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default React.memo(Home);

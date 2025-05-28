@@ -33,7 +33,7 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
 
   return (
     <div
-      className={`relative ${isEditing ? "ring-2 ring-accent-primary ring-opacity-50 rounded-lg" : ""}`}
+      className={`relative flex items-center justify-center ${isEditing ? "ring-2 ring-accent-primary ring-opacity-50 rounded-lg" : ""}`}
       onContextMenu={(e) => onContextMenu(e, componentKey, colIndex, index)}
     >
       <Component ref={pomodoroRef} {...props} />

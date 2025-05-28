@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import AddTaskModal from "./AddTaskModal";
 import { CheckCircle2, Clock } from 'lucide-react';
+import { fetchLaps } from "../../redux/LapActions";
 
 const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
   useEffect(() => {
@@ -62,6 +63,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
 };
 
 const Calendar = () => {
+  const dispatch = useDispatch();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +72,11 @@ const Calendar = () => {
   // Get data from Redux store
   const { tasks } = useSelector((state) => state.tasks);
   const { laps } = useSelector((state) => state.laps);
+
+  // Fetch laps when component mounts
+  useEffect(() => {
+    dispatch(fetchLaps());
+  }, [dispatch]);
 
   // Agregar manejo de teclas para navegación
   useEffect(() => {

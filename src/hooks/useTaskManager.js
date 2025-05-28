@@ -12,43 +12,36 @@ export const useTaskManager = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
   const [user, setUser] = useState(null);
-  const [localTasks, setLocalTasks] = useState([]);
-
-  // Load local tasks from localStorage on component mount
-  useEffect(() => {
+  const [localTasks, setLocalTasks] = useState(() => {
     const savedTasks = localStorage.getItem("localTasks");
-    if (savedTasks) {
-      setLocalTasks(JSON.parse(savedTasks));
-    }
-  }, []);
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
 
   // Save local tasks to localStorage whenever they change
   useEffect(() => {
     if (!user) {
       localStorage.setItem("localTasks", JSON.stringify(localTasks));
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('localTasksUpdated'));
     }
   }, [localTasks, user]);
 
-  // Obtener usuario y cargar tareas al montar el componente
+  // Get user and load tasks on component mount
   useEffect(() => {
     const loadData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
       if (user) {
+        // Clear local tasks when user logs in
+        localStorage.removeItem("localTasks");
+        setLocalTasks([]);
         dispatch(fetchTasks());
-      } else {
-        // Cargar tareas locales si no hay usuario
-        const savedTasks = localStorage.getItem("localTasks");
-        if (savedTasks) {
-          setLocalTasks(JSON.parse(savedTasks));
-        }
       }
     };
     loadData();
 
-    // Escuchar cambios en localStorage
+    // Listen for storage changes
     const handleStorageChange = (e) => {
       if (e.key === "localTasks") {
         const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
@@ -58,23 +51,12 @@ export const useTaskManager = () => {
 
     window.addEventListener("storage", handleStorageChange);
 
-    // Escuchar evento personalizado para actualización local
-    const handleLocalUpdate = () => {
-      const savedTasks = localStorage.getItem("localTasks");
-      if (savedTasks) {
-        setLocalTasks(JSON.parse(savedTasks));
-      }
-    };
-
-    window.addEventListener("localTasksUpdated", handleLocalUpdate);
-
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("localTasksUpdated", handleLocalUpdate);
     };
   }, [dispatch]);
 
-  // Suscribirse a cambios en tiempo real
+  // Subscribe to real-time changes
   useEffect(() => {
     if (!user) return;
 
@@ -101,7 +83,6 @@ export const useTaskManager = () => {
 
   const handleToggleCompletion = async (task) => {
     if (!user) {
-      // Handle local storage update
       setLocalTasks((prevTasks) =>
         prevTasks.map((t) =>
           t.id === task.id
@@ -114,47 +95,28 @@ export const useTaskManager = () => {
         )
       );
     } else {
-      // Handle remote storage update
       dispatch(toggleTaskStatus(task.id, !task.completed));
-      try {
-        const { error } = await supabase
-          .from("tasks")
-          .update({ 
-            completed: !task.completed,
-            completed_at: !task.completed ? new Date().toISOString() : null 
-          })
-          .eq("id", task.id);
-
-        if (error) throw error;
-      } catch (error) {
-        dispatch(toggleTaskStatus(task.id, task.completed));
-        console.error("Error updating task:", error);
-      }
     }
   };
 
   const handleDeleteTask = async (taskId) => {
     if (!user) {
-      // Handle local storage delete
       setLocalTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
     } else {
-      // Handle remote storage delete
       dispatch(deleteTask(taskId));
     }
   };
 
   const handleUpdateTask = async (task) => {
     if (!user) {
-      // Handle local storage update
       setLocalTasks((prevTasks) =>
         prevTasks.map((t) => (t.id === task.id ? task : t))
       );
     } else {
-      // Handle remote storage update
       try {
         await dispatch(updateTask(task));
         
-        // Si estamos activando una tarea, desactivamos otras
+        // If we're activating a task, deactivate others
         if (task.activetask) {
           const otherActiveTasks = tasks.filter(
             (t) => t.id !== task.id && t.activetask
@@ -171,12 +133,18 @@ export const useTaskManager = () => {
     }
   };
 
+  const clearLocalTasks = () => {
+    localStorage.removeItem("localTasks");
+    setLocalTasks([]);
+  };
+
   return { 
     user, 
     tasks, 
     localTasks, 
     handleToggleCompletion, 
     handleDeleteTask, 
-    handleUpdateTask 
+    handleUpdateTask,
+    clearLocalTasks
   };
 };

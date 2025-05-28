@@ -63,23 +63,23 @@ export const addTask = (newTask) => async (dispatch) => {
     }
 
     const taskWithUser = {
-      title: newTask.title,
-      description: newTask.description,
-      deadline: newTask.deadline,
-      difficulty: newTask.difficulty,
-      assignment: newTask.assignment,
+      ...newTask,
       user_id: user.id,
+      created_at: new Date().toISOString(),
+      completed: false,
+      activetask: false
     };
 
     const { data, error } = await supabase
       .from('tasks')
       .insert([taskWithUser])
-      .select();
+      .select()
+      .single();
 
     if (error) throw error;
 
-    dispatch(addTaskSuccess(data[0]));
-    return data[0];
+    dispatch(addTaskSuccess(data));
+    return data;
   } catch (error) {
     dispatch(taskError(error.message));
     throw error;

@@ -1,32 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { updateTask } from "../../redux/TaskActions";
+import { updateTask, deleteTask } from "../../redux/TaskActions";
 
 const TaskDetailsModal = ({
-  selectedTask,
-  editedTask,
-  isEditing,
+  isOpen,
   onClose,
-  onEdit,
+  task,
   onSave,
-  onDelete,
+  onEditChange,
+  editedTask,
   onToggleCompletion,
   onSetActiveTask,
-  onEditChange,
 }) => {
   const dispatch = useDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Verificación de seguridad
+  if (!isOpen || !task) return null;
+
+  const handleClose = () => {
+    if (isEditing) {
+      // Si está en modo edición, preguntar antes de cerrar
+      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+        setIsEditing(false);
+        onClose();
+      }
+    } else {
+      setIsEditing(false);
+      onClose();
+    }
+  };
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
-      if (isEditing) {
-        onEdit(false);
-      } else {
-        onClose();
-      }
+      handleClose();
     }
   };
 
@@ -35,6 +46,7 @@ const TaskDetailsModal = ({
       console.log("Edited Task before update:", editedTask);
       
       await onSave(editedTask);
+      setIsEditing(false);
       onClose();
     } catch (error) {
       console.error("Error saving task:", error);
@@ -49,6 +61,7 @@ const TaskDetailsModal = ({
   const handleSaveEdit = async () => {
     try {
       await dispatch(updateTask(editedTask));
+      setIsEditing(false);
       onClose();
     } catch (error) {
       console.error("Error updating task:", error);
@@ -56,37 +69,80 @@ const TaskDetailsModal = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await dispatch(deleteTask(task.id));
+        onClose();
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        toast.error("Failed to delete task: " + error.message);
+      }
+    }
+  };
+
+  const handleToggleCompletion = async () => {
+    try {
+      if (onToggleCompletion) {
+        await onToggleCompletion(task);
+      } else {
+        await dispatch(updateTask({ ...task, completed: !task.completed }));
+      }
+      onClose();
+    } catch (error) {
+      console.error("Error toggling task completion:", error);
+      toast.error("Failed to update task status: " + error.message);
+    }
+  };
+
+  const handleSetActiveTask = async () => {
+    try {
+      if (onSetActiveTask) {
+        await onSetActiveTask({ ...task, activetask: !task.activetask });
+      } else {
+        await dispatch(updateTask({ ...task, activetask: !task.activetask }));
+      }
+      onClose();
+    } catch (error) {
+      console.error("Error setting active task:", error);
+      toast.error("Failed to update task status: " + error.message);
+    }
+  };
+
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
-        onClose(); // Cierra el modal
+        handleClose();
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
+    if (isOpen) {
+      window.addEventListener('keydown', handleEscape);
+    }
+    
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [onClose]);
+  }, [isOpen, isEditing]);
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-sm"
       onClick={handleOverlayClick}
     >
       <div 
-        className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
+        className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 max-w-2xl w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-bold text-center flex-1">
-            Task Details
-          </h3>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">
+            {isEditing ? "Edit Task" : "Task Details"}
+          </h2>
           <button
-            className="text-gray-400 hover:text-white transition duration-200"
-            onClick={onClose}
+            onClick={handleClose}
+            className="text-neutral-400 hover:text-white transition-colors"
           >
-            <X size={24} />
+            ×
           </button>
         </div>
 
@@ -103,7 +159,7 @@ const TaskDetailsModal = ({
                 className="textinput w-full"
               />
             ) : (
-              <p className="text-text-secondary">{selectedTask.title}</p>
+              <p className="text-text-secondary">{task.title}</p>
             )}
           </div>
 
@@ -120,7 +176,7 @@ const TaskDetailsModal = ({
               />
             ) : (
               <p className="text-text-secondary whitespace-pre-wrap">
-                {selectedTask.description || "No description"}
+                {task.description || "No description"}
               </p>            )}
           </div>
 
@@ -144,15 +200,15 @@ const TaskDetailsModal = ({
               ) : (
                 <p
                   className={`text-text-secondary ${
-                    selectedTask.difficulty === "easy"
+                    task.difficulty === "easy"
                       ? "text-green-500"
-                      : selectedTask.difficulty === "medium"
+                      : task.difficulty === "medium"
                         ? "text-[var(--accent-primary)]"
                         : "text-red-500"
                   }`}
                 >
-                  {selectedTask.difficulty.charAt(0).toUpperCase() +
-                    selectedTask.difficulty.slice(1)}
+                  {task.difficulty.charAt(0).toUpperCase() +
+                    task.difficulty.slice(1)}
                 </p>
               )}
             </div>
@@ -172,7 +228,7 @@ const TaskDetailsModal = ({
                 />
               ) : (
                 <p className="text-text-secondary">
-                  {selectedTask.assignment || "No assignment"}
+                  {task.assignment || "No assignment"}
                 </p>
               )}
             </div>
@@ -191,7 +247,7 @@ const TaskDetailsModal = ({
                 />
               ) : (
                 <p className="text-text-secondary">
-                  {new Date(selectedTask.deadline).toLocaleDateString("en-US", {
+                  {new Date(task.deadline).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -208,7 +264,7 @@ const TaskDetailsModal = ({
                 Created At
               </h4>
               <p className="text-text-secondary">
-                {moment(selectedTask.created_at).format("MMMM D, YYYY h:mm A")}
+                {moment(task.created_at).format("MMMM D, YYYY h:mm A")}
               </p>
             </div>
 
@@ -221,25 +277,23 @@ const TaskDetailsModal = ({
                 Status
               </h4>
               <p className="text-text-secondary">
-                {selectedTask.completed ? "Completed" : "Pending"}
+                {task.completed ? "Completed" : "Pending"}
               </p>
             </div>
           </div>
 
           <div className="flex justify-end gap-4 flex-wrap">
             <button
-              onClick={() => onDelete(selectedTask.id)}
+              onClick={handleDelete}
               className="text-red-500 hover:text-red-600 transition-colors duration-200 flex items-center gap-2"
             >
               <Trash2 size={20} />
               Delete Task
             </button>
 
-            {selectedTask.activetask ? (
+            {task.activetask ? (
               <button
-                onClick={() =>
-                  onSetActiveTask({ ...selectedTask, activetask: false })
-                }
+                onClick={handleSetActiveTask}
                 className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
               >
                 <Play size={20} className="rotate-180" />
@@ -247,9 +301,7 @@ const TaskDetailsModal = ({
               </button>
             ) : (
               <button
-                onClick={() =>
-                  onSetActiveTask({ ...selectedTask, activetask: true })
-                }
+                onClick={handleSetActiveTask}
                 className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
               >
                 <Play size={20} />
@@ -258,10 +310,10 @@ const TaskDetailsModal = ({
             )}
 
             <button
-              onClick={() => onToggleCompletion(selectedTask)}
+              onClick={handleToggleCompletion}
               className="text-gray-400 hover:text-gray-300 transition-colors duration-200 flex items-center gap-2"
             >
-              {selectedTask.completed ? (
+              {task.completed ? (
                 <>
                   <Circle size={20} />
                   Mark as Incomplete
@@ -284,7 +336,7 @@ const TaskDetailsModal = ({
               </button>
             ) : (
               <button
-                onClick={() => onEdit(true)}
+                onClick={() => setIsEditing(true)}
                 className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors duration-200 flex items-center gap-2"
               >
                 Edit Task

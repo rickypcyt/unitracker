@@ -19,6 +19,7 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: false,
+            thunk: true
         }).concat(createErrorMiddleware({
             maxRetries: 3,
             retryDelay: 1000

@@ -36,12 +36,24 @@ const AddTaskModal = ({ isOpen, onClose, selectedDate, onAddTask }) => {
     }
   };
 
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      if (taskTitle.trim() || taskDescription.trim()) {
+        if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+          onClose();
+        }
+      } else {
+        onClose();
+      }
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={handleOverlayClick}
     >
       <div 
         className="bg-neutral-900 rounded-lg p-6 w-full max-w-md"

@@ -1,5 +1,6 @@
 import React, { memo, useEffect } from 'react';
-import Statistics from '../../components/tools/Stats';
+import Statistics from '../components/tools/Stats';
+import MonthLogs from '../components/statistics/MonthLogs';
 import { useLocation } from 'react-router-dom';
 
 const StatsPage = memo(() => {
@@ -14,9 +15,14 @@ const StatsPage = memo(() => {
   }, [isVisible]);
 
   return (
-    <div className="container mx-auto px-4 pt-20">
-      <div className="max-w-4xl mx-auto">
-        <Statistics />
+    <div className="w-full px-6 pt-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <Statistics />
+        </div>
+        <div>
+          <MonthLogs />
+        </div>
       </div>
     </div>
   );

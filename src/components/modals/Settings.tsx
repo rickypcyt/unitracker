@@ -1,207 +1,175 @@
 import React, { useState } from "react";
-import { Settings as SettingsIcon, X, Play, Pause } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../../utils/ThemeContext";
-import { colorClasses } from "../../utils/colors";
-import StartSessionMenu from "./StartSessionMenu";
-import { useAuth } from "../hooks/useAuth";
+import { X, Bell, Eye, Globe } from "lucide-react";
 
-interface LayoutControlsProps {
-  isEditing: boolean;
-  onToggleEditing: () => void;
-  isLoggedIn: boolean;
-  onLogin: () => void;
-  isPlaying: boolean;
-  setIsPlaying: (playing: boolean) => void;
-  currentTheme: string;
-  onThemeChange: (theme: string) => void;
-  accentPalette: string;
-  setAccentPalette: (palette: string) => void;
-  loginWithGoogle: () => void;
-  showSettings: boolean;
-  setShowSettings: (show: boolean) => void;
-  userPadding: number;
-  setUserPadding: (val: number) => void;
-  userGap: number;
-  setUserGap: (val: number) => void;
+interface SettingsProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const Settings: React.FC<LayoutControlsProps> = ({
-  isEditing,
-  onToggleEditing,
-  isLoggedIn,
-  onLogin,
-  isPlaying,
-  setIsPlaying,
-  loginWithGoogle,
-  showSettings,
-  setShowSettings,
-  userPadding,
-  setUserPadding,
-  userGap,
-  setUserGap,
-}) => {
-  const { accentPalette: themeAccentPalette } = useTheme();
-  const [showControlsModal, setShowControlsModal] = useState(false);
-  const [showSessionMenu, setShowSessionMenu] = useState(false);
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
+  const [notifications, setNotifications] = useState({
+    sessionReminders: true,
+    taskDueDates: true,
+    achievements: true
+  });
+  const [displayPreferences, setDisplayPreferences] = useState({
+    compactMode: false,
+    showAnimations: true
+  });
+  const [language, setLanguage] = useState('en');
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const toggleNotification = (key: keyof typeof notifications) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const toggleDisplayPreference = (key: keyof typeof displayPreferences) => {
+    setDisplayPreferences(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
 
   return (
-    <>
-      <button
-        onClick={() => setShowControlsModal(true)}
-        className="fixed bottom-4 right-4 p-1 rounded hover:bg-neutral-800 transition z-[100]"
-        aria-label="Open Settings"
-      >
-        <SettingsIcon size={20} />
-      </button>
-
-      {showSettings && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-sm p-4 sm:p-6"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowSettings(false);
-            }
-          }}
-        >
-          <div 
-            className="maincard w-full max-w-md mx-auto rounded-2xl p-4 sm:p-6 transform transition-all duration-200 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[99999]"
+      onClick={handleOverlayClick}
+    >
+      <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-md mx-4 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-neutral-100">Settings</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
           >
-            <div className="flex justify-between items-center mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold">Settings</h2>
-              <button
-                className="text-gray-400 hover:text-white transition duration-200 p-1"
-                onClick={() => setShowSettings(false)}
-              >
-                <X size={20} className="sm:w-6 sm:h-6" />
-              </button>
-            </div>
+            <X size={20} />
+          </button>
+        </div>
 
-            <div className="space-y-4 sm:space-y-6">
-              {/* Session Section */}
-              <div className="bg-bg-secondary p-3 sm:p-4 rounded-xl">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-text-primary">Session Controls</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  {!isPlaying ? (
-                    <button
-                      onClick={() => {
-                        setShowSessionMenu(true);
-                        setShowSettings(false);
-                      }}
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${colorClasses["blue"]} hover:${colorClasses["blue"]}`}
-                    >
-                      <Play size={18} className="sm:w-5 sm:h-5" />
-                      Start Session
-                    </button>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <button
-                        onClick={() => setIsPlaying(false)}
-                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${colorClasses["blue"]} hover:${colorClasses["blue"]}`}
-                      >
-                        <Pause size={18} className="sm:w-5 sm:h-5" />
-                        Pause Session
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsPlaying(false);
-                        }}
-                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700`}
-                      >
-                        <X size={18} className="sm:w-5 sm:h-5" />
-                        Stop Session
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Account Section */}
-              <div className="bg-bg-secondary p-3 sm:p-4 rounded-xl">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-text-primary">Account</h3>
+        <div className="space-y-6">
+          {/* Notifications Section */}
+          <div className="bg-neutral-800/50 p-4 rounded-xl">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-100 flex items-center gap-2">
+              <Bell size={18} />
+              Notifications
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center justify-between">
+                <span className="text-neutral-300">Session Reminders</span>
                 <button
-                  onClick={() => {
-                    if (isLoggedIn) {
-                      setShowSettings(false);
-                      onLogin();
-                    } else {
-                      loginWithGoogle();
-                      setShowSettings(false);
-                    }
-                  }}
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${colorClasses["blue"]} hover:${colorClasses["blue"]}`}
+                  onClick={() => toggleNotification('sessionReminders')}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    notifications.sessionReminders ? 'bg-blue-600' : 'bg-neutral-700'
+                  }`}
                 >
-                  {isLoggedIn ? "Log Out" : "Log In with Google"}
-                </button>
-              </div>
-
-              {/* Layout Section */}
-              <div className="bg-bg-secondary p-3 sm:p-4 rounded-xl">
-                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-text-primary">Layout Settings</h3>
-                <div className="space-y-3 sm:space-y-4">
-                  {/* Edit Layout Button */}
-                  <button
-                    onClick={() => {
-                      onToggleEditing();
-                      setShowSettings(false);
-                    }}
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
-                      isEditing 
-                        ? "bg-red-600 hover:bg-red-700" 
-                        : `${colorClasses["blue"]} hover:${colorClasses["blue"]}`
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                      notifications.sessionReminders ? 'translate-x-6' : 'translate-x-1'
                     }`}
-                  >
-                    {isEditing ? "Exit Layout Edit Mode" : "Edit Layout"}
-                  </button>
-
-                  {/* Spacing Controls */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-2">
-                        Padding (rem)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={10}
-                        step={0.1}
-                        value={userPadding}
-                        onChange={(e) => setUserPadding(Number(e.target.value))}
-                        className="textinput w-full px-3 py-2 text-sm sm:text-base"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-text-secondary mb-2">
-                        Gap (rem)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={5}
-                        step={0.1}
-                        value={userGap}
-                        onChange={(e) => setUserGap(Number(e.target.value))}
-                        className="textinput w-full px-3 py-2 text-sm sm:text-base"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  />
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-neutral-300">Task Due Dates</span>
+                <button
+                  onClick={() => toggleNotification('taskDueDates')}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    notifications.taskDueDates ? 'bg-blue-600' : 'bg-neutral-700'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                      notifications.taskDueDates ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-neutral-300">Achievements</span>
+                <button
+                  onClick={() => toggleNotification('achievements')}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    notifications.achievements ? 'bg-blue-600' : 'bg-neutral-700'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                      notifications.achievements ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </label>
             </div>
           </div>
-        </div>
-      )}
 
-      <StartSessionMenu
-        isOpen={showSessionMenu}
-        onClose={() => {
-          setShowSessionMenu(false);
-          setIsPlaying(false);
-        }}
-        setIsPlaying={setIsPlaying}
-      />
-    </>
+          {/* Display Preferences Section */}
+          <div className="bg-neutral-800/50 p-4 rounded-xl">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-100 flex items-center gap-2">
+              <Eye size={18} />
+              Display Preferences
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center justify-between">
+                <span className="text-neutral-300">Compact Mode</span>
+                <button
+                  onClick={() => toggleDisplayPreference('compactMode')}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    displayPreferences.compactMode ? 'bg-blue-600' : 'bg-neutral-700'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                      displayPreferences.compactMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-neutral-300">Show Animations</span>
+                <button
+                  onClick={() => toggleDisplayPreference('showAnimations')}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    displayPreferences.showAnimations ? 'bg-blue-600' : 'bg-neutral-700'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transform transition-transform ${
+                      displayPreferences.showAnimations ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </label>
+            </div>
+          </div>
+
+          {/* Language Section */}
+          <div className="bg-neutral-800/50 p-4 rounded-xl">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-100 flex items-center gap-2">
+              <Globe size={18} />
+              Language
+            </h3>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-neutral-300 border border-neutral-600 focus:outline-none focus:border-blue-500"
+            >
+              <option value="en">English</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

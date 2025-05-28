@@ -109,11 +109,11 @@ function useSound(config, masterGain) {
 function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlaying, start, stop, className }) {
   return (
     <div className={`bar ${className || ''}`}>
-      <label className="noisegentitle">
-        <Icon size={18} />
+      <label className="noisegentitle flex items-center gap-2">
+        <Icon size={20} className="text-white" />
         <span className="card-text font-medium text-white text-sm sm:text-md">{label}</span>
       </label>
-      <div className="slider">
+      <div className="slider flex items-center gap-3">
         <input
           type="range"
           min={min}
@@ -121,14 +121,14 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
           step="0.01"
           value={volume}
           onChange={e => setVolume(parseFloat(e.target.value))}
-          className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-accent-primary"
+          className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-white"
         />
         <div className="w-8 flex justify-center">
           {!isPlaying ? (
             <button
               type="button"
               onClick={start}
-              className="text-white hover:text-accent-secondary"
+              className="text-white hover:text-neutral-300 transition-colors"
             >
               <Play size={20} />
             </button>
@@ -136,7 +136,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
             <button
               type="button"
               onClick={stop}
-              className="text-accent-tertiary hover:text-accent-secondary"
+              className="text-white hover:text-neutral-300 transition-colors"
             >
               <Pause size={20} />
             </button>
@@ -184,29 +184,32 @@ export default function NoiseGenerator() {
   }, []);
 
   return (
-    <div className="maincard">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2"><AudioLines size={24} />Noise Generator</h2>
+    <div className="maincard p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-3 text-white">
+          <AudioLines size={24} className="text-white" />
+          Noise Generator
+        </h2>
         <button
           type="button"
           onClick={toggleAllSounds}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-sm sm:text-base"
         >
           {allPlaying ? (
             <>
-              <Pause size={16} />
+              <Pause size={18} />
               <span>Stop All</span>
             </>
           ) : (
             <>
-              <Play size={16} />
+              <Play size={18} />
               <span>Play All</span>
             </>
           )}
         </button>
       </div>
-      <div className="mb-3 space-y-6 pr-2">
-        <div className="mt-10 mb-5">
+      <div className="space-y-6">
+        <div className="space-y-6">
           {SOUND_CONFIGS.map((config, idx) => (
             <SoundControl
               key={config.key}
@@ -219,7 +222,7 @@ export default function NoiseGenerator() {
               isPlaying={soundHooks[idx].isPlaying}
               start={soundHooks[idx].start}
               stop={soundHooks[idx].stop}
-              className={`mt-3 mb-3 ${config.key === 'ocean' ? 'mb-10' : ''}`}
+              className={config.key === 'ocean' ? 'mb-2' : ''}
             />
           ))}
         </div>

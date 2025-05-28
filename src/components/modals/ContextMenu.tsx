@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Trash2, Settings, Move } from "lucide-react";
+import { Trash2, Settings } from "lucide-react";
 
 const ContextMenu = ({
   x,
@@ -55,14 +55,6 @@ const ContextMenu = ({
             <Trash2 size={16} />
             Delete Component
           </button>
-        )}
-        {isEditing && (
-          <div className="px-4 py-2 text-xs text-text-secondary">
-            <div className="flex items-center gap-2">
-              <Move size={14} />
-              Drag to reorder
-            </div>
-          </div>
         )}
       </div>
     </div>

@@ -1,14 +1,8 @@
-import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocalStorage } from './useLocalStorage';
-import { 
-  addTask as addTaskAction, 
-  updateTask as updateTaskAction,
-  deleteTask as deleteTaskAction,
-  toggleTaskStatus as toggleTaskStatusAction
-} from '../redux/TaskActions';
-import { supabase } from '../utils/supabaseClient';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addTask, fetchTasks } from "../redux/TaskActions";
+import { supabase } from "../utils/supabaseClient";
+import { toast } from "react-toastify";
 
 /**
  * Custom hook for unified task management (local and remote)
@@ -16,125 +10,146 @@ import { toast } from 'react-toastify';
  */
 export const useTaskStorage = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const remoteTasks = useSelector((state) => state.tasks.tasks);
-  const [localTasks, setLocalTasks] = useLocalStorage('localTasks', []);
+  const tasks = useSelector((state) => state.tasks.tasks);
+  const [user, setUser] = useState(null);
+  const [localTasks, setLocalTasks] = useState(() => {
+    const savedTasks = localStorage.getItem("localTasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
 
-  // Get the appropriate tasks based on user status
-  const tasks = user ? remoteTasks : localTasks;
-
-  const addTask = useCallback(async (newTask) => {
-    try {
-      if (!user) {
-        const localTask = {
-          ...newTask,
-          id: Date.now(),
-          created_at: new Date().toISOString(),
-          completed: false,
-          activetask: false
-        };
-        setLocalTasks(prev => [...prev, localTask]);
-        return localTask;
-      }
-
-      const result = await dispatch(addTaskAction(newTask)).unwrap();
-      return result;
-    } catch (error) {
-      toast.error('Failed to add task');
-      throw error;
+  // Save local tasks to localStorage whenever they change
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem("localTasks", JSON.stringify(localTasks));
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('localTasksUpdated'));
     }
-  }, [user, dispatch, setLocalTasks]);
+  }, [localTasks, user]);
 
-  const updateTask = useCallback(async (taskId, updates) => {
-    try {
-      if (!user) {
-        setLocalTasks(prev => 
-          prev.map(task => 
-            task.id === taskId ? { ...task, ...updates } : task
-          )
-        );
-        return;
+  // Get user and load tasks on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        // Clear local tasks when user logs in
+        localStorage.removeItem("localTasks");
+        setLocalTasks([]);
+        dispatch(fetchTasks());
       }
+    };
+    loadData();
 
-      await dispatch(updateTaskAction(taskId, updates)).unwrap();
-    } catch (error) {
-      toast.error('Failed to update task');
-      throw error;
-    }
-  }, [user, dispatch, setLocalTasks]);
-
-  const deleteTask = useCallback(async (taskId) => {
-    try {
-      if (!user) {
-        setLocalTasks(prev => prev.filter(task => task.id !== taskId));
-        return;
+    // Listen for storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === "localTasks") {
+        const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
+        setLocalTasks(newTasks);
       }
+    };
 
-      await dispatch(deleteTaskAction(taskId)).unwrap();
-    } catch (error) {
-      toast.error('Failed to delete task');
-      throw error;
-    }
-  }, [user, dispatch, setLocalTasks]);
+    window.addEventListener("storage", handleStorageChange);
 
-  const toggleTaskStatus = useCallback(async (taskId, completed) => {
-    try {
-      if (!user) {
-        setLocalTasks(prev => 
-          prev.map(task => 
-            task.id === taskId 
-              ? { 
-                  ...task, 
-                  completed, 
-                  completed_at: completed ? new Date().toISOString() : null 
-                } 
-              : task
-          )
-        );
-        return;
-      }
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [dispatch]);
 
-      await dispatch(toggleTaskStatusAction(taskId, completed)).unwrap();
-    } catch (error) {
-      toast.error('Failed to update task status');
-      throw error;
-    }
-  }, [user, dispatch, setLocalTasks]);
-
-  const syncLocalTasks = useCallback(async () => {
+  // Subscribe to real-time changes
+  useEffect(() => {
     if (!user) return;
 
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) return;
+    const subscription = supabase
+      .channel("tasks_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "tasks",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          dispatch(fetchTasks());
+        }
+      )
+      .subscribe();
 
-      // Get all local tasks
-      const localTasksToSync = JSON.parse(localStorage.getItem('localTasks') || '[]');
-      
-      // Upload each local task to the server
-      for (const task of localTasksToSync) {
-        const { id, ...taskData } = task;
-        await dispatch(addTaskAction({
-          ...taskData,
-          user_id: currentUser.id
-        })).unwrap();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, dispatch]);
+
+  const addTask = async (newTask) => {
+    if (!user) {
+      // Handle local storage
+      const localTask = {
+        ...newTask,
+        id: Date.now().toString(),
+        created_at: new Date().toISOString(),
+        completed: false,
+        completed_at: null,
+        activetask: false,
+      };
+      setLocalTasks((prevTasks) => [...prevTasks, localTask]);
+      return localTask;
+    } else {
+      try {
+        // Handle remote storage - remove id from the task data
+        const { id, ...taskWithoutId } = newTask;
+        const { data, error } = await supabase
+          .from("tasks")
+          .insert([{ ...taskWithoutId, user_id: user.id }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        dispatch(addTask(data));
+        return data;
+      } catch (error) {
+        console.error("Error adding task:", error);
+        toast.error("Failed to add task");
+        return null;
       }
+    }
+  };
+
+  const syncLocalTasks = async () => {
+    if (!user || !localTasks.length) return;
+
+    try {
+      const tasksToSync = localTasks.map(task => ({
+        ...task,
+        user_id: user.id,
+        id: undefined // Let Supabase generate new IDs
+      }));
+
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert(tasksToSync)
+        .select();
+
+      if (error) throw error;
 
       // Clear local tasks after successful sync
+      localStorage.removeItem("localTasks");
       setLocalTasks([]);
-      toast.success('Tasks synchronized successfully');
+      dispatch(fetchTasks());
+
+      return data;
     } catch (error) {
-      toast.error('Failed to synchronize tasks');
-      throw error;
+      console.error("Error syncing local tasks:", error);
+      toast.error("Failed to sync local tasks");
+      return null;
     }
-  }, [user, dispatch, setLocalTasks]);
+  };
 
   return {
-    tasks,
+    tasks: user ? tasks : localTasks,
     addTask,
-    updateTask,
-    deleteTask,
-    toggleTaskStatus,
-    syncLocalTasks
+    syncLocalTasks,
+    isAuthenticated: !!user
   };
 }; 

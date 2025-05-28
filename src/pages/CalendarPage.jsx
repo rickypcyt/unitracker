@@ -1,6 +1,7 @@
 import React, { memo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Calendar from '../../components/tools/Calendar';
+import Calendar from '../components/tools/Calendar';
+import UpcomingTasks from '../components/tools/UpcomingTasks';
 
 const CalendarPage = memo(() => {
   const location = useLocation();
@@ -14,9 +15,14 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
   return (
-    <div className="container mx-auto px-4 pt-20">
-      <div className="max-w-4xl mx-auto">
-        <Calendar />
+    <div className="w-full px-6 pt-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Calendar />
+        </div>
+        <div className="lg:col-span-1">
+          <UpcomingTasks />
+        </div>
       </div>
     </div>
   );
