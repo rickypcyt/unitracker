@@ -54,7 +54,7 @@ export const SortableColumn = ({
           >
             <h3 className="font-medium text-lg text-neutral-200 group-hover:text-neutral-100">
               {assignment}
-              <span className="text-sm text-neutral-400 ml-2">
+              <span className="text-base text-neutral-400 ml-2">
                 ({tasks.length})
               </span>
             </h3>

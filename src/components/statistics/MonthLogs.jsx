@@ -59,7 +59,7 @@ const MonthLogs = () => {
                             <div className="flex items-center justify-between w-full">
                                 <span className="text-base">{monthYear}</span>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-text-secondary text-sm">
+                                    <span className="text-text-secondary text-base">
                                         {lapsOfMonth.length} sessions
                                     </span>
                                     {expandedMonths[monthYear] ? (

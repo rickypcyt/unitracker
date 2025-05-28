@@ -94,7 +94,7 @@ const UpcomingTasks = () => {
                 <Clock size={16} className="text-blue-500" />
                 <span className="text-white">{task.title}</span>
               </div>
-              <span className="text-sm text-neutral-400">
+              <span className="text-base text-neutral-400">
                 {task.assignment && <span className="mr-2">{task.assignment}</span>}
                 {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
                   weekday: 'short',

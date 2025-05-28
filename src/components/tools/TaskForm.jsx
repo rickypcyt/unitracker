@@ -77,7 +77,7 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Assignment Section */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-neutral-400">
+          <label className="block text-base font-medium text-neutral-400">
             Assignment
           </label>
           <div className="relative">
@@ -123,7 +123,7 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
 
         {/* Title Section */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-neutral-400">
+          <label className="block text-base font-medium text-neutral-400">
             Title
           </label>
           <input
@@ -138,7 +138,7 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
 
         {/* Description Section */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-neutral-400">
+          <label className="block text-base font-medium text-neutral-400">
             Description
           </label>
           <textarea
@@ -153,7 +153,7 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
         {/* Deadline and Difficulty Section */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-400">
+            <label className="block text-base font-medium text-neutral-400">
               Deadline
             </label>
             <input
@@ -166,7 +166,7 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-neutral-400">
+            <label className="block text-base font-medium text-neutral-400">
               Difficulty
             </label>
             <select

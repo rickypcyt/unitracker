@@ -198,7 +198,7 @@ export const KanbanBoard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium text-neutral-200">
               Completed Tasks
-              <span className="text-sm text-neutral-400 ml-2">
+              <span className="text-base text-neutral-400 ml-2">
                 ({completedTasks.length})
               </span>
             </h2>

@@ -69,7 +69,26 @@ const StudyTimer = ({ onSyncChange }) => {
   const studyControls = {
     start: async () => {
       if (!studyState.isRunning) {
-        setIsStartModalOpen(true);
+        if (currentSession) {
+          // If there's an active session, resume it instead of showing the modal
+          const now = Date.now();
+          setStudyState((prev) => ({
+            ...prev,
+            isRunning: true,
+            lastStart: now,
+            timeAtStart: prev.time,
+          }));
+
+          window.dispatchEvent(
+            new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
+          );
+
+          if (studyState.syncPomo) {
+            window.dispatchEvent(new CustomEvent("startPomodoro"));
+          }
+        } else {
+          setIsStartModalOpen(true);
+        }
       }
     },
     pause: () => {
@@ -167,7 +186,14 @@ const StudyTimer = ({ onSyncChange }) => {
       window.dispatchEvent(new CustomEvent("startPomodoro"));
     }
 
-    // Save session data to database
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
+
+    // Save session data to database with only existing columns
     const { error } = await supabase
       .from('study_laps')
       .insert([
@@ -175,7 +201,8 @@ const StudyTimer = ({ onSyncChange }) => {
           name: sessionData.title,
           description: sessionData.description,
           session_number: sessionNum,
-          tasks: sessionData.taskIds
+          duration: '00:00:00',
+          user_id: user.id
         }
       ]);
 
@@ -278,8 +305,14 @@ const StudyTimer = ({ onSyncChange }) => {
         </button>
       </div>
 
-      <div className="text-sm text-neutral-400 mt-4">
-        Session Today: {currentSession || 0}
+      <div className="text-base text-neutral-400 mt-4 text-center">
+        <div className={`mb-1 ${
+          !currentSession ? 'text-neutral-400' : 
+          studyState.isRunning ? 'text-green-500' : 'text-yellow-500'
+        }`}>
+          Session Status: {!currentSession ? 'Inactive' : studyState.isRunning ? 'Active' : 'Paused'}
+        </div>
+        Sessions Today: {currentSession || 0}
       </div>
 
       <StartSessionModal
@@ -291,4 +324,4 @@ const StudyTimer = ({ onSyncChange }) => {
   );
 };
 
-export default StudyTimer; 
+export default StudyTimer;

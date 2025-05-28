@@ -77,7 +77,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           {/* Left Column - Session Details */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-base font-medium text-neutral-400 mb-1">
                 Session Title
               </label>
               <input
@@ -90,7 +90,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-400 mb-1">
+              <label className="block text-base font-medium text-neutral-400 mb-1">
                 Session Description
               </label>
               <textarea
@@ -106,7 +106,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           {/* Right Column - Tasks */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium text-neutral-400">
+              <label className="block text-base font-medium text-neutral-400">
                 Tasks
               </label>
               <button
@@ -133,11 +133,11 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
                     <div className="flex-1">
                       <div className="font-medium">{task.title}</div>
                       {task.description && (
-                        <div className="text-sm text-neutral-400">{task.description}</div>
+                        <div className="text-base text-neutral-400">{task.description}</div>
                       )}
                     </div>
                     {task.assignment && (
-                      <div className="ml-4 px-2 py-1 bg-neutral-700/50 rounded text-sm text-neutral-300">
+                      <div className="ml-4 px-2 py-1 bg-neutral-700/50 rounded text-base text-neutral-300">
                         {task.assignment}
                       </div>
                     )}

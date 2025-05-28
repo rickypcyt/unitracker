@@ -249,19 +249,19 @@ const Statistics = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-sm">Today (h)</div>
+            <div className="text-text-secondary text-base">Today (h)</div>
             <div className="text-2xl font-bold">{formatMinutesToHHMM(todayMinutes)}</div>
-            <div className="text-text-secondary text-sm">{doneToday} tasks</div>
+            <div className="text-text-secondary text-base">{doneToday} tasks</div>
           </div>
           <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-sm">This Week (h)</div>
+            <div className="text-text-secondary text-base">This Week (h)</div>
             <div className="text-2xl font-bold">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
-            <div className="text-text-secondary text-sm">{doneWeek} tasks</div>
+            <div className="text-text-secondary text-base">{doneWeek} tasks</div>
           </div>
           <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-sm">This Month (h)</div>
+            <div className="text-text-secondary text-base">This Month (h)</div>
             <div className="text-2xl font-bold">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
-            <div className="text-text-secondary text-sm">{doneMonth} tasks</div>
+            <div className="text-text-secondary text-base">{doneMonth} tasks</div>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ const Statistics = () => {
             <h3 className="text-lg font-semibold">Weekly Progress</h3>
             <button
               onClick={toggleWeek}
-              className="text-sm text-text-secondary hover:text-white transition-colors duration-200"
+              className="text-base text-text-secondary hover:text-white transition-colors duration-200"
             >
               {isCurrentWeek ? "Last Week" : "This Week"}
             </button>

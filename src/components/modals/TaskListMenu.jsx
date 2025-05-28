@@ -52,7 +52,7 @@ export const TaskListMenu = ({
             onDoubleClick(contextMenu.task);
             onClose();
           }}
-          className="w-full px-2 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+          className="w-full px-2 py-2 text-left text-base text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
         >
           <Info size={16} />
           Edit Task
@@ -66,7 +66,7 @@ export const TaskListMenu = ({
               });
               onClose();
             }}
-            className="w-full px-2 py-2 text-left text-sm text-yellow-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+            className="w-full px-2 py-2 text-left text-base text-yellow-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
           >
             <Play size={16} className="rotate-180" />
             Deactivate Task
@@ -80,7 +80,7 @@ export const TaskListMenu = ({
               });
               onClose();
             }}
-            className="w-full px-2 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+            className="w-full px-2 py-2 text-left text-base text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
           >
             <Play size={16} />
             Set as Active Task
@@ -91,7 +91,7 @@ export const TaskListMenu = ({
             onDeleteTask(contextMenu.task.id);
             onClose();
           }}
-          className="w-full px-2 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+          className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
         >
           <Trash2 size={16} />
           Delete Task

@@ -82,7 +82,7 @@ export const TaskItem = ({
                             className="w-full text-left focus:outline-none"
                         >
                             <span
-                                className={`block font-medium text-sm transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
+                                className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
                                     task.completed
                                         ? "line-through text-neutral-400"
                                         : "text-neutral-200"
@@ -96,7 +96,7 @@ export const TaskItem = ({
                 </div>
 
                 {/* Second row: Metadata */}
-                <div className="flex items-center justify-between text-xs text-neutral-400">
+                <div className="flex items-center justify-between text-base text-neutral-400">
                     <div className="flex items-center gap-3">
                         {task.deadline && (
                             <div className="flex items-center gap-1">

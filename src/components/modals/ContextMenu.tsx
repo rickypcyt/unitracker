@@ -39,7 +39,7 @@ const ContextMenu = ({
             onToggleEdit();
             onClose();
           }}
-          className="w-full px-4 py-2 text-left text-sm bg-neutral-800 hover:bg-neutral-700 rounded-md bg-opacity-60 flex items-center gap-2 transition-colors duration-200"
+          className="w-full px-4 py-2 text-left text-base bg-neutral-800 hover:bg-neutral-700 rounded-md bg-opacity-60 flex items-center gap-2 transition-colors duration-200"
         >
           <Settings size={16} />
           {isEditing ? "Exit Edit Layout" : "Edit Layout"}
@@ -50,7 +50,7 @@ const ContextMenu = ({
               onRemove(colIndex, itemIndex);
               onClose();
             }}
-            className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2 transition-colors duration-200"
+            className="w-full px-4 py-2 text-left text-base text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2 transition-colors duration-200"
           >
             <Trash2 size={16} />
             Delete Component

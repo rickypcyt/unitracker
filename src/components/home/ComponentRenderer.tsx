@@ -38,7 +38,7 @@ const ComponentRenderer: React.FC<ComponentRendererProps> = ({
     >
       <Component ref={pomodoroRef} {...props} />
       {isEditing && (
-        <div className="absolute top-2 right-2 text-xs text-accent-primary bg-neutral-900 px-2 py-1 rounded-full">
+        <div className="absolute top-2 right-2 text-base text-accent-primary bg-neutral-900 px-2 py-1 rounded-full">
           {ComponentRegistry[componentKey]?.name}
         </div>
       )}

@@ -177,10 +177,10 @@ const Pomodoro = () => {
         )}
       </div>
 
-      <div className="mt-4 text-sm text-neutral-400">
+      <div className="mt-4 text-base text-neutral-400">
         {pomoState.currentMode === "work" ? "Work Time" : "Break Time"}
       </div>
-      <div className="text-sm text-neutral-400">
+      <div className="text-base text-neutral-400">
         Pomodoros Today: {pomoState.pomodoroToday}
       </div>
     </div>
