@@ -244,17 +244,27 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
       }}
     >
       <div 
-        className="maincard max-w-2xl w-full mx-4 transform transition-transform duration-200"
+        className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl mx-4 transform transition-transform duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Start Session</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">
+            {menuIsPlaying ? "Edit Session" : "Start Session"}
+          </h2>
           <button
-            className="text-gray-400 hover:text-white transition duration-200"
+            className="text-neutral-400 hover:text-white"
             onClick={onClose}
           >
             <X size={24} />
           </button>
+        </div>
+
+        <div className="mb-6">
+          <p className="text-neutral-400">
+            {menuIsPlaying 
+              ? "Configure your current session settings and tools."
+              : "Select a task and configure your session tools before starting."}
+          </p>
         </div>
         
         <div className="space-y-4">
@@ -284,40 +294,36 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => toggleTool('pomodoro')}
-                disabled={menuIsPlaying}
                 className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                   activeTools.pomodoro ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <Play size={16} />
                 Pomodoro
               </button>
               <button
                 onClick={() => toggleTool('brownNoise')}
-                disabled={menuIsPlaying}
                 className={`flex items-center justify-center gap-2 p-2 rounded-lg text-base transition-colors duration-200 ${
                   activeTools.brownNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <Cloud size={16} />
                 Brown Noise
               </button>
               <button
                 onClick={() => toggleTool('rainNoise')}
-                disabled={menuIsPlaying}
                 className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                   activeTools.rainNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <CloudRain size={16} />
                 Rain Noise
               </button>
               <button
                 onClick={() => toggleTool('oceanNoise')}
-                disabled={menuIsPlaying}
                 className={`flex items-center justify-center gap-2 p-2 rounded-lg transition-colors duration-200 ${
                   activeTools.oceanNoise ? 'bg-accent-primary text-white' : 'bg-neutral-800 text-text-secondary hover:bg-neutral-700'
-                } ${menuIsPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                }`}
               >
                 <Waves size={16} />
                 Ocean Waves
@@ -325,22 +331,25 @@ const StartSessionMenu = ({ isOpen = false, onClose = () => {}, setIsPlaying }) 
             </div>
           </div>
 
-          <div className="flex justify-center mt-6">
-            {!menuIsPlaying ? (
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-neutral-400 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600"
+            >
+              Okay
+            </button>
+            {!menuIsPlaying && (
               <button
                 onClick={handleStartSession}
-                className="textbutton"
+                className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
               >
-                <Play size={20} />
                 Start Session
-              </button>
-            ) : (
-              <button
-                onClick={handleStopSession}
-                className="textbutton bg-red-600 hover:bg-red-700"
-              >
-                <Pause size={20} />
-                Stop Session
               </button>
             )}
           </div>

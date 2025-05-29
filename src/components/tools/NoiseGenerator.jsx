@@ -256,7 +256,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
             <button
               type="button"
               onClick={stop}
-              className="text-white hover:text-neutral-300 transition-colors"
+              className="text-blue-500 hover:text-blue-400 transition-colors"
             >
               <Pause size={20} />
             </button>

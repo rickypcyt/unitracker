@@ -3,25 +3,32 @@ import { useDispatch, useSelector } from "react-redux";
 import { supabase } from "../../utils/supabaseClient";
 import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
 import { createLap } from "../../redux/LapActions";
-import { Play, Pause, RotateCcw, Check, Clock } from "lucide-react";
+import { Play, Pause, RotateCcw, Check, Clock, X, MoreVertical } from "lucide-react";
 import { useTheme } from "../../utils/ThemeContext";
 import { useStudyTimer, formatStudyTime } from "../../hooks/useTimers";
 import useEventListener from "../../hooks/useEventListener";
 import StartSessionModal from "../modals/StartSessionModal";
+import FinishSessionModal from "../modals/FinishSessionModal";
+import EditSessionModal from "../modals/EditSessionModal";
 
 const StudyTimer = ({ onSyncChange }) => {
   const { iconColor } = useTheme();
   const dispatch = useDispatch();
   const { currentSession } = useSelector((state) => state.laps);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
+    const activeSessionId = localStorage.getItem("activeSessionId");
     if (savedState) {
       const parsed = JSON.parse(savedState);
       return {
         ...parsed,
         syncPomo: localStorage.getItem("syncPomoWithTimer") === "true",
+        sessionStatus: parsed.sessionStatus || 'inactive',
       };
     }
     return {
@@ -30,6 +37,7 @@ const StudyTimer = ({ onSyncChange }) => {
       syncPomo: true,
       lastStart: null,
       timeAtStart: 0,
+      sessionStatus: 'inactive',
     };
   });
 
@@ -40,11 +48,36 @@ const StudyTimer = ({ onSyncChange }) => {
       syncPomo: studyState.syncPomo,
       lastStart: studyState.lastStart,
       timeAtStart: studyState.timeAtStart,
+      sessionStatus: studyState.sessionStatus,
     };
     localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
     localStorage.setItem("syncPomoWithTimer", studyState.syncPomo.toString());
+    if (currentSessionId) {
+      localStorage.setItem("activeSessionId", currentSessionId);
+    } else {
+      localStorage.removeItem("activeSessionId");
+    }
     onSyncChange?.(studyState.syncPomo);
-  }, [studyState, onSyncChange]);
+  }, [studyState, onSyncChange, currentSessionId]);
+
+  useEffect(() => {
+    const fetchSessionTitle = async () => {
+      if (currentSessionId) {
+        const { data: session, error } = await supabase
+          .from('sessions')
+          .select('title')
+          .eq('id', currentSessionId)
+          .single();
+        if (!error && session) {
+          setStudyState(prev => ({
+            ...prev,
+            sessionTitle: session.title || 'Untitled Session'
+          }));
+        }
+      }
+    };
+    fetchSessionTitle();
+  }, [currentSessionId]);
 
   const studyTick = useCallback((elapsed) => {
     setStudyState(prev => ({
@@ -62,21 +95,26 @@ const StudyTimer = ({ onSyncChange }) => {
 
   useEventListener("startStudyTimer", () => studyControls.start(), [studyState.syncPomo]);
   useEventListener("stopStudyTimer", () => studyControls.pause(), [studyState.syncPomo]);
-  useEventListener("pauseTimerSync", () => { if (studyState.syncPomo) studyControls.pause(); }, [studyState.syncPomo]);
+  useEventListener("pauseTimerSync", () => { 
+    if (studyState.syncPomo && studyState.isRunning) {
+      studyControls.pause();
+    }
+  }, [studyState.syncPomo, studyState.isRunning]);
   useEventListener("resetTimerSync", () => { if (studyState.syncPomo) studyControls.reset(); }, [studyState.syncPomo]);
   useEventListener("playTimerSync", () => { if (studyState.syncPomo) studyControls.start(); }, [studyState.syncPomo]);
 
   const studyControls = {
     start: async () => {
       if (!studyState.isRunning) {
-        if (currentSession) {
-          // If there's an active session, resume it instead of showing the modal
+        if (currentSessionId) {
+          // Si ya hay una sesión activa, reanuda el contador
           const now = Date.now();
           setStudyState((prev) => ({
             ...prev,
             isRunning: true,
             lastStart: now,
             timeAtStart: prev.time,
+            sessionStatus: 'active'
           }));
 
           window.dispatchEvent(
@@ -87,6 +125,7 @@ const StudyTimer = ({ onSyncChange }) => {
             window.dispatchEvent(new CustomEvent("startPomodoro"));
           }
         } else {
+          // Si no hay sesión activa, abre el modal de inicio
           setIsStartModalOpen(true);
         }
       }
@@ -96,13 +135,16 @@ const StudyTimer = ({ onSyncChange }) => {
         setStudyState((prev) => {
           const now = Date.now();
           const elapsed = prev.timeAtStart + ((now - prev.lastStart) / 1000);
-          return {
+          const newState = {
             ...prev,
             isRunning: false,
             time: elapsed,
             lastStart: null,
             timeAtStart: elapsed,
+            sessionStatus: 'paused'
           };
+          localStorage.setItem("studyTimerState", JSON.stringify(newState));
+          return newState;
         });
 
         window.dispatchEvent(
@@ -121,6 +163,7 @@ const StudyTimer = ({ onSyncChange }) => {
         time: 0,
         lastStart: null,
         timeAtStart: 0,
+        sessionStatus: 'inactive'
       }));
 
       dispatch(resetTimerState());
@@ -135,6 +178,18 @@ const StudyTimer = ({ onSyncChange }) => {
     },
   };
 
+  // Add useEffect to recover state on page load
+  useEffect(() => {
+    const savedState = localStorage.getItem("studyTimerState");
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      setStudyState(prev => ({
+        ...prev,
+        ...parsed
+      }));
+    }
+  }, []);
+
   const getCurrentSessionNumber = async () => {
     const today = new Date().toISOString().split("T")[0];
     const { data, error } = await supabase
@@ -147,16 +202,59 @@ const StudyTimer = ({ onSyncChange }) => {
     return error || !data.length ? 0 : data[0].session_number + 1;
   };
 
-  const handleFinishSession = async () => {
-    if (!currentSession) return;
-    const sessionData = {
-      name: `Session ${currentSession}`,
-      duration: formatStudyTime(studyState.time, true),
-      description: "",
-      session_number: currentSession,
-    };
-    dispatch(createLap(sessionData));
-    studyControls.reset();
+  const handleFinishSession = async (completedTaskIds) => {
+    if (!currentSession || !currentSessionId) {
+      console.warn('Attempted to finish session without currentSession or currentSessionId');
+      return;
+    }
+
+    console.log('Attempting to finish session:', currentSessionId);
+    console.log('Tasks completed count:', completedTaskIds.length);
+
+    try {
+      // Update session end time and tasks completed count based on final active tasks from modal
+      const { data, error: sessionError } = await supabase
+        .from('sessions')
+        .update({
+          ended_at: new Date().toISOString(),
+          tasks_completed: completedTaskIds.length
+        })
+        .eq('id', currentSessionId)
+        .select(); // Select updated data to confirm success
+
+      if (sessionError) {
+        console.error('Error updating session end time/tasks completed:', sessionError);
+        // Decide if we should return here or try to save lap/reset anyway
+        // For now, let's proceed to try to save the lap and reset timers
+      } else {
+        console.log('Session updated successfully:', data);
+      }
+
+      // The FinishSessionModal already updated the session_tasks table based on user selections.
+      // We no longer need to update/delete session_tasks here.
+
+      const sessionData = {
+        name: `Session ${currentSession}`, // Or use sessionTitle if we pass it from modal, but lap name is different
+        duration: formatStudyTime(studyState.time, true),
+        description: "", // Or use sessionDescription
+        session_number: currentSession,
+        session_id: currentSessionId, // Link lap to the session
+      };
+
+      // Dispatch the action to create the lap
+      dispatch(createLap(sessionData));
+
+      // Reset timer state and session ID
+      studyControls.reset();
+      setCurrentSessionId(null);
+      dispatch(setCurrentSession(null)); // Also reset the Redux currentSession
+
+      // Also reset Pomodoro if it's being used
+      window.dispatchEvent(new CustomEvent("resetPomodoro"));
+
+    } catch (error) {
+      console.error('Error finishing session:', error);
+    }
   };
 
   const toggleSync = () => {
@@ -169,13 +267,16 @@ const StudyTimer = ({ onSyncChange }) => {
   const handleStartSession = async (sessionData) => {
     const now = Date.now();
     const sessionNum = await getCurrentSessionNumber();
+    
+    // Set both states to ensure session is active
     dispatch(setCurrentSession(sessionNum));
-
+    setCurrentSessionId(sessionData.sessionId);
     setStudyState((prev) => ({
       ...prev,
       isRunning: true,
       lastStart: now,
       timeAtStart: prev.time,
+      sessionStatus: 'active'
     }));
 
     window.dispatchEvent(
@@ -185,30 +286,6 @@ const StudyTimer = ({ onSyncChange }) => {
     if (studyState.syncPomo) {
       window.dispatchEvent(new CustomEvent("startPomodoro"));
     }
-
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.error('No user found');
-      return;
-    }
-
-    // Save session data to database with only existing columns
-    const { error } = await supabase
-      .from('study_laps')
-      .insert([
-        {
-          name: sessionData.title,
-          description: sessionData.description,
-          session_number: sessionNum,
-          duration: '00:00:00',
-          user_id: user.id
-        }
-      ]);
-
-    if (error) {
-      console.error('Error saving session:', error);
-    }
   };
 
   return (
@@ -216,24 +293,15 @@ const StudyTimer = ({ onSyncChange }) => {
       <div className="flex items-center gap-2 mb-6">
         <Clock size={24} />
         <h2 className="text-xl font-semibold">Study Timer</h2>
-        <button
-          onClick={toggleSync}
-          className={`ml-2 p-1 rounded-full transition-colors ${
-            studyState.syncPomo ? "text-accent-primary" : "text-neutral-400"
-          }`}
-          aria-label={studyState.syncPomo ? "Disable Pomodoro sync" : "Enable Pomodoro sync"}
-        >
-          {studyState.syncPomo ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M8 12l2 2 6-6" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-          )}
-        </button>
+        {currentSessionId && (
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="ml-2 p-1 rounded-full text-neutral-400 hover:text-white transition-colors"
+            aria-label="Configure session"
+          >
+            <MoreVertical size={20} />
+          </button>
+        )}
       </div>
 
       <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
@@ -296,21 +364,44 @@ const StudyTimer = ({ onSyncChange }) => {
             <Pause size={20} style={{ color: iconColor }} />
           </button>
         )}
-        <button
-          onClick={handleFinishSession}
-          className="control-button w-10 h-10 flex items-center justify-center"
-          aria-label="Finish session"
-        >
-          <Check size={20} style={{ color: iconColor }} />
-        </button>
+        {currentSessionId && (
+          <>
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to exit this session? This will delete the session.')) {
+                  studyControls.reset();
+                  setCurrentSessionId(null);
+                  dispatch(setCurrentSession(null));
+                  window.dispatchEvent(new CustomEvent("resetPomodoro"));
+                }
+              }}
+              className="control-button w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-600"
+              aria-label="Exit session"
+            >
+              <X size={20} />
+            </button>
+            <button
+              onClick={() => setIsFinishModalOpen(true)}
+              className="control-button w-10 h-10 flex items-center justify-center"
+              aria-label="Finish session"
+            >
+              <Check size={20} style={{ color: iconColor }} />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="text-base text-neutral-400 mt-4 text-center">
+        {currentSessionId && (
+          <div className="mb-1">
+            Session Name: <span className="text-blue-500">{studyState.sessionTitle || 'Untitled Session'}</span>
+          </div>
+        )}
         <div className={`mb-1 ${
-          !currentSession ? 'text-neutral-400' : 
-          studyState.isRunning ? 'text-green-500' : 'text-yellow-500'
+          studyState.sessionStatus === 'inactive' ? 'text-neutral-400' : 
+          studyState.sessionStatus === 'active' ? 'text-green-500' : 'text-yellow-500'
         }`}>
-          Session Status: {!currentSession ? 'Inactive' : studyState.isRunning ? 'Active' : 'Paused'}
+          Session Status: {studyState.sessionStatus.charAt(0).toUpperCase() + studyState.sessionStatus.slice(1)}
         </div>
         Sessions Today: {currentSession || 0}
       </div>
@@ -319,6 +410,19 @@ const StudyTimer = ({ onSyncChange }) => {
         isOpen={isStartModalOpen}
         onClose={() => setIsStartModalOpen(false)}
         onStart={handleStartSession}
+      />
+
+      <FinishSessionModal
+        isOpen={isFinishModalOpen}
+        onClose={() => setIsFinishModalOpen(false)}
+        onFinish={handleFinishSession}
+        sessionId={currentSessionId}
+      />
+
+      <EditSessionModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        sessionId={currentSessionId}
       />
     </div>
   );

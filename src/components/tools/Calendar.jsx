@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import AddTaskModal from "./AddTaskModal";
+import TaskForm from "./TaskForm";
 import { CheckCircle2, Clock } from 'lucide-react';
 import { fetchLaps } from "../../redux/LapActions";
+import { useTaskDetails } from "../../hooks/useTaskDetails";
+import { useTaskManager } from "../../hooks/useTaskManager";
 
 const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
   useEffect(() => {
@@ -66,9 +68,22 @@ const Calendar = () => {
   const dispatch = useDispatch();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   
+  const {
+    selectedTask,
+    editedTask,
+    taskDetailsEdit,
+    handleOpenTaskDetails,
+    handleCloseTaskDetails,
+    setTaskEditing,
+    setEditedTask,
+    handleEditTaskField,
+  } = useTaskDetails();
+
+  const { handleUpdateTask } = useTaskManager();
+
   // Get data from Redux store
   const { tasks } = useSelector((state) => state.tasks);
   const { laps } = useSelector((state) => state.laps);
@@ -150,13 +165,8 @@ const Calendar = () => {
     if (date < today) {
       setIsInfoModalOpen(true);
     } else {
-      setIsModalOpen(true);
+      setShowTaskForm(true);
     }
-  };
-
-  const handleAddTask = (task) => {
-    // This will be handled by Redux actions
-    console.log("Task added:", task);
   };
 
   const getTasksForDate = (date) => {
@@ -239,6 +249,13 @@ const Calendar = () => {
     return days;
   };
 
+  const handleSaveEdit = async () => {
+    if (editedTask) {
+      await handleUpdateTask(editedTask);
+      handleCloseTaskDetails();
+    }
+  };
+
   return (
     <div className="maincard" >
       <div className="flex justify-between items-center">
@@ -312,12 +329,26 @@ const Calendar = () => {
         </div>
       </div>
 
-      <AddTaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedDate={selectedDate}
-        onAddTask={handleAddTask}
-      />
+      {/* Task Form Modal */}
+      {showTaskForm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-md mx-4 transform transition-all duration-300 scale-100">
+            <div className="p-6">
+              <TaskForm
+                initialAssignment=""
+                initialDeadline={selectedDate.toISOString().split('T')[0]}
+                onClose={(newTaskId) => {
+                  setShowTaskForm(false);
+                  if (newTaskId) {
+                    // Refresh the task list
+                    window.dispatchEvent(new CustomEvent('refreshTaskList'));
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <DayInfoModal
         isOpen={isInfoModalOpen}

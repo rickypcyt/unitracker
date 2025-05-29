@@ -206,7 +206,7 @@ export const KanbanBoard = () => {
               onClick={() => setShowDeleteCompletedModal(true)}
               className="text-red-500 hover:text-red-400 transition-colors"
             >
-              <Trash2 size={18} />
+              <Trash2 size={20} />
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

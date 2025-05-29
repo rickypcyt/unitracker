@@ -3,11 +3,11 @@ import { useTaskStorage } from '../../hooks/useTaskStorage';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../../utils/supabaseClient';
 
-const TaskForm = ({ initialAssignment = null, onClose }) => {
+const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose }) => {
   const { addTask } = useTaskStorage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [deadline, setDeadline] = useState(new Date().toISOString().split('T')[0]);
+  const [deadline, setDeadline] = useState(initialDeadline || new Date().toISOString().split('T')[0]);
   const [difficulty, setDifficulty] = useState('medium');
   const [assignment, setAssignment] = useState(initialAssignment || '');
   const [showAssignmentInput, setShowAssignmentInput] = useState(false);
@@ -19,7 +19,10 @@ const TaskForm = ({ initialAssignment = null, onClose }) => {
       setAssignment(initialAssignment);
       setShowAssignmentInput(false);
     }
-  }, [initialAssignment]);
+    if (initialDeadline) {
+      setDeadline(initialDeadline);
+    }
+  }, [initialAssignment, initialDeadline]);
 
   const fetchAssignments = async () => {
     try {

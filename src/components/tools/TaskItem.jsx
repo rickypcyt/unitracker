@@ -100,7 +100,7 @@ export const TaskItem = ({
                     <div className="flex items-center gap-3">
                         {task.deadline && (
                             <div className="flex items-center gap-1">
-                                <Calendar size={14} />
+                                <Calendar size={18} />
                                 <span>{new Date(task.deadline).toLocaleDateString()}</span>
                             </div>
                         )}
@@ -116,7 +116,7 @@ export const TaskItem = ({
                         className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:text-red-500"
                         aria-label="Delete task"
                     >
-                        <Trash2 size={14} />
+                        <Trash2 size={18} />
                     </button>
                 </div>
             </div>
