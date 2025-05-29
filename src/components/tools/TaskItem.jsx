@@ -1,5 +1,7 @@
 import React from "react";
 import { CheckCircle2, Circle, Calendar, Trash2, Clock } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const TaskItem = ({
     task,
@@ -7,7 +9,24 @@ export const TaskItem = ({
     onDelete,
     onDoubleClick,
     onContextMenu,
+    onEditTask,
+    assignmentId,
+    isSelected = false
 }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+        id: task.id,
+        data: {
+            type: 'task',
+            task: task,
+            assignment: assignmentId,
+        },
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
             case 'high':
@@ -46,18 +65,24 @@ export const TaskItem = ({
                 backdrop-blur-sm
                 cursor-pointer
                 group
-                ${task.activetask
-                    ? task.difficulty === "easy"
-                        ? "bg-green-500/10 border-green-500/30 hover:border-green-500/50"
-                        : task.difficulty === "medium"
-                            ? "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50"
-                            : "bg-red-500/10 border-red-500/30 hover:border-red-500/50"
-                    : "bg-neutral-800/20 border-neutral-700/30 hover:border-neutral-700/50"
+                ${isSelected 
+                    ? "bg-blue-500/20 border-blue-500/50 hover:border-blue-500/70"
+                    : task.activetask
+                        ? task.difficulty === "easy"
+                            ? "bg-green-500/10 border-green-500/30 hover:border-green-500/50"
+                            : task.difficulty === "medium"
+                                ? "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50"
+                                : "bg-red-500/10 border-red-500/30 hover:border-red-500/50"
+                        : "bg-neutral-800/20 border-neutral-700/30 hover:border-neutral-700/50"
                 }`}
             onDoubleClick={() => onDoubleClick(task)}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
             role="listitem"
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
         >
             <div className="flex flex-col gap-3">
                 {/* First row: Checkbox and Title */}
@@ -77,21 +102,16 @@ export const TaskItem = ({
                         )}
                     </button>
                     <div className="flex-1 min-w-0">
-                        <button
-                            onClick={() => onDoubleClick(task)}
-                            className="w-full text-left focus:outline-none"
+                        <span
+                            className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
+                                task.completed
+                                    ? "line-through text-neutral-400"
+                                    : "text-neutral-200"
+                            }`}
+                            title={task.title}
                         >
-                            <span
-                                className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
-                                    task.completed
-                                        ? "line-through text-neutral-400"
-                                        : "text-neutral-200"
-                                }`}
-                                title={task.title}
-                            >
-                                {task.title}
-                            </span>
-                        </button>
+                            {task.title}
+                        </span>
                     </div>
                 </div>
 

@@ -265,9 +265,9 @@ const Statistics = () => {
           </div>
         </div>
 
-        <div className="bg-black rounded-lg text-white p-4">
+        <div className="maincard border-none p-0 m-0">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Weekly Progress</h3>
+            <h3 className="text-lg font-semibold">{isCurrentWeek ? "This Week Progress" : "Last Week Progress"}</h3>
             <button
               onClick={toggleWeek}
               className="text-base text-text-secondary hover:text-white transition-colors duration-200"

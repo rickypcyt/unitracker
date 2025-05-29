@@ -7,12 +7,14 @@ export const useTaskDetails = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [taskDetailsEdit, setTaskEditing] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   // Abre el modal de detalles y edita la tarea seleccionada
   const handleOpenTaskDetails = (task) => {
     setSelectedTask(task);
     setEditedTask(task);
     setTaskEditing(true);
+    setSelectedTaskId(task.id);
     dispatch(setCalendarVisibility(false)); // Oculta el calendario si está abierto
   };
 
@@ -21,6 +23,7 @@ export const useTaskDetails = () => {
     setSelectedTask(null);
     setEditedTask(null);
     setTaskEditing(false);
+    setSelectedTaskId(null);
     dispatch(setCalendarVisibility(true)); // Muestra el calendario si estaba oculto
   };
 
@@ -46,5 +49,6 @@ export const useTaskDetails = () => {
     handleCloseTaskDetails,
     handleEditTaskField,
     setEditedTask,
+    selectedTaskId,
   };
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from '../config/supabaseClient';
 
-import { fetchTasks } from "../store/actions/TaskActions";
+import { fetchTasks, forceTaskRefresh } from "../store/actions/TaskActions";
 import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../store/slices/TaskSlice";
 
 export const useTaskManager = () => {
@@ -114,9 +114,20 @@ export const useTaskManager = () => {
     if (!user) return;
 
     try {
+      // Invalidar caché antes de actualizar
+      await dispatch(forceTaskRefresh());
+
       const { error } = await supabase
         .from('tasks')
-        .update(updatedTask)
+        .update({
+          title: updatedTask.title,
+          description: updatedTask.description,
+          deadline: updatedTask.deadline,
+          completed: updatedTask.completed,
+          difficulty: updatedTask.difficulty,
+          assignment: updatedTask.assignment,
+          activetask: updatedTask.activetask
+        })
         .eq('id', updatedTask.id);
 
       if (error) throw error;

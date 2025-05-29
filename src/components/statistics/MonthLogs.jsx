@@ -51,21 +51,21 @@ const MonthLogs = () => {
                 {Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => (
                     <div key={monthYear} className="mb-4">
                         <button
-                            className="infomenu w-full"
+                            className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-4 hover:bg-neutral-800 transition-colors"
                             onClick={() => toggleVisibility(monthYear)}
                             aria-expanded={expandedMonths[monthYear]}
                             aria-controls={`sessions-${monthYear}`}
                         >
                             <div className="flex items-center justify-between w-full">
-                                <span className="text-base">{monthYear}</span>
+                                <span className="text-base text-white">{monthYear}</span>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-text-secondary text-base">
+                                    <span className="text-neutral-400 text-base">
                                         {lapsOfMonth.length} sessions
                                     </span>
                                     {expandedMonths[monthYear] ? (
-                                        <ChevronUp size={22} />
+                                        <ChevronUp size={22} className="text-neutral-400" />
                                     ) : (
-                                        <ChevronDown size={22} />
+                                        <ChevronDown size={22} className="text-neutral-400" />
                                     )}
                                 </div>
                             </div>
@@ -79,28 +79,28 @@ const MonthLogs = () => {
                                 aria-label={`Sessions for ${monthYear}`}
                             >
                                 {lapsOfMonth.length === 0 ? (
-                                    <div className="text-gray-400 ml-4">No logs this month</div>
+                                    <div className="text-neutral-400 ml-4">No logs this month</div>
                                 ) : (
                                     lapsOfMonth.map((lap) => (
                                         <div
                                             key={lap.id}
-                                            className="mt-2 ml-4 relative p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border-2 border-border-primary mx-auto"
+                                            className="mt-2 ml-4 relative p-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 transition-all duration-300"
                                             role="listitem"
                                             onDoubleClick={() => setSelectedSession(lap)}
                                         >
                                             <div className="flex justify-between">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <span className="text-lg text-accent-primary">
+                                                        <span className="text-lg text-[var(--accent-primary)]">
                                                             #{lap.session_number} {lap.name}
                                                         </span>
                                                     </div>
-                                                    <p className="text-lg text-text-secondary mb-1">
+                                                    <p className="text-lg text-neutral-400 mb-1">
                                                         {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-4">
-                                                    <span className="text-text-secondary text-lg">
+                                                    <span className="text-neutral-400 text-lg">
                                                         {lap.duration}
                                                     </span>
                                                     <button

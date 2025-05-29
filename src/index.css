@@ -15,7 +15,7 @@
 @layer base {
   :root {
     /* Paleta principal */
-    --bg-primary: #000;
+    --bg-primary: #0b0b0b;
     --border-primary: #29292ac7;
     --text-primary: #fff;
     --accent-primary: #0166EA;

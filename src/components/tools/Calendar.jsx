@@ -272,7 +272,7 @@ const Calendar = () => {
           >
             <FaChevronLeft size={18} />
           </button>
-          <div className="text-lg font-medium mx-4">
+          <div className={`text-lg font-medium mx-4 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-blue-500' : 'text-white'}`}>
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
           <button
@@ -287,13 +287,13 @@ const Calendar = () => {
         </div>
       </div>
 
-      <div className="bg-black rounded-lg text-white">
+      <div className="maincard border-none p-0 m-0 rounded-lg text-white">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 text-center">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-neutral-500 text-base w-full py-4 flex items-center justify-center"
+              className="text-white text-base w-full py-4 flex items-center justify-center"
             >
               {day}
             </div>

@@ -81,7 +81,7 @@ const UpcomingTasks = () => {
 
   if (upcomingTasks.length === 0) {
     return (
-      <div className="maincard border border-neutral-800 rounded-lg p-4">
+      <div className="maincard">
         <h3 className="text-lg font-semibold text-white mb-2">Upcoming Tasks</h3>
         <p className="text-neutral-400">No upcoming tasks</p>
       </div>
@@ -100,11 +100,11 @@ const UpcomingTasks = () => {
           return (
             <div 
               key={task.id} 
-              className="flex maincard items-center justify-between p-2 rounded-md hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="flex items-center justify-between p-4 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
               onClick={() => handleOpenTaskDetails(task)}
             >
               <div className="flex items-center gap-2">
-                <Clock size={16} className="text-blue-500" />
+                <Clock size={16} className="text-[var(--accent-primary)]" />
                 <span className="text-white">{task.title}</span>
               </div>
               <span className="text-base text-neutral-400">

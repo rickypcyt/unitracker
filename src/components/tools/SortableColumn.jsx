@@ -1,8 +1,9 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, ListOrdered } from 'lucide-react';
 import { TaskItem } from './TaskItem';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 export const SortableColumn = ({
   id,
@@ -16,6 +17,7 @@ export const SortableColumn = ({
   onTaskDoubleClick,
   onTaskContextMenu,
   isEditing,
+  onSortClick,
 }) => {
   const {
     attributes,
@@ -40,7 +42,7 @@ export const SortableColumn = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] bg-neutral-800/30 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/30 hover:border-neutral-700/50 transition-all duration-200"
+      className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-4"
     >
       <div className="flex items-center justify-between w-full mb-4">
         <div className="flex items-center gap-2 flex-1">
@@ -68,6 +70,16 @@ export const SortableColumn = ({
           </div>
         </div>
         <button
+          onClick={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            onSortClick(assignment, { x: rect.left, y: rect.bottom });
+          }}
+          className="p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700 transition-all duration-200 text-neutral-300 hover:text-neutral-100 hover:scale-105 mr-2"
+          title="Sort tasks"
+        >
+          <ListOrdered size={18} />
+        </button>
+        <button
           onClick={onAddTask}
           className="p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700 transition-all duration-200 text-neutral-300 hover:text-neutral-100 hover:scale-105"
           title="Add task"
@@ -77,19 +89,22 @@ export const SortableColumn = ({
       </div>
       
       {!collapsed && (
-        <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-20rem)] custom-scrollbar">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={onTaskToggle}
-              onDelete={onTaskDelete}
-              onDoubleClick={onTaskDoubleClick}
-              onContextMenu={(e) => onTaskContextMenu(e, task)}
-              isEditing={isEditing}
-            />
-          ))}
-        </div>
+        <SortableContext items={tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-20rem)] custom-scrollbar">
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={onTaskToggle}
+                onDelete={onTaskDelete}
+                onDoubleClick={onTaskDoubleClick}
+                onContextMenu={(e) => onTaskContextMenu(e, task)}
+                isEditing={isEditing}
+                assignmentId={id}
+              />
+            ))}
+          </div>
+        </SortableContext>
       )}
     </div>
   );

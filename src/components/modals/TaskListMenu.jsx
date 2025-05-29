@@ -7,6 +7,7 @@ export const TaskListMenu = ({
   onDoubleClick,
   onSetActiveTask,
   onDeleteTask,
+  onEditTask,
 }) => {
   const menuRef = useRef(null);
 
@@ -49,7 +50,7 @@ export const TaskListMenu = ({
       <div className="space-y-1">
         <button
           onClick={() => {
-            onDoubleClick(contextMenu.task);
+            onEditTask(contextMenu.task);
             onClose();
           }}
           className="w-full px-2 py-2 text-left text-base text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
