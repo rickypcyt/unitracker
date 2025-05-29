@@ -29,45 +29,43 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
 
   const fetchSessionTasks = async () => {
     try {
-      const { data: allTasks, error: tasksError } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Fetch all incomplete tasks for the user
+      const { data: userTasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
+        .eq('user_id', user.id)
         .eq('completed', false)
         .order('created_at', { ascending: false });
 
       if (tasksError) {
-        console.error('Error fetching tasks:', tasksError);
+        console.error('Error fetching user tasks:', tasksError);
+        setActiveTasks([]);
+        setAvailableTasks([]);
         return;
       }
 
-      const { data: sessionTaskLinks, error: sessionLinksError } = await supabase
-        .from('session_tasks')
-        .select('task_id')
-        .eq('session_id', sessionId);
-
-      if (sessionLinksError) {
-        console.error('Error fetching session task links:', sessionLinksError);
-        return;
-      }
-
-      const sessionTaskIds = sessionTaskLinks ? sessionTaskLinks.map(link => link.task_id) : [];
-
-      const active = allTasks.filter(task => sessionTaskIds.includes(task.id));
-      const available = allTasks.filter(task => !sessionTaskIds.includes(task.id));
+      // Separate tasks based on activetask status
+      const active = userTasks.filter(task => task.activetask);
+      const available = userTasks.filter(task => !task.activetask);
 
       setActiveTasks(active);
       setAvailableTasks(available);
 
     } catch (error) {
       console.error('Error in fetchSessionTasks:', error);
+      setActiveTasks([]);
+      setAvailableTasks([]);
     }
   };
 
   const fetchSessionDetails = async (id) => {
     try {
       const { data: session, error } = await supabase
-        .from('sessions')
-        .select('title')
+        .from('study_laps')
+        .select('name')
         .eq('id', id)
         .single();
 
@@ -151,7 +149,9 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
     const newSyncState = !syncPomo;
     setSyncPomo(newSyncState);
     localStorage.setItem("syncPomoWithTimer", newSyncState.toString());
-    window.dispatchEvent(new CustomEvent("syncPomoStateChanged", { detail: { isSynced: newSyncState } }));
+    window.dispatchEvent(
+      new CustomEvent("syncStateChanged", { detail: { syncPomo: newSyncState } })
+    );
   };
 
   if (!isOpen) return null;

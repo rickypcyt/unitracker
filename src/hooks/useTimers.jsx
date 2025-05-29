@@ -17,25 +17,27 @@ export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = 
       clearInterval(intervalRef.current);
     }
 
-    if (!isRunning) {
+    if (!isRunning || !lastStart) {
       return;
     }
 
-    // Inicializar el tiempo de inicio
-    startTimeRef.current = Date.now() - (timeAtStart * 1000);
+    // Inicializar el tiempo de inicio usando lastStart
+    startTimeRef.current = lastStart;
 
     // Actualizar cada 100ms para mantener la precisión
     intervalRef.current = setInterval(() => {
-      const elapsed = (Date.now() - startTimeRef.current) / 1000;
+      const now = Date.now();
+      const elapsed = timeAtStart + ((now - startTimeRef.current) / 1000);
       savedCallback.current(elapsed);
     }, 100);
 
+    // Cleanup
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeAtStart]);
+  }, [isRunning, timeAtStart, lastStart]);
 
   // Cleanup on unmount
   useEffect(() => {

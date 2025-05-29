@@ -189,6 +189,8 @@ const Calendar = () => {
 
     const totalMinutes = dayLaps.reduce((total, lap) => {
       const duration = lap.duration;
+      if (!duration || duration === '00:00:00') return total;
+      
       const [hours, minutes] = duration.split(':').map(Number);
       return total + (hours * 60 + minutes);
     }, 0);

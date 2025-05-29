@@ -1,150 +1,135 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { 
-  toggleTaskStatus, 
-  deleteTask, 
-  fetchTasks, 
-  updateTask 
-} from "../redux/TaskActions";
 import { supabase } from "../utils/supabaseClient";
+import { fetchTasks } from "../redux/TaskActions";
+import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../redux/TaskSlice";
 
 export const useTaskManager = () => {
   const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasks.tasks);
   const [user, setUser] = useState(null);
-  const [localTasks, setLocalTasks] = useState(() => {
-    const savedTasks = localStorage.getItem("localTasks");
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
 
-  // Save local tasks to localStorage whenever they change
   useEffect(() => {
-    if (!user) {
-      localStorage.setItem("localTasks", JSON.stringify(localTasks));
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent('localTasksUpdated'));
-    }
-  }, [localTasks, user]);
-
-  // Get user and load tasks on component mount
-  useEffect(() => {
-    const loadData = async () => {
+    // Get initial user
+    const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      
-      if (user) {
-        // Clear local tasks when user logs in
-        localStorage.removeItem("localTasks");
-        setLocalTasks([]);
-        dispatch(fetchTasks());
-      }
     };
-    loadData();
+    getUser();
 
-    // Listen for storage changes
-    const handleStorageChange = (e) => {
-      if (e.key === "localTasks") {
-        const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
-        setLocalTasks(newTasks);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      subscription.unsubscribe();
     };
-  }, [dispatch]);
+  }, []);
+
+  // Fetch tasks when user changes
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchTasks());
+    }
+  }, [user, dispatch]);
 
   // Subscribe to real-time changes
   useEffect(() => {
     if (!user) return;
 
-    const subscription = supabase
-      .channel("tasks_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "tasks",
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          dispatch(fetchTasks());
+    const channel = supabase
+      .channel('tasks_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'tasks',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        (payload) => {
+          switch (payload.eventType) {
+            case 'INSERT':
+              dispatch(addTaskSuccess(payload.new));
+              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+              break;
+            case 'UPDATE':
+              dispatch(updateTaskSuccess(payload.new));
+              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+              break;
+            case 'DELETE':
+              dispatch(deleteTaskSuccess(payload.old.id));
+              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+              break;
+            default:
+              dispatch(fetchTasks());
+              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+          }
         }
       )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [user, dispatch]);
 
-  const handleToggleCompletion = async (task) => {
-    if (!user) {
-      setLocalTasks((prevTasks) =>
-        prevTasks.map((t) =>
-          t.id === task.id
-            ? {
-                ...t,
-                completed: !t.completed,
-                completed_at: !t.completed ? new Date().toISOString() : null,
-              }
-            : t
-        )
-      );
-    } else {
-      dispatch(toggleTaskStatus(task.id, !task.completed));
+  const handleToggleCompletion = async (taskId) => {
+    if (!user) return;
+
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ completed: !task.completed })
+        .eq('id', taskId);
+
+      if (error) throw error;
+      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
     }
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (!user) {
-      setLocalTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
-    } else {
-      dispatch(deleteTask(taskId));
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+    } catch (error) {
+      console.error('Error deleting task:', error);
     }
   };
 
-  const handleUpdateTask = async (task) => {
-    if (!user) {
-      setLocalTasks((prevTasks) =>
-        prevTasks.map((t) => (t.id === task.id ? task : t))
-      );
-    } else {
-      try {
-        await dispatch(updateTask(task));
-        
-        // If we're activating a task, deactivate others
-        if (task.activetask) {
-          const otherActiveTasks = tasks.filter(
-            (t) => t.id !== task.id && t.activetask
-          );
-          await Promise.all(
-            otherActiveTasks.map((t) =>
-              supabase.from("tasks").update({ activetask: false }).eq("id", t.id)
-            )
-          );
-        }
-      } catch (error) {
-        console.error("Error updating task:", error);
-      }
+  const handleUpdateTask = async (updatedTask) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update(updatedTask)
+        .eq('id', updatedTask.id);
+
+      if (error) throw error;
+      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+    } catch (error) {
+      console.error('Error updating task:', error);
     }
   };
 
-  const clearLocalTasks = () => {
-    localStorage.removeItem("localTasks");
-    setLocalTasks([]);
-  };
-
-  return { 
-    user, 
-    tasks, 
-    localTasks, 
-    handleToggleCompletion, 
-    handleDeleteTask, 
+  return {
+    user,
+    tasks,
+    handleToggleCompletion,
+    handleDeleteTask,
     handleUpdateTask,
-    clearLocalTasks
   };
 };

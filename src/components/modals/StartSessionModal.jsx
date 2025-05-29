@@ -81,14 +81,32 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
+      // Get today's date for session number calculation
+      const today = new Date().toISOString().split("T")[0];
+      const { data: latestSession, error: latestSessionError } = await supabase
+        .from('study_laps')
+        .select('session_number')
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`)
+        .order('session_number', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (latestSessionError && latestSessionError.code !== 'PGRST116') throw latestSessionError;
+
+      // Calculate next session number
+      const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
+
       const { data: session, error: sessionError } = await supabase
-        .from('sessions')
+        .from('study_laps')
         .insert([{
           user_id: user.id,
           started_at: new Date().toISOString(),
           tasks_completed: 0,
-          title: sessionTitle.trim(),
+          name: sessionTitle.trim(),
           description: sessionDescription.trim(),
+          session_number: nextSessionNumber,
+          created_at: new Date().toISOString()
         }])
         .select()
         .single();
@@ -96,22 +114,36 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       if (sessionError) throw sessionError;
 
       if (selectedTasks.length > 0) {
-        const { error: tasksError } = await supabase
+        // Insert links into session_tasks table
+        const { error: sessionTasksError } = await supabase
           .from('session_tasks')
           .insert(
             selectedTasks.map(taskId => ({
               session_id: session.id,
               task_id: taskId,
-              completed_at: new Date().toISOString()
+              completed_at: null // Tasks are not completed when session starts
             }))
           );
 
-        if (tasksError) throw tasksError;
+        if (sessionTasksError) throw sessionTasksError;
+
+        // Update activetask status for selected tasks
+        const { error: updateTasksError } = await supabase
+          .from('tasks')
+          .update({ activetask: true })
+          .in('id', selectedTasks);
+
+        if (updateTasksError) {
+          console.error('Error updating tasks activetask status:', updateTasksError);
+          // Decide how to handle this error - maybe still proceed or roll back session creation?
+          // For now, we'll just log it.
+        }
       }
 
       onStart({
         sessionId: session.id,
-        tasks: selectedTasks
+        tasks: selectedTasks,
+        title: sessionTitle.trim()
       });
       onClose();
     } catch (error) {

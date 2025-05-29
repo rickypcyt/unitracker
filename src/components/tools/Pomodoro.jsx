@@ -66,6 +66,7 @@ const Pomodoro = () => {
 
   // Event listeners
   useEventListener("startPomodoro", () => handleStart(), []);
+  useEventListener("pauseTimerSync", () => handleStop(), []);
   useEventListener("stopPomodoro", () => handleStop(), []);
   useEventListener("resetPomodoro", () => handleReset(), []);
 
@@ -75,8 +76,6 @@ const Pomodoro = () => {
 
   const handleStop = useCallback(() => {
     setPomoState(prev => ({ ...prev, isRunning: false }));
-    // Dispatch event to sync with study timer
-    window.dispatchEvent(new CustomEvent("pauseTimerSync"));
   }, []);
 
   const handleReset = useCallback(() => {

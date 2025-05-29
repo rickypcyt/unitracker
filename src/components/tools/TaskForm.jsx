@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useTaskStorage } from '../../hooks/useTaskStorage';
+import { useTaskManager } from '../../hooks/useTaskManager';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../../utils/supabaseClient';
 
 const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose }) => {
-  const { addTask } = useTaskStorage();
+  const { user } = useTaskManager();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState(initialDeadline || new Date().toISOString().split('T')[0]);
@@ -12,6 +12,7 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose })
   const [assignment, setAssignment] = useState(initialAssignment || '');
   const [showAssignmentInput, setShowAssignmentInput] = useState(false);
   const [existingAssignments, setExistingAssignments] = useState([]);
+  const [assignmentError, setAssignmentError] = useState(false);
 
   useEffect(() => {
     fetchAssignments();
@@ -43,28 +44,40 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim() || !assignment.trim()) return;
+
+    if (!assignment.trim()) {
+      setAssignmentError(true);
+      return;
+    }
+
+    setAssignmentError(false);
 
     const newTask = {
-      title: title.trim(),
-      description: description.trim(),
+      title,
+      description,
       deadline: deadline || null,
       difficulty,
       assignment: assignment.trim(),
+      user_id: user.id,
       completed: false,
+      created_at: new Date().toISOString(),
     };
 
     try {
-      const result = await addTask(newTask);
-      if (result && result.id) {
-        onClose(result.id);
-      } else {
-        console.error('No task ID returned from addTask');
-        onClose();
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([newTask])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        window.dispatchEvent(new CustomEvent('refreshTaskList'));
+        onClose(data.id);
       }
     } catch (error) {
       console.error('Error adding task:', error);
-      onClose();
     }
   };
 
@@ -83,24 +96,32 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose })
           <label className="block text-base font-medium text-neutral-400">
             Assignment
           </label>
+          {assignmentError && (
+            <p className="text-red-500 text-sm mb-1">Please select an assignment
+            </p>
+          )}
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowAssignmentInput(!showAssignmentInput)}
-              className="w-full px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-100 flex justify-between items-center"
+              className={`w-full px-3 py-2 bg-neutral-800/50 border rounded-lg text-neutral-100 flex justify-between items-center ${assignmentError ? 'border-red-500' : 'border-neutral-700/50 hover:border-neutral-700/50'
+                }`}
             >
               <span>{assignment || 'Select or create assignment'}</span>
               {showAssignmentInput ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
-            
+
             {showAssignmentInput && (
               <div className="absolute z-10 w-full mt-1 bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg">
                 <div className="p-2">
                   <input
                     type="text"
                     value={assignment}
-                    onChange={(e) => setAssignment(e.target.value)}
-                    className="w-full px-3 py-2 bg-neutral-700 rounded-lg text-white mb-2 focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                    onChange={(e) => {
+                      setAssignment(e.target.value);
+                      setAssignmentError(false);
+                    }}
+                    className={`w-full px-3 py-2 bg-neutral-700 rounded-lg text-white mb-2 focus:outline-none focus:ring-2 focus:ring-accent-primary ${assignmentError ? 'border border-red-500' : 'focus:ring-accent-primary'}`}
                     placeholder="Type to create new assignment"
                   />
                 </div>
@@ -112,6 +133,7 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose })
                       onClick={() => {
                         setAssignment(existingAssignment);
                         setShowAssignmentInput(false);
+                        setAssignmentError(false);
                       }}
                       className="w-full px-4 py-2 text-left text-neutral-200 hover:bg-neutral-700"
                     >

@@ -38,22 +38,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@chakra-ui/react', 'framer-motion'],
-          'vendor-utils': ['@reduxjs/toolkit', 'react-redux'],
-          'vendor-dnd': ['react-beautiful-dnd'],
-          'vendor-icons': ['lucide-react'],
-          'vendor-toast': ['react-toastify'],
-          'vendor-supabase': ['@supabase/supabase-js', '@supabase/postgrest-js']
-        },
-        // Optimize chunk loading
-        experimentalMinChunkSize: 20000,
-        // Add content hash to file names
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
+        // Desactivamos el code splitting
+        manualChunks: undefined,
+        // Todo en un solo archivo
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]'
       }
     },
     // Enable source maps in production

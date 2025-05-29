@@ -10,6 +10,7 @@ import useEventListener from "../../hooks/useEventListener";
 import StartSessionModal from "../modals/StartSessionModal";
 import FinishSessionModal from "../modals/FinishSessionModal";
 import EditSessionModal from "../modals/EditSessionModal";
+import { toast } from "react-hot-toast";
 
 const StudyTimer = ({ onSyncChange }) => {
   const { iconColor } = useTheme();
@@ -17,8 +18,15 @@ const StudyTimer = ({ onSyncChange }) => {
   const { currentSession } = useSelector((state) => state.laps);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
-  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [currentSessionId, setCurrentSessionId] = useState(() => {
+    // Try to get active session from localStorage
+    const savedSessionId = localStorage.getItem("activeSessionId");
+    return savedSessionId || null;
+  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPauseFromSync, setIsPauseFromSync] = useState(false);
+  const [isHandlingEvent, setIsHandlingEvent] = useState(false);
+  const [sessionsTodayCount, setSessionsTodayCount] = useState(0);
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
@@ -40,6 +48,30 @@ const StudyTimer = ({ onSyncChange }) => {
       sessionStatus: 'inactive',
     };
   });
+
+  // Remove the sync timer effect since we'll use useStudyTimer exclusively
+  useEffect(() => {
+    const syncTimer = () => {
+      if (studyState.isRunning && studyState.lastStart) {
+        const now = Date.now();
+        const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+        setStudyState(prev => ({
+          ...prev,
+          time: elapsed
+        }));
+      }
+    };
+
+    // Sync immediately when component mounts
+    syncTimer();
+
+    // Set up interval to keep timer in sync
+    const intervalId = setInterval(syncTimer, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [studyState.isRunning, studyState.lastStart, studyState.timeAtStart]);
 
   useEffect(() => {
     const stateToSave = {
@@ -64,14 +96,14 @@ const StudyTimer = ({ onSyncChange }) => {
     const fetchSessionTitle = async () => {
       if (currentSessionId) {
         const { data: session, error } = await supabase
-          .from('sessions')
-          .select('title')
+          .from('study_laps')
+          .select('name')
           .eq('id', currentSessionId)
           .single();
         if (!error && session) {
           setStudyState(prev => ({
             ...prev,
-            sessionTitle: session.title || 'Untitled Session'
+            sessionTitle: session.name || 'Untitled Session'
           }));
         }
       }
@@ -80,12 +112,22 @@ const StudyTimer = ({ onSyncChange }) => {
   }, [currentSessionId]);
 
   const studyTick = useCallback((elapsed) => {
-    setStudyState(prev => ({
-      ...prev,
-      time: elapsed,
-    }));
-  }, []);
+    // Only update if we have a valid lastStart time
+    if (studyState.lastStart) {
+      console.log('Timer Tick:', {
+        timestamp: new Date().toISOString(),
+        elapsedTime: elapsed.toFixed(2),
+        sessionId: currentSessionId
+      });
+      
+      setStudyState(prev => ({
+        ...prev,
+        time: elapsed
+      }));
+    }
+  }, [studyState.lastStart, currentSessionId]);
 
+  // Use the useStudyTimer hook for background timing
   useStudyTimer(
     studyTick,
     studyState.isRunning,
@@ -93,22 +135,62 @@ const StudyTimer = ({ onSyncChange }) => {
     studyState.lastStart
   );
 
-  useEventListener("startStudyTimer", () => studyControls.start(), [studyState.syncPomo]);
-  useEventListener("stopStudyTimer", () => studyControls.pause(), [studyState.syncPomo]);
-  useEventListener("pauseTimerSync", () => { 
-    if (studyState.syncPomo && studyState.isRunning) {
-      studyControls.pause();
-    }
+  // Remove the pause on page change event listener
+  useEventListener("pauseTimerSync", () => {
+    // Do nothing - we want the timer to keep running
   }, [studyState.syncPomo, studyState.isRunning]);
-  useEventListener("resetTimerSync", () => { if (studyState.syncPomo) studyControls.reset(); }, [studyState.syncPomo]);
-  useEventListener("playTimerSync", () => { if (studyState.syncPomo) studyControls.start(); }, [studyState.syncPomo]);
+
+  useEventListener("startStudyTimer", () => {
+    if (!isHandlingEvent) {
+      setIsHandlingEvent(true);
+      studyControls.start();
+      setIsHandlingEvent(false);
+    }
+  }, [studyState.syncPomo]);
+
+  useEventListener("stopStudyTimer", () => {
+    if (!isHandlingEvent) {
+      setIsHandlingEvent(true);
+      studyControls.pause();
+      setIsHandlingEvent(false);
+    }
+  }, [studyState.syncPomo]);
+
+  useEventListener("resetTimerSync", () => { 
+    if (!isHandlingEvent) {
+      setIsHandlingEvent(true);
+      if (studyState.syncPomo) studyControls.reset();
+      setIsHandlingEvent(false);
+    }
+  }, [studyState.syncPomo]);
+
+  useEventListener("playTimerSync", () => { 
+    if (!isHandlingEvent) {
+      setIsHandlingEvent(true);
+      if (studyState.syncPomo) studyControls.start();
+      setIsHandlingEvent(false);
+    }
+  }, [studyState.syncPomo]);
+
+  // Add event listener for sync state changes
+  useEventListener("syncStateChanged", (event) => {
+    setStudyState(prev => ({
+      ...prev,
+      syncPomo: event.detail.syncPomo
+    }));
+  }, []);
 
   const studyControls = {
     start: async () => {
-      if (!studyState.isRunning) {
+      if (!studyState.isRunning && !isHandlingEvent) {
         if (currentSessionId) {
-          // Si ya hay una sesión activa, reanuda el contador
           const now = Date.now();
+          console.log('Timer Started:', {
+            timestamp: new Date(now).toISOString(),
+            timeAtStart: studyState.time,
+            sessionId: currentSessionId
+          });
+          
           setStudyState((prev) => ({
             ...prev,
             isRunning: true,
@@ -125,38 +207,46 @@ const StudyTimer = ({ onSyncChange }) => {
             window.dispatchEvent(new CustomEvent("startPomodoro"));
           }
         } else {
-          // Si no hay sesión activa, abre el modal de inicio
           setIsStartModalOpen(true);
         }
       }
     },
     pause: () => {
-      if (studyState.isRunning) {
-        setStudyState((prev) => {
-          const now = Date.now();
-          const elapsed = prev.timeAtStart + ((now - prev.lastStart) / 1000);
-          const newState = {
-            ...prev,
-            isRunning: false,
-            time: elapsed,
-            lastStart: null,
-            timeAtStart: elapsed,
-            sessionStatus: 'paused'
-          };
-          localStorage.setItem("studyTimerState", JSON.stringify(newState));
-          return newState;
+      if (studyState.isRunning && !isHandlingEvent) {
+        const now = Date.now();
+        const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+        
+        console.log('Timer Paused:', {
+          timestamp: new Date(now).toISOString(),
+          elapsedTime: elapsed.toFixed(2),
+          sessionId: currentSessionId
         });
+        
+        setStudyState((prev) => ({
+          ...prev,
+          isRunning: false,
+          time: elapsed,
+          lastStart: null,
+          timeAtStart: elapsed,
+          sessionStatus: 'paused'
+        }));
 
         window.dispatchEvent(
           new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
         );
 
-        if (studyState.syncPomo) {
-          window.dispatchEvent(new CustomEvent("pausePomodoro"));
+        if (studyState.syncPomo && !isPauseFromSync) {
+          window.dispatchEvent(new CustomEvent("pauseTimerSync"));
         }
       }
     },
     reset: () => {
+      console.log('Timer Reset:', {
+        timestamp: new Date().toISOString(),
+        finalTime: studyState.time.toFixed(2),
+        sessionId: currentSessionId
+      });
+      
       setStudyState((prev) => ({
         ...prev,
         isRunning: false,
@@ -190,70 +280,87 @@ const StudyTimer = ({ onSyncChange }) => {
     }
   }, []);
 
-  const getCurrentSessionNumber = async () => {
-    const today = new Date().toISOString().split("T")[0];
-    const { data, error } = await supabase
-      .from("study_laps")
-      .select("session_number")
-      .gte("created_at", `${today}T00:00:00`)
-      .lte("created_at", `${today}T23:59:59`)
-      .order("session_number", { ascending: false })
-      .limit(1);
-    return error || !data.length ? 0 : data[0].session_number + 1;
-  };
-
-  const handleFinishSession = async (completedTaskIds) => {
-    if (!currentSession || !currentSessionId) {
-      console.warn('Attempted to finish session without currentSession or currentSessionId');
-      return;
-    }
-
-    console.log('Attempting to finish session:', currentSessionId);
-    console.log('Tasks completed count:', completedTaskIds.length);
-
+  const fetchSessionsTodayCount = async () => {
     try {
-      // Update session end time and tasks completed count based on final active tasks from modal
-      const { data, error: sessionError } = await supabase
-        .from('sessions')
-        .update({
-          ended_at: new Date().toISOString(),
-          tasks_completed: completedTaskIds.length
-        })
-        .eq('id', currentSessionId)
-        .select(); // Select updated data to confirm success
+      const today = new Date().toISOString().split("T")[0];
+      const { count, error } = await supabase
+        .from("study_laps")
+        .select('*' , { count: 'exact', head: true })
+        .gte("created_at", `${today}T00:00:00`)
+        .lte("created_at", `${today}T23:59:59`);
 
-      if (sessionError) {
-        console.error('Error updating session end time/tasks completed:', sessionError);
-        // Decide if we should return here or try to save lap/reset anyway
-        // For now, let's proceed to try to save the lap and reset timers
-      } else {
-        console.log('Session updated successfully:', data);
+      if (error) {
+        console.error('Error fetching sessions today count:', error);
+        setSessionsTodayCount(0);
+        return;
       }
 
-      // The FinishSessionModal already updated the session_tasks table based on user selections.
-      // We no longer need to update/delete session_tasks here.
+      setSessionsTodayCount(count || 0);
+    } catch (error) {
+      console.error('Error in fetchSessionsTodayCount:', error);
+      setSessionsTodayCount(0);
+    }
+  };
 
-      const sessionData = {
-        name: `Session ${currentSession}`, // Or use sessionTitle if we pass it from modal, but lap name is different
-        duration: formatStudyTime(studyState.time, true),
-        description: "", // Or use sessionDescription
-        session_number: currentSession,
-        session_id: currentSessionId, // Link lap to the session
-      };
+  // Fetch sessions today count on component mount
+  useEffect(() => {
+    fetchSessionsTodayCount();
+  }, []);
 
-      // Dispatch the action to create the lap
-      dispatch(createLap(sessionData));
+  const handleFinishSession = async (completedTaskIds) => {
+    try {
+      if (!currentSessionId) return;
 
-      // Reset timer state and session ID
+      // Get current session data
+      const { data: session, error: fetchError } = await supabase
+        .from('study_laps')
+        .select('*')
+        .eq('id', currentSessionId)
+        .single();
+
+      if (fetchError || !session) {
+        console.error('Error fetching session:', fetchError);
+        return;
+      }
+
+      // Calculate the total duration
+      const totalDurationSeconds = studyState.time;
+      const hours = Math.floor(totalDurationSeconds / 3600);
+      const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
+      const seconds = totalDurationSeconds % 60;
+      const formattedDuration = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      // Only finalize if duration is not 00:00:00
+      if (formattedDuration !== '00:00:00') {
+        const { error } = await supabase
+          .from('study_laps')
+          .update({
+            duration: formattedDuration,
+            tasks_completed: completedTaskIds.length,
+            finished_at: new Date().toISOString()
+          })
+          .eq('id', currentSessionId);
+
+        if (error) {
+          console.error('Error updating study lap:', error);
+          toast.error('Failed to update session details.');
+          return;
+        }
+
+        // Display success message
+        toast.success(`Congrats! During this session you completed ${completedTaskIds.length} tasks and studied for ${hours} hours and ${minutes} minutes.`);
+      }
+
+      // Reset session state
       studyControls.reset();
       setCurrentSessionId(null);
-      dispatch(setCurrentSession(null)); // Also reset the Redux currentSession
-
-      // Also reset Pomodoro if it's being used
+      dispatch(setCurrentSession(null));
+      localStorage.removeItem("activeSessionId");
       window.dispatchEvent(new CustomEvent("resetPomodoro"));
 
     } catch (error) {
       console.error('Error finishing session:', error);
+      toast.error('An error occurred while finishing the session.');
     }
   };
 
@@ -265,26 +372,103 @@ const StudyTimer = ({ onSyncChange }) => {
   };
 
   const handleStartSession = async (sessionData) => {
-    const now = Date.now();
-    const sessionNum = await getCurrentSessionNumber();
-    
-    // Set both states to ensure session is active
-    dispatch(setCurrentSession(sessionNum));
-    setCurrentSessionId(sessionData.sessionId);
-    setStudyState((prev) => ({
-      ...prev,
-      isRunning: true,
-      lastStart: now,
-      timeAtStart: prev.time,
-      sessionStatus: 'active'
-    }));
+    try {
+      const now = Date.now();
+      
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
 
-    window.dispatchEvent(
-      new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
-    );
+      // Get today's date for session number calculation
+      const today = new Date().toISOString().split("T")[0];
+      const { data: latestSession, error: latestSessionError } = await supabase
+        .from('study_laps')
+        .select('session_number')
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`)
+        .order('session_number', { ascending: false })
+        .limit(1)
+        .single();
 
-    if (studyState.syncPomo) {
-      window.dispatchEvent(new CustomEvent("startPomodoro"));
+      if (latestSessionError && latestSessionError.code !== 'PGRST116') throw latestSessionError;
+
+      // Calculate next session number
+      const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
+
+      // Create a new study lap record
+      const { data: newLap, error: lapError } = await supabase
+        .from('study_laps')
+        .insert([{
+          user_id: user.id,
+          name: sessionData.title || 'Untitled Session',
+          description: sessionData.title || 'Untitled Session',
+          duration: '00:00:00',
+          started_at: new Date().toISOString(),
+          tasks_completed: 0,
+          session_number: nextSessionNumber
+        }])
+        .select()
+        .single();
+
+      if (lapError) {
+        console.error('Error creating study lap:', lapError);
+        return;
+      }
+
+      // Set both states to ensure session is active
+      dispatch(setCurrentSession(newLap.id));
+      setCurrentSessionId(newLap.id);
+      setStudyState((prev) => ({
+        ...prev,
+        isRunning: true,
+        lastStart: now,
+        timeAtStart: prev.time,
+        sessionStatus: 'active',
+        sessionTitle: newLap.description
+      }));
+
+      // Update sessions today count
+      fetchSessionsTodayCount();
+
+      window.dispatchEvent(
+        new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
+      );
+
+      if (studyState.syncPomo) {
+        window.dispatchEvent(new CustomEvent("startPomodoro"));
+      }
+    } catch (error) {
+      console.error('Error starting session:', error);
+    }
+  };
+
+  const handleExitSession = async () => {
+    if (window.confirm('Are you sure you want to exit this session? This will delete the session.')) {
+      try {
+        if (currentSessionId) {
+          // Delete the session from the database
+          const { error } = await supabase
+            .from('study_laps')
+            .delete()
+            .eq('id', currentSessionId);
+
+          if (error) {
+            console.error('Error deleting session:', error);
+            toast.error('Failed to delete session.');
+            return;
+          }
+        }
+
+        // Reset all states
+        studyControls.reset();
+        setCurrentSessionId(null);
+        dispatch(setCurrentSession(null));
+        localStorage.removeItem("activeSessionId");
+        window.dispatchEvent(new CustomEvent("resetPomodoro"));
+      } catch (error) {
+        console.error('Error exiting session:', error);
+        toast.error('An error occurred while exiting the session.');
+      }
     }
   };
 
@@ -367,21 +551,19 @@ const StudyTimer = ({ onSyncChange }) => {
         {currentSessionId && (
           <>
             <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to exit this session? This will delete the session.')) {
-                  studyControls.reset();
-                  setCurrentSessionId(null);
-                  dispatch(setCurrentSession(null));
-                  window.dispatchEvent(new CustomEvent("resetPomodoro"));
-                }
-              }}
+              onClick={handleExitSession}
               className="control-button w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-600"
               aria-label="Exit session"
             >
               <X size={20} />
             </button>
             <button
-              onClick={() => setIsFinishModalOpen(true)}
+              onClick={() => {
+                if (studyState.isRunning) {
+                  studyControls.pause();
+                }
+                setIsFinishModalOpen(true);
+              }}
               className="control-button w-10 h-10 flex items-center justify-center"
               aria-label="Finish session"
             >
@@ -403,7 +585,7 @@ const StudyTimer = ({ onSyncChange }) => {
         }`}>
           Session Status: {studyState.sessionStatus.charAt(0).toUpperCase() + studyState.sessionStatus.slice(1)}
         </div>
-        Sessions Today: {currentSession || 0}
+        Sessions Today: {sessionsTodayCount}
       </div>
 
       <StartSessionModal

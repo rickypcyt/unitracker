@@ -2,43 +2,30 @@ import React, {
   useRef,
   useState,
   useEffect,
-  useCallback,
-  useMemo,
-  lazy,
-  Suspense
+  useCallback
 } from "react";
 import { useAuth } from "./hooks/useAuth";
 import ContextMenu from "./components/modals/ContextMenu";
 import WelcomeModal from "./components/modals/WelcomeModal";
 import Settings from "./components/modals/Settings";
 import StartSessionMenu from "./components/modals/StartSessionMenu";
-import { LayoutManager } from "./utils/layoutManager";
+import ComponentRenderer from "./components/home/ComponentRenderer";
 import AddComponentButton from "./components/home/AddComponentButton";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useResponsiveColumns } from "./hooks/useResponsiveColumns";
 import { distributeItems } from "./utils/distributeItems";
 import Navbar from "./components/Navbar";
 
-// Lazy load the ComponentRenderer
-const ComponentRenderer = lazy(() => import("./components/home/ComponentRenderer"));
-
 const Home = () => {
   const pomodoroRef = useRef<any>(null);
   const responsiveColumns = useResponsiveColumns();
 
-  // Memoize initial layout
-  const initialLayout = useMemo(() => 
-    LayoutManager.getInitialLayout(responsiveColumns),
-    [responsiveColumns]
-  );
-
+  // Get initial layout
+  const initialLayout = LayoutManager.getInitialLayout(responsiveColumns);
   const [layout, setLayout] = useState(initialLayout);
   
-  // Memoize responsive layout
-  const responsiveLayout = useMemo(
-    () => distributeItems(layout, responsiveColumns),
-    [layout, responsiveColumns]
-  );
+  // Calculate responsive layout without memoization
+  const responsiveLayout = distributeItems(layout, responsiveColumns);
 
   // Combine related state into a single object
   const [uiState, setUiState] = useState({
@@ -52,13 +39,13 @@ const Home = () => {
 
   const { isLoggedIn, loginWithGoogle } = useAuth();
 
-  // Memoize theme and accent palette
+  // Theme and accent palette state
   const [themeState, setThemeState] = useState(() => ({
     currentTheme: typeof window !== "undefined" ? localStorage.getItem("theme") || "default" : "default",
     accentPalette: typeof window !== "undefined" ? localStorage.getItem("accentPalette") || "blue" : "blue"
   }));
 
-  // Memoize layout settings
+  // Layout settings state
   const [layoutSettings, setLayoutSettings] = useState(() => ({
     userPadding: typeof window !== "undefined" ? Number(localStorage.getItem("userPadding")) || 1 : 1,
     userGap: typeof window !== "undefined" ? Number(localStorage.getItem("userGap")) || 1 : 1
@@ -68,12 +55,12 @@ const Home = () => {
     setUiState(prev => ({ ...prev, isEditing: !prev.isEditing }));
   }, []);
 
-  // Optimize layout updates
+  // Update layout when columns change
   useEffect(() => {
     setLayout(LayoutManager.getInitialLayout(responsiveColumns));
   }, [responsiveColumns]);
 
-  // Optimize keyboard event handling
+  // Handle keyboard events
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hasSeen = localStorage.getItem("hasSeenWelcomeModal");
@@ -105,7 +92,7 @@ const Home = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Memoize component handlers
+  // Component handlers
   const addComponent = useCallback(
     (colIndex, componentKey) => {
       setLayout(prev => LayoutManager.addComponent(prev, colIndex, componentKey, responsiveColumns));
@@ -149,6 +136,17 @@ const Home = () => {
     setUiState(prev => ({ ...prev, contextMenu: null }));
   }, []);
 
+  // Listen for task updates
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      // Force re-render of components
+      setLayout(prev => [...prev]);
+    };
+
+    window.addEventListener('refreshTaskList', handleTaskUpdate);
+    return () => window.removeEventListener('refreshTaskList', handleTaskUpdate);
+  }, []);
+
   return (
     <div className="min-h-screen bg-neutral-950">
       <div style={{ paddingLeft: `${layoutSettings.userPadding}rem`, paddingRight: `${layoutSettings.userPadding}rem` }}>
@@ -177,17 +175,15 @@ const Home = () => {
                     }
                     className="mb-4"
                   >
-                    <Suspense fallback={<div>Loading...</div>}>
-                      <ComponentRenderer
-                        componentKey={componentKey}
-                        colIndex={colIndex}
-                        index={index}
-                        isEditing={uiState.isEditing}
-                        onRemove={removeComponent}
-                        onContextMenu={handleContextMenu}
-                        pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
-                      />
-                    </Suspense>
+                    <ComponentRenderer
+                      componentKey={componentKey}
+                      colIndex={colIndex}
+                      index={index}
+                      isEditing={uiState.isEditing}
+                      onRemove={removeComponent}
+                      onContextMenu={handleContextMenu}
+                      pomodoroRef={componentKey === "Pomodoro" || componentKey === "StudyTimer" ? pomodoroRef : undefined}
+                    />
                   </div>
                 ))}
                 {uiState.isEditing && (
@@ -260,4 +256,4 @@ const Home = () => {
   );
 };
 
-export default React.memo(Home);
+export default Home;

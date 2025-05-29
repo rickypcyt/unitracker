@@ -28,7 +28,6 @@ export const KanbanBoard = () => {
   const {
     user,
     tasks,
-    localTasks,
     handleToggleCompletion,
     handleDeleteTask,
     handleUpdateTask,
@@ -68,10 +67,8 @@ export const KanbanBoard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Define tasks based on user
-  const allTasks = user ? tasks : localTasks;
-  const completedTasks = allTasks.filter((task) => task.completed);
-  const incompletedTasks = allTasks.filter((task) => !task.completed);
+  const completedTasks = tasks.filter((task) => task.completed);
+  const incompletedTasks = tasks.filter((task) => !task.completed);
 
   // Group tasks by assignment
   const groupTasksByAssignment = (tasks) => {
@@ -86,28 +83,25 @@ export const KanbanBoard = () => {
   const incompletedByAssignment = groupTasksByAssignment(incompletedTasks);
   const completedByAssignment = groupTasksByAssignment(completedTasks);
 
-  // Get all unique assignments that have tasks
+  // Get all unique assignments
   const allAssignments = useMemo(() => 
-    [...new Set(allTasks.map(task => task.assignment || "No assignment"))]
-      .filter(assignment => incompletedByAssignment[assignment]?.length > 0),
-    [allTasks, incompletedByAssignment]
+    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
+    [tasks]
   );
 
-  // Initialize column order when assignments change
+  // Initialize column order when assignments change or on mount
   useEffect(() => {
-    if (columnOrder.length === 0) {
-      const newOrder = [...allAssignments];
-      setColumnOrder(newOrder);
-      localStorage.setItem('kanbanColumnOrder', JSON.stringify(newOrder));
-    } else {
-      // Add any new assignments to the end of the order
-      const newAssignments = allAssignments.filter(a => !columnOrder.includes(a));
-      if (newAssignments.length > 0) {
-        const updatedOrder = [...columnOrder, ...newAssignments];
-        setColumnOrder(updatedOrder);
-        localStorage.setItem('kanbanColumnOrder', JSON.stringify(updatedOrder));
-      }
-    }
+    const savedOrder = localStorage.getItem('kanbanColumnOrder');
+    const initialOrder = savedOrder ? JSON.parse(savedOrder) : allAssignments;
+
+    // Ensure all current assignments are in the column order
+    const currentAssignmentsSet = new Set(allAssignments);
+    const filteredOrder = initialOrder.filter(assignment => currentAssignmentsSet.has(assignment));
+    const newAssignments = allAssignments.filter(assignment => !filteredOrder.includes(assignment));
+
+    const finalOrder = [...filteredOrder, ...newAssignments];
+    setColumnOrder(finalOrder);
+    localStorage.setItem('kanbanColumnOrder', JSON.stringify(finalOrder));
   }, [allAssignments]);
 
   const sensors = useSensors(
@@ -150,7 +144,7 @@ export const KanbanBoard = () => {
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
-  const handleAddTask = (assignment) => {
+  const handleAddTask = (assignment = null) => {
     setSelectedAssignment(assignment);
     setShowTaskForm(true);
   };
@@ -162,6 +156,14 @@ export const KanbanBoard = () => {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Add Task Button */}
+      <button
+        onClick={() => handleAddTask(null)}
+        className="text-lg mb-4 px-4 py-2 border-2 border-dashed border-accent-primary text-accent-primary rounded-lg hover:bg-accent-primary/10 transition-colors"
+      >
+        + Add Task
+      </button>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -258,10 +260,6 @@ export const KanbanBoard = () => {
                 onClose={(newTaskId) => {
                   setShowTaskForm(false);
                   setSelectedAssignment(null);
-                  if (newTaskId) {
-                    // Refresh the task list
-                    window.dispatchEvent(new CustomEvent('refreshTaskList'));
-                  }
                 }}
               />
             </div>

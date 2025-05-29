@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Clock } from 'lucide-react';
 import TaskDetailsModal from '../modals/TaskDetailsModal';
 import { useTaskManager } from '../../hooks/useTaskManager';
 
 const UpcomingTasks = () => {
-  const { user, tasks, localTasks, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
+  const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
+  const tasks = useSelector((state) => state.tasks.tasks);
   const [selectedTask, setSelectedTask] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  // Define tasks based on user authentication
-  const allTasks = user ? tasks : localTasks;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -21,7 +19,7 @@ const UpcomingTasks = () => {
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
 
   // Filter and sort upcoming tasks
-  const upcomingTasks = allTasks
+  const upcomingTasks = tasks
     .filter(task => {
       const taskDate = new Date(task.deadline);
       taskDate.setHours(0, 0, 0, 0);
@@ -87,7 +85,7 @@ const UpcomingTasks = () => {
           return (
             <div 
               key={task.id} 
-              className="flex maincard items-center justify-between p-2 rounded-md  hover:bg-neutral-700 transition-colors cursor-pointer"
+              className="flex maincard items-center justify-between p-2 rounded-md hover:bg-neutral-700 transition-colors cursor-pointer"
               onClick={() => handleOpenTaskDetails(task)}
             >
               <div className="flex items-center gap-2">
@@ -110,7 +108,7 @@ const UpcomingTasks = () => {
   );
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
+    <div className="maincard">
       <h3 className="text-lg font-semibold text-white mb-3">Upcoming Tasks</h3>
       <div className="space-y-3">
         {thisWeekTasks.length > 0 && <TaskGroup title="This Week" tasks={thisWeekTasks} />}

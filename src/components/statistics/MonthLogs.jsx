@@ -34,10 +34,10 @@ const MonthLogs = () => {
     const handleDelete = async (sessionId) => {
         try {
             await dispatch(deleteLap(sessionId));
-            toast.success("Session deleted successfully");
+            // toast.success("Session deleted successfully");
         } catch (error) {
             console.error("Error deleting session:", error);
-            toast.error("Failed to delete session");
+            // toast.error("Failed to delete session");
         }
     };
 

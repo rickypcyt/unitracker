@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { X, Plus, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
+import { useDispatch } from 'react-redux';
+import { toggleTaskStatus } from '../../redux/TaskActions';
 
 const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
   const [activeTasks, setActiveTasks] = useState([]); // Stores task objects
@@ -9,67 +11,28 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [sessionTitle, setSessionTitle] = useState(''); // State for session title
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (isOpen && sessionId) {
-      fetchSessionTasks();
-      fetchSessionDetails(sessionId); // Fetch session details
+      fetchSessionDetails();
+      fetchSessionTasks(); // Fetch tasks linked to this session
     }
   }, [isOpen, sessionId]);
 
   useEffect(() => {
     if (lastAddedTaskId) {
-      // After adding a new task, refetch all tasks to update lists
-      fetchSessionTasks();
+      fetchSessionTasks(); // Refresh after adding a new task
       setLastAddedTaskId(null);
     }
   }, [lastAddedTaskId]);
 
-  const fetchSessionTasks = async () => {
-    try {
-      // Get all uncompleted tasks
-      const { data: allTasks, error: tasksError } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('completed', false)
-        .order('created_at', { ascending: false });
-
-      if (tasksError) {
-        console.error('Error fetching tasks:', tasksError);
-        return;
-      }
-
-      // Get tasks currently associated with this session
-      const { data: sessionTaskLinks, error: sessionLinksError } = await supabase
-        .from('session_tasks')
-        .select('task_id')
-        .eq('session_id', sessionId);
-
-      if (sessionLinksError) {
-        console.error('Error fetching session task links:', sessionLinksError);
-        // Continue even if links fail, just won't have pre-selected tasks
-      }
-
-      const sessionTaskIds = sessionTaskLinks ? sessionTaskLinks.map(link => link.task_id) : [];
-
-      // Separate tasks into active and available based on session links
-      const active = allTasks.filter(task => sessionTaskIds.includes(task.id));
-      const available = allTasks.filter(task => !sessionTaskIds.includes(task.id));
-
-      setActiveTasks(active);
-      setAvailableTasks(available);
-
-    } catch (error) {
-      console.error('Error in fetchSessionTasks:', error);
-    }
-  };
-
-  const fetchSessionDetails = async (id) => {
+  const fetchSessionDetails = async () => {
     try {
       const { data: session, error } = await supabase
-        .from('sessions')
-        .select('title') // Select the title
-        .eq('id', id)
+        .from('study_laps')
+        .select('description')
+        .eq('id', sessionId)
         .single();
 
       if (error) {
@@ -78,59 +41,101 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
       }
 
       if (session) {
-        setSessionTitle(session.title || 'Untitled Session'); // Set the title
+        setSessionTitle(session.description || 'Untitled Session');
       }
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
     }
   };
 
+  const fetchSessionTasks = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Fetch all incomplete tasks for the user
+      const { data: userTasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('completed', false)
+        .order('created_at', { ascending: false });
+
+      if (tasksError) {
+        console.error('Error fetching user tasks:', tasksError);
+        setActiveTasks([]);
+        setAvailableTasks([]);
+        return;
+      }
+
+      // Separate tasks based on activetask status
+      const active = userTasks.filter(task => task.activetask);
+      const available = userTasks.filter(task => !task.activetask);
+
+      setActiveTasks(active);
+      setAvailableTasks(available);
+
+    } catch (error) {
+      console.error('Error in fetchSessionTasks:', error);
+      setActiveTasks([]);
+      setAvailableTasks([]);
+    }
+  };
+
   const moveTask = async (task, toActive) => {
     try {
       if (toActive) {
-        // Check if the session_task link already exists
+        // Check if the link already exists (shouldn't happen with proper filtering, but safety)
         const { data: existingLink, error: fetchError } = await supabase
           .from('session_tasks')
-          .select('session_id')
+          .select('*')
           .eq('session_id', sessionId)
           .eq('task_id', task.id)
-          .single();
+          .maybeSingle();
 
-        if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows found
+        if (fetchError) {
           console.error('Error checking for existing session task link:', fetchError);
           return;
         }
 
         if (!existingLink) {
-          // Add task to session_tasks table only if it doesn't exist
+          // Move task from available to active in state AND add to session_tasks table
           const { error } = await supabase
             .from('session_tasks')
-            .insert([{
+            .insert({
               session_id: sessionId,
               task_id: task.id,
-              completed_at: new Date().toISOString() // Set completed_at to now when task is moved to active
-            }]);
+              completed_at: new Date().toISOString() // Or null, depending on schema intention
+            });
 
-          if (error) { console.error('Error adding task to session:', error); return; }
+          if (error) {
+            console.error('Error adding task to session:', error);
+            return;
+          }
         }
 
-        // Move task from available to active in state
+        // Update state after successful DB operation
         setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
         setActiveTasks(prev => [...prev, task]);
 
       } else {
-        // Remove task from session_tasks table
+        // Move task from active to available in state AND remove from session_tasks table
         const { error } = await supabase
           .from('session_tasks')
           .delete()
-          .eq('session_id', sessionId)
-          .eq('task_id', task.id);
+          .match({
+            session_id: sessionId,
+            task_id: task.id
+          });
 
-        if (error) { console.error('Error removing task from session:', error); return; }
+        if (error) {
+          console.error('Error removing task from session:', error);
+          return;
+        }
 
-        // Move task from active to available in state
+        // Update state after successful DB operation
         setActiveTasks(prev => prev.filter(t => t.id !== task.id));
-        setAvailableTasks(prev => [...prev, task]);
+        setAvailableTasks(prev => [...prev, task]); // Assuming you want it back in available
       }
     } catch (error) {
       console.error('Error moving task:', error);
@@ -140,14 +145,30 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
   const handleTaskFormClose = (newTaskId) => {
     setShowTaskForm(false);
     if (newTaskId) {
+      fetchSessionTasks(); // Refresh the list after adding a new task
       setLastAddedTaskId(newTaskId);
     }
   };
 
   const handleFinish = () => {
-    // Pass only the IDs of the active tasks to the parent onFinish handler
-    onFinish(activeTasks.map(task => task.id));
-    onClose();
+    // Update tasks as completed and then call onFinish
+    const taskIdsToComplete = activeTasks.map(task => task.id);
+    // Dispatch toggleTaskStatus for each active task to mark as completed
+    const completionPromises = taskIdsToComplete.map(taskId =>
+      dispatch(toggleTaskStatus(taskId, true))
+    );
+
+    Promise.all(completionPromises)
+      .then(() => {
+        console.log('Tasks marked as completed');
+        onFinish(taskIdsToComplete); // Pass completed task IDs if needed by parent
+        onClose();
+      })
+      .catch(error => {
+        console.error('Error marking tasks as completed:', error);
+        // Optionally still call onFinish or show an error message
+        onClose(); // Close the modal even on error for now
+      });
   };
 
   if (!isOpen) return null;
@@ -261,7 +282,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
             Cancel
           </button>
           <button
-            onClick={onClose}
+            onClick={handleFinish}
             className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600"
           >
             Okay

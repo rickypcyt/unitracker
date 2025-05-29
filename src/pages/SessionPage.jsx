@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import StudyTimer from '../components/tools/StudyTimer';
 import Pomodoro from '../components/tools/Pomodoro';
 import NoiseGenerator from '../components/tools/NoiseGenerator';
@@ -6,14 +6,6 @@ import { useLocation } from 'react-router-dom';
 
 const SessionPage = memo(() => {
   const location = useLocation();
-  const isVisible = location.pathname === '/';
-
-  // Pausar timers cuando la página no está visible
-  useEffect(() => {
-    if (!isVisible) {
-      window.dispatchEvent(new CustomEvent('pauseTimerSync'));
-    }
-  }, [isVisible]);
 
   return (
     <div className="w-full px-6 pt-10">
