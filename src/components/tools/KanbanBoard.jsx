@@ -71,17 +71,27 @@ export const KanbanBoard = () => {
   const completedTasks = tasks.filter((task) => task.completed);
   const incompletedTasks = tasks.filter((task) => !task.completed);
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    
-    if (active.id !== over.id) {
-      const oldIndex = columnOrder.indexOf(active.id);
-      const newIndex = columnOrder.indexOf(over.id);
-      
-      const newOrder = arrayMove(columnOrder, oldIndex, newIndex);
-      setColumnOrder(newOrder);
-      localStorage.setItem('kanbanColumnOrder', JSON.stringify(newOrder));
-    }
+  // Get all unique assignments
+  const allAssignments = useMemo(() => 
+    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
+    [tasks]
+  );
+
+  // Group tasks by assignment
+  const groupTasksByAssignment = (tasks) => {
+    const grouped = tasks.reduce((acc, task) => {
+      const assignment = task.assignment || "No assignment";
+      if (!acc[assignment]) acc[assignment] = [];
+      acc[assignment].push(task);
+      return acc;
+    }, {});
+
+    // Sort tasks within each assignment
+    Object.keys(grouped).forEach(assignment => {
+      grouped[assignment] = sortTasksByPosition(grouped[assignment]);
+    });
+
+    return grouped;
   };
 
   // Sort tasks by position within each assignment
@@ -103,31 +113,8 @@ export const KanbanBoard = () => {
     });
   };
 
-  // Group tasks by assignment and sort them
-  const groupTasksByAssignment = (tasks) => {
-    const grouped = tasks.reduce((acc, task) => {
-      const assignment = task.assignment || "No assignment";
-      if (!acc[assignment]) acc[assignment] = [];
-      acc[assignment].push(task);
-      return acc;
-    }, {});
-
-    // Sort tasks within each assignment
-    Object.keys(grouped).forEach(assignment => {
-      grouped[assignment] = sortTasksByPosition(grouped[assignment]);
-    });
-
-    return grouped;
-  };
-
   const incompletedByAssignment = groupTasksByAssignment(incompletedTasks);
   const completedByAssignment = groupTasksByAssignment(completedTasks);
-
-  // Get all unique assignments
-  const allAssignments = useMemo(() => 
-    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
-    [tasks]
-  );
 
   // Filter assignments that have incomplete tasks
   const assignmentsWithIncompleteTasks = useMemo(() => 
@@ -139,22 +126,32 @@ export const KanbanBoard = () => {
 
   // Initialize column order when assignments change or on mount
   useEffect(() => {
-    const savedOrder = localStorage.getItem('kanbanColumnOrder');
-    const initialOrder = savedOrder ? JSON.parse(savedOrder) : assignmentsWithIncompleteTasks;
+    // Sort assignments by the number of incomplete tasks (descending)
+    const sortedAssignments = [...assignmentsWithIncompleteTasks].sort((a, b) => {
+      const countA = incompletedByAssignment[a]?.length || 0;
+      const countB = incompletedByAssignment[b]?.length || 0;
+      return countB - countA; // Sort descending
+    });
 
-    // Ensure all current assignments are in the column order
-    const currentAssignmentsSet = new Set(assignmentsWithIncompleteTasks);
-    const filteredOrder = initialOrder.filter(assignment => currentAssignmentsSet.has(assignment));
-    const newAssignments = assignmentsWithIncompleteTasks.filter(assignment => !filteredOrder.includes(assignment));
-
-    const finalOrder = [...filteredOrder, ...newAssignments];
-    
     // Only update if the order has actually changed
-    if (JSON.stringify(finalOrder) !== JSON.stringify(columnOrder)) {
-      setColumnOrder(finalOrder);
-      localStorage.setItem('kanbanColumnOrder', JSON.stringify(finalOrder));
+    if (JSON.stringify(sortedAssignments) !== JSON.stringify(columnOrder)) {
+      setColumnOrder(sortedAssignments);
+      localStorage.setItem('kanbanColumnOrder', JSON.stringify(sortedAssignments));
     }
-  }, [assignmentsWithIncompleteTasks]); // Remove columnOrder from dependencies
+  }, [assignmentsWithIncompleteTasks, incompletedByAssignment]); // Depend on incompletedByAssignment as well
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      const oldIndex = columnOrder.indexOf(active.id);
+      const newIndex = columnOrder.indexOf(over.id);
+      
+      const newOrder = arrayMove(columnOrder, oldIndex, newIndex);
+      setColumnOrder(newOrder);
+      localStorage.setItem('kanbanColumnOrder', JSON.stringify(newOrder));
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
