@@ -1,5 +1,5 @@
 // utils/taskUpdater.js
-import { toggleTaskStatus, deleteTask, updateTask } from "../redux/TaskActions";
+import { toggleTaskStatus, deleteTask, updateTask } from "../store/actions/TaskActions";
 import { getLocalTasks, setLocalTasks } from "./taskStorage";
 
 export const updateTaskStatus = async ({ user, task, dispatch, supabase }) => {

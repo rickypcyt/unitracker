@@ -1,22 +1,47 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useCallback } from 'react';
 import Statistics from '../components/tools/Stats';
 import MonthLogs from '../components/statistics/MonthLogs';
 import { useLocation } from 'react-router-dom';
 import { useLapRealtimeSubscription } from '../hooks/useLapRealtimeSubscription';
+import { useDispatch } from 'react-redux';
+import { fetchLaps } from '../store/actions/LapActions';
 
 const StatsPage = memo(() => {
   const location = useLocation();
+  const dispatch = useDispatch();
   const isVisible = location.pathname === '/stats';
 
-  // Use the new hook for real-time updates
+  // Use the real-time subscription hook
   useLapRealtimeSubscription();
 
-  // Actualizar estadísticas cuando la página se hace visible
+  // Función para refrescar los datos
+  const refreshData = useCallback(() => {
+    dispatch(fetchLaps());
+  }, [dispatch]);
+
+  // Escuchar eventos de actualización
+  useEffect(() => {
+    const handleRefresh = () => {
+      refreshData();
+    };
+
+    window.addEventListener('refreshStats', handleRefresh);
+    window.addEventListener('studyTimerStateChanged', handleRefresh);
+    window.addEventListener('resetPomodoro', handleRefresh);
+
+    return () => {
+      window.removeEventListener('refreshStats', handleRefresh);
+      window.removeEventListener('studyTimerStateChanged', handleRefresh);
+      window.removeEventListener('resetPomodoro', handleRefresh);
+    };
+  }, [refreshData]);
+
+  // Actualizar cuando la página se hace visible
   useEffect(() => {
     if (isVisible) {
-      window.dispatchEvent(new CustomEvent('refreshStats'));
+      refreshData();
     }
-  }, [isVisible]);
+  }, [isVisible, refreshData]);
 
   return (
     <div className="w-full px-6 pt-10">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, ArrowRight, ArrowLeft } from 'lucide-react';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
 import TaskForm from '../tools/TaskForm';
 
 const EditSessionModal = ({ isOpen, onClose, sessionId }) => {

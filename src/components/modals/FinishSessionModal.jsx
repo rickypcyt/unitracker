@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
+
 import { X, Plus, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
 import { useDispatch } from 'react-redux';
-import { toggleTaskStatus } from '../../redux/TaskActions';
+import { toggleTaskStatus } from '../../store/actions/TaskActions';
 
 const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
   const [activeTasks, setActiveTasks] = useState([]); // Stores task objects

@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import moment from 'moment';
 import { getMonthYear } from '../../hooks/useTimers';
-import { deleteLap } from '../../redux/LapActions';
+import { deleteLap } from '../../store/actions/LapActions';
 import { toast } from 'react-toastify';
 import SessionDetailsModal from '../modals/SessionDetailsModal';
 

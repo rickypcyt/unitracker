@@ -1,8 +1,8 @@
 import React, { memo, useEffect, useCallback } from 'react';
 import { KanbanBoard } from '../components/tools/KanbanBoard';
-import { useNavigation } from '../contexts/NavigationContext';
+import { useNavigation } from '../features/navigation/NavigationContext';
 import { useDispatch } from 'react-redux';
-import { fetchTasks } from '../redux/TaskActions';
+import { fetchTasks } from '../store/actions/TaskActions';
 
 const TasksPage = memo(() => {
   const { activePage } = useNavigation();

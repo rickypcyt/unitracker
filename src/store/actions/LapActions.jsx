@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
+
 import { 
   fetchLapsSuccess, 
   addLapSuccess, 
@@ -6,7 +7,7 @@ import {
   deleteLapSuccess, 
   lapError,
   invalidateCache
-} from './LapSlice';
+} from '../slices/LapSlice';
 
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;

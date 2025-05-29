@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { NavigationProvider, useNavigation } from './contexts/NavigationContext';
-import Navbar from './components/Navbar';
+import { NavigationProvider, useNavigation } from './features/navigation/NavigationContext';
+import Navbar from './components/layout/Navbar';
 import SessionPage from './pages/SessionPage';
 import TasksPage from './pages/TasksPage';
 import StatsPage from './pages/StatsPage';
 import CalendarPage from './pages/CalendarPage';
 import Settings from './components/modals/Settings';
 import { AuthProvider } from "./hooks/useAuth.jsx";
-import { NoiseProvider } from "./contexts/NoiseContext";
+import { NoiseProvider } from "./features/noise/NoiseContext";
 
 const PageContent = ({ onOpenSettings }) => {
   const { activePage } = useNavigation();

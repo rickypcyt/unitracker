@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { X, Save, Edit2, Trash2 } from 'lucide-react';
 import moment from 'moment';
-import { updateLap, deleteLap } from '../../redux/LapActions';
+import { deleteLap } from '../../store/actions/LapActions';
+
 import { toast } from 'react-toastify';
 
 const SessionDetailsModal = ({ session, onClose }) => {

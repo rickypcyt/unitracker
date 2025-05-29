@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
+
 import { X, Plus, Check } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
 

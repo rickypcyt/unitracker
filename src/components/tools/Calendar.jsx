@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import TaskForm from "./TaskForm";
 import { CheckCircle2, Clock } from 'lucide-react';
-import { fetchLaps } from "../../redux/LapActions";
+import { fetchLaps } from "../../store/actions/LapActions";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { useTaskManager } from "../../hooks/useTaskManager";
 

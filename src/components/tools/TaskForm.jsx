@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTaskManager } from '../../hooks/useTaskManager';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
 
 const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose, onTaskCreated }) => {
   const { user } = useTaskManager();

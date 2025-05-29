@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { supabase } from "../utils/supabaseClient";
-import { fetchTasks } from "../redux/TaskActions";
-import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../redux/TaskSlice";
+import { supabase } from '../config/supabaseClient';
+
+import { fetchTasks } from "../store/actions/TaskActions";
+import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../store/slices/TaskSlice";
 
 export const useTaskManager = () => {
   const dispatch = useDispatch();

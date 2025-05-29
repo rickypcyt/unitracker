@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { supabase } from "../../utils/supabaseClient";
-import { resetTimerState, setCurrentSession } from "../../redux/LapSlice";
-import { createLap } from "../../redux/LapActions";
+import { supabase } from '../../config/supabaseClient';
+
+import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
 import { Play, Pause, RotateCcw, Check, Clock, X, MoreVertical } from "lucide-react";
 import { useTheme } from "../../utils/ThemeContext";
 import { useStudyTimer, formatStudyTime } from "../../hooks/useTimers";
@@ -346,9 +346,12 @@ const StudyTimer = ({ onSyncChange }) => {
 
       // Calculate the total duration
       const totalDurationSeconds = studyState.time;
-      const hours = Math.floor(totalDurationSeconds / 3600);
-      const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
-      const seconds = totalDurationSeconds % 60;
+      // Round to the nearest whole second
+      const roundedDurationSeconds = Math.round(totalDurationSeconds);
+
+      const hours = Math.floor(roundedDurationSeconds / 3600);
+      const minutes = Math.floor((roundedDurationSeconds % 3600) / 60);
+      const seconds = roundedDurationSeconds % 60;
       const formattedDuration = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
       // Only finalize if duration is not 00:00:00

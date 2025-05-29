@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCalendarVisibility } from "../redux/uiSlice";
+import { setCalendarVisibility } from "../store/slices/uiSlice";
 
 export const useTaskDetails = () => {
   const dispatch = useDispatch();

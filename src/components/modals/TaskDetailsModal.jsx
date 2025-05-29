@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { X, Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { updateTask, deleteTask } from "../../redux/TaskActions";
+import { updateTask, deleteTask } from "../../store/actions/TaskActions";
 
 const TaskDetailsModal = ({
   isOpen,

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, Settings, LogOut, LogIn } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useNavigation } from '../contexts/NavigationContext';
+import { useAuth } from '../../hooks/useAuth';
+import { useNavigation } from '../../features/navigation/NavigationContext';
 
 const Navbar = ({ onOpenSettings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

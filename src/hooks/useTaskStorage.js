@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addTask, fetchTasks } from "../redux/TaskActions";
-import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../redux/TaskSlice";
+import { addTask, fetchTasks } from "../store/actions/TaskActions";
+import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../store/slices/TaskSlice";
 import { supabase } from "../utils/supabaseClient";
 import { toast } from "react-toastify";
 

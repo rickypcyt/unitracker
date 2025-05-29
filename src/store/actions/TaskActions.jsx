@@ -1,4 +1,5 @@
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../../config/supabaseClient';
+
 import {
   fetchTasksSuccess,
   addTaskSuccess,
@@ -7,7 +8,7 @@ import {
   deleteTaskSuccess,
   taskError,
   invalidateCache
-} from './TaskSlice';
+} from '../slices/TaskSlice';
 
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;

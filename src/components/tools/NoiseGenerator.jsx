@@ -1,6 +1,6 @@
 import React from "react";
 import { AudioLines, Play, Pause, Cloud, CloudRain, Waves } from "lucide-react";
-import { useNoise } from "../../contexts/NoiseContext";
+import { useNoise } from "../../features/noise/NoiseContext";
 
 // Configuración de cada sonido
 const SOUND_CONFIGS = [
