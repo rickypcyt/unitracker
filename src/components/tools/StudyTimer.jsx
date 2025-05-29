@@ -114,18 +114,34 @@ const StudyTimer = ({ onSyncChange }) => {
   const studyTick = useCallback((elapsed) => {
     // Only update if we have a valid lastStart time
     if (studyState.lastStart) {
-      console.log('Timer Tick:', {
-        timestamp: new Date().toISOString(),
-        elapsedTime: elapsed.toFixed(2),
-        sessionId: currentSessionId
-      });
+      // Solo log cada minuto para no saturar la consola
+      if (Math.floor(elapsed) % 60 === 0) {
+        const minutes = Math.floor(elapsed / 60);
+        console.log('Timer Status:', {
+          timestamp: new Date().toISOString(),
+          elapsedTime: `${minutes} min`,
+          sessionId: currentSessionId
+        });
+      }
       
       setStudyState(prev => ({
         ...prev,
         time: elapsed
       }));
+
+      // Sincronizar el estado del pomodoro con el timer
+      if (studyState.syncPomo) {
+        window.dispatchEvent(
+          new CustomEvent("syncPomodoroState", { 
+            detail: { 
+              isRunning: studyState.isRunning,
+              elapsedTime: elapsed
+            } 
+          })
+        );
+      }
     }
-  }, [studyState.lastStart, currentSessionId]);
+  }, [studyState.lastStart, currentSessionId, studyState.syncPomo, studyState.isRunning]);
 
   // Use the useStudyTimer hook for background timing
   useStudyTimer(

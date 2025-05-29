@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { AudioLines, Play, Pause, Cloud, CloudRain, Waves } from "lucide-react";
-import * as Tone from "tone";
+import { useNoise } from "../../contexts/NoiseContext";
 
 // Configuración de cada sonido
 const SOUND_CONFIGS = [
@@ -169,62 +169,6 @@ const SOUND_CONFIGS = [
   }
 ];
 
-// Hook reutilizable para sonidos individuales
-function useSound(config, masterGain) {
-  const [volume, setVolume] = useState(() => {
-    const saved = localStorage.getItem(config.key + "Volume");
-    return saved ? parseFloat(saved) : config.defaultVolume;
-  });
-  const [isPlaying, setIsPlaying] = useState(false);
-  const soundRef = useRef(null);
-
-  useEffect(() => {
-    localStorage.setItem(config.key + "Volume", volume.toString());
-    if (soundRef.current?.gain) {
-      // Si el volumen es 0, detener todos los sonidos
-      if (volume === 0) {
-        Object.values(soundRef.current).forEach(node => {
-          if (node instanceof Tone.Noise) {
-            node.stop();
-          }
-        });
-      } else {
-        // Si el volumen no es 0, asegurarse de que los sonidos estén activos
-        Object.values(soundRef.current).forEach(node => {
-          if (node instanceof Tone.Noise && !node.started) {
-            node.start();
-          }
-        });
-      }
-      // Actualizar el volumen
-      soundRef.current.gain.gain.value = volume * config.volumeMultiplier;
-    }
-  }, [volume, config.volumeMultiplier, config.key]);
-
-  const start = async () => {
-    if (!masterGain.current) {
-      masterGain.current = new Tone.Gain(1).toDestination();
-    }
-    await Tone.start();
-    if (!soundRef.current) {
-      soundRef.current = config.create(volume, masterGain.current);
-    }
-    setIsPlaying(true);
-  };
-
-  const stop = () => {
-    if (soundRef.current) {
-      Object.values(soundRef.current).forEach(node => node.dispose && node.dispose());
-      soundRef.current = null;
-    }
-    setIsPlaying(false);
-  };
-
-  useEffect(() => () => stop(), []); // Limpieza al desmontar
-
-  return { volume, setVolume, isPlaying, start, stop };
-}
-
 // Componente de control para cada sonido
 function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlaying, start, stop, className }) {
   return (
@@ -269,39 +213,8 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
 
 // Componente principal
 export default function NoiseGenerator() {
-  const masterGainRef = useRef(null);
-  const soundHooks = SOUND_CONFIGS.map(config => useSound(config, masterGainRef));
-  const allPlaying = soundHooks.every(hook => hook.isPlaying);
-
-  // Play/Pause All
-  const toggleAllSounds = async () => {
-    if (!masterGainRef.current) {
-      masterGainRef.current = new Tone.Gain(1).toDestination();
-      await Tone.start();
-    }
-    if (allPlaying) {
-      soundHooks.forEach(hook => hook.stop());
-    } else {
-      await Tone.start();
-      soundHooks.forEach(hook => !hook.isPlaying && hook.start());
-    }
-  };
-
-  // Mantener el estado de "Play All" sincronizado
-  useEffect(() => {
-    // Si todos están activos, allPlaying será true; si alguno se apaga, será false
-  }, [soundHooks.map(hook => hook.isPlaying).join()]);
-
-  // Limpieza global
-  useEffect(() => {
-    return () => {
-      soundHooks.forEach(hook => hook.stop());
-      if (masterGainRef.current) {
-        masterGainRef.current.dispose();
-      }
-    };
-    // eslint-disable-next-line
-  }, []);
+  const { sounds, startSound, stopSound, setVolume, toggleAllSounds } = useNoise();
+  const allPlaying = sounds.every(sound => sound.isPlaying);
 
   return (
     <div className="maincard p-6">
@@ -330,19 +243,19 @@ export default function NoiseGenerator() {
       </div>
       <div className="space-y-6">
         <div className="space-y-6">
-          {SOUND_CONFIGS.map((config, idx) => (
+          {sounds.map((sound, idx) => (
             <SoundControl
-              key={config.key}
-              label={config.label}
-              icon={config.icon}
-              min={config.min}
-              max={config.max}
-              volume={soundHooks[idx].volume}
-              setVolume={soundHooks[idx].setVolume}
-              isPlaying={soundHooks[idx].isPlaying}
-              start={soundHooks[idx].start}
-              stop={soundHooks[idx].stop}
-              className={config.key === 'ocean' ? 'mb-2' : ''}
+              key={sound.key}
+              label={sound.label}
+              icon={sound.icon === "Cloud" ? Cloud : sound.icon === "CloudRain" ? CloudRain : Waves}
+              min={sound.min}
+              max={sound.max}
+              volume={sound.volume}
+              setVolume={(volume) => setVolume(idx, volume)}
+              isPlaying={sound.isPlaying}
+              start={() => startSound(idx)}
+              stop={() => stopSound(idx)}
+              className={sound.key === 'ocean' ? 'mb-2' : ''}
             />
           ))}
         </div>

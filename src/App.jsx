@@ -7,6 +7,7 @@ import StatsPage from './pages/StatsPage';
 import CalendarPage from './pages/CalendarPage';
 import Settings from './components/modals/Settings';
 import { AuthProvider } from "./hooks/useAuth.jsx";
+import { NoiseProvider } from "./contexts/NoiseContext";
 
 const PageContent = ({ onOpenSettings }) => {
   const { activePage } = useNavigation();
@@ -36,16 +37,18 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <NavigationProvider>
-        <PageContent onOpenSettings={handleOpenSettings} />
-        {showSettings && (
-          <Settings
-            onClose={handleCloseSettings}
-          />
-        )}
-      </NavigationProvider>
-    </AuthProvider>
+    <NoiseProvider>
+      <AuthProvider>
+        <NavigationProvider>
+          <PageContent onOpenSettings={handleOpenSettings} />
+          {showSettings && (
+            <Settings
+              onClose={handleCloseSettings}
+            />
+          )}
+        </NavigationProvider>
+      </AuthProvider>
+    </NoiseProvider>
   );
 }
 

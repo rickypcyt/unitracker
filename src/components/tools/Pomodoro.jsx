@@ -69,6 +69,16 @@ const Pomodoro = () => {
   useEventListener("pauseTimerSync", () => handleStop(), []);
   useEventListener("stopPomodoro", () => handleStop(), []);
   useEventListener("resetPomodoro", () => handleReset(), []);
+  useEventListener("syncPomodoroState", (event) => {
+    const { isRunning, elapsedTime } = event.detail;
+    if (isRunning !== pomoState.isRunning) {
+      if (isRunning) {
+        handleStart();
+      } else {
+        handleStop();
+      }
+    }
+  }, [pomoState.isRunning]);
 
   const handleStart = useCallback(() => {
     setPomoState(prev => ({ ...prev, isRunning: true }));
