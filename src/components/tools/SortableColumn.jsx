@@ -44,7 +44,7 @@ export const SortableColumn = ({
       style={style}
       className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-4"
     >
-      <div className="flex items-center justify-between w-full mb-4">
+      <div className="flex items-center justify-between w-full mb-2">
         <div className="flex items-center gap-2 flex-1">
           <button
             onClick={onToggleCollapse}
@@ -61,7 +61,7 @@ export const SortableColumn = ({
             {...listeners}
             className="flex items-center gap-2 flex-1 cursor-move"
           >
-            <h3 className="font-medium text-lg text-neutral-200 group-hover:text-neutral-100">
+            <h3 className="font-medium text-lg text-white group-hover:text-neutral-100">
               {assignment}
               <span className="text-base text-neutral-400 ml-2">
                 ({tasks.length})

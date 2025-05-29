@@ -95,7 +95,7 @@ export const TaskItem = ({
                                 className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
                                     task.completed
                                         ? "line-through text-neutral-400"
-                                        : "text-neutral-200"
+                                        : "text-white"
                                 }`}
                                 title={task.title}
                             >
@@ -160,7 +160,7 @@ export const TaskItem = ({
                                 e.preventDefault();
                                 onDelete(task.id);
                             }}
-                            className="hover:text-red-500 pointer-events-auto"
+                            className="hover:text-red-500 pointer-events-auto text-neutral-400"
                             aria-label="Delete task"
                         >
                             <Trash2 size={18} />
