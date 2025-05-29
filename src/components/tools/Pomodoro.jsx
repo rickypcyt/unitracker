@@ -3,7 +3,7 @@ import { Play, Pause, RotateCcw, Timer } from "lucide-react";
 import { useTheme } from "../../utils/ThemeContext";
 import { formatPomoTime } from "../../hooks/useTimers";
 import useEventListener from "../../hooks/useEventListener";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 const MODES = [
   { label: "50/10", work: 50 * 60, break: 10 * 60 },
@@ -27,42 +27,84 @@ const Pomodoro = () => {
   const { iconColor } = useTheme();
   const [pomoState, setPomoState] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
+    const savedState = localStorage.getItem("pomodoroState");
+    const defaultModeIndex = 0;
+    const defaultMode = "work";
+    const defaultTimeLeft = MODES[defaultModeIndex][defaultMode];
+
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        return {
+          modeIndex: Number(parsed.modeIndex) || defaultModeIndex,
+          currentMode: parsed.currentMode || defaultMode,
+          timeLeft: Number(parsed.timeLeft) || defaultTimeLeft,
+          isRunning: localStorage.getItem("pomodoroIsRunning") === "true",
+          pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || "0"),
+          startTime: Number(parsed.startTime) || 0,
+          pausedTime: Number(parsed.pausedTime) || 0,
+        };
+      } catch (error) {
+        console.error('Error parsing saved state:', error);
+        return {
+          modeIndex: defaultModeIndex,
+          currentMode: defaultMode,
+          timeLeft: defaultTimeLeft,
+          isRunning: false,
+          pomodoroToday: 0,
+          startTime: 0,
+          pausedTime: 0,
+        };
+      }
+    }
     return {
-      modeIndex: parseInt(localStorage.getItem("pomodoroModeIndex") || "0"),
-      currentMode: localStorage.getItem("pomodoroCurrentMode") || "work",
-      timeLeft: parseInt(localStorage.getItem("pomodoroTimeLeft") || MODES[0].work),
-      isRunning: localStorage.getItem("pomodoroIsRunning") === "true",
-      pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || "0"),
+      modeIndex: defaultModeIndex,
+      currentMode: defaultMode,
+      timeLeft: defaultTimeLeft,
+      isRunning: false,
+      pomodoroToday: 0,
+      startTime: 0,
+      pausedTime: 0,
     };
   });
 
-  // Save state to localStorage
+  // Guardar estado en localStorage cuando cambie
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem("pomodoroModeIndex", pomoState.modeIndex);
-    localStorage.setItem("pomodoroCurrentMode", pomoState.currentMode);
-    if (!pomoState.isRunning) {
-      localStorage.setItem("pomodoroTimeLeft", pomoState.timeLeft);
-    }
-    localStorage.setItem("pomodoroIsRunning", pomoState.isRunning);
-    localStorage.setItem(`pomodoroDailyCount_${today}`, pomoState.pomodoroToday);
+    const stateToSave = {
+      modeIndex: pomoState.modeIndex,
+      currentMode: pomoState.currentMode,
+      timeLeft: pomoState.timeLeft,
+      startTime: pomoState.startTime,
+      pausedTime: pomoState.pausedTime,
+    };
+    localStorage.setItem("pomodoroState", JSON.stringify(stateToSave));
+    localStorage.setItem("pomodoroIsRunning", pomoState.isRunning.toString());
   }, [pomoState]);
 
   // Timer logic
   useEffect(() => {
     let interval;
     if (pomoState.isRunning && pomoState.timeLeft > 0) {
+      const startTime = Date.now();
+      const initialTimeLeft = pomoState.timeLeft;
+      
       interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const newTimeLeft = Math.max(0, initialTimeLeft - elapsed);
+        
+        if (newTimeLeft <= 0) {
+          handlePomodoroComplete();
+          return;
+        }
+
         setPomoState(prev => ({
           ...prev,
-          timeLeft: prev.timeLeft - 1
+          timeLeft: newTimeLeft
         }));
-      }, 1000);
-    } else if (pomoState.timeLeft === 0) {
-      handlePomodoroComplete();
+      }, 100);
     }
     return () => clearInterval(interval);
-  }, [pomoState.isRunning, pomoState.timeLeft]);
+  }, [pomoState.isRunning, pomoState.modeIndex, pomoState.currentMode]);
 
   // Event listeners
   useEventListener("startPomodoro", () => handleStart(), []);
@@ -70,31 +112,101 @@ const Pomodoro = () => {
   useEventListener("stopPomodoro", () => handleStop(), []);
   useEventListener("resetPomodoro", () => handleReset(), []);
   useEventListener("syncPomodoroState", (event) => {
-    const { isRunning, elapsedTime } = event.detail;
-    if (isRunning !== pomoState.isRunning) {
-      if (isRunning) {
-        handleStart();
-      } else {
-        handleStop();
-      }
+    const { isRunning: studyIsRunning, elapsedTime } = event.detail;
+    
+    if (studyIsRunning) {
+      setPomoState(prev => {
+        const currentMode = prev.currentMode || "work";
+        const modeIndex = Number(prev.modeIndex) || 0;
+        const modeDuration = MODES[modeIndex][currentMode];
+
+        // Si es la primera sincronización o no hay tiempo de inicio
+        if (!prev.startTime) {
+          return {
+            ...prev,
+            startTime: Date.now() / 1000,
+            pausedTime: 0,
+            isRunning: true,
+            timeLeft: modeDuration
+          };
+        }
+
+        // Si estaba pausado, reiniciar con el tiempo completo
+        if (prev.pausedTime > 0) {
+          return {
+            ...prev,
+            startTime: Date.now() / 1000,
+            pausedTime: 0,
+            isRunning: true,
+            timeLeft: modeDuration
+          };
+        }
+
+        // Calcular el tiempo transcurrido desde el inicio del ciclo
+        const cycleElapsed = Math.floor((Date.now() / 1000) - prev.startTime);
+        const newTimeLeft = Math.max(0, modeDuration - cycleElapsed);
+
+        // Si el tiempo se acaba, cambiar al siguiente ciclo
+        if (newTimeLeft <= 0) {
+          const isWork = currentMode === "work";
+          const nextMode = isWork ? "break" : "work";
+          const nextDuration = MODES[modeIndex][nextMode];
+          
+          return {
+            ...prev,
+            currentMode: nextMode,
+            timeLeft: nextDuration,
+            pomodoroToday: isWork ? prev.pomodoroToday + 1 : prev.pomodoroToday,
+            startTime: Date.now() / 1000,
+            pausedTime: 0,
+            isRunning: true
+          };
+        }
+
+        return {
+          ...prev,
+          timeLeft: newTimeLeft,
+          isRunning: true
+        };
+      });
+    } else if (pomoState.isRunning) {
+      setPomoState(prev => ({
+        ...prev,
+        isRunning: false,
+        pausedTime: Date.now() / 1000
+      }));
     }
-  }, [pomoState.isRunning]);
+  }, [pomoState.currentMode, pomoState.modeIndex]);
 
   const handleStart = useCallback(() => {
-    setPomoState(prev => ({ ...prev, isRunning: true }));
-  }, []);
+    const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
+    setPomoState(prev => ({ 
+      ...prev, 
+      isRunning: true,
+      startTime: Date.now() / 1000,
+      pausedTime: 0,
+      timeLeft: modeDuration
+    }));
+  }, [pomoState.modeIndex, pomoState.currentMode]);
 
   const handleStop = useCallback(() => {
-    setPomoState(prev => ({ ...prev, isRunning: false }));
+    setPomoState(prev => ({ 
+      ...prev, 
+      isRunning: false,
+      pausedTime: Date.now() / 1000
+    }));
   }, []);
 
   const handleReset = useCallback(() => {
+    const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
     setPomoState(prev => ({
       ...prev,
       isRunning: false,
-      timeLeft: MODES[prev.modeIndex][prev.currentMode],
+      timeLeft: modeDuration,
+      startTime: 0,
+      pausedTime: 0
     }));
-  }, []);
+  }, [pomoState.modeIndex, pomoState.currentMode]);
 
   const handleModeChange = useCallback((index) => {
     setPomoState(prev => ({
@@ -122,7 +234,63 @@ const Pomodoro = () => {
     }));
 
     // Show notification
-    toast.success(isWork ? "Work session complete! Time for a break." : "Break complete! Ready for next work session?");
+    if (isWork) {
+      toast.success("Work session complete! Time for a break.");
+      
+      // Reset StudyTimer and show session summary
+      window.dispatchEvent(new CustomEvent("stopStudyTimer"));
+      window.dispatchEvent(new CustomEvent("resetTimerSync"));
+      
+      // Get the current session time from localStorage
+      const studyState = JSON.parse(localStorage.getItem("studyTimerState") || "{}");
+      const studyTime = studyState.time || 0;
+      const hours = Math.floor(studyTime / 3600);
+      const minutes = Math.floor((studyTime % 3600) / 60);
+      const seconds = Math.floor(studyTime % 60);
+      
+      // Get completed tasks count from localStorage
+      const completedTasks = JSON.parse(localStorage.getItem("completedTasks") || "[]");
+      
+      // Update the study lap in the database
+      const activeSessionId = localStorage.getItem("activeSessionId");
+      if (activeSessionId) {
+        const { supabase } = require("../../utils/supabaseClient");
+        supabase
+          .from('study_laps')
+          .update({
+            duration: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
+            tasks_completed: completedTasks.length,
+            ended_at: new Date().toISOString()
+          })
+          .eq('id', activeSessionId)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error updating study lap:', error);
+              toast.error('Failed to update session details.');
+            }
+          });
+      }
+      
+      // Show summary toast with a longer duration
+      toast.success(
+        `Congrats! You studied for ${hours} hours and ${minutes} minutes and completed ${completedTasks.length} tasks.`,
+        {
+          duration: 5000, // Show for 5 seconds
+          position: 'top-center',
+          style: {
+            background: '#333',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+        }
+      );
+    } else {
+      toast.success("Break complete! Ready for next work session?", {
+        duration: 3000,
+        position: 'top-center',
+      });
+    }
 
     // Browser notification
     if ("Notification" in window && Notification.permission === "granted") {

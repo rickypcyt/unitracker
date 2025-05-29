@@ -300,6 +300,10 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
             <TaskForm
               onClose={handleTaskFormClose}
+              onTaskCreated={(newTaskId) => {
+                fetchTasks();
+                setSelectedTasks(prev => [...prev, newTaskId]);
+              }}
             />
           </div>
         </div>

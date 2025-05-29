@@ -111,37 +111,23 @@ const StudyTimer = ({ onSyncChange }) => {
     fetchSessionTitle();
   }, [currentSessionId]);
 
-  const studyTick = useCallback((elapsed) => {
-    // Only update if we have a valid lastStart time
+  const studyTick = useCallback(() => {
     if (studyState.lastStart) {
-      // Solo log cada minuto para no saturar la consola
-      if (Math.floor(elapsed) % 60 === 0) {
-        const minutes = Math.floor(elapsed / 60);
-        console.log('Timer Status:', {
-          timestamp: new Date().toISOString(),
-          elapsedTime: `${minutes} min`,
-          sessionId: currentSessionId
-        });
-      }
-      
+      const elapsed = Math.floor((Date.now() - studyState.lastStart) / 1000) + studyState.timeAtStart;
       setStudyState(prev => ({
         ...prev,
         time: elapsed
       }));
-
-      // Sincronizar el estado del pomodoro con el timer
-      if (studyState.syncPomo) {
-        window.dispatchEvent(
-          new CustomEvent("syncPomodoroState", { 
-            detail: { 
-              isRunning: studyState.isRunning,
-              elapsedTime: elapsed
-            } 
-          })
-        );
-      }
+      
+      // Dispara evento de sincronización con el tiempo transcurrido
+      window.dispatchEvent(new CustomEvent("syncPomodoroState", {
+        detail: { 
+          isRunning: studyState.isRunning,
+          elapsedTime: elapsed
+        }
+      }));
     }
-  }, [studyState.lastStart, currentSessionId, studyState.syncPomo, studyState.isRunning]);
+  }, [studyState.lastStart, studyState.timeAtStart, studyState.isRunning]);
 
   // Use the useStudyTimer hook for background timing
   useStudyTimer(
@@ -296,29 +282,48 @@ const StudyTimer = ({ onSyncChange }) => {
     }
   }, []);
 
+  // Add effect to reset sessions count at midnight
+  useEffect(() => {
+    const checkAndResetSessions = () => {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const lastReset = localStorage.getItem('lastSessionsReset');
+      
+      if (lastReset !== today) {
+        setSessionsTodayCount(0);
+        localStorage.setItem('lastSessionsReset', today);
+        localStorage.setItem('sessionsTodayCount', '0');
+      }
+    };
+
+    // Check immediately on mount
+    checkAndResetSessions();
+
+    // Set up interval to check every minute
+    const interval = setInterval(checkAndResetSessions, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch sessions count for today
   const fetchSessionsTodayCount = async () => {
     try {
-      const today = new Date().toISOString().split("T")[0];
-      const { count, error } = await supabase
-        .from("study_laps")
-        .select('*' , { count: 'exact', head: true })
-        .gte("created_at", `${today}T00:00:00`)
-        .lte("created_at", `${today}T23:59:59`);
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('study_laps')
+        .select('id')
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`);
 
-      if (error) {
-        console.error('Error fetching sessions today count:', error);
-        setSessionsTodayCount(0);
-        return;
-      }
-
-      setSessionsTodayCount(count || 0);
+      if (error) throw error;
+      setSessionsTodayCount(data.length);
+      localStorage.setItem('sessionsTodayCount', data.length.toString());
     } catch (error) {
-      console.error('Error in fetchSessionsTodayCount:', error);
-      setSessionsTodayCount(0);
+      console.error('Error fetching sessions count:', error);
     }
   };
 
-  // Fetch sessions today count on component mount
+  // Add effect to fetch sessions count on mount and when needed
   useEffect(() => {
     fetchSessionsTodayCount();
   }, []);
@@ -353,7 +358,7 @@ const StudyTimer = ({ onSyncChange }) => {
           .update({
             duration: formattedDuration,
             tasks_completed: completedTaskIds.length,
-            finished_at: new Date().toISOString()
+            ended_at: new Date().toISOString()
           })
           .eq('id', currentSessionId);
 

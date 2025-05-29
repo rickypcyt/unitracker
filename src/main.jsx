@@ -5,8 +5,8 @@ import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import { Provider } from 'react-redux';
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react"
-import { ToastContainer } from "react-toastify";
 import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from "react-hot-toast";
 
 // Import local files
 import { store } from './redux/store';
@@ -51,7 +51,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <BrowserRouter>
           <ThemeProvider>
             <App />
-            <ToastContainer />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: '#333',
+                  color: '#fff',
+                  padding: '16px',
+                  borderRadius: '8px',
+                },
+              }}
+            />
             <Analytics />
             <SpeedInsights />
           </ThemeProvider>

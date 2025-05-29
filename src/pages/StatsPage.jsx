@@ -2,10 +2,14 @@ import React, { memo, useEffect } from 'react';
 import Statistics from '../components/tools/Stats';
 import MonthLogs from '../components/statistics/MonthLogs';
 import { useLocation } from 'react-router-dom';
+import { useLapRealtimeSubscription } from '../hooks/useLapRealtimeSubscription';
 
 const StatsPage = memo(() => {
   const location = useLocation();
   const isVisible = location.pathname === '/stats';
+
+  // Use the new hook for real-time updates
+  useLapRealtimeSubscription();
 
   // Actualizar estadísticas cuando la página se hace visible
   useEffect(() => {

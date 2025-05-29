@@ -91,14 +91,10 @@ export const formatStudyTime = (totalSeconds, roundUp = false) => {
 
 export const formatPomoTime = (totalSeconds, roundUp = false) => {
   try {
-    const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
-    const hours = Math.floor(s / 3600);
-    const minutes = Math.floor((s % 3600) / 60);
+    // Ensure totalSeconds is a valid number
+    const s = Math.max(0, Math.floor(roundUp ? Math.ceil(totalSeconds) : totalSeconds));
+    const minutes = Math.floor(s / 60);
     const seconds = Math.floor(s % 60);
-    
-    if (s >= 3600) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   } catch (error) {
     console.error('Error formatting pomo time:', error);

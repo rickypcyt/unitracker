@@ -77,16 +77,46 @@ export const deleteLap = (id) => async (dispatch) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    const { error } = await supabase
+    // First, get all tasks associated with this session
+    const { data: sessionTasks, error: fetchError } = await supabase
+      .from('session_tasks')
+      .select('task_id')
+      .eq('session_id', id);
+
+    if (fetchError) throw fetchError;
+
+    // Delete the session_tasks relationships
+    const { error: deleteSessionTasksError } = await supabase
+      .from('session_tasks')
+      .delete()
+      .eq('session_id', id);
+
+    if (deleteSessionTasksError) throw deleteSessionTasksError;
+
+    // Delete the session
+    const { error: deleteError } = await supabase
       .from('study_laps')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id);
 
-    if (error) throw error;
+    if (deleteError) throw deleteError;
+
+    // Update tasks that were associated with this session
+    if (sessionTasks && sessionTasks.length > 0) {
+      const taskIds = sessionTasks.map(st => st.task_id);
+      const { error: updateTasksError } = await supabase
+        .from('tasks')
+        .update({ activetask: false })
+        .in('id', taskIds);
+
+      if (updateTasksError) throw updateTasksError;
+    }
+
     dispatch(deleteLapSuccess(id));
   } catch (error) {
     dispatch(lapError(error.message));
+    throw error;
   }
 };
 

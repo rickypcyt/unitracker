@@ -3,7 +3,7 @@ import { useTaskManager } from '../../hooks/useTaskManager';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../../utils/supabaseClient';
 
-const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose }) => {
+const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose, onTaskCreated }) => {
   const { user } = useTaskManager();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -73,7 +73,7 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose })
       if (error) throw error;
       
       if (data) {
-        window.dispatchEvent(new CustomEvent('refreshTaskList'));
+        onTaskCreated?.(data.id);
         onClose(data.id);
       }
     } catch (error) {
