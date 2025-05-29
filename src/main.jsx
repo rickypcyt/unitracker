@@ -25,7 +25,7 @@ const securityHeaders = {
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob:;
-    connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com;
     worker-src 'self' blob:;
     frame-src 'self';
     font-src 'self';
