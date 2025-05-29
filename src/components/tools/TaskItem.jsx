@@ -54,90 +54,118 @@ export const TaskItem = ({
     };
 
     return (
-        <div
-            className={`relative
-                p-3
-                rounded-lg
-                transition-all
-                duration-200
-                border
-                hover:shadow-lg
-                backdrop-blur-sm
-                cursor-pointer
-                group
-                ${isSelected 
-                    ? "bg-blue-500/20 border-blue-500/50 hover:border-blue-500/70"
-                    : task.activetask
-                        ? task.difficulty === "easy"
-                            ? "bg-green-500/10 border-green-500/30 hover:border-green-500/50"
-                            : task.difficulty === "medium"
-                                ? "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50"
-                                : "bg-red-500/10 border-red-500/30 hover:border-red-500/50"
-                        : "bg-neutral-800/20 border-neutral-700/30 hover:border-neutral-700/50"
-                }`}
-            onDoubleClick={() => onDoubleClick(task)}
-            onContextMenu={(e) => onContextMenu(e, task)}
-            tabIndex={0}
-            role="listitem"
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-        >
-            <div className="flex flex-col gap-3">
-                {/* First row: Checkbox and Title */}
-                <div className="flex items-start gap-3">
-                    <button
-                        onClick={() => onToggleCompletion(task)}
-                        className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group-hover:scale-110 transition-transform duration-200"
-                        aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-                    >
-                        {task.completed ? (
-                            <CheckCircle2 className="text-accent-primary" size={20} />
-                        ) : (
-                            <Circle
-                                className={getDifficultyColor(task.difficulty)}
-                                size={20}
-                            />
-                        )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                        <span
-                            className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
-                                task.completed
-                                    ? "line-through text-neutral-400"
-                                    : "text-neutral-200"
-                            }`}
-                            title={task.title}
-                        >
-                            {task.title}
-                        </span>
+        <div className="relative">
+            {/* Draggable Area */}
+            <div
+                className={`relative
+                    p-3
+                    rounded-lg
+                    transition-all
+                    duration-200
+                    border
+                    hover:shadow-lg
+                    backdrop-blur-sm
+                    cursor-pointer
+                    group
+                    ${isSelected 
+                        ? "bg-blue-500/20 border-blue-500/50 hover:border-blue-500/70"
+                        : task.activetask
+                            ? task.difficulty === "easy"
+                                ? "bg-green-500/10 border-green-500/30 hover:border-green-500/50"
+                                : task.difficulty === "medium"
+                                    ? "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50"
+                                    : "bg-red-500/10 border-red-500/30 hover:border-red-500/50"
+                            : "bg-neutral-800/20 border-neutral-700/30 hover:border-neutral-700/50"
+                    }`}
+                onDoubleClick={() => onDoubleClick(task)}
+                onContextMenu={(e) => onContextMenu(e, task)}
+                tabIndex={0}
+                role="listitem"
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+            >
+                <div className="flex flex-col gap-3">
+                    {/* First row: Title */}
+                    <div className="flex items-start gap-3">
+                        <div className="w-5 h-5" /> {/* Spacer for the toggle button */}
+                        <div className="flex-1 min-w-0">
+                            <span
+                                className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
+                                    task.completed
+                                        ? "line-through text-neutral-400"
+                                        : "text-neutral-200"
+                                }`}
+                                title={task.title}
+                            >
+                                {task.title}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Second row: Metadata */}
+                    <div className="flex items-center justify-between text-base text-neutral-400">
+                        <div className="flex items-center gap-3">
+                            {task.deadline && (
+                                <div className="flex items-center gap-1">
+                                    <Calendar size={18} />
+                                    <span>{new Date(task.deadline).toLocaleDateString()}</span>
+                                </div>
+                            )}
+                            {task.priority && (
+                                <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
+                                    <Clock size={14} />
+                                    <span className="capitalize">{task.priority}</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="w-5 h-5" /> {/* Spacer for the delete button */}
                     </div>
                 </div>
+            </div>
 
-                {/* Second row: Metadata */}
-                <div className="flex items-center justify-between text-base text-neutral-400">
-                    <div className="flex items-center gap-3">
-                        {task.deadline && (
-                            <div className="flex items-center gap-1">
-                                <Calendar size={18} />
-                                <span>{new Date(task.deadline).toLocaleDateString()}</span>
-                            </div>
-                        )}
-                        {task.priority && (
-                            <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
-                                <Clock size={14} />
-                                <span className="capitalize">{task.priority}</span>
-                            </div>
-                        )}
+            {/* Action Buttons (rendered on top) */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="flex flex-col h-full">
+                    {/* Toggle Button */}
+                    <div className="flex items-start p-3">
+                        <button
+                            onClick={(e) => {
+                                console.log('Toggle button clicked');
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onToggleCompletion(task.id);
+                            }}
+                            className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group-hover:scale-110 transition-transform duration-200 pointer-events-auto"
+                            aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                        >
+                            {task.completed ? (
+                                <CheckCircle2 className="text-accent-primary" size={20} />
+                            ) : (
+                                <Circle
+                                    className={getDifficultyColor(task.difficulty)}
+                                    size={20}
+                                />
+                            )}
+                        </button>
                     </div>
-                    <button
-                        onClick={() => onDelete(task.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:text-red-500"
-                        aria-label="Delete task"
-                    >
-                        <Trash2 size={18} />
-                    </button>
+
+                    {/* Delete Button */}
+                    <div className="flex-1 flex items-end justify-end p-3">
+                        <button
+                            onClick={(e) => {
+                                console.log('Delete button clicked');
+                                e.stopPropagation();
+                                e.preventDefault();
+                                onDelete(task.id);
+                            }}
+                            className="hover:text-red-500 pointer-events-auto"
+                            aria-label="Delete task"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

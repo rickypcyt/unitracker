@@ -25,6 +25,7 @@ const taskSlice = createSlice({
       const task = state.tasks.find(t => t.id === action.payload.id);
       if (task) {
         task.completed = action.payload.completed;
+        task.completed_at = action.payload.completed ? new Date().toISOString() : null;
       }
     },
     deleteTaskSuccess: (state, action) => {

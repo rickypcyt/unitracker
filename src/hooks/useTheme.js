@@ -18,11 +18,11 @@ const useTheme = () => {
     localStorage.setItem("hasSeenWelcomeModal", "true");
   };
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) handleCloseWelcome();
   };
 
-  const handleThemeChange = (theme: string) => {
+  const handleThemeChange = (theme) => {
     setCurrentTheme(theme);
     localStorage.setItem("theme", theme);
   };

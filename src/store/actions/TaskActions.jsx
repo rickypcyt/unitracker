@@ -94,21 +94,26 @@ export const toggleTaskStatus = (id, completed) => async (dispatch) => {
     // Actualización optimista
     dispatch(toggleTaskStatusOptimistic({ id, completed }));
 
-    // Nueva lógica para completed_at
-    const completed_at = completed ? new Date().toISOString() : null;
-
+    // Actualizar en la base de datos
     const { data, error } = await supabase
       .from('tasks')
-      .update({ completed, completed_at })
+      .update({ 
+        completed: completed,
+        completed_at: completed ? new Date().toISOString() : null 
+      })
       .eq('id', id)
-      .select();
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (error) {
+      // Revertir en caso de error
+      dispatch(toggleTaskStatusOptimistic({ id, completed: !completed }));
+      throw error;
+    }
 
-    dispatch(updateTaskSuccess(data[0]));
+    // Actualizar el estado con la respuesta del servidor
+    dispatch(updateTaskSuccess(data));
   } catch (error) {
-    // Revertir en caso de error
-    dispatch(toggleTaskStatusOptimistic({ id, completed: !completed }));
     dispatch(taskError(error.message));
   }
 };

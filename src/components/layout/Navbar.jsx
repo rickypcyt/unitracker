@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Settings, LogOut, LogIn } from 'lucide-react';
+import { Menu, X, Settings, LogOut, LogIn, Info } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '../../features/navigation/NavigationContext';
+import AboutModal from '../modals/AboutModal';
 
 const Navbar = ({ onOpenSettings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const { isLoggedIn, loginWithGoogle, logout } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const settingsRef = useRef(null);
@@ -34,152 +36,159 @@ const Navbar = ({ onOpenSettings }) => {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-black border-b border-neutral-300/30 z-50">
-      <div className="w-full px-6">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <span className="text-white font-bold text-2xl">Uni</span>
-            <span className="text-blue-500 font-bold text-2xl">Tracker</span>
-          </div>
+    <>
+      <nav className="fixed top-0 left-0 right-0 bg-black border-b border-neutral-300/30 z-50">
+        <div className="w-full px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <span className="text-white font-bold text-2xl">Uni</span>
+              <span className="text-blue-500 font-bold text-2xl">Tracker</span>
+            </div>
 
-          {/* Enlaces de navegación - Desktop */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks')}>
-              Tasks
-            </button>
-            <button onClick={() => navigateTo('session')} className={navLinkClass('session')}>
-              Session
-            </button>
-            <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar')}>
-              Calendar
-            </button>
-            <button onClick={() => navigateTo('stats')} className={navLinkClass('stats')}>
-              Statistics
-            </button>
-          </div>
+            {/* Enlaces de navegación - Desktop */}
+            <div className="hidden md:flex items-center space-x-8">
+              <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks')}>
+                Tasks
+              </button>
+              <button onClick={() => navigateTo('session')} className={navLinkClass('session')}>
+                Session
+              </button>
+              <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar')}>
+                Calendar
+              </button>
+              <button onClick={() => navigateTo('stats')} className={navLinkClass('stats')}>
+                Statistics
+              </button>
+            </div>
 
-          {/* Settings Menu - Desktop */}
-          <div className="hidden md:block relative" ref={settingsRef}>
-            <button
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="text-gray-300 hover:text-white p-2 rounded-md transition-colors"
-            >
-              <Settings size={24} />
-            </button>
-            {isSettingsOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-lg shadow-lg z-50 border border-neutral-800">
-                <button
-                  onClick={() => {
-                    onOpenSettings();
-                    setIsSettingsOpen(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-gray-300 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
-                >
-                  <Settings size={16} />
-                  Settings
-                </button>
-                {isLoggedIn ? (
+            {/* Settings Menu - Desktop */}
+            <div className="hidden md:block relative" ref={settingsRef}>
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className="text-gray-300 hover:text-white p-2 rounded-md transition-colors"
+              >
+                <Settings size={24} />
+              </button>
+              {isSettingsOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-lg shadow-lg z-50 border border-neutral-800">
                   <button
                     onClick={() => {
-                      logout();
+                      onOpenSettings();
                       setIsSettingsOpen(false);
                     }}
                     className="w-full px-4 py-2 text-left text-gray-300 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
                   >
-                    <LogOut size={16} />
-                    Log Out
+                    <Settings size={16} />
+                    Settings
                   </button>
-                ) : (
                   <button
                     onClick={() => {
-                      loginWithGoogle();
+                      setShowAbout(true);
                       setIsSettingsOpen(false);
                     }}
                     className="w-full px-4 py-2 text-left text-gray-300 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
                   >
-                    <LogIn size={16} />
-                    Log In
+                    <Info size={16} />
+                    About
                   </button>
-                )}
-              </div>
-            )}
-          </div>
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsSettingsOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-300 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
+                    >
+                      <LogOut size={16} />
+                      Log Out
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        loginWithGoogle();
+                        setIsSettingsOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-gray-300 hover:bg-neutral-800 hover:text-white transition-colors flex items-center gap-2"
+                    >
+                      <LogIn size={16} />
+                      Log In
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
-          {/* Botón de menú móvil */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-400 hover:text-white focus:outline-none"
-            >
-              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
+            {/* Botón de menú móvil */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-400 hover:text-white focus:outline-none"
+              >
+                {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Menú móvil */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute w-full bg-black border-b border-neutral-800">
-          <div className="px-2 pt-2 pb-2 space-y-1 flex flex-col items-center">
-            <button onClick={() => {
-              navigateTo('tasks');
-              setIsMenuOpen(false);
-            }} className={navLinkClass('tasks')}>
-              Tasks
-            </button>
-            <button onClick={() => {
-              navigateTo('session');
-              setIsMenuOpen(false);
-            }} className={navLinkClass('session')}>
-              Session
-            </button>
-            <button onClick={() => {
-              navigateTo('calendar');
-              setIsMenuOpen(false);
-            }} className={navLinkClass('calendar')}>
-              Calendar
-            </button>
-            <button onClick={() => {
-              navigateTo('stats');
-              setIsMenuOpen(false);
-            }} className={navLinkClass('stats')}>
-              Statistics
-            </button>
-            <button
-              onClick={() => {
-                onOpenSettings();
+        {/* Menú móvil */}
+        {isMenuOpen && (
+          <div className="md:hidden absolute w-full bg-black border-b border-neutral-800">
+            <div className="px-2 pt-2 pb-2 space-y-1 flex flex-col items-center">
+              <button onClick={() => {
+                navigateTo('tasks');
                 setIsMenuOpen(false);
-              }}
-              className="text-gray-300 hover:text-white px-4 py-2 rounded-md text-xl font-medium"
-            >
-              Settings
-            </button>
-            {isLoggedIn ? (
+              }} className={navLinkClass('tasks')}>
+                Tasks
+              </button>
+              <button onClick={() => {
+                navigateTo('session');
+                setIsMenuOpen(false);
+              }} className={navLinkClass('session')}>
+                Session
+              </button>
+              <button onClick={() => {
+                navigateTo('calendar');
+                setIsMenuOpen(false);
+              }} className={navLinkClass('calendar')}>
+                Calendar
+              </button>
+              <button onClick={() => {
+                navigateTo('stats');
+                setIsMenuOpen(false);
+              }} className={navLinkClass('stats')}>
+                Statistics
+              </button>
               <button
                 onClick={() => {
-                  logout();
+                  onOpenSettings();
                   setIsMenuOpen(false);
                 }}
                 className="text-gray-300 hover:text-white px-4 py-2 rounded-md text-xl font-medium"
               >
-                Logout
+                Settings
               </button>
-            ) : (
               <button
                 onClick={() => {
-                  loginWithGoogle();
+                  setShowAbout(true);
                   setIsMenuOpen(false);
                 }}
                 className="text-gray-300 hover:text-white px-4 py-2 rounded-md text-xl font-medium"
               >
-                Login
+                About
               </button>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+      </nav>
+
+      {showAbout && (
+        <AboutModal
+          isOpen={showAbout}
+          onClose={() => setShowAbout(false)}
+        />
       )}
-    </nav>
+    </>
   );
 };
 

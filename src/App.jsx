@@ -6,8 +6,10 @@ import TasksPage from './pages/TasksPage';
 import StatsPage from './pages/StatsPage';
 import CalendarPage from './pages/CalendarPage';
 import Settings from './components/modals/Settings';
+import WelcomeModal from './components/modals/WelcomeModal';
 import { AuthProvider } from "./hooks/useAuth.jsx";
 import { NoiseProvider } from "./features/noise/NoiseContext";
+import useTheme from './hooks/useTheme';
 
 const PageContent = ({ onOpenSettings }) => {
   const { activePage } = useNavigation();
@@ -27,6 +29,7 @@ const PageContent = ({ onOpenSettings }) => {
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
+  const { showWelcomeModal, handleCloseWelcome } = useTheme();
 
   const handleOpenSettings = () => {
     setShowSettings(true);
@@ -44,6 +47,11 @@ function App() {
           {showSettings && (
             <Settings
               onClose={handleCloseSettings}
+            />
+          )}
+          {showWelcomeModal && (
+            <WelcomeModal
+              onClose={handleCloseWelcome}
             />
           )}
         </NavigationProvider>

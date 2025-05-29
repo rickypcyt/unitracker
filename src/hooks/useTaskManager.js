@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from '../config/supabaseClient';
 
-import { fetchTasks, forceTaskRefresh } from "../store/actions/TaskActions";
+import { fetchTasks, forceTaskRefresh, toggleTaskStatus } from "../store/actions/TaskActions";
 import { addTaskSuccess, updateTaskSuccess, deleteTaskSuccess } from "../store/slices/TaskSlice";
 
 export const useTaskManager = () => {
@@ -82,13 +82,23 @@ export const useTaskManager = () => {
     if (!task) return;
 
     try {
+      // Actualizar el estado local inmediatamente
+      dispatch(toggleTaskStatus(taskId, !task.completed));
+
+      // Actualizar en la base de datos
       const { error } = await supabase
         .from('tasks')
-        .update({ completed: !task.completed })
+        .update({ 
+          completed: !task.completed,
+          completed_at: !task.completed ? new Date().toISOString() : null 
+        })
         .eq('id', taskId);
 
-      if (error) throw error;
-      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+      if (error) {
+        // Si hay error, revertir el estado local
+        dispatch(toggleTaskStatus(taskId, task.completed));
+        throw error;
+      }
     } catch (error) {
       console.error('Error toggling task completion:', error);
     }
@@ -98,13 +108,20 @@ export const useTaskManager = () => {
     if (!user) return;
 
     try {
+      // Actualizar el estado local inmediatamente
+      dispatch(deleteTaskSuccess(taskId));
+
+      // Actualizar en la base de datos
       const { error } = await supabase
         .from('tasks')
         .delete()
         .eq('id', taskId);
 
-      if (error) throw error;
-      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+      if (error) {
+        // Si hay error, revertir el estado local
+        dispatch(fetchTasks());
+        throw error;
+      }
     } catch (error) {
       console.error('Error deleting task:', error);
     }
@@ -114,9 +131,10 @@ export const useTaskManager = () => {
     if (!user) return;
 
     try {
-      // Invalidar caché antes de actualizar
-      await dispatch(forceTaskRefresh());
+      // Actualizar el estado local inmediatamente
+      dispatch(updateTaskSuccess(updatedTask));
 
+      // Actualizar en la base de datos
       const { error } = await supabase
         .from('tasks')
         .update({
@@ -130,8 +148,11 @@ export const useTaskManager = () => {
         })
         .eq('id', updatedTask.id);
 
-      if (error) throw error;
-      window.dispatchEvent(new CustomEvent('refreshTaskList'));
+      if (error) {
+        // Si hay error, revertir el estado local
+        dispatch(fetchTasks());
+        throw error;
+      }
     } catch (error) {
       console.error('Error updating task:', error);
     }
