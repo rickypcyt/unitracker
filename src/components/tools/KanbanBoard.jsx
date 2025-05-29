@@ -23,6 +23,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { SortableColumn } from './SortableColumn';
+import { supabase } from '../../config/supabaseClient';
 
 export const KanbanBoard = () => {
   const {
@@ -70,47 +71,6 @@ export const KanbanBoard = () => {
   const completedTasks = tasks.filter((task) => task.completed);
   const incompletedTasks = tasks.filter((task) => !task.completed);
 
-  // Group tasks by assignment
-  const groupTasksByAssignment = (tasks) => {
-    return tasks.reduce((acc, task) => {
-      const assignment = task.assignment || "No assignment";
-      if (!acc[assignment]) acc[assignment] = [];
-      acc[assignment].push(task);
-      return acc;
-    }, {});
-  };
-
-  const incompletedByAssignment = groupTasksByAssignment(incompletedTasks);
-  const completedByAssignment = groupTasksByAssignment(completedTasks);
-
-  // Get all unique assignments
-  const allAssignments = useMemo(() => 
-    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
-    [tasks]
-  );
-
-  // Initialize column order when assignments change or on mount
-  useEffect(() => {
-    const savedOrder = localStorage.getItem('kanbanColumnOrder');
-    const initialOrder = savedOrder ? JSON.parse(savedOrder) : allAssignments;
-
-    // Ensure all current assignments are in the column order
-    const currentAssignmentsSet = new Set(allAssignments);
-    const filteredOrder = initialOrder.filter(assignment => currentAssignmentsSet.has(assignment));
-    const newAssignments = allAssignments.filter(assignment => !filteredOrder.includes(assignment));
-
-    const finalOrder = [...filteredOrder, ...newAssignments];
-    setColumnOrder(finalOrder);
-    localStorage.setItem('kanbanColumnOrder', JSON.stringify(finalOrder));
-  }, [allAssignments]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const handleDragEnd = (event) => {
     const { active, over } = event;
     
@@ -123,6 +83,85 @@ export const KanbanBoard = () => {
       localStorage.setItem('kanbanColumnOrder', JSON.stringify(newOrder));
     }
   };
+
+  // Sort tasks by position within each assignment
+  const sortTasksByPosition = (tasks) => {
+    const savedOrder = JSON.parse(localStorage.getItem('kanbanColumnOrder') || '[]');
+    return [...tasks].sort((a, b) => {
+      const aIndex = savedOrder.indexOf(a.id);
+      const bIndex = savedOrder.indexOf(b.id);
+      
+      // If both tasks are in the saved order, sort by their position
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only one task is in the saved order, prioritize it
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      // If neither task is in the saved order, maintain original order
+      return 0;
+    });
+  };
+
+  // Group tasks by assignment and sort them
+  const groupTasksByAssignment = (tasks) => {
+    const grouped = tasks.reduce((acc, task) => {
+      const assignment = task.assignment || "No assignment";
+      if (!acc[assignment]) acc[assignment] = [];
+      acc[assignment].push(task);
+      return acc;
+    }, {});
+
+    // Sort tasks within each assignment
+    Object.keys(grouped).forEach(assignment => {
+      grouped[assignment] = sortTasksByPosition(grouped[assignment]);
+    });
+
+    return grouped;
+  };
+
+  const incompletedByAssignment = groupTasksByAssignment(incompletedTasks);
+  const completedByAssignment = groupTasksByAssignment(completedTasks);
+
+  // Get all unique assignments
+  const allAssignments = useMemo(() => 
+    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
+    [tasks]
+  );
+
+  // Filter assignments that have incomplete tasks
+  const assignmentsWithIncompleteTasks = useMemo(() => 
+    allAssignments.filter(assignment => 
+      incompletedByAssignment[assignment]?.length > 0
+    ),
+    [allAssignments, incompletedByAssignment]
+  );
+
+  // Initialize column order when assignments change or on mount
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('kanbanColumnOrder');
+    const initialOrder = savedOrder ? JSON.parse(savedOrder) : assignmentsWithIncompleteTasks;
+
+    // Ensure all current assignments are in the column order
+    const currentAssignmentsSet = new Set(assignmentsWithIncompleteTasks);
+    const filteredOrder = initialOrder.filter(assignment => currentAssignmentsSet.has(assignment));
+    const newAssignments = assignmentsWithIncompleteTasks.filter(assignment => !filteredOrder.includes(assignment));
+
+    const finalOrder = [...filteredOrder, ...newAssignments];
+    
+    // Only update if the order has actually changed
+    if (JSON.stringify(finalOrder) !== JSON.stringify(columnOrder)) {
+      setColumnOrder(finalOrder);
+      localStorage.setItem('kanbanColumnOrder', JSON.stringify(finalOrder));
+    }
+  }, [assignmentsWithIncompleteTasks]); // Remove columnOrder from dependencies
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const toggleColumn = (assignment) => {
     setCollapsedColumns(prev => ({

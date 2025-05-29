@@ -33,7 +33,8 @@ export const fetchTasks = () => async (dispatch, getState) => {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .order('assignment');
 
     if (error) throw error;
 

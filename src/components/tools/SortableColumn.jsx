@@ -43,14 +43,21 @@ export const SortableColumn = ({
       className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] bg-neutral-800/30 backdrop-blur-sm rounded-xl p-4 border border-neutral-700/30 hover:border-neutral-700/50 transition-all duration-200"
     >
       <div className="flex items-center justify-between w-full mb-4">
-        <div
-          {...attributes}
-          {...listeners}
-          className="flex items-center gap-2 flex-1 cursor-move"
-        >
+        <div className="flex items-center gap-2 flex-1">
           <button
             onClick={onToggleCollapse}
-            className="flex items-center justify-between flex-1 group"
+            className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors"
+          >
+            {collapsed ? (
+              <ChevronDown size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
+            ) : (
+              <ChevronUp size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
+            )}
+          </button>
+          <div
+            {...attributes}
+            {...listeners}
+            className="flex items-center gap-2 flex-1 cursor-move"
           >
             <h3 className="font-medium text-lg text-neutral-200 group-hover:text-neutral-100">
               {assignment}
@@ -58,12 +65,7 @@ export const SortableColumn = ({
                 ({tasks.length})
               </span>
             </h3>
-            {collapsed ? (
-              <ChevronDown size={20} className="text-neutral-400 group-hover:text-neutral-200 transition-transform duration-200" />
-            ) : (
-              <ChevronUp size={20} className="text-neutral-400 group-hover:text-neutral-200 transition-transform duration-200" />
-            )}
-          </button>
+          </div>
         </div>
         <button
           onClick={onAddTask}

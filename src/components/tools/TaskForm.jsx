@@ -52,6 +52,26 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose, o
 
     setAssignmentError(false);
 
+    // Get the current highest position for this assignment
+    const getNextPosition = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('position')
+          .eq('assignment', assignment.trim())
+          .order('position', { ascending: false })
+          .limit(1);
+
+        if (error) throw error;
+        return data.length > 0 ? data[0].position + 1 : 0;
+      } catch (error) {
+        console.error('Error getting next position:', error);
+        return 0;
+      }
+    };
+
+    const position = await getNextPosition();
+
     const newTask = {
       title,
       description,
@@ -61,6 +81,7 @@ const TaskForm = ({ initialAssignment = null, initialDeadline = null, onClose, o
       user_id: user.id,
       completed: false,
       created_at: new Date().toISOString(),
+      position,
     };
 
     try {

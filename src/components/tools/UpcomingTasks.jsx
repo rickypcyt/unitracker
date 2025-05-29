@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Clock } from 'lucide-react';
 import TaskDetailsModal from '../modals/TaskDetailsModal';
 import { useTaskManager } from '../../hooks/useTaskManager';
+import { fetchTasks } from '../../store/actions/TaskActions';
 
 const UpcomingTasks = () => {
   const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
@@ -10,6 +11,20 @@ const UpcomingTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Listen for the refreshTaskList event
+    const handleRefresh = () => {
+      dispatch(fetchTasks());
+    };
+
+    window.addEventListener('refreshTaskList', handleRefresh);
+
+    return () => {
+      window.removeEventListener('refreshTaskList', handleRefresh);
+    };
+  }, [dispatch]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
