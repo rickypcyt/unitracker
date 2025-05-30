@@ -244,17 +244,13 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
 
       {/* Task Form Modal */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
-            <TaskForm
-              onClose={handleTaskFormClose}
-              onTaskCreated={(newTaskId) => {
-                fetchSessionTasks();
-                setSelectedTasks(prev => [...prev, newTaskId]);
-              }}
-            />
-          </div>
-        </div>
+        <TaskForm
+          onClose={handleTaskFormClose}
+          onTaskCreated={(newTaskId) => {
+            fetchSessionTasks();
+            setSelectedTasks(prev => [...prev, newTaskId]);
+          }}
+        />
       )}
     </div>
   );

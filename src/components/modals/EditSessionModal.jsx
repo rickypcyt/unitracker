@@ -214,13 +214,9 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
 
       {/* Task Form Modal */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
-            <TaskForm
-              onClose={handleTaskFormClose}
-            />
-          </div>
-        </div>
+        <TaskForm
+          onClose={handleTaskFormClose}
+        />
       )}
     </div>
   );

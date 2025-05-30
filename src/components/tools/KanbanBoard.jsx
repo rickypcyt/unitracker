@@ -590,19 +590,15 @@ export const KanbanBoard = () => {
 
       {/* Task Form Modal */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
-            <TaskForm
-              onClose={handleCloseTaskForm}
-              initialAssignment={selectedAssignment}
-              initialTask={editingTask}
-              onTaskCreated={(newTaskId) => {
-                dispatch(fetchTasks());
-                handleCloseTaskForm();
-              }}
-            />
-          </div>
-        </div>
+        <TaskForm
+          onClose={handleCloseTaskForm}
+          initialAssignment={selectedAssignment}
+          initialTask={editingTask}
+          onTaskCreated={(newTaskId) => {
+            dispatch(fetchTasks());
+            handleCloseTaskForm();
+          }}
+        />
       )}
 
       {/* Delete Completed Modal */}

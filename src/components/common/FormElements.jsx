@@ -15,7 +15,7 @@ export const FormInput = ({
   <div className="mb-4">
     {label && (
       <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
     <input
@@ -48,7 +48,7 @@ export const FormTextarea = ({
   <div className="mb-4">
     {label && (
       <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
     <textarea
@@ -80,7 +80,7 @@ export const FormSelect = ({
   <div className="mb-4">
     {label && (
       <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
+        {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
     <select
@@ -92,9 +92,9 @@ export const FormSelect = ({
       } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary ${className}`}
       {...props}
     >
-      {options.map(({ value, label }) => (
-        <option key={value} value={value}>
-          {label}
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
         </option>
       ))}
     </select>
@@ -109,18 +109,17 @@ export const FormButton = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'px-4 py-2 rounded-lg transition-colors duration-200';
-  const variants = {
-    primary: 'bg-accent-primary text-white hover:bg-accent-primary/90',
-    secondary: 'text-neutral-400 hover:text-white',
-    danger: 'text-red-500 hover:text-red-600',
-    success: 'text-green-500 hover:text-green-600'
+  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200';
+  const variantClasses = {
+    primary: 'bg-accent-primary text-white hover:bg-accent-primary/80',
+    secondary: 'bg-neutral-800 text-white hover:bg-neutral-700',
+    danger: 'bg-red-500 text-white hover:bg-red-600'
   };
 
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {children}

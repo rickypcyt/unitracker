@@ -86,7 +86,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
       onClose();
     } catch (error) {
       console.error('Error saving task:', error);
-      // You might want to show a toast notification here
     }
   };
 

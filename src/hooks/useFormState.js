@@ -1,63 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+// Helper function to do deep comparison of objects
+const isEqual = (obj1, obj2) => {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
+};
 
 export const useFormState = (initialState = {}, initialValidation = {}) => {
   const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [isDirty, setIsDirty] = useState(false);
-  const [validationRules, setValidationRules] = useState(initialValidation);
+  const prevInitialStateRef = useRef(initialState);
 
+  // Reset form when initial state changes, but only if the actual values are different
   useEffect(() => {
-    // Reset form when initial state changes
-    setFormData(initialState);
-    setErrors({});
-    setIsDirty(false);
+    if (!isEqual(prevInitialStateRef.current, initialState)) {
+      setFormData(initialState);
+      setErrors({});
+      setIsDirty(false);
+      prevInitialStateRef.current = initialState;
+    }
   }, [initialState]);
 
   const handleChange = (field, value) => {
+    // Update form data
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-    setIsDirty(true);
-    validateField(field, value);
+    
+    // Mark form as dirty
+    if (!isDirty) {
+      setIsDirty(true);
+    }
+
+    // Clear error for this field if it exists
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
   };
 
   const validateField = (field, value) => {
-    if (!validationRules[field]) return;
-
-    const rules = validationRules[field];
-    const fieldErrors = [];
+    const rules = initialValidation[field];
+    if (!rules) return null;
 
     if (rules.required && (!value || value.trim() === '')) {
-      fieldErrors.push('This field is required');
+      return 'This field is required';
     }
 
     if (rules.minLength && value.length < rules.minLength) {
-      fieldErrors.push(`Minimum length is ${rules.minLength} characters`);
+      return `Minimum length is ${rules.minLength} characters`;
     }
 
     if (rules.maxLength && value.length > rules.maxLength) {
-      fieldErrors.push(`Maximum length is ${rules.maxLength} characters`);
+      return `Maximum length is ${rules.maxLength} characters`;
     }
 
     if (rules.pattern && !rules.pattern.test(value)) {
-      fieldErrors.push(rules.message || 'Invalid format');
+      return rules.message || 'Invalid format';
     }
 
-    setErrors(prev => ({
-      ...prev,
-      [field]: fieldErrors.length > 0 ? fieldErrors[0] : null
-    }));
+    return null;
   };
 
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
 
-    Object.keys(validationRules).forEach(field => {
-      validateField(field, formData[field]);
-      if (errors[field]) {
-        newErrors[field] = errors[field];
+    // Validate all fields
+    Object.keys(initialValidation).forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
         isValid = false;
       }
     });
@@ -72,10 +88,6 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     setIsDirty(false);
   };
 
-  const hasErrors = () => {
-    return Object.values(errors).some(error => error !== null);
-  };
-
   return {
     formData,
     errors,
@@ -83,8 +95,6 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     handleChange,
     validateForm,
     resetForm,
-    hasErrors,
-    setFormData,
-    setValidationRules
+    setFormData
   };
 }; 

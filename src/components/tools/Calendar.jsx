@@ -339,25 +339,18 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Task Form Modal */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-md mx-4 transform transition-all duration-300 scale-100">
-            <div className="p-6">
-              <TaskForm
-                initialAssignment=""
-                initialDeadline={selectedDate.toISOString().split('T')[0]}
-                onClose={(newTaskId) => {
-                  setShowTaskForm(false);
-                  if (newTaskId) {
-                    // Refresh the task list
-                    window.dispatchEvent(new CustomEvent('refreshTaskList'));
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
+        <TaskForm
+          initialAssignment=""
+          initialDeadline={selectedDate.toISOString().split('T')[0]}
+          onClose={(newTaskId) => {
+            setShowTaskForm(false);
+            if (newTaskId) {
+              // Refresh the task list
+              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+            }
+          }}
+        />
       )}
 
       <DayInfoModal
