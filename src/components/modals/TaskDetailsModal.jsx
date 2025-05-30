@@ -17,19 +17,40 @@ const TaskDetailsModal = ({
 }) => {
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Verificación de seguridad
   if (!isOpen || !task) return null;
 
+  useEffect(() => {
+    // Resetear el estado de edición y cambios sin guardar cuando se abre el modal
+    if (isOpen) {
+      setIsEditing(false);
+      setHasUnsavedChanges(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Detectar cambios sin guardar
+    if (isEditing && editedTask) {
+      const hasChanges = Object.keys(editedTask).some(key => {
+        if (key === 'created_at') return false; // Ignorar cambios en created_at
+        return editedTask[key] !== task[key];
+      });
+      setHasUnsavedChanges(hasChanges);
+    }
+  }, [editedTask, task, isEditing]);
+
   const handleClose = () => {
-    if (isEditing) {
-      // Si está en modo edición, preguntar antes de cerrar
+    if (hasUnsavedChanges) {
       if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
         setIsEditing(false);
+        setHasUnsavedChanges(false);
         onClose();
       }
     } else {
       setIsEditing(false);
+      setHasUnsavedChanges(false);
       onClose();
     }
   };
@@ -46,6 +67,7 @@ const TaskDetailsModal = ({
       
       await onSave(editedTask);
       setIsEditing(false);
+      setHasUnsavedChanges(false);
       onClose();
     } catch (error) {
       console.error("Error saving task:", error);
@@ -61,6 +83,7 @@ const TaskDetailsModal = ({
     try {
       await dispatch(updateTask(editedTask));
       setIsEditing(false);
+      setHasUnsavedChanges(false);
       onClose();
     } catch (error) {
       console.error("Error updating task:", error);
@@ -122,7 +145,7 @@ const TaskDetailsModal = ({
     return () => {
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, isEditing]);
+  }, [isOpen, hasUnsavedChanges]);
 
   return (
     <div

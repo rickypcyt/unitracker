@@ -1,41 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
-
-import { X, Plus, Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
-import { useDispatch } from 'react-redux';
-import { toggleTaskStatus } from '../../store/actions/TaskActions';
+import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 
-const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
-  const [activeTasks, setActiveTasks] = useState([]); // Stores task objects
-  const [availableTasks, setAvailableTasks] = useState([]); // Stores task objects
+const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
+  const [tasks, setTasks] = useState([]);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [incompleteTasks, setIncompleteTasks] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
-  const [sessionTitle, setSessionTitle] = useState(''); // State for session title
-  const [sessionStartTime, setSessionStartTime] = useState(null); // Track session start time
-  const dispatch = useDispatch();
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [sessionStartTime, setSessionStartTime] = useState(null);
 
   useEffect(() => {
-    if (isOpen && sessionId) {
+    if (isOpen && session?.id) {
       fetchSessionDetails();
-      fetchSessionTasks(); // Fetch tasks linked to this session
-      setSessionStartTime(new Date()); // Set start time when modal opens
+      fetchSessionTasks();
+      // Set session start time when modal opens
+      setSessionStartTime(new Date());
     }
-  }, [isOpen, sessionId]);
-
-  useEffect(() => {
-    if (lastAddedTaskId) {
-      fetchSessionTasks(); // Refresh after adding a new task
-      setLastAddedTaskId(null);
-    }
-  }, [lastAddedTaskId]);
+  }, [isOpen, session?.id]);
 
   const fetchSessionDetails = async () => {
     try {
       const { data: session, error } = await supabase
         .from('study_laps')
         .select('description')
-        .eq('id', sessionId)
+        .eq('id', session.id)
         .single();
 
       if (error) {
@@ -44,7 +35,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
       }
 
       if (session) {
-        setSessionTitle(session.description || 'Untitled Session');
+        setSessionNotes(session.description || 'Untitled Session');
       }
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
@@ -56,100 +47,72 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Fetch all incomplete tasks for the user
+      // Fetch all tasks for the user
       const { data: userTasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .eq('user_id', user.id)
-        .eq('completed', false)
         .order('created_at', { ascending: false });
 
       if (tasksError) {
         console.error('Error fetching user tasks:', tasksError);
-        setActiveTasks([]);
-        setAvailableTasks([]);
+        setTasks([]);
+        setCompletedTasks([]);
+        setIncompleteTasks([]);
         return;
       }
 
-      // Separate tasks based on activetask status
-      const active = userTasks.filter(task => task.activetask);
-      const available = userTasks.filter(task => !task.activetask);
+      // Separate tasks based on completed status
+      const completed = userTasks.filter(task => task.completed);
+      const incomplete = userTasks.filter(task => !task.completed);
 
-      setActiveTasks(active);
-      setAvailableTasks(available);
+      setTasks(userTasks);
+      setCompletedTasks(completed.map(task => task.id));
+      setIncompleteTasks(incomplete.map(task => task.id));
 
     } catch (error) {
       console.error('Error in fetchSessionTasks:', error);
-      setActiveTasks([]);
-      setAvailableTasks([]);
+      setTasks([]);
+      setCompletedTasks([]);
+      setIncompleteTasks([]);
     }
   };
 
-  const moveTask = async (task, toActive) => {
-    try {
-      if (toActive) {
-        // Check if the link already exists (shouldn't happen with proper filtering, but safety)
-        const { data: existingLink, error: fetchError } = await supabase
-          .from('session_tasks')
-          .select('*')
-          .eq('session_id', sessionId)
-          .eq('task_id', task.id)
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error('Error checking for existing session task link:', fetchError);
-          return;
-        }
-
-        if (!existingLink) {
-          // Move task from available to active in state AND add to session_tasks table
-          const { error } = await supabase
-            .from('session_tasks')
-            .insert({
-              session_id: sessionId,
-              task_id: task.id,
-              completed_at: new Date().toISOString() // Or null, depending on schema intention
-            });
-
-          if (error) {
-            console.error('Error adding task to session:', error);
-            return;
-          }
-        }
-
-        // Update state after successful DB operation
-        setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
-        setActiveTasks(prev => [...prev, task]);
-
+  const handleTaskToggle = (taskId) => {
+    setCompletedTasks(prev => {
+      if (prev.includes(taskId)) {
+        // Move to incomplete
+        setIncompleteTasks(prevIncomplete => [...prevIncomplete, tasks.find(t => t.id === taskId).id]);
+        return prev.filter(id => id !== taskId);
       } else {
-        // Move task from active to available in state AND remove from session_tasks table
-        const { error } = await supabase
-          .from('session_tasks')
-          .delete()
-          .match({
-            session_id: sessionId,
-            task_id: task.id
-          });
-
-        if (error) {
-          console.error('Error removing task from session:', error);
-          return;
-        }
-
-        // Update state after successful DB operation
-        setActiveTasks(prev => prev.filter(t => t.id !== task.id));
-        setAvailableTasks(prev => [...prev, task]); // Assuming you want it back in available
+        // Move to completed
+        setIncompleteTasks(prevIncomplete => prevIncomplete.filter(t => t !== taskId));
+        return [...prev, taskId];
       }
-    } catch (error) {
-      console.error('Error moving task:', error);
-    }
+    });
   };
 
   const handleTaskFormClose = (newTaskId) => {
     setShowTaskForm(false);
     if (newTaskId) {
       fetchSessionTasks(); // Refresh the list after adding a new task
-      setLastAddedTaskId(newTaskId);
+    }
+  };
+
+  const toggleTaskStatus = async (taskId, completed) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ completed })
+        .eq('id', taskId);
+
+      if (error) {
+        console.error('Error updating task status:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error in toggleTaskStatus:', error);
+      throw error;
     }
   };
 
@@ -157,22 +120,27 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
     try {
       // Calculate session duration in minutes
       const endTime = new Date();
-      const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
+      const startTime = sessionStartTime || new Date(session.started_at);
+      const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
 
-      // Update session with duration
+      // Update session with duration and notes
       const { error: updateError } = await supabase
         .from('study_laps')
-        .update({ duration: durationMinutes })
-        .eq('id', sessionId);
+        .update({ 
+          duration: durationMinutes,
+          description: sessionNotes.trim() || null
+        })
+        .eq('id', session.id);
 
       if (updateError) {
-        console.error('Error updating session duration:', updateError);
+        console.error('Error updating session:', updateError);
+        throw updateError;
       }
 
       // Update tasks as completed
-      const taskIdsToComplete = activeTasks.map(task => task.id);
+      const taskIdsToComplete = completedTasks;
       const completionPromises = taskIdsToComplete.map(taskId =>
-        dispatch(toggleTaskStatus(taskId, true))
+        toggleTaskStatus(taskId, true)
       );
 
       await Promise.all(completionPromises);
@@ -181,7 +149,8 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
       onClose();
     } catch (error) {
       console.error('Error finishing session:', error);
-      onClose();
+      // Don't close the modal on error
+      // onClose();
     }
   };
 
@@ -191,102 +160,42 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Complete Session{sessionTitle && <>: <span className="text-accent-primary">{sessionTitle}</span></>}</h2>
+          <h2 className="text-xl font-semibold">Finish Session</h2>
           <button onClick={onClose} className="text-neutral-400 hover:text-white">
             <X size={24} />
           </button>
         </div>
 
         <div className="mb-6">
-          <p className="text-neutral-400">
-            Review and modify the tasks you completed during this session. Move tasks between columns to mark them as completed or not.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Active Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Active Tasks</h3>
-              <span className="text-md text-neutral-400">
-                {activeTasks.length} tasks
-              </span>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {activeTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="p-3 rounded-lg bg-accent-primary/20 border border-accent-primary"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-md text-neutral-400 mt-1">
-                          {task.description}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => moveTask(task, false)}
-                      className="p-1 hover:bg-neutral-700 rounded-full transition-colors"
-                      title="Move to Available Tasks"
-                    >
-                      <ArrowLeft size={20} className="text-neutral-400" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {activeTasks.length === 0 && (
-                <div className="text-center text-neutral-500 py-4">
-                  No active tasks
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column - Available Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Available Tasks</h3>
-              <button
-                onClick={() => setShowTaskForm(true)}
-                className="flex items-center gap-1 text-accent-primary hover:text-accent-primary/80"
-              >
-                <Plus size={20} />
-                New Task
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {availableTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="p-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 cursor-pointer"
-                  onClick={() => moveTask(task, true)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-md text-neutral-400 mt-1">
-                          {task.description}
-                        </div>
-                      )}
-                    </div>
-                    <ArrowRight size={20} className="text-neutral-400" />
-                  </div>
-                </div>
-              ))}
-              {availableTasks.length === 0 && (
-                <div className="text-center text-neutral-500 py-4">
-                  No available tasks
-                </div>
-              )}
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="sessionNotes" className="block text-sm font-medium text-neutral-300 mb-1">
+                Session Notes (Optional)
+              </label>
+              <textarea
+                id="sessionNotes"
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                rows="3"
+                placeholder="Add any notes about this session"
+              />
             </div>
           </div>
         </div>
+
+        <TaskSelectionPanel
+          activeTasks={tasks.filter(task => completedTasks.includes(task.id))}
+          availableTasks={tasks.filter(task => !completedTasks.includes(task.id))}
+          onTaskSelect={handleTaskToggle}
+          onAddTask={() => setShowTaskForm(true)}
+          mode="select"
+          selectedTasks={completedTasks}
+          showNewTaskButton={false}
+          activeTitle="Completed Tasks"
+          availableTitle="Incomplete Tasks"
+          groupByAssignment={true}
+        />
 
         <div className="mt-6 flex justify-end gap-2">
           <button
@@ -294,12 +203,6 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
             className="px-4 py-2 text-neutral-400 hover:text-white"
           >
             Cancel
-          </button>
-          <button
-            onClick={handleFinish}
-            className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600"
-          >
-            Okay
           </button>
           <button
             onClick={handleFinish}
@@ -316,6 +219,10 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
           <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
             <TaskForm
               onClose={handleTaskFormClose}
+              onTaskCreated={(newTaskId) => {
+                fetchSessionTasks();
+                setIncompleteTasks(prev => [...prev, newTaskId]);
+              }}
             />
           </div>
         </div>

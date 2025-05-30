@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, ArrowRight, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../config/supabaseClient';
 import TaskForm from '../tools/TaskForm';
+import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 
 const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
   const [activeTasks, setActiveTasks] = useState([]);
@@ -9,6 +10,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [sessionTitle, setSessionTitle] = useState('');
+  const [sessionDescription, setSessionDescription] = useState('');
   const [syncPomo, setSyncPomo] = useState(() => {
     return localStorage.getItem("syncPomoWithTimer") === "true";
   });
@@ -82,59 +84,15 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
     }
   };
 
-  const moveTask = async (task, toActive) => {
-    try {
-      if (toActive) {
-        // Primero verificamos si ya existe el enlace
-        const { data: existingLink, error: fetchError } = await supabase
-          .from('session_tasks')
-          .select('*')
-          .eq('session_id', sessionId)
-          .eq('task_id', task.id)
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error('Error checking for existing session task link:', fetchError);
-          return;
-        }
-
-        if (!existingLink) {
-          const { error } = await supabase
-            .from('session_tasks')
-            .insert({
-              session_id: sessionId,
-              task_id: task.id,
-              completed_at: new Date().toISOString()
-            });
-
-          if (error) {
-            console.error('Error adding task to session:', error);
-            return;
-          }
-        }
-
-        setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
-        setActiveTasks(prev => [...prev, task]);
-
-      } else {
-        const { error } = await supabase
-          .from('session_tasks')
-          .delete()
-          .match({
-            session_id: sessionId,
-            task_id: task.id
-          });
-
-        if (error) {
-          console.error('Error removing task from session:', error);
-          return;
-        }
-
-        setActiveTasks(prev => prev.filter(t => t.id !== task.id));
-        setAvailableTasks(prev => [...prev, task]);
-      }
-    } catch (error) {
-      console.error('Error moving task:', error);
+  const handleTaskMove = (taskId, direction) => {
+    if (direction === 'right') {
+      // Move from available to active
+      setActiveTasks(prev => [...prev, availableTasks.find(t => t.id === taskId)]);
+      setAvailableTasks(prev => prev.filter(t => t.id !== taskId));
+    } else {
+      // Move from active to available
+      setAvailableTasks(prev => [...prev, activeTasks.find(t => t.id === taskId)]);
+      setActiveTasks(prev => prev.filter(t => t.id !== taskId));
     }
   };
 
@@ -167,90 +125,51 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Active Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Active Tasks</h3>
-              <span className="text-md text-neutral-400">
-                {activeTasks.length} tasks
-              </span>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {activeTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="p-3 rounded-lg bg-accent-primary/20 border border-accent-primary"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-md text-neutral-400 mt-1">
-                          {task.description}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => moveTask(task, false)}
-                      className="p-1 hover:bg-neutral-700 rounded-full transition-colors"
-                      title="Move to Available Tasks"
-                    >
-                      <ArrowLeft size={20} className="text-neutral-400" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {activeTasks.length === 0 && (
-                <div className="text-center text-neutral-500 py-4">
-                  No active tasks
-                </div>
+        <div className="mb-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
+                Session Title
+              </label>
+              <input
+                type="text"
+                id="sessionTitle"
+                value={sessionTitle}
+                onChange={(e) => setSessionTitle(e.target.value)}
+                className={`w-full px-3 py-2 bg-neutral-800 border ${
+                  titleError ? 'border-red-500' : 'border-neutral-700'
+                } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary`}
+                placeholder="Enter session title"
+              />
+              {titleError && (
+                <p className="mt-1 text-sm text-red-500">Please enter a session title</p>
               )}
             </div>
-          </div>
 
-          {/* Right Column - Available Tasks */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Available Tasks</h3>
-              <button
-                onClick={() => setShowTaskForm(true)}
-                className="flex items-center gap-1 text-accent-primary hover:text-accent-primary/80"
-              >
-                <Plus size={20} />
-                New Task
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {availableTasks.map(task => (
-                <div
-                  key={task.id}
-                  className="p-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 cursor-pointer"
-                  onClick={() => moveTask(task, true)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-md text-neutral-400 mt-1">
-                          {task.description}
-                        </div>
-                      )}
-                    </div>
-                    <ArrowRight size={20} className="text-neutral-400" />
-                  </div>
-                </div>
-              ))}
-              {availableTasks.length === 0 && (
-                <div className="text-center text-neutral-500 py-4">
-                  No available tasks
-                </div>
-              )}
+            <div>
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
+                Description (Optional)
+              </label>
+              <textarea
+                id="sessionDescription"
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
+                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                rows="3"
+                placeholder="Enter session description"
+              />
             </div>
           </div>
         </div>
+
+        <TaskSelectionPanel
+          activeTasks={activeTasks}
+          availableTasks={availableTasks}
+          onTaskMove={handleTaskMove}
+          onAddTask={() => setShowTaskForm(true)}
+          mode="move"
+          showNewTaskButton={true}
+        />
 
         <div className="mt-6 flex justify-end gap-2">
           <button

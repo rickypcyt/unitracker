@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Clock } from 'lucide-react';
+import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import TaskDetailsModal from '../modals/TaskDetailsModal';
 import { useTaskManager } from '../../hooks/useTaskManager';
 import { fetchTasks } from '../../store/actions/TaskActions';
@@ -11,6 +11,10 @@ const UpcomingTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({
+    today: false,
+    thisWeek: false
+  });
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -42,16 +46,69 @@ const UpcomingTasks = () => {
     })
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
-  // Separate tasks into this week and later
-  const thisWeekTasks = upcomingTasks.filter(task => {
+  // Group tasks by time periods
+  const todayTasks = upcomingTasks.filter(task => {
     const taskDate = new Date(task.deadline);
-    return taskDate <= endOfWeek;
+    return taskDate.toDateString() === today.toDateString();
   });
 
-  const laterTasks = upcomingTasks.filter(task => {
+  const thisWeekTasks = upcomingTasks.filter(task => {
     const taskDate = new Date(task.deadline);
-    return taskDate > endOfWeek;
+    return taskDate > today && taskDate <= endOfWeek;
   });
+
+  // Group remaining tasks by month
+  const tasksByMonth = upcomingTasks.reduce((groups, task) => {
+    const taskDate = new Date(task.deadline);
+    if (taskDate <= today || taskDate <= endOfWeek) return groups;
+
+    const monthKey = `${taskDate.getFullYear()}-${taskDate.getMonth()}`;
+    if (!groups[monthKey]) {
+      groups[monthKey] = {
+        month: taskDate.getMonth(),
+        year: taskDate.getFullYear(),
+        tasks: []
+      };
+      // Initialize expanded state for new month groups only if they don't exist
+      if (!(monthKey in expandedGroups)) {
+        setExpandedGroups(prev => ({
+          ...prev,
+          [monthKey]: false
+        }));
+      }
+    }
+    groups[monthKey].tasks.push(task);
+    return groups;
+  }, {});
+
+  // Sort months chronologically
+  const sortedMonths = Object.values(tasksByMonth).sort((a, b) => {
+    if (a.year !== b.year) return a.year - b.year;
+    return a.month - b.month;
+  });
+
+  // Clean up expanded state for months that no longer have tasks
+  useEffect(() => {
+    const currentMonthKeys = sortedMonths.map(({ month, year }) => `${year}-${month}`);
+    const allMonthKeys = Object.keys(expandedGroups).filter(key => key !== 'today' && key !== 'thisWeek');
+    
+    const monthsToRemove = allMonthKeys.filter(key => !currentMonthKeys.includes(key));
+    if (monthsToRemove.length > 0) {
+      setExpandedGroups(prev => {
+        const newState = { ...prev };
+        monthsToRemove.forEach(key => delete newState[key]);
+        return newState;
+      });
+    }
+  }, [sortedMonths]);
+
+  const toggleGroup = (group) => {
+    setExpandedGroups(prev => {
+      const newState = { ...prev };
+      newState[group] = !prev[group];
+      return newState;
+    });
+  };
 
   const handleOpenTaskDetails = (task) => {
     setSelectedTask(task);
@@ -88,46 +145,81 @@ const UpcomingTasks = () => {
     );
   }
 
-  const TaskGroup = ({ title, tasks }) => (
-    <div className="mb-4">
-      <h4 className="text-md font-medium text-neutral-300 mb-2">{title}</h4>
-      <div className="space-y-2">
-        {tasks.map((task) => {
-          const taskDate = new Date(task.deadline);
-          const isToday = taskDate.toDateString() === today.toDateString();
-          const isTomorrow = new Date(today.getTime() + 86400000).toDateString() === taskDate.toDateString();
-          
-          return (
-            <div 
-              key={task.id} 
-              className="flex items-center justify-between p-4 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
-              onClick={() => handleOpenTaskDetails(task)}
-            >
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-[var(--accent-primary)]" />
-                <span className="text-white">{task.title}</span>
-              </div>
-              <span className="text-base text-neutral-400">
-                {task.assignment && <span className="mr-2">{task.assignment}</span>}
-                {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
-                  weekday: 'short',
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
+  const TaskGroup = ({ title, tasks, groupKey }) => {
+    if (tasks.length === 0) return null;
+
+    return (
+      <div className="mb-4">
+        <button
+          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-4 hover:bg-neutral-800 transition-colors flex items-center justify-between"
+          onClick={() => toggleGroup(groupKey)}
+          aria-expanded={expandedGroups[groupKey]}
+        >
+          <div className="flex items-center justify-between w-full">
+            <span className={`text-base transition-colors ${expandedGroups[groupKey] ? 'text-[var(--accent-primary)]' : 'text-white'}`}>
+              {title}
+            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-neutral-400 text-base">
+                {tasks.length} tasks
               </span>
+              {expandedGroups[groupKey] ? (
+                <ChevronUp size={22} className="text-[var(--accent-primary)]" />
+              ) : (
+                <ChevronDown size={22} className="text-neutral-400" />
+              )}
             </div>
-          );
-        })}
+          </div>
+        </button>
+        
+        {expandedGroups[groupKey] && (
+          <div className="space-y-2 mt-3">
+            {tasks.map(task => {
+              const taskDate = new Date(task.deadline);
+              const isToday = taskDate.toDateString() === today.toDateString();
+              const isTomorrow = new Date(today.getTime() + 86400000).toDateString() === taskDate.toDateString();
+              
+              return (
+                <div 
+                  key={task.id} 
+                  className="flex items-center justify-between p-4 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+                  onClick={() => handleOpenTaskDetails(task)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock size={16} className="text-[var(--accent-primary)]" />
+                    <span className="text-white">{task.title}</span>
+                  </div>
+                  <span className="text-base text-neutral-400">
+                    {task.assignment && <span className="mr-2">{task.assignment}</span>}
+                    {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
+                      weekday: 'short',
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="maincard">
       <h3 className="text-lg font-semibold text-white mb-3">Upcoming Tasks</h3>
       <div className="space-y-3">
-        {thisWeekTasks.length > 0 && <TaskGroup title="This Week" tasks={thisWeekTasks} />}
-        {laterTasks.length > 0 && <TaskGroup title="Later" tasks={laterTasks} />}
+        <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
+        <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />
+        {sortedMonths.map(({ month, year, tasks }) => (
+          <TaskGroup
+            key={`${year}-${month}`}
+            title={new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
+            tasks={tasks}
+            groupKey={`${year}-${month}`}
+          />
+        ))}
       </div>
 
       {/* Task Details Modal */}

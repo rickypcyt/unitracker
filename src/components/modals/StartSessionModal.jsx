@@ -3,6 +3,7 @@ import { supabase } from '../../config/supabaseClient';
 
 import { X, Plus, Check } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
+import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 
 const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [sessionTitle, setSessionTitle] = useState('');
@@ -191,86 +192,52 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column - Session Details */}
-          <div>
-            <div className="mb-4">
-              <label className="block text-base font-medium text-neutral-400 mb-2">
+        <div className="mb-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
                 Session Title
               </label>
-              {titleError && (
-                <p className="text-red-500 text-md mb-1">Please insert session title</p>
-              )}
               <input
                 type="text"
+                id="sessionTitle"
                 value={sessionTitle}
-                onChange={(e) => { setSessionTitle(e.target.value); setTitleError(false); }}
+                onChange={(e) => setSessionTitle(e.target.value)}
+                className={`w-full px-3 py-2 bg-neutral-800 border ${
+                  titleError ? 'border-red-500' : 'border-neutral-700'
+                } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary`}
                 placeholder="Enter session title"
-                className={`w-full px-3 py-2 bg-neutral-800 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 ${titleError ? 'border border-red-500' : 'focus:ring-accent-primary'}`}
               />
+              {titleError && (
+                <p className="mt-1 text-sm text-red-500">Please enter a session title</p>
+              )}
             </div>
 
-            <div className="mb-4">
-              <label className="block text-base font-medium text-neutral-400 mb-2">
-                Description
+            <div>
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
+                Description (Optional)
               </label>
               <textarea
+                id="sessionDescription"
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
+                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                rows="3"
                 placeholder="Enter session description"
-                rows={3}
-                className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-primary"
               />
-            </div>
-          </div>
-
-          {/* Right Column - Task Selection */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Select Tasks</h3>
-              <button
-                onClick={() => setShowTaskForm(true)}
-                className="flex items-center gap-1 text-accent-primary hover:text-accent-primary/80"
-              >
-                <Plus size={20} />
-                New Task
-              </button>
-            </div>
-
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {tasks.map(task => (
-                <div
-                  key={task.id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedTasks.includes(task.id)
-                      ? 'bg-accent-primary/20 border border-accent-primary'
-                      : 'bg-neutral-800 hover:bg-neutral-700'
-                  }`}
-                  onClick={() => handleTaskToggle(task.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{task.title}</div>
-                      {task.description && (
-                        <div className="text-sm text-neutral-400 mt-1">
-                          {task.description}
-                        </div>
-                      )}
-                    </div>
-                    {selectedTasks.includes(task.id) && (
-                      <Check size={20} className="text-accent-primary" />
-                    )}
-                  </div>
-                </div>
-              ))}
-              {tasks.length === 0 && (
-                <div className="text-center text-neutral-500 py-4">
-                  No tasks available
-                </div>
-              )}
             </div>
           </div>
         </div>
+
+        <TaskSelectionPanel
+          activeTasks={tasks.filter(task => selectedTasks.includes(task.id))}
+          availableTasks={tasks.filter(task => !selectedTasks.includes(task.id))}
+          onTaskSelect={handleTaskToggle}
+          onAddTask={() => setShowTaskForm(true)}
+          mode="select"
+          selectedTasks={selectedTasks}
+          showNewTaskButton={true}
+        />
 
         <div className="mt-6 flex justify-end gap-2">
           <div className="flex items-center gap-2 mr-auto">
