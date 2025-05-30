@@ -16,11 +16,14 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [syncPomo, setSyncPomo] = useState(() => {
     return localStorage.getItem("syncPomoWithTimer") === "true";
   });
-  const [startPomodoro, setStartPomodoro] = useState(false);
+  const [startPomodoro, setStartPomodoro] = useState(() => {
+    const savedState = localStorage.getItem('startPomodoroChecked');
+    return savedState ? JSON.parse(savedState) : false;
+  });
 
   useEffect(() => {
     if (isOpen) {
-      fetchTasks();
+      fetchSessionTasks();
       setSessionTitle('');
       setSessionDescription('');
       setSelectedTasks([]);
@@ -32,36 +35,58 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     if (lastAddedTaskId) {
       setSelectedTasks(prev => [...prev, lastAddedTaskId]);
       setLastAddedTaskId(null);
-      fetchTasks();
+      fetchSessionTasks();
     }
   }, [lastAddedTaskId]);
 
-  const fetchTasks = async () => {
+  // Save startPomodoro state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('startPomodoroChecked', JSON.stringify(startPomodoro));
+  }, [startPomodoro]);
+
+  const fetchSessionTasks = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Fetch all tasks for the user
+      const { data: userTasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
+        .eq('user_id', user.id)
         .eq('completed', false)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching tasks:', error);
+      if (tasksError) {
+        console.error('Error fetching user tasks:', tasksError);
+        setTasks([]);
+        setSelectedTasks([]);
         return;
       }
 
-      setTasks(data);
+      setTasks(userTasks);
+      // Initialize selectedTasks with tasks that are already active
+      setSelectedTasks(userTasks.filter(task => task.activetask).map(task => task.id));
     } catch (error) {
-      console.error('Error in fetchTasks:', error);
+      console.error('Error in fetchSessionTasks:', error);
+      setTasks([]);
+      setSelectedTasks([]);
     }
   };
 
-  const handleTaskToggle = (taskId) => {
+  // Modified function to handle task movement between columns
+  const handleMoveTask = (task, toActive) => {
     setSelectedTasks(prev => {
-      if (prev.includes(taskId)) {
-        return prev.filter(id => id !== taskId);
+      if (toActive) {
+        // Add task ID to selectedTasks if moving to active column
+        if (!prev.includes(task.id)) {
+          return [...prev, task.id];
+        }
       } else {
-        return [...prev, taskId];
+        // Remove task ID from selectedTasks if moving to available column
+        return prev.filter(id => id !== task.id);
       }
+      return prev; // Return previous state if no change
     });
   };
 
@@ -87,7 +112,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       // Get today's date for session number calculation
       const today = new Date().toISOString().split("T")[0];
       console.log('Fetching latest session for date:', today);
-      
+
       const { data: latestSession, error: latestSessionError } = await supabase
         .from('study_laps')
         .select('session_number')
@@ -121,12 +146,13 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         return;
       }
 
+      // Create the new session
       const { data: session, error: sessionError } = await supabase
         .from('study_laps')
         .insert([{
           user_id: user.id,
           started_at: new Date().toISOString(),
-          tasks_completed: 0,
+          tasks_completed: 0, // Will be updated on finish
           name: sessionTitle.trim(),
           description: sessionDescription.trim(),
           session_number: nextSessionNumber,
@@ -138,6 +164,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       if (sessionError) throw sessionError;
       console.log('Successfully created new session:', session.id);
 
+      // Link selected tasks to the new session and set activetask to true
       if (selectedTasks.length > 0) {
         // Insert links into session_tasks table
         const { error: sessionTasksError } = await supabase
@@ -146,7 +173,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             selectedTasks.map(taskId => ({
               session_id: session.id,
               task_id: taskId,
-              completed_at: null // Tasks are not completed when session starts
+              completed_at: null // Not completed when session starts
             }))
           );
 
@@ -169,14 +196,17 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         window.dispatchEvent(new CustomEvent("pomodoroStartedWithSession"));
       }
 
+      // Pass the created session details back to StudyTimer
       onStart({
         sessionId: session.id,
         tasks: selectedTasks,
         title: sessionTitle.trim()
       });
+
       onClose();
     } catch (error) {
       console.error('Error starting session:', error);
+      // Optionally show a toast or error message
     }
   };
 
@@ -232,11 +262,13 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         <TaskSelectionPanel
           activeTasks={tasks.filter(task => selectedTasks.includes(task.id))}
           availableTasks={tasks.filter(task => !selectedTasks.includes(task.id))}
-          onTaskSelect={handleTaskToggle}
+          onMoveTask={handleMoveTask}
           onAddTask={() => setShowTaskForm(true)}
-          mode="select"
+          mode="move"
           selectedTasks={selectedTasks}
           showNewTaskButton={true}
+          activeTitle="Active Tasks"
+          availableTitle="Available Tasks"
         />
 
         <div className="mt-6 flex justify-end gap-2">
@@ -273,7 +305,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             <TaskForm
               onClose={handleTaskFormClose}
               onTaskCreated={(newTaskId) => {
-                fetchTasks();
+                fetchSessionTasks();
                 setSelectedTasks(prev => [...prev, newTaskId]);
               }}
             />

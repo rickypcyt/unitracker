@@ -4,13 +4,14 @@ import { supabase } from '../../config/supabaseClient';
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 
-const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
+const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }) => {
   const [activeTasks, setActiveTasks] = useState([]);
   const [availableTasks, setAvailableTasks] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
+  const [titleError, setTitleError] = useState(false);
   const [syncPomo, setSyncPomo] = useState(() => {
     return localStorage.getItem("syncPomoWithTimer") === "true";
   });
@@ -34,7 +35,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Fetch all incomplete tasks for the user
+      // Fetch all tasks for the user
       const { data: userTasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
@@ -55,7 +56,6 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
 
       setActiveTasks(active);
       setAvailableTasks(available);
-
     } catch (error) {
       console.error('Error in fetchSessionTasks:', error);
       setActiveTasks([]);
@@ -77,7 +77,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
       }
 
       if (session) {
-        setSessionTitle(session.title || 'Untitled Session');
+        setSessionTitle(session.name || 'Untitled Session');
       }
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
@@ -100,6 +100,29 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
     setShowTaskForm(false);
     if (newTaskId) {
       setLastAddedTaskId(newTaskId);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const { error } = await supabase
+        .from('study_laps')
+        .update({
+          name: sessionTitle,
+          description: sessionDescription
+        })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      if (onSessionDetailsUpdated) {
+        onSessionDetailsUpdated();
+      }
+
+      onClose();
+    } catch (error) {
+      console.error('Error updating session:', error);
+      // Optionally show a toast or error message here
     }
   };
 
@@ -165,10 +188,12 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
         <TaskSelectionPanel
           activeTasks={activeTasks}
           availableTasks={availableTasks}
-          onTaskMove={handleTaskMove}
+          onMoveTask={handleTaskMove}
           onAddTask={() => setShowTaskForm(true)}
           mode="move"
           showNewTaskButton={true}
+          activeTitle="Active Tasks"
+          availableTitle="Available Tasks"
         />
 
         <div className="mt-6 flex justify-end gap-2">
@@ -179,7 +204,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
             Cancel
           </button>
           <button
-            onClick={onClose}
+            onClick={handleSaveChanges}
             className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
           >
             Save Changes

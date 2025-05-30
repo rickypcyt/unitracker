@@ -58,6 +58,11 @@ const TaskSelectionPanel = ({
                   {task.description}
                 </div>
               )}
+              {task.assignment && (
+                <div className="text-xs text-neutral-500 mt-1">
+                  Assignment: {task.assignment}
+                </div>
+              )}
             </div>
             {selectedTasks.includes(task.id) && (
               <Check size={20} className="text-accent-primary" />
@@ -80,6 +85,11 @@ const TaskSelectionPanel = ({
             {task.description && (
               <div className="text-md text-neutral-400 mt-1">
                 {task.description}
+              </div>
+            )}
+            {task.assignment && (
+              <div className="text-xs text-neutral-500 mt-1">
+                Assignment: {task.assignment}
               </div>
             )}
           </div>

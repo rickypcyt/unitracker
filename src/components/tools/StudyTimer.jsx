@@ -48,6 +48,39 @@ const StudyTimer = ({ onSyncChange }) => {
     };
   });
 
+  // Function to fetch and update current session details
+  const fetchCurrentSessionDetails = useCallback(async () => {
+    if (!currentSessionId) return;
+    try {
+      const { data: session, error } = await supabase
+        .from('study_laps')
+        .select('name, description')
+        .eq('id', currentSessionId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching current session details:', error);
+        return;
+      }
+
+      if (session) {
+        setStudyState(prev => ({ ...prev, sessionTitle: session.name, sessionDescription: session.description }));
+      }
+    } catch (error) {
+      console.error('Error in fetchCurrentSessionDetails:', error);
+    }
+  }, [currentSessionId, setStudyState]);
+
+  // Effect to fetch details when modal closes or session ID changes
+  useEffect(() => {
+    // This effect will trigger fetchCurrentSessionDetails when currentSessionId changes
+    // or when modals close and update a state that causes StudyTimer to re-render.
+    // A more explicit way would be to pass the fetch function to modals.
+    if (currentSessionId) {
+       fetchCurrentSessionDetails();
+    }
+  }, [currentSessionId, fetchCurrentSessionDetails]); // Add fetchCurrentSessionDetails as dependency
+
   // Remove the sync timer effect since we'll use useStudyTimer exclusively
   useEffect(() => {
     const syncTimer = () => {
@@ -117,12 +150,12 @@ const StudyTimer = ({ onSyncChange }) => {
   }, []);
 
   // Use the useStudyTimer hook for background timing
-  useStudyTimer(
-    studyTick,
-    studyState.isRunning,
-    studyState.timeAtStart,
-    studyState.lastStart
-  );
+  // useStudyTimer(
+  //   studyTick,
+  //   studyState.isRunning,
+  //   studyState.timeAtStart,
+  //   studyState.lastStart
+  // );
 
   // Remove the pause on page change event listener
   useEventListener("pauseTimerSync", () => {
@@ -184,7 +217,7 @@ const StudyTimer = ({ onSyncChange }) => {
             timeAtStart: studyState.time,
             sessionId: currentSessionId
           });
-          
+
           setStudyState((prev) => ({
             ...prev,
             isRunning: true,
@@ -211,13 +244,13 @@ const StudyTimer = ({ onSyncChange }) => {
       if (studyState.isRunning && !isHandlingEvent) {
         const now = Date.now();
         const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
-        
+
         console.log('Timer Paused:', {
           timestamp: new Date(now).toISOString(),
           elapsedTime: elapsed.toFixed(2),
           sessionId: currentSessionId
         });
-        
+
         setStudyState((prev) => ({
           ...prev,
           isRunning: false,
@@ -243,7 +276,7 @@ const StudyTimer = ({ onSyncChange }) => {
         finalTime: studyState.time.toFixed(2),
         sessionId: currentSessionId
       });
-      
+
       setStudyState((prev) => ({
         ...prev,
         isRunning: false,
@@ -285,7 +318,7 @@ const StudyTimer = ({ onSyncChange }) => {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
       const lastReset = localStorage.getItem('lastSessionsReset');
-      
+
       if (lastReset !== today) {
         setSessionsTodayCount(0);
         localStorage.setItem('lastSessionsReset', today);
@@ -303,7 +336,7 @@ const StudyTimer = ({ onSyncChange }) => {
   }, []);
 
   // Fetch sessions count for today
-  const fetchSessionsTodayCount = async () => {
+  const fetchSessionsTodayCount = useCallback(async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       const { data, error } = await supabase
@@ -318,12 +351,12 @@ const StudyTimer = ({ onSyncChange }) => {
     } catch (error) {
       console.error('Error fetching sessions count:', error);
     }
-  };
+  }, []); // Add empty dependency array for useCallback
 
   // Add effect to fetch sessions count on mount and when needed
   useEffect(() => {
     fetchSessionsTodayCount();
-  }, []);
+  }, [fetchSessionsTodayCount]); // Add fetchSessionsTodayCount as dependency
 
   const handleFinishSession = async (completedTaskIds) => {
     try {
@@ -369,7 +402,13 @@ const StudyTimer = ({ onSyncChange }) => {
         }
 
         // Display success message
-        toast.success(`Congrats! During this session you completed ${completedTaskIds.length} tasks and studied for ${hours} hours and ${minutes} minutes.`);
+        toast.success(`Congrats! During this session you completed ${completedTaskIds.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
+          position: 'top-right',
+          style: {
+            backgroundColor: '#3b82f6', // Using a shade of blue consistent with accent-primary
+            color: '#f3f4f6', // Light text color for contrast
+          },
+        });
       }
 
       // Reset session state
@@ -377,6 +416,9 @@ const StudyTimer = ({ onSyncChange }) => {
       setCurrentSessionId(null);
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
+
+      // Unconditionally reset Pomodoro timer
+      window.dispatchEvent(new CustomEvent("resetPomodoro"));
 
     } catch (error) {
       console.error('Error finishing session:', error);
@@ -580,12 +622,14 @@ const StudyTimer = ({ onSyncChange }) => {
         onClose={() => setIsFinishModalOpen(false)}
         onFinish={handleFinishSession}
         sessionId={currentSessionId}
+        onSessionDetailsUpdated={fetchCurrentSessionDetails}
       />
 
       <EditSessionModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         sessionId={currentSessionId}
+        onSessionDetailsUpdated={fetchCurrentSessionDetails}
       />
     </div>
   );

@@ -4,29 +4,40 @@ import { X } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 
-const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
+const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDetailsUpdated }) => {
+  const [sessionTitle, setSessionTitle] = useState('');
+  const [sessionDescription, setSessionDescription] = useState('');
   const [tasks, setTasks] = useState([]);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [selectedTasks, setSelectedTasks] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [sessionNotes, setSessionNotes] = useState('');
+  const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
+  const [titleError, setTitleError] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [activeTasks, setActiveTasks] = useState([]);
+  const [availableTasks, setAvailableTasks] = useState([]);
 
   useEffect(() => {
-    if (isOpen && session?.id) {
+    if (isOpen && sessionId) {
       fetchSessionDetails();
       fetchSessionTasks();
-      // Set session start time when modal opens
       setSessionStartTime(new Date());
     }
-  }, [isOpen, session?.id]);
+  }, [isOpen, sessionId]);
+
+  useEffect(() => {
+    if (lastAddedTaskId) {
+      setSelectedTasks(prev => [...prev, lastAddedTaskId]);
+      setLastAddedTaskId(null);
+      fetchSessionTasks();
+    }
+  }, [lastAddedTaskId]);
 
   const fetchSessionDetails = async () => {
     try {
       const { data: session, error } = await supabase
         .from('study_laps')
-        .select('description')
-        .eq('id', session.id)
+        .select('name, description, started_at')
+        .eq('id', sessionId)
         .single();
 
       if (error) {
@@ -35,7 +46,9 @@ const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
       }
 
       if (session) {
-        setSessionNotes(session.description || 'Untitled Session');
+        setSessionTitle(session.name || 'Untitled Session');
+        setSessionDescription(session.description || '');
+        setSessionStartTime(new Date(session.started_at));
       }
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
@@ -47,110 +60,113 @@ const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Fetch all tasks for the user
+      // Fetch all tasks for the user (not completed)
       const { data: userTasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
         .eq('user_id', user.id)
+        .eq('completed', false)
         .order('created_at', { ascending: false });
 
       if (tasksError) {
         console.error('Error fetching user tasks:', tasksError);
-        setTasks([]);
-        setCompletedTasks([]);
-        setIncompleteTasks([]);
+        setActiveTasks([]);
+        setAvailableTasks([]);
+        setSelectedTasks([]);
         return;
       }
 
-      // Separate tasks based on completed status
-      const completed = userTasks.filter(task => task.completed);
-      const incomplete = userTasks.filter(task => !task.completed);
+      // Fetch session_tasks for this session
+      const { data: sessionTasks, error: sessionTasksError } = await supabase
+        .from('session_tasks')
+        .select('task_id, completed_at')
+        .eq('session_id', sessionId);
 
-      setTasks(userTasks);
-      setCompletedTasks(completed.map(task => task.id));
-      setIncompleteTasks(incomplete.map(task => task.id));
+      if (sessionTasksError) {
+        console.error('Error fetching session tasks:', sessionTasksError);
+        setActiveTasks(userTasks.filter(t => t.activetask));
+        setAvailableTasks(userTasks.filter(t => !t.activetask));
+        setSelectedTasks([]);
+        return;
+      }
 
+      // Mark as selected those tasks that are in session_tasks and completed
+      const completedTaskIds = sessionTasks.filter(st => st.completed_at).map(st => st.task_id);
+
+      setActiveTasks(userTasks.filter(t => t.activetask));
+      setAvailableTasks(userTasks.filter(t => !t.activetask));
+      setSelectedTasks(completedTaskIds);
     } catch (error) {
       console.error('Error in fetchSessionTasks:', error);
-      setTasks([]);
-      setCompletedTasks([]);
-      setIncompleteTasks([]);
+      setActiveTasks([]);
+      setAvailableTasks([]);
+      setSelectedTasks([]);
     }
   };
 
-  const handleTaskToggle = (taskId) => {
-    setCompletedTasks(prev => {
-      if (prev.includes(taskId)) {
-        // Move to incomplete
-        setIncompleteTasks(prevIncomplete => [...prevIncomplete, tasks.find(t => t.id === taskId).id]);
-        return prev.filter(id => id !== taskId);
-      } else {
-        // Move to completed
-        setIncompleteTasks(prevIncomplete => prevIncomplete.filter(t => t !== taskId));
-        return [...prev, taskId];
-      }
-    });
+  const handleMoveTask = (task, toActive) => {
+    if (toActive) {
+      setActiveTasks(prev => [...prev, task]);
+      setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
+    } else {
+      setAvailableTasks(prev => [...prev, task]);
+      setActiveTasks(prev => prev.filter(t => t.id !== task.id));
+      setSelectedTasks(prev => prev.filter(id => id !== task.id)); // Unselect if moved to available
+    }
   };
 
   const handleTaskFormClose = (newTaskId) => {
     setShowTaskForm(false);
     if (newTaskId) {
-      fetchSessionTasks(); // Refresh the list after adding a new task
-    }
-  };
-
-  const toggleTaskStatus = async (taskId, completed) => {
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ completed })
-        .eq('id', taskId);
-
-      if (error) {
-        console.error('Error updating task status:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error in toggleTaskStatus:', error);
-      throw error;
+      setLastAddedTaskId(newTaskId);
     }
   };
 
   const handleFinish = async () => {
     try {
-      // Calculate session duration in minutes
       const endTime = new Date();
-      const startTime = sessionStartTime || new Date(session.started_at);
-      const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+      const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
 
-      // Update session with duration and notes
+      // Update session with duration and number of completed tasks
       const { error: updateError } = await supabase
         .from('study_laps')
-        .update({ 
+        .update({
           duration: durationMinutes,
-          description: sessionNotes.trim() || null
+          description: sessionDescription.trim() || null,
+          tasks_completed: selectedTasks.length
         })
-        .eq('id', session.id);
+        .eq('id', sessionId);
 
-      if (updateError) {
-        console.error('Error updating session:', updateError);
-        throw updateError;
+      if (updateError) throw updateError;
+
+      // Update task completion status in session_tasks
+      const updatePromises = activeTasks.map(task => {
+        const isCompleted = selectedTasks.includes(task.id);
+        return supabase
+          .from('session_tasks')
+          .update({ completed_at: isCompleted ? new Date().toISOString() : null })
+          .eq('session_id', sessionId)
+          .eq('task_id', task.id);
+      });
+
+      await Promise.all(updatePromises);
+
+      // Update task activetask status (set all to false)
+      const { error: tasksUpdateError } = await supabase
+        .from('tasks')
+        .update({ activetask: false })
+        .in('id', activeTasks.map(t => t.id));
+
+      if (tasksUpdateError) throw tasksUpdateError;
+
+      if (onSessionDetailsUpdated) {
+        onSessionDetailsUpdated();
       }
 
-      // Update tasks as completed
-      const taskIdsToComplete = completedTasks;
-      const completionPromises = taskIdsToComplete.map(taskId =>
-        toggleTaskStatus(taskId, true)
-      );
-
-      await Promise.all(completionPromises);
-      console.log('Tasks marked as completed');
-      onFinish(taskIdsToComplete);
+      onFinish(selectedTasks);
       onClose();
     } catch (error) {
       console.error('Error finishing session:', error);
-      // Don't close the modal on error
-      // onClose();
     }
   };
 
@@ -169,32 +185,45 @@ const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionNotes" className="block text-sm font-medium text-neutral-300 mb-1">
-                Session Notes (Optional)
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
+                Session Title
+              </label>
+              <input
+                type="text"
+                id="sessionTitle"
+                value={sessionTitle}
+                onChange={(e) => setSessionTitle(e.target.value)}
+                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                placeholder="Session title"
+                disabled
+              />
+            </div>
+
+            <div>
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
+                Session Notes
               </label>
               <textarea
-                id="sessionNotes"
-                value={sessionNotes}
-                onChange={(e) => setSessionNotes(e.target.value)}
+                id="sessionDescription"
+                value={sessionDescription}
+                onChange={(e) => setSessionDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
                 rows="3"
-                placeholder="Add any notes about this session"
+                placeholder="Add notes about this session..."
               />
             </div>
           </div>
         </div>
 
         <TaskSelectionPanel
-          activeTasks={tasks.filter(task => completedTasks.includes(task.id))}
-          availableTasks={tasks.filter(task => !completedTasks.includes(task.id))}
-          onTaskSelect={handleTaskToggle}
+          activeTasks={activeTasks}
+          availableTasks={availableTasks}
+          onMoveTask={handleMoveTask}
           onAddTask={() => setShowTaskForm(true)}
-          mode="select"
-          selectedTasks={completedTasks}
-          showNewTaskButton={false}
-          activeTitle="Completed Tasks"
-          availableTitle="Incomplete Tasks"
-          groupByAssignment={true}
+          mode="move"
+          showNewTaskButton={true}
+          activeTitle="Active Tasks"
+          availableTitle="Available Tasks"
         />
 
         <div className="mt-6 flex justify-end gap-2">
@@ -221,7 +250,7 @@ const FinishSessionModal = ({ isOpen, onClose, session, onFinish }) => {
               onClose={handleTaskFormClose}
               onTaskCreated={(newTaskId) => {
                 fetchSessionTasks();
-                setIncompleteTasks(prev => [...prev, newTaskId]);
+                setSelectedTasks(prev => [...prev, newTaskId]);
               }}
             />
           </div>
