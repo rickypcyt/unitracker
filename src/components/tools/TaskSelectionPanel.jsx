@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, ArrowRight, ArrowLeft, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LoginPromptModal from '../modals/LoginPromptModal';
@@ -20,18 +20,40 @@ const TaskSelectionPanel = ({
   const [expandedGroups, setExpandedGroups] = useState({});
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
+  // Filter out any invalid tasks
+  const validActiveTasks = useMemo(() => 
+    activeTasks.filter(task => task && typeof task === 'object' && task.id),
+    [activeTasks]
+  );
+  
+  const validAvailableTasks = useMemo(() => 
+    availableTasks.filter(task => task && typeof task === 'object' && task.id),
+    [availableTasks]
+  );
+
+  // Memoize the assignments to prevent unnecessary recalculations
+  const assignments = useMemo(() => 
+    [...new Set(validAvailableTasks.map(task => task.assignment || 'No Assignment'))],
+    [validAvailableTasks]
+  );
+
   // Initialize expanded state for new groups
   useEffect(() => {
-    // Siempre agrupar por assignment
     const newExpandedState = { ...expandedGroups };
-    const assignments = [...new Set(availableTasks.map(task => task.assignment || 'No Assignment'))];
+    let hasChanges = false;
+
     assignments.forEach(assignment => {
       if (newExpandedState[assignment] === undefined) {
         newExpandedState[assignment] = false; // Start collapsed
+        hasChanges = true;
       }
     });
-    setExpandedGroups(newExpandedState);
-  }, [availableTasks]);
+
+    // Only update state if there are actual changes
+    if (hasChanges) {
+      setExpandedGroups(newExpandedState);
+    }
+  }, [assignments]); // Only depend on the memoized assignments array
 
   const toggleGroup = (assignment) => {
     setExpandedGroups(prev => ({
@@ -49,6 +71,10 @@ const TaskSelectionPanel = ({
   };
 
   const renderTaskCard = (task, isActive) => {
+    if (!task || typeof task !== 'object' || !task.id) {
+      return null;
+    }
+
     const commonClasses = "p-3 rounded-lg cursor-pointer transition-colors";
     const activeClasses = "bg-accent-primary/20 border border-accent-primary";
     const availableClasses = "bg-neutral-800 hover:bg-neutral-700";
@@ -126,8 +152,8 @@ const TaskSelectionPanel = ({
 
   const renderActiveTasks = () => (
     <div className={`space-y-2 max-h-[${maxHeight}] overflow-y-auto`}>
-      {activeTasks.map(task => renderTaskCard(task, true))}
-      {activeTasks.length === 0 && (
+      {validActiveTasks.map(task => renderTaskCard(task, true))}
+      {validActiveTasks.length === 0 && (
         <div className="text-center text-neutral-500 py-4">
           {mode === 'select' ? 'No tasks selected' : 'No active tasks'}
         </div>
@@ -138,7 +164,8 @@ const TaskSelectionPanel = ({
   const renderAvailableTasks = () => {
     // Siempre agrupar por assignment
     // Group tasks by assignment
-    const tasksByAssignment = availableTasks.reduce((acc, task) => {
+    const tasksByAssignment = validAvailableTasks.reduce((acc, task) => {
+      if (!task || typeof task !== 'object' || !task.id) return acc;
       const assignment = task.assignment || 'No Assignment';
       if (!acc[assignment]) {
         acc[assignment] = [];
@@ -173,7 +200,7 @@ const TaskSelectionPanel = ({
               )}
             </div>
           ))}
-          {availableTasks.length === 0 && (
+          {validAvailableTasks.length === 0 && (
             <div className="text-center text-neutral-500 py-4">
               No available tasks
             </div>
@@ -190,7 +217,7 @@ const TaskSelectionPanel = ({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium">{activeTitle}</h3>
           <span className="text-md text-neutral-400">
-            {activeTasks.length} tasks
+            {validActiveTasks.length} tasks
           </span>
         </div>
         {renderActiveTasks()}

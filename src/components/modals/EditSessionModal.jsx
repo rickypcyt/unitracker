@@ -84,15 +84,29 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
     }
   };
 
-  const handleTaskMove = (taskId, direction) => {
-    if (direction === 'right') {
-      // Move from available to active
-      setActiveTasks(prev => [...prev, availableTasks.find(t => t.id === taskId)]);
-      setAvailableTasks(prev => prev.filter(t => t.id !== taskId));
-    } else {
-      // Move from active to available
-      setAvailableTasks(prev => [...prev, activeTasks.find(t => t.id === taskId)]);
-      setActiveTasks(prev => prev.filter(t => t.id !== taskId));
+  const handleTaskMove = async (task, toActive) => {
+    try {
+      // Update the task in the database
+      const { error } = await supabase
+        .from('tasks')
+        .update({ activetask: toActive })
+        .eq('id', task.id);
+
+      if (error) throw error;
+
+      // Update local state
+      if (toActive) {
+        // Move from available to active
+        setActiveTasks(prev => [...prev, { ...task, activetask: true }]);
+        setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
+      } else {
+        // Move from active to available
+        setAvailableTasks(prev => [...prev, { ...task, activetask: false }]);
+        setActiveTasks(prev => prev.filter(t => t.id !== task.id));
+      }
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      // Optionally show an error message to the user
     }
   };
 
