@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, ArrowLeft, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import LoginPromptModal from '../modals/LoginPromptModal';
 
 const TaskSelectionPanel = ({
   activeTasks = [],
@@ -14,7 +16,9 @@ const TaskSelectionPanel = ({
   activeTitle = 'Active Tasks',
   availableTitle = 'Available Tasks'
 }) => {
+  const { isLoggedIn } = useAuth();
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   // Initialize expanded state for new groups
   useEffect(() => {
@@ -34,6 +38,14 @@ const TaskSelectionPanel = ({
       ...prev,
       [assignment]: !prev[assignment]
     }));
+  };
+
+  const handleAddTask = () => {
+    if (!isLoggedIn) {
+      setIsLoginPromptOpen(true);
+      return;
+    }
+    onAddTask();
   };
 
   const renderTaskCard = (task, isActive) => {
@@ -190,7 +202,7 @@ const TaskSelectionPanel = ({
           <h3 className="text-lg font-medium">{availableTitle}</h3>
           {showNewTaskButton && (
             <button
-              onClick={onAddTask}
+              onClick={handleAddTask}
               className="flex items-center gap-1 text-accent-primary hover:text-accent-primary/80"
             >
               <Plus size={20} />
@@ -200,6 +212,12 @@ const TaskSelectionPanel = ({
         </div>
         {renderAvailableTasks()}
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+      />
     </div>
   );
 };

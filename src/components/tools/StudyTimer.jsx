@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { supabase } from '../../config/supabaseClient';
+import { useAuth } from '../../hooks/useAuth';
 
 import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
 import { Play, Pause, RotateCcw, Check, Clock, X, MoreVertical } from "lucide-react";
@@ -10,14 +11,17 @@ import useEventListener from "../../hooks/useEventListener";
 import StartSessionModal from "../modals/StartSessionModal";
 import FinishSessionModal from "../modals/FinishSessionModal";
 import EditSessionModal from "../modals/EditSessionModal";
+import LoginPromptModal from "../modals/LoginPromptModal";
 import { toast } from "react-hot-toast";
 
 const StudyTimer = ({ onSyncChange }) => {
   const { iconColor } = useTheme();
+  const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
   const { currentSession } = useSelector((state) => state.laps);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState(() => {
     // Try to get active session from localStorage
     const savedSessionId = localStorage.getItem("activeSessionId");
@@ -210,6 +214,11 @@ const StudyTimer = ({ onSyncChange }) => {
   const studyControls = {
     start: async () => {
       if (!studyState.isRunning && !isHandlingEvent) {
+        if (!isLoggedIn) {
+          setIsLoginPromptOpen(true);
+          return;
+        }
+        
         if (currentSessionId) {
           const now = Date.now();
           console.log('Timer Started:', {
@@ -630,6 +639,11 @@ const StudyTimer = ({ onSyncChange }) => {
         onClose={() => setIsEditModalOpen(false)}
         sessionId={currentSessionId}
         onSessionDetailsUpdated={fetchCurrentSessionDetails}
+      />
+
+      <LoginPromptModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
       />
     </div>
   );

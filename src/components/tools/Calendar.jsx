@@ -6,6 +6,8 @@ import { CheckCircle2, Clock } from 'lucide-react';
 import { fetchLaps } from "../../store/actions/LapActions";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { useTaskManager } from "../../hooks/useTaskManager";
+import { useAuth } from "../../hooks/useAuth";
+import LoginPromptModal from "../modals/LoginPromptModal";
 
 const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
   useEffect(() => {
@@ -66,10 +68,12 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
 
 const Calendar = () => {
   const dispatch = useDispatch();
+  const { isLoggedIn } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   
   const {
     selectedTask,
@@ -165,6 +169,10 @@ const Calendar = () => {
     if (date < today) {
       setIsInfoModalOpen(true);
     } else {
+      if (!isLoggedIn) {
+        setIsLoginPromptOpen(true);
+        return;
+      }
       setShowTaskForm(true);
     }
   };
@@ -358,6 +366,12 @@ const Calendar = () => {
         date={selectedDate}
         tasks={getTasksForDate(selectedDate)}
         studiedHours={getStudiedHoursForDate(selectedDate)}
+      />
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
       />
     </div>
   );

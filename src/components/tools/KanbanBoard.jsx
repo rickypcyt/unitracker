@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TaskItem } from './TaskItem';
 import { useTaskManager } from '../../hooks/useTaskManager';
+import { useAuth } from '../../hooks/useAuth';
 import { ClipboardCheck, ChevronDown, ChevronUp, Archive, Plus, Filter, Trash2 } from 'lucide-react';
 import TaskDetailsModal from '../modals/TaskDetailsModal';
 import DeleteCompletedModal from '../modals/DeleteTasksPop';
+import LoginPromptModal from '../modals/LoginPromptModal';
 import { useTaskDetails } from '../../hooks/useTaskDetails';
 import { TaskListMenu } from '../modals/TaskListMenu';
 import TaskForm from './TaskForm';
@@ -38,6 +40,7 @@ export const KanbanBoard = () => {
     handleDeleteTask,
     handleUpdateTask,
   } = useTaskManager();
+  const { isLoggedIn } = useAuth();
 
   const {
     selectedTask,
@@ -79,6 +82,8 @@ export const KanbanBoard = () => {
     const savedConfig = localStorage.getItem('kanbanAssignmentSortConfig');
     return savedConfig ? JSON.parse(savedConfig) : {};
   });
+
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -443,6 +448,10 @@ export const KanbanBoard = () => {
   const handleCloseContextMenu = () => setContextMenu(null);
 
   const handleAddTask = (assignment = null) => {
+    if (!isLoggedIn) {
+      setIsLoginPromptOpen(true);
+      return;
+    }
     setSelectedAssignment(assignment);
     setShowTaskForm(true);
   };
@@ -581,15 +590,17 @@ export const KanbanBoard = () => {
 
       {/* Task Form Modal */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-neutral-900 rounded-xl border border-neutral-800 w-full max-w-md mx-4 transform transition-all duration-300 scale-100">
-            <div className="p-6">
-              <TaskForm
-                initialAssignment={selectedAssignment}
-                initialTask={editingTask}
-                onClose={handleCloseTaskForm}
-              />
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-md">
+            <TaskForm
+              onClose={handleCloseTaskForm}
+              initialAssignment={selectedAssignment}
+              initialTask={editingTask}
+              onTaskCreated={(newTaskId) => {
+                dispatch(fetchTasks());
+                handleCloseTaskForm();
+              }}
+            />
           </div>
         </div>
       )}
@@ -615,6 +626,12 @@ export const KanbanBoard = () => {
           currentSortDirection={assignmentSortConfig[sortMenu.assignmentId]?.direction || 'asc'}
         />
       )}
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+      />
     </div>
   );
 }; 
