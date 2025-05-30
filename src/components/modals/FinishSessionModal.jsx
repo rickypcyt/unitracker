@@ -12,12 +12,14 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [sessionTitle, setSessionTitle] = useState(''); // State for session title
+  const [sessionStartTime, setSessionStartTime] = useState(null); // Track session start time
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (isOpen && sessionId) {
       fetchSessionDetails();
       fetchSessionTasks(); // Fetch tasks linked to this session
+      setSessionStartTime(new Date()); // Set start time when modal opens
     }
   }, [isOpen, sessionId]);
 
@@ -151,25 +153,36 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId }) => {
     }
   };
 
-  const handleFinish = () => {
-    // Update tasks as completed and then call onFinish
-    const taskIdsToComplete = activeTasks.map(task => task.id);
-    // Dispatch toggleTaskStatus for each active task to mark as completed
-    const completionPromises = taskIdsToComplete.map(taskId =>
-      dispatch(toggleTaskStatus(taskId, true))
-    );
+  const handleFinish = async () => {
+    try {
+      // Calculate session duration in minutes
+      const endTime = new Date();
+      const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
 
-    Promise.all(completionPromises)
-      .then(() => {
-        console.log('Tasks marked as completed');
-        onFinish(taskIdsToComplete); // Pass completed task IDs if needed by parent
-        onClose();
-      })
-      .catch(error => {
-        console.error('Error marking tasks as completed:', error);
-        // Optionally still call onFinish or show an error message
-        onClose(); // Close the modal even on error for now
-      });
+      // Update session with duration
+      const { error: updateError } = await supabase
+        .from('study_laps')
+        .update({ duration: durationMinutes })
+        .eq('id', sessionId);
+
+      if (updateError) {
+        console.error('Error updating session duration:', updateError);
+      }
+
+      // Update tasks as completed
+      const taskIdsToComplete = activeTasks.map(task => task.id);
+      const completionPromises = taskIdsToComplete.map(taskId =>
+        dispatch(toggleTaskStatus(taskId, true))
+      );
+
+      await Promise.all(completionPromises);
+      console.log('Tasks marked as completed');
+      onFinish(taskIdsToComplete);
+      onClose();
+    } catch (error) {
+      console.error('Error finishing session:', error);
+      onClose();
+    }
   };
 
   if (!isOpen) return null;

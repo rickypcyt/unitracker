@@ -395,56 +395,22 @@ const StudyTimer = ({ onSyncChange }) => {
     try {
       const now = Date.now();
       
-      // Get the current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-
-      // Get today's date for session number calculation
-      const today = new Date().toISOString().split("T")[0];
-      const { data: latestSession, error: latestSessionError } = await supabase
-        .from('study_laps')
-        .select('session_number')
-        .gte('created_at', `${today}T00:00:00`)
-        .lte('created_at', `${today}T23:59:59`)
-        .order('session_number', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (latestSessionError && latestSessionError.code !== 'PGRST116') throw latestSessionError;
-
-      // Calculate next session number
-      const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
-
-      // Create a new study lap record
-      const { data: newLap, error: lapError } = await supabase
-        .from('study_laps')
-        .insert([{
-          user_id: user.id,
-          name: sessionData.title || 'Untitled Session',
-          description: sessionData.title || 'Untitled Session',
-          duration: '00:00:00',
-          started_at: new Date().toISOString(),
-          tasks_completed: 0,
-          session_number: nextSessionNumber
-        }])
-        .select()
-        .single();
-
-      if (lapError) {
-        console.error('Error creating study lap:', lapError);
+      // Use the session that was already created by StartSessionModal
+      if (!sessionData.sessionId) {
+        console.error('No session ID provided');
         return;
       }
 
       // Set both states to ensure session is active
-      dispatch(setCurrentSession(newLap.id));
-      setCurrentSessionId(newLap.id);
+      dispatch(setCurrentSession(sessionData.sessionId));
+      setCurrentSessionId(sessionData.sessionId);
       setStudyState((prev) => ({
         ...prev,
         isRunning: true,
         lastStart: now,
         timeAtStart: prev.time,
         sessionStatus: 'active',
-        sessionTitle: newLap.description
+        sessionTitle: sessionData.title
       }));
 
       // Update sessions today count

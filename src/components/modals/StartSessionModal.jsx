@@ -85,6 +85,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       // Get today's date for session number calculation
       const today = new Date().toISOString().split("T")[0];
+      console.log('Fetching latest session for date:', today);
+      
       const { data: latestSession, error: latestSessionError } = await supabase
         .from('study_laps')
         .select('session_number')
@@ -98,6 +100,25 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       // Calculate next session number
       const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
+      console.log('Creating new session with number:', nextSessionNumber);
+
+      // Check if a session with this title already exists today
+      const { data: existingSession, error: checkError } = await supabase
+        .from('study_laps')
+        .select('id')
+        .eq('name', sessionTitle.trim())
+        .gte('created_at', `${today}T00:00:00`)
+        .lte('created_at', `${today}T23:59:59`)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking for existing session:', checkError);
+      }
+
+      if (existingSession) {
+        console.warn('Session with this title already exists today:', existingSession);
+        return;
+      }
 
       const { data: session, error: sessionError } = await supabase
         .from('study_laps')
@@ -114,6 +135,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         .single();
 
       if (sessionError) throw sessionError;
+      console.log('Successfully created new session:', session.id);
 
       if (selectedTasks.length > 0) {
         // Insert links into session_tasks table
@@ -137,8 +159,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
         if (updateTasksError) {
           console.error('Error updating tasks activetask status:', updateTasksError);
-          // Decide how to handle this error - maybe still proceed or roll back session creation?
-          // For now, we'll just log it.
         }
       }
 
