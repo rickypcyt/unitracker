@@ -145,15 +145,6 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
     }
   };
 
-  const toggleSync = () => {
-    const newSyncState = !syncPomo;
-    setSyncPomo(newSyncState);
-    localStorage.setItem("syncPomoWithTimer", newSyncState.toString());
-    window.dispatchEvent(
-      new CustomEvent("syncStateChanged", { detail: { syncPomo: newSyncState } })
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -174,33 +165,6 @@ const EditSessionModal = ({ isOpen, onClose, sessionId }) => {
           >
             <X size={24} />
           </button>
-        </div>
-
-        <div className="mb-6">
-          <p className="text-neutral-400">
-            Review and modify the tasks for this session. Move tasks between columns to add or remove them from the session.
-          </p>
-          <div className="flex items-center gap-2 mt-4">
-            <button
-              onClick={toggleSync}
-              className={`p-1 rounded-full transition-colors ${
-                syncPomo ? "text-accent-primary" : "text-neutral-400"
-              }`}
-              aria-label={syncPomo ? "Disable Pomodoro sync" : "Enable Pomodoro sync"}
-            >
-              {syncPomo ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M8 12l2 2 6-6" />
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                </svg>
-              )}
-            </button>
-            <span className="text-neutral-400">Sync Study Timer with Pomodoro</span>
-          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-6">

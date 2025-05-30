@@ -27,6 +27,7 @@ const StudyTimer = ({ onSyncChange }) => {
   const [isPauseFromSync, setIsPauseFromSync] = useState(false);
   const [isHandlingEvent, setIsHandlingEvent] = useState(false);
   const [sessionsTodayCount, setSessionsTodayCount] = useState(0);
+  const [pomodoroStartedWithSession, setPomodoroStartedWithSession] = useState(false);
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
@@ -35,14 +36,12 @@ const StudyTimer = ({ onSyncChange }) => {
       const parsed = JSON.parse(savedState);
       return {
         ...parsed,
-        syncPomo: localStorage.getItem("syncPomoWithTimer") === "true",
         sessionStatus: parsed.sessionStatus || 'inactive',
       };
     }
     return {
       time: 0,
       isRunning: false,
-      syncPomo: true,
       lastStart: null,
       timeAtStart: 0,
       sessionStatus: 'inactive',
@@ -77,13 +76,11 @@ const StudyTimer = ({ onSyncChange }) => {
     const stateToSave = {
       time: studyState.time,
       isRunning: studyState.isRunning,
-      syncPomo: studyState.syncPomo,
       lastStart: studyState.lastStart,
       timeAtStart: studyState.timeAtStart,
       sessionStatus: studyState.sessionStatus,
     };
     localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
-    localStorage.setItem("syncPomoWithTimer", studyState.syncPomo.toString());
     if (currentSessionId) {
       localStorage.setItem("activeSessionId", currentSessionId);
     } else {
@@ -111,23 +108,13 @@ const StudyTimer = ({ onSyncChange }) => {
     fetchSessionTitle();
   }, [currentSessionId]);
 
-  const studyTick = useCallback(() => {
-    if (studyState.lastStart) {
-      const elapsed = Math.floor((Date.now() - studyState.lastStart) / 1000) + studyState.timeAtStart;
-      setStudyState(prev => ({
-        ...prev,
-        time: elapsed
-      }));
-      
-      // Dispara evento de sincronización con el tiempo transcurrido
-      window.dispatchEvent(new CustomEvent("syncPomodoroState", {
-        detail: { 
-          isRunning: studyState.isRunning,
-          elapsedTime: elapsed
-        }
-      }));
-    }
-  }, [studyState.lastStart, studyState.timeAtStart, studyState.isRunning]);
+  // Define studyTick function for useStudyTimer hook
+  const studyTick = useCallback((elapsed) => {
+    setStudyState(prev => ({
+      ...prev,
+      time: elapsed
+    }));
+  }, []);
 
   // Use the useStudyTimer hook for background timing
   useStudyTimer(
@@ -182,6 +169,11 @@ const StudyTimer = ({ onSyncChange }) => {
     }));
   }, []);
 
+  // Add event listener for when Pomodoro is started with session
+  useEventListener("pomodoroStartedWithSession", () => {
+    setPomodoroStartedWithSession(true);
+  }, []);
+
   const studyControls = {
     start: async () => {
       if (!studyState.isRunning && !isHandlingEvent) {
@@ -205,8 +197,10 @@ const StudyTimer = ({ onSyncChange }) => {
             new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
           );
 
-          if (studyState.syncPomo) {
-            window.dispatchEvent(new CustomEvent("startPomodoro"));
+          // If Pomodoro was started with this session, start it too
+          if (pomodoroStartedWithSession) {
+            // Use playTimerSync instead of startPomodoro to resume from pause
+            window.dispatchEvent(new CustomEvent("playTimerSync"));
           }
         } else {
           setIsStartModalOpen(true);
@@ -237,7 +231,8 @@ const StudyTimer = ({ onSyncChange }) => {
           new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
         );
 
-        if (studyState.syncPomo && !isPauseFromSync) {
+        // If Pomodoro was started with this session, pause it too
+        if (pomodoroStartedWithSession) {
           window.dispatchEvent(new CustomEvent("pauseTimerSync"));
         }
       }
@@ -264,8 +259,10 @@ const StudyTimer = ({ onSyncChange }) => {
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
       );
 
-      if (studyState.syncPomo) {
+      // If Pomodoro was started with this session, reset it too
+      if (pomodoroStartedWithSession) {
         window.dispatchEvent(new CustomEvent("resetPomodoro"));
+        setPomodoroStartedWithSession(false);
       }
     },
   };
@@ -380,7 +377,6 @@ const StudyTimer = ({ onSyncChange }) => {
       setCurrentSessionId(null);
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
-      window.dispatchEvent(new CustomEvent("resetPomodoro"));
 
     } catch (error) {
       console.error('Error finishing session:', error);
@@ -457,10 +453,6 @@ const StudyTimer = ({ onSyncChange }) => {
       window.dispatchEvent(
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
       );
-
-      if (studyState.syncPomo) {
-        window.dispatchEvent(new CustomEvent("startPomodoro"));
-      }
     } catch (error) {
       console.error('Error starting session:', error);
     }
@@ -488,7 +480,6 @@ const StudyTimer = ({ onSyncChange }) => {
         setCurrentSessionId(null);
         dispatch(setCurrentSession(null));
         localStorage.removeItem("activeSessionId");
-        window.dispatchEvent(new CustomEvent("resetPomodoro"));
       } catch (error) {
         console.error('Error exiting session:', error);
         toast.error('An error occurred while exiting the session.');

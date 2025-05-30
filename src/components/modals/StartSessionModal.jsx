@@ -15,6 +15,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [syncPomo, setSyncPomo] = useState(() => {
     return localStorage.getItem("syncPomoWithTimer") === "true";
   });
+  const [startPomodoro, setStartPomodoro] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -141,6 +142,12 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         }
       }
 
+      // If startPomodoro is true, dispatch the startPomodoro event
+      if (startPomodoro) {
+        window.dispatchEvent(new CustomEvent("startPomodoro"));
+        window.dispatchEvent(new CustomEvent("pomodoroStartedWithSession"));
+      }
+
       onStart({
         sessionId: session.id,
         tasks: selectedTasks,
@@ -150,13 +157,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     } catch (error) {
       console.error('Error starting session:', error);
     }
-  };
-
-  const toggleSync = () => {
-    const newSyncState = !syncPomo;
-    setSyncPomo(newSyncState);
-    localStorage.setItem("syncPomoWithTimer", newSyncState.toString());
-    window.dispatchEvent(new CustomEvent("syncPomoStateChanged", { detail: { isSynced: newSyncState } }));
   };
 
   if (!isOpen) return null;
@@ -201,33 +201,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
                 rows={3}
                 className="w-full px-3 py-2 bg-neutral-800 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-primary"
               />
-            </div>
-
-            <div className="mb-4">
-              <p className="text-neutral-400 mb-2">
-                Sync with Pomodoro
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={toggleSync}
-                  className={`p-1 rounded-full transition-colors ${
-                    syncPomo ? "text-accent-primary" : "text-neutral-400"
-                  }`}
-                  aria-label={syncPomo ? "Disable Pomodoro sync" : "Enable Pomodoro sync"}
-                >
-                  {syncPomo ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M8 12l2 2 6-6" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                    </svg>
-                  )}
-                </button>
-                <span className="text-neutral-400">Sync Study Timer with Pomodoro</span>
-              </div>
             </div>
           </div>
 
@@ -280,6 +253,17 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
+          <div className="flex items-center gap-2 mr-auto">
+            <label className="flex items-center gap-2 text-neutral-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={startPomodoro}
+                onChange={(e) => setStartPomodoro(e.target.checked)}
+                className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-accent-primary focus:ring-accent-primary"
+              />
+              <span>Start Pomodoro Timer</span>
+            </label>
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 text-neutral-400 hover:text-white"

@@ -108,75 +108,18 @@ const Pomodoro = () => {
 
   // Event listeners
   useEventListener("startPomodoro", () => handleStart(), []);
-  useEventListener("pauseTimerSync", () => handleStop(), []);
+  useEventListener("pauseTimerSync", () => {
+    if (pomoState.isRunning) {
+      handleStop();
+    }
+  }, [pomoState.isRunning]);
   useEventListener("stopPomodoro", () => handleStop(), []);
   useEventListener("resetPomodoro", () => handleReset(), []);
-  useEventListener("syncPomodoroState", (event) => {
-    const { isRunning: studyIsRunning, elapsedTime } = event.detail;
-    
-    if (studyIsRunning) {
-      setPomoState(prev => {
-        const currentMode = prev.currentMode || "work";
-        const modeIndex = Number(prev.modeIndex) || 0;
-        const modeDuration = MODES[modeIndex][currentMode];
-
-        // Si es la primera sincronización o no hay tiempo de inicio
-        if (!prev.startTime) {
-          return {
-            ...prev,
-            startTime: Date.now() / 1000,
-            pausedTime: 0,
-            isRunning: true,
-            timeLeft: modeDuration
-          };
-        }
-
-        // Si estaba pausado, reiniciar con el tiempo completo
-        if (prev.pausedTime > 0) {
-          return {
-            ...prev,
-            startTime: Date.now() / 1000,
-            pausedTime: 0,
-            isRunning: true,
-            timeLeft: modeDuration
-          };
-        }
-
-        // Calcular el tiempo transcurrido desde el inicio del ciclo
-        const cycleElapsed = Math.floor((Date.now() / 1000) - prev.startTime);
-        const newTimeLeft = Math.max(0, modeDuration - cycleElapsed);
-
-        // Si el tiempo se acaba, cambiar al siguiente ciclo
-        if (newTimeLeft <= 0) {
-          const isWork = currentMode === "work";
-          const nextMode = isWork ? "break" : "work";
-          const nextDuration = MODES[modeIndex][nextMode];
-          
-          return {
-            ...prev,
-            currentMode: nextMode,
-            timeLeft: nextDuration,
-            pomodoroToday: isWork ? prev.pomodoroToday + 1 : prev.pomodoroToday,
-            startTime: Date.now() / 1000,
-            pausedTime: 0,
-            isRunning: true
-          };
-        }
-
-        return {
-          ...prev,
-          timeLeft: newTimeLeft,
-          isRunning: true
-        };
-      });
-    } else if (pomoState.isRunning) {
-      setPomoState(prev => ({
-        ...prev,
-        isRunning: false,
-        pausedTime: Date.now() / 1000
-      }));
+  useEventListener("playTimerSync", () => {
+    if (!pomoState.isRunning) {
+      handleStart();
     }
-  }, [pomoState.currentMode, pomoState.modeIndex]);
+  }, [pomoState.isRunning]);
 
   const handleStart = useCallback(() => {
     const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
@@ -185,7 +128,7 @@ const Pomodoro = () => {
       isRunning: true,
       startTime: Date.now() / 1000,
       pausedTime: 0,
-      timeLeft: modeDuration
+      timeLeft: prev.pausedTime > 0 ? prev.timeLeft : modeDuration
     }));
   }, [pomoState.modeIndex, pomoState.currentMode]);
 
@@ -236,55 +179,6 @@ const Pomodoro = () => {
     // Show notification
     if (isWork) {
       toast.success("Work session complete! Time for a break.");
-      
-      // Reset StudyTimer and show session summary
-      window.dispatchEvent(new CustomEvent("stopStudyTimer"));
-      window.dispatchEvent(new CustomEvent("resetTimerSync"));
-      
-      // Get the current session time from localStorage
-      const studyState = JSON.parse(localStorage.getItem("studyTimerState") || "{}");
-      const studyTime = studyState.time || 0;
-      const hours = Math.floor(studyTime / 3600);
-      const minutes = Math.floor((studyTime % 3600) / 60);
-      const seconds = Math.floor(studyTime % 60);
-      
-      // Get completed tasks count from localStorage
-      const completedTasks = JSON.parse(localStorage.getItem("completedTasks") || "[]");
-      
-      // Update the study lap in the database
-      const activeSessionId = localStorage.getItem("activeSessionId");
-      if (activeSessionId) {
-        const { supabase } = require("../../utils/supabaseClient");
-        supabase
-          .from('study_laps')
-          .update({
-            duration: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
-            tasks_completed: completedTasks.length,
-            ended_at: new Date().toISOString()
-          })
-          .eq('id', activeSessionId)
-          .then(({ error }) => {
-            if (error) {
-              console.error('Error updating study lap:', error);
-              toast.error('Failed to update session details.');
-            }
-          });
-      }
-      
-      // Show summary toast with a longer duration
-      toast.success(
-        `Congrats! You studied for ${hours} hours and ${minutes} minutes and completed ${completedTasks.length} tasks.`,
-        {
-          duration: 5000, // Show for 5 seconds
-          position: 'top-center',
-          style: {
-            background: '#333',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '8px',
-          },
-        }
-      );
     } else {
       toast.success("Break complete! Ready for next work session?", {
         duration: 3000,
