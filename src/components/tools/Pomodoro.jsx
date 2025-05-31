@@ -25,6 +25,7 @@ Object.values(sounds).forEach(sound => {
 
 const Pomodoro = () => {
   const { iconColor } = useTheme();
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [pomoState, setPomoState] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
     const savedState = localStorage.getItem("pomodoroState");
@@ -121,6 +122,23 @@ const Pomodoro = () => {
     }
   }, [pomoState.isRunning]);
 
+  // Request notification permission on component mount
+  useEffect(() => {
+    const requestNotificationPermission = async () => {
+      if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return;
+      }
+
+      if (Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        setNotificationPermission(permission);
+      }
+    };
+
+    requestNotificationPermission();
+  }, []);
+
   const handleStart = useCallback(() => {
     const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
     setPomoState(prev => ({ 
@@ -176,24 +194,45 @@ const Pomodoro = () => {
       pomodoroToday: isWork ? prev.pomodoroToday + 1 : prev.pomodoroToday,
     }));
 
-    // Show notification
+    // Show toast notification
     if (isWork) {
       toast.success("Work session complete! Time for a break.");
     } else {
-      toast.success("Break complete! Ready for next work session?", {
+      toast.success("Break is over! Let's get back to work! 💪", {
         duration: 3000,
         position: 'top-center',
       });
     }
 
-    // Browser notification
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification(isWork ? "Work Session Complete!" : "Break Complete!", {
-        body: isWork ? "Time for a break!" : "Ready for next work session?",
-        icon: "🍅",
-      });
+    // Show browser notification if permission is granted
+    if ("Notification" in window && notificationPermission === "granted") {
+      const notification = new Notification(
+        isWork ? "Work Session Complete! 🎉" : "Break Complete! ⏰", 
+        {
+          body: isWork 
+            ? "Great job! Time to take a well-deserved break." 
+            : "Break is over! Time to get back to work.",
+          icon: isWork ? "🍅" : "💪",
+          badge: isWork ? "🍅" : "💪",
+          tag: "pomodoro-notification",
+          requireInteraction: true,
+          silent: false,
+          vibrate: [200, 100, 200]
+        }
+      );
+
+      // Close notification after 5 seconds
+      setTimeout(() => {
+        notification.close();
+      }, 5000);
+
+      // Handle notification click
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
     }
-  }, [pomoState.currentMode, pomoState.modeIndex]);
+  }, [pomoState.currentMode, pomoState.modeIndex, notificationPermission]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full">
@@ -256,6 +295,17 @@ const Pomodoro = () => {
       <div className="text-base text-neutral-400">
         Pomodoros Today: {pomoState.pomodoroToday}
       </div>
+      {notificationPermission !== "granted" && (
+        <button
+          onClick={async () => {
+            const permission = await Notification.requestPermission();
+            setNotificationPermission(permission);
+          }}
+          className="mt-2 text-sm text-accent-primary hover:text-accent-primary/80"
+        >
+          Enable Notifications
+        </button>
+      )}
     </div>
   );
 };
