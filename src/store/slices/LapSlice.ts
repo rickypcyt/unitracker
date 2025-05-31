@@ -1,6 +1,33 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface Lap {
+  id: string;
+  start_time: string;
+  end_time?: string;
+  duration?: number;
+  task_id?: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface CurrentSession {
+  startTime: string;
+  taskId?: string;
+}
+
+type LapStatus = 'idle' | 'loading' | 'succeeded' | 'failed';
+
+interface LapState {
+  laps: Lap[];
+  error: string | null;
+  currentSession: CurrentSession | null;
+  status: LapStatus;
+  lastFetch: number | null;
+  isCached: boolean;
+}
+
+const initialState: LapState = {
   laps: [],
   error: null,
   currentSession: null,
@@ -13,34 +40,34 @@ const lapSlice = createSlice({
   name: 'laps',
   initialState,
   reducers: {
-    fetchLapsSuccess(state, action) {
+    fetchLapsSuccess(state, action: PayloadAction<Lap[]>) {
       state.status = 'succeeded';
       state.laps = action.payload;
       state.error = null;
       state.lastFetch = Date.now();
       state.isCached = true;
     },
-    addLapSuccess(state, action) {
+    addLapSuccess(state, action: PayloadAction<Lap>) {
       state.status = 'succeeded';
       state.laps.unshift(action.payload);
       state.isCached = true;
     },
-    updateLapSuccess(state, action) {
+    updateLapSuccess(state, action: PayloadAction<Lap>) {
       const index = state.laps.findIndex(lap => lap.id === action.payload.id);
       if (index !== -1) state.laps[index] = action.payload;
       state.isCached = true;
     },
-    deleteLapSuccess(state, action) {
+    deleteLapSuccess(state, action: PayloadAction<string>) {
       state.laps = state.laps.filter(lap => lap.id !== action.payload);
       state.isCached = true;
     },
-    setCurrentSession(state, action) {
+    setCurrentSession(state, action: PayloadAction<CurrentSession | null>) {
       state.currentSession = action.payload;
     },
     resetTimerState(state) {
       state.currentSession = null;
     },
-    lapError(state, action) {
+    lapError(state, action: PayloadAction<string>) {
       state.status = 'failed';
       state.error = action.payload;
     },
@@ -61,4 +88,4 @@ export const {
   invalidateCache
 } = lapSlice.actions;
 
-export default lapSlice.reducer;
+export default lapSlice.reducer; 

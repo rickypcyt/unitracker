@@ -1,7 +1,15 @@
-// src/slices/taskSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+import { Task } from '../../utils/taskStorage';
+
+interface TaskState {
+  tasks: Task[];
+  error: string | null;
+  lastFetch: number | null;
+  isCached: boolean;
+}
+
+const initialState: TaskState = {
   tasks: [],
   error: null,
   lastFetch: null,
@@ -12,32 +20,32 @@ const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
-    fetchTasksSuccess: (state, action) => {
+    fetchTasksSuccess: (state, action: PayloadAction<Task[]>) => {
       state.tasks = action.payload;
       state.lastFetch = Date.now();
       state.isCached = true;
     },
-    addTaskSuccess: (state, action) => {
+    addTaskSuccess: (state, action: PayloadAction<Task>) => {
       state.tasks.push(action.payload);
       state.isCached = true;
     },
-    toggleTaskStatusOptimistic: (state, action) => {
+    toggleTaskStatusOptimistic: (state, action: PayloadAction<{ id: string; completed: boolean }>) => {
       const task = state.tasks.find(t => t.id === action.payload.id);
       if (task) {
         task.completed = action.payload.completed;
         task.completed_at = action.payload.completed ? new Date().toISOString() : null;
       }
     },
-    deleteTaskSuccess: (state, action) => {
+    deleteTaskSuccess: (state, action: PayloadAction<string>) => {
       state.tasks = state.tasks.filter(t => t.id !== action.payload);
     },
-    updateTaskSuccess: (state, action) => {
+    updateTaskSuccess: (state, action: PayloadAction<Task>) => {
       const index = state.tasks.findIndex(t => t.id === action.payload.id);
       if (index !== -1) {
         state.tasks[index] = action.payload;
       }
     },
-    taskError: (state, action) => {
+    taskError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
     invalidateCache: (state) => {
@@ -56,4 +64,4 @@ export const {
   invalidateCache
 } = taskSlice.actions;
 
-export default taskSlice.reducer;
+export default taskSlice.reducer; 

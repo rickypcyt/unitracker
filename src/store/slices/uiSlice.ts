@@ -1,6 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
+interface UiState {
+  isCalendarVisible: boolean;
+}
+
+const initialState: UiState = {
   isCalendarVisible: true
 };
 
@@ -8,7 +12,7 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    setCalendarVisibility: (state, action) => {
+    setCalendarVisibility: (state, action: PayloadAction<boolean>) => {
       state.isCalendarVisible = action.payload;
     }
   }

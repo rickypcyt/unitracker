@@ -6,7 +6,8 @@
     "module": "ESNext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
-    "allowJs": false,
+    "allowJs": true,
+    "esModuleInterop": true,
 
     // Bundler mode
     "moduleResolution": "bundler",
@@ -15,19 +16,23 @@
     "noEmit": false,
 
     // Best practices
-    "strict": false,
-    "skipLibCheck": false,
-    "noFallthroughCasesInSwitch": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
 
-    // Some stricter flags (disabled by default)
+    // Some stricter flags
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
 
     // Import alias
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

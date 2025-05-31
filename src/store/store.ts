@@ -1,11 +1,11 @@
-import { configureStore } from "@reduxjs/toolkit";
+import assignmentReducer from "./slices/AssignmentSlice";
 import authReducer from "./slices/authSlice";
-import taskReducer from "./slices/TaskSlice";
-import lapReducer from "./slices/LapSlice";
-import uiReducer from "./slices/uiSlice";
-import layoutReducer from "./slices/layoutSlice";
-import assignmentReducer from "./slices/AssignmentSlice"; // importa tu nuevo slice
+import { configureStore } from "@reduxjs/toolkit";
 import { createErrorMiddleware } from './middleware/errorMiddleware';
+import lapReducer from "./slices/LapSlice";
+import layoutReducer from "./slices/layoutSlice";
+import taskReducer from "./slices/TaskSlice";
+import uiReducer from "./slices/uiSlice";
 
 export const store = configureStore({
     reducer: {
@@ -14,7 +14,7 @@ export const store = configureStore({
         laps: lapReducer,
         ui: uiReducer,
         layout: layoutReducer,
-        assignments: assignmentReducer, // <-- agrégalo aquí
+        assignments: assignmentReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
@@ -25,3 +25,7 @@ export const store = configureStore({
             retryDelay: 1000
         })),
 });
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch; 
