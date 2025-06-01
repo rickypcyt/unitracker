@@ -1,6 +1,8 @@
 import { Check, Plus, X } from 'lucide-react';
+import { FormActions, FormButton, FormInput, FormTextarea } from '../common/FormElements';
 import React, { useEffect, useState } from 'react';
 
+import BaseModal from '../common/BaseModal';
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
 import { supabase } from '../../config/supabaseClient';
@@ -194,53 +196,32 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-filter backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Start New Session</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white">
-            <X size={24} />
-          </button>
-        </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Start New Session"
+      maxWidth="max-w-4xl"
+    >
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <FormInput
+            id="sessionTitle"
+            label="Session Title"
+            value={sessionTitle}
+            onChange={setSessionTitle}
+            error={titleError ? "Please enter a session title" : null}
+            required
+            placeholder="Enter session title"
+          />
 
-        <div className="mb-6">
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
-                Session Title
-              </label>
-              <input
-                type="text"
-                id="sessionTitle"
-                value={sessionTitle}
-                onChange={(e) => setSessionTitle(e.target.value)}
-                className={`w-full px-3 py-2 bg-neutral-800 border ${
-                  titleError ? 'border-red-500' : 'border-neutral-700'
-                } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary`}
-                placeholder="Enter session title"
-              />
-              {titleError && (
-                <p className="mt-1 text-sm text-red-500">Please enter a session title</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
-                Description (Optional)
-              </label>
-              <textarea
-                id="sessionDescription"
-                value={sessionDescription}
-                onChange={(e) => setSessionDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                rows="3"
-                placeholder="Enter session description"
-              />
-            </div>
-          </div>
+          <FormTextarea
+            id="sessionDescription"
+            label="Description (Optional)"
+            value={sessionDescription}
+            onChange={setSessionDescription}
+            placeholder="Enter session description"
+          />
         </div>
 
         <TaskSelectionPanel
@@ -255,20 +236,22 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           availableTitle="Available Tasks"
         />
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
+        <FormActions>
+          <FormButton
+            type="button"
+            variant="secondary"
             onClick={onClose}
-            className="px-4 py-2 text-neutral-400 hover:text-white"
           >
             Cancel
-          </button>
-          <button
+          </FormButton>
+          <FormButton
+            type="button"
+            variant="primary"
             onClick={handleStart}
-            className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
           >
             Start Session
-          </button>
-        </div>
+          </FormButton>
+        </FormActions>
       </div>
 
       {/* Task Form Modal */}
@@ -281,7 +264,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           }}
         />
       )}
-    </div>
+    </BaseModal>
   );
 };
 

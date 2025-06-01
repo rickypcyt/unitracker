@@ -32,26 +32,26 @@ export const TaskItem = ({
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
             case 'high':
-                return 'text-red-500';
+                return 'text-[#FF003C]'; /* Neon red */
             case 'medium':
-                return 'text-yellow-500';
+                return 'text-[#FFD700]'; /* Neon yellow */
             case 'low':
-                return 'text-green-500';
+                return 'text-[#00FF41]'; /* Matrix green */
             default:
-                return 'text-neutral-400';
+                return 'text-[var(--text-secondary)]';
         }
     };
 
     const getDifficultyColor = (difficulty) => {
         switch (difficulty?.toLowerCase()) {
             case 'easy':
-                return 'text-green-500';
+                return 'text-[#00FF41]'; /* Matrix green */
             case 'medium':
-                return 'text-[var(--accent-primary)]';
+                return 'text-[#1E90FF]'; /* Electric neon blue */
             case 'hard':
-                return 'text-red-500';
+                return 'text-[#FF003C]'; /* Neon red */
             default:
-                return 'text-neutral-400';
+                return 'text-[var(--text-secondary)]';
         }
     };
 
@@ -64,21 +64,17 @@ export const TaskItem = ({
                     rounded-lg
                     transition-all
                     duration-200
-                    border
-                    hover:shadow-lg
+                    border-2
                     backdrop-blur-sm
                     cursor-pointer
                     group
                     ${isSelected 
-                        ? "bg-blue-500/20 border-blue-500/50 hover:border-blue-500/70"
+                        ? "bg-[var(--bg-secondary)] border-[var(--accent-primary)]/50 hover:bg-[var(--bg-secondary)]/80"
                         : task.activetask
-                            ? task.difficulty === "easy"
-                                ? "bg-green-500/10 border-green-500/30 hover:border-green-500/50"
-                                : task.difficulty === "medium"
-                                    ? "bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50"
-                                    : "bg-red-500/10 border-red-500/30 hover:border-red-500/50"
-                            : "bg-neutral-800/20 border-neutral-700/30 hover:border-neutral-700/50"
+                            ? "task-item-active hover:bg-[var(--bg-secondary)]/80"
+                            : "bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80"
                     }`}
+                data-difficulty={task.activetask ? task.difficulty?.toLowerCase() : undefined}
                 onDoubleClick={() => onDoubleClick(task)}
                 onContextMenu={(e) => onContextMenu(e, task)}
                 tabIndex={0}
@@ -96,8 +92,8 @@ export const TaskItem = ({
                             <span
                                 className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
                                     task.completed
-                                        ? "line-through text-neutral-400"
-                                        : "text-white"
+                                        ? "line-through text-[var(--text-secondary)]"
+                                        : "text-[var(--text-primary)]"
                                 }`}
                                 title={task.title}
                             >
@@ -107,11 +103,11 @@ export const TaskItem = ({
                     </div>
 
                     {/* Second row: Metadata */}
-                    <div className="flex items-center justify-between text-base text-neutral-400">
+                    <div className="flex items-center justify-between text-base text-[var(--text-secondary)]">
                         <div className="flex items-center gap-3">
                             {task.deadline && (
                                 <div className="flex items-center gap-1">
-                                    <Calendar size={18} />
+                                    <Calendar size={18} className="text-[var(--text-secondary)]" />
                                     <span>{formatDate(task.deadline)}</span>
                                 </div>
                             )}
@@ -134,20 +130,20 @@ export const TaskItem = ({
                     <div className="flex items-start p-3">
                         <button
                             onClick={(e) => {
-                                console.log('Toggle button clicked');
                                 e.stopPropagation();
                                 e.preventDefault();
                                 onToggleCompletion(task.id);
                             }}
-                            className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-opacity-50 rounded-full group-hover:scale-110 transition-transform duration-200 pointer-events-auto"
+                            className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full group-hover:scale-110 transition-transform duration-200 pointer-events-auto"
                             aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                         >
                             {task.completed ? (
-                                <CheckCircle2 className="text-accent-primary" size={20} />
+                                <CheckCircle2 className="text-[var(--accent-primary)]" size={20} strokeWidth={2.5} />
                             ) : (
                                 <Circle
                                     className={getDifficultyColor(task.difficulty)}
                                     size={20}
+                                    strokeWidth={2.5}
                                 />
                             )}
                         </button>
@@ -157,12 +153,11 @@ export const TaskItem = ({
                     <div className="flex-1 flex items-end justify-end p-3">
                         <button
                             onClick={(e) => {
-                                console.log('Delete button clicked');
                                 e.stopPropagation();
                                 e.preventDefault();
                                 onDelete(task.id);
                             }}
-                            className="hover:text-red-500 pointer-events-auto text-neutral-400"
+                            className="hover:text-red-500 pointer-events-auto text-[var(--text-secondary)]"
                             aria-label="Delete task"
                         >
                             <Trash2 size={18} />

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const useTheme = () => {
   const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem("theme") || "default";
+    // Default to dark mode if no theme is set
+    return localStorage.getItem("theme") || "dark";
   });
   
   const [showWelcomeModal, setShowWelcomeModal] = useState(
@@ -10,7 +11,7 @@ const useTheme = () => {
   );
 
   const [accentPalette, setAccentPalette] = useState(
-    localStorage.getItem("accentPalette") || "blue"
+    localStorage.getItem("accentPalette") || "#0A84FF"
   );
 
   const handleCloseWelcome = () => {
@@ -25,12 +26,22 @@ const useTheme = () => {
   const handleThemeChange = (theme) => {
     setCurrentTheme(theme);
     localStorage.setItem("theme", theme);
+    // Aplicar el tema inmediatamente
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
   };
 
+  // Initialize theme class on mount
   useEffect(() => {
     const root = document.documentElement;
-    root.className = `theme-${currentTheme}`;
-  }, [currentTheme]);
+    root.classList.remove('light', 'dark');
+    root.classList.add(currentTheme);
+  }, []);
+
+  // Initialize accent color
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent-primary", accentPalette);
+  }, [accentPalette]);
 
   return {
     currentTheme,

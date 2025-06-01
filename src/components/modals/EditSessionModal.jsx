@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, ArrowRight, ArrowLeft } from 'lucide-react';
-import { supabase } from '../../config/supabaseClient';
+import { ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
+import { supabase } from '../../config/supabaseClient';
 
 const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }) => {
   const [activeTasks, setActiveTasks] = useState([]);
@@ -145,17 +146,17 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-xl">
       <div 
-        className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl mx-4"
+        className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 shadow-xl border border-neutral-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">
-              Edit Session{sessionTitle && <>: <span className="text-accent-primary">{sessionTitle}</span></>}
+            <h2 className="text-xl font-semibold text-neutral-900">
+              Edit Session{sessionTitle && <>: <span className="text-[var(--accent-primary)]">{sessionTitle}</span></>}
             </h2>
           </div>
           <button
-            className="text-neutral-400 hover:text-white"
+            className="text-neutral-500 hover:text-neutral-900"
             onClick={onClose}
           >
             <X size={24} />
@@ -165,7 +166,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-900 mb-2">
                 Session Title
               </label>
               <input
@@ -184,7 +185,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-900 mb-2">
                 Description (Optional)
               </label>
               <textarea
@@ -219,7 +220,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
           </button>
           <button
             onClick={handleSaveChanges}
-            className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
+            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80"
           >
             Save Changes
           </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import BaseModal from '../common/BaseModal';
-import { X } from 'lucide-react';
+import { FormInput } from '../common/FormElements';
 
 const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onModeChange, onSaveCustomMode }) => {
   const [selectedModeIndex, setSelectedModeIndex] = useState(currentModeIndex);
@@ -41,8 +41,6 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
       const breakTimeSeconds = parseInt(customBreakTime) * 60;
       if (!isNaN(workTimeSeconds) && !isNaN(breakTimeSeconds) && workTimeSeconds > 0 && breakTimeSeconds > 0) {
         onSaveCustomMode({ label: 'Custom', work: workTimeSeconds, break: breakTimeSeconds });
-        // After saving custom mode, keep it selected and show edit fields
-        // onClose(); // Don't close after saving custom, let user confirm or select another mode
       } else {
         // Handle invalid input
         alert('Please enter valid positive numbers for custom work and break times.');
@@ -58,18 +56,18 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="Pomodoro Settings">
-      <div className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-neutral-300 mb-2">Select Mode</h3>
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
           <div className="flex gap-2 flex-wrap">
             {predefinedModes.map((mode, index) => (
               <button
                 key={mode.label}
                 onClick={() => handleModeSelect(index)}
-                className={`px-3 py-1 rounded-lg transition-colors ${
+                className={`px-4 py-2 rounded-lg transition-colors ${
                   selectedModeIndex === index && !isCustomModeSelected
-                    ? 'bg-accent-primary text-white'
-                    : 'bg-neutral-800 text-neutral-400 hover:text-white'
+                    ? 'bg-[var(--accent-primary)] text-white'
+                    : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
                 }`}
               >
                 {mode.label}
@@ -77,10 +75,10 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
             ))}
             <button
               onClick={() => handleModeSelect(customModeIndex)}
-              className={`px-3 py-1 rounded-lg transition-colors ${
+              className={`px-4 py-2 rounded-lg transition-colors ${
                 isCustomModeSelected
-                  ? 'bg-accent-primary text-white'
-                  : 'bg-neutral-800 text-neutral-400 hover:text-white'
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
               }`}
             >
               Custom
@@ -89,47 +87,43 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         </div>
 
         {isCustomModeSelected && modes[customModeIndex] && (
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-neutral-300 mb-2">Custom Mode (minutes)</h3>
-            <div className="flex gap-4">
-              <div>
-                <label htmlFor="customWork" className="block text-sm font-medium text-neutral-400 mb-1">Work Time</label>
-                <input
-                  id="customWork"
-                  type="number"
-                  min="1"
-                  value={customWorkTime}
-                  onChange={(e) => setCustomWorkTime(e.target.value)}
-                  className="w-24 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                />
-              </div>
-              <div>
-                <label htmlFor="customBreak" className="block text-sm font-medium text-neutral-400 mb-1">Break Time</label>
-                <input
-                  id="customBreak"
-                  type="number"
-                  min="1"
-                  value={customBreakTime}
-                  onChange={(e) => setCustomBreakTime(e.target.value)}
-                  className="w-24 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                />
-              </div>
+          <div>
+            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Mode (minutes)</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                id="customWork"
+                label="Work Time"
+                type="number"
+                min="1"
+                value={customWorkTime}
+                onChange={(value) => setCustomWorkTime(value)}
+                placeholder="Enter work time"
+              />
+              <FormInput
+                id="customBreak"
+                label="Break Time"
+                type="number"
+                min="1"
+                value={customBreakTime}
+                onChange={(value) => setCustomBreakTime(value)}
+                placeholder="Enter break time"
+              />
             </div>
           </div>
         )}
 
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-neutral-400 hover:text-white"
+            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
+            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80 transition-colors"
           >
-            {'Select Mode'}
+            {isCustomModeSelected ? 'Save Custom Mode' : 'Select Mode'}
           </button>
         </div>
       </div>

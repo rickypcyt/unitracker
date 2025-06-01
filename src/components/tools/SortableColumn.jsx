@@ -1,9 +1,10 @@
-import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, ChevronUp, Plus, ListOrdered } from 'lucide-react';
-import { TaskItem } from './TaskItem';
+import { ChevronDown, ChevronUp, ListOrdered, Plus } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+
+import { CSS } from '@dnd-kit/utilities';
+import React from 'react';
+import { TaskItem } from './TaskItem';
+import { useSortable } from '@dnd-kit/sortable';
 
 export const SortableColumn = ({
   id,
@@ -44,8 +45,8 @@ export const SortableColumn = ({
       style={style}
       className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-4"
     >
-      <div className="flex items-center justify-between w-full mb-2">
-        <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center justify-between w-full mb-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={onToggleCollapse}
             className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors"
@@ -56,36 +57,32 @@ export const SortableColumn = ({
               <ChevronUp size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
             )}
           </button>
-          <div
-            {...attributes}
-            {...listeners}
-            className="flex items-center gap-2 flex-1 cursor-move"
-          >
-            <h3 className="font-medium text-lg text-white group-hover:text-neutral-100">
-              {assignment}
-              <span className="text-base text-neutral-400 ml-2">
-                ({tasks.length})
-              </span>
-            </h3>
-          </div>
+          <h3 className="font-medium text-lg text-[var(--text-primary)] group-hover:text-[var(--text-primary)]">
+            {assignment}
+          </h3>
+          <span className="text-base text-[var(--text-secondary)]">
+            ({tasks.length})
+          </span>
         </div>
-        <button
-          onClick={(event) => {
-            const rect = event.currentTarget.getBoundingClientRect();
-            onSortClick(assignment, { x: rect.left, y: rect.bottom });
-          }}
-          className="p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700 transition-all duration-200 text-neutral-300 hover:text-neutral-100 hover:scale-105 mr-2"
-          title="Sort tasks"
-        >
-          <ListOrdered size={18} />
-        </button>
-        <button
-          onClick={onAddTask}
-          className="p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700 transition-all duration-200 text-neutral-300 hover:text-neutral-100 hover:scale-105"
-          title="Add task"
-        >
-          <Plus size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(event) => {
+              const rect = event.currentTarget.getBoundingClientRect();
+              onSortClick(assignment, { x: rect.left, y: rect.bottom });
+            }}
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 mr-2"
+            title="Sort tasks"
+          >
+            <ListOrdered size={18} />
+          </button>
+          <button
+            onClick={onAddTask}
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105"
+            title="Add task"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
       </div>
       
       {!collapsed && (

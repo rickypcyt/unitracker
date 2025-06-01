@@ -1,6 +1,7 @@
 import { AudioLines, Cloud, CloudRain, Pause, Play, Waves } from "lucide-react";
 
 import React from "react";
+import ReactSlider from "react-slider";
 import { useNoise } from "../../features/noise/NoiseContext";
 
 // Configuración de cada sonido
@@ -33,45 +34,47 @@ const SOUND_CONFIGS = [
     defaultVolume: 1,
     volumeMultiplier: 0.2,
     create: (volume, masterGain) => {
-      // Main rain noise
-      const noise = new Tone.Noise("pink").start();
-      const highpass = new Tone.Filter(200, "highpass");
-      const lowpass = new Tone.Filter(1500, "lowpass");
-      
-      // Ambient layer
-      const ambientNoise = new Tone.Noise("brown").start();
-      const ambientFilter = new Tone.Filter(100, "lowpass");
-      const ambientGain = new Tone.Gain(0.2);
-      
+      // Main rain noise (white for a flatter spectrum)
+      const noise = new Tone.Noise("white").start();
+      const highpass = new Tone.Filter(300, "highpass"); // Revert high-pass slightly, maybe less low end needed
+      const lowpass = new Tone.Filter(4000, "lowpass"); // Increase low-pass for more highs
+      const eq = new Tone.EQ3(0, 0, 0).toDestination(); // Add a simple EQ for shaping
+
       // Spatial effects
       const reverb = new Tone.Reverb({
-        decay: 2,
-        wet: 0.2,
+        decay: 2.5, // Slightly longer decay
+        wet: 0.4, // More wet reverb
         preDelay: 0.1
       }).toDestination();
-      
+
       // Main gain
-      const gain = new Tone.Gain(volume * 0.2).connect(reverb);
-      
-      // Connect main rain
+      const gain = new Tone.Gain(volume * 0.4).connect(reverb); // Adjust gain multiplier and connect to reverb
+
+      // LFO for subtle volume variation (mimics natural fluctuations)
+      const rainLFO = new Tone.LFO({
+        frequency: 0.2, // Slow variation
+        min: 0.9,     // Subtle change range
+        max: 1,
+        type: "sine"
+      }).start();
+
+      // Connect main rain chain
       noise.connect(highpass);
       highpass.connect(lowpass);
       lowpass.connect(gain);
-      
-      // Connect ambient
-      ambientNoise.connect(ambientFilter);
-      ambientFilter.connect(ambientGain);
-      ambientGain.connect(gain);
-      
-      return { 
-        noise, 
-        highpass, 
-        lowpass, 
-        ambientNoise,
-        ambientFilter,
-        ambientGain,
+      rainLFO.connect(gain.gain); // Modulate the main gain
+
+      // Connect gain output to EQ (optional, could also be done before reverb)
+      gain.connect(eq); // Connect gain to EQ
+
+      return {
+        noise,
+        highpass,
+        lowpass,
+        eq,
         gain,
-        reverb
+        reverb,
+        rainLFO // Return the LFO as well
       };
     }
   },
@@ -120,6 +123,19 @@ const SOUND_CONFIGS = [
       const splashFilter = new Tone.Filter(2000, "bandpass");
       const splashGain = new Tone.Gain(0.1);
       
+      // Foam noise
+      const foamNoise = new Tone.Noise("white").start();
+      const foamFilter = new Tone.Filter(2000, "highpass");
+      const foamGain = new Tone.Gain(0.1);
+      
+      // LFO for subtle foam volume variation
+      const foamLFO = new Tone.LFO({
+        frequency: 0.5,
+        min: 0.8,
+        max: 1,
+        type: "sine"
+      }).start();
+      
       // Spatial effects
       const reverb = new Tone.Reverb({
         decay: 4,
@@ -149,6 +165,14 @@ const SOUND_CONFIGS = [
       splashFilter.connect(splashGain);
       splashGain.connect(gain);
       
+      // Connect foam noise
+      foamNoise.connect(foamFilter);
+      foamFilter.connect(foamGain);
+      foamGain.connect(gain);
+      
+      // Connect foam LFO to foam gain
+      foamLFO.connect(foamGain.gain);
+      
       return { 
         pinkNoise, 
         pinkHighpass, 
@@ -161,6 +185,10 @@ const SOUND_CONFIGS = [
         splashNoise,
         splashFilter,
         splashGain,
+        foamNoise,
+        foamFilter,
+        foamGain,
+        foamLFO,
         gain,
         waveLFO,
         randomLFO,
@@ -175,25 +203,37 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
   return (
     <div className={`bar ${className || ''}`}>
       <label className="noisegentitle flex items-center gap-2">
-        <Icon size={20} className="text-white" />
-        <span className="card-text font-medium text-white text-base sm:text-md">{label}</span>
+        <Icon size={20} className="text-[var(--text-primary)]" />
+        <span className="card-text font-medium text-[var(--text-primary)] text-base sm:text-md">{label}</span>
       </label>
       <div className="slider flex items-center gap-3">
-        <input
-          type="range"
+        <ReactSlider
+          className="flex-1 h-2"
+          thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] -translate-y-1"
+          trackClassName="h-2 rounded-full bg-[var(--bg-secondary)]"
+          renderTrack={(props, state) => (
+            <div
+              {...props}
+              className={`h-2 rounded-full ${
+                state.index === 0
+                  ? 'bg-[var(--accent-primary)]'
+                  : 'bg-[var(--bg-secondary)]'
+              }`}
+            />
+          )}
           min={min}
           max={max}
-          step="0.01"
+          step={0.01}
           value={volume}
-          onChange={e => setVolume(parseFloat(e.target.value))}
-          className="flex-1 h-2 bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-white"
+          onChange={value => setVolume(value)}
+          renderThumb={(props, state) => <div {...props} />}
         />
         <div className="w-8 flex justify-center">
           {!isPlaying ? (
             <button
               type="button"
               onClick={start}
-              className="text-white hover:text-neutral-300 transition-colors"
+              className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
             >
               <Play size={20} />
             </button>
@@ -201,7 +241,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
             <button
               type="button"
               onClick={stop}
-              className="text-blue-500 hover:text-blue-400 transition-colors"
+              className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
             >
               <Pause size={20} />
             </button>
@@ -220,14 +260,14 @@ export default function NoiseGenerator() {
   return (
     <div className="maincard p-6">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-xl sm:text-xl font-bold flex items-center gap-3 text-white">
-          <AudioLines size={24} className="text-white" />
+        <h2 className="text-xl sm:text-xl font-bold flex items-center gap-3 text-[var(--text-primary)]">
+          <AudioLines size={24} className="text-[var(--text-primary)]" />
           Noise Generator
         </h2>
         <button
           type="button"
           onClick={toggleAllSounds}
-          className="flex items-center gap-1 px-2 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200 text-base sm:text-base"
+          className="flex items-center gap-1 px-2 py-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-200 text-sm whitespace-nowrap"
         >
           {allPlaying ? (
             <>

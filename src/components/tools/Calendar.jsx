@@ -59,7 +59,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
             <span>{completedTasks.length} of {totalTasks} tasks completed</span>
           </div>
           <div className="flex items-center gap-3 text-neutral-300">
-            <Clock size={20} className="text-blue-500" />
+            <Clock size={20} className="text-[var(--accent-primary)]" />
             <span>{studiedHours || 0} hours studied</span>
           </div>
         </div>
@@ -270,40 +270,40 @@ const Calendar = () => {
 
   return (
     <div className="maincard" >
-      <div className="flex justify-between items-center">
-        <h2 className="caltitle">
+      <div className="flex justify-between items-center text-xl">
+        <h2 className="caltitle gap-2">
           <FaCalendarAlt size={24} />
           Calendar
         </h2>
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-neutral-0 hover:bg-neutral-0 text-white transition-colors duration-200 mb-6 group relative">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg  text-[var(--text-primary)] transition-colors duration-200 mb-6 group relative">
           <button
             onClick={goToPreviousMonth}
-            className="text-white hover:text-gray-300 focus:outline-none"
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
           >
             <FaChevronLeft size={18} />
           </button>
-          <div className={`text-lg font-medium mx-4 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-blue-500' : 'text-white'}`}>
+          <div className={`text-lg font-medium mx-4 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
           <button
             onClick={goToNextMonth}
-            className="text-white hover:text-gray-300 focus:outline-none"
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
           >
             <FaChevronRight size={18} />
           </button>
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-neutral-800 text-white text-base px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
             Use ← → to navigate
           </div>
         </div>
       </div>
 
-      <div className="maincard border-none p-0 m-0 rounded-lg text-white">
+      <div className=" border-none p-0 m-0 rounded-lg">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 text-center">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-white text-base w-full py-4 flex items-center justify-center"
+              className="text-[var(--text-primary)] text-base w-full py-4 flex items-center justify-center"
             >
               {day}
             </div>
@@ -319,19 +319,19 @@ const Calendar = () => {
               onDoubleClick={() => dayObj.currentMonth && handleDateDoubleClick(dayObj.date)}
               style={{
                 ...(dayObj.isToday ? { color: "var(--accent-primary)" } : {}),
-                ...(dayObj.currentMonth ? {} : { color: "grey" }),
+                ...(dayObj.currentMonth ? {} : { color: "var(--text-secondary)" }),
                 fontWeight: "bold",
               }}
-              className={`text-neutral-500 select-none hover:text-gray-600 cursor-pointer text-base w-full py-4 flex items-center justify-center relative ${
-                dayObj.currentMonth ? "text-white font-bold" : "text-black hover:text-[var(--accent-primary)]"
-              } ${!dayObj.currentMonth ? "text-black font-bold" : ""} ${
-                dayObj.isToday ? "select-none hover:text-gray-600" : ""
+              className={`select-none hover:text-[var(--text-secondary)] cursor-pointer text-base w-full py-4 flex items-center justify-center relative ${
+                dayObj.currentMonth ? "text-[var(--text-primary)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
+              } ${!dayObj.currentMonth ? "text-[var(--text-secondary)] font-bold" : ""} ${
+                dayObj.isToday ? "select-none hover:text-[var(--accent-primary)]" : ""
               }`}
             >
               <div className="flex flex-col items-center">
                 <span>{dayObj.day}</span>
                 {dayObj.currentMonth && (
-                  <span className="text-base text-neutral-500 mt-1">
+                  <span className="text-base text-[var(--text-secondary)] mt-1">
                     {getStudiedHoursForDate(dayObj.date)}h
                   </span>
                 )}

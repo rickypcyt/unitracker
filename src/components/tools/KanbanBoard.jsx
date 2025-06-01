@@ -38,8 +38,8 @@ export const KanbanBoard = () => {
     user,
     tasks,
     handleToggleCompletion,
-    handleDeleteTask,
     handleUpdateTask,
+    handleDeleteTask: originalHandleDeleteTask,
   } = useTaskManager();
   const { isLoggedIn } = useAuth();
 
@@ -64,6 +64,8 @@ export const KanbanBoard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
   const [columnOrder, setColumnOrder] = useState(() => {
     const savedOrder = localStorage.getItem('kanbanColumnOrder');
     return savedOrder ? JSON.parse(savedOrder) : [];
@@ -472,7 +474,7 @@ export const KanbanBoard = () => {
   };
 
   const handleDeleteAllCompletedTasks = () => {
-    completedTasks.forEach((task) => handleDeleteTask(task.id));
+    completedTasks.forEach((task) => originalHandleDeleteTask(task.id));
     setShowDeleteCompletedModal(false);
   };
 
@@ -487,16 +489,18 @@ export const KanbanBoard = () => {
     setEditingTask(null);
   };
 
+  const handleConfirmDeleteTask = (taskId) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        setTaskToDelete(task);
+        setShowDeleteTaskConfirmation(true);
+    } else {
+        console.error(`Task with ID ${taskId} not found.`);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
-      {/* Add Task Button */}
-      <button
-        onClick={() => handleAddTask(null)}
-        className="text-lg mb-4 px-4 py-2 border-2 border-dashed border-accent-primary text-accent-primary rounded-lg hover:bg-accent-primary/10 transition-colors"
-      >
-        + Add Task
-      </button>
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -519,7 +523,7 @@ export const KanbanBoard = () => {
                 onToggleCollapse={() => toggleColumn(assignment)}
                 onAddTask={() => handleAddTask(assignment)}
                 onTaskToggle={handleToggleCompletion}
-                onTaskDelete={handleDeleteTask}
+                onTaskDelete={handleConfirmDeleteTask}
                 onTaskDoubleClick={handleOpenTaskDetails}
                 onTaskContextMenu={handleTaskContextMenu}
                 isEditing={taskDetailsEdit}
@@ -534,7 +538,7 @@ export const KanbanBoard = () => {
                 <TaskItem
                     task={activeTask}
                     onToggleCompletion={handleToggleCompletion}
-                    onDelete={handleDeleteTask}
+                    onDelete={handleConfirmDeleteTask}
                     onDoubleClick={handleOpenTaskDetails}
                     onContextMenu={() => {}} // Disable context menu on overlay
                     isEditing={taskDetailsEdit}
@@ -568,7 +572,7 @@ export const KanbanBoard = () => {
                 key={task.id}
                 task={task}
                 onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
+                onDelete={handleConfirmDeleteTask}
                 onDoubleClick={handleOpenTaskDetails}
                 onContextMenu={(e) => handleTaskContextMenu(e, task)}
                 isEditing={taskDetailsEdit}
@@ -586,7 +590,7 @@ export const KanbanBoard = () => {
           onClose={handleCloseContextMenu}
           onDoubleClick={handleOpenTaskDetails}
           onSetActiveTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
+          onDeleteTask={handleConfirmDeleteTask}
           onEditTask={handleEditTask}
         />
       )}
@@ -643,6 +647,20 @@ export const KanbanBoard = () => {
         isOpen={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
       />
+
+      {/* Add the new Delete Task Confirmation Modal here later */}
+      {/* Example placeholder: */}
+      {showDeleteTaskConfirmation && taskToDelete && (
+        <DeleteCompletedModal
+          isOpen={showDeleteTaskConfirmation}
+          onClose={() => setShowDeleteTaskConfirmation(false)}
+          onConfirm={() => {
+            originalHandleDeleteTask(taskToDelete.id);
+            setShowDeleteTaskConfirmation(false);
+            setTaskToDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 }; 

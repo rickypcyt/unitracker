@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+
 import { X } from 'lucide-react';
 
 const BaseModal = ({
@@ -52,17 +53,17 @@ const BaseModal = ({
       onClick={handleOverlayClick}
     >
       <div 
-        className={`bg-neutral-900 rounded-lg p-6 w-full ${maxWidth} mx-4 ${className}`}
+        className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl border border-[var(--border-primary)]`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
             {title}
           </h2>
           {showCloseButton && (
             <button
               onClick={handleClose}
-              className="text-neutral-400 hover:text-white transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
               <X size={24} />
             </button>

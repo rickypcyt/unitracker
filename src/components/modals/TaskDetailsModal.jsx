@@ -1,11 +1,12 @@
+import { CheckCircle2, Circle, Play, Save, Trash2 } from "lucide-react";
+import { FormActions, FormButton, FormInput, FormSelect, FormTextarea } from "../common/FormElements";
 import React, { useEffect } from "react";
-import { Save, Trash2, Play, Circle, CheckCircle2 } from "lucide-react";
+import { deleteTask, updateTask } from "../../store/actions/TaskActions";
+
+import BaseModal from "../common/BaseModal";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { updateTask, deleteTask } from "../../store/actions/TaskActions";
-import BaseModal from "../common/BaseModal";
-import { FormInput, FormTextarea, FormSelect, FormButton, FormActions } from "../common/FormElements";
 import { useFormState } from "../../hooks/useFormState";
 
 const TaskDetailsModal = ({
@@ -166,19 +167,19 @@ const TaskDetailsModal = ({
 
         <div className="flex justify-between gap-8">
           <div className="flex-1 text-left">
-            <h4 className="text-lg font-semibold text-text-primary mb-1">
+            <h4 className="text-lg font-semibold text-neutral-900 mb-1">
               Created At
             </h4>
-            <p className="text-text-secondary">
+            <p className="text-neutral-600">
               {moment(task.created_at).format("MMMM D, YYYY h:mm A")}
             </p>
           </div>
 
           <div className="flex-1 text-right">
-            <h4 className="text-lg font-semibold text-text-primary mb-1">
+            <h4 className="text-lg font-semibold text-neutral-900 mb-1">
               Status
             </h4>
-            <p className="text-text-secondary">
+            <p className="text-neutral-600">
               {task.completed ? "Completed" : "Pending"}
             </p>
           </div>
@@ -224,7 +225,7 @@ const TaskDetailsModal = ({
           <FormButton
             variant="primary"
             onClick={handleSave}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 text-white"
           >
             <Save size={20} />
             Save Changes

@@ -45,7 +45,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           <h3 className="text-2xl sm:text-3xl font-bold text-accent-primary mb-2">
             Welcome to UniTracker
           </h3>
-          <p className="text-text-secondary text-base sm:text-lg">
+          <p className="text-neutral-600 text-base sm:text-lg">
             Your all-in-one study companion
           </p>
         </div>
@@ -54,7 +54,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="bg-neutral-800/50 p-6 rounded-xl hover:bg-neutral-800/70 transition-all duration-200 animate-slideUp"
+              className="bg-white p-6 rounded-xl hover:bg-neutral-50 transition-all duration-200 animate-slideUp border border-neutral-200"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start gap-4">
@@ -62,10 +62,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                   {feature.icon}
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-white mb-2">
+                  <h4 className="text-lg font-semibold text-neutral-900 mb-2">
                     {feature.title}
                   </h4>
-                  <p className="text-text-secondary">
+                  <p className="text-neutral-600">
                     {feature.description}
                   </p>
                 </div>
@@ -74,29 +74,29 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           ))}
         </div>
 
-        <div className="bg-neutral-800/50 p-6 rounded-xl mb-8">
+        <div className="bg-white p-6 rounded-xl mb-8 border border-neutral-200">
           <h4 className="text-xl font-semibold text-accent-primary mb-4 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
             Getting Started
           </h4>
           <div className="space-y-4">
-            <p className="text-text-secondary">
+            <p className="text-neutral-600">
               UniTracker helps you manage your study time effectively. Here's what you can do:
             </p>
             <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-text-secondary">
+              <li className="flex items-center gap-3 text-neutral-600">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
                 Create and organize your study tasks
               </li>
-              <li className="flex items-center gap-3 text-text-secondary">
+              <li className="flex items-center gap-3 text-neutral-600">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
                 Track your study sessions with the built-in timer
               </li>
-              <li className="flex items-center gap-3 text-text-secondary">
+              <li className="flex items-center gap-3 text-neutral-600">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
                 Use the Pomodoro technique for focused study sessions
               </li>
-              <li className="flex items-center gap-3 text-text-secondary">
+              <li className="flex items-center gap-3 text-neutral-600">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent-primary" />
                 Monitor your progress with detailed statistics
               </li>
@@ -107,7 +107,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-accent-primary hover:bg-accent-primary/90 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
+            className="px-6 py-3 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
           >
             Get Started
           </button>

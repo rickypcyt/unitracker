@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabaseClient';
-import { X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
+import { X } from 'lucide-react';
+import { supabase } from '../../config/supabaseClient';
 
 const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDetailsUpdated }) => {
   const [sessionTitle, setSessionTitle] = useState('');
@@ -185,7 +186,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-300 mb-1">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-900 mb-2">
                 Session Title
               </label>
               <input
@@ -200,7 +201,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-300 mb-1">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-900 mb-2">
                 Session Notes
               </label>
               <textarea
@@ -229,13 +230,13 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-neutral-400 hover:text-white"
+            className="px-4 py-2 text-neutral-600 hover:text-neutral-900"
           >
             Cancel
           </button>
           <button
             onClick={handleFinish}
-            className="px-4 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-primary/80"
+            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80"
           >
             Finish Session
           </button>

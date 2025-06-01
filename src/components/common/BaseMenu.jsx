@@ -41,8 +41,8 @@ const BaseMenu = ({
     top: y,
     left: x,
     zIndex: 1000,
-    backgroundColor: '#262626', // Neutral 800
-    border: '1px solid #404040', // Neutral 700
+    backgroundColor: '#ffffff', // White
+    border: '1px solid #e5e5e5', // Neutral 200
     borderRadius: '0.5rem', // rounded-lg
     padding: '0.5rem 0', // Padding top/bottom, none left/right for list items
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',

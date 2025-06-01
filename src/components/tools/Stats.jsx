@@ -1,14 +1,15 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useSelector } from "react-redux";
+import { Activity, Eye, EyeOff } from "lucide-react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
   XAxis,
   YAxis,
-  ResponsiveContainer,
-  Cell,
 } from "recharts";
-import { Activity, Eye, EyeOff } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { useSelector } from "react-redux";
 
 // --- Utilidades DRY ---
 const durationToMinutes = (duration) => {
@@ -178,19 +179,19 @@ function WeeklyBarChart({
   }, [hasAnimated]);
 
   return (
-    <div className="h-40 sm:h-48 lg:h-56 rounded-lg bg-neutral-950 p-2">
+    <div className="h-40 sm:h-48 lg:h-56 rounded-lg bg-[var(--bg-secondary)] p-2">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={12}>
           <XAxis
             dataKey="dayName"
-            stroke="#64748b"
-            tick={{ fill: "#94a3b8", fontSize: "0.75rem" }}
+            stroke="var(--text-secondary)"
+            tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            stroke="#64748b"
-            tick={{ fill: "#94a3b8", fontSize: "0.75rem" }}
+            stroke="var(--text-secondary)"
+            tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
             tickFormatter={(v) => formatMinutesToHHMM(v)}
             axisLine={false}
             tickLine={false}
@@ -241,36 +242,36 @@ const Statistics = () => {
     <div className="maincard">
       <div>
         <div className="flex justify-between items-center mb-3 gap-2">
-          <h2 className="cardtitle mb-0 text-white flex items-center gap-2">
+          <h2 className="cardtitle mb-0 text-[var(--text-primary)] flex items-center gap-2">
             <Activity size={24} />
             Statistics
           </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-base">Today (h)</div>
-            <div className="text-2xl font-bold">{formatMinutesToHHMM(todayMinutes)}</div>
-            <div className="text-text-secondary text-base">{doneToday} tasks</div>
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+            <div className="text-[var(--text-secondary)] text-base">Today (h)</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(todayMinutes)}</div>
+            <div className="text-[var(--text-secondary)] text-base">{doneToday} tasks</div>
           </div>
-          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-base">This Week (h)</div>
-            <div className="text-2xl font-bold">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
-            <div className="text-text-secondary text-base">{doneWeek} tasks</div>
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+            <div className="text-[var(--text-secondary)] text-base">This Week (h)</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
+            <div className="text-[var(--text-secondary)] text-base">{doneWeek} tasks</div>
           </div>
-          <div className="stat-card bg-neutral-900 rounded-lg p-4 border border-neutral-800 shadow-lg">
-            <div className="text-text-secondary text-base">This Month (h)</div>
-            <div className="text-2xl font-bold">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
-            <div className="text-text-secondary text-base">{doneMonth} tasks</div>
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+            <div className="text-[var(--text-secondary)] text-base">This Month (h)</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
+            <div className="text-[var(--text-secondary)] text-base">{doneMonth} tasks</div>
           </div>
         </div>
 
-        <div className="maincard border-none p-0 m-0">
+        <div className="border-none p-3 m-0 bg-[var(--bg-secondary)]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">{isCurrentWeek ? "This Week Progress" : "Last Week Progress"}</h3>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">{isCurrentWeek ? "This Week Progress" : "Last Week Progress"}</h3>
             <button
               onClick={toggleWeek}
-              className="text-base text-text-secondary hover:text-white transition-colors duration-200"
+              className="text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
             >
               {isCurrentWeek ? "Last Week" : "This Week"}
             </button>

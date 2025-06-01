@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
 import { Info, Play, Trash2 } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 
 export const TaskListMenu = ({
   contextMenu,
@@ -41,7 +41,7 @@ export const TaskListMenu = ({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800"
+      className="fixed bg-[var(--bg-primary)] p-2 rounded-lg shadow-lg z-50 border border-[var(--border-primary)]"
       style={{
         left: contextMenu.x,
         top: contextMenu.y,
@@ -53,7 +53,7 @@ export const TaskListMenu = ({
             onEditTask(contextMenu.task);
             onClose();
           }}
-          className="w-full px-2 py-2 text-left text-base text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
         >
           <Info size={16} />
           Edit Task
@@ -67,7 +67,7 @@ export const TaskListMenu = ({
               });
               onClose();
             }}
-            className="w-full px-2 py-2 text-left text-base text-yellow-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+            className="w-full px-2 py-2 text-left text-base text-yellow-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
           >
             <Play size={16} className="rotate-180" />
             Deactivate Task
@@ -81,7 +81,7 @@ export const TaskListMenu = ({
               });
               onClose();
             }}
-            className="w-full px-2 py-2 text-left text-base text-neutral-300 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+            className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
           >
             <Play size={16} />
             Set as Active Task
@@ -92,7 +92,7 @@ export const TaskListMenu = ({
             onDeleteTask(contextMenu.task.id);
             onClose();
           }}
-          className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-neutral-800 rounded-md flex items-center gap-2"
+          className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
         >
           <Trash2 size={16} />
           Delete Task

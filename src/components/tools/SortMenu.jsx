@@ -34,9 +34,9 @@ export const SortMenu = ({
   const getOptionClassName = (optionType, optionValue) => {
     let className = "hover:bg-neutral-700/50 transition-colors duration-100";
     if (optionType === 'type' && currentSortType === optionValue) {
-      className += ' font-semibold text-blue-500';
+      className += ' font-semibold text-[var(--accent-primary)]';
     } else if (optionType === 'direction' && currentSortDirection === optionValue) {
-      className += ' font-semibold text-blue-500';
+      className += ' font-semibold text-[var(--accent-primary)]';
     }
     return className;
   };

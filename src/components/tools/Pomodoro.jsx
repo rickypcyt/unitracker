@@ -79,12 +79,104 @@ const Pomodoro = () => {
   });
 
   // Add state to track sync status from StudyTimer
-  const [isSyncedWithStudyTimer, setIsSyncedWithStudyTimer] = useState(false);
+  const [isSyncedWithStudyTimer, setIsSyncedWithStudyTimer] = useState(() => {
+    // Initialize sync state from localStorage on load
+    const savedState = localStorage.getItem('isSyncedWithStudyTimer');
+    return savedState ? JSON.parse(savedState) : false;
+  });
 
   // Add event listener for sync state changes from StudyTimer
   useEventListener("studyTimerSyncStateChanged", (event) => {
     setIsSyncedWithStudyTimer(event.detail.isSyncedWithStudyTimer);
   }, []);
+
+  // Add event listener for study timer time updates
+  useEventListener("studyTimerTimeUpdate", (event) => {
+    if (!isSyncedWithStudyTimer) return;
+    
+    const studyTime = Math.floor(event.detail.time); // Redondear a segundos completos
+    const currentMode = modes[pomoState.modeIndex];
+    const totalWorkTime = currentMode.work;
+    const totalBreakTime = currentMode.break;
+    
+    // Calculate total cycle time
+    const totalCycleTime = totalWorkTime + totalBreakTime;
+    
+    // Calculate position within the current cycle, asegurando que sea exacto
+    const positionInCycle = studyTime % totalCycleTime;
+    
+    // Determine if we should be in work or break mode
+    // Ajustamos la comparación para que sea exacta en el segundo 0
+    const shouldBeWorkMode = positionInCycle < totalWorkTime;
+    
+    // Solo cambiar de modo si estamos exactamente en el punto de transición
+    const isTransitionPoint = positionInCycle === 0 || positionInCycle === totalWorkTime;
+    
+    if (isTransitionPoint && shouldBeWorkMode !== (pomoState.currentMode === "work")) {
+      setPomoState(prev => ({
+        ...prev,
+        currentMode: shouldBeWorkMode ? "work" : "break",
+        timeLeft: shouldBeWorkMode ? totalWorkTime : totalBreakTime,
+        // Si estamos cambiando a modo trabajo, incrementar el contador
+        pomodoroToday: shouldBeWorkMode ? prev.pomodoroToday + 1 : prev.pomodoroToday
+      }));
+
+      // Play sound and show notification when switching modes
+      const sound = sounds[shouldBeWorkMode ? "break" : "work"];
+      sound.currentTime = 0;
+      sound.play().catch(console.error);
+
+      // Show toast notification
+      if (shouldBeWorkMode) {
+        toast.success("Break is over! Let's get back to work! 💪", {
+          duration: 3000,
+          position: 'top-center',
+        });
+      } else {
+        toast.success("Work session complete! Time for a break.");
+      }
+
+      // Show browser notification if permission is granted
+      if ("Notification" in window && notificationPermission === "granted") {
+        const notification = new Notification(
+          shouldBeWorkMode ? "Break Complete! ⏰" : "Work Session Complete! 🎉", 
+          {
+            body: shouldBeWorkMode 
+              ? "Break is over! Time to get back to work."
+              : "Great job! Time to take a well-deserved break.",
+            icon: shouldBeWorkMode ? "💪" : "🍅",
+            badge: shouldBeWorkMode ? "💪" : "🍅",
+            tag: "pomodoro-notification",
+            requireInteraction: true,
+            silent: false,
+            vibrate: [200, 100, 200]
+          }
+        );
+
+        // Close notification after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+
+        // Handle notification click
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+      }
+    }
+
+    // Update timeLeft based on position in cycle, asegurando que sea exacto
+    const maxTime = shouldBeWorkMode ? totalWorkTime : totalBreakTime;
+    const timeLeft = shouldBeWorkMode 
+      ? Math.min(maxTime, totalWorkTime - positionInCycle)
+      : Math.min(maxTime, totalBreakTime - (positionInCycle - totalWorkTime));
+
+    setPomoState(prev => ({
+      ...prev,
+      timeLeft: Math.max(0, timeLeft)
+    }));
+  }, [isSyncedWithStudyTimer, modes, pomoState.modeIndex, pomoState.currentMode, notificationPermission]);
 
   // Add state for settings modal
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -128,7 +220,7 @@ const Pomodoro = () => {
           ...prev,
           timeLeft: newTimeLeft
         }));
-      }, 100);
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [pomoState.isRunning, pomoState.timeLeft]);
@@ -152,22 +244,28 @@ const Pomodoro = () => {
   useEventListener("adjustPomodoroTime", (event) => {
     const { adjustment } = event.detail;
     const now = Date.now();
+    const currentMode = modes[pomoState.modeIndex];
+    const maxTime = currentMode[pomoState.currentMode];
+    
     if (pomoState.isRunning) {
       // Si está corriendo, actualizamos el tiempo y el startTime
-      setPomoState(prev => ({
-        ...prev,
-        timeLeft: Math.max(0, prev.timeLeft + adjustment),
-        startTime: now / 1000,
-        pausedTime: 0
-      }));
+      setPomoState(prev => {
+        const newTimeLeft = Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime));
+        return {
+          ...prev,
+          timeLeft: newTimeLeft,
+          startTime: now / 1000,
+          pausedTime: 0
+        };
+      });
     } else {
       // Si está en pausa, solo actualizamos el tiempo
       setPomoState(prev => ({
         ...prev,
-        timeLeft: Math.max(0, prev.timeLeft + adjustment)
+        timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime))
       }));
     }
-  }, [pomoState.isRunning]);
+  }, [pomoState.isRunning, modes, pomoState.modeIndex, pomoState.currentMode]);
 
   // Request notification permission on component mount
   useEffect(() => {
@@ -297,18 +395,25 @@ const Pomodoro = () => {
   }, [pomoState.currentMode, pomoState.modeIndex, notificationPermission]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <div className="flex items-center gap-2 mb-6">
-        <Timer size={24} />
-        <h2 className="text-xl font-semibold">Pomodoro Timer</h2>
-        {/* Add settings icon */}
-        <button
-          onClick={() => setIsSettingsModalOpen(true)}
-          className="ml-2 p-1 rounded-full text-neutral-400 hover:text-white transition-colors"
-          aria-label="Pomodoro settings"
-        >
-          <MoreVertical size={20} />
-        </button>
+    <div className="flex flex-col items-center h-full">
+      {/* Header: Icon, Title, Settings Button */}
+      <div className="flex items-center w-full mb-6">
+        {/* Left side: Icon and Title */}
+        <div className="flex items-center gap-2">
+          <Timer size={24} />
+          <h2 className="text-xl font-semibold">Pomo Timer</h2>
+        </div>
+
+        {/* Right side: Settings Button */}
+        <div className="ml-auto">
+          <button
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Pomodoro settings"
+          >
+            <MoreVertical size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Timer display */}
@@ -322,22 +427,24 @@ const Pomodoro = () => {
           onClick={() => {
             const adjustment = -600;
             const now = Date.now();
+            const currentMode = modes[pomoState.modeIndex];
+            const maxTime = currentMode[pomoState.currentMode];
+            
             if (pomoState.isRunning) {
-              // Si está corriendo, actualizamos el tiempo y el startTime
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: Math.max(0, prev.timeLeft + adjustment),
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime)),
                 startTime: now / 1000,
                 pausedTime: 0
               }));
             } else {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: Math.max(0, prev.timeLeft + adjustment)
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime))
               }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 10 minutes"
         >
           -10
@@ -346,21 +453,24 @@ const Pomodoro = () => {
           onClick={() => {
             const adjustment = -300;
             const now = Date.now();
+            const currentMode = modes[pomoState.modeIndex];
+            const maxTime = currentMode[pomoState.currentMode];
+            
             if (pomoState.isRunning) {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: Math.max(0, prev.timeLeft + adjustment),
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime)),
                 startTime: now / 1000,
                 pausedTime: 0
               }));
             } else {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: Math.max(0, prev.timeLeft + adjustment)
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime))
               }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 5 minutes"
         >
           -5
@@ -369,21 +479,24 @@ const Pomodoro = () => {
           onClick={() => {
             const adjustment = 300;
             const now = Date.now();
+            const currentMode = modes[pomoState.modeIndex];
+            const maxTime = currentMode[pomoState.currentMode];
+            
             if (pomoState.isRunning) {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: prev.timeLeft + adjustment,
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime)),
                 startTime: now / 1000,
                 pausedTime: 0
               }));
             } else {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: prev.timeLeft + adjustment
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime))
               }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 5 minutes"
         >
           +5
@@ -392,21 +505,24 @@ const Pomodoro = () => {
           onClick={() => {
             const adjustment = 600;
             const now = Date.now();
+            const currentMode = modes[pomoState.modeIndex];
+            const maxTime = currentMode[pomoState.currentMode];
+            
             if (pomoState.isRunning) {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: prev.timeLeft + adjustment,
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime)),
                 startTime: now / 1000,
                 pausedTime: 0
               }));
             } else {
               setPomoState(prev => ({
                 ...prev,
-                timeLeft: prev.timeLeft + adjustment
+                timeLeft: Math.max(0, Math.min(prev.timeLeft + adjustment, maxTime))
               }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 10 minutes"
         >
           +10
@@ -417,45 +533,49 @@ const Pomodoro = () => {
       <div className="timer-controls flex justify-center items-center gap-3">
         <button
           onClick={handleReset}
-          className="control-button flex items-center justify-center"
+          className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Reset timer"
         >
-          <RotateCcw size={20} style={{ color: iconColor }} />
+          <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
         </button>
         {!pomoState.isRunning ? (
           <button
             onClick={handleStart}
-            className="control-button flex items-center justify-center"
+            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Start timer"
           >
-            <Play size={20} style={{ color: iconColor }} />
+            <Play size={20} style={{ color: "var(--accent-primary)" }} />
           </button>
         ) : (
           <button
             onClick={handleStop}
-            className="control-button flex items-center justify-center"
+            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Pause timer"
           >
-            <Pause size={20} style={{ color: iconColor }} />
+            <Pause size={20} style={{ color: "var(--accent-primary)" }} />
           </button>
         )}
       </div>
 
-      <div className="mt-4 text-base text-neutral-400 mb-1">
+      <div className="mt-4 text-base text-[var(--text-secondary)] mb-1">
         {pomoState.currentMode === "work" ? "Work Time" : "Break Time"}
       </div>
-      <div className="text-base text-neutral-400 mb-1">
+      <div className="text-base text-[var(--text-secondary)] mb-1">
         Pomodoros Today: {pomoState.pomodoroToday}
       </div>
 
-      {/* Sync with StudyTimer toggle - Moved down */}
+      {/* Sync with StudyTimer toggle */}
       <div className="flex items-center gap-2 justify-center mb-4">
-        <label className="flex items-center gap-2 text-neutral-400 cursor-pointer" onClick={() => {
-          // Dispatch event to update sync state in StudyTimer
-          window.dispatchEvent(new CustomEvent("pomodoroSyncStateChanged", { detail: { isSyncedWithStudyTimer: !isSyncedWithStudyTimer } }));
+        <label className="flex items-center gap-2 text-[var(--text-secondary)] cursor-pointer" onClick={() => {
+          const newSyncState = !isSyncedWithStudyTimer;
+          setIsSyncedWithStudyTimer(newSyncState);
+          localStorage.setItem('isSyncedWithStudyTimer', JSON.stringify(newSyncState));
+          window.dispatchEvent(new CustomEvent("studyTimerSyncStateChanged", { 
+            detail: { isSyncedWithStudyTimer: newSyncState } 
+          }));
         }}>
           <span>Sync with Study Timer:</span>
-          {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: '#3b82f6' }} /> : <Square size={20} style={{ color: iconColor }} />}
+          {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
         </label>
       </div>
 
@@ -465,7 +585,7 @@ const Pomodoro = () => {
             const permission = await Notification.requestPermission();
             setNotificationPermission(permission);
           }}
-          className="mt-2 text-sm text-accent-primary hover:text-accent-primary/80"
+          className="mt-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
         >
           Enable Notifications
         </button>

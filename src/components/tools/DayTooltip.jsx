@@ -17,7 +17,7 @@ const DayTooltip = ({ date, tasks, studiedHours }) => {
           <span>{totalTasks} tasks</span>
         </div>
         <div className="flex items-center gap-2 text-neutral-300">
-          <Clock size={16} className="text-blue-500" />
+          <Clock size={16} className="text-[var(--accent-primary)]" />
           <span>{studiedHours || 0} hours studied</span>
         </div>
       </div>

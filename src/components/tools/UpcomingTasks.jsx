@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import TaskDetailsModal from '../modals/TaskDetailsModal';
-import { useTaskManager } from '../../hooks/useTaskManager';
 import { fetchTasks } from '../../store/actions/TaskActions';
+import { useTaskManager } from '../../hooks/useTaskManager';
 
 const UpcomingTasks = () => {
   const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
@@ -139,8 +140,8 @@ const UpcomingTasks = () => {
   if (upcomingTasks.length === 0) {
     return (
       <div className="maincard">
-        <h3 className="text-lg font-semibold text-white mb-2">Upcoming Tasks</h3>
-        <p className="text-neutral-400">No upcoming tasks</p>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Upcoming Tasks</h3>
+        <p className="text-[var(--text-secondary)]">No upcoming tasks</p>
       </div>
     );
   }
@@ -151,22 +152,22 @@ const UpcomingTasks = () => {
     return (
       <div className="mb-4">
         <button
-          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-4 hover:bg-neutral-800 transition-colors flex items-center justify-between"
+          className="w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors flex items-center justify-between"
           onClick={() => toggleGroup(groupKey)}
           aria-expanded={expandedGroups[groupKey]}
         >
           <div className="flex items-center justify-between w-full">
-            <span className={`text-base transition-colors ${expandedGroups[groupKey] ? 'text-[var(--accent-primary)]' : 'text-white'}`}>
+            <span className={`text-base transition-colors ${expandedGroups[groupKey] ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
               {title}
             </span>
             <div className="flex items-center gap-4">
-              <span className="text-neutral-400 text-base">
+              <span className="text-[var(--text-secondary)] text-base">
                 {tasks.length} tasks
               </span>
               {expandedGroups[groupKey] ? (
                 <ChevronUp size={22} className="text-[var(--accent-primary)]" />
               ) : (
-                <ChevronDown size={22} className="text-neutral-400" />
+                <ChevronDown size={22} className="text-[var(--text-secondary)]" />
               )}
             </div>
           </div>
@@ -182,15 +183,15 @@ const UpcomingTasks = () => {
               return (
                 <div 
                   key={task.id} 
-                  className="flex items-center justify-between p-4 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
                   onClick={() => handleOpenTaskDetails(task)}
                 >
                   <div className="flex items-center gap-2">
                     <Clock size={16} className="text-[var(--accent-primary)]" />
-                    <span className="text-white">{task.title}</span>
+                    <span className="text-[var(--text-primary)]">{task.title}</span>
                   </div>
-                  <span className="text-base text-neutral-400">
-                    {task.assignment && <span className="mr-2">{task.assignment}</span>}
+                  <span className="text-base text-[var(--text-secondary)]">
+                    {task.assignment && <span className="mr-2 text-[var(--text-secondary)]">{task.assignment}</span>}
                     {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
                       weekday: 'short',
                       month: 'short', 
@@ -208,7 +209,7 @@ const UpcomingTasks = () => {
 
   return (
     <div className="maincard">
-      <h3 className="text-lg font-semibold text-white mb-3">Upcoming Tasks</h3>
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">Upcoming Tasks</h3>
       <div className="space-y-3">
         <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
         <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />

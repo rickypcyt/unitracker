@@ -14,17 +14,7 @@
    ========================= */
 @layer base {
   :root {
-    /* Paleta principal */
-    --bg-primary: #0b0b0b;
-    --border-primary: #29292ac7;
-    --text-primary: #fff;
-    --accent-primary: #0166EA;
-
-    --bg-secondary: #1c1c1e;
-    --text-secondary: #a0a0a0;
-    --accent-deep: #006effbd;
-
-    /* Paleta extendida (HSL para compatibilidad con Tailwind) */
+    /* Light mode variables */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -44,16 +34,28 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Paleta principal */
+    --bg-primary: #ffffff;
+    --border-primary: #e5e5e5;
+    --text-primary: #000000;
+    --accent-primary: #1E90FF; /* Electric neon blue */
+    --accent-primary-transparent: rgba(30, 144, 255, 0.2);
+
+    --bg-secondary: #f5f5f5;
+    --text-secondary: #666666;
+    --accent-deep: #187BCD; /* Darker electric blue */
+
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Sobrescribe variables para modo oscuro */
+    /* Dark mode variables */
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
@@ -78,24 +80,86 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Paleta principal */
+    --bg-primary: #000000;
+    --border-primary: #2b2b2ce3;
+    --text-primary: #ffffff;
+    --accent-primary: #1E90FF; /* Electric neon blue */
+    --accent-primary-transparent: rgba(30, 144, 255, 0.2);
+
+    --bg-secondary: #1c1c1c;
+    --text-secondary: #a0a0a0;
+    --accent-deep: #187BCD; /* Darker electric blue */
   }
 
   /* Fuente base */
   html {
     font-family: Arial, sans-serif;
-    background-color: var(--bg-primary);
     min-height: 100vh;
+    @apply text-base; /* Set default text size to base */
   }
-  body {
+
+  html.dark {
     background-color: var(--bg-primary);
     color: var(--text-primary);
+  }
+
+  html.light {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  body {
     min-height: 100vh;
     margin: 0;
     padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
   }
+
   * {
     @apply border-border;
     font-family: inherit;
+  }
+
+  /* Override specific text sizes */
+  .card-text {
+    @apply text-base;
+    color: var(--text-secondary);
+  }
+
+  .card-text-lg {
+    @apply text-lg;
+    color: var(--text-secondary);
+  }
+
+  .textinput {
+    @apply w-full p-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    background-color: var(--bg-primary);
+    border: 2px solid var(--border-primary);
+    color: var(--text-primary);
+  }
+
+  .infomenu {
+    @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold text-base transition-colors duration-200;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .tasks {
+    @apply task-item-base task-item-default task-item-hover-default task-item-flex text-base;
+  }
+
+  .plslogin {
+    @apply text-center text-lg p-12 rounded-xl mb-4;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+  }
+
+  .modal-info-item {
+    @apply flex items-center gap-3 text-base;
+    color: var(--text-secondary);
   }
 }
 
@@ -107,7 +171,7 @@
     border-radius: 1rem;
     padding: 1.5rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-    background-color: var(--bg-primary);
+    background-color: var(--bg-secondary);
     border: 2px solid var(--border-primary);
     margin-bottom: 1rem;
     width: 100%;
@@ -146,12 +210,22 @@
     border-color: var(--border-primary) !important;
   }
   .cardtitle {
-    @apply text-xl font-bold mb-6 flex items-center gap-2;
+    @apply text-xl font-bold flex items-center;
+    margin-bottom: 0;
+    justify-content: space-between;
     color: var(--text-primary);
   }
+  .cardtitle > div:first-child {
+    @apply flex items-center gap-2;
+  }
   .caltitle {
-    @apply text-xl font-bold flex items-center gap-2 mb-6;
+    @apply text-xl font-bold flex items-center;
+    margin-bottom: 0;
+    justify-content: space-between;
     color: var(--text-primary);
+  }
+  .caltitle > div:first-child {
+    @apply flex items-center gap-2;
   }
   .card-subtitle {
     @apply text-lg font-semibold mb-2;
@@ -161,62 +235,25 @@
     border-style: dotted !important;
   }
 
-  .card-text,
-  .card-text-lg {
-    @apply text-lg;
-    color: var(--text-secondary);
-  }
   .button,
   .textbutton {
-    @apply px-4 py-2 rounded-lg transition-colors duration-200 items-center gap-2 text-center;
-    background-color: var(--accent-primary);
-    color: var(--text-primary);
+    @apply btn-base btn-rounded-lg btn-padding-px4-py2 btn-bg-accent-primary btn-text-primary text-center;
   }
   .button:hover,
   .textbutton:hover {
-    background-color: var(--accent-deep);
+    @apply btn-hover-bg-accent-deep;
   }
 
-  .textinput {
-    @apply w-full p-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50;
-    background-color: var(--bg-primary);
-    border: 2px solid var(--border-primary);
-    color: var(--text-primary);
-  }
   .textinput:focus {
     border: 2px solid var(--accent-primary);
     box-shadow: 0px var(--accent-primary);
   }
-  .infomenu {
-    @apply flex items-center justify-between w-full py-2 px-3 rounded-lg text-left font-semibold transition-colors duration-200;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-  }
   .infomenu:hover {
     background-color: var(--bg-secondary);
   }
-  .tasks {
-    @apply flex justify-between items-center p-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg;
-    background-color: var(--bg-secondary);
-    border: 2px solid var(--border-primary);
-  }
-  .tasks:hover {
-    background-color: var(--bg-primary);
-  }
-  .bg-stats {
-    @apply p-6 rounded-xl relative;
-    background-color: var(--bg-secondary);
-  }
-  .plslogin {
-    @apply text-center text-xl p-12 rounded-xl mb-4;
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-  }
   .editbutton,
   .cancelbutton {
-    @apply flex items-center py-2 px-3 rounded-lg font-semibold transition-colors duration-200;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
+    @apply btn-base btn-rounded-lg btn-padding-px4-py2 btn-bg-secondary btn-text-primary btn-font-semibold btn-hover-bg-primary;
   }
   .editbutton {
     @apply absolute right-0 bottom-9;
@@ -238,8 +275,41 @@
     @apply w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer;
   }
 
-  
+  /* Fix for flex items with icons and text */
+  .flex.items-start {
+    align-items: flex-start; /* Align items to the top */
+    display: flex; /* Ensure it's a flex container */
+    gap: 0.75rem; /* Keep gap consistent with original */
+    width: 100%; /* Ensure it takes full width */
+  }
 
+  .flex.items-start .w-5.h-5 {
+    flex-shrink: 0; /* Prevent icon from shrinking */
+  }
+
+  .flex.items-start .flex-1 {
+    display: flex; /* Text container is also a flex container */
+    flex-direction: column; /* Allow text to wrap vertically */
+    /* Removed justify-content: center to align contents to the top */
+    min-width: 0; /* Allow shrinking */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflow */
+  }
+
+  .flex.items-start .flex-1 span {
+    word-break: break-word; /* Break long words */
+  }
+
+  .flex.items-start .block {
+    line-height: normal; /* Ensure consistent line height */
+  }
+
+  /* Add styles for the trash icon, assuming it's also a flex item */
+  .flex.items-start .trash-icon-container { /* Assuming a class for the trash icon's parent */
+    flex-shrink: 0; /* Prevent trash icon from shrinking */
+    margin-left: auto; /* Push trash icon to the right */
+    align-self: flex-start; /* Align trash icon to the top */
+  }
 }
 
 /* =========================
@@ -375,19 +445,11 @@ h1 {
 }
 
 .control-button {
-  @apply p-2 rounded-full transition-colors duration-200;
-  background-color: var(--bg-secondary);
-  color: #fff;
-}
-
-.control-button:hover:not(:disabled) {
-  background-color: var(--accent-primary);
-  color: #fff;
+  @apply btn-base btn-rounded-full btn-padding-2 btn-bg-secondary btn-text-white btn-hover-bg-secondary-opacity-30 btn-flex-center;
 }
 
 .control-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  @apply btn-disabled;
 }
 
 .time-adjust-controls {
@@ -398,14 +460,11 @@ h1 {
 }
 
 .time-adjust-button {
-  @apply p-1 rounded-full transition-colors duration-200;
-  background-color: var(--bg-secondary);
-  color: #fff;
+  @apply btn-base btn-rounded-full btn-padding-1 btn-bg-secondary btn-text-white;
 }
 
 .time-adjust-button:hover {
-  background-color: var(--accent-primary);
-  color: #fff;
+  @apply btn-hover-bg-accent-primary;
 }
 
 .session-controls {
@@ -416,16 +475,152 @@ h1 {
 }
 
 .session-button {
-  @apply px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  @apply btn-base btn-rounded-lg btn-padding-px4-py2 btn-bg-secondary btn-text-primary btn-flex-items-center-gap-2;
 }
 
 .session-button:hover:not(:disabled) {
-  background-color: var(--accent-primary);
+  @apply btn-hover-bg-accent-primary;
 }
 
 .session-button:disabled {
+  @apply btn-disabled;
+}
+
+/* Custom Utility Classes for Buttons */
+.btn-base {
+  @apply transition-colors duration-200;
+}
+
+.btn-rounded-full {
+  @apply rounded-full;
+}
+
+.btn-rounded-lg {
+  @apply rounded-lg;
+}
+
+.btn-padding-2 {
+  @apply p-2;
+}
+
+.btn-padding-1 {
+  @apply p-1;
+}
+
+.btn-padding-px4-py2 {
+  @apply px-4 py-2;
+}
+
+.btn-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.btn-bg-accent-primary {
+  background-color: var(--accent-primary);
+}
+
+.btn-text-primary {
+  color: var(--text-primary);
+}
+
+.btn-text-secondary {
+  color: var(--text-secondary);
+}
+
+.btn-text-white {
+  color: #fff;
+}
+
+.btn-hover-bg-accent-primary:hover:not(:disabled) {
+  background-color: var(--accent-primary);
+}
+
+.btn-hover-bg-secondary-opacity-30:hover:not(:disabled) {
+  background-color: rgba(var(--bg-secondary), 0.3);
+}
+
+.btn-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.btn-flex-center {
+  @apply flex items-center justify-center;
+}
+
+.btn-flex-items-center-gap-2 {
+  @apply flex items-center gap-2;
+}
+
+.btn-hover-bg-accent-deep:hover {
+  background-color: var(--accent-deep);
+}
+
+.btn-font-semibold {
+  @apply font-semibold;
+}
+
+.btn-hover-bg-primary:hover {
+  background-color: var(--bg-primary);
+}
+
+/* Task Item Styles */
+.task-item-base {
+  @apply p-3 rounded-lg cursor-pointer transition-all duration-300 bg-[var(--bg-primary)] hover:bg-[var(--bg-hover)];
+}
+
+.task-item-default {
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-primary);
+}
+
+.task-item-hover-default:hover {
+  background-color: var(--bg-hover);
+}
+
+.task-item-active {
+  background-color: var(--bg-secondary);
+  border: 2px solid;
+  border-color: var(--accent-primary);
+}
+
+.task-item-active[data-difficulty="easy"] {
+  border-color: #00FF41; /* Matrix green */
+}
+
+.task-item-active[data-difficulty="medium"] {
+  border-color: #1E90FF; /* Electric neon blue */
+}
+
+.task-item-active[data-difficulty="hard"] {
+  border-color: #FF003C; /* Neon red */
+}
+
+.task-item-flex {
+  @apply flex items-center justify-between;
+}
+
+/* Modal Content Styles */
+.modal-content-section {
+  @apply space-y-4;
+}
+
+.modal-info-item {
+  @apply flex items-center gap-3;
+  color: var(--text-secondary);
+}
+
+.modal-info-item .icon {
+  color: var(--text-primary);
+}
+
+/* Calendar Styles */
+.calendar-container {
+  /* Add any calendar container specific styles here if needed */
+}
+
+.calendar-grid {
+  /* Add any calendar grid specific styles here if needed */
+}
+
+/* Other styles */

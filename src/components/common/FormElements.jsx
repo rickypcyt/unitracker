@@ -14,7 +14,7 @@ export const FormInput = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -23,9 +23,9 @@ export const FormInput = ({
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-neutral-800 border ${
-        error ? 'border-red-500' : 'border-neutral-700'
-      } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary ${className}`}
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+        error ? 'border-red-500' : 'border-[var(--border-primary)]'
+      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2 ${className}`}
       placeholder={placeholder}
       {...props}
     />
@@ -47,7 +47,7 @@ export const FormTextarea = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -55,9 +55,9 @@ export const FormTextarea = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-neutral-800 border ${
-        error ? 'border-red-500' : 'border-neutral-700'
-      } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary ${className}`}
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+        error ? 'border-red-500' : 'border-[var(--border-primary)]'
+      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2 ${className}`}
       placeholder={placeholder}
       rows={rows}
       {...props}
@@ -79,7 +79,7 @@ export const FormSelect = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-neutral-300 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -87,13 +87,13 @@ export const FormSelect = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-neutral-800 border ${
-        error ? 'border-red-500' : 'border-neutral-700'
-      } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary ${className}`}
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+        error ? 'border-red-500' : 'border-[var(--border-primary)]'
+      } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] ${className}`}
       {...props}
     >
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
+        <option key={option.value} value={option.value} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
           {option.label}
         </option>
       ))}
@@ -111,8 +111,8 @@ export const FormButton = ({
 }) => {
   const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200';
   const variantClasses = {
-    primary: 'bg-accent-primary text-white hover:bg-accent-primary/80',
-    secondary: 'bg-neutral-800 text-white hover:bg-neutral-700',
+    primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
+    secondary: 'bg-[var(--bg-primary)] text-[var(--text-primary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]',
     danger: 'bg-red-500 text-white hover:bg-red-600'
   };
 

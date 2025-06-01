@@ -90,7 +90,7 @@ const StudyTimer = ({ onSyncChange }) => {
     }
   }, [currentSessionId, fetchCurrentSessionDetails]); // Add fetchCurrentSessionDetails as dependency
 
-  // Remove the sync timer effect since we'll use useStudyTimer exclusively
+  // Timer logic
   useEffect(() => {
     const syncTimer = () => {
       if (studyState.isRunning && studyState.lastStart) {
@@ -99,6 +99,11 @@ const StudyTimer = ({ onSyncChange }) => {
         setStudyState(prev => ({
           ...prev,
           time: elapsed
+        }));
+
+        // Emit time update event for Pomodoro sync
+        window.dispatchEvent(new CustomEvent("studyTimerTimeUpdate", { 
+          detail: { time: elapsed } 
         }));
       }
     };
@@ -378,8 +383,8 @@ const StudyTimer = ({ onSyncChange }) => {
         toast.success(`Congrats! During this session you completed ${completedTaskIds.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
           position: 'top-right',
           style: {
-            backgroundColor: '#3b82f6', // Using a shade of blue consistent with accent-primary
-            color: '#f3f4f6', // Light text color for contrast
+            backgroundColor: 'var(--accent-primary)',
+            color: '#f3f4f6',
           },
         });
       }
@@ -473,19 +478,30 @@ const StudyTimer = ({ onSyncChange }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <div className="flex items-center gap-2 mb-6">
-        <Clock size={24} />
-        <h2 className="text-xl font-semibold">Study Timer</h2>
-        {currentSessionId && (
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="ml-2 p-1 rounded-full text-neutral-400 hover:text-white transition-colors"
-            aria-label="Configure session"
-          >
-            <MoreVertical size={20} />
-          </button>
-        )}
+    <div className="flex flex-col items-center h-full">
+      {/* Header: Icon, Title, Settings Button */}
+      <div className="flex items-center justify-between w-full px-4 mb-6">
+        {/* Left side: Icon and Title */}
+        <div className="flex items-center gap-2">
+          <Clock size={24} />
+          <h2 className="text-xl font-semibold">Study Timer</h2>
+        </div>
+
+        {/* Right side: Settings Button or Placeholder */}
+        <div className="ml-auto">
+          {currentSessionId ? (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Configure session"
+            >
+              <MoreVertical size={20} />
+            </button>
+          ) : (
+            // Placeholder to maintain alignment
+            <div className="w-[28px]"></div> 
+          )}
+        </div>
       </div>
 
       <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
@@ -511,7 +527,7 @@ const StudyTimer = ({ onSyncChange }) => {
               window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 10 minutes"
         >
           -10
@@ -534,7 +550,7 @@ const StudyTimer = ({ onSyncChange }) => {
               window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 5 minutes"
         >
           -5
@@ -557,7 +573,7 @@ const StudyTimer = ({ onSyncChange }) => {
               window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 5 minutes"
         >
           +5
@@ -580,7 +596,7 @@ const StudyTimer = ({ onSyncChange }) => {
               window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
             }
           }}
-          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 10 minutes"
         >
           +10
@@ -590,36 +606,36 @@ const StudyTimer = ({ onSyncChange }) => {
       <div className="timer-controls flex justify-center items-center gap-3">
         <button
           onClick={studyControls.reset}
-          className="control-button flex items-center justify-center"
+          className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Reset timer"
         >
-          <RotateCcw size={20} style={{ color: iconColor }} />
+          <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
         </button>
         {!studyState.isRunning ? (
           <button
             onClick={studyControls.start}
-            className="control-button flex items-center justify-center"
+            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Start timer"
           >
-            <Play size={20} style={{ color: iconColor }} />
+            <Play size={20} style={{ color: "var(--accent-primary)" }} />
           </button>
         ) : (
           <button
             onClick={studyControls.pause}
-            className="control-button flex items-center justify-center"
+            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Pause timer"
           >
-            <Pause size={20} style={{ color: iconColor }} />
+            <Pause size={20} style={{ color: "var(--accent-primary)" }} />
           </button>
         )}
         {currentSessionId && (
           <>
             <button
               onClick={handleExitSession}
-              className="control-button flex items-center justify-center text-red-500 hover:text-red-600"
+              className="control-button flex items-center justify-center bg-[var(--bg-secondary)] transition-colors"
               aria-label="Exit session"
             >
-              <X size={20} />
+              <X size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
             <button
               onClick={() => {
@@ -628,29 +644,31 @@ const StudyTimer = ({ onSyncChange }) => {
                 }
                 setIsFinishModalOpen(true);
               }}
-              className="control-button flex items-center justify-center"
+              className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Finish session"
             >
-              <Check size={20} style={{ color: iconColor }} />
+              <Check size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
           </>
         )}
       </div>
 
-      <div className="text-base text-neutral-400 mt-4 text-center">
-        {/* Always display Session Name */}
+      <div className="text-base text-[var(--text-secondary)] mt-4 text-center">
+        {/* Reordered session information display with Sessions Today first */}
         <div className="mb-1">
-          Session Name: <span className="text-blue-500">{studyState.sessionTitle || 'None yet'}</span>
+          Sessions Today: {sessionsTodayCount}
         </div>
-        <div className="mb-1">
+        <div>
           Session Status: <span className={`font-semibold ${
-            studyState.sessionStatus === 'inactive' ? 'text-neutral-400' : 
+            studyState.sessionStatus === 'inactive' ? 'text-[var(--text-secondary)]' : 
             studyState.sessionStatus === 'active' ? 'text-green-500' : 'text-yellow-500'
           }`}>
             {studyState.sessionStatus.charAt(0).toUpperCase() + studyState.sessionStatus.slice(1)}
           </span>
         </div>
-        Sessions Today: {sessionsTodayCount}
+        <div>
+          Session Name: <span className="text-[var(--accent-primary)]">{studyState.sessionTitle || 'None yet'}</span>
+        </div>
       </div>
 
       <StartSessionModal

@@ -6,11 +6,11 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
     <div className="relative">
       <button
         onClick={() => setShowSortMenu(!showSortMenu)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white transition-colors duration-200"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] transition-all duration-200 hover:shadow-md"
       >
-        <ArrowUpDown size={16} />
+        <ArrowUpDown size={16} className="text-[var(--text-secondary)]" />
         Sort by{" "}
-        <span style={{ color: "var(--accent-primary)" }}>
+        <span className="text-[var(--accent-primary)] font-medium">
           {sortBy === "default"
             ? "Default"
             : sortBy === "assignment"
@@ -27,7 +27,7 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
         </span>
       </button>
       {showSortMenu && (
-        <div className="sort-menu absolute right-0 mt-2 w-48 bg-neutral-900 rounded-lg shadow-lg z-10 border border-neutral-800">
+        <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-primary)] rounded-lg shadow-lg z-10 border border-[var(--border-primary)] overflow-hidden">
           <SortOption label="Default" value="default" currentSort={sortBy} onClick={onSortChange} />
           <SortOption label="Assignment" value="assignment" currentSort={sortBy} onClick={onSortChange} />  
           <SortOption label="Deadline" value="deadline" currentSort={sortBy} onClick={onSortChange} />
@@ -43,8 +43,8 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
 const SortOption = ({ label, value, currentSort, onClick }) => (
   <button
     onClick={() => onClick(value)}
-    className={`block px-4 py-2 w-full text-left hover:bg-neutral-800 transition-colors duration-200 ${
-      currentSort === value ? "bg-neutral-800" : ""
+    className={`block px-4 py-2 w-full text-left text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors duration-200 ${
+      currentSort === value ? "bg-[var(--bg-secondary)] text-[var(--accent-primary)] font-medium" : ""
     }`}
   >
     {label}
