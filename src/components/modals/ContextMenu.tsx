@@ -1,7 +1,21 @@
-import React, { useEffect, useRef } from "react";
-import { Trash2, Settings } from "lucide-react";
+import { Settings, Trash2 } from "lucide-react";
 
-const ContextMenu = ({
+import BaseMenu from '../common/BaseMenu';
+import React from "react";
+
+interface ContextMenuProps {
+  x: number;
+  y: number;
+  componentId: string;
+  colIndex: number;
+  itemIndex: number;
+  isEditing: boolean;
+  onClose: () => void;
+  onRemove: (colIndex: number, itemIndex: number) => void;
+  onToggleEdit: () => void;
+}
+
+const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   componentId,
@@ -12,26 +26,12 @@ const ContextMenu = ({
   onRemove,
   onToggleEdit,
 }) => {
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
-
   return (
-    <div
-      ref={menuRef}
-      className="fixed bg-neutral-900 p-2 rounded-lg shadow-lg z-50 border border-neutral-800 min-w-[200px]"
-      style={{ 
-        left: Math.min(x, window.innerWidth - 220),
-        top: Math.min(y, window.innerHeight - 150)
-      }}
+    <BaseMenu
+      x={Math.min(x, window.innerWidth - 220)}
+      y={Math.min(y, window.innerHeight - 150)}
+      onClose={onClose}
+      aria-label="Context menu"
     >
       <div className="space-y-1">
         <button
@@ -57,7 +57,7 @@ const ContextMenu = ({
           </button>
         )}
       </div>
-    </div>
+    </BaseMenu>
   );
 };
 

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
-import moment from 'moment';
-import { getMonthYear } from '../../hooks/useTimers';
-import { deleteLap } from '../../store/actions/LapActions';
-import { toast } from 'react-toastify';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import SessionDetailsModal from '../modals/SessionDetailsModal';
+import { deleteLap } from '../../store/actions/LapActions';
+import { formatDateTimeWithAmPm } from '../../utils/dateUtils';
+import { getMonthYear } from '../../hooks/useTimers';
+import moment from 'moment';
+import { toast } from 'react-toastify';
 import { useAuth } from '../../hooks/useAuth';
 
 const MonthLogs = () => {
@@ -103,7 +105,7 @@ const MonthLogs = () => {
                                                             </span>
                                                         </div>
                                                         <p className="text-lg text-neutral-400 mb-1">
-                                                            {moment(lap.created_at).format("MMM D, YYYY h:mm A")}
+                                                            {formatDateTimeWithAmPm(lap.created_at)}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-4">

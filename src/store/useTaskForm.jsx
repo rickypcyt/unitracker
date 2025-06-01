@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useEffect, useState } from "react";
+
 import { addTask } from "./TaskActions";
+import { formatDateForInput } from '../utils/dateUtils';
 import { supabase } from "../utils/supabaseClient";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-
-
-
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -20,7 +19,7 @@ export const useTaskForm = () => {
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    deadline: formatDate(new Date()),
+    deadline: formatDateForInput(new Date()),
     difficulty: "medium",
     assignment: "",
   });
@@ -84,7 +83,7 @@ export const useTaskForm = () => {
   const resetForm = () => setNewTask({
     title: "",
     description: "",
-    deadline: formatDate(new Date()),
+    deadline: formatDateForInput(new Date()),
     difficulty: "medium",
     assignment: "",
   });
@@ -136,11 +135,11 @@ export const useTaskForm = () => {
     handleSubmit,
     updateField,
     setNewTask,
-    handleSetToday: () => updateField("deadline", formatDate(new Date())),
+    handleSetToday: () => updateField("deadline", formatDateForInput(new Date())),
     handleSetTomorrow: () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      updateField("deadline", formatDate(tomorrow));
+      updateField("deadline", formatDateForInput(tomorrow));
     },
   };
 };

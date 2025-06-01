@@ -1,5 +1,7 @@
-import React from 'react';
 import { CheckCircle2, Clock } from 'lucide-react';
+
+import React from 'react';
+import { formatDate } from '../../utils/dateUtils';
 
 const DayTooltip = ({ date, tasks, studiedHours }) => {
   const totalTasks = tasks?.length || 0;
@@ -7,7 +9,7 @@ const DayTooltip = ({ date, tasks, studiedHours }) => {
   return (
     <div className="absolute z-50 bg-neutral-900 border border-neutral-800 rounded-lg p-3 shadow-lg min-w-[200px] transform -translate-y-full -translate-x-1/2 left-1/2 -top-2">
       <div className="text-base font-medium text-white mb-2">
-        {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+        {formatDate(date.toISOString())}
       </div>
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-neutral-300">

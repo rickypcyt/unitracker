@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { supabase } from '../../config/supabaseClient';
-import { useAuth } from '../../hooks/useAuth';
-
+import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { formatStudyTime, useStudyTimer } from "../../hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
-import { Play, Pause, RotateCcw, Check, Clock, X, MoreVertical } from "lucide-react";
-import { useTheme } from "../../utils/ThemeContext";
-import { useStudyTimer, formatStudyTime } from "../../hooks/useTimers";
-import useEventListener from "../../hooks/useEventListener";
-import StartSessionModal from "../modals/StartSessionModal";
-import FinishSessionModal from "../modals/FinishSessionModal";
+import { useDispatch, useSelector } from "react-redux";
+
 import EditSessionModal from "../modals/EditSessionModal";
+import FinishSessionModal from "../modals/FinishSessionModal";
 import LoginPromptModal from "../modals/LoginPromptModal";
+import StartSessionModal from "../modals/StartSessionModal";
+import { supabase } from '../../config/supabaseClient';
 import { toast } from "react-hot-toast";
+import { useAuth } from '../../hooks/useAuth';
+import useEventListener from "../../hooks/useEventListener";
+import { useTheme } from "../../utils/ThemeContext";
 
 const StudyTimer = ({ onSyncChange }) => {
   const { iconColor } = useTheme();
@@ -241,7 +241,6 @@ const StudyTimer = ({ onSyncChange }) => {
 
           // If Pomodoro was started with this session, start it too
           if (pomodoroStartedWithSession) {
-            // Use playTimerSync instead of startPomodoro to resume from pause
             window.dispatchEvent(new CustomEvent("playTimerSync"));
           }
         } else {
@@ -301,10 +300,10 @@ const StudyTimer = ({ onSyncChange }) => {
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
       );
 
-      // If Pomodoro was started with this session, reset it too
+      // If Pomodoro was started with this session, reset it too but maintain the sync state
       if (pomodoroStartedWithSession) {
         window.dispatchEvent(new CustomEvent("resetPomodoro"));
-        setPomodoroStartedWithSession(false);
+        // Don't reset pomodoroStartedWithSession here
       }
     },
   };

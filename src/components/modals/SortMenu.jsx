@@ -1,5 +1,5 @@
-import React from "react";
 import { ArrowUpDown } from "lucide-react";
+import React from "react";
 
 export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }) => {
   return (
@@ -21,6 +21,8 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
             ? "Difficulty"
             : sortBy === "alphabetical"
             ? "A-Z"
+            : sortBy === "dateAdded"
+            ? "Date Added"
             : ""}
         </span>
       </button>
@@ -31,6 +33,7 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
           <SortOption label="Deadline" value="deadline" currentSort={sortBy} onClick={onSortChange} />
           <SortOption label="Difficulty" value="difficulty" currentSort={sortBy} onClick={onSortChange} />
           <SortOption label="Alphabetical" value="alphabetical" currentSort={sortBy} onClick={onSortChange} />
+          <SortOption label="Date Added" value="dateAdded" currentSort={sortBy} onClick={onSortChange} />
         </div>
       )}
     </div>

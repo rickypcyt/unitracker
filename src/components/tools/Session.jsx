@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Play, Pause, RotateCcw } from 'lucide-react';
+import { Clock, Pause, Play, RotateCcw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import { formatDate } from '../../utils/dateUtils';
 
 const Session = () => {
   const [time, setTime] = useState(0);
@@ -89,7 +91,7 @@ const Session = () => {
           {sessions.slice(-5).reverse().map((session, index) => (
             <div key={index} className="bg-neutral-900 rounded-lg p-3 flex justify-between items-center">
               <span className="text-neutral-400">
-                {new Date(session.date).toLocaleDateString()}
+                {formatDate(session.date)}
               </span>
               <span className="font-mono">
                 {formatTime(session.duration)}

@@ -1,3 +1,4 @@
+import BaseMenu from '../common/BaseMenu';
 import React from 'react';
 
 export const SortMenu = ({
@@ -9,19 +10,6 @@ export const SortMenu = ({
   currentSortType = 'alphabetical',
   currentSortDirection = 'asc'
 }) => {
-  const menuStyle = {
-    position: 'fixed',
-    top: y,
-    left: x,
-    zIndex: 1000,
-    backgroundColor: '#262626', // Neutral 800
-    border: '1px solid #404040', // Neutral 700
-    borderRadius: '0.5rem', // rounded-lg
-    padding: '0.5rem 0', // Padding top/bottom, none left/right for list items
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    minWidth: '120px', // Minimum width for the menu
-  };
-
   const optionStyle = {
     padding: '0.5rem 1rem',
     cursor: 'pointer',
@@ -54,12 +42,12 @@ export const SortMenu = ({
   };
 
   return (
-    <div style={menuStyle} onMouseLeave={onClose} // Close when mouse leaves the menu area
+    <BaseMenu
+      x={x}
+      y={y}
+      onClose={onClose}
+      aria-label="Sort options"
     >
-      {/* Optional: Add a header */}
-      {/* <div style={{ padding: '0.5rem 1rem', fontWeight: 'bold', color: '#a3a3a3', borderBottom: '1px solid #404040' }}>
-        Sort By
-      </div> */}
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li
           style={optionStyle}
@@ -82,7 +70,13 @@ export const SortMenu = ({
         >
           Difficulty
         </li>
-        {/* Add other sorting options here */}
+        <li
+          style={optionStyle}
+          className={getOptionClassName('type', 'dateAdded')}
+          onClick={handleOptionClick('dateAdded')}
+        >
+          Date Added
+        </li>
 
         {/* Separator */}
         <li style={{ height: '1px', backgroundColor: '#404040', margin: '0.5rem 0' }}></li>
@@ -103,6 +97,6 @@ export const SortMenu = ({
           Descending
         </li>
       </ul>
-    </div>
+    </BaseMenu>
   );
 }; 

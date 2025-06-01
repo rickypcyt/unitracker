@@ -24,15 +24,29 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser(state, action: PayloadAction<User | null>) {
+      if (action.payload) {
+        console.log(`[Auth] User logged in: ${action.payload.email} (ID: ${action.payload.id})`);
+      } else {
+        console.log('[Auth] User logged out');
+      }
       state.user = action.payload;
     },
     clearUser(state) {
+      console.log('[Auth] User session cleared');
       state.user = null;
     },
     setError(state, action: PayloadAction<string | null>) {
+      if (action.payload) {
+        console.error(`[Auth] Error: ${action.payload}`);
+      }
       state.error = action.payload;
     },
     setLoading(state, action: PayloadAction<boolean>) {
+      if (action.payload) {
+        console.log('[Auth] Loading started');
+      } else {
+        console.log('[Auth] Loading finished');
+      }
       state.loading = action.payload;
     }
   }

@@ -1,7 +1,9 @@
-import React from "react";
-import { CheckCircle2, Circle, Calendar, Trash2, Clock } from "lucide-react";
-import { useSortable } from "@dnd-kit/sortable";
+import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
+
 import { CSS } from "@dnd-kit/utilities";
+import React from "react";
+import { formatDate } from '../../utils/dateUtils';
+import { useSortable } from "@dnd-kit/sortable";
 
 export const TaskItem = ({
     task,
@@ -110,7 +112,7 @@ export const TaskItem = ({
                             {task.deadline && (
                                 <div className="flex items-center gap-1">
                                     <Calendar size={18} />
-                                    <span>{new Date(task.deadline).toLocaleDateString()}</span>
+                                    <span>{formatDate(task.deadline)}</span>
                                 </div>
                             )}
                             {task.priority && (

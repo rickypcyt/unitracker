@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import TaskForm from "./TaskForm";
 import { CheckCircle2, Clock } from 'lucide-react';
+import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { formatDate, formatDateForInput } from '../../utils/dateUtils';
+import { useDispatch, useSelector } from "react-redux";
+
+import LoginPromptModal from "../modals/LoginPromptModal";
+import TaskForm from "./TaskForm";
 import { fetchLaps } from "../../store/actions/LapActions";
+import { useAuth } from "../../hooks/useAuth";
 import { useTaskDetails } from "../../hooks/useTaskDetails";
 import { useTaskManager } from "../../hooks/useTaskManager";
-import { useAuth } from "../../hooks/useAuth";
-import LoginPromptModal from "../modals/LoginPromptModal";
 
 const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
   useEffect(() => {
@@ -42,7 +44,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-white">
-            {date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+            {formatDate(date.toISOString())}
           </h3>
           <button
             onClick={onClose}
@@ -342,7 +344,7 @@ const Calendar = () => {
       {showTaskForm && (
         <TaskForm
           initialAssignment=""
-          initialDeadline={selectedDate.toISOString().split('T')[0]}
+          initialDeadline={formatDateForInput(selectedDate)}
           onClose={(newTaskId) => {
             setShowTaskForm(false);
             if (newTaskId) {

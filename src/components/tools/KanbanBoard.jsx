@@ -1,36 +1,37 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { TaskItem } from './TaskItem';
-import { useTaskManager } from '../../hooks/useTaskManager';
-import { useAuth } from '../../hooks/useAuth';
-import { ClipboardCheck, ChevronDown, ChevronUp, Archive, Plus, Filter, Trash2 } from 'lucide-react';
-import TaskDetailsModal from '../modals/TaskDetailsModal';
-import DeleteCompletedModal from '../modals/DeleteTasksPop';
-import LoginPromptModal from '../modals/LoginPromptModal';
-import { useTaskDetails } from '../../hooks/useTaskDetails';
-import { TaskListMenu } from '../modals/TaskListMenu';
-import TaskForm from './TaskForm';
+import { Archive, ChevronDown, ChevronUp, ClipboardCheck, Filter, Plus, Trash2 } from 'lucide-react';
 import {
   DndContext,
-  closestCenter,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
-  DragOverlay,
 } from '@dnd-kit/core';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
+  arrayMove,
   horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { SortableColumn } from './SortableColumn';
-import { supabase } from '../../config/supabaseClient';
+
+import DeleteCompletedModal from '../modals/DeleteTasksPop';
+import LoginPromptModal from '../modals/LoginPromptModal';
 import { SortMenu } from './SortMenu';
-import { useDispatch } from 'react-redux';
-import { updateTaskSuccess } from '../../store/slices/TaskSlice';
+import { SortableColumn } from './SortableColumn';
+import TaskDetailsModal from '../modals/TaskDetailsModal';
+import TaskForm from './TaskForm';
+import { TaskItem } from './TaskItem';
+import { TaskListMenu } from '../modals/TaskListMenu';
 import { fetchTasks } from '../../store/actions/TaskActions';
+import { supabase } from '../../config/supabaseClient';
+import { updateTaskSuccess } from '../../store/slices/TaskSlice';
+import { useAuth } from '../../hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import { useTaskDetails } from '../../hooks/useTaskDetails';
+import { useTaskManager } from '../../hooks/useTaskManager';
 
 export const KanbanBoard = () => {
   const {
@@ -134,6 +135,13 @@ export const KanbanBoard = () => {
           return aDifficulty - bDifficulty;
         });
         break;
+      case 'dateAdded':
+        sortedTasks.sort((a, b) => {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateA - dateB;
+        });
+        break;
       default:
         break;
     }
@@ -222,6 +230,13 @@ export const KanbanBoard = () => {
               const aDifficulty = difficultyOrder[a.difficulty?.toLowerCase()] || 4;
               const bDifficulty = difficultyOrder[b.difficulty?.toLowerCase()] || 4;
               return aDifficulty - bDifficulty;
+            });
+            break;
+          case 'dateAdded':
+            sortedTasks.sort((a, b) => {
+              const dateA = new Date(a.created_at);
+              const dateB = new Date(b.created_at);
+              return dateA - dateB;
             });
             break;
           default:
