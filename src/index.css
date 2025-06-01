@@ -83,13 +83,13 @@
 
     /* Paleta principal */
     --bg-primary: #000000;
-    --border-primary: #2b2b2ce3;
+    --border-primary: #373737e3;
     --text-primary: #ffffff;
     --accent-primary: #1E90FF; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
 
-    --bg-secondary: #1c1c1c;
-    --text-secondary: #a0a0a0;
+    --bg-secondary: #0a0a0a;
+    --text-secondary: #b5b5b5;
     --accent-deep: #187BCD; /* Darker electric blue */
   }
 
