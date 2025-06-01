@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Play, Pause, RotateCcw, Timer } from "lucide-react";
-import { useTheme } from "../../utils/ThemeContext";
+import { Pause, Play, RotateCcw, Timer } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
+
 import { formatPomoTime } from "../../hooks/useTimers";
-import useEventListener from "../../hooks/useEventListener";
 import toast from "react-hot-toast";
+import useEventListener from "../../hooks/useEventListener";
+import { useTheme } from "../../utils/ThemeContext";
 
 const MODES = [
   { label: "50/10", work: 50 * 60, break: 10 * 60 },
@@ -86,13 +87,14 @@ const Pomodoro = () => {
   useEffect(() => {
     let interval;
     if (pomoState.isRunning && pomoState.timeLeft > 0) {
+      // Restart interval whenever isRunning or timeLeft changes
       const startTime = Date.now();
-      const initialTimeLeft = pomoState.timeLeft;
-      
+      const startCountingDownFrom = pomoState.timeLeft;
+
       interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const newTimeLeft = Math.max(0, initialTimeLeft - elapsed);
-        
+        const newTimeLeft = Math.max(0, startCountingDownFrom - elapsed);
+
         if (newTimeLeft <= 0) {
           handlePomodoroComplete();
           return;
@@ -105,7 +107,7 @@ const Pomodoro = () => {
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [pomoState.isRunning, pomoState.modeIndex, pomoState.currentMode]);
+  }, [pomoState.isRunning, pomoState.timeLeft]);
 
   // Event listeners
   useEventListener("startPomodoro", () => handleStart(), []);
@@ -119,6 +121,27 @@ const Pomodoro = () => {
   useEventListener("playTimerSync", () => {
     if (!pomoState.isRunning) {
       handleStart();
+    }
+  }, [pomoState.isRunning]);
+
+  // Add event listener for time adjustments
+  useEventListener("adjustPomodoroTime", (event) => {
+    const { adjustment } = event.detail;
+    const now = Date.now();
+    if (pomoState.isRunning) {
+      // Si está corriendo, actualizamos el tiempo y el startTime
+      setPomoState(prev => ({
+        ...prev,
+        timeLeft: Math.max(0, prev.timeLeft + adjustment),
+        startTime: now / 1000,
+        pausedTime: 0
+      }));
+    } else {
+      // Si está en pausa, solo actualizamos el tiempo
+      setPomoState(prev => ({
+        ...prev,
+        timeLeft: Math.max(0, prev.timeLeft + adjustment)
+      }));
     }
   }, [pomoState.isRunning]);
 
@@ -241,10 +264,7 @@ const Pomodoro = () => {
         <h2 className="text-xl font-semibold">Pomodoro Timer</h2>
       </div>
 
-      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
-        {formatPomoTime(pomoState.timeLeft)}
-      </div>
-
+      {/* Mode selection buttons */}
       <div className="flex gap-2 mb-6">
         {MODES.map((mode, index) => (
           <button
@@ -260,6 +280,108 @@ const Pomodoro = () => {
             {mode.label}
           </button>
         ))}
+      </div>
+
+      {/* Timer display */}
+      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
+        {formatPomoTime(pomoState.timeLeft)}
+      </div>
+
+      {/* Time adjustment buttons */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => {
+            const adjustment = -600;
+            const now = Date.now();
+            if (pomoState.isRunning) {
+              // Si está corriendo, actualizamos el tiempo y el startTime
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: Math.max(0, prev.timeLeft + adjustment),
+                startTime: now / 1000,
+                pausedTime: 0
+              }));
+            } else {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: Math.max(0, prev.timeLeft + adjustment)
+              }));
+            }
+          }}
+          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          aria-label="Subtract 10 minutes"
+        >
+          -10
+        </button>
+        <button
+          onClick={() => {
+            const adjustment = -300;
+            const now = Date.now();
+            if (pomoState.isRunning) {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: Math.max(0, prev.timeLeft + adjustment),
+                startTime: now / 1000,
+                pausedTime: 0
+              }));
+            } else {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: Math.max(0, prev.timeLeft + adjustment)
+              }));
+            }
+          }}
+          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          aria-label="Subtract 5 minutes"
+        >
+          -5
+        </button>
+        <button
+          onClick={() => {
+            const adjustment = 300;
+            const now = Date.now();
+            if (pomoState.isRunning) {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: prev.timeLeft + adjustment,
+                startTime: now / 1000,
+                pausedTime: 0
+              }));
+            } else {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: prev.timeLeft + adjustment
+              }));
+            }
+          }}
+          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          aria-label="Add 5 minutes"
+        >
+          +5
+        </button>
+        <button
+          onClick={() => {
+            const adjustment = 600;
+            const now = Date.now();
+            if (pomoState.isRunning) {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: prev.timeLeft + adjustment,
+                startTime: now / 1000,
+                pausedTime: 0
+              }));
+            } else {
+              setPomoState(prev => ({
+                ...prev,
+                timeLeft: prev.timeLeft + adjustment
+              }));
+            }
+          }}
+          className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+          aria-label="Add 10 minutes"
+        >
+          +10
+        </button>
       </div>
 
       <div className="timer-controls">

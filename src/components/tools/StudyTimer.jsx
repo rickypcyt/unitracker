@@ -4,6 +4,7 @@ import { formatStudyTime, useStudyTimer } from "../../hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
 import { useDispatch, useSelector } from "react-redux";
 
+import DeleteSessionModal from '../modals/DeleteSessionModal';
 import EditSessionModal from "../modals/EditSessionModal";
 import FinishSessionModal from "../modals/FinishSessionModal";
 import LoginPromptModal from "../modals/LoginPromptModal";
@@ -32,6 +33,7 @@ const StudyTimer = ({ onSyncChange }) => {
   const [isHandlingEvent, setIsHandlingEvent] = useState(false);
   const [sessionsTodayCount, setSessionsTodayCount] = useState(0);
   const [pomodoroStartedWithSession, setPomodoroStartedWithSession] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
@@ -475,31 +477,34 @@ const StudyTimer = ({ onSyncChange }) => {
   };
 
   const handleExitSession = async () => {
-    if (window.confirm('Are you sure you want to exit this session? This will delete the session.')) {
-      try {
-        if (currentSessionId) {
-          // Delete the session from the database
-          const { error } = await supabase
-            .from('study_laps')
-            .delete()
-            .eq('id', currentSessionId);
+    setIsDeleteModalOpen(true);
+  };
 
-          if (error) {
-            console.error('Error deleting session:', error);
-            toast.error('Failed to delete session.');
-            return;
-          }
+  const handleConfirmDelete = async () => {
+    try {
+      if (currentSessionId) {
+        // Delete the session from the database
+        const { error } = await supabase
+          .from('study_laps')
+          .delete()
+          .eq('id', currentSessionId);
+
+        if (error) {
+          console.error('Error deleting session:', error);
+          toast.error('Failed to delete session.');
+          return;
         }
-
-        // Reset all states
-        studyControls.reset();
-        setCurrentSessionId(null);
-        dispatch(setCurrentSession(null));
-        localStorage.removeItem("activeSessionId");
-      } catch (error) {
-        console.error('Error exiting session:', error);
-        toast.error('An error occurred while exiting the session.');
       }
+
+      // Reset all states
+      studyControls.reset();
+      setCurrentSessionId(null);
+      dispatch(setCurrentSession(null));
+      localStorage.removeItem("activeSessionId");
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error('Error exiting session:', error);
+      toast.error('An error occurred while exiting the session.');
     }
   };
 
@@ -525,28 +530,92 @@ const StudyTimer = ({ onSyncChange }) => {
 
       <div className="flex gap-2 mb-6">
         <button
-          onClick={() => setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time - 600) }))}
+          onClick={() => {
+            const adjustment = -600;
+            const now = Date.now();
+            if (studyState.isRunning) {
+              const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+              setStudyState(prev => ({
+                ...prev,
+                timeAtStart: Math.max(0, elapsed + adjustment),
+                lastStart: now
+              }));
+            } else {
+              setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time + adjustment) }));
+            }
+            if (pomodoroStartedWithSession) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            }
+          }}
           className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
           aria-label="Subtract 10 minutes"
         >
           -10
         </button>
         <button
-          onClick={() => setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time - 300) }))}
+          onClick={() => {
+            const adjustment = -300;
+            const now = Date.now();
+            if (studyState.isRunning) {
+              const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+              setStudyState(prev => ({
+                ...prev,
+                timeAtStart: Math.max(0, elapsed + adjustment),
+                lastStart: now
+              }));
+            } else {
+              setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time + adjustment) }));
+            }
+            if (pomodoroStartedWithSession) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            }
+          }}
           className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
           aria-label="Subtract 5 minutes"
         >
           -5
         </button>
         <button
-          onClick={() => setStudyState(prev => ({ ...prev, time: prev.time + 300 }))}
+          onClick={() => {
+            const adjustment = 300;
+            const now = Date.now();
+            if (studyState.isRunning) {
+              const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+              setStudyState(prev => ({
+                ...prev,
+                timeAtStart: elapsed + adjustment,
+                lastStart: now
+              }));
+            } else {
+              setStudyState(prev => ({ ...prev, time: prev.time + adjustment }));
+            }
+            if (pomodoroStartedWithSession) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            }
+          }}
           className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
           aria-label="Add 5 minutes"
         >
           +5
         </button>
         <button
-          onClick={() => setStudyState(prev => ({ ...prev, time: prev.time + 600 }))}
+          onClick={() => {
+            const adjustment = 600;
+            const now = Date.now();
+            if (studyState.isRunning) {
+              const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
+              setStudyState(prev => ({
+                ...prev,
+                timeAtStart: elapsed + adjustment,
+                lastStart: now
+              }));
+            } else {
+              setStudyState(prev => ({ ...prev, time: prev.time + adjustment }));
+            }
+            if (pomodoroStartedWithSession) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            }
+          }}
           className="px-3 py-1 rounded-lg bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
           aria-label="Add 10 minutes"
         >
@@ -643,6 +712,12 @@ const StudyTimer = ({ onSyncChange }) => {
       <LoginPromptModal
         isOpen={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
+      />
+
+      <DeleteSessionModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );
