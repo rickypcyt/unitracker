@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import DeleteSessionModal from '../modals/DeleteSessionModal';
 import SessionDetailsModal from '../modals/SessionDetailsModal';
 import { deleteLap } from '../../store/actions/LapActions';
 import { formatDateTimeWithAmPm } from '../../utils/dateUtils';
@@ -16,6 +17,8 @@ const MonthLogs = () => {
     const { isLoggedIn } = useAuth();
     const [expandedMonths, setExpandedMonths] = useState({});
     const [selectedSession, setSelectedSession] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [sessionToDeleteId, setSessionToDeleteId] = useState(null);
 
     const toggleVisibility = (monthYear) => {
         setExpandedMonths(prev => ({
@@ -35,14 +38,28 @@ const MonthLogs = () => {
         }, {});
     };
 
-    const handleDelete = async (sessionId) => {
-        try {
-            await dispatch(deleteLap(sessionId));
-            toast.success("Session deleted successfully");
-        } catch (error) {
-            console.error("Error deleting session:", error);
-            toast.error(error.message || "Failed to delete session");
+    const handleDeleteClick = (sessionId) => {
+        setSessionToDeleteId(sessionId);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (sessionToDeleteId) {
+            try {
+                await dispatch(deleteLap(sessionToDeleteId));
+                toast.success("Session deleted successfully");
+            } catch (error) {
+                console.error("Error deleting session:", error);
+                toast.error(error.message || "Failed to delete session");
+            }
         }
+        setIsDeleteModalOpen(false);
+        setSessionToDeleteId(null);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setSessionToDeleteId(null);
     };
 
     const groupedLaps = groupSessionsByMonth();
@@ -113,7 +130,7 @@ const MonthLogs = () => {
                                                             {lap.duration}
                                                         </span>
                                                         <button
-                                                            onClick={() => handleDelete(lap.id)}
+                                                            onClick={() => handleDeleteClick(lap.id)}
                                                             className="text-red-500 hover:text-red-600 transition-colors duration-200"
                                                             aria-label={`Delete session ${lap.name}`}
                                                         >
@@ -137,6 +154,12 @@ const MonthLogs = () => {
                     onClose={() => setSelectedSession(null)}
                 />
             )}
+
+            <DeleteSessionModal
+                isOpen={isDeleteModalOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDelete}
+            />
         </div>
     );
 };

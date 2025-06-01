@@ -146,11 +146,11 @@
     border-color: var(--border-primary) !important;
   }
   .cardtitle {
-    @apply text-2xl font-bold mb-6 flex items-center gap-2;
+    @apply text-xl font-bold mb-6 flex items-center gap-2;
     color: var(--text-primary);
   }
   .caltitle {
-    @apply text-2xl font-bold flex items-center gap-2 mb-6;
+    @apply text-xl font-bold flex items-center gap-2 mb-6;
     color: var(--text-primary);
   }
   .card-subtitle {

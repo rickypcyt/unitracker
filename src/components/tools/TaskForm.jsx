@@ -1,11 +1,12 @@
+import { FormActions, FormButton, FormInput, FormSelect, FormTextarea } from '../common/FormElements';
 import React, { useEffect } from 'react';
-import { useTaskManager } from '../../hooks/useTaskManager';
-import { useDispatch } from 'react-redux';
-import { updateTaskSuccess, addTaskSuccess } from '../../store/slices/TaskSlice';
-import { useFormState } from '../../hooks/useFormState';
+import { addTaskSuccess, updateTaskSuccess } from '../../store/slices/TaskSlice';
+
 import BaseModal from '../common/BaseModal';
-import { FormInput, FormTextarea, FormSelect, FormButton, FormActions } from '../common/FormElements';
 import { supabase } from '../../config/supabaseClient';
+import { useDispatch } from 'react-redux';
+import { useFormState } from '../../hooks/useFormState';
+import { useTaskManager } from '../../hooks/useTaskManager';
 
 const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTaskCreated }) => {
   const { user } = useTaskManager();
@@ -100,7 +101,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
       isOpen={true}
       onClose={onClose}
       title={initialTask ? 'Edit Task' : 'Add Task'}
-      hasUnsavedChanges={isDirty}
       maxWidth="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">

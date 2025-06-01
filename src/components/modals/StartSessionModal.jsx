@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../../config/supabaseClient';
+import { Check, Plus, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-import { X, Plus, Check } from 'lucide-react';
 import TaskForm from '../tools/TaskForm';
 import TaskSelectionPanel from '../tools/TaskSelectionPanel';
+import { supabase } from '../../config/supabaseClient';
 
 const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [sessionTitle, setSessionTitle] = useState('');
@@ -13,13 +13,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [titleError, setTitleError] = useState(false);
-  const [syncPomo, setSyncPomo] = useState(() => {
-    return localStorage.getItem("syncPomoWithTimer") === "true";
-  });
-  const [startPomodoro, setStartPomodoro] = useState(() => {
-    const savedState = localStorage.getItem('startPomodoroChecked');
-    return savedState ? JSON.parse(savedState) : false;
-  });
 
   useEffect(() => {
     if (isOpen) {
@@ -38,11 +31,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       fetchSessionTasks();
     }
   }, [lastAddedTaskId]);
-
-  // Save startPomodoro state to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('startPomodoroChecked', JSON.stringify(startPomodoro));
-  }, [startPomodoro]);
 
   const fetchSessionTasks = async () => {
     try {
@@ -190,12 +178,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         }
       }
 
-      // If startPomodoro is true, dispatch the startPomodoro event
-      if (startPomodoro) {
-        window.dispatchEvent(new CustomEvent("startPomodoro"));
-        window.dispatchEvent(new CustomEvent("pomodoroStartedWithSession"));
-      }
-
       // Pass the created session details back to StudyTimer
       onStart({
         sessionId: session.id,
@@ -203,7 +185,9 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         title: sessionTitle.trim()
       });
 
+      // Close the modal after successful session start
       onClose();
+
     } catch (error) {
       console.error('Error starting session:', error);
       // Optionally show a toast or error message
@@ -213,8 +197,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-filter backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Start New Session</h2>
           <button onClick={onClose} className="text-neutral-400 hover:text-white">
@@ -272,17 +256,6 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         />
 
         <div className="mt-6 flex justify-end gap-2">
-          <div className="flex items-center gap-2 mr-auto">
-            <label className="flex items-center gap-2 text-neutral-400 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={startPomodoro}
-                onChange={(e) => setStartPomodoro(e.target.checked)}
-                className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-accent-primary focus:ring-accent-primary"
-              />
-              <span>Start Pomodoro Timer</span>
-            </label>
-          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 text-neutral-400 hover:text-white"

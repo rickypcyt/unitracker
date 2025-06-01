@@ -1,15 +1,18 @@
-import { Pause, Play, RotateCcw, Timer } from "lucide-react";
+import { CheckSquare, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
+import PomodoroSettingsModal from "../modals/PomodoroSettingsModal";
 import { formatPomoTime } from "../../hooks/useTimers";
 import toast from "react-hot-toast";
 import useEventListener from "../../hooks/useEventListener";
 import { useTheme } from "../../utils/ThemeContext";
 
-const MODES = [
+// Initial modes
+const INITIAL_MODES = [
   { label: "50/10", work: 50 * 60, break: 10 * 60 },
   { label: "25/5", work: 25 * 60, break: 5 * 60 },
   { label: "90/30", work: 90 * 60, break: 30 * 60 },
+  { label: "Custom", work: 45 * 60, break: 15 * 60 }, // Add default custom mode
 ];
 
 // Preload sounds
@@ -27,12 +30,17 @@ Object.values(sounds).forEach(sound => {
 const Pomodoro = () => {
   const { iconColor } = useTheme();
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [modes, setModes] = useState(() => {
+    const savedModes = localStorage.getItem("pomodoroModes");
+    return savedModes ? JSON.parse(savedModes) : INITIAL_MODES;
+  });
+
   const [pomoState, setPomoState] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
     const savedState = localStorage.getItem("pomodoroState");
     const defaultModeIndex = 0;
     const defaultMode = "work";
-    const defaultTimeLeft = MODES[defaultModeIndex][defaultMode];
+    const defaultTimeLeft = modes[defaultModeIndex][defaultMode];
 
     if (savedState) {
       try {
@@ -69,6 +77,22 @@ const Pomodoro = () => {
       pausedTime: 0,
     };
   });
+
+  // Add state to track sync status from StudyTimer
+  const [isSyncedWithStudyTimer, setIsSyncedWithStudyTimer] = useState(false);
+
+  // Add event listener for sync state changes from StudyTimer
+  useEventListener("studyTimerSyncStateChanged", (event) => {
+    setIsSyncedWithStudyTimer(event.detail.isSyncedWithStudyTimer);
+  }, []);
+
+  // Add state for settings modal
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
+  // Save modes to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("pomodoroModes", JSON.stringify(modes));
+  }, [modes]);
 
   // Guardar estado en localStorage cuando cambie
   useEffect(() => {
@@ -163,7 +187,7 @@ const Pomodoro = () => {
   }, []);
 
   const handleStart = useCallback(() => {
-    const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
+    const modeDuration = modes[pomoState.modeIndex][pomoState.currentMode];
     setPomoState(prev => ({ 
       ...prev, 
       isRunning: true,
@@ -182,7 +206,7 @@ const Pomodoro = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    const modeDuration = MODES[pomoState.modeIndex][pomoState.currentMode];
+    const modeDuration = modes[pomoState.modeIndex][pomoState.currentMode];
     setPomoState(prev => ({
       ...prev,
       isRunning: false,
@@ -193,13 +217,28 @@ const Pomodoro = () => {
   }, [pomoState.modeIndex, pomoState.currentMode]);
 
   const handleModeChange = useCallback((index) => {
+    // Ensure index is within bounds
+    const safeIndex = Math.min(index, modes.length - 1);
     setPomoState(prev => ({
       ...prev,
-      modeIndex: index,
-      timeLeft: MODES[index][prev.currentMode],
+      modeIndex: safeIndex,
+      timeLeft: modes[safeIndex][prev.currentMode],
       isRunning: false,
     }));
-  }, []);
+  }, [modes]);
+
+  const handleSaveCustomMode = useCallback((customMode) => {
+    setModes(prev => {
+      const newModes = [...prev];
+      // Find the custom mode (it should always be the last one)
+      const customModeIndex = newModes.length - 1;
+      // Update the custom mode
+      newModes[customModeIndex] = customMode;
+      // Switch to the custom mode
+      handleModeChange(customModeIndex);
+      return newModes;
+    });
+  }, [handleModeChange]);
 
   const handlePomodoroComplete = useCallback(() => {
     const isWork = pomoState.currentMode === "work";
@@ -213,7 +252,7 @@ const Pomodoro = () => {
     setPomoState(prev => ({
       ...prev,
       currentMode: isWork ? "break" : "work",
-      timeLeft: MODES[prev.modeIndex][isWork ? "break" : "work"],
+      timeLeft: modes[prev.modeIndex][isWork ? "break" : "work"],
       pomodoroToday: isWork ? prev.pomodoroToday + 1 : prev.pomodoroToday,
     }));
 
@@ -262,24 +301,14 @@ const Pomodoro = () => {
       <div className="flex items-center gap-2 mb-6">
         <Timer size={24} />
         <h2 className="text-xl font-semibold">Pomodoro Timer</h2>
-      </div>
-
-      {/* Mode selection buttons */}
-      <div className="flex gap-2 mb-6">
-        {MODES.map((mode, index) => (
-          <button
-            key={mode.label}
-            onClick={() => handleModeChange(index)}
-            className={`px-3 py-1 rounded-lg transition-colors ${
-              pomoState.modeIndex === index
-                ? "bg-accent-primary text-white"
-                : "bg-neutral-800 text-neutral-400 hover:text-white"
-            }`}
-            aria-label={`Set ${mode.label} mode`}
-          >
-            {mode.label}
-          </button>
-        ))}
+        {/* Add settings icon */}
+        <button
+          onClick={() => setIsSettingsModalOpen(true)}
+          className="ml-2 p-1 rounded-full text-neutral-400 hover:text-white transition-colors"
+          aria-label="Pomodoro settings"
+        >
+          <MoreVertical size={20} />
+        </button>
       </div>
 
       {/* Timer display */}
@@ -384,10 +413,11 @@ const Pomodoro = () => {
         </button>
       </div>
 
-      <div className="timer-controls">
+      {/* Timer controls */}
+      <div className="timer-controls flex justify-center items-center gap-3">
         <button
           onClick={handleReset}
-          className="control-button w-10 h-10 flex items-center justify-center"
+          className="control-button flex items-center justify-center"
           aria-label="Reset timer"
         >
           <RotateCcw size={20} style={{ color: iconColor }} />
@@ -395,7 +425,7 @@ const Pomodoro = () => {
         {!pomoState.isRunning ? (
           <button
             onClick={handleStart}
-            className="control-button w-10 h-10 flex items-center justify-center"
+            className="control-button flex items-center justify-center"
             aria-label="Start timer"
           >
             <Play size={20} style={{ color: iconColor }} />
@@ -403,7 +433,7 @@ const Pomodoro = () => {
         ) : (
           <button
             onClick={handleStop}
-            className="control-button w-10 h-10 flex items-center justify-center"
+            className="control-button flex items-center justify-center"
             aria-label="Pause timer"
           >
             <Pause size={20} style={{ color: iconColor }} />
@@ -411,12 +441,24 @@ const Pomodoro = () => {
         )}
       </div>
 
-      <div className="mt-4 text-base text-neutral-400">
+      <div className="mt-4 text-base text-neutral-400 mb-1">
         {pomoState.currentMode === "work" ? "Work Time" : "Break Time"}
       </div>
-      <div className="text-base text-neutral-400">
+      <div className="text-base text-neutral-400 mb-1">
         Pomodoros Today: {pomoState.pomodoroToday}
       </div>
+
+      {/* Sync with StudyTimer toggle - Moved down */}
+      <div className="flex items-center gap-2 justify-center mb-4">
+        <label className="flex items-center gap-2 text-neutral-400 cursor-pointer" onClick={() => {
+          // Dispatch event to update sync state in StudyTimer
+          window.dispatchEvent(new CustomEvent("pomodoroSyncStateChanged", { detail: { isSyncedWithStudyTimer: !isSyncedWithStudyTimer } }));
+        }}>
+          <span>Sync with Study Timer:</span>
+          {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: '#3b82f6' }} /> : <Square size={20} style={{ color: iconColor }} />}
+        </label>
+      </div>
+
       {notificationPermission !== "granted" && (
         <button
           onClick={async () => {
@@ -428,6 +470,16 @@ const Pomodoro = () => {
           Enable Notifications
         </button>
       )}
+
+      {/* Add Pomodoro Settings Modal */}
+      <PomodoroSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        currentModeIndex={pomoState.modeIndex}
+        modes={modes}
+        onModeChange={handleModeChange}
+        onSaveCustomMode={handleSaveCustomMode}
+      />
     </div>
   );
 };

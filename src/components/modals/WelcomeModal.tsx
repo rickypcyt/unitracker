@@ -1,26 +1,13 @@
+import { BarChart2, Calendar, CheckCircle2, Clock, Music } from "lucide-react";
+
+import BaseModal from "../common/BaseModal";
 import React from "react";
-import { X, Clock, Calendar, BarChart2, Music, CheckCircle2 } from "lucide-react";
 
 interface WelcomeModalProps {
   onClose: () => void;
 }
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  React.useEffect(() => {
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.documentElement.style.overflow = "auto";
-      document.body.style.overflow = "auto";
-    };
-  }, []);
-
   const features = [
     {
       icon: <Clock className="w-6 h-6" />,
@@ -45,27 +32,22 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   ];
 
   return (
-    <div
-      className="fixed inset-0 bg-black/80 flex justify-center items-center z-[99999] backdrop-blur-sm p-4 sm:p-6"
-      onClick={handleOverlayClick}
+    <BaseModal
+      isOpen={true}
+      onClose={onClose}
+      title="Welcome to UniTracker"
+      maxWidth="max-w-4xl"
+      zIndex="z-[99999]"
+      showCloseButton={false}
     >
-      <div className="maincard w-full max-w-4xl mx-auto p-6 sm:p-8 rounded-2xl text-text-primary max-h-[90vh] overflow-y-auto animate-fadeIn">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex-1">
-            <h3 className="text-2xl sm:text-3xl font-bold text-accent-primary mb-2">
-              Welcome to UniTracker
-            </h3>
-            <p className="text-text-secondary text-base sm:text-lg">
-              Your all-in-one study companion
-            </p>
-          </div>
-          <button
-            className="text-gray-400 hover:text-white transition duration-200 p-2 hover:bg-white/10 rounded-full"
-            onClick={onClose}
-            aria-label="Close welcome modal"
-          >
-            <X size={24} />
-          </button>
+      <div className="p-6 sm:p-8">
+        <div className="flex-1 mb-8">
+          <h3 className="text-2xl sm:text-3xl font-bold text-accent-primary mb-2">
+            Welcome to UniTracker
+          </h3>
+          <p className="text-text-secondary text-base sm:text-lg">
+            Your all-in-one study companion
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -131,7 +113,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 };
 
