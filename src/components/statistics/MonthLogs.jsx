@@ -77,7 +77,7 @@ const MonthLogs = () => {
                     {Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => (
                         <div key={monthYear} className="mb-4">
                             <button
-                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors"
+                                className="w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors"
                                 onClick={() => toggleVisibility(monthYear)}
                                 aria-expanded={expandedMonths[monthYear]}
                                 aria-controls={`sessions-${monthYear}`}
@@ -110,23 +110,23 @@ const MonthLogs = () => {
                                         lapsOfMonth.map((lap) => (
                                             <div
                                                 key={lap.id}
-                                                className="mt-2 ml-4 relative p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300"
+                                                className="mt-2 ml-2 relative p-3 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300"
                                                 role="listitem"
                                                 onDoubleClick={() => setSelectedSession(lap)}
                                             >
                                                 <div className="flex justify-between">
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-lg text-[var(--accent-primary)]">
+                                                            <span className="text-base text-[var(--accent-primary)]">
                                                                 #{lap.session_number} {lap.name}
                                                             </span>
                                                         </div>
-                                                        <p className="text-lg text-[var(--text-secondary)] mb-1">
+                                                        <p className="text-base text-[var(--text-secondary)] mb-1">
                                                             {formatDateTimeWithAmPm(lap.created_at)}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-4">
-                                                        <span className="text-[var(--text-secondary)] text-lg">
+                                                        <span className="text-[var(--text-secondary)] text-base">
                                                             {lap.duration}
                                                         </span>
                                                         <button

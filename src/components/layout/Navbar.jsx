@@ -20,7 +20,7 @@ const Navbar = ({ onOpenSettings }) => {
   const navLinkClass = (page) => {
     return `px-4 py-2 rounded-md text-xl ${
       isActive(page)
-        ? 'text-[var(--accent-primary)] font-bold'
+        ? 'text-[var(--accent-primary)] '
         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'
     }`;
   };

@@ -484,7 +484,7 @@ const StudyTimer = ({ onSyncChange }) => {
         {/* Left side: Icon and Title */}
         <div className="flex items-center gap-2">
           <Clock size={24} />
-          <h2 className="text-xl font-semibold">Study Timer</h2>
+          <h2 className="text-xl font-semibold sm:text-sm">Study Timer</h2>
         </div>
 
         {/* Right side: Settings Button or Placeholder */}

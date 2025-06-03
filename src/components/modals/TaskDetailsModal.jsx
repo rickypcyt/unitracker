@@ -108,23 +108,55 @@ const TaskDetailsModal = ({
     { value: 'hard', label: 'Hard' }
   ];
 
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'text-[#00FF41]'; /* Matrix green */
+      case 'medium':
+        return 'text-[#1E90FF]'; /* Electric neon blue */
+      case 'hard':
+        return 'text-[#FF003C]'; /* Neon red */
+      default:
+        return 'text-neutral-400';
+    }
+  };
+
   return (
     <BaseModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        if (isDirty) {
+          if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+            onClose();
+          }
+        } else {
+          onClose();
+        }
+      }}
       title="Task Details"
-      hasUnsavedChanges={isDirty}
+      hasUnsavedChanges={false}
       maxWidth="max-w-2xl"
     >
       <div className="space-y-4">
-        <FormInput
-          id="title"
-          label="Title"
-          value={formData.title}
-          onChange={(value) => handleChange('title', value)}
-          error={errors.title}
-          required
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormInput
+            id="assignment"
+            label="Assignment"
+            value={formData.assignment}
+            onChange={(value) => handleChange('assignment', value)}
+            error={errors.assignment}
+            required
+          />
+
+          <FormInput
+            id="title"
+            label="Title"
+            value={formData.title}
+            onChange={(value) => handleChange('title', value)}
+            error={errors.title}
+            required
+          />
+        </div>
 
         <FormTextarea
           id="description"
@@ -134,25 +166,45 @@ const TaskDetailsModal = ({
           error={errors.description}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormSelect
-            id="difficulty"
-            label="Difficulty"
-            value={formData.difficulty}
-            onChange={(value) => handleChange('difficulty', value)}
-            options={difficultyOptions}
-            error={errors.difficulty}
-            required
-          />
-
-          <FormInput
-            id="assignment"
-            label="Assignment"
-            value={formData.assignment}
-            onChange={(value) => handleChange('assignment', value)}
-            error={errors.assignment}
-            required
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Difficulty
+            </label>
+            <div className="flex items-center justify-center gap-8">
+              {difficultyOptions.map((option) => (
+                <div key={option.value} className="flex flex-col items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleChange('difficulty', option.value)}
+                    className="p-1 rounded-full transition-all duration-200 hover:scale-110 focus:shadow-[0_0_0_2px_rgba(255,255,255,0.1)] focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleChange('difficulty', option.value);
+                      }
+                    }}
+                  >
+                    {formData.difficulty === option.value ? (
+                      <CheckCircle2
+                        size={24}
+                        className={getDifficultyColor(option.value)}
+                      />
+                    ) : (
+                      <Circle
+                        size={24}
+                        className={getDifficultyColor(option.value)}
+                      />
+                    )}
+                  </button>
+                  <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
+                </div>
+              ))}
+            </div>
+            {errors.difficulty && (
+              <p className="mt-1 text-sm text-red-500">{errors.difficulty}</p>
+            )}
+          </div>
 
           <FormInput
             id="deadline"
@@ -167,57 +219,57 @@ const TaskDetailsModal = ({
 
         <div className="flex justify-between gap-8">
           <div className="flex-1 text-left">
-            <h4 className="text-lg font-semibold text-neutral-900 mb-1">
+            <h4 className="text-lg font-semibold text-neutral-500 mb-1">
               Created At
             </h4>
-            <p className="text-neutral-600">
+            <p className="text-gray">
               {moment(task.created_at).format("MMMM D, YYYY h:mm A")}
             </p>
           </div>
 
           <div className="flex-1 text-right">
-            <h4 className="text-lg font-semibold text-neutral-900 mb-1">
+            <h4 className="text-lg font-semibold text-neutral-500 mb-1">
               Status
             </h4>
-            <p className="text-neutral-600">
+            <p className="text-gray">
               {task.completed ? "Completed" : "Pending"}
             </p>
           </div>
         </div>
 
-        <FormActions className="flex-wrap">
+        <FormActions className="grid grid-cols-4 gap-2">
           <FormButton
             variant="danger"
             onClick={handleDelete}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full"
           >
             <Trash2 size={20} />
-            Delete Task
+            <span>Delete</span>
           </FormButton>
 
           <FormButton
             variant="secondary"
             onClick={handleSetActiveTask}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full"
           >
             <Play size={20} className={task.activetask ? "rotate-180" : ""} />
-            {task.activetask ? "Deactivate Task" : "Set as Active Task"}
+            <span>{task.activetask ? "Deactivate" : "Activate"}</span>
           </FormButton>
 
           <FormButton
             variant="secondary"
             onClick={handleToggleCompletion}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2 w-full"
           >
             {task.completed ? (
               <>
                 <Circle size={20} />
-                Mark as Incomplete
+                <span>Incomplete</span>
               </>
             ) : (
               <>
                 <CheckCircle2 size={20} />
-                Mark as Complete
+                <span>Complete</span>
               </>
             )}
           </FormButton>
@@ -225,10 +277,10 @@ const TaskDetailsModal = ({
           <FormButton
             variant="primary"
             onClick={handleSave}
-            className="flex items-center gap-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 text-white"
+            className="flex items-center justify-center gap-2 w-full"
           >
             <Save size={20} />
-            Save Changes
+            <span>Save</span>
           </FormButton>
         </FormActions>
       </div>

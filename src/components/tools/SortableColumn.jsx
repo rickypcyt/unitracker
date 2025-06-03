@@ -70,14 +70,14 @@ export const SortableColumn = ({
               const rect = event.currentTarget.getBoundingClientRect();
               onSortClick(assignment, { x: rect.left, y: rect.bottom });
             }}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 mr-2"
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]  mr-2"
             title="Sort tasks"
           >
             <ListOrdered size={18} />
           </button>
           <button
             onClick={onAddTask}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105"
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] "
             title="Add task"
           >
             <Plus size={18} />

@@ -151,12 +151,12 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-neutral-900">
+            <h2 className="text-xl font-semibold text-neutral-500">
               Edit Session{sessionTitle && <>: <span className="text-[var(--accent-primary)]">{sessionTitle}</span></>}
             </h2>
           </div>
           <button
-            className="text-neutral-500 hover:text-neutral-900"
+            className="text-neutral-500 hover:text-neutral-500"
             onClick={onClose}
           >
             <X size={24} />
@@ -166,7 +166,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-900 mb-2">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-500 mb-2">
                 Session Title
               </label>
               <input
@@ -185,7 +185,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-900 mb-2">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-500 mb-2">
                 Description (Optional)
               </label>
               <textarea

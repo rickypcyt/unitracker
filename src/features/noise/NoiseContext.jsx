@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useRef, useState, useEffect } from "react";
 import * as Tone from "tone";
+
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // Configuración de cada sonido
 const SOUND_CONFIGS = [
@@ -238,12 +239,23 @@ export function NoiseProvider({ children }) {
 
   // Iniciar sonidos que estaban reproduciéndose
   useEffect(() => {
-    sounds.forEach((sound, index) => {
-      if (sound.isPlaying) {
-        startSound(index);
-      }
-    });
-  }, []);
+    const initializeSounds = async () => {
+      // Esperar a que Tone.js esté listo
+      await Tone.start();
+      
+      // Iniciar todos los sonidos que estaban reproduciéndose
+      const startPromises = sounds.map((sound, index) => {
+        if (sound.isPlaying) {
+          return startSound(index);
+        }
+        return Promise.resolve();
+      });
+      
+      await Promise.all(startPromises);
+    };
+
+    initializeSounds().catch(console.error);
+  }, []); // Solo se ejecuta al montar el componente
 
   // Limpieza global
   useEffect(() => {

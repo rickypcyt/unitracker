@@ -53,7 +53,7 @@ const BaseModal = ({
       onClick={handleOverlayClick}
     >
       <div 
-        className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl border border-[var(--border-primary)]`}
+        className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl border-2 border-[var(--border-primary)]`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">

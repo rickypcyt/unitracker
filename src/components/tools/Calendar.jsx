@@ -73,6 +73,7 @@ const Calendar = () => {
   const { isLoggedIn } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [focusedDate, setFocusedDate] = useState(new Date());
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
@@ -99,19 +100,51 @@ const Calendar = () => {
     dispatch(fetchLaps());
   }, [dispatch]);
 
-  // Agregar manejo de teclas para navegación
+  // Replace the keyboard event handler
   useEffect(() => {
     const handleKeyPress = (event) => {
-      if (event.key === 'ArrowLeft') {
-        goToPreviousMonth();
-      } else if (event.key === 'ArrowRight') {
-        goToNextMonth();
+      const newFocusedDate = new Date(focusedDate);
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          newFocusedDate.setDate(newFocusedDate.getDate() - 1);
+          break;
+        case 'ArrowRight':
+          newFocusedDate.setDate(newFocusedDate.getDate() + 1);
+          break;
+        case 'ArrowUp':
+          newFocusedDate.setDate(newFocusedDate.getDate() - 7);
+          break;
+        case 'ArrowDown':
+          newFocusedDate.setDate(newFocusedDate.getDate() + 7);
+          break;
+        case 'Enter':
+          handleDateDoubleClick(focusedDate);
+          return;
+        default:
+          return;
+      }
+
+      // Update focused date and ensure it's visible in the calendar
+      setFocusedDate(newFocusedDate);
+      setSelectedDate(newFocusedDate);
+      
+      // If the new focused date is in a different month, update the current date
+      if (newFocusedDate.getMonth() !== currentDate.getMonth() || 
+          newFocusedDate.getFullYear() !== currentDate.getFullYear()) {
+        setCurrentDate(new Date(newFocusedDate.getFullYear(), newFocusedDate.getMonth(), 1));
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, []);
+  }, [focusedDate, currentDate]);
+
+  // Update handleDateClick to also set focused date
+  const handleDateClick = (date) => {
+    setSelectedDate(date);
+    setFocusedDate(date);
+  };
 
   // Days of the week in English
   const weekdays = ["M", "T", "W", "T", "F", "S", "S"];
@@ -156,10 +189,6 @@ const Calendar = () => {
       date.getMonth() === selectedDate.getMonth() &&
       date.getFullYear() === selectedDate.getFullYear()
     );
-  };
-
-  const handleDateClick = (date) => {
-    setSelectedDate(date);
   };
 
   const handleDateDoubleClick = (date) => {
@@ -268,76 +297,150 @@ const Calendar = () => {
     }
   };
 
+  // Add this new function to check for tasks with deadlines
+  const hasTasksWithDeadline = (date) => {
+    return tasks.some(task => {
+      if (!task.deadline) return false;
+      const deadlineDate = new Date(task.deadline);
+      return (
+        deadlineDate.getDate() === date.getDate() &&
+        deadlineDate.getMonth() === date.getMonth() &&
+        deadlineDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
+
+  // Add this new function to get tasks with deadlines for a specific date
+  const getTasksWithDeadline = (date) => {
+    return tasks.filter(task => {
+      if (!task.deadline) return false;
+      const deadlineDate = new Date(task.deadline);
+      return (
+        deadlineDate.getDate() === date.getDate() &&
+        deadlineDate.getMonth() === date.getMonth() &&
+        deadlineDate.getFullYear() === date.getFullYear()
+      );
+    });
+  };
+
+  // Add state for tooltip content and position
+  const [tooltipContent, setTooltipContent] = useState(null);
+
+  // Modify the tooltip hover handler to only store content
+  const handleTooltipHover = (date, tasks) => {
+    setTooltipContent({
+      date,
+      tasks
+    });
+  };
+
   return (
-    <div className="maincard" >
-      <div className="flex justify-between items-center text-xl">
-        <h2 className="caltitle gap-2">
-          <FaCalendarAlt size={24} />
+    <div className="maincard relative max-w-3xl mx-auto">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="caltitle gap-2 text-base">
+          <FaCalendarAlt size={18} />
           Calendar
         </h2>
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg  text-[var(--text-primary)] transition-colors duration-200 mb-6 group relative">
+        <div className="flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group relative">
           <button
             onClick={goToPreviousMonth}
             className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
           >
-            <FaChevronLeft size={18} />
+            <FaChevronLeft size={16} />
           </button>
-          <div className={`text-lg font-medium mx-4 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+          <div className={`text-sm font-medium mx-2 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
           <button
             onClick={goToNextMonth}
             className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
           >
-            <FaChevronRight size={18} />
+            <FaChevronRight size={16} />
           </button>
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-            Use ← → to navigate
-          </div>
         </div>
       </div>
 
-      <div className=" border-none p-0 m-0 rounded-lg">
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 text-center">
-          {weekdays.map((day, index) => (
-            <div
-              key={index}
-              className="text-[var(--text-primary)] text-base w-full py-4 flex items-center justify-center"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar days */}
-        <div className="grid grid-cols-7 text-center">
-          {renderCalendarDays().map((dayObj, index) => (
-            <div
-              key={index}
-              onClick={() => handleDateClick(dayObj.date)}
-              onDoubleClick={() => dayObj.currentMonth && handleDateDoubleClick(dayObj.date)}
-              style={{
-                ...(dayObj.isToday ? { color: "var(--accent-primary)" } : {}),
-                ...(dayObj.currentMonth ? {} : { color: "var(--text-secondary)" }),
-                fontWeight: "bold",
-              }}
-              className={`select-none hover:text-[var(--text-secondary)] cursor-pointer text-base w-full py-4 flex items-center justify-center relative ${
-                dayObj.currentMonth ? "text-[var(--text-primary)] font-bold" : "text-[var(--text-secondary)] hover:text-[var(--accent-primary)]"
-              } ${!dayObj.currentMonth ? "text-[var(--text-secondary)] font-bold" : ""} ${
-                dayObj.isToday ? "select-none hover:text-[var(--accent-primary)]" : ""
-              }`}
-            >
-              <div className="flex flex-col items-center">
-                <span>{dayObj.day}</span>
-                {dayObj.currentMonth && (
-                  <span className="text-base text-[var(--text-secondary)] mt-1">
-                    {getStudiedHoursForDate(dayObj.date)}h
-                  </span>
-                )}
+      {/* Add centered tooltip container at the top of the calendar */}
+      {tooltipContent && (
+        <div 
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
+          style={{
+            top: '0',
+            minWidth: '180px',
+            maxWidth: '250px'
+          }}
+        >
+          <div className="font-medium p-2 border-b border-[var(--border-color)] text-center">
+            Tasks due for {formatDate(tooltipContent.date.toISOString())}:
+          </div>
+          <div className="p-2 max-h-[180px] overflow-y-auto">
+            {tooltipContent.tasks.map(task => (
+              <div key={task.id} className="flex items-center gap-1 mb-1 last:mb-0">
+                <div className={`w-1 h-1 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-[var(--accent-primary)]'}`} />
+                <span className={`truncate text-xs ${task.completed ? 'line-through text-[var(--text-secondary)]' : ''}`}>
+                  {task.title}
+                </span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Wrap calendar headers and days in a new container with padding */}
+      <div className="w-full mt-6">
+        <div className="block border-none p-0 m-0 rounded-lg">
+          {/* Weekday headers */}
+          <div className="weekday-grid mb-2">
+            {weekdays.map((day, index) => (
+              <div
+                key={index}
+                className="text-[var(--text-primary)] text-xs font-medium flex items-center justify-center w-1/7"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar days */}
+          <div className="grid grid-cols-7 text-center aspect-[4/3]">
+            {renderCalendarDays().map((dayObj, index) => {
+              const isFocused = dayObj.date.getTime() === focusedDate.getTime();
+              const hasDeadlines = dayObj.currentMonth && hasTasksWithDeadline(dayObj.date);
+              const tasksWithDeadline = hasDeadlines ? getTasksWithDeadline(dayObj.date) : [];
+              
+              return (
+                <div
+                  key={index}
+                  onClick={() => handleDateClick(dayObj.date)}
+                  onDoubleClick={() => dayObj.currentMonth && handleDateDoubleClick(dayObj.date)}
+                  onMouseEnter={() => hasDeadlines && handleTooltipHover(dayObj.date, tasksWithDeadline)}
+                  onMouseLeave={() => setTooltipContent(null)}
+                  style={{
+                    ...(dayObj.isToday ? { color: "var(--accent-primary)" } : {}),
+                    ...(dayObj.currentMonth ? {} : { color: "var(--text-secondary)" }),
+                  }}
+                  className={`select-none cursor-pointer text-xs w-1/7 relative group
+                    ${dayObj.currentMonth ? "text-[var(--text-primary)] font-medium" : "text-[var(--text-secondary)]"}
+                    ${dayObj.isToday ? "hover:text-[var(--accent-primary)]" : "hover:text-[var(--text-secondary)]"}
+                    ${dayObj.isSelected ? "rounded-lg border-1px border-[var(--accent-primary)]" : ""}
+                    ${isFocused ? "ring-1 ring-[var(--accent-primary)] ring-inset" : ""}
+                  `}
+                >
+                  {hasDeadlines && (
+                    <div className="absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-[var(--accent-primary)]" />
+                  )}
+                  <div className="flex flex-col items-center justify-center w-full h-full">
+                    <span>{dayObj.day}</span>
+                    {dayObj.currentMonth && (
+                      <span className="text-[10px] text-[var(--text-secondary)] mt-0.5">
+                        {getStudiedHoursForDate(dayObj.date)}h
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

@@ -152,11 +152,11 @@ const UpcomingTasks = () => {
     return (
       <div className="mb-4">
         <button
-          className="w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors flex items-center justify-between"
+          className="w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-primary)] transition-colors flex items-center justify-between"
           onClick={() => toggleGroup(groupKey)}
           aria-expanded={expandedGroups[groupKey]}
         >
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full ">
             <span className={`text-base transition-colors ${expandedGroups[groupKey] ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
               {title}
             </span>
@@ -183,11 +183,11 @@ const UpcomingTasks = () => {
               return (
                 <div 
                   key={task.id} 
-                  className="flex items-center justify-between p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
+                  className="flex items-center justify-between ml-2 text-base p-3 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
                   onClick={() => handleOpenTaskDetails(task)}
                 >
                   <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-[var(--accent-primary)]" />
+                    <Clock size={16} className="text-[var(--accent-primary)] text-base" />
                     <span className="text-[var(--text-primary)]">{task.title}</span>
                   </div>
                   <span className="text-base text-[var(--text-secondary)]">

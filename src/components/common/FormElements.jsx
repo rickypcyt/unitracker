@@ -12,7 +12,7 @@ export const FormInput = ({
   placeholder = '',
   ...props
 }) => (
-  <div className="mb-4">
+  <div className="mb-1">
     {label && (
       <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
@@ -23,9 +23,9 @@ export const FormInput = ({
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
         error ? 'border-red-500' : 'border-[var(--border-primary)]'
-      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2 ${className}`}
+      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
       placeholder={placeholder}
       {...props}
     />
@@ -55,9 +55,9 @@ export const FormTextarea = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
         error ? 'border-red-500' : 'border-[var(--border-primary)]'
-      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2 ${className}`}
+      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
       placeholder={placeholder}
       rows={rows}
       {...props}
@@ -87,7 +87,7 @@ export const FormSelect = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${
+      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
         error ? 'border-red-500' : 'border-[var(--border-primary)]'
       } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] ${className}`}
       {...props}
@@ -112,7 +112,7 @@ export const FormButton = ({
   const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200';
   const variantClasses = {
     primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
-    secondary: 'bg-[var(--bg-primary)] text-[var(--text-primary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]',
+    secondary: 'bg-[var(--bg-primary)] text-[var(--text-primary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]',
     danger: 'bg-red-500 text-white hover:bg-red-600'
   };
 

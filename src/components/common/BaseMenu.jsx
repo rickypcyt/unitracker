@@ -41,11 +41,11 @@ const BaseMenu = ({
     top: y,
     left: x,
     zIndex: 1000,
-    backgroundColor: '#ffffff', // White
-    border: '1px solid #e5e5e5', // Neutral 200
-    borderRadius: '0.5rem', // rounded-lg
-    padding: '0.5rem 0', // Padding top/bottom, none left/right for list items
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'var(--bg-secondary)', // Changed to bg-secondary
+    border: '2px solid var(--border-primary)',
+    borderRadius: '0.5rem',
+    padding: '0.5rem 0',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)', // Darkened shadow for better contrast
     minWidth: minWidth,
     maxWidth: maxWidth,
   };

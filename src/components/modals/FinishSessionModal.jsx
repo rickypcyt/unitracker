@@ -186,7 +186,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-900 mb-2">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-500 mb-2">
                 Session Title
               </label>
               <input
@@ -201,7 +201,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-900 mb-2">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-500 mb-2">
                 Session Notes
               </label>
               <textarea
@@ -230,7 +230,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-neutral-600 hover:text-neutral-900"
+            className="px-4 py-2 text-gray hover:text-neutral-500"
           >
             Cancel
           </button>

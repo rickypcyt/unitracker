@@ -1,9 +1,11 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
 
 import { KanbanBoard } from '../components/tools/KanbanBoard';
+import LoginPromptModal from '../components/modals/LoginPromptModal';
 import { Plus } from 'lucide-react';
 import TaskForm from '../components/tools/TaskForm';
 import { fetchTasks } from '../store/actions/TaskActions';
+import { useAuth } from '../hooks/useAuth';
 import { useDispatch } from 'react-redux';
 import { useNavigation } from '../features/navigation/NavigationContext';
 
@@ -12,6 +14,8 @@ const TasksPage = memo(() => {
   const isVisible = activePage === 'tasks';
   const dispatch = useDispatch();
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const { isLoggedIn } = useAuth();
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
@@ -37,6 +41,10 @@ const TasksPage = memo(() => {
   }, [handleRefresh, dispatch]);
 
   const handleAddTask = () => {
+    if (!isLoggedIn) {
+      setIsLoginPromptOpen(true);
+      return;
+    }
     setShowTaskForm(true);
   };
 
@@ -50,7 +58,13 @@ const TasksPage = memo(() => {
 
   return (
     <div className="w-full px-6 pt-10 relative min-h-[calc(100vh-4rem)]">
-      <KanbanBoard />
+      {!isLoggedIn ? (
+        <div className="text-center text-[var(--text-secondary)] py-8">
+          Please log in to manage your tasks.
+        </div>
+      ) : (
+        <KanbanBoard />
+      )}
       
       {/* Floating Action Button */}
       <button
@@ -71,6 +85,12 @@ const TasksPage = memo(() => {
           }}
         />
       )}
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal
+        isOpen={isLoginPromptOpen}
+        onClose={() => setIsLoginPromptOpen(false)}
+      />
     </div>
   );
 });

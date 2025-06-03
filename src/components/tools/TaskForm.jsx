@@ -168,20 +168,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Title
-            </label>
-            <FormInput
-              id="title"
-              value={formData.title}
-              onChange={(value) => handleChange('title', value)}
-              error={errors.title}
-              required
-              placeholder="Enter task title"
-            />
-          </div>
-
-          <div>
             <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Assignment
             </label>
@@ -192,6 +178,20 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
               error={errors.assignment}
               required
               placeholder="Enter assignment name"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Title
+            </label>
+            <FormInput
+              id="title"
+              value={formData.title}
+              onChange={(value) => handleChange('title', value)}
+              error={errors.title}
+              required
+              placeholder="Enter task title"
             />
           </div>
         </div>
@@ -222,9 +222,9 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
                   <input
                     type="text"
                     readOnly
-                    className={`w-full pl-3 pr-10 py-2 bg-[var(--bg-primary)] border ${
+                    className={`w-full pl-3 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${
                       errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
-                    } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2`}
+                    } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2px`}
                   />
                 }
                 minDate={new Date()}

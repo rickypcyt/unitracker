@@ -59,20 +59,12 @@ export const TaskItem = ({
         <div className="relative">
             {/* Draggable Area */}
             <div
-                className={`relative
-                    p-3
-                    rounded-lg
-                    transition-all
-                    duration-200
-                    border-2
-                    backdrop-blur-sm
-                    cursor-pointer
-                    group
+                className={`task-item-base task-item-flex
                     ${isSelected 
-                        ? "bg-[var(--bg-secondary)] border-[var(--accent-primary)]/50 hover:bg-[var(--bg-secondary)]/80"
+                        ? "task-item-active hover:bg-black"
                         : task.activetask
-                            ? "task-item-active hover:bg-[var(--bg-secondary)]/80"
-                            : "bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80"
+                            ? "task-item-active hover:bg-black"
+                            : "task-item-default hover:bg-black"
                     }`}
                 data-difficulty={task.activetask ? task.difficulty?.toLowerCase() : undefined}
                 onDoubleClick={() => onDoubleClick(task)}

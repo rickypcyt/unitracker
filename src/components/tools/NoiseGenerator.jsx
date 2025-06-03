@@ -209,15 +209,15 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
       <div className="slider flex items-center gap-3">
         <ReactSlider
           className="flex-1 h-2"
-          thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] -translate-y-1"
-          trackClassName="h-2 rounded-full bg-[var(--bg-secondary)]"
+          thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors -translate-y-1 border-2 border-[var(--accent-primary)]"
+          trackClassName="h-2 rounded-full bg-[var(--border-primary)] border-2 border-[var(--border-primary)]"
           renderTrack={(props, state) => (
             <div
               {...props}
-              className={`h-2 rounded-full ${
+              className={`h-2 rounded-full border-2 border-[var(--border-primary)] ${
                 state.index === 0
                   ? 'bg-[var(--accent-primary)]'
-                  : 'bg-[var(--bg-secondary)]'
+                  : 'bg-[var(--border-primary)]'
               }`}
             />
           )}
@@ -258,20 +258,24 @@ export default function NoiseGenerator() {
   const allPlaying = sounds.every(sound => sound.isPlaying);
 
   return (
-    <div className="maincard p-6">
+    <div className="maincard p-6 border-2 border-[var(--border-primary)]">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-xl sm:text-xl font-bold flex items-center gap-3 text-[var(--text-primary)]">
+        <h2 className="text-xl font-bold flex items-center gap-3 text-[var(--text-primary)]">
           <AudioLines size={24} className="text-[var(--text-primary)]" />
           Noise Generator
         </h2>
         <button
           type="button"
           onClick={toggleAllSounds}
-          className="flex items-center gap-1 px-2 py-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-200 text-sm whitespace-nowrap"
+          className={`flex items-center gap-1 px-2 py-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors duration-200 text-sm whitespace-nowrap ${
+            allPlaying 
+              ? 'text-[var(--accent-primary)]' 
+              : 'text-[var(--text-primary)]'
+          }`}
         >
           {allPlaying ? (
             <>
-              <Pause size={18} />
+              <Pause size={18} className="text-[var(--accent-primary)]" />
               <span>Stop All</span>
             </>
           ) : (

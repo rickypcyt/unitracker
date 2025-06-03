@@ -61,6 +61,7 @@ function useTaskStats(tasks) {
   const [doneToday, setDoneToday] = useState(0);
   const [doneWeek, setDoneWeek] = useState(0);
   const [doneMonth, setDoneMonth] = useState(0);
+  const [doneYear, setDoneYear] = useState(0);
 
   useEffect(() => {
     if (!tasks || !Array.isArray(tasks)) return;
@@ -73,7 +74,8 @@ function useTaskStats(tasks) {
 
     let countToday = 0,
       countWeek = 0,
-      countMonth = 0;
+      countMonth = 0,
+      countYear = 0;
 
     tasks.forEach((task) => {
       if (!task.completed_at) return;
@@ -87,14 +89,16 @@ function useTaskStats(tasks) {
       )
         countMonth++;
       if (completedDate >= monday && completedDate <= today) countWeek++;
+      if (completedDate.getFullYear() === currentYear) countYear++;
     });
 
     setDoneToday(countToday);
     setDoneWeek(countWeek);
     setDoneMonth(countMonth);
+    setDoneYear(countYear);
   }, [tasks]);
 
-  return { doneToday, doneWeek, doneMonth };
+  return { doneToday, doneWeek, doneMonth, doneYear };
 }
 
 function useLapStats(laps, isCurrentWeek) {
@@ -102,6 +106,7 @@ function useLapStats(laps, isCurrentWeek) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [weeklyTotalMinutes, setWeeklyTotalMinutes] = useState(0);
   const [monthlyTotalMinutes, setMonthlyTotalMinutes] = useState(0);
+  const [yearlyTotalMinutes, setYearlyTotalMinutes] = useState(0);
   const prevDataRef = useRef(null);
 
   useEffect(() => {
@@ -111,6 +116,7 @@ function useLapStats(laps, isCurrentWeek) {
 
     let todayTotalMinutes = 0;
     let monthTotalMinutes = 0;
+    let yearTotalMinutes = 0;
 
     const weekDays = getWeekDays(monday);
 
@@ -127,6 +133,10 @@ function useLapStats(laps, isCurrentWeek) {
         lapDate.getFullYear() === today.getFullYear()
       ) {
         monthTotalMinutes += minutes;
+      }
+
+      if (lapDate.getFullYear() === today.getFullYear()) {
+        yearTotalMinutes += minutes;
       }
 
       if (weekDays.includes(date)) {
@@ -157,11 +167,12 @@ function useLapStats(laps, isCurrentWeek) {
       setWeeklyData(formattedWeeklyData);
       setWeeklyTotalMinutes(weekTotalMinutes);
       setMonthlyTotalMinutes(monthTotalMinutes);
+      setYearlyTotalMinutes(yearTotalMinutes);
       prevDataRef.current = formattedWeeklyData;
     }
   }, [laps, isCurrentWeek]);
 
-  return { todayMinutes, weeklyData, weeklyTotalMinutes, monthlyTotalMinutes };
+  return { todayMinutes, weeklyData, weeklyTotalMinutes, monthlyTotalMinutes, yearlyTotalMinutes };
 }
 
 // --- Chart y Tooltip DRY ---
@@ -228,12 +239,13 @@ const Statistics = () => {
   const accentColor = useMemo(getAccentColor, []);
 
   // Custom hooks para lógica separada
-  const { doneToday, doneWeek, doneMonth } = useTaskStats(tasks);
+  const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
   const {
     todayMinutes,
     weeklyData,
     weeklyTotalMinutes,
     monthlyTotalMinutes,
+    yearlyTotalMinutes,
   } = useLapStats(laps, isCurrentWeek);
 
   const toggleWeek = useCallback(() => setIsCurrentWeek((w) => !w), []);
@@ -248,21 +260,26 @@ const Statistics = () => {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">Today (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(todayMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneToday} tasks</div>
           </div>
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">This Week (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneWeek} tasks</div>
           </div>
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)]">
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">This Month (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneMonth} tasks</div>
+          </div>
+          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
+            <div className="text-[var(--text-secondary)] text-base">This Year (h)</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(yearlyTotalMinutes)}</div>
+            <div className="text-[var(--text-secondary)] text-base">{doneYear} tasks</div>
           </div>
         </div>
 

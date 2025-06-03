@@ -83,7 +83,7 @@
 
     /* Paleta principal */
     --bg-primary: #000000;
-    --border-primary: #373737e3;
+    --border-primary: #2f2f2fa4;
     --text-primary: #ffffff;
     --accent-primary: #1E90FF; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
@@ -98,6 +98,11 @@
     font-family: Arial, sans-serif;
     min-height: 100vh;
     @apply text-base; /* Set default text size to base */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   html.dark {
@@ -149,6 +154,12 @@
 
   .tasks {
     @apply task-item-base task-item-default task-item-hover-default task-item-flex text-base;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .plslogin {
@@ -288,16 +299,27 @@
   }
 
   .flex.items-start .flex-1 {
-    display: flex; /* Text container is also a flex container */
-    flex-direction: column; /* Allow text to wrap vertically */
-    /* Removed justify-content: center to align contents to the top */
-    min-width: 0; /* Allow shrinking */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Add ellipsis for overflow */
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .flex.items-start .flex-1 span {
-    word-break: break-word; /* Break long words */
+    word-break: break-word;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .flex.items-start .block {
@@ -309,6 +331,39 @@
     flex-shrink: 0; /* Prevent trash icon from shrinking */
     margin-left: auto; /* Push trash icon to the right */
     align-self: flex-start; /* Align trash icon to the top */
+  }
+
+  /* Task Sort Button Styles */
+  .task-sort-button {
+    @apply p-2 rounded-lg transition-all duration-200 mr-2;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: none;
+  }
+
+  .dark .task-sort-button {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  .task-sort-button:hover {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transform: scale(1.05);
+  }
+
+  .task-sort-button[data-active="true"] {
+    background-color: var(--accent-primary);
+    color: white;
+  }
+
+  .dark .task-sort-button[data-active="true"] {
+    background-color: var(--accent-primary);
+    color: white;
+  }
+
+  .task-sort-button:hover:not([data-active="true"]) {
+    background-color: var(--bg-secondary);
   }
 }
 
@@ -566,16 +621,26 @@ h1 {
 
 /* Task Item Styles */
 .task-item-base {
-  @apply p-3 rounded-lg cursor-pointer transition-all duration-300 bg-[var(--bg-primary)] hover:bg-[var(--bg-hover)];
+  @apply p-3 rounded-lg cursor-pointer transition-colors duration-200 bg-[var(--bg-primary)] hover:bg-[var(--bg-hover)];
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .task-item-default {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
   border: 2px solid var(--border-primary);
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .task-item-hover-default:hover {
   background-color: var(--bg-hover);
+  transition: background-color 0.15s ease-in-out;
 }
 
 .task-item-active {
@@ -620,7 +685,17 @@ h1 {
 }
 
 .calendar-grid {
-  /* Add any calendar grid specific styles here if needed */
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  width: 100%;
+}
+
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  width: 100%;
 }
 
 /* Other styles */

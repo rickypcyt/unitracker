@@ -7,14 +7,15 @@ export const SortMenu = ({
   assignmentId,
   onSelectSort,
   onClose,
-  currentSortType = 'alphabetical',
+  currentSortType = 'deadline',
   currentSortDirection = 'asc'
 }) => {
   const optionStyle = {
     padding: '0.5rem 1rem',
     cursor: 'pointer',
-    color: '#d4d4d4', // Neutral 300
+    color: 'var(--text-primary)',
     fontSize: '0.9rem',
+    backgroundColor: 'var(--bg-secondary)',
   };
 
   const handleOptionClick = (sortOption) => () => {
@@ -26,17 +27,17 @@ export const SortMenu = ({
     if (currentSortType) {
       onSelectSort(assignmentId, currentSortType, direction);
     } else {
-      onSelectSort(assignmentId, 'alphabetical', direction);
+      onSelectSort(assignmentId, 'deadline', direction);
     }
     onClose();
   };
 
   const getOptionClassName = (optionType, optionValue) => {
-    let className = "hover:bg-neutral-700/50 transition-colors duration-100";
+    let className = "hover:bg-[var(--bg-primary)] transition-colors duration-100";
     if (optionType === 'type' && currentSortType === optionValue) {
-      className += ' font-semibold text-[var(--accent-primary)]';
+      className += ' font-semibold text-white bg-[var(--accent-primary)]';
     } else if (optionType === 'direction' && currentSortDirection === optionValue) {
-      className += ' font-semibold text-[var(--accent-primary)]';
+      className += ' font-semibold text-white bg-[var(--accent-primary)]';
     }
     return className;
   };
@@ -47,6 +48,7 @@ export const SortMenu = ({
       y={y}
       onClose={onClose}
       aria-label="Sort options"
+      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
     >
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li
@@ -79,7 +81,7 @@ export const SortMenu = ({
         </li>
 
         {/* Separator */}
-        <li style={{ height: '1px', backgroundColor: '#404040', margin: '0.5rem 0' }}></li>
+        <li style={{ height: '1px', backgroundColor: 'var(--border-primary)', margin: '0.5rem 0' }}></li>
 
         {/* Direction Options */}
         <li

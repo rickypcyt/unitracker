@@ -401,7 +401,7 @@ const Pomodoro = () => {
         {/* Left side: Icon and Title */}
         <div className="flex items-center gap-2">
           <Timer size={24} />
-          <h2 className="text-xl font-semibold">Pomo Timer</h2>
+          <h2 className="text-xl font-semibold ">Pomo Timer</h2>
         </div>
 
         {/* Right side: Settings Button */}
