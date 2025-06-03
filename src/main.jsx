@@ -1,22 +1,22 @@
+import './index.css';
+import "react-toastify/dist/ReactToastify.css";
+
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+
+import { Analytics } from "@vercel/analytics/react";
+import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
+import { HelmetProvider } from 'react-helmet-async';
+import { Provider } from 'react-redux';
 // Import necessary dependencies
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
-import { Provider } from 'react-redux';
-import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react"
-import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from "react-hot-toast";
-import { HelmetProvider } from 'react-helmet-async';
-
+import { logger } from './utils/logger';
 // Import local files
 import { store } from './store/store';
-import App from './App';
-import './index.css';
-import "react-toastify/dist/ReactToastify.css";
-import { ThemeProvider } from './utils/ThemeContext';
-import ErrorBoundary from './components/ErrorBoundary';
-import { logger } from './utils/logger';
 
 // Security headers
 const securityHeaders = {
@@ -62,23 +62,21 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ChakraProvider value={defaultSystem}> 
         <HelmetProvider>
           <BrowserRouter>
-            <ThemeProvider>
-              <App />
-              <Toaster
-                position="top-center"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: '#333',
-                    color: '#fff',
-                    padding: '16px',
-                    borderRadius: '8px',
-                  },
-                }}
-              />
-              <Analytics />
-              <SpeedInsights />
-            </ThemeProvider>
+            <App />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                duration: 3000,
+                style: {
+                  background: '#333',
+                  color: '#fff',
+                  padding: '16px',
+                  borderRadius: '8px',
+                },
+              }}
+            />
+            <Analytics />
+            <SpeedInsights />
           </BrowserRouter>
         </HelmetProvider>
       </ChakraProvider>

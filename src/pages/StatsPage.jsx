@@ -1,10 +1,11 @@
-import React, { memo, useEffect, useCallback } from 'react';
-import Statistics from '../components/tools/Stats';
+import React, { memo, useCallback, useEffect } from 'react';
+
 import MonthLogs from '../components/statistics/MonthLogs';
-import { useLocation } from 'react-router-dom';
-import { useLapRealtimeSubscription } from '../hooks/useLapRealtimeSubscription';
-import { useDispatch } from 'react-redux';
+import Statistics from '../components/tools/Stats';
 import { fetchLaps } from '../store/actions/LapActions';
+import { useDispatch } from 'react-redux';
+import { useLapRealtimeSubscription } from '../hooks/useLapRealtimeSubscription';
+import { useLocation } from 'react-router-dom';
 
 const StatsPage = memo(() => {
   const location = useLocation();
@@ -44,7 +45,7 @@ const StatsPage = memo(() => {
   }, [isVisible, refreshData]);
 
   return (
-    <div className="w-full px-6 pt-10">
+    <div className="w-full px-6 pt-10 overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <Statistics />

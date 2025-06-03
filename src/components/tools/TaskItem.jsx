@@ -61,10 +61,10 @@ export const TaskItem = ({
             <div
                 className={`task-item-base task-item-flex
                     ${isSelected 
-                        ? "task-item-active hover:bg-black"
+                        ? "task-item-active"
                         : task.activetask
-                            ? "task-item-active hover:bg-black"
-                            : "task-item-default hover:bg-black"
+                            ? "task-item-active"
+                            : "task-item-default"
                     }`}
                 data-difficulty={task.activetask ? task.difficulty?.toLowerCase() : undefined}
                 onDoubleClick={() => onDoubleClick(task)}

@@ -33,7 +33,7 @@ export const SortMenu = ({
   };
 
   const getOptionClassName = (optionType, optionValue) => {
-    let className = "hover:bg-[var(--bg-primary)] transition-colors duration-100";
+    let className = "hover:bg-[var(--bg-primary)] transition-colors duration-75";
     if (optionType === 'type' && currentSortType === optionValue) {
       className += ' font-semibold text-white bg-[var(--accent-primary)]';
     } else if (optionType === 'direction' && currentSortDirection === optionValue) {

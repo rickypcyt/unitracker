@@ -13,10 +13,11 @@ import { supabase } from '../../config/supabaseClient';
 import { toast } from "react-hot-toast";
 import { useAuth } from '../../hooks/useAuth';
 import useEventListener from "../../hooks/useEventListener";
-import { useTheme } from "../../utils/ThemeContext";
+import useTheme from "../../hooks/useTheme";
 
 const StudyTimer = ({ onSyncChange }) => {
-  const { iconColor } = useTheme();
+  const { accentPalette } = useTheme();
+  const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
   const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
   const { currentSession } = useSelector((state) => state.laps);

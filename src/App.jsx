@@ -32,12 +32,6 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
 
-  // Asegurar que el tema oscuro se aplique desde el inicio
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    handleThemeChange(savedTheme);
-  }, []);
-
   const handleOpenSettings = () => {
     setShowSettings(true);
   };

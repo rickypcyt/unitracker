@@ -5,7 +5,7 @@ import PomodoroSettingsModal from "../modals/PomodoroSettingsModal";
 import { formatPomoTime } from "../../hooks/useTimers";
 import toast from "react-hot-toast";
 import useEventListener from "../../hooks/useEventListener";
-import { useTheme } from "../../utils/ThemeContext";
+import useTheme from "../../hooks/useTheme";
 
 // Initial modes
 const INITIAL_MODES = [
@@ -28,7 +28,8 @@ Object.values(sounds).forEach(sound => {
 });
 
 const Pomodoro = () => {
-  const { iconColor } = useTheme();
+  const { accentPalette } = useTheme();
+  const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
   const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   const [modes, setModes] = useState(() => {
     const savedModes = localStorage.getItem("pomodoroModes");

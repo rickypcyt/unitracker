@@ -183,21 +183,46 @@ const UpcomingTasks = () => {
               return (
                 <div 
                   key={task.id} 
-                  className="flex items-center justify-between ml-2 text-base p-3 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
+                  className="flex flex-col ml-2 text-base p-3 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
                   onClick={() => handleOpenTaskDetails(task)}
                 >
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-[var(--accent-primary)] text-base" />
-                    <span className="text-[var(--text-primary)]">{task.title}</span>
+                  {/* Top row: Deadline/Priority (Left) and Assignment (Right) */}
+                  <div className="flex justify-between items-center w-full mb-1">
+                      {/* Deadline or Priority */}
+                      <div className="text-xs text-[var(--text-secondary)]">
+                          {task.deadline && (
+                              <span>
+                                  {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
+                                      weekday: 'short',
+                                      month: 'short', 
+                                      day: 'numeric' 
+                                  })}
+                              </span>
+                          )}
+                          {task.priority && !task.deadline && (
+                              <span className={`capitalize ${getPriorityColor(task.priority)}`}>
+                                  {task.priority}
+                              </span>
+                          )}
+                      </div>
+
+                      {/* Assignment Name */}
+                      {task.assignment && (
+                          <div className="text-[var(--accent-primary)] text-xs font-semibold capitalize text-right">
+                              {task.assignment}
+                          </div>
+                      )}
                   </div>
-                  <span className="text-base text-[var(--text-secondary)]">
-                    {task.assignment && <span className="mr-2 text-[var(--text-secondary)]">{task.assignment}</span>}
-                    {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
-                      weekday: 'short',
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                  </span>
+
+                  {/* Title and Description */}
+                  <div className="flex flex-col">
+                    <span className="text-[var(--text-primary)] text-base font-medium">{task.title}</span>
+                    {task.description && (
+                        <span className="text-[var(--text-secondary)] text-sm mt-0.5">
+                            {task.description}
+                        </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

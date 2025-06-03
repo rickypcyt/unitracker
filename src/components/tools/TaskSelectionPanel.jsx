@@ -167,7 +167,7 @@ const TaskSelectionPanel = ({
   };
 
   const renderActiveTasks = () => (
-    <div className="space-y-2 h-[300px] overflow-y-auto custom-scrollbar">
+    <div className="space-y-2 h-auto overflow-y-auto custom-scrollbar">
       {validActiveTasks.map(task => renderTaskCard(task, true))}
       {validActiveTasks.length === 0 && (
         <div className="text-center text-[var(--text-secondary)] py-4">
@@ -194,7 +194,7 @@ const TaskSelectionPanel = ({
     const sortedAssignments = Object.keys(tasksByAssignment).sort();
 
     return (
-      <div className="h-[300px] overflow-y-auto custom-scrollbar">
+      <div className="h-auto overflow-y-auto custom-scrollbar">
         <div className="space-y-2">
           {sortedAssignments.map(assignment => (
             <div key={assignment} className="border border-[var(--border-primary)] rounded-lg overflow-hidden">
@@ -227,7 +227,7 @@ const TaskSelectionPanel = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-6 h-[400px]">
+    <div className="grid grid-cols-2 gap-6 h-auto">
       {/* Left Column - Active Tasks */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">

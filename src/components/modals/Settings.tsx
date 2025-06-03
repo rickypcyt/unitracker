@@ -1,10 +1,17 @@
-import { ACCENT_COLORS, AccentColor } from "../../utils/theme";
 import { ListTodo, Moon, Palette, Sun, X } from "lucide-react";
 import React, { useState } from "react";
 
+import { ACCENT_COLORS } from "../../utils/theme";
 import ManageAssignmentsModal from "./ManageAssignmentsModal";
 import Switch from "react-switch";
 import useTheme from "../../hooks/useTheme";
+
+// Define the AccentColor type locally since it's not exported from theme.ts
+interface AccentColor {
+  name: string;
+  value: string;
+  class: string;
+}
 
 interface SettingsProps {
   isOpen: boolean;
@@ -70,8 +77,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                     width={48}
                     handleDiameter={20}
                     offColor="#D1D5DB"
-                    onColor="var(--accent-primary)"
-                    activeBoxShadow="0 0 2px 3px var(--accent-primary)"
+                    onColor={accentPalette}
+                    activeBoxShadow={`0 0 2px 3px ${accentPalette}`}
                     className="react-switch"
                   />
                   <div className="flex items-center gap-2">

@@ -110,7 +110,7 @@ const MonthLogs = () => {
                                         lapsOfMonth.map((lap) => (
                                             <div
                                                 key={lap.id}
-                                                className="mt-2 ml-2 relative p-3 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300"
+                                                className="mt-2 ml-2 relative p-3 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:bg-[var(--bg-primary)] transition-all duration-75"
                                                 role="listitem"
                                                 onDoubleClick={() => setSelectedSession(lap)}
                                             >

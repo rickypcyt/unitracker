@@ -260,23 +260,23 @@ const Statistics = () => {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
+        <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-2 md:grid-cols-4">
+          <div className="stat-card aspect-square bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">Today (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(todayMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneToday} tasks</div>
           </div>
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
+          <div className="stat-card aspect-square bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">This Week (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneWeek} tasks</div>
           </div>
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
+          <div className="stat-card aspect-square bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">This Month (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(monthlyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneMonth} tasks</div>
           </div>
-          <div className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
+          <div className="stat-card aspect-square bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
             <div className="text-[var(--text-secondary)] text-base">This Year (h)</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(yearlyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneYear} tasks</div>
