@@ -144,19 +144,19 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-[99999] backdrop-blur-xl">
+    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-[99999] backdrop-blur-xl">
       <div 
-        className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 shadow-xl border border-neutral-200"
+        className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-4xl mx-4 shadow-xl border border-[var(--border-primary)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-neutral-500">
+            <h2 className="text-xl font-semibold text-[var(--text-secondary)]">
               Edit Session{sessionTitle && <>: <span className="text-[var(--accent-primary)]">{sessionTitle}</span></>}
             </h2>
           </div>
           <button
-            className="text-neutral-500 hover:text-neutral-500"
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             onClick={onClose}
           >
             <X size={24} />
@@ -166,7 +166,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-500 mb-2">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Session Title
               </label>
               <input
@@ -174,9 +174,9 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
                 id="sessionTitle"
                 value={sessionTitle}
                 onChange={(e) => setSessionTitle(e.target.value)}
-                className={`w-full px-3 py-2 bg-neutral-800 border ${
-                  titleError ? 'border-red-500' : 'border-neutral-700'
-                } rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary`}
+                className={`w-full px-3 py-2 bg-[var(--bg-secondary)] border ${
+                  titleError ? 'border-red-500' : 'border-[var(--border-primary)]'
+                } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors`}
                 placeholder="Enter session title"
               />
               {titleError && (
@@ -185,14 +185,14 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-500 mb-2">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Description (Optional)
               </label>
               <textarea
                 id="sessionDescription"
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
                 rows="3"
                 placeholder="Enter session description"
               />
@@ -214,13 +214,13 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-neutral-400 hover:text-white"
+            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSaveChanges}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80"
+            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80 transition-colors"
           >
             Save Changes
           </button>
