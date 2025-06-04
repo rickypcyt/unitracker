@@ -34,6 +34,7 @@
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
+    "eruda": "^3.4.1",
     "express": "^4.21.2",
     "framer-motion": "^12.11.3",
     "gridstack": "^12.2.0",

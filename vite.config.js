@@ -62,7 +62,12 @@ export default defineConfig({
     dedupe: ['@supabase/supabase-js', '@supabase/postgrest-js']
   },
   server: {
-    hmr: true,
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      host: 'localhost'
+    },
     watch: {
       usePolling: false,
       interval: 100

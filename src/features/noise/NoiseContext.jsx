@@ -138,24 +138,46 @@ const NoiseContext = createContext();
 
 export function NoiseProvider({ children }) {
   const masterGainRef = useRef(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [sounds, setSounds] = useState(() => 
     SOUND_CONFIGS.map(config => ({
       ...config,
       volume: parseFloat(localStorage.getItem(config.key + "Volume")) || config.defaultVolume,
-      isPlaying: localStorage.getItem(config.key + "IsPlaying") === "true",
+      isPlaying: false,
       soundRef: null
     }))
   );
 
+  const initializeAudio = async () => {
+    if (!isInitialized) {
+      try {
+        await Tone.start();
+        setIsInitialized(true);
+        const savedSounds = sounds.map(sound => ({
+          ...sound,
+          isPlaying: localStorage.getItem(sound.key + "IsPlaying") === "true"
+        }));
+        setSounds(savedSounds);
+      } catch (error) {
+        console.error('Error initializing audio:', error);
+      }
+    }
+  };
+
   const startSound = async (index) => {
+    if (!isInitialized) {
+      await initializeAudio();
+    }
+    
     const sound = sounds[index];
     if (!masterGainRef.current) {
       masterGainRef.current = new Tone.Gain(1).toDestination();
     }
-    await Tone.start();
+    
     if (!sound.soundRef) {
       sound.soundRef = sound.create(sound.volume, masterGainRef.current);
     }
+    
     setSounds(prev => {
       const newSounds = [...prev];
       newSounds[index] = { ...sound, isPlaying: true };
@@ -237,27 +259,6 @@ export function NoiseProvider({ children }) {
     }
   };
 
-  // Iniciar sonidos que estaban reproduciéndose
-  useEffect(() => {
-    const initializeSounds = async () => {
-      // Esperar a que Tone.js esté listo
-      await Tone.start();
-      
-      // Iniciar todos los sonidos que estaban reproduciéndose
-      const startPromises = sounds.map((sound, index) => {
-        if (sound.isPlaying) {
-          return startSound(index);
-        }
-        return Promise.resolve();
-      });
-      
-      await Promise.all(startPromises);
-    };
-
-    initializeSounds().catch(console.error);
-  }, []); // Solo se ejecuta al montar el componente
-
-  // Limpieza global
   useEffect(() => {
     return () => {
       sounds.forEach(sound => {
@@ -277,7 +278,9 @@ export function NoiseProvider({ children }) {
       startSound,
       stopSound,
       setVolume,
-      toggleAllSounds
+      toggleAllSounds,
+      isInitialized,
+      initializeAudio
     }}>
       {children}
     </NoiseContext.Provider>

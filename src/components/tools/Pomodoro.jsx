@@ -30,7 +30,11 @@ Object.values(sounds).forEach(sound => {
 const Pomodoro = () => {
   const { accentPalette } = useTheme();
   const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  const [notificationPermission, setNotificationPermission] = useState(
+    typeof window !== 'undefined' && 'Notification' in window 
+      ? Notification.permission 
+      : 'denied'
+  );
   const [modes, setModes] = useState(() => {
     const savedModes = localStorage.getItem("pomodoroModes");
     return savedModes ? JSON.parse(savedModes) : INITIAL_MODES;
@@ -271,19 +275,53 @@ const Pomodoro = () => {
   // Request notification permission on component mount
   useEffect(() => {
     const requestNotificationPermission = async () => {
-      if (!("Notification" in window)) {
+      if (typeof window === 'undefined' || !('Notification' in window)) {
         console.log("This browser does not support notifications");
         return;
       }
 
       if (Notification.permission === "default") {
-        const permission = await Notification.requestPermission();
-        setNotificationPermission(permission);
+        try {
+          const permission = await Notification.requestPermission();
+          setNotificationPermission(permission);
+        } catch (error) {
+          console.error('Error requesting notification permission:', error);
+          setNotificationPermission('denied');
+        }
       }
     };
 
     requestNotificationPermission();
   }, []);
+
+  const showNotification = (title, options) => {
+    if (typeof window === 'undefined' || !('Notification' in window) || notificationPermission !== 'granted') {
+      return;
+    }
+
+    try {
+      const notification = new Notification(title, {
+        ...options,
+        silent: false,
+        vibrate: [200, 100, 200]
+      });
+
+      // Close notification after 5 seconds
+      setTimeout(() => {
+        notification.close();
+      }, 5000);
+
+      // Handle notification click
+      notification.onclick = () => {
+        if (typeof window !== 'undefined') {
+          window.focus();
+        }
+        notification.close();
+      };
+    } catch (error) {
+      console.error('Error showing notification:', error);
+    }
+  };
 
   const handleStart = useCallback(() => {
     const modeDuration = modes[pomoState.modeIndex][pomoState.currentMode];
@@ -365,34 +403,19 @@ const Pomodoro = () => {
       });
     }
 
-    // Show browser notification if permission is granted
-    if ("Notification" in window && notificationPermission === "granted") {
-      const notification = new Notification(
-        isWork ? "Work Session Complete! 🎉" : "Break Complete! ⏰", 
-        {
-          body: isWork 
-            ? "Great job! Time to take a well-deserved break." 
-            : "Break is over! Time to get back to work.",
-          icon: isWork ? "🍅" : "💪",
-          badge: isWork ? "🍅" : "💪",
-          tag: "pomodoro-notification",
-          requireInteraction: true,
-          silent: false,
-          vibrate: [200, 100, 200]
-        }
-      );
-
-      // Close notification after 5 seconds
-      setTimeout(() => {
-        notification.close();
-      }, 5000);
-
-      // Handle notification click
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
-    }
+    // Show browser notification
+    showNotification(
+      isWork ? "Work Session Complete! 🎉" : "Break Complete! ⏰", 
+      {
+        body: isWork 
+          ? "Great job! Time to take a well-deserved break." 
+          : "Break is over! Time to get back to work.",
+        icon: isWork ? "🍅" : "💪",
+        badge: isWork ? "🍅" : "💪",
+        tag: "pomodoro-notification",
+        requireInteraction: true
+      }
+    );
   }, [pomoState.currentMode, pomoState.modeIndex, notificationPermission]);
 
   return (

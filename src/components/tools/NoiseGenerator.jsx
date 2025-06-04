@@ -254,8 +254,22 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
 
 // Componente principal
 export default function NoiseGenerator() {
-  const { sounds, startSound, stopSound, setVolume, toggleAllSounds } = useNoise();
+  const { sounds, startSound, stopSound, setVolume, toggleAllSounds, isInitialized, initializeAudio } = useNoise();
   const allPlaying = sounds.every(sound => sound.isPlaying);
+
+  const handleStart = async (index) => {
+    if (!isInitialized) {
+      await initializeAudio();
+    }
+    startSound(index);
+  };
+
+  const handleToggleAll = async () => {
+    if (!isInitialized) {
+      await initializeAudio();
+    }
+    toggleAllSounds();
+  };
 
   return (
     <div className="maincard p-6 border-2 border-[var(--border-primary)]">
@@ -266,7 +280,7 @@ export default function NoiseGenerator() {
         </h2>
         <button
           type="button"
-          onClick={toggleAllSounds}
+          onClick={handleToggleAll}
           className={`flex items-center gap-1 px-2 py-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors duration-200 text-sm whitespace-nowrap ${
             allPlaying 
               ? 'text-[var(--accent-primary)]' 
@@ -298,7 +312,7 @@ export default function NoiseGenerator() {
               volume={sound.volume}
               setVolume={(volume) => setVolume(idx, volume)}
               isPlaying={sound.isPlaying}
-              start={() => startSound(idx)}
+              start={() => handleStart(idx)}
               stop={() => stopSound(idx)}
               className={sound.key === 'ocean' ? 'mb-2' : ''}
             />

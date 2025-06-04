@@ -21,6 +21,14 @@ import { store } from './store/store';
 // Initialize logging
 logger.info('Application starting', { environment: process.env.NODE_ENV });
 
+if (import.meta.env.DEV) {
+  // Cargar Eruda solo en desarrollo
+  import('eruda').then(({ default: eruda }) => {
+    eruda.init();
+    console.log('Eruda mobile console initialized');
+  });
+}
+
 // Render the React application
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ErrorBoundary>
