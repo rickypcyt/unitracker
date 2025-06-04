@@ -18,34 +18,6 @@ import { logger } from './utils/logger';
 // Import local files
 import { store } from './store/store';
 
-// Security headers
-const securityHeaders = {
-  'Content-Security-Policy': `
-    default-src 'self' * blob: data:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' * blob:;
-    style-src 'self' 'unsafe-inline' * blob:;
-    img-src 'self' data: blob: *;
-    connect-src 'self' * blob:;
-    worker-src 'self' blob:;
-    frame-src 'self' * blob:;
-    font-src 'self' * data: blob:;
-    media-src 'self' blob: data: *;
-    child-src 'self' blob:;
-  `.replace(/\s+/g, ' ').trim(),
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'no-referrer-when-downgrade'
-};
-
-// Apply security headers
-Object.entries(securityHeaders).forEach(([key, value]) => {
-  document.head.appendChild(
-    Object.assign(document.createElement('meta'), {
-      httpEquiv: key,
-      content: value,
-    })
-  );
-});
-
 // Initialize logging
 logger.info('Application starting', { environment: process.env.NODE_ENV });
 

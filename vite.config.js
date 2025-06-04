@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import path from "path";
 import { compression } from 'vite-plugin-compression2';
+import { defineConfig } from 'vite'
+import path from "path";
+import react from '@vitejs/plugin-react-swc'
 
 export default defineConfig({
   plugins: [
@@ -31,31 +31,27 @@ export default defineConfig({
       '@supabase/postgrest-js'
     ],
     esbuildOptions: {
-      target: 'esnext'
+      target: 'es2020'
     }
   },
   build: {
+    target: 'es2020',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Desactivamos el code splitting
         manualChunks: undefined,
-        // Todo en un solo archivo
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name].[ext]'
       }
     },
-    // Enable source maps in production
     sourcemap: true,
-    // Minify CSS
     cssMinify: true,
-    // Minify JavaScript
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_console: false,
+        drop_debugger: false
       }
     }
   },
@@ -66,18 +62,14 @@ export default defineConfig({
     dedupe: ['@supabase/supabase-js', '@supabase/postgrest-js']
   },
   server: {
-    // Enable HMR
     hmr: true,
-    // Optimize dev server
     watch: {
       usePolling: false,
       interval: 100
-    },
-    // Configure history fallback
-    historyApiFallback: true
+    }
   },
   preview: {
-    // Configure history fallback for preview server
-    historyApiFallback: true
+    port: 3000,
+    host: true
   }
 });
