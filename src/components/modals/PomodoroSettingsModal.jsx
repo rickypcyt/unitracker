@@ -7,6 +7,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
   const [selectedModeIndex, setSelectedModeIndex] = useState(currentModeIndex);
   const [customWorkTime, setCustomWorkTime] = useState('');
   const [customBreakTime, setCustomBreakTime] = useState('');
+  const [customLongBreakTime, setCustomLongBreakTime] = useState('');
   const [isCustomModeSelected, setIsCustomModeSelected] = useState(false);
 
   // Assume Custom mode is always the last one
@@ -22,9 +23,11 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         // Load current custom mode times
         setCustomWorkTime((modes[currentModeIndex].work / 60).toString());
         setCustomBreakTime((modes[currentModeIndex].break / 60).toString());
+        setCustomLongBreakTime((modes[currentModeIndex].longBreak / 60).toString());
       } else {
         setCustomWorkTime('');
         setCustomBreakTime('');
+        setCustomLongBreakTime('');
       }
     }
   }, [isOpen, currentModeIndex, modes, customModeIndex]);
@@ -39,11 +42,19 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
     if (isCustomModeSelected) {
       const workTimeSeconds = parseInt(customWorkTime) * 60;
       const breakTimeSeconds = parseInt(customBreakTime) * 60;
-      if (!isNaN(workTimeSeconds) && !isNaN(breakTimeSeconds) && workTimeSeconds > 0 && breakTimeSeconds > 0) {
-        onSaveCustomMode({ label: 'Custom', work: workTimeSeconds, break: breakTimeSeconds });
+      const longBreakTimeSeconds = parseInt(customLongBreakTime) * 60;
+      if (!isNaN(workTimeSeconds) && !isNaN(breakTimeSeconds) && !isNaN(longBreakTimeSeconds) && 
+          workTimeSeconds > 0 && breakTimeSeconds > 0 && longBreakTimeSeconds > 0) {
+        onSaveCustomMode({ 
+          label: 'Custom', 
+          work: workTimeSeconds, 
+          break: breakTimeSeconds,
+          longBreak: longBreakTimeSeconds 
+        });
+        onClose();
       } else {
         // Handle invalid input
-        alert('Please enter valid positive numbers for custom work and break times.');
+        alert('Please enter valid positive numbers for all time values.');
       }
     } else {
       onModeChange(selectedModeIndex);
@@ -89,7 +100,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         {isCustomModeSelected && modes[customModeIndex] && (
           <div>
             <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Mode (minutes)</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <FormInput
                 id="customWork"
                 label="Work Time"
@@ -107,6 +118,15 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 value={customBreakTime}
                 onChange={(value) => setCustomBreakTime(value)}
                 placeholder="Enter break time"
+              />
+              <FormInput
+                id="customLongBreak"
+                label="Long Break Time"
+                type="number"
+                min="1"
+                value={customLongBreakTime}
+                onChange={(value) => setCustomLongBreakTime(value)}
+                placeholder="Enter long break time"
               />
             </div>
           </div>
