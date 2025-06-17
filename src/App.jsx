@@ -10,6 +10,7 @@ import Settings from './components/modals/Settings';
 import StatsPage from './pages/StatsPage';
 import TasksPage from './pages/TasksPage';
 import WelcomeModal from './components/modals/WelcomeModal';
+import toast from 'react-hot-toast';
 import useTheme from './hooks/useTheme';
 
 const PageContent = ({ onOpenSettings }) => {
@@ -39,6 +40,37 @@ function App() {
   const handleCloseSettings = () => {
     setShowSettings(false);
   };
+
+  // Handle notification permissions
+  useEffect(() => {
+    const checkNotificationPermission = async () => {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        const permission = Notification.permission;
+        
+        if (permission === 'default') {
+          // Only request permission if it hasn't been requested before
+          const hasRequestedBefore = localStorage.getItem('notificationPermissionRequested');
+          if (!hasRequestedBefore) {
+            try {
+              const newPermission = await Notification.requestPermission();
+              localStorage.setItem('notificationPermissionRequested', 'true');
+              
+              if (newPermission === 'granted') {
+                toast.success('Notifications enabled! You will be notified about your study sessions.', {
+                  duration: 4000,
+                  position: 'top-center',
+                });
+              }
+            } catch (error) {
+              console.error('Error requesting notification permission:', error);
+            }
+          }
+        }
+      }
+    };
+
+    checkNotificationPermission();
+  }, []);
 
   return (
     <NoiseProvider>

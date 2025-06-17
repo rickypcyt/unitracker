@@ -1,10 +1,15 @@
-import { useRef, useEffect } from "react";
+import { setPomoRunning, setStudyRunning, toggleSyncTimers } from "../store/slices/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
 
 // Hook corregido para StudyTimer
-export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = null) {
+export function useStudyTimer(callback, timeAtStart = 0, lastStart = null) {
   const intervalRef = useRef();
   const savedCallback = useRef();
   const startTimeRef = useRef(null);
+  const dispatch = useDispatch();
+  const isRunning = useSelector((state) => state.ui.isStudyRunning);
+  const syncTimers = useSelector((state) => state.ui.syncTimers);
 
   // Guardar el callback actual
   useEffect(() => {
@@ -17,7 +22,14 @@ export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = 
       clearInterval(intervalRef.current);
     }
 
-    if (!isRunning || !lastStart) {
+    if (!isRunning) {
+      if (syncTimers) {
+        dispatch(setPomoRunning(false)); // Pause Pomo Timer if sync is on and Study Timer is paused
+      }
+      return;
+    }
+
+    if (!lastStart) {
       return;
     }
 
@@ -37,7 +49,7 @@ export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = 
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeAtStart, lastStart]);
+  }, [isRunning, timeAtStart, lastStart, syncTimers, dispatch]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -49,17 +61,25 @@ export function useStudyTimer(callback, isRunning, timeAtStart = 0, lastStart = 
   }, []);
 }
 
-export function usePomoTimer(callback, isRunning, duration, initialRemaining) {
+export function usePomoTimer(callback, duration, initialRemaining) {
   const rafRef = useRef();
   const savedCallback = useRef();
   const endTime = useRef();
+  const dispatch = useDispatch();
+  const isRunning = useSelector((state) => state.ui.isPomoRunning);
+  const syncTimers = useSelector((state) => state.ui.syncTimers);
+
   useEffect(() => {
     savedCallback.current = callback;
   }, [callback]);
+
   // Update the useEffect in usePomoTimer
   useEffect(() => {
     if (!isRunning) {
       cancelAnimationFrame(rafRef.current);
+      if (syncTimers) {
+        dispatch(setStudyRunning(false)); // Pause Study Timer if sync is on and Pomo Timer is paused
+      }
       return;
     }
     const startTime = performance.now();
@@ -73,8 +93,9 @@ export function usePomoTimer(callback, isRunning, duration, initialRemaining) {
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [isRunning, duration]); // Removed initialRemaining from dependencies
+  }, [isRunning, duration, syncTimers, dispatch]);
 }
+
 // Funciones de utilidad mejoradas
 export const formatStudyTime = (totalSeconds, roundUp = false) => {
   try {

@@ -1,4 +1,4 @@
-import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, CheckSquare, Clock, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { formatStudyTime, useStudyTimer } from "../../hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
@@ -9,6 +9,7 @@ import EditSessionModal from "../modals/EditSessionModal";
 import FinishSessionModal from "../modals/FinishSessionModal";
 import LoginPromptModal from "../modals/LoginPromptModal";
 import StartSessionModal from "../modals/StartSessionModal";
+import { setStudyRunning } from "../../store/slices/uiSlice";
 import { supabase } from '../../config/supabaseClient';
 import { toast } from "react-hot-toast";
 import { useAuth } from '../../hooks/useAuth';
@@ -21,6 +22,7 @@ const StudyTimer = ({ onSyncChange }) => {
   const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
   const { currentSession } = useSelector((state) => state.laps);
+  const isStudyRunningRedux = useSelector((state) => state.ui.isStudyRunning);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
@@ -94,7 +96,7 @@ const StudyTimer = ({ onSyncChange }) => {
   // Timer logic
   useEffect(() => {
     const syncTimer = () => {
-      if (studyState.isRunning && studyState.lastStart) {
+      if (isStudyRunningRedux && studyState.lastStart) {
         const now = Date.now();
         const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
         setStudyState(prev => ({
@@ -118,12 +120,12 @@ const StudyTimer = ({ onSyncChange }) => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [studyState.isRunning, studyState.lastStart, studyState.timeAtStart]);
+  }, [isStudyRunningRedux, studyState.lastStart, studyState.timeAtStart]);
 
   useEffect(() => {
     const stateToSave = {
       time: studyState.time,
-      isRunning: studyState.isRunning,
+      isRunning: isStudyRunningRedux,
       lastStart: studyState.lastStart,
       timeAtStart: studyState.timeAtStart,
       sessionStatus: studyState.sessionStatus,
@@ -135,7 +137,7 @@ const StudyTimer = ({ onSyncChange }) => {
       localStorage.removeItem("activeSessionId");
     }
     onSyncChange?.(studyState.syncPomo);
-  }, [studyState, onSyncChange, currentSessionId]);
+  }, [studyState, onSyncChange, currentSessionId, isStudyRunningRedux]);
 
   useEffect(() => {
     const fetchSessionTitle = async () => {
@@ -165,17 +167,16 @@ const StudyTimer = ({ onSyncChange }) => {
   }, []);
 
   // Use the useStudyTimer hook for background timing
-  // useStudyTimer(
-  //   studyTick,
-  //   studyState.isRunning,
-  //   studyState.timeAtStart,
-  //   studyState.lastStart
-  // );
+  useStudyTimer(
+    studyTick,
+    studyState.timeAtStart,
+    studyState.lastStart
+  );
 
   // Remove the pause on page change event listener
   useEventListener("pauseTimerSync", () => {
     // Do nothing - we want the timer to keep running
-  }, [studyState.syncPomo, studyState.isRunning]);
+  }, [studyState.syncPomo, isStudyRunningRedux]);
 
   // Add a useEffect to dispatch sync state changes from StudyTimer
   useEffect(() => {
@@ -185,7 +186,7 @@ const StudyTimer = ({ onSyncChange }) => {
 
   const studyControls = {
     start: async () => {
-      if (!studyState.isRunning && !isHandlingEvent) {
+      if (!isStudyRunningRedux && !isHandlingEvent) {
         if (!isLoggedIn) {
           setIsLoginPromptOpen(true);
           return;
@@ -198,8 +199,8 @@ const StudyTimer = ({ onSyncChange }) => {
             timeAtStart: studyState.time,
             sessionId: currentSessionId
           });
-
-          setStudyState((prev) => ({
+          dispatch(setStudyRunning(true));
+          setStudyState(prev => ({
             ...prev,
             isRunning: true,
             lastStart: now,
@@ -221,22 +222,15 @@ const StudyTimer = ({ onSyncChange }) => {
       }
     },
     pause: () => {
-      if (studyState.isRunning && !isHandlingEvent) {
-        const now = Date.now();
-        const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
-
-        console.log('Timer Paused:', {
-          timestamp: new Date(now).toISOString(),
-          elapsedTime: elapsed.toFixed(2),
-          sessionId: currentSessionId
-        });
-
-        setStudyState((prev) => ({
+      if (isStudyRunningRedux) {
+        console.log('Timer Paused', { timestamp: new Date().toISOString(), time: studyState.time });
+        dispatch(setStudyRunning(false));
+        setStudyState(prev => ({
           ...prev,
           isRunning: false,
-          time: elapsed,
+          time: prev.time,
           lastStart: null,
-          timeAtStart: elapsed,
+          timeAtStart: prev.time,
           sessionStatus: 'paused'
         }));
 
@@ -251,6 +245,9 @@ const StudyTimer = ({ onSyncChange }) => {
       }
     },
     reset: () => {
+      if (isStudyRunningRedux) {
+        dispatch(setStudyRunning(false));
+      }
       console.log('Timer Reset:', {
         timestamp: new Date().toISOString(),
         finalTime: studyState.time.toFixed(2),
@@ -275,6 +272,19 @@ const StudyTimer = ({ onSyncChange }) => {
       // If synced with Pomodoro, reset it too
       if (isSyncedWithStudyTimer) {
         window.dispatchEvent(new CustomEvent("resetPomodoro"));
+      }
+    },
+    resume: () => {
+      if (!isStudyRunningRedux && studyState.sessionStatus === 'active' && !isHandlingEvent) {
+        console.log('Timer Resumed', { timestamp: new Date().toISOString(), time: studyState.time });
+        const now = Date.now();
+        dispatch(setStudyRunning(true));
+        setStudyState(prev => ({ ...prev, lastStart: now }));
+
+        // If synced with Pomodoro, start it too
+        if (isSyncedWithStudyTimer) {
+          window.dispatchEvent(new CustomEvent("playTimerSync"));
+        }
       }
     },
   };
@@ -612,7 +622,7 @@ const StudyTimer = ({ onSyncChange }) => {
         >
           <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
         </button>
-        {!studyState.isRunning ? (
+        {!isStudyRunningRedux ? (
           <button
             onClick={studyControls.start}
             className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -640,7 +650,7 @@ const StudyTimer = ({ onSyncChange }) => {
             </button>
             <button
               onClick={() => {
-                if (studyState.isRunning) {
+                if (isStudyRunningRedux) {
                   studyControls.pause();
                 }
                 setIsFinishModalOpen(true);

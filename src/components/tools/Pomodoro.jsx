@@ -33,12 +33,6 @@ const Pomodoro = () => {
   const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
   
   // State declarations
-  const [notificationPermission, setNotificationPermission] = useState(
-    typeof window !== 'undefined' && 'Notification' in window 
-      ? Notification.permission 
-      : 'denied'
-  );
-  
   const [modes, setModes] = useState(() => {
     const savedModes = localStorage.getItem("pomodoroModes");
     return savedModes ? JSON.parse(savedModes) : INITIAL_MODES;
@@ -292,22 +286,22 @@ const Pomodoro = () => {
         requireInteraction: true
       }
     );
-  }, [pomoState.currentMode, pomoState.modeIndex, pomoState.workSessionsCompleted, pomoState.workSessionsBeforeLongBreak, notificationPermission]);
+  }, [pomoState.currentMode, pomoState.modeIndex, pomoState.workSessionsCompleted, pomoState.workSessionsBeforeLongBreak, Notification.permission]);
 
   // All event listeners after all function declarations
   useEventListener("startPomodoro", handleStart, [handleStart]);
   useEventListener("pauseTimerSync", () => {
-    if (pomoState.isRunning) {
+    if (pomoState.isRunning && isSyncedWithStudyTimer) {
       handleStop();
     }
-  }, [pomoState.isRunning, handleStop]);
+  }, [pomoState.isRunning, handleStop, isSyncedWithStudyTimer]);
   useEventListener("stopPomodoro", handleStop, [handleStop]);
   useEventListener("resetPomodoro", handleReset, [handleReset]);
   useEventListener("playTimerSync", () => {
-    if (!pomoState.isRunning) {
+    if (!pomoState.isRunning && isSyncedWithStudyTimer) {
       handleStart();
     }
-  }, [pomoState.isRunning, handleStart]);
+  }, [pomoState.isRunning, handleStart, isSyncedWithStudyTimer]);
 
   useEventListener("studyTimerReset", () => {
     if (isSyncedWithStudyTimer) {
@@ -326,6 +320,11 @@ const Pomodoro = () => {
       handleStart();
     }
   }, [isSyncedWithStudyTimer, pomoState.isRunning, handleStart]);
+
+  useEventListener("studyTimerSyncStateChanged", (event) => {
+    const { isSyncedWithStudyTimer: newSyncState } = event.detail;
+    setIsSyncedWithStudyTimer(newSyncState);
+  }, []);
 
   useEventListener("studyTimerTimeUpdate", (event) => {
     if (!isSyncedWithStudyTimer) return;
@@ -373,7 +372,7 @@ const Pomodoro = () => {
       }
 
       // Show browser notification
-      if ("Notification" in window && notificationPermission === "granted") {
+      if ("Notification" in window && Notification.permission === "granted") {
         showNotification(
           shouldBeWorkMode ? "Break Complete! ⏰" : "Work Session Complete! 🎉",
           {
@@ -400,7 +399,7 @@ const Pomodoro = () => {
       timeLeft: Math.max(0, timeLeft),
       isRunning: true // Mantener el estado de ejecución
     }));
-  }, [isSyncedWithStudyTimer, modes, pomoState.modeIndex, pomoState.currentMode, pomoState.lastManualAdjustment, notificationPermission]);
+  }, [isSyncedWithStudyTimer, modes, pomoState.modeIndex, pomoState.currentMode, pomoState.lastManualAdjustment, Notification.permission]);
 
   useEventListener("adjustPomodoroTime", (event) => {
     const { adjustment } = event.detail;
@@ -491,7 +490,7 @@ const Pomodoro = () => {
   }, [pomoState.isRunning, pomoState.timeLeft]);
 
   const showNotification = (title, options) => {
-    if (typeof window === 'undefined' || !('Notification' in window) || notificationPermission !== 'granted') {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
       return;
     }
 
@@ -626,6 +625,8 @@ const Pomodoro = () => {
           const newSyncState = !isSyncedWithStudyTimer;
           setIsSyncedWithStudyTimer(newSyncState);
           localStorage.setItem('isSyncedWithStudyTimer', JSON.stringify(newSyncState));
+          
+          // Only dispatch the sync state change event, don't affect timer state
           window.dispatchEvent(new CustomEvent("studyTimerSyncStateChanged", { 
             detail: { isSyncedWithStudyTimer: newSyncState } 
           }));
@@ -634,18 +635,6 @@ const Pomodoro = () => {
           {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
         </label>
       </div>
-
-      {notificationPermission !== "granted" && (
-        <button
-          onClick={async () => {
-            const permission = await Notification.requestPermission();
-            setNotificationPermission(permission);
-          }}
-          className="mt-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
-        >
-          Enable Notifications
-        </button>
-      )}
 
       {/* Add Pomodoro Settings Modal */}
       <PomodoroSettingsModal
