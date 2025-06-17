@@ -1,4 +1,4 @@
-import { Check, CheckSquare, Clock, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
+import { Check, CheckSquare, Clock, FileText, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { formatStudyTime, useStudyTimer } from "../../hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "../../store/slices/LapSlice";
@@ -495,7 +495,7 @@ const StudyTimer = ({ onSyncChange }) => {
         {/* Left side: Icon and Title */}
         <div className="flex items-center gap-2">
           <Clock size={24} />
-          <h2 className="text-xl font-semibold sm:text-sm">Study Timer</h2>
+          <h2 className="text-xl font-semibold">Study Timer</h2>
         </div>
 
         {/* Right side: Settings Button or Placeholder */}
@@ -663,24 +663,31 @@ const StudyTimer = ({ onSyncChange }) => {
           </>
         )}
       </div>
-
-      <div className="text-base text-[var(--text-secondary)] mt-4 text-center">
-        {/* Reordered session information display with Sessions Today first */}
-        <div className="mb-1">
-          Sessions Today: {sessionsTodayCount}
-        </div>
-        <div>
-          Session Status: <span className={`font-semibold ${
-            studyState.sessionStatus === 'inactive' ? 'text-[var(--text-secondary)]' : 
-            studyState.sessionStatus === 'active' ? 'text-green-500' : 'text-yellow-500'
-          }`}>
-            {studyState.sessionStatus.charAt(0).toUpperCase() + studyState.sessionStatus.slice(1)}
-          </span>
-        </div>
-        <div>
-          Session Name: <span className="text-[var(--accent-primary)]">{studyState.sessionTitle || 'None yet'}</span>
-        </div>
+      <div className="text-base mt-2 text-[var(--text-secondary)]">
+        Session Title: <span style={{ color: iconColor }}>{studyState.sessionTitle || 'No Session'}</span>
       </div>
+      
+      {/* Sync with Pomodoro button */}
+      <div className="flex items-center justify-center mt-2">
+        <button
+          onClick={() => {
+            const newSyncState = !isSyncedWithStudyTimer;
+            setIsSyncedWithStudyTimer(newSyncState);
+            localStorage.setItem('isSyncedWithStudyTimer', JSON.stringify(newSyncState));
+            
+            // Only dispatch the sync state change event, don't affect timer state
+            window.dispatchEvent(new CustomEvent("studyTimerSyncStateChanged", { 
+              detail: { isSyncedWithStudyTimer: newSyncState } 
+            }));
+          }}
+          className="flex items-center gap-1 px-6 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          <div className="text-base">Start pomodoro at the same time</div>
+          {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
+        </button>
+      </div>
+
+
 
       <StartSessionModal
         isOpen={isStartModalOpen}

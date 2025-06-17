@@ -1,4 +1,4 @@
-import { CheckSquare, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
+import { CheckSquare, Coffee, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import PomodoroSettingsModal from "../modals/PomodoroSettingsModal";
@@ -287,6 +287,14 @@ const Pomodoro = () => {
       }
     );
   }, [pomoState.currentMode, pomoState.modeIndex, pomoState.workSessionsCompleted, pomoState.workSessionsBeforeLongBreak, Notification.permission]);
+
+  const handleWorkSessionsChange = useCallback((newWorkSessions) => {
+    setPomoState(prev => ({
+      ...prev,
+      workSessionsBeforeLongBreak: newWorkSessions,
+      workSessionsCompleted: 0
+    }));
+  }, []);
 
   // All event listeners after all function declarations
   useEventListener("startPomodoro", handleStart, [handleStart]);
@@ -605,37 +613,6 @@ const Pomodoro = () => {
         )}
       </div>
 
-      <div className="mt-4 text-base text-[var(--text-secondary)] mb-1">
-        {pomoState.currentMode === "work" 
-          ? "Work Time" 
-          : pomoState.currentMode === "longBreak" 
-            ? "Long Break Time" 
-            : "Break Time"}
-      </div>
-      <div className="text-base text-[var(--text-secondary)] mb-1">
-        Pomodoros Today: {pomoState.pomodoroToday}
-      </div>
-      <div className="text-base text-[var(--text-secondary)] mb-1">
-        Work Sessions until Long Break: {pomoState.workSessionsBeforeLongBreak - (pomoState.workSessionsCompleted % pomoState.workSessionsBeforeLongBreak)}
-      </div>
-
-      {/* Sync with StudyTimer toggle */}
-      <div className="flex items-center gap-2 justify-center mb-4">
-        <label className="flex items-center gap-2 text-[var(--text-secondary)] cursor-pointer" onClick={() => {
-          const newSyncState = !isSyncedWithStudyTimer;
-          setIsSyncedWithStudyTimer(newSyncState);
-          localStorage.setItem('isSyncedWithStudyTimer', JSON.stringify(newSyncState));
-          
-          // Only dispatch the sync state change event, don't affect timer state
-          window.dispatchEvent(new CustomEvent("studyTimerSyncStateChanged", { 
-            detail: { isSyncedWithStudyTimer: newSyncState } 
-          }));
-        }}>
-          <span>Sync with Study Timer:</span>
-          {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
-        </label>
-      </div>
-
       {/* Add Pomodoro Settings Modal */}
       <PomodoroSettingsModal
         isOpen={isSettingsModalOpen}
@@ -644,6 +621,8 @@ const Pomodoro = () => {
         modes={modes}
         onModeChange={handleModeChange}
         onSaveCustomMode={handleSaveCustomMode}
+        workSessionsBeforeLongBreak={pomoState.workSessionsBeforeLongBreak}
+        onWorkSessionsChange={handleWorkSessionsChange}
       />
     </div>
   );

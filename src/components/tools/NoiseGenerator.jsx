@@ -273,7 +273,7 @@ export default function NoiseGenerator() {
 
   return (
     <div className="maincard p-6 border-2 border-[var(--border-primary)]">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold flex items-center gap-3 text-[var(--text-primary)]">
           <AudioLines size={24} className="text-[var(--text-primary)]" />
           Noise Generator
