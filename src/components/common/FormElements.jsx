@@ -109,10 +109,10 @@ export const FormButton = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200';
+  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
   const variantClasses = {
     primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
-    secondary: 'bg-[var(--bg-primary)] text-[var(--text-primary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]',
+    secondary: 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]',
     danger: 'bg-red-500 text-white hover:bg-red-600'
   };
 

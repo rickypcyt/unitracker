@@ -422,14 +422,19 @@ const Calendar = () => {
                   className={`select-none cursor-pointer text-xs w-1/7 relative group
                     ${dayObj.currentMonth ? "text-[var(--text-primary)] font-medium" : "text-[var(--text-secondary)]"}
                     ${dayObj.isToday ? "hover:text-[var(--accent-primary)]" : "hover:text-[var(--text-secondary)]"}
-                    ${dayObj.isSelected ? "rounded-lg border-1px border-[var(--accent-primary)]" : ""}
-                    ${isFocused ? "ring-1 ring-[var(--accent-primary)] ring-inset" : ""}
                   `}
                 >
-                  {hasDeadlines && (
-                    <div className="absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-[var(--accent-primary)]" />
-                  )}
-                  <div className="flex flex-col items-center justify-center w-full h-full">
+                  <div className="flex flex-col items-center justify-center w-full h-full relative">
+                    {tasksWithDeadline.length > 0 && (
+                      <div className="absolute top-3 left-1/2 -translate-x-1/2 flex gap-0.5">
+                        {tasksWithDeadline.map((task, idx) => (
+                          <div
+                            key={task.id}
+                            className="w-1 h-1 rounded-full bg-[var(--accent-primary)]"
+                          />
+                        ))}
+                      </div>
+                    )}
                     <span>{dayObj.day}</span>
                     {dayObj.currentMonth && (
                       <span className="text-[10px] text-[var(--text-secondary)] mt-0.5">
