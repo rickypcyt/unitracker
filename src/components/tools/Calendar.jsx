@@ -452,7 +452,7 @@ const Calendar = () => {
       {showTaskForm && (
         <TaskForm
           initialAssignment=""
-          initialDeadline={formatDateForInput(selectedDate)}
+          initialDeadline={selectedDate}
           onClose={(newTaskId) => {
             setShowTaskForm(false);
             if (newTaskId) {

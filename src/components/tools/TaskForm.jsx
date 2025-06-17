@@ -29,7 +29,7 @@ const parseDateForDB = (dateString) => {
   return `${year}-${month}-${day}`;
 };
 
-const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTaskCreated }) => {
+const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }) => {
   const { user } = useTaskManager();
   const dispatch = useDispatch();
   const datePickerRef = useRef(null);
@@ -37,7 +37,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, onClose, onTas
   const initialFormState = {
     title: initialTask?.title || '',
     description: initialTask?.description || '',
-    deadline: initialTask?.deadline ? formatDateForInput(new Date(initialTask.deadline)) : formatDateForInput(new Date()),
+    deadline: initialDeadline ? (typeof initialDeadline === 'string' ? initialDeadline : formatDateForInput(initialDeadline)) : (initialTask?.deadline ? formatDateForInput(new Date(initialTask.deadline)) : formatDateForInput(new Date())),
     difficulty: initialTask?.difficulty || 'medium',
     assignment: initialTask?.assignment || initialAssignment || ''
   };
