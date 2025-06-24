@@ -39,7 +39,7 @@ const Navbar = ({ onOpenSettings }) => {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-50">
-        <div className="w-full px-6">
+        <div className="w-full px-2">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">

@@ -1,8 +1,9 @@
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronUp, Circle, Clock, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TaskDetailsModal from '../modals/TaskDetailsModal';
+import { TaskItem } from './TaskItem';
 import { fetchTasks } from '../../store/actions/TaskActions';
 import { useTaskManager } from '../../hooks/useTaskManager';
 
@@ -14,7 +15,8 @@ const UpcomingTasks = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({
     today: false,
-    thisWeek: false
+    thisWeek: false,
+    pastTasks: false,
   });
   const dispatch = useDispatch();
 
@@ -37,6 +39,15 @@ const UpcomingTasks = () => {
   // Get end of week (Sunday)
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+
+  // Filtrar tareas pasadas (no completadas y deadline < hoy)
+  const pastTasks = tasks
+    .filter(task => {
+      const taskDate = new Date(task.deadline);
+      taskDate.setHours(0, 0, 0, 0);
+      return taskDate < today && !task.completed;
+    })
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   // Filter and sort upcoming tasks
   const upcomingTasks = tasks
@@ -91,7 +102,8 @@ const UpcomingTasks = () => {
   // Clean up expanded state for months that no longer have tasks
   useEffect(() => {
     const currentMonthKeys = sortedMonths.map(({ month, year }) => `${year}-${month}`);
-    const allMonthKeys = Object.keys(expandedGroups).filter(key => key !== 'today' && key !== 'thisWeek');
+    // Solo limpiar claves de meses, nunca 'today', 'thisWeek' ni 'pastTasks'
+    const allMonthKeys = Object.keys(expandedGroups).filter(key => !['today', 'thisWeek', 'pastTasks'].includes(key));
     
     const monthsToRemove = allMonthKeys.filter(key => !currentMonthKeys.includes(key));
     if (monthsToRemove.length > 0) {
@@ -137,6 +149,20 @@ const UpcomingTasks = () => {
     }
   };
 
+  // Agregar función para color de dificultad
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'text-[#00FF41]'; // Matrix green
+      case 'medium':
+        return 'text-[#1E90FF]'; // Electric neon blue
+      case 'hard':
+        return 'text-[#FF003C]'; // Neon red
+      default:
+        return 'text-[var(--text-secondary)]';
+    }
+  };
+
   if (upcomingTasks.length === 0) {
     return (
       <div className="maincard">
@@ -175,57 +201,16 @@ const UpcomingTasks = () => {
         
         {expandedGroups[groupKey] && (
           <div className="space-y-2 mt-3">
-            {tasks.map(task => {
-              const taskDate = new Date(task.deadline);
-              const isToday = taskDate.toDateString() === today.toDateString();
-              const isTomorrow = new Date(today.getTime() + 86400000).toDateString() === taskDate.toDateString();
-              
-              return (
-                <div 
-                  key={task.id} 
-                  className="flex flex-col ml-2 text-base p-3 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer"
-                  onClick={() => handleOpenTaskDetails(task)}
-                >
-                  {/* Top row: Deadline/Priority (Left) and Assignment (Right) */}
-                  <div className="flex justify-between items-center w-full mb-1">
-                      {/* Deadline or Priority */}
-                      <div className="text-xs text-[var(--text-secondary)]">
-                          {task.deadline && (
-                              <span>
-                                  {isToday ? 'Today' : isTomorrow ? 'Tomorrow' : taskDate.toLocaleDateString(undefined, { 
-                                      weekday: 'short',
-                                      month: 'short', 
-                                      day: 'numeric' 
-                                  })}
-                              </span>
-                          )}
-                          {task.priority && !task.deadline && (
-                              <span className={`capitalize ${getPriorityColor(task.priority)}`}>
-                                  {task.priority}
-                              </span>
-                          )}
-                      </div>
-
-                      {/* Assignment Name */}
-                      {task.assignment && (
-                          <div className="text-[var(--accent-primary)] text-xs font-semibold capitalize text-right">
-                              {task.assignment}
-                          </div>
-                      )}
-                  </div>
-
-                  {/* Title and Description */}
-                  <div className="flex flex-col">
-                    <span className="text-[var(--text-primary)] text-base font-medium">{task.title}</span>
-                    {task.description && (
-                        <span className="text-[var(--text-secondary)] text-sm mt-0.5">
-                            {task.description}
-                        </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {tasks.map(task => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onDoubleClick={handleOpenTaskDetails}
+                showAssignment={true}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -236,6 +221,9 @@ const UpcomingTasks = () => {
     <div className="maincard">
       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">Upcoming Tasks</h3>
       <div className="space-y-3">
+        {/* Past Tasks */}
+        <TaskGroup title="Past Tasks" tasks={pastTasks} groupKey="pastTasks" />
+        {/* Upcoming Tasks */}
         <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
         <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />
         {sortedMonths.map(({ month, year, tasks }) => (

@@ -267,7 +267,7 @@ const Statistics = () => {
             <div className="text-[var(--text-secondary)] text-base">{doneToday} tasks</div>
           </div>
           <div className="stat-card aspect-square bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)]">
-            <div className="text-[var(--text-secondary)] text-base">This Week (h)</div>
+            <div className="text-[var(--text-secondary)] text-base">{isCurrentWeek ? 'This Week (h)' : 'Last Week (h)'}</div>
             <div className="text-2xl font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(weeklyTotalMinutes)}</div>
             <div className="text-[var(--text-secondary)] text-base">{doneWeek} tasks</div>
           </div>

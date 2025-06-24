@@ -57,7 +57,7 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-6 pt-10 relative min-h-[calc(100vh-4rem)]">
+    <div className="w-full px-3 pt-6 relative min-h-[calc(100vh-4rem)]">
       {!isLoggedIn ? (
         <div className="text-center text-[var(--text-secondary)] py-8">
           Please log in to manage your tasks.

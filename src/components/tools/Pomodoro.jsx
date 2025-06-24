@@ -549,8 +549,17 @@ const Pomodoro = () => {
       </div>
 
       {/* Timer display */}
-      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
+      <div className="text-4xl sm:text-5xl font-mono mb-2 text-center" role="timer" aria-label="Current pomodoro time">
         {formatPomoTime(pomoState.timeLeft)}
+      </div>
+
+      {/* Modo actual: Work, Break o Long Break */}
+      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded bg-black text-white">
+        <span>
+          {pomoState.currentMode === 'work' && 'Work'}
+          {pomoState.currentMode === 'break' && 'Break'}
+          {pomoState.currentMode === 'longBreak' && 'Long Break'}
+        </span>
       </div>
 
       {/* Time adjustment buttons */}

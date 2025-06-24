@@ -1,8 +1,8 @@
 import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
+import { formatDate, formatDateShort } from '../../utils/dateUtils';
 
 import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-import { formatDate } from '../../utils/dateUtils';
 import { useSortable } from "@dnd-kit/sortable";
 
 export const TaskItem = ({
@@ -13,7 +13,8 @@ export const TaskItem = ({
     onContextMenu,
     onEditTask,
     assignmentId,
-    isSelected = false
+    isSelected = false,
+    showAssignment = false
 }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: task.id,
@@ -56,105 +57,76 @@ export const TaskItem = ({
     };
 
     return (
-        <div className="relative">
-            {/* Draggable Area */}
-            <div
-                className={`task-item-base task-item-flex
-                    ${isSelected 
-                        ? "task-item-active"
-                        : task.activetask
-                            ? "task-item-active"
-                            : "task-item-default"
-                    }`}
-                data-difficulty={task.activetask ? task.difficulty?.toLowerCase() : undefined}
-                onDoubleClick={() => onDoubleClick(task)}
-                onContextMenu={(e) => onContextMenu(e, task)}
-                tabIndex={0}
-                role="listitem"
-                ref={setNodeRef}
-                style={style}
-                {...attributes}
-                {...listeners}
-            >
-                <div className="flex flex-col gap-3">
-                    {/* First row: Title */}
-                    <div className="flex items-start gap-3">
-                        <div className="w-5 h-5" /> {/* Spacer for the toggle button */}
-                        <div className="flex-1 min-w-0">
-                            <span
-                                className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
-                                    task.completed
-                                        ? "line-through text-[var(--text-secondary)]"
-                                        : "text-[var(--text-primary)]"
-                                }`}
-                                title={task.title}
-                            >
-                                {task.title}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Second row: Metadata */}
-                    <div className="flex items-center justify-between text-base text-[var(--text-secondary)]">
-                        <div className="flex items-center gap-3">
-                            {task.deadline && (
-                                <div className="flex items-center gap-1">
-                                    <Calendar size={18} className="text-[var(--text-secondary)]" />
-                                    <span>{formatDate(task.deadline)}</span>
-                                </div>
-                            )}
-                            {task.priority && (
-                                <div className={`flex items-center gap-1 ${getPriorityColor(task.priority)}`}>
-                                    <Clock size={14} />
-                                    <span className="capitalize">{task.priority}</span>
-                                </div>
-                            )}
-                        </div>
-                        <div className="w-5 h-5" /> {/* Spacer for the delete button */}
-                    </div>
-                </div>
+        <div
+            className="flex p-1.5 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-1"
+            onDoubleClick={() => onDoubleClick(task)}
+            onContextMenu={(e) => onContextMenu(e, task)}
+            tabIndex={0}
+            role="listitem"
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+        >
+            <div className="flex flex-col justify-between items-center py-0.5">
+                <button
+                    onClick={e => { e.stopPropagation(); onToggleCompletion(task.id); }}
+                    className="bg-transparent border-none cursor-pointer flex items-center mr-1 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200"
+                    aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                >
+                    {task.completed ? (
+                        <CheckCircle2 className="text-[var(--accent-primary)]" size={18} strokeWidth={2.2} />
+                    ) : (
+                        <Circle className={getDifficultyColor(task.difficulty)} size={18} strokeWidth={2.2} />
+                    )}
+                </button>
             </div>
-
-            {/* Action Buttons (rendered on top) */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="flex flex-col h-full">
-                    {/* Toggle Button */}
-                    <div className="flex items-start p-3">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onToggleCompletion(task.id);
-                            }}
-                            className="bg-transparent border-none cursor-pointer flex items-center focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full group-hover:scale-110 transition-transform duration-200 pointer-events-auto"
-                            aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-                        >
-                            {task.completed ? (
-                                <CheckCircle2 className="text-[var(--accent-primary)]" size={20} strokeWidth={2.5} />
-                            ) : (
-                                <Circle
-                                    className={getDifficultyColor(task.difficulty)}
-                                    size={20}
-                                    strokeWidth={2.5}
-                                />
-                            )}
-                        </button>
+            {/* Contenido principal y trash juntos */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between">
+                {/* Título y descripción arriba */}
+                <div>
+                    <span
+                        className={`block font-medium text-[15px] transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
+                            task.completed
+                                ? "line-through text-[var(--text-secondary)]"
+                                : "text-[var(--text-primary)]"
+                        }`}
+                        title={task.title}
+                    >
+                        {task.title}
+                    </span>
+                    {task.description && (
+                        <span className="text-[var(--text-secondary)] text-xs mt-0.5 truncate">
+                            {task.description}
+                        </span>
+                    )}
+                </div>
+                {/* Prioridad, assignment, fecha y trash abajo */}
+                <div className="flex items-center gap-2 mt-1 w-full">
+                    <div className="text-xs text-[var(--text-secondary)]">
+                        {task.deadline && (
+                            <span>{formatDateShort(task.deadline)}</span>
+                        )}
                     </div>
-
-                    {/* Delete Button */}
-                    <div className="flex-1 flex items-end justify-end p-3">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                onDelete(task.id);
-                            }}
-                            className="hover:text-red-500 pointer-events-auto text-[var(--text-secondary)]"
-                            aria-label="Delete task"
-                        >
-                            <Trash2 size={18} />
-                        </button>
-                    </div>
+                    {task.priority && (
+                        <div className={`flex items-center gap-1 text-xs ${getPriorityColor(task.priority)}`}> 
+                            <Clock size={11} />
+                            <span className="capitalize">{task.priority}</span>
+                        </div>
+                    )}
+                    {showAssignment && task.assignment && (
+                        <div className="text-[var(--accent-primary)] text-xs font-semibold capitalize text-right">
+                            {task.assignment}
+                        </div>
+                    )}
+                    <div className="flex-1" />
+                    <button
+                        onClick={e => { e.stopPropagation(); onDelete(task.id); }}
+                        className="hover:text-red-500 text-[var(--text-secondary)]"
+                        aria-label="Delete task"
+                    >
+                        <Trash2 size={16} />
+                    </button>
                 </div>
             </div>
         </div>

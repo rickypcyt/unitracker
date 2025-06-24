@@ -99,8 +99,8 @@ const TaskSelectionPanel = ({
                 </div>
               )}
               {task.assignment && (
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  Assignment: {task.assignment}
+                <div className="text-sm text-[var(--text-secondary)] mt-1">
+                  {task.assignment}
                 </div>
               )}
             </div>
@@ -125,8 +125,8 @@ const TaskSelectionPanel = ({
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[var(--text-primary)]">{task.title}</div>
                 {task.assignment && (
-                  <div className="text-xs text-[var(--text-secondary)] mt-1">
-                    Assignment: {task.assignment}
+                  <div className="text-sm text-[var(--text-secondary)] mt-1">
+                    {task.assignment}
                   </div>
                 )}
               </div>
@@ -154,8 +154,8 @@ const TaskSelectionPanel = ({
                   </div>
                 )}
                 {task.assignment && (
-                  <div className="text-xs text-[var(--text-secondary)] mt-1">
-                    Assignment: {task.assignment}
+                  <div className="text-sm text-[var(--text-secondary)] mt-1">
+                    {task.assignment}
                   </div>
                 )}
               </div>

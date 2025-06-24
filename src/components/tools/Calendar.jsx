@@ -363,7 +363,7 @@ const Calendar = () => {
       {/* Add centered tooltip container at the top of the calendar */}
       {tooltipContent && (
         <div 
-          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
           style={{
             top: '0',
             minWidth: '180px',
@@ -377,7 +377,7 @@ const Calendar = () => {
             {tooltipContent.tasks.map(task => (
               <div key={task.id} className="flex items-center gap-1 mb-1 last:mb-0">
                 <div className={`w-1 h-1 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-[var(--accent-primary)]'}`} />
-                <span className={`truncate text-xs ${task.completed ? 'line-through text-[var(--text-secondary)]' : ''}`}>
+                <span className={`truncate text-sm ${task.completed ? 'line-through text-[var(--text-secondary)]' : ''}`}>
                   {task.title}
                 </span>
               </div>
@@ -394,7 +394,7 @@ const Calendar = () => {
             {weekdays.map((day, index) => (
               <div
                 key={index}
-                className="text-[var(--text-primary)] text-xs font-medium flex items-center justify-center w-1/7"
+                className="text-[var(--text-primary)] text-base font-semibold flex items-center justify-center w-1/7"
               >
                 {day}
               </div>
@@ -419,14 +419,14 @@ const Calendar = () => {
                     ...(dayObj.isToday ? { color: "var(--accent-primary)" } : {}),
                     ...(dayObj.currentMonth ? {} : { color: "var(--text-secondary)" }),
                   }}
-                  className={`select-none cursor-pointer text-xs w-1/7 relative group
-                    ${dayObj.currentMonth ? "text-[var(--text-primary)] font-medium" : "text-[var(--text-secondary)]"}
+                  className={`select-none cursor-pointer text-lg w-1/7 relative group
+                    ${dayObj.currentMonth ? "text-[var(--text-primary)] font-bold" : "text-[var(--text-secondary)]"}
                     ${dayObj.isToday ? "hover:text-[var(--accent-primary)]" : "hover:text-[var(--text-secondary)]"}
                   `}
                 >
                   <div className="flex flex-col items-center justify-center w-full h-full relative">
                     {tasksWithDeadline.length > 0 && (
-                      <div className="absolute top-3 left-1/2 -translate-x-1/2 flex gap-0.5">
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
                         {tasksWithDeadline.map((task, idx) => (
                           <div
                             key={task.id}

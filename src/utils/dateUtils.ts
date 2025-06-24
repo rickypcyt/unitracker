@@ -60,4 +60,18 @@ export function formatDateForInput(date: Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+/**
+ * Formats a date string into 'Mon, Jun 30' format
+ * @param dateStr - The date string to format (can be null or undefined)
+ * @returns A formatted date string like 'Mon, Jun 30' or empty string if no date provided
+ */
+export function formatDateShort(dateStr: string | null | undefined): string {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const weekday = date.toLocaleString('en-US', { weekday: 'short' });
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return `${weekday}, ${month} ${day}`;
 } 
