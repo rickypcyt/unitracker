@@ -5,11 +5,12 @@ import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormSelect, FormTextarea } from '../common/FormElements';
 import React, { useEffect, useRef, useState } from 'react';
 import { addTaskSuccess, updateTaskSuccess } from '../../store/slices/TaskSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
+import AutocompleteInput from '../common/AutocompleteInput';
 import BaseModal from '../common/BaseModal';
 import DatePicker from 'react-datepicker';
 import { supabase } from '../../config/supabaseClient';
-import { useDispatch } from 'react-redux';
 import { useFormState } from '../../hooks/useFormState';
 import { useTaskManager } from '../../hooks/useTaskManager';
 
@@ -30,7 +31,8 @@ const parseDateForDB = (dateString) => {
 };
 
 const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }) => {
-  const { user } = useTaskManager();
+  const { user, tasks } = useTaskManager();
+  const assignments = useSelector(state => state.assignments.list);
   const dispatch = useDispatch();
   const datePickerRef = useRef(null);
 
@@ -171,13 +173,21 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
               Assignment
             </label>
-            <FormInput
+            <AutocompleteInput
               id="assignment"
               value={formData.assignment}
               onChange={(value) => handleChange('assignment', value)}
               error={errors.assignment}
               required
               placeholder="Enter assignment name"
+              suggestions={Array.from(new Set([
+                // Assignments with at least one incomplete task
+                ...tasks.filter(t => !t.completed && t.assignment).map(t => t.assignment),
+                // Assignments that have no tasks at all
+                ...assignments
+                  .filter(a => !tasks.some(t => t.assignment === a.name))
+                  .map(a => a.name)
+              ]))}
             />
           </div>
 

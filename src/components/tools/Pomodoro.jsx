@@ -31,7 +31,7 @@ Object.values(sounds).forEach(sound => {
 const Pomodoro = () => {
   const { accentPalette } = useTheme();
   const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
-  
+
   // State declarations
   const [modes, setModes] = useState(() => {
     const savedModes = localStorage.getItem("pomodoroModes");
@@ -101,8 +101,8 @@ const Pomodoro = () => {
   // All function declarations first
   const handleStart = useCallback(() => {
     const modeDuration = modes[pomoState.modeIndex][pomoState.currentMode];
-    setPomoState(prev => ({ 
-      ...prev, 
+    setPomoState(prev => ({
+      ...prev,
       isRunning: true,
       startTime: Date.now() / 1000,
       pausedTime: 0,
@@ -116,8 +116,8 @@ const Pomodoro = () => {
   }, [pomoState.modeIndex, pomoState.currentMode, modes, isSyncedWithStudyTimer]);
 
   const handleStop = useCallback(() => {
-    setPomoState(prev => ({ 
-      ...prev, 
+    setPomoState(prev => ({
+      ...prev,
       isRunning: false,
       pausedTime: Date.now() / 1000,
       lastManualAdjustment: Date.now()
@@ -168,11 +168,11 @@ const Pomodoro = () => {
     const now = Date.now();
     const currentMode = modes[pomoState.modeIndex];
     const maxTime = currentMode[pomoState.currentMode];
-    
+
     if (adjustment < 0 && pomoState.timeLeft <= 0) {
       const newMode = pomoState.currentMode === "work" ? "break" : "work";
       const newTimeLeft = currentMode[newMode];
-      
+
       setPomoState(prev => ({
         ...prev,
         currentMode: newMode,
@@ -183,11 +183,11 @@ const Pomodoro = () => {
       }));
 
       if (isSyncedWithStudyTimer) {
-        window.dispatchEvent(new CustomEvent("adjustStudyTimerTime", { 
-          detail: { 
+        window.dispatchEvent(new CustomEvent("adjustStudyTimerTime", {
+          detail: {
             adjustment: -currentMode[pomoState.currentMode],
             forceSync: true
-          } 
+          }
         }));
       }
       return;
@@ -213,26 +213,26 @@ const Pomodoro = () => {
     }
 
     if (isSyncedWithStudyTimer) {
-      window.dispatchEvent(new CustomEvent("adjustStudyTimerTime", { 
-        detail: { 
+      window.dispatchEvent(new CustomEvent("adjustStudyTimerTime", {
+        detail: {
           adjustment: -adjustment,
           forceSync: true
-        } 
+        }
       }));
     }
   }, [pomoState.isRunning, pomoState.currentMode, pomoState.timeLeft, modes, pomoState.modeIndex, isSyncedWithStudyTimer]);
 
   const handlePomodoroComplete = useCallback(() => {
     const isWork = pomoState.currentMode === "work";
-    const shouldTakeLongBreak = isWork && 
+    const shouldTakeLongBreak = isWork &&
       (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
-    
-    const nextMode = isWork 
+
+    const nextMode = isWork
       ? (shouldTakeLongBreak ? "longBreak" : "break")
       : "work";
-    
+
     const sound = sounds[isWork ? "work" : (pomoState.currentMode === "longBreak" ? "longBreak" : "break")];
-    
+
     // Play sound
     sound.currentTime = 0;
     sound.play().catch(console.error);
@@ -242,9 +242,9 @@ const Pomodoro = () => {
       // Solo incrementamos pomodoroToday cuando terminamos un ciclo completo (work -> break -> work)
       const shouldIncrementPomodoro = !isWork; // Incrementamos cuando terminamos el break
       const newWorkSessionsCompleted = isWork ? prev.workSessionsCompleted + 1 : prev.workSessionsCompleted;
-      
+
       return {
-      ...prev,
+        ...prev,
         currentMode: nextMode,
         timeLeft: modes[prev.modeIndex][nextMode],
         pomodoroToday: shouldIncrementPomodoro ? prev.pomodoroToday + 1 : prev.pomodoroToday,
@@ -260,7 +260,7 @@ const Pomodoro = () => {
           position: 'top-center',
         });
       } else {
-      toast.success("Work session complete! Time for a break.");
+        toast.success("Work session complete! Time for a break.");
       }
     } else {
       toast.success("Break is over! Let's get back to work! 💪", {
@@ -271,14 +271,14 @@ const Pomodoro = () => {
 
     // Show browser notification
     showNotification(
-      isWork 
+      isWork
         ? (shouldTakeLongBreak ? "Work Session Complete! Time for a Long Break! 🎉" : "Work Session Complete! 🎉")
-        : "Break Complete! ⏰", 
+        : "Break Complete! ⏰",
       {
-        body: isWork 
-          ? (shouldTakeLongBreak 
-              ? "Great job! Time to take a well-deserved long break." 
-              : "Great job! Time to take a short break.")
+        body: isWork
+          ? (shouldTakeLongBreak
+            ? "Great job! Time to take a well-deserved long break."
+            : "Great job! Time to take a short break.")
           : "Break is over! Time to get back to work.",
         icon: isWork ? "🍅" : "💪",
         badge: isWork ? "🍅" : "💪",
@@ -336,24 +336,24 @@ const Pomodoro = () => {
 
   useEventListener("studyTimerTimeUpdate", (event) => {
     if (!isSyncedWithStudyTimer) return;
-    
+
     const studyTime = Math.floor(event.detail.time);
     const currentMode = modes[pomoState.modeIndex];
     const totalWorkTime = currentMode.work;
     const totalBreakTime = currentMode.break;
     const totalCycleTime = totalWorkTime + totalBreakTime;
-    
+
     // Ignorar actualizaciones si ha habido un ajuste manual reciente (dentro de 2 segundos)
     const now = Date.now();
     if (now - pomoState.lastManualAdjustment < 2000) {
       return;
     }
-    
+
     // Calcular posición en el ciclo
     const positionInCycle = studyTime % totalCycleTime;
     const shouldBeWorkMode = positionInCycle < totalWorkTime;
     const isTransitionPoint = positionInCycle === 0 || positionInCycle === totalWorkTime;
-    
+
     // Actualizar el estado del Pomodoro
     if (isTransitionPoint && shouldBeWorkMode !== (pomoState.currentMode === "work")) {
       setPomoState(prev => ({
@@ -384,7 +384,7 @@ const Pomodoro = () => {
         showNotification(
           shouldBeWorkMode ? "Break Complete! ⏰" : "Work Session Complete! 🎉",
           {
-            body: shouldBeWorkMode 
+            body: shouldBeWorkMode
               ? "Break is over! Time to get back to work."
               : "Great job! Time to take a well-deserved break.",
             icon: shouldBeWorkMode ? "💪" : "🍅",
@@ -398,7 +398,7 @@ const Pomodoro = () => {
 
     // Actualizar el tiempo restante
     const maxTime = shouldBeWorkMode ? totalWorkTime : totalBreakTime;
-    const timeLeft = shouldBeWorkMode 
+    const timeLeft = shouldBeWorkMode
       ? Math.min(maxTime, totalWorkTime - positionInCycle)
       : Math.min(maxTime, totalBreakTime - (positionInCycle - totalWorkTime));
 
@@ -432,7 +432,7 @@ const Pomodoro = () => {
     };
     localStorage.setItem("pomodoroState", JSON.stringify(stateToSave));
     localStorage.setItem("pomodoroIsRunning", pomoState.isRunning.toString());
-    
+
     const today = new Date().toISOString().slice(0, 10);
     localStorage.setItem(`pomodoroDailyCount_${today}`, pomoState.pomodoroToday.toString());
   }, [pomoState]);
@@ -442,7 +442,7 @@ const Pomodoro = () => {
     const resetDailyCount = () => {
       const today = new Date().toISOString().slice(0, 10);
       const lastReset = localStorage.getItem('lastPomodoroReset');
-      
+
       if (lastReset !== today) {
         localStorage.setItem('lastPomodoroReset', today);
         localStorage.setItem(`pomodoroDailyCount_${today}`, '0');
@@ -549,18 +549,11 @@ const Pomodoro = () => {
       </div>
 
       {/* Timer display */}
-      <div className="text-4xl sm:text-5xl font-mono mb-2 text-center" role="timer" aria-label="Current pomodoro time">
+      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
         {formatPomoTime(pomoState.timeLeft)}
       </div>
 
-      {/* Modo actual: Work, Break o Long Break */}
-      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded bg-black text-white">
-        <span>
-          {pomoState.currentMode === 'work' && 'Work'}
-          {pomoState.currentMode === 'break' && 'Break'}
-          {pomoState.currentMode === 'longBreak' && 'Long Break'}
-        </span>
-      </div>
+
 
       {/* Time adjustment buttons */}
       <div className="flex gap-2 mb-6">
@@ -620,6 +613,15 @@ const Pomodoro = () => {
             <Pause size={20} style={{ color: "var(--accent-primary)" }} />
           </button>
         )}
+      </div>
+
+      {/* Modo actual: Work, Break o Long Break */}
+      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded bg-black text-white">
+        <span>
+          {pomoState.currentMode === 'work' && 'Work'}
+          {pomoState.currentMode === 'break' && 'Break'}
+          {pomoState.currentMode === 'longBreak' && 'Long Break'}
+        </span>
       </div>
 
       {/* Add Pomodoro Settings Modal */}

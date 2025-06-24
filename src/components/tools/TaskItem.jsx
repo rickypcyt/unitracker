@@ -86,7 +86,7 @@ export const TaskItem = ({
                 {/* Título y descripción arriba */}
                 <div>
                     <span
-                        className={`block font-medium text-[15px] transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
+                        className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
                             task.completed
                                 ? "line-through text-[var(--text-secondary)]"
                                 : "text-[var(--text-primary)]"
@@ -96,26 +96,26 @@ export const TaskItem = ({
                         {task.title}
                     </span>
                     {task.description && (
-                        <span className="text-[var(--text-secondary)] text-xs mt-0.5 truncate">
+                        <span className="text-[var(--text-secondary)] text-md mt-0.5 truncate">
                             {task.description}
                         </span>
                     )}
                 </div>
                 {/* Prioridad, assignment, fecha y trash abajo */}
                 <div className="flex items-center gap-2 mt-1 w-full">
-                    <div className="text-xs text-[var(--text-secondary)]">
+                    <div className="text-sm text-[var(--text-secondary)]">
                         {task.deadline && (
                             <span>{formatDateShort(task.deadline)}</span>
                         )}
                     </div>
                     {task.priority && (
-                        <div className={`flex items-center gap-1 text-xs ${getPriorityColor(task.priority)}`}> 
+                        <div className={`flex items-center gap-1 text-md ${getPriorityColor(task.priority)}`}> 
                             <Clock size={11} />
                             <span className="capitalize">{task.priority}</span>
                         </div>
                     )}
                     {showAssignment && task.assignment && (
-                        <div className="text-[var(--accent-primary)] text-xs font-semibold capitalize text-right">
+                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
                             {task.assignment}
                         </div>
                     )}

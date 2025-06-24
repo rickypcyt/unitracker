@@ -1,11 +1,11 @@
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
+import { formatDateShort, formatDateTimeWithAmPm } from '../../utils/dateUtils';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteSessionModal from '../modals/DeleteSessionModal';
 import SessionDetailsModal from '../modals/SessionDetailsModal';
 import { deleteLap } from '../../store/actions/LapActions';
-import { formatDateTimeWithAmPm } from '../../utils/dateUtils';
 import { getMonthYear } from '../../hooks/useTimers';
 import moment from 'moment';
 import { toast } from 'react-toastify';
@@ -117,13 +117,19 @@ const MonthLogs = () => {
                                                 <div className="flex justify-between">
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <span className="text-base text-[var(--accent-primary)]">
-                                                                #{lap.session_number} {lap.name}
+                                                            <span className="text-base text-[var(--accent-primary)] font-mono mr-2">
+                                                                #{lap.session_number}
+                                                            </span>
+                                                            <span className="text-base text-[var(--text-primary)]">
+                                                                {formatDateShort(lap.created_at)}
+                                                            </span>
+                                                            <span className="text-base text-[var(--text-secondary)] ml-2">
+                                                                {moment(lap.created_at).format('HH:mm')}
                                                             </span>
                                                         </div>
-                                                        <p className="text-base text-[var(--text-secondary)] mb-1">
-                                                            {formatDateTimeWithAmPm(lap.created_at)}
-                                                        </p>
+                                                        <span className="text-base text-[var(--text-secondary)] mb-1 block">
+                                                            {lap.name}
+                                                        </span>
                                                     </div>
                                                     <div className="flex items-center gap-4">
                                                         <span className="text-[var(--text-secondary)] text-base">

@@ -529,9 +529,14 @@ export const KanbanBoard = () => {
                   isEditing={taskDetailsEdit}
                   onSortClick={handleSortClick}
                 />
-                {/* Línea divisoria entre columnas excepto la última */}
+                {/* Línea divisoria entre columnas: vertical en desktop, horizontal en móvil */}
                 {idx < columnOrder.length - 1 && (
-                  <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-neutral-800 mx-2 rounded-full opacity-80" />
+                  <>
+                    {/* Desktop: vertical */}
+                    <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-neutral-800 mx-2 rounded-full opacity-80" />
+                    {/* Móvil: horizontal */}
+                    <div className="block md:hidden w-full h-px bg-neutral-800 my-2 rounded-full opacity-80" />
+                  </>
                 )}
               </React.Fragment>
             ))}
@@ -664,6 +669,8 @@ export const KanbanBoard = () => {
             setShowDeleteTaskConfirmation(false);
             setTaskToDelete(null);
           }}
+          message={`¿Seguro que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`}
+          confirmButtonText="Eliminar tarea"
         />
       )}
     </div>

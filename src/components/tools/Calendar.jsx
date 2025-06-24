@@ -335,7 +335,7 @@ const Calendar = () => {
   };
 
   return (
-    <div className="maincard relative max-w-3xl mx-auto">
+    <div className="maincard relative mx-auto">
       <div className="flex justify-between items-center mb-3">
         <h2 className="caltitle gap-2 text-base">
           <FaCalendarAlt size={18} />

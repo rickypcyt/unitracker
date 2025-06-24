@@ -43,7 +43,7 @@ export const SortableColumn = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-1 border-none"
+      className="flex flex-col flex-1 min-w-[16rem] maincard p-1 border-none"
     >
       <div className="flex items-center justify-between w-full mb-3">
         <div className="flex items-center gap-2">

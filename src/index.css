@@ -104,6 +104,7 @@
     backface-visibility: hidden;
     transform: translateZ(0);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-size: 18px; /* o 20px */
   }
 
   html.dark {
@@ -197,7 +198,7 @@
 @layer components {
   .maincard {
     border-radius: 1rem;
-    padding: 1.5rem;
+  padding: 1.25rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     background-color: var(--bg-secondary);
     border: 2px solid var(--border-primary);
@@ -238,7 +239,7 @@
     border-color: var(--border-primary) !important;
   }
   .cardtitle {
-    @apply text-xl font-bold flex items-center;
+    @apply text-2xl font-bold flex items-center;
     margin-bottom: 0;
     justify-content: space-between;
     color: var(--text-primary);
@@ -247,7 +248,7 @@
     @apply flex items-center gap-2;
   }
   .caltitle {
-    @apply text-xl font-bold flex items-center;
+    @apply text-2xl font-bold flex items-center;
     margin-bottom: 0;
     justify-content: space-between;
     color: var(--text-primary);
@@ -256,7 +257,7 @@
     @apply flex items-center gap-2;
   }
   .card-subtitle {
-    @apply text-lg font-semibold mb-2;
+    @apply text-xl font-semibold mb-2;
     color: var(--text-primary);
   }
   .border-dotted {
@@ -300,7 +301,7 @@
     @apply flex items-center gap-4;
   }
   .bigaddtask {
-    @apply w-full mt-2 p-3 rounded-lg card-text font-semibold cursor-pointer;
+    @apply w-full mt-4 p-5 rounded-xl card-text-lg font-semibold cursor-pointer;
   }
 
   /* Fix for flex items with icons and text */
@@ -385,7 +386,7 @@
 
   /* Task Item Styles */
   .task-item-base {
-    @apply p-3 rounded-lg cursor-pointer transition-colors duration-75;
+    @apply p-5 rounded-xl cursor-pointer transition-colors duration-75;
     background-color: var(--bg-secondary);
     border: 2px solid var(--border-primary);
     -webkit-font-smoothing: antialiased;
@@ -433,7 +434,7 @@
 
   /* Modal Content Styles */
   .modal-content-section {
-    @apply space-y-4;
+    @apply space-y-6;
   }
 
   .modal-info-item {
@@ -469,7 +470,7 @@
    3. Utilidades Generales
    ========================= */
 h1 {
-  @apply text-4xl font-bold mb-8;
+  @apply text-5xl font-bold mb-10;
   color: var(--text-primary);
 }
 
@@ -537,8 +538,8 @@ h1 {
 /* Layout Grid */
 .layout-grid {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 2rem;
+  padding: 2rem;
   width: 100%;
   margin: 0 auto;
   align-items: center;
@@ -552,10 +553,10 @@ h1 {
 }
 
 .layout-item {
-  min-height: 200px;
+  min-height: 240px;
   background: var(--bg-surface);
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -653,7 +654,7 @@ h1 {
 }
 
 .btn-padding-2 {
-  @apply p-2;
+  @apply p-4;
 }
 
 .btn-padding-1 {
@@ -661,7 +662,7 @@ h1 {
 }
 
 .btn-padding-px4-py2 {
-  @apply px-4 py-2;
+  @apply px-6 py-3;
 }
 
 .btn-bg-secondary {
@@ -728,4 +729,28 @@ h1 {
 * {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* =========================
+   7. Cards de Estadísticas
+   ========================= */
+.stats-card {
+  @apply rounded-lg border border-border bg-bg-secondary;
+  padding: 1rem 1.25rem;
+  min-width: 160px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.stats-card-title {
+  @apply text-base font-semibold mb-1;
+}
+.stats-card-value {
+  @apply text-2xl font-bold;
+}
+.stats-card-subtext {
+  @apply text-sm text-text-secondary;
 }
