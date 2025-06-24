@@ -512,23 +512,28 @@ export const KanbanBoard = () => {
           items={columnOrder}
           strategy={isMobile ? verticalListSortingStrategy : horizontalListSortingStrategy}
         >
-          <div className="flex flex-col md:flex-row items-start gap-6 overflow-x-auto pb-4 custom-scrollbar min-h-[calc(100vh-16rem)] mt-2">
-            {columnOrder.map((assignment) => (
-              <SortableColumn
-                key={assignment}
-                id={assignment}
-                assignment={assignment}
-                tasks={incompletedByAssignment[assignment] || []}
-                collapsed={collapsedColumns[assignment]}
-                onToggleCollapse={() => toggleColumn(assignment)}
-                onAddTask={() => handleAddTask(assignment)}
-                onTaskToggle={handleToggleCompletion}
-                onTaskDelete={handleConfirmDeleteTask}
-                onTaskDoubleClick={handleOpenTaskDetails}
-                onTaskContextMenu={handleTaskContextMenu}
-                isEditing={taskDetailsEdit}
-                onSortClick={handleSortClick}
-              />
+          <div className="flex flex-col md:flex-row items-start gap-6 w-full mt-2">
+            {columnOrder.map((assignment, idx) => (
+              <React.Fragment key={assignment}>
+                <SortableColumn
+                  id={assignment}
+                  assignment={assignment}
+                  tasks={incompletedByAssignment[assignment] || []}
+                  collapsed={collapsedColumns[assignment]}
+                  onToggleCollapse={() => toggleColumn(assignment)}
+                  onAddTask={() => handleAddTask(assignment)}
+                  onTaskToggle={handleToggleCompletion}
+                  onTaskDelete={handleConfirmDeleteTask}
+                  onTaskDoubleClick={handleOpenTaskDetails}
+                  onTaskContextMenu={handleTaskContextMenu}
+                  isEditing={taskDetailsEdit}
+                  onSortClick={handleSortClick}
+                />
+                {/* Línea divisoria entre columnas excepto la última */}
+                {idx < columnOrder.length - 1 && (
+                  <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-neutral-800 mx-2 rounded-full opacity-80" />
+                )}
+              </React.Fragment>
             ))}
           </div>
         </SortableContext>

@@ -43,7 +43,7 @@ export const SortableColumn = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-4"
+      className="flex flex-col w-full md:w-[20rem] md:min-w-[20rem] maincard p-1 border-none"
     >
       <div className="flex items-center justify-between w-full mb-3">
         <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export const SortableColumn = ({
       
       {!collapsed && (
         <SortableContext items={tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-20rem)] custom-scrollbar">
+          <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-14rem)] min-h-[6rem] custom-scrollbar pr-1">
             {tasks.map((task) => (
               <TaskItem
                 key={task.id}
