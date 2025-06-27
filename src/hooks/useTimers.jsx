@@ -1,4 +1,4 @@
-import { setPomoRunning, setStudyRunning, toggleSyncTimers } from "../store/slices/uiSlice";
+import { setPomoRunning, setStudyRunning, toggleSyncTimers } from "@/store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 

@@ -1,11 +1,11 @@
-import { AppDispatch, RootState } from "../store/store";
-import { addTask as addTaskAction, fetchTasks } from "../store/actions/TaskActions";
-import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "../store/slices/TaskSlice";
+import { AppDispatch, RootState } from "@/store/store";
+import { addTask as addTaskAction, fetchTasks } from "@/store/actions/TaskActions";
+import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "@/store/slices/TaskSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
-import { Task } from "../utils/taskStorage";
-import { supabase } from "../config/supabaseClient";
+import { Task } from "@/utils/taskStorage";
+import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 
 interface User {

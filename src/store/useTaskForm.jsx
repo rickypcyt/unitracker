@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { addTask } from "./TaskActions";
-import { formatDateForInput } from '../utils/dateUtils';
-import { supabase } from "../utils/supabaseClient";
+import { addTask } from "@/TaskActions";
+import { formatDateForInput } from '@/utils/dateUtils';
+import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";

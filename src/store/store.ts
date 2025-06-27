@@ -1,11 +1,11 @@
-import assignmentReducer from "./slices/AssignmentSlice";
-import authReducer from "./slices/authSlice";
+import assignmentReducer from "@/store/slices/AssignmentSlice";
+import authReducer from "@/store/slices/authSlice";
 import { configureStore } from "@reduxjs/toolkit";
-import { createErrorMiddleware } from './middleware/errorMiddleware';
-import lapReducer from "./slices/LapSlice";
-import layoutReducer from "./slices/layoutSlice";
-import taskReducer from "./slices/TaskSlice";
-import uiReducer from "./slices/uiSlice";
+import { createErrorMiddleware } from '@/store/errorMiddleware';
+import lapReducer from "@/store/slices/LapSlice";
+import layoutReducer from "@/store/slices/layoutSlice";
+import taskReducer from "@/store/slices/TaskSlice";
+import uiReducer from "@/store/slices/uiSlice";
 
 export const store = configureStore({
     reducer: {

@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { addLapSuccess, deleteLapSuccess, invalidateCache, lapError, updateLapSuccess } from "@/store/slices/LapSlice";
+
+import { fetchLaps } from "@/store/LapActions";
+import { supabase } from "@/utils/supabaseClient";
 import { useDispatch } from "react-redux";
-import { supabase } from "../config/supabaseClient";
-import { addLapSuccess, updateLapSuccess, deleteLapSuccess, lapError, invalidateCache } from "../store/slices/LapSlice";
-import { fetchLaps } from "../store/actions/LapActions";
+import { useEffect } from "react";
 
 export const useLapRealtimeSubscription = () => {
   const dispatch = useDispatch();
