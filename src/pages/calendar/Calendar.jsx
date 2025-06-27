@@ -1,5 +1,5 @@
-import { CheckCircle2, Clock } from 'lucide-react';
-import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { CheckCircle2, Clock, CalendarDays as LucideCalendar } from 'lucide-react';
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { formatDate, formatDateForInput } from '@/utils/dateUtils';
 import { useDispatch, useSelector } from "react-redux";
@@ -336,30 +336,13 @@ const Calendar = () => {
 
   return (
     <div className="maincard relative mx-auto">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="caltitle gap-2 text-base">
-          <FaCalendarAlt size={18} />
-          Calendar
-        </h2>
-        <div className="flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group relative">
-          <button
-            onClick={goToPreviousMonth}
-            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
-          >
-            <FaChevronLeft size={16} />
-          </button>
-          <div className={`text-sm font-medium mx-2 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </div>
-          <button
-            onClick={goToNextMonth}
-            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
-          >
-            <FaChevronRight size={16} />
-          </button>
+      <div className="flex justify-center items-center">
+        <div className="section-title mb-0">
+          <LucideCalendar size={24} className="icon" />
+          <span>Calendar</span>
         </div>
       </div>
-
+      
       {/* Add centered tooltip container at the top of the calendar */}
       {tooltipContent && (
         <div 
@@ -387,7 +370,7 @@ const Calendar = () => {
       )}
 
       {/* Wrap calendar headers and days in a new container with padding */}
-      <div className="w-full mt-6">
+      <div className="w-full mt-6 relative">
         <div className="block border-none p-0 m-0 rounded-lg">
           {/* Weekday headers */}
           <div className="weekday-grid mb-2">
@@ -446,6 +429,24 @@ const Calendar = () => {
               );
             })}
           </div>
+        </div>
+        {/* Month selector moved to bottom right */}
+        <div className="absolute right-0 bottom-0 flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group bg-transparent">
+          <button
+            onClick={goToPreviousMonth}
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
+          >
+            <FaChevronLeft size={16} />
+          </button>
+          <div className={`text-sm font-medium mx-2 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </div>
+          <button
+            onClick={goToNextMonth}
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
+          >
+            <FaChevronRight size={16} />
+          </button>
         </div>
       </div>
 

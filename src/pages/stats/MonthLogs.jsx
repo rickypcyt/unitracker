@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { formatDateShort, formatDateTimeWithAmPm } from '@/utils/dateUtils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -66,7 +66,12 @@ const MonthLogs = () => {
 
     return (
         <div className="maincard">
-            <h2 className="text-xl font-bold mb-6 text-[var(--text-primary)]">Study Sessions</h2>
+            <div className="flex justify-center items-center">
+                <div className="section-title">
+                    <BookOpen size={24} className="icon" />
+                    <span>Study Sessions</span>
+                </div>
+            </div>
             
             {!isLoggedIn ? (
                 <div className="text-center text-[var(--text-secondary)] py-8">

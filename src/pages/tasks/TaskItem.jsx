@@ -1,35 +1,18 @@
 import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
 import { formatDate, formatDateShort } from '@/utils/dateUtils';
 
-import { CSS } from "@dnd-kit/utilities";
 import React from "react";
-import { useSortable } from "@dnd-kit/sortable";
 
 export const TaskItem = ({
     task,
     onToggleCompletion,
     onDelete,
-    onDoubleClick,
-    onContextMenu,
     onEditTask,
+    onContextMenu,
     assignmentId,
     isSelected = false,
     showAssignment = false
 }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-        id: task.id,
-        data: {
-            type: 'task',
-            task: task,
-            assignment: assignmentId,
-        },
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
             case 'high':
@@ -56,22 +39,36 @@ export const TaskItem = ({
         }
     };
 
+    const handleToggleClick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onToggleCompletion(task.id);
+    };
+
+    const handleDeleteClick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onDelete(task.id);
+    };
+
+    const handleDoubleClick = () => {
+        onEditTask(task);
+    };
+
     return (
         <div
             className="flex p-1.5 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-1"
-            onDoubleClick={() => onDoubleClick(task)}
+            onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
             role="listitem"
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
         >
             <div className="flex flex-col justify-between items-center py-0.5">
                 <button
-                    onClick={e => { e.stopPropagation(); onToggleCompletion(task.id); }}
-                    className="bg-transparent border-none cursor-pointer flex items-center mr-1 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200"
+                    onClick={handleToggleClick}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="bg-transparent border-none cursor-pointer flex items-center mr-1 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200 hover:scale-110"
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
@@ -96,7 +93,7 @@ export const TaskItem = ({
                         {task.title}
                     </span>
                     {task.description && (
-                        <span className="text-[var(--text-secondary)] text-md mt-0.5 truncate">
+                        <span className="text-[var(--text-secondary)] text-md mt-0.5">
                             {task.description}
                         </span>
                     )}
@@ -121,8 +118,10 @@ export const TaskItem = ({
                     )}
                     <div className="flex-1" />
                     <button
-                        onClick={e => { e.stopPropagation(); onDelete(task.id); }}
-                        className="hover:text-red-500 text-[var(--text-secondary)]"
+                        onClick={handleDeleteClick}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        className="hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110"
                         aria-label="Delete task"
                     >
                         <Trash2 size={16} />

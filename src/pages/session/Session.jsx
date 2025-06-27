@@ -46,9 +46,11 @@ const Session = () => {
 
   return (
     <div className="maincard">
-      <div className="flex items-center gap-2 mb-6">
-        <Clock size={24} />
-        <h2 className="text-xl font-semibold">Study Session</h2>
+      <div className="flex justify-center items-center">
+        <div className="section-title">
+          <Clock size={24} className="icon" />
+          <span>Study Session</span>
+        </div>
       </div>
 
       {/* Timer Display */}

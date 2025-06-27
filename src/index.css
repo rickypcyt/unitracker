@@ -752,5 +752,16 @@ h1 {
   @apply text-2xl font-bold;
 }
 .stats-card-subtext {
-  @apply text-sm text-text-secondary;
+  @apply text-sm text-[var(--text-secondary)];
+}
+
+/* =========================
+   Section Title with Icon
+   ========================= */
+.section-title {
+  @apply flex items-center justify-center mb-3 gap-3 text-xl font-semibold text-[var(--text-primary)];
+}
+
+.section-title .icon {
+  @apply text-[var(--accent-primary)];
 }

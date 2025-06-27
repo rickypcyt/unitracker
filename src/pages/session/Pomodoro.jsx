@@ -529,11 +529,11 @@ const Pomodoro = () => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center w-full mb-6">
-        {/* Left side: Icon and Title */}
-        <div className="flex items-center gap-2">
-          <Timer size={24} />
-          <h2 className="text-xl font-semibold ">Pomo Timer</h2>
+      <div className="flex items-center w-full">
+        {/* Centered Title with Icon */}
+        <div className="section-title flex-1">
+          <Timer size={24} className="icon" />
+          <span>Pomo Timer</span>
         </div>
 
         {/* Right side: Settings Button */}
@@ -552,8 +552,6 @@ const Pomodoro = () => {
       <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
         {formatPomoTime(pomoState.timeLeft)}
       </div>
-
-
 
       {/* Time adjustment buttons */}
       <div className="flex gap-2 mb-6">

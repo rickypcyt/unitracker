@@ -1,8 +1,8 @@
-import { CheckCircle2, ChevronDown, ChevronUp, Circle, Clock, Trash2 } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronDown, ChevronUp, Circle, Clock, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import TaskDetailsModal from '@/modals/TaskDetailsModal';
+import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { fetchTasks } from '@/store/TaskActions';
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -10,9 +10,8 @@ import { useTaskManager } from '@/hooks/useTaskManager';
 const UpcomingTasks = () => {
   const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
   const tasks = useSelector((state) => state.tasks.tasks);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [editedTask, setEditedTask] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({
     today: false,
     thisWeek: false,
@@ -123,30 +122,14 @@ const UpcomingTasks = () => {
     });
   };
 
-  const handleOpenTaskDetails = (task) => {
-    setSelectedTask(task);
-    setEditedTask(task);
-    setIsEditing(false);
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setShowTaskForm(true);
   };
 
-  const handleCloseTaskDetails = () => {
-    setSelectedTask(null);
-    setEditedTask(null);
-    setIsEditing(false);
-  };
-
-  const handleEditChange = (field, value) => {
-    setEditedTask(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSaveEdit = () => {
-    if (editedTask) {
-      handleUpdateTask(editedTask);
-      handleCloseTaskDetails();
-    }
+  const handleCloseTaskForm = () => {
+    setShowTaskForm(false);
+    setEditingTask(null);
   };
 
   // Agregar función para color de dificultad
@@ -166,7 +149,12 @@ const UpcomingTasks = () => {
   if (upcomingTasks.length === 0) {
     return (
       <div className="maincard">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Upcoming Tasks</h3>
+        <div className="flex justify-center items-center">
+          <div className="section-title">
+            <Calendar size={24} className="icon" />
+            <span>Upcoming Tasks</span>
+          </div>
+        </div>
         <p className="text-[var(--text-secondary)]">No upcoming tasks</p>
       </div>
     );
@@ -207,7 +195,7 @@ const UpcomingTasks = () => {
                 task={task}
                 onToggleCompletion={handleToggleCompletion}
                 onDelete={handleDeleteTask}
-                onDoubleClick={handleOpenTaskDetails}
+                onEditTask={handleEditTask}
                 showAssignment={true}
               />
             ))}
@@ -219,7 +207,12 @@ const UpcomingTasks = () => {
 
   return (
     <div className="maincard">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">Upcoming Tasks</h3>
+      <div className="flex justify-center items-center">
+        <div className="section-title">
+          <Calendar size={24} className="icon" />
+          <span>Upcoming Tasks</span>
+        </div>
+      </div>
       <div className="space-y-3">
         {/* Past Tasks */}
         <TaskGroup title="Past Tasks" tasks={pastTasks} groupKey="pastTasks" />
@@ -236,17 +229,15 @@ const UpcomingTasks = () => {
         ))}
       </div>
 
-      {/* Task Details Modal */}
-      {selectedTask && (
-        <TaskDetailsModal
-          isOpen={!!selectedTask}
-          onClose={handleCloseTaskDetails}
-          task={selectedTask}
-          onSave={handleSaveEdit}
-          onEditChange={handleEditChange}
-          editedTask={editedTask}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
+      {/* Task Form Modal */}
+      {showTaskForm && (
+        <TaskForm
+          onClose={handleCloseTaskForm}
+          initialTask={editingTask}
+          onTaskCreated={() => {
+            dispatch(fetchTasks());
+            handleCloseTaskForm();
+          }}
         />
       )}
     </div>

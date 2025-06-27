@@ -253,11 +253,11 @@ const Statistics = () => {
   return (
     <div className="maincard">
       <div>
-        <div className="flex justify-between items-center mb-3 gap-2">
-          <h2 className="cardtitle mb-0 text-[var(--text-primary)] flex items-center gap-2">
-            <Activity size={24} />
-            Statistics
-          </h2>
+        <div className="flex justify-center items-center">
+          <div className="section-title">
+            <Activity size={24} className="icon" />
+            <span>Statistics</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-2 md:grid-cols-4">

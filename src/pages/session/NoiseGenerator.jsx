@@ -254,8 +254,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
 
 // Componente principal
 export default function NoiseGenerator() {
-  const { sounds, startSound, stopSound, setVolume, toggleAllSounds, isInitialized, initializeAudio } = useNoise();
-  const allPlaying = sounds.every(sound => sound.isPlaying);
+  const { sounds, startSound, stopSound, setVolume, isInitialized, initializeAudio } = useNoise();
 
   const handleStart = async (index) => {
     if (!isInitialized) {
@@ -264,41 +263,13 @@ export default function NoiseGenerator() {
     startSound(index);
   };
 
-  const handleToggleAll = async () => {
-    if (!isInitialized) {
-      await initializeAudio();
-    }
-    toggleAllSounds();
-  };
-
   return (
     <div className="maincard p-6 border-2 border-[var(--border-primary)]">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold flex items-center gap-3 text-[var(--text-primary)]">
-          <AudioLines size={24} className="text-[var(--text-primary)]" />
-          Noise Generator
-        </h2>
-        <button
-          type="button"
-          onClick={handleToggleAll}
-          className={`flex items-center gap-1 px-2 py-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors duration-200 text-sm whitespace-nowrap ${
-            allPlaying 
-              ? 'text-[var(--accent-primary)]' 
-              : 'text-[var(--text-primary)]'
-          }`}
-        >
-          {allPlaying ? (
-            <>
-              <Pause size={18} className="text-[var(--accent-primary)]" />
-              <span>Stop All</span>
-            </>
-          ) : (
-            <>
-              <Play size={18} />
-              <span>Play All</span>
-            </>
-          )}
-        </button>
+      <div className="flex justify-center items-center">
+        <div className="section-title mb-0">
+          <AudioLines size={24} className="icon" />
+          <span>Noise Generator</span>
+        </div>
       </div>
       <div className="space-y-6">
         <div className="space-y-6">
