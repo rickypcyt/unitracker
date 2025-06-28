@@ -532,7 +532,7 @@ const Pomodoro = () => {
       <div className="flex items-center w-full">
         {/* Centered Title with Icon */}
         <div className="section-title flex-1">
-          <Timer size={24} className="icon" />
+          <Timer size={22} className="icon" />
           <span>Pomo Timer</span>
         </div>
 

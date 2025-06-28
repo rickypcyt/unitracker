@@ -203,7 +203,7 @@ const Statistics: React.FC = () => {
             <div className="mb-1">{card.icon}</div>
             <div className="text-[var(--text-secondary)] text-sm font-medium">{card.label}</div>
             <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(statData)}</div>
-            <div className="text-[var(--text-secondary)] text-xs">{card.sub(statData)}</div>
+            <div className="text-[var(--text-secondary)] text-sm">{card.sub(statData)}</div>
           </div>
         ))}
       </div>

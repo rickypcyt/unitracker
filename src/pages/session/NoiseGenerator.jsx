@@ -266,7 +266,7 @@ export default function NoiseGenerator() {
   return (
     <div className="w-full">
       <div className="section-title justify-center mb-4">
-        <AudioLines size={24} className="icon" />
+        <AudioLines size={22} className="icon" />
         <span>Noise Generator</span>
       </div>
       <div className="space-y-6 w-full">

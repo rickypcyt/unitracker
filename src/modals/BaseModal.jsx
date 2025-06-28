@@ -65,7 +65,7 @@ const BaseModal = ({
               onClick={handleClose}
               className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
-              <X size={24} />
+              <X size={22} />
             </button>
           )}
         </div>

@@ -151,7 +151,7 @@ const UpcomingTasks = () => {
       <div className="maincard">
         <div className="flex justify-center items-center">
           <div className="section-title">
-            <Calendar size={24} className="icon" />
+            <Calendar size={22} className="icon" />
             <span>Upcoming Tasks</span>
           </div>
         </div>
@@ -209,7 +209,7 @@ const UpcomingTasks = () => {
     <div className="maincard">
       <div className="flex justify-center items-center">
         <div className="section-title">
-          <Calendar size={24} className="icon" />
+          <Calendar size={22} className="icon" />
           <span>Upcoming Tasks</span>
         </div>
       </div>

@@ -57,7 +57,7 @@ export const TaskItem = ({
 
     return (
         <div
-            className="flex p-1.5 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-1"
+            className="flex p-3 py-4 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
@@ -72,9 +72,9 @@ export const TaskItem = ({
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
-                        <CheckCircle2 className="text-[var(--accent-primary)]" size={18} strokeWidth={2.2} />
+                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
                     ) : (
-                        <Circle className={getDifficultyColor(task.difficulty)} size={18} strokeWidth={2.2} />
+                        <Circle className={getDifficultyColor(task.difficulty)} size={22} strokeWidth={2.2} />
                     )}
                 </button>
             </div>
@@ -121,10 +121,10 @@ export const TaskItem = ({
                         onClick={handleDeleteClick}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
-                        className="hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110"
+                        className="hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110 ml-2"
                         aria-label="Delete task"
                     >
-                        <Trash2 size={16} />
+                        <Trash2 size={22} />
                     </button>
                 </div>
             </div>

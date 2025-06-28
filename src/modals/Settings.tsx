@@ -1,9 +1,11 @@
-import { ListTodo, Moon, Palette, Sun, X } from "lucide-react";
+import { Info, ListTodo, LogIn, LogOut, Moon, Palette, Sun, X } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
+import AboutModal from '@/modals/AboutModal';
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import Switch from "react-switch";
+import { useAuth } from '@/hooks/useAuth';
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -23,6 +25,8 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const { currentTheme, handleThemeChange, accentPalette, setAccentPalette } = useTheme();
   const [showAssignments, setShowAssignments] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const { isLoggedIn, loginWithGoogle, logout } = useAuth();
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -56,10 +60,38 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="space-y-4">
+            {/* About, Login, Logout Section */}
+            <div className="bg-[var(--bg-secondary)] p-4 rounded-xl flex flex-col gap-2">
+              <button
+                onClick={() => setShowAbout(true)}
+                className="infomenu flex items-center gap-2"
+              >
+                <Info size={18} />
+                About
+              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={logout}
+                  className="infomenu flex items-center gap-2"
+                >
+                  <LogOut size={18} />
+                  Log Out
+                </button>
+              ) : (
+                <button
+                  onClick={loginWithGoogle}
+                  className="infomenu flex items-center gap-2"
+                >
+                  <LogIn size={18} />
+                  Log In
+                </button>
+              )}
+            </div>
+
             {/* Theme Section */}
             <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
               <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                {currentTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+                {currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
                 Theme
               </h3>
               <div className="space-y-3">
@@ -92,7 +124,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             {/* Accent Color Section */}
             <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
               <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                <Palette size={18} />
+                <Palette size={22} />
                 Accent Color
               </h3>
               <div className="grid grid-cols-6 gap-2">
@@ -117,7 +149,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             {/* Assignments Section */}
             <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
               <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                <ListTodo size={18} />
+                <ListTodo size={22} />
                 Assignments
               </h3>
               <button
@@ -135,6 +167,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         isOpen={showAssignments}
         onClose={() => setShowAssignments(false)}
       />
+
+      <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
     </>
   );
 };

@@ -283,12 +283,12 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                   >
                     {formData.difficulty === option.value ? (
                       <CheckCircle2
-                        size={24}
+                        size={22}
                         className={getDifficultyColor(option.value)}
                       />
                     ) : (
                       <Circle
-                        size={24}
+                        size={22}
                         className={getDifficultyColor(option.value)}
                       />
                     )}

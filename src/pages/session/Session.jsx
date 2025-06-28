@@ -48,7 +48,7 @@ const Session = () => {
     <div className="maincard">
       <div className="flex justify-center items-center">
         <div className="section-title">
-          <Clock size={24} className="icon" />
+          <Clock size={22} className="icon" />
           <span>Study Session</span>
         </div>
       </div>
@@ -65,7 +65,7 @@ const Session = () => {
               className="control-button w-12 h-12 flex items-center justify-center"
               aria-label="Start timer"
             >
-              <Play size={24} style={{ color: "white" }} />
+              <Play size={22} style={{ color: "white" }} />
             </button>
           ) : (
             <button
@@ -73,7 +73,7 @@ const Session = () => {
               className="control-button w-12 h-12 flex items-center justify-center"
               aria-label="Pause timer"
             >
-              <Pause size={24} style={{ color: "white" }} />
+              <Pause size={22} style={{ color: "white" }} />
             </button>
           )}
           <button
@@ -81,7 +81,7 @@ const Session = () => {
             className="control-button w-12 h-12 flex items-center justify-center"
             aria-label="Reset timer"
           >
-            <RotateCcw size={24} style={{ color: "white" }} />
+            <RotateCcw size={22} style={{ color: "white" }} />
           </button>
         </div>
       </div>

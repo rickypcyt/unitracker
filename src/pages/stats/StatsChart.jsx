@@ -1,5 +1,5 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { Activity } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -29,9 +29,18 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
     return completedDate === date;
   });
   const tags = Array.from(new Set(dayTasks.flatMap(t => t.tags || [])));
-  // Formato de fecha para mostrar (ej: Jueves 6)
+  // Formato de fecha para mostrar
   const dateObj = date ? new Date(date) : null;
-  const dayLabel = dateObj ? dateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }) : label;
+  let dayLabel;
+  if (title === "This Month" && dateObj) {
+    dayLabel = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+  } else if (title === "This Year" && dateObj) {
+    dayLabel = dateObj.toLocaleDateString('en-US', { month: 'long' });
+  } else if (dateObj) {
+    dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric' });
+  } else {
+    dayLabel = label;
+  }
   return (
     <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px]">
       <div className="font-semibold text-[var(--accent-primary)] mb-1">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
@@ -46,19 +55,12 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
 
 const StatsChart = ({ data, title, accentColor, small = false }) => {
   const chartRef = useRef(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
   const tasks = useSelector((state) => state.tasks.tasks || []);
-
-  useEffect(() => {
-    if (chartRef.current && !hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [hasAnimated]);
 
   return (
     <div className="maincard p-0.5 mb-3">
       <div className="section-title mt-4 mb-2">
-        <Activity size={24} className="icon" />
+        <Activity size={22} className="icon" />
         <span>{title}</span>
       </div>
       <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] p-2 z-10 overflow-visible`}>
@@ -81,14 +83,14 @@ const StatsChart = ({ data, title, accentColor, small = false }) => {
               domain={[0, 'auto']}
               tickMargin={8}
             />
-            <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} />
+            <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
             <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
             <Bar
               dataKey="minutes"
               fill={accentColor}
               radius={[6, 6, 0, 0]}
               barSize={18}
-              animationDuration={hasAnimated ? 0 : 350}
+              animationDuration={0}
               ref={chartRef}
             >
               {data.map((entry, index) => (
@@ -102,4 +104,4 @@ const StatsChart = ({ data, title, accentColor, small = false }) => {
   );
 };
 
-export default StatsChart; 
+export default StatsChart;

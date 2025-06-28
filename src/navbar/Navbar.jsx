@@ -69,7 +69,7 @@ const Navbar = ({ onOpenSettings }) => {
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                 className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors"
               >
-                <Settings size={24} />
+                <Settings size={22} />
               </button>
               {isSettingsOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">

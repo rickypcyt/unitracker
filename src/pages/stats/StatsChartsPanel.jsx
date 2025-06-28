@@ -90,7 +90,17 @@ const StatsChartsPanel = () => {
   // This Month
   const thisMonthData = useMemo(() => {
     const today = new Date();
-    const monthDays = getMonthDays(today);
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Generar todos los días del mes actual (1 hasta el último día)
+    const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const date = new Date(year, month, day);
+      return date.toISOString().split('T')[0];
+    });
+    
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
       const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
@@ -99,12 +109,16 @@ const StatsChartsPanel = () => {
       }
       return acc;
     }, {});
-    return monthDays.map((date, idx) => ({
-      date,
-      minutes: dailyMinutes[date] || 0,
-      hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
-      dayName: (idx + 1).toString(),
-    }));
+    
+    return monthDays.map((date, idx) => {
+      const dayOfMonth = idx + 1; // Siempre empieza en 1
+      return {
+        date,
+        minutes: dailyMinutes[date] || 0,
+        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
+        dayName: dayOfMonth.toString(),
+      };
+    });
   }, [laps]);
 
   // This Year

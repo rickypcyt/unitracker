@@ -159,7 +159,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
             className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             onClick={onClose}
           >
-            <X size={24} />
+            <X size={22} />
           </button>
         </div>
 

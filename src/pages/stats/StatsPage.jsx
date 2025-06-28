@@ -1,8 +1,8 @@
 import React, { memo, useCallback, useEffect } from 'react';
 
-import MonthLogs from '@/pages/stats/MonthLogs';
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
+import StudySessions from '@/pages/stats/StudySessions';
 import { fetchLaps } from '@/store/LapActions';
 import { useDispatch } from 'react-redux';
 import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
@@ -53,7 +53,7 @@ const StatsPage = memo(() => {
         </div>
         <div>
           <Statistics />
-          <MonthLogs />
+          <StudySessions />
         </div>
       </div>
     </div>

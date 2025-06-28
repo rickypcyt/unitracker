@@ -72,7 +72,7 @@ const TasksPage = memo(() => {
         className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-[var(--accent-primary)] text-white shadow-lg hover:bg-[var(--accent-primary)]/90 transition-colors flex items-center justify-center z-50"
         aria-label="Add new task"
       >
-        <Plus size={24} />
+        <Plus size={22} />
       </button>
 
       {/* Task Form Modal */}

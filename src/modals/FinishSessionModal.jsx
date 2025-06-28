@@ -179,7 +179,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Finish Session</h2>
           <button onClick={onClose} className="text-neutral-400 hover:text-white">
-            <X size={24} />
+            <X size={22} />
           </button>
         </div>
 

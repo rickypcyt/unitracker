@@ -46,14 +46,14 @@ export const SortableColumn = ({
             className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]  mr-2"
             title="Sort tasks"
           >
-            <ListOrdered size={18} />
+            <ListOrdered size={22} />
           </button>
           <button
             onClick={onAddTask}
             className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] "
             title="Add task"
           >
-            <Plus size={18} />
+            <Plus size={22} />
           </button>
         </div>
       </div>

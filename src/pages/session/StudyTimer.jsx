@@ -494,7 +494,7 @@ const StudyTimer = ({ onSyncChange }) => {
       <div className="flex items-center justify-between w-full px-4">
         {/* Centered Title with Icon */}
         <div className="section-title flex-1">
-          <Clock size={24} className="icon" />
+          <Clock size={22} className="icon" />
           <span>Study Timer</span>
         </div>
 
