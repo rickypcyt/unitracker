@@ -17,7 +17,7 @@ export const SortableColumn = ({
   onSortClick,
 }) => {
   return (
-    <div className="flex flex-col flex-1 min-w-[16rem] maincard p-1 border-none">
+    <div className="flex flex-col flex-1 min-w-[16rem] p-1 border-none">
       <div className="flex items-center justify-between w-full mb-3">
         <div className="flex items-center gap-2">
           <button

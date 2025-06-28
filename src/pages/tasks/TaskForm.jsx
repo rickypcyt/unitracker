@@ -160,6 +160,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     return null;
   };
 
+  const uniqueAssignments = [...new Set(tasks.map((task) => task.assignment || 'No Assignment'))]
+    .filter((assignment) => assignment && assignment !== 'No Assignment')
+    .sort();
+
   return (
     <BaseModal
       isOpen={true}
@@ -180,14 +184,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
               error={errors.assignment}
               required
               placeholder="Enter assignment name"
-              suggestions={Array.from(new Set([
-                // Assignments with at least one incomplete task
-                ...tasks.filter(t => !t.completed && t.assignment).map(t => t.assignment),
-                // Assignments that have no tasks at all
-                ...assignments
-                  .filter(a => !tasks.some(t => t.assignment === a.name))
-                  .map(a => a.name)
-              ]))}
+              suggestions={uniqueAssignments}
             />
           </div>
 

@@ -305,9 +305,9 @@ export const KanbanBoard = () => {
             {idx < assignmentsWithIncompleteTasks.length - 1 && (
               <>
                 {/* Desktop: vertical */}
-                <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-neutral-800 mx-2 rounded-full opacity-80" />
+                <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-[var(--border-primary)] mx-2 rounded-full opacity-80" />
                 {/* Móvil: horizontal */}
-                <div className="block md:hidden w-full h-px bg-neutral-800 my-2 rounded-full opacity-80" />
+                <div className="block md:hidden w-full h-px bg-[var(--border-primary)] my-2 rounded-full opacity-80" />
               </>
             )}
           </React.Fragment>
