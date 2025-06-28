@@ -79,18 +79,7 @@
   </script>
 
   <!-- Security Headers -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    img-src 'self' data: https://opencollective.com;
-    script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com;
-    style-src 'self' 'unsafe-inline';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    worker-src 'self' blob:;
-    connect-src 'self' https://uwwtnrwjvxlzekmdhmuo.supabase.co wss://uwwtnrwjvxlzekmdhmuo.supabase.co;
-    font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:;
-  "/>
+  <!-- Eliminada la metaetiqueta Content-Security-Policy para evitar bloqueos de CSP -->
   <meta name="referrer" content="strict-origin-when-cross-origin" />
 </head>
 
