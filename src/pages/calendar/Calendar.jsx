@@ -1,9 +1,10 @@
-import { CheckCircle2, Clock, CalendarDays as LucideCalendar } from 'lucide-react';
+import { CheckCircle2, Clock, CalendarDays as LucideCalendar, MoreVertical } from 'lucide-react';
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { formatDate, formatDateForInput } from '@/utils/dateUtils';
 import { useDispatch, useSelector } from "react-redux";
 
+import BaseModal from '@/modals/BaseModal';
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import TaskForm from '@/pages/tasks/TaskForm';
 import { fetchLaps } from '@/store/LapActions';
@@ -77,6 +78,8 @@ const Calendar = () => {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [calendarSize, setCalendarSize] = useState('lg'); // sm, md, lg
   
   const {
     selectedTask,
@@ -335,12 +338,36 @@ const Calendar = () => {
   };
 
   return (
-    <div className="maincard relative mx-auto">
-      <div className="flex justify-center items-center">
-        <div className="section-title mb-0">
-          <LucideCalendar size={24} className="icon" />
-          <span>Calendar</span>
+    <div className={`maincard relative mx-auto transition-all duration-300 ${
+      calendarSize === 'sm' ? 'max-w-md' : calendarSize === 'md' ? 'max-w-2xl' : 'max-w-4xl'
+    }`}>
+      {/* Top bar: Month selector centered, options right */}
+      <div className="flex justify-center items-center mb-4 relative">
+        <div className="flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group bg-transparent">
+          <button
+            onClick={goToPreviousMonth}
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
+          >
+            <FaChevronLeft size={16} />
+          </button>
+          <div className={`text-lg font-semibold mx-2 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </div>
+          <button
+            onClick={goToNextMonth}
+            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
+          >
+            <FaChevronRight size={16} />
+          </button>
         </div>
+        {/* Botón de opciones arriba a la derecha */}
+        <button
+          className="absolute right-0 top-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] p-2"
+          onClick={() => setIsOptionsOpen(true)}
+          aria-label="Calendar options"
+        >
+          <MoreVertical size={22} />
+        </button>
       </div>
       
       {/* Add centered tooltip container at the top of the calendar */}
@@ -430,24 +457,6 @@ const Calendar = () => {
             })}
           </div>
         </div>
-        {/* Month selector moved to bottom right */}
-        <div className="absolute right-0 bottom-0 flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group bg-transparent">
-          <button
-            onClick={goToPreviousMonth}
-            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
-          >
-            <FaChevronLeft size={16} />
-          </button>
-          <div className={`text-sm font-medium mx-2 ${currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </div>
-          <button
-            onClick={goToNextMonth}
-            className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] focus:outline-none"
-          >
-            <FaChevronRight size={16} />
-          </button>
-        </div>
       </div>
 
       {showTaskForm && (
@@ -477,6 +486,29 @@ const Calendar = () => {
         isOpen={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
       />
+
+      {/* Modal de opciones */}
+      <BaseModal
+        isOpen={isOptionsOpen}
+        onClose={() => setIsOptionsOpen(false)}
+        title="Calendar Options"
+        maxWidth="max-w-xs"
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block mb-2 text-sm font-medium text-[var(--text-primary)]">Calendar Size</label>
+            <select
+              className="w-full p-2 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+              value={calendarSize}
+              onChange={e => setCalendarSize(e.target.value)}
+            >
+              <option value="sm">Small</option>
+              <option value="md">Medium</option>
+              <option value="lg">Large</option>
+            </select>
+          </div>
+        </div>
+      </BaseModal>
     </div>
   );
 };

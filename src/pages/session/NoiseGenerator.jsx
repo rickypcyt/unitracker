@@ -264,31 +264,27 @@ export default function NoiseGenerator() {
   };
 
   return (
-    <div className="maincard p-6 border-2 border-[var(--border-primary)]">
-      <div className="flex justify-center items-center">
-        <div className="section-title mb-0">
-          <AudioLines size={24} className="icon" />
-          <span>Noise Generator</span>
-        </div>
+    <div className="w-full">
+      <div className="section-title justify-center mb-4">
+        <AudioLines size={24} className="icon" />
+        <span>Noise Generator</span>
       </div>
-      <div className="space-y-6">
-        <div className="space-y-6">
-          {sounds.map((sound, idx) => (
-            <SoundControl
-              key={sound.key}
-              label={sound.label}
-              icon={sound.icon === "Cloud" ? Cloud : sound.icon === "CloudRain" ? CloudRain : Waves}
-              min={sound.min}
-              max={sound.max}
-              volume={sound.volume}
-              setVolume={(volume) => setVolume(idx, volume)}
-              isPlaying={sound.isPlaying}
-              start={() => handleStart(idx)}
-              stop={() => stopSound(idx)}
-              className={sound.key === 'ocean' ? 'mb-2' : ''}
-            />
-          ))}
-        </div>
+      <div className="space-y-6 w-full">
+        {sounds.map((sound, idx) => (
+          <SoundControl
+            key={sound.key}
+            label={sound.label}
+            icon={sound.icon === "Cloud" ? Cloud : sound.icon === "CloudRain" ? CloudRain : Waves}
+            min={sound.min}
+            max={sound.max}
+            volume={sound.volume}
+            setVolume={(volume) => setVolume(idx, volume)}
+            isPlaying={sound.isPlaying}
+            start={() => handleStart(idx)}
+            stop={() => stopSound(idx)}
+            className={sound.key === 'ocean' ? 'mb-2' : ''}
+          />
+        ))}
       </div>
     </div>
   );

@@ -47,7 +47,7 @@
     --accent-primary: #1E90FF; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
 
-    --bg-secondary: #f5f5f5;
+    --bg-secondary: #ffffffb3;
     --text-secondary: #666666;
     --accent-deep: #187BCD; /* Darker electric blue */
 
@@ -759,7 +759,7 @@ h1 {
    Section Title with Icon
    ========================= */
 .section-title {
-  @apply flex items-center justify-center mb-3 gap-3 text-xl font-semibold text-[var(--text-primary)];
+  @apply flex items-center justify-center mb-6 gap-3 text-xl font-semibold text-[var(--text-primary)];
 }
 
 .section-title .icon {

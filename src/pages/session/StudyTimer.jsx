@@ -664,7 +664,7 @@ const StudyTimer = ({ onSyncChange }) => {
         )}
       </div>
       <div className="text-base mt-2 text-[var(--text-secondary)]">
-        Session Title: <span style={{ color: iconColor }}>{studyState.sessionTitle || 'No Session'}</span>
+        Session Title: <span className="text-[var(--text-primary)]">{studyState.sessionTitle || 'No Session'}</span>
       </div>
       
       {/* Sync with Pomodoro button */}
@@ -680,7 +680,7 @@ const StudyTimer = ({ onSyncChange }) => {
               detail: { isSyncedWithStudyTimer: newSyncState } 
             }));
           }}
-          className="flex items-center gap-1 px-6 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="flex items-center gap-1 px-6 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)]  transition-colors"
         >
           <div className="text-base">Start pomodoro at the same time</div>
           {isSyncedWithStudyTimer ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}

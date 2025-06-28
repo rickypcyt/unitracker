@@ -9,20 +9,22 @@ const SessionPage = memo(() => {
   const location = useLocation();
 
   return (
-    <div className="w-full px-6 pt-10">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="w-full pt-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-3/4 mx-auto">
         {/* Pomodoro */}
-        <div className="maincard">
+        <div className="maincard max-w-md w-full mx-auto">
           <Pomodoro />
         </div>
 
         {/* Study Timer */}
-        <div className="maincard">
+        <div className="maincard max-w-md w-full mx-auto">
           <StudyTimer />
         </div>
         
         {/* Noise Generator */}
-        <NoiseGenerator />
+        <div className="maincard max-w-md w-full mx-auto">
+          <NoiseGenerator />
+        </div>
       </div>
     </div>
   );

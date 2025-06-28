@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect } from 'react';
 
 import MonthLogs from '@/pages/stats/MonthLogs';
 import Statistics from '@/pages/stats/Stats';
+import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import { fetchLaps } from '@/store/LapActions';
 import { useDispatch } from 'react-redux';
 import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
@@ -48,9 +49,10 @@ const StatsPage = memo(() => {
     <div className="w-full px-6 pt-10 overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <Statistics />
+          <StatsChartsPanel />
         </div>
         <div>
+          <Statistics />
           <MonthLogs />
         </div>
       </div>
