@@ -44,8 +44,8 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   return (
     <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px]">
       <div className="font-semibold text-[var(--accent-primary)] mb-1">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
-      <div className="text-[var(--text-primary)]">Tiempo: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
-      <div className="text-[var(--text-primary)]">Tareas: <b>{dayTasks.length}</b></div>
+      <div className="text-[var(--text-primary)]">Time: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
+      <div className="text-[var(--text-primary)]">Tasks: <b>{dayTasks.length}</b></div>
       {tags.length > 0 && (
         <div className="text-[var(--text-primary)]">Tags: <span className="italic">{tags.map(tag => `"${tag}"`).join(', ')}</span></div>
       )}
