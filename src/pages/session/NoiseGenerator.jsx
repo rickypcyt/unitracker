@@ -211,22 +211,29 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
           className="flex-1 h-2"
           thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors -translate-y-1 border-2 border-[var(--accent-primary)]"
           trackClassName="h-2 rounded-full bg-[var(--border-primary)] border-2 border-[var(--border-primary)]"
-          renderTrack={(props, state) => (
-            <div
-              {...props}
-              className={`h-2 rounded-full border-2 border-[var(--border-primary)] ${
-                state.index === 0
-                  ? 'bg-[var(--accent-primary)]'
-                  : 'bg-[var(--border-primary)]'
-              }`}
-            />
-          )}
+          renderTrack={(props, state) => {
+            const { key, ...rest } = props;
+            return (
+              <div
+                key={key}
+                {...rest}
+                className={`h-2 rounded-full border-2 border-[var(--border-primary)] ${
+                  state.index === 0
+                    ? 'bg-[var(--accent-primary)]'
+                    : 'bg-[var(--border-primary)]'
+                }`}
+              />
+            );
+          }}
           min={min}
           max={max}
           step={0.01}
           value={volume}
           onChange={value => setVolume(value)}
-          renderThumb={(props, state) => <div {...props} />}
+          renderThumb={(props, state) => {
+            const { key, ...rest } = props;
+            return <div key={key} {...rest} />;
+          }}
         />
         <div className="w-8 flex justify-center">
           {!isPlaying ? (

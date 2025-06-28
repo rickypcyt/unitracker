@@ -196,10 +196,13 @@ const Statistics: React.FC = () => {
   };
 
   return (
-    <div className="maincard">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-center items-center">
+    <div className="maincard px-2 md:px-6">
+      <div
+        className="grid gap-6 md:gap-8 justify-center items-center"
+        style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
+      >
         {statCards.map((card, i) => (
-          <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[120px] min-h-[90px]">
+          <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px]">
             <div className="mb-1">{card.icon}</div>
             <div className="text-[var(--text-secondary)] text-sm font-medium">{card.label}</div>
             <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(statData)}</div>

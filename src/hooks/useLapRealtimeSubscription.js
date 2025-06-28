@@ -9,47 +9,52 @@ export const useLapRealtimeSubscription = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Fetch initial data
-    dispatch(fetchLaps());
+    let channel = null;
+    let isMounted = true;
 
-    const channel = supabase
-      .channel('study_laps_changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'study_laps'
-          // Consider adding a filter here if needed, e.g., for user_id
-        }, 
-        (payload) => {
-          console.log('Change received!', payload);
-          
-          // Invalidar caché antes de procesar el cambio
-          dispatch(invalidateCache());
-          
-          switch (payload.eventType) {
-            case 'INSERT':
-              dispatch(addLapSuccess(payload.new));
-              break;
-            case 'UPDATE':
-              dispatch(updateLapSuccess(payload.new));
-              break;
-            case 'DELETE':
-              dispatch(deleteLapSuccess(payload.old.id));
-              break;
-            default:
-              dispatch(fetchLaps());
-              break;
+    const setupSubscription = async () => {
+      dispatch(fetchLaps());
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !isMounted) return;
+      channel = supabase
+        .channel('study_laps_changes')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'study_laps',
+            filter: `user_id=eq.${user.id}`
+          }, 
+          (payload) => {
+            // Invalidar caché antes de procesar el cambio
+            dispatch(invalidateCache());
+            switch (payload.eventType) {
+              case 'INSERT':
+                dispatch(addLapSuccess(payload.new));
+                break;
+              case 'UPDATE':
+                dispatch(updateLapSuccess(payload.new));
+                break;
+              case 'DELETE':
+                dispatch(deleteLapSuccess(payload.old.id));
+                break;
+              default:
+                dispatch(fetchLaps());
+                break;
+            }
+            window.dispatchEvent(new CustomEvent('refreshStats'));
           }
-          
-          // Disparar evento para actualizar la UI
-          window.dispatchEvent(new CustomEvent('refreshStats'));
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    };
+
+    setupSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [dispatch]); // Added dispatch as a dependency
+  }, [dispatch]);
 }; 

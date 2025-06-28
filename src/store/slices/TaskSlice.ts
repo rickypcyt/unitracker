@@ -21,46 +21,34 @@ const taskSlice = createSlice({
   initialState,
   reducers: {
     fetchTasksSuccess: (state, action: PayloadAction<Task[]>) => {
-      console.log(`[Tasks] Fetched ${action.payload.length} tasks from database`);
       state.tasks = action.payload;
-      state.lastFetch = Date.now();
       state.isCached = true;
+      state.lastFetch = Date.now();
     },
     addTaskSuccess: (state, action: PayloadAction<Task>) => {
-      console.log(`[Tasks] Added new task: "${action.payload.title}" (ID: ${action.payload.id})`);
       state.tasks.push(action.payload);
-      state.isCached = true;
     },
     toggleTaskStatusOptimistic: (state, action: PayloadAction<{ id: string; completed: boolean }>) => {
       const task = state.tasks.find(t => t.id === action.payload.id);
       if (task) {
-        const newStatus = action.payload.completed ? 'completed' : 'pending';
-        console.log(`[Tasks] Task "${task.title}" marked as ${newStatus}`);
+        const newStatus = action.payload.completed ? 'completed' : 'not completed';
         task.completed = action.payload.completed;
         task.completed_at = action.payload.completed ? new Date().toISOString() : null;
       }
     },
     deleteTaskSuccess: (state, action: PayloadAction<string>) => {
-      const taskToDelete = state.tasks.find(t => t.id === action.payload);
-      if (taskToDelete) {
-        console.log(`[Tasks] Deleted task: "${taskToDelete.title}" (ID: ${action.payload})`);
-      }
       state.tasks = state.tasks.filter(t => t.id !== action.payload);
     },
     updateTaskSuccess: (state, action: PayloadAction<Task>) => {
       const index = state.tasks.findIndex(t => t.id === action.payload.id);
       if (index !== -1) {
-        const oldTask = state.tasks[index];
-        console.log(`[Tasks] Updated task: "${oldTask.title}" -> "${action.payload.title}" (ID: ${action.payload.id})`);
         state.tasks[index] = action.payload;
       }
     },
     taskError: (state, action: PayloadAction<string>) => {
-      console.error(`[Tasks] Error: ${action.payload}`);
       state.error = action.payload;
     },
     invalidateCache: (state) => {
-      console.log('[Tasks] Cache invalidated, will fetch fresh data on next request');
       state.isCached = false;
     }
   }

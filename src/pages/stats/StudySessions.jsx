@@ -172,7 +172,10 @@ const StudySessions = () => {
                 </div>
             ) : (
                 // Vista de tarjetas de meses
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div
+                  className="grid gap-6 md:gap-8 justify-center items-center"
+                  style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}
+                >
                     {Object.entries(groupedLaps).map(([monthYear, lapsOfMonth]) => {
                         const stats = getMonthStats(lapsOfMonth);
                         return (
