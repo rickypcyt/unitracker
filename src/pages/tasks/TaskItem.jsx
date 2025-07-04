@@ -1,7 +1,17 @@
 import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
-import { formatDate, formatDateShort } from '@/utils/dateUtils';
+import { formatDate, formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
 
 import React from "react";
+
+// Helper para saber si la fecha es pasada
+const isPast = (dateStr) => {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < now;
+};
 
 export const TaskItem = ({
     task,
@@ -54,6 +64,17 @@ export const TaskItem = ({
 
     const handleDoubleClick = () => {
         onEditTask(task);
+    };
+
+    // Helper para el label de hoy/mañana
+    const renderDateLabel = (deadline) => {
+        if (isToday(deadline)) {
+            return <span className="text-green-500 ml-1">(Today)</span>;
+        }
+        if (isTomorrow(deadline)) {
+            return <span className="text-blue-500 ml-1">(Tomorrow)</span>;
+        }
+        return null;
     };
 
     return (
@@ -111,16 +132,6 @@ export const TaskItem = ({
                 </div>
                 {/* Prioridad, assignment, fecha abajo */}
                 <div className="flex items-center gap-2 mt-1 w-full">
-                    {assignmentLeftOfDate && showAssignment && task.assignment && (
-                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
-                            {task.assignment}
-                        </div>
-                    )}
-                    <div className="text-base text-[var(--text-secondary)]">
-                        <span>
-                          {task.deadline && task.deadline !== '' ? formatDateShort(task.deadline) : 'No Deadline'}
-                        </span>
-                    </div>
                     {task.priority && (
                         <div className={`flex items-center gap-1 text-md ${getPriorityColor(task.priority)}`}> 
                             <Clock size={11} />
@@ -132,6 +143,18 @@ export const TaskItem = ({
                             {task.assignment}
                         </div>
                     )}
+                    <div className="text-base text-[var(--text-secondary)]">
+                        <span>
+                          {task.deadline && task.deadline !== '' ? (
+                            <>
+                              <span className={isPast(task.deadline) ? 'text-red-500' : ''}>
+                                {formatDateShort(task.deadline)}
+                              </span>
+                              {renderDateLabel(task.deadline)}
+                            </>
+                          ) : 'No Deadline'}
+                        </span>
+                    </div>
                     <div className="flex-1" />
                 </div>
             </div>

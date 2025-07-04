@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Calendar, CheckSquare, Clock, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckSquare, Clock, Info, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { formatDateShort, formatDateTimeWithAmPm } from '@/utils/dateUtils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,6 +19,7 @@ const StudySessions = () => {
     const [selectedSession, setSelectedSession] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sessionToDeleteId, setSessionToDeleteId] = useState(null);
+    const [contextMenu, setContextMenu] = useState(null);
 
     const groupSessionsByMonth = () => {
         return laps.reduce((groups, lap) => {
@@ -79,6 +80,30 @@ const StudySessions = () => {
         return `${h}:${m.toString().padStart(2, '0')}`;
     };
 
+    // Handler para click derecho en sesión
+    const handleSessionContextMenu = (e, lap) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            lap,
+        });
+    };
+
+    // Cerrar menú contextual
+    React.useEffect(() => {
+        if (!contextMenu) return;
+        const handleClick = (e) => setContextMenu(null);
+        const handleEsc = (e) => { if (e.key === 'Escape') setContextMenu(null); };
+        document.addEventListener('mousedown', handleClick);
+        document.addEventListener('keydown', handleEsc);
+        return () => {
+            document.removeEventListener('mousedown', handleClick);
+            document.removeEventListener('keydown', handleEsc);
+        };
+    }, [contextMenu]);
+
     if (!isLoggedIn) {
         return (
             <div className="maincard">
@@ -97,12 +122,6 @@ const StudySessions = () => {
 
     return (
         <div className="maincard">
-            <div className="flex justify-center items-center ">
-                <div className="section-title">
-                    {/* <BookOpen size={22} className="icon" /> */}
-                    <span>Study Sessions</span>
-                </div>
-            </div>
 
             {selectedMonth ? (
                 // Vista detallada del mes seleccionado
@@ -124,23 +143,23 @@ const StudySessions = () => {
                                 key={lap.id}
                                 className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative"
                                 onDoubleClick={() => setSelectedSession(lap)}
+                                onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                             >
-                                {/* Primera línea: #, título, duración */}
+                                {/* Duración arriba del título */}
+                                <div className="flex items-center gap-1 mb-1">
+                                    <Clock size={18} className="text-[var(--text-secondary)]" />
+                                    <span className="text-base text-[var(--text-primary)] font-medium">{lap.duration}</span>
+                                </div>
+                                {/* Primera línea: #, título */}
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="text-base text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
                                     <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
-                                    <div className="flex items-center gap-1 ml-2">
-                                        <Clock size={18} className="text-[var(--text-secondary)]" />
-                                        <span className="text-base text-[var(--text-primary)] font-medium">{lap.duration}</span>
-                                    </div>
-
                                 </div>
                                 {/* Segunda línea: fecha, tasks done y trash icon */}
-                                <div className="flex items-center justify-between text-base text-[var(--text-secondary)] mt-1">
+                                <div className="flex items-center justify-between text-sm text-[var(--text-secondary)] mt-1">
                                     <span>{formatDateShort(lap.created_at)}</span>
                                     <div className="flex items-center gap-2 ml-auto">
-
-                                        <span className="text-base font-normal">Tasks Done: {lap.tasks_completed ?? 0}</span>
+                                        <span className="text-sm font-normal ">Tasks Done: {lap.tasks_completed ?? 0}</span>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -176,7 +195,7 @@ const StudySessions = () => {
                         ];
                         return orderedYears.map(year => (
                             <div key={year} className="mb-2">
-                                <div className="border-b border-[var(--border-primary)] mb-2 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
+                                <div className="border-b border-[var(--border-primary)] mb-6 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="grid gap-3 md:gap-4 w-full grid-cols-2 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6">
                                     {monthsByYear[year]
                                         .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
@@ -222,6 +241,33 @@ const StudySessions = () => {
                 onClose={handleCloseDeleteModal}
                 onConfirm={handleConfirmDelete}
             />
+
+            {/* Context Menu para sesión */}
+            {contextMenu && (
+                <div
+                    className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-50 p-2 flex flex-col min-w-[160px]"
+                    style={{ left: contextMenu.x, top: contextMenu.y }}
+                >
+                    <button
+                        onClick={() => {
+                            setSelectedSession(contextMenu.lap);
+                            setContextMenu(null);
+                        }}
+                        className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                    >
+                        <Info size={16} /> Edit Session
+                    </button>
+                    <button
+                        onClick={() => {
+                            handleDeleteClick(contextMenu.lap.id);
+                            setContextMenu(null);
+                        }}
+                        className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                    >
+                        <Trash2 size={16} /> Delete Session
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

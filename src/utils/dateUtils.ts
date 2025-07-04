@@ -74,4 +74,33 @@ export function formatDateShort(dateStr: string | null | undefined): string {
     const month = date.toLocaleString('en-US', { month: 'short' });
     const day = date.getDate();
     return `${weekday}, ${month} ${day}`;
+}
+
+/**
+ * Checks if a date string is today
+ * @param dateStr - The date string to check
+ * @returns true if the date is today
+ */
+export function isToday(dateStr: string | null | undefined): boolean {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate();
+}
+
+/**
+ * Checks if a date string is tomorrow
+ * @param dateStr - The date string to check
+ * @returns true if the date is tomorrow
+ */
+export function isTomorrow(dateStr: string | null | undefined): boolean {
+    if (!dateStr) return false;
+    const date = new Date(dateStr);
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    return date.getFullYear() === tomorrow.getFullYear() &&
+        date.getMonth() === tomorrow.getMonth() &&
+        date.getDate() === tomorrow.getDate();
 } 

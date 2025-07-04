@@ -239,10 +239,9 @@ const Pomodoro = () => {
 
     // Update state
     setPomoState(prev => {
-      // Solo incrementamos pomodoroToday cuando terminamos un ciclo completo (work -> break -> work)
-      const shouldIncrementPomodoro = !isWork; // Incrementamos cuando terminamos el break
+      // Incrementar pomodoroToday al terminar un work
+      const shouldIncrementPomodoro = isWork;
       const newWorkSessionsCompleted = isWork ? prev.workSessionsCompleted + 1 : prev.workSessionsCompleted;
-
       return {
         ...prev,
         currentMode: nextMode,
@@ -613,12 +612,17 @@ const Pomodoro = () => {
       </div>
 
       {/* Modo actual: Work, Break o Long Break */}
-      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded text-[var(--text-primary)]">
+      <div className="flex flex-col items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded text-[var(--text-primary)]">
         <span>
           {pomoState.currentMode === 'work' && 'Work'}
           {pomoState.currentMode === 'break' && 'Break'}
           {pomoState.currentMode === 'longBreak' && 'Long Break'}
         </span>
+        {(pomoState.currentMode === 'work' || pomoState.currentMode === 'break') && (
+          <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
+            Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{pomoState.pomodoroToday}</span>
+          </span>
+        )}
       </div>
 
       {/* Add Pomodoro Settings Modal */}

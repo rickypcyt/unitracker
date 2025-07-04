@@ -1,4 +1,4 @@
-import { Info, Play, Trash2 } from "lucide-react";
+import { Clipboard, Info, Play, Trash2 } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 
 export const TaskListMenu = ({
@@ -48,6 +48,18 @@ export const TaskListMenu = ({
       }}
     >
       <div className="space-y-1">
+        <button
+          onClick={() => {
+            const t = contextMenu.task;
+            const text = `Title: ${t.title || ''}\nDescription: ${t.description || ''}\nAssignment: ${t.assignment || ''}\nDate: ${t.deadline || t.due_date || ''}`;
+            navigator.clipboard.writeText(text);
+            onClose();
+          }}
+          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+        >
+          <Clipboard size={16} />
+          Copy Task
+        </button>
         <button
           onClick={() => {
             onEditTask(contextMenu.task);

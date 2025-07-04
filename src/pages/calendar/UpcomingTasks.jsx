@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
+import { TaskListMenu } from '@/modals/TaskListMenu';
 import { fetchTasks } from '@/store/TaskActions';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
@@ -18,6 +19,7 @@ const UpcomingTasks = () => {
     pastTasks: false,
   });
   const dispatch = useDispatch();
+  const [contextMenu, setContextMenu] = useState(null);
 
   useEffect(() => {
     // Listen for the refreshTaskList event
@@ -140,6 +142,18 @@ const UpcomingTasks = () => {
   // Add No Deadline group
   const noDeadlineTasks = tasks.filter(task => (!task.deadline || task.deadline === '' || task.deadline === null) && !task.completed);
 
+  const handleTaskContextMenu = (e, task) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      type: 'task',
+      x: e.clientX,
+      y: e.clientY,
+      task,
+    });
+  };
+  const handleCloseContextMenu = () => setContextMenu(null);
+
   if (upcomingTasks.length === 0) {
     return (
       <div className="maincard">
@@ -190,12 +204,7 @@ const UpcomingTasks = () => {
                 onToggleCompletion={handleToggleCompletion}
                 onDelete={handleDeleteTask}
                 onEditTask={handleEditTask}
-                onContextMenu={(e, t) => {
-                  e.preventDefault();
-                  // Aquí puedes abrir tu menú contextual reutilizable, por ahora solo log
-                  // console.log('Context menu for task:', t);
-                  // Si ya tienes un handler global, llama aquí
-                }}
+                onContextMenu={handleTaskContextMenu}
                 showAssignment={true}
                 assignmentLeftOfDate={true}
               />
@@ -241,6 +250,16 @@ const UpcomingTasks = () => {
             dispatch(fetchTasks());
             handleCloseTaskForm();
           }}
+        />
+      )}
+      {/* Context Menu */}
+      {contextMenu && (
+        <TaskListMenu
+          contextMenu={contextMenu}
+          onClose={handleCloseContextMenu}
+          onEditTask={handleEditTask}
+          onSetActiveTask={handleUpdateTask}
+          onDeleteTask={handleDeleteTask}
         />
       )}
     </div>
