@@ -212,9 +212,10 @@ export const KanbanBoard = () => {
   }, [incompletedTasks, assignmentSortConfig, taskOrder]);
 
   const assignmentsWithIncompleteTasks = useMemo(() => {
-    const assignments = Object.keys(incompletedByAssignment);
-    
-    // If we have saved column order, use it and add any new assignments at the end
+    const assignments = Object.keys(incompletedByAssignment).filter(
+      (assignment) => (incompletedByAssignment[assignment] && incompletedByAssignment[assignment].length > 0)
+    );
+    // Si tenemos un orden guardado de columnas, usarlo y agregar nuevos assignments al final
     if (columnOrder.length > 0) {
       const orderedAssignments = [...columnOrder];
       assignments.forEach(assignment => {
@@ -222,9 +223,9 @@ export const KanbanBoard = () => {
           orderedAssignments.push(assignment);
         }
       });
-      return orderedAssignments;
+      // Solo devolver los assignments que tienen tareas incompletas
+      return orderedAssignments.filter(a => assignments.includes(a));
     }
-    
     return assignments;
   }, [incompletedByAssignment, columnOrder]);
 

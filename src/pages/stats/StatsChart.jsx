@@ -19,9 +19,26 @@ function formatMinutesToHMText(minutes) {
 const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   if (!active || !payload || !payload.length) return null;
   const entry = payload[0].payload;
-  // Buscar la fecha real (YYYY-MM-DD) en data
-  const dayData = data.find(d => d.dayName === entry.dayName || d.dayName === label);
-  const date = dayData?.date;
+  let date = undefined;
+  let year, month;
+  if (title === "This Month") {
+    // Buscar el objeto cuyo dayName sea igual al del entry
+    const dayData = data.find(d => d.dayName === entry.dayName);
+    date = dayData?.date;
+    if (dayData && dayData.realDay) {
+      entry.realDay = dayData.realDay;
+    }
+    // Extraer año y mes del primer dato del array (todos son del mismo mes)
+    if (data.length > 0) {
+      const d = new Date(data[0].date);
+      year = d.getFullYear();
+      month = d.getMonth();
+    }
+  } else {
+    // Para otros gráficos, mantener la lógica anterior
+    const dayData = data.find(d => d.dayName === entry.dayName || d.dayName === label);
+    date = dayData?.date;
+  }
   // Filtrar tareas por fecha
   const dayTasks = tasks.filter(t => {
     if (!t.completed_at) return false;
@@ -30,13 +47,19 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   });
   const tags = Array.from(new Set(dayTasks.flatMap(t => t.tags || [])));
   // Formato de fecha para mostrar
-  const dateObj = date ? new Date(date) : null;
   let dayLabel;
-  if (title === "This Month" && dateObj) {
+  if (title === "This Month" && entry.realDay && year !== undefined && month !== undefined) {
+    // Construir la fecha manualmente para evitar desfases de zona horaria
+    const correctDate = new Date(year, month, parseInt(entry.realDay, 10));
+    dayLabel = correctDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  } else if (title === "This Month" && date) {
+    const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
-  } else if (title === "This Year" && dateObj) {
+  } else if (title === "This Year" && date) {
+    const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { month: 'long' });
-  } else if (dateObj) {
+  } else if (date) {
+    const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric' });
   } else {
     dayLabel = label;
@@ -53,25 +76,26 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   );
 };
 
-const StatsChart = ({ data, title, accentColor, small = false }) => {
+const StatsChart = ({ data, title, accentColor, small = false, customTitle }) => {
   const chartRef = useRef(null);
   const tasks = useSelector((state) => state.tasks.tasks || []);
 
   return (
     <div className="maincard p-0.5 mb-3">
-      <div className="section-title mt-4 mb-2">
-        <Activity size={22} className="icon" />
-        <span>{title}</span>
+      <div className="w-full flex flex-col items-center mt-2 mb-2">
+        {customTitle ? customTitle : <span className="text-lg font-semibold">{title}</span>}
       </div>
       <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] p-2 z-10 overflow-visible`}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 30, right: 0, bottom: 20, left: 32 }} barCategoryGap={12}>
             <XAxis
-              dataKey="dayName"
+              dataKey="realDay"
               stroke="var(--text-secondary)"
               tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
               axisLine={false}
               tickLine={false}
+              interval={0}
+              minTickGap={0}
             />
             <YAxis
               stroke="var(--text-secondary)"

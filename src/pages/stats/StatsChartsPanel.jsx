@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 
 import StatsChart from './StatsChart';
 import { useSelector } from 'react-redux';
@@ -29,8 +30,10 @@ function getMonthDays(date) {
   const month = date.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: daysInMonth }, (_, i) => {
-    const d = new Date(year, month, i + 1);
-    return d.toISOString().split('T')[0];
+    const day = i + 1;
+    // Usar Date.UTC para evitar desfases de zona horaria
+    const date = new Date(Date.UTC(year, month, day));
+    return date.toISOString().split('T')[0];
   });
 }
 
@@ -44,6 +47,46 @@ const monthLabels = [
 const StatsChartsPanel = () => {
   const { laps } = useSelector((state) => state.laps);
   const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
+
+  // Estado para el mes mostrado
+  const [monthOffset, setMonthOffset] = useState(0); // 0 = mes actual, -1 = mes anterior, etc.
+
+  // Calcular la fecha base del mes mostrado
+  const shownMonthDate = useMemo(() => {
+    const now = new Date();
+    // Usar UTC para evitar desfases de zona horaria
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    d.setUTCMonth(d.getUTCMonth() + monthOffset);
+    return d;
+  }, [monthOffset]);
+
+  // Datos del mes mostrado
+  const shownMonthData = useMemo(() => {
+    const year = shownMonthDate.getFullYear();
+    const month = shownMonthDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthDays = getMonthDays(shownMonthDate);
+    const dailyMinutes = laps.reduce((acc, lap) => {
+      const lapDateObj = new Date(lap.created_at);
+      // Solo contar si el mes y año coinciden exactamente
+      if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
+        const lapDate = lapDateObj.toISOString().split('T')[0];
+        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        acc[lapDate] = (acc[lapDate] || 0) + minutes;
+      }
+      return acc;
+    }, {});
+    return monthDays.map((date, idx) => {
+      // dayName ahora es idx (0 para el primer día, 1 para el segundo, ...)
+      return {
+        date,
+        minutes: dailyMinutes[date] || 0,
+        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
+        dayName: idx.toString(),
+        realDay: (idx + 1).toString(), // para mostrar el número real si se necesita
+      };
+    });
+  }, [laps, shownMonthDate]);
 
   // This Week
   const thisWeekData = useMemo(() => {
@@ -87,40 +130,6 @@ const StatsChartsPanel = () => {
     }));
   }, [laps]);
 
-  // This Month
-  const thisMonthData = useMemo(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    // Generar todos los días del mes actual (1 hasta el último día)
-    const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
-      const day = i + 1;
-      const date = new Date(year, month, day);
-      return date.toISOString().split('T')[0];
-    });
-    
-    const dailyMinutes = laps.reduce((acc, lap) => {
-      const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
-      const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-      if (monthDays.includes(lapDate)) {
-        acc[lapDate] = (acc[lapDate] || 0) + minutes;
-      }
-      return acc;
-    }, {});
-    
-    return monthDays.map((date, idx) => {
-      const dayOfMonth = idx + 1; // Siempre empieza en 1
-      return {
-        date,
-        minutes: dailyMinutes[date] || 0,
-        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
-        dayName: dayOfMonth.toString(),
-      };
-    });
-  }, [laps]);
-
   // This Year
   const thisYearData = useMemo(() => {
     const today = new Date();
@@ -154,7 +163,36 @@ const StatsChartsPanel = () => {
           <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
         </div>
       </div>
-      <StatsChart data={thisMonthData} title="This Month" accentColor={accentColor} />
+      {/* Card mensual con título y flechas dentro */}
+      <StatsChart
+        data={shownMonthData}
+        title="This Month"
+        accentColor={accentColor}
+        customTitle={
+          <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
+            <button
+              onClick={() => setMonthOffset((prev) => prev - 1)}
+              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              aria-label="Mes anterior"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span
+              className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+            >
+              {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </span>
+            <button
+              onClick={() => setMonthOffset((prev) => prev + 1)}
+              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              aria-label="Mes siguiente"
+              disabled={monthOffset >= 0}
+            >
+              <ChevronRight size={20} className={monthOffset >= 0 ? 'opacity-40 cursor-not-allowed' : ''} />
+            </button>
+          </div>
+        }
+      />
       <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
     </div>
   );

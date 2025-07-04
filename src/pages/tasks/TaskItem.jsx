@@ -57,12 +57,22 @@ export const TaskItem = ({
 
     return (
         <div
-            className="flex p-3 py-4 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
+            className="relative flex p-3 py-4 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
             role="listitem"
         >
+            {/* Botón de eliminar en la esquina superior derecha */}
+            <button
+                onClick={handleDeleteClick}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                className="absolute top-2 right-2 hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110 z-10 bg-transparent border-none p-1 rounded-full"
+                aria-label="Delete task"
+            >
+                <Trash2 size={22} />
+            </button>
             <div className="flex flex-col justify-between items-center py-0.5">
                 <button
                     onClick={handleToggleClick}
@@ -78,7 +88,7 @@ export const TaskItem = ({
                     )}
                 </button>
             </div>
-            {/* Contenido principal y trash juntos */}
+            {/* Contenido principal */}
             <div className="flex-1 min-w-0 flex flex-col justify-between">
                 {/* Título y descripción arriba */}
                 <div>
@@ -98,7 +108,7 @@ export const TaskItem = ({
                         </span>
                     )}
                 </div>
-                {/* Prioridad, assignment, fecha y trash abajo */}
+                {/* Prioridad, assignment, fecha abajo */}
                 <div className="flex items-center gap-2 mt-1 w-full">
                     <div className="text-sm text-[var(--text-secondary)]">
                         {task.deadline && (
@@ -117,15 +127,6 @@ export const TaskItem = ({
                         </div>
                     )}
                     <div className="flex-1" />
-                    <button
-                        onClick={handleDeleteClick}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        className="hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110 ml-2"
-                        aria-label="Delete task"
-                    >
-                        <Trash2 size={22} />
-                    </button>
                 </div>
             </div>
         </div>
