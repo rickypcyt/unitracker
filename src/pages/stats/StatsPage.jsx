@@ -1,10 +1,11 @@
 import React, { memo, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import StudySessions from '@/pages/stats/StudySessions';
 import { fetchLaps } from '@/store/LapActions';
-import { useDispatch } from 'react-redux';
+import { fetchTasks } from '@/store/TaskActions';
 import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
 import { useLocation } from 'react-router-dom';
 
@@ -12,19 +13,25 @@ const StatsPage = memo(() => {
   const location = useLocation();
   const dispatch = useDispatch();
   const isVisible = location.pathname === '/stats';
+  const user = useSelector((state) => state.auth.user);
 
   // Use the real-time subscription hook
   useLapRealtimeSubscription();
 
-  // Función para refrescar los datos
-  const refreshData = useCallback(() => {
-    dispatch(fetchLaps());
-  }, [dispatch]);
+  // Refresca tasks y laps solo cuando el usuario esté listo
+  useEffect(() => {
+    if (user && isVisible) {
+      dispatch(fetchLaps());
+      dispatch(fetchTasks());
+    }
+  }, [user, isVisible, dispatch]);
 
   // Escuchar eventos de actualización
   useEffect(() => {
+    if (!user) return;
     const handleRefresh = () => {
-      refreshData();
+      dispatch(fetchLaps());
+      dispatch(fetchTasks());
     };
 
     window.addEventListener('refreshStats', handleRefresh);
@@ -36,14 +43,7 @@ const StatsPage = memo(() => {
       window.removeEventListener('studyTimerStateChanged', handleRefresh);
       window.removeEventListener('resetPomodoro', handleRefresh);
     };
-  }, [refreshData]);
-
-  // Actualizar cuando la página se hace visible
-  useEffect(() => {
-    if (isVisible) {
-      refreshData();
-    }
-  }, [isVisible, refreshData]);
+  }, [user, dispatch]);
 
   return (
     <div className="w-full px-6 pt-10 overflow-hidden">

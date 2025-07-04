@@ -181,6 +181,7 @@ const statCards: StatCard[] = [
 const Statistics: React.FC = () => {
   const { tasks } = useSelector((state: any) => state.tasks);
   const { laps } = useSelector((state: any) => state.laps);
+  const user = useSelector((state: any) => state.auth.user);
 
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
   const { todayMinutes, weekMinutes, monthMinutes, yearMinutes } = useLapStats(laps);

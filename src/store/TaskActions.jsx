@@ -1,7 +1,9 @@
 import {
   addTaskSuccess,
   deleteTaskSuccess,
+  fetchTasksStart,
   fetchTasksSuccess,
+  hydrateTasksFromLocalStorage,
   invalidateCache,
   taskError,
   toggleTaskStatusOptimistic,
@@ -13,9 +15,17 @@ import { supabase } from '@/utils/supabaseClient';
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;
 
+// Helper para guardar en localStorage
+function saveTasksToLocalStorage(tasks) {
+  try {
+    localStorage.setItem('tasksHydrated', JSON.stringify(tasks));
+  } catch (e) {}
+}
+
 // En tu archivo TaskActions.js
 export const fetchTasks = () => async (dispatch, getState) => {
   try {
+    dispatch(fetchTasksStart());
     const { tasks } = getState();
     
     // Check if we have a valid cache
@@ -29,16 +39,17 @@ export const fetchTasks = () => async (dispatch, getState) => {
       throw new Error('Usuario no autenticado');
     }
 
-    // Obtener tareas filtradas por user_id
+    // Obtener todas las tareas del usuario y solo los campos necesarios
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline')
       .eq('user_id', user.id)
       .order('assignment');
 
     if (error) throw error;
 
     dispatch(fetchTasksSuccess(data));
+    saveTasksToLocalStorage(data);
   } catch (error) {
     dispatch(taskError(error.message));
   }
@@ -81,6 +92,8 @@ export const addTask = (newTask) => async (dispatch) => {
     if (error) throw error;
 
     dispatch(addTaskSuccess(data));
+    // Actualiza localStorage
+    saveTasksToLocalStorage([...(await getTasksFromStoreOrLocalStorage()), data]);
     return data;
   } catch (error) {
     dispatch(taskError(error.message));
@@ -130,6 +143,8 @@ export const deleteTask = (id) => async (dispatch) => {
     if (error) throw error;
 
     dispatch(deleteTaskSuccess(id));
+    // Actualiza localStorage
+    saveTasksToLocalStorage((await getTasksFromStoreOrLocalStorage()).filter(t => t.id !== id));
   } catch (error) {
     dispatch(taskError(error.message));
   }
@@ -178,6 +193,8 @@ export const updateTask = (task) => async (dispatch) => {
     if (error) throw error;
 
     dispatch(updateTaskSuccess(data[0]));
+    // Actualiza localStorage
+    saveTasksToLocalStorage(await getTasksFromStoreOrLocalStorage().then(tasks => tasks.map(t => t.id === data[0].id ? data[0] : t)));
   } catch (error) {
     dispatch(taskError(error.message));
     throw error;
@@ -189,4 +206,13 @@ export const forceTaskRefresh = () => async (dispatch) => {
   dispatch(invalidateCache());
   return dispatch(fetchTasks());
 };
+
+// Helper para obtener tasks actuales
+async function getTasksFromStoreOrLocalStorage() {
+  try {
+    const local = localStorage.getItem('tasksHydrated');
+    if (local) return JSON.parse(local);
+  } catch (e) {}
+  return [];
+}
 

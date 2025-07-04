@@ -7,23 +7,39 @@ interface TaskState {
   error: string | null;
   lastFetch: number | null;
   isCached: boolean;
+  loading: boolean;
 }
 
 const initialState: TaskState = {
   tasks: [],
   error: null,
   lastFetch: null,
-  isCached: false
+  isCached: false,
+  loading: false
 };
 
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
+    hydrateTasksFromLocalStorage: (state) => {
+      try {
+        const local = localStorage.getItem('tasksHydrated');
+        if (local) {
+          state.tasks = JSON.parse(local);
+        }
+      } catch (e) {
+        // ignore
+      }
+    },
+    fetchTasksStart: (state) => {
+      state.loading = true;
+    },
     fetchTasksSuccess: (state, action: PayloadAction<Task[]>) => {
       state.tasks = action.payload;
       state.isCached = true;
       state.lastFetch = Date.now();
+      state.loading = false;
     },
     addTaskSuccess: (state, action: PayloadAction<Task>) => {
       state.tasks.push(action.payload);
@@ -47,6 +63,7 @@ const taskSlice = createSlice({
     },
     taskError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
+      state.loading = false;
     },
     invalidateCache: (state) => {
       state.isCached = false;
@@ -55,6 +72,8 @@ const taskSlice = createSlice({
 });
 
 export const {
+  hydrateTasksFromLocalStorage,
+  fetchTasksStart,
   fetchTasksSuccess,
   addTaskSuccess,
   toggleTaskStatusOptimistic,

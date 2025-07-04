@@ -347,7 +347,7 @@ const StudyTimer = ({ onSyncChange }) => {
     fetchSessionsTodayCount();
   }, [fetchSessionsTodayCount]); // Add fetchSessionsTodayCount as dependency
 
-  const handleFinishSession = async (completedTaskIds) => {
+  const handleFinishSession = async () => {
     try {
       if (!currentSessionId) return;
 
@@ -363,11 +363,35 @@ const StudyTimer = ({ onSyncChange }) => {
         return;
       }
 
+      // Get user info
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('User not authenticated');
+        return;
+      }
+
+      // Get session time range
+      const startedAt = session.started_at;
+      const endedAt = new Date().toISOString();
+
+      // Fetch all completed tasks for the user in the session time range
+      const { data: completedTasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('id, completed_at')
+        .eq('user_id', user.id)
+        .eq('completed', true)
+        .gte('completed_at', startedAt)
+        .lte('completed_at', endedAt);
+
+      if (tasksError) {
+        console.error('Error fetching completed tasks:', tasksError);
+        toast.error('Failed to fetch completed tasks.');
+        return;
+      }
+
       // Calculate the total duration
       const totalDurationSeconds = studyState.time;
-      // Round to the nearest whole second
       const roundedDurationSeconds = Math.round(totalDurationSeconds);
-
       const hours = Math.floor(roundedDurationSeconds / 3600);
       const minutes = Math.floor((roundedDurationSeconds % 3600) / 60);
       const seconds = roundedDurationSeconds % 60;
@@ -379,8 +403,8 @@ const StudyTimer = ({ onSyncChange }) => {
           .from('study_laps')
           .update({
             duration: formattedDuration,
-            tasks_completed: completedTaskIds.length,
-            ended_at: new Date().toISOString()
+            tasks_completed: completedTasks.length,
+            ended_at: endedAt
           })
           .eq('id', currentSessionId);
 
@@ -390,14 +414,15 @@ const StudyTimer = ({ onSyncChange }) => {
           return;
         }
 
-        // Display success message
-        toast.success(`Congrats! During this session you completed ${completedTaskIds.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
+        toast.success(`Congrats! During this session you completed ${completedTasks.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
           position: 'top-right',
           style: {
-            backgroundColor: 'var(--accent-primary)',
-            color: '#f3f4f6',
+            backgroundColor: '#fff',
+            color: '#000',
+            border: '2px solid var(--border-primary)',
           },
         });
+        window.dispatchEvent(new CustomEvent('refreshStats'));
       }
 
       // Reset session state
@@ -406,7 +431,6 @@ const StudyTimer = ({ onSyncChange }) => {
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
 
-      // If synced with Pomodoro, reset it too
       if (isSyncedWithStudyTimer) {
          window.dispatchEvent(new CustomEvent("resetPomodoro"));
       }

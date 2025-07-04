@@ -1,5 +1,6 @@
 import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
 import React, { useEffect, useState } from 'react';
+import { clearUser, setUser } from '@/store/slices/authSlice';
 
 import { AuthProvider } from '@/hooks/useAuth';
 import CalendarPage from '@/pages/calendar/CalendarPage';
@@ -10,7 +11,10 @@ import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import WelcomeModal from '@/modals/WelcomeModal';
+import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
+import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
 import useTheme from '@/hooks/useTheme';
 
 interface PageContentProps {
@@ -33,9 +37,32 @@ const PageContent: React.FC<PageContentProps> = ({ onOpenSettings }) => {
   );
 };
 
+function useSupabaseAuthSync() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Al cargar, setea el usuario si hay sesión
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) dispatch(setUser(user));
+      else dispatch(clearUser());
+    });
+
+    // Suscríbete a cambios de sesión
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) dispatch(setUser(session.user));
+      else dispatch(clearUser());
+    });
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [dispatch]);
+}
+
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
+  const dispatch = useDispatch();
 
   const handleOpenSettings = () => {
     setShowSettings(true);
@@ -70,6 +97,12 @@ const App: React.FC = () => {
     };
     checkNotificationPermission();
   }, []);
+
+  useEffect(() => {
+    dispatch(hydrateTasksFromLocalStorage());
+  }, [dispatch]);
+
+  useSupabaseAuthSync();
 
   return (
     <NoiseProvider>
