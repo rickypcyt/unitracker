@@ -116,10 +116,10 @@ export const TaskItem = ({
                             {task.assignment}
                         </div>
                     )}
-                    <div className="text-sm text-[var(--text-secondary)]">
-                        {task.deadline && (
-                            <span>{formatDateShort(task.deadline)}</span>
-                        )}
+                    <div className="text-base text-[var(--text-secondary)]">
+                        <span>
+                          {task.deadline && task.deadline !== '' ? formatDateShort(task.deadline) : 'No Deadline'}
+                        </span>
                     </div>
                     {task.priority && (
                         <div className={`flex items-center gap-1 text-md ${getPriorityColor(task.priority)}`}> 

@@ -373,7 +373,7 @@ const Calendar = () => {
       {/* Add centered tooltip container at the top of the calendar */}
       {tooltipContent && (
         <div 
-          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-sm rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
           style={{
             top: '0',
             minWidth: '180px',
@@ -387,7 +387,7 @@ const Calendar = () => {
             {tooltipContent.tasks.map(task => (
               <div key={task.id} className="flex items-center gap-1 mb-1 last:mb-0">
                 <div className={`w-1 h-1 rounded-full flex-shrink-0 ${task.completed ? 'bg-green-500' : 'bg-[var(--accent-primary)]'}`} />
-                <span className={`truncate text-sm ${task.completed ? 'line-through text-[var(--text-secondary)]' : ''}`}>
+                <span className={`truncate text-base ${task.completed ? 'line-through text-[var(--text-secondary)]' : ''}`}>
                   {task.title}
                 </span>
               </div>
@@ -496,7 +496,7 @@ const Calendar = () => {
       >
         <div className="flex flex-col gap-4">
           <div>
-            <label className="block mb-2 text-sm font-medium text-[var(--text-primary)]">Calendar Size</label>
+            <label className="block mb-2 text-base font-medium text-[var(--text-primary)]">Calendar Size</label>
             <select
               className="w-full p-2 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               value={calendarSize}

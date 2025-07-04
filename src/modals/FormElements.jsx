@@ -14,7 +14,7 @@ export const FormInput = ({
 }) => (
   <div className="mb-1">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -29,7 +29,7 @@ export const FormInput = ({
       placeholder={placeholder}
       {...props}
     />
-    {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+    {error && <p className="mt-1 text-base text-red-500">{error}</p>}
   </div>
 );
 
@@ -47,7 +47,7 @@ export const FormTextarea = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -62,7 +62,7 @@ export const FormTextarea = ({
       rows={rows}
       {...props}
     />
-    {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+    {error && <p className="mt-1 text-base text-red-500">{error}</p>}
   </div>
 );
 
@@ -79,7 +79,7 @@ export const FormSelect = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -98,7 +98,7 @@ export const FormSelect = ({
         </option>
       ))}
     </select>
-    {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+    {error && <p className="mt-1 text-base text-red-500">{error}</p>}
   </div>
 );
 

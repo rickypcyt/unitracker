@@ -45,7 +45,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           <h3 className="text-xl sm:text-2xl font-bold text-accent-primary mb-1">
             Welcome to UniTracker
           </h3>
-          <p className="text-gray text-sm sm:text-base">
+          <p className="text-gray text-base sm:text-base">
             Your all-in-one study companion
           </p>
         </div>
@@ -65,7 +65,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                   <h4 className="text-base font-semibold text-neutral-500 mb-1">
                     {feature.title}
                   </h4>
-                  <p className="text-sm text-gray">
+                  <p className="text-base text-gray">
                     {feature.description}
                   </p>
                 </div>
@@ -80,23 +80,23 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             Getting Started
           </h4>
           <div className="space-y-2">
-            <p className="text-sm text-gray">
+            <p className="text-base text-gray">
               UniTracker helps you manage your study time effectively. Here's what you can do:
             </p>
             <ul className="space-y-2">
-              <li className="flex items-center gap-2 text-sm text-gray">
+              <li className="flex items-center gap-2 text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Create and organize your study tasks
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray">
+              <li className="flex items-center gap-2 text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Track your study sessions with the built-in timer
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray">
+              <li className="flex items-center gap-2 text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Use the Pomodoro technique for focused study sessions
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray">
+              <li className="flex items-center gap-2 text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Monitor your progress with detailed statistics
               </li>

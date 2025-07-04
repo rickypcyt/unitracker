@@ -409,8 +409,8 @@ export const KanbanBoard = () => {
             setShowDeleteTaskConfirmation(false);
             setTaskToDelete(null);
           }}
-          message={`¿Seguro que quieres eliminar la tarea "${taskToDelete.title}"? Esta acción no se puede deshacer.`}
-          confirmButtonText="Eliminar tarea"
+          message={`Are you sure you want to delete the task "${taskToDelete.title}"? This action cannot be undone.`}
+          confirmButtonText="Delete Task"
         />
       )}
     </div>

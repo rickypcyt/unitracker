@@ -81,21 +81,21 @@ const SessionDetailsModal = ({ session, onClose }) => {
                 ) : (
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-medium text-[var(--text-secondary)]">Session Title</h3>
+                            <h3 className="text-base font-medium text-[var(--text-secondary)]">Session Title</h3>
                             <p className="mt-1 text-[var(--text-primary)]">{session.name}</p>
                         </div>
                         {session.description && (
                             <div>
-                                <h3 className="text-sm font-medium text-[var(--text-secondary)]">Description</h3>
+                                <h3 className="text-base font-medium text-[var(--text-secondary)]">Description</h3>
                                 <p className="mt-1 text-[var(--text-primary)] whitespace-pre-wrap">{session.description}</p>
                             </div>
                         )}
                         <div>
-                            <h3 className="text-sm font-medium text-[var(--text-secondary)]">Duration</h3>
+                            <h3 className="text-base font-medium text-[var(--text-secondary)]">Duration</h3>
                             <p className="mt-1 text-[var(--text-primary)]">{moment.duration(session.duration, 'minutes').humanize()}</p>
                         </div>
                         <div>
-                            <h3 className="text-sm font-medium text-[var(--text-secondary)]">Started</h3>
+                            <h3 className="text-base font-medium text-[var(--text-secondary)]">Started</h3>
                             <p className="mt-1 text-[var(--text-primary)]">{moment(session.started_at).format('MMMM D, YYYY h:mm A')}</p>
                         </div>
                     </div>

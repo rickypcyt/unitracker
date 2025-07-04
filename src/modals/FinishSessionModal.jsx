@@ -186,7 +186,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label htmlFor="sessionTitle" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Session Title
               </label>
               <input
@@ -201,7 +201,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label htmlFor="sessionDescription" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Session Notes
               </label>
               <textarea

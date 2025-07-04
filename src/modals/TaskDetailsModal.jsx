@@ -168,7 +168,7 @@ const TaskDetailsModal = ({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label className="block text-base font-medium text-[var(--text-primary)] mb-2">
               Difficulty
             </label>
             <div className="flex items-center justify-center gap-8">
@@ -197,12 +197,12 @@ const TaskDetailsModal = ({
                       />
                     )}
                   </button>
-                  <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
+                  <span className="text-base text-[var(--text-primary)]">{option.label}</span>
                 </div>
               ))}
             </div>
             {errors.difficulty && (
-              <p className="mt-1 text-sm text-red-500">{errors.difficulty}</p>
+              <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
             )}
           </div>
 
@@ -213,7 +213,6 @@ const TaskDetailsModal = ({
             value={formData.deadline}
             onChange={(value) => handleChange('deadline', value)}
             error={errors.deadline}
-            required
           />
         </div>
 

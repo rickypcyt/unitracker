@@ -203,9 +203,9 @@ const Statistics: React.FC = () => {
         {statCards.map((card, i) => (
           <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px]">
             <div className="mb-1">{card.icon}</div>
-            <div className="text-[var(--text-secondary)] text-sm font-medium">{card.label}</div>
+            <div className="text-[var(--text-secondary)] text-base font-medium">{card.label}</div>
             <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(statData)}</div>
-            <div className="text-[var(--text-secondary)] text-sm">{card.sub(statData)}</div>
+            <div className="text-[var(--text-secondary)] text-base">{card.sub(statData)}</div>
           </div>
         ))}
       </div>

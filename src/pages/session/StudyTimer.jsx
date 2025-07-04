@@ -491,14 +491,14 @@ const StudyTimer = ({ onSyncChange }) => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center w-full px-4 py-3">
+      <div className="flex items-center justify-center w-full px-4 py-3 relative">
         {/* Centered Title with Icon */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Clock size={22} className="icon" />
+        <div className="flex items-center gap-2 mx-auto">
+          <Clock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg truncate">Study Timer</span>
         </div>
         {/* Right side: Settings Button or Placeholder */}
-        <div className="ml-auto flex items-center">
+        <div className="absolute right-4 flex items-center">
           {currentSessionId ? (
             <button
               onClick={() => setIsEditModalOpen(true)}

@@ -752,7 +752,7 @@ h1 {
   @apply text-2xl font-bold;
 }
 .stats-card-subtext {
-  @apply text-sm text-[var(--text-secondary)];
+  @apply text-base text-[var(--text-secondary)];
 }
 
 /* =========================

@@ -93,7 +93,7 @@ const TaskSelectionPanel = ({
         >
           <div className="flex items-center gap-2 w-full">
             {task.assignment && (
-              <span className="text-[var(--accent-primary)] font-semibold text-sm whitespace-nowrap">[{task.assignment}]</span>
+              <span className="text-[var(--accent-primary)] font-semibold text-base whitespace-nowrap">[{task.assignment}]</span>
             )}
             <span className="font-medium text-[var(--text-primary)] truncate">{task.title}</span>
             <button
@@ -119,12 +119,12 @@ const TaskSelectionPanel = ({
             <div>
               <div className="font-medium text-[var(--text-primary)]">{task.title}</div>
               {task.description && (
-                <div className="text-sm text-[var(--text-secondary)] mt-1">
+                <div className="text-base text-[var(--text-secondary)] mt-1">
                   {task.description}
                 </div>
               )}
               {task.assignment && (
-                <div className="text-sm text-[var(--text-secondary)] mt-1">
+                <div className="text-base text-[var(--text-secondary)] mt-1">
                   {task.assignment}
                 </div>
               )}
@@ -175,7 +175,7 @@ const TaskSelectionPanel = ({
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-[var(--text-primary)]">{task.title}</div>
                 {task.assignment && (
-                  <div className="text-sm text-[var(--text-secondary)] mt-1">
+                  <div className="text-base text-[var(--text-secondary)] mt-1">
                     {task.assignment}
                   </div>
                 )}
@@ -204,7 +204,7 @@ const TaskSelectionPanel = ({
                   </div>
                 )}
                 {task.assignment && (
-                  <div className="text-sm text-[var(--text-secondary)] mt-1">
+                  <div className="text-base text-[var(--text-secondary)] mt-1">
                     {task.assignment}
                   </div>
                 )}

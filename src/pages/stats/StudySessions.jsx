@@ -131,11 +131,11 @@ const StudySessions = () => {
                                     <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
                                     <div className="flex items-center gap-1 ml-2">
                                         <Clock size={18} className="text-[var(--text-secondary)]" />
-                                        <span className="text-sm text-[var(--text-primary)] font-medium">{lap.duration}</span>
+                                        <span className="text-base text-[var(--text-primary)] font-medium">{lap.duration}</span>
                                     </div>
                                 </div>
                                 {/* Segunda línea: fecha y trash icon */}
-                                <div className="flex items-center justify-between text-sm text-[var(--text-secondary)] mt-1">
+                                <div className="flex items-center justify-between text-base text-[var(--text-secondary)] mt-1">
                                     <span>{formatDateShort(lap.created_at)}</span>
                                     <button
                                         onClick={(e) => {
@@ -189,7 +189,7 @@ const StudySessions = () => {
                                 </div>
                                 <div className="mb-1">
                                   <span className="text-lg font-bold text-[var(--text-primary)]">{stats.totalSessions}</span>
-                                  <span className="text-xs font-normal text-[var(--text-secondary)] ml-1 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                  <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-[var(--text-secondary)] text-base">
                                   <Clock size={18} />

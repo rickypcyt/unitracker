@@ -166,7 +166,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label htmlFor="sessionTitle" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Session Title
               </label>
               <input
@@ -180,12 +180,12 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
                 placeholder="Enter session title"
               />
               {titleError && (
-                <p className="mt-1 text-sm text-red-500">Please enter a session title</p>
+                <p className="mt-1 text-base text-red-500">Please enter a session title</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              <label htmlFor="sessionDescription" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Description (Optional)
               </label>
               <textarea

@@ -47,10 +47,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const validationRules = {
     title: { required: true, minLength: 3, maxLength: 100 },
     description: { maxLength: 500 },
-    deadline: { 
-      required: true,
+    deadline: {
+      required: false,
       validate: (value) => {
-        if (!value) return 'Deadline is required';
+        if (!value) return true;
         const [day, month, year] = value.split('/');
         const date = new Date(`${year}-${month}-${day}`);
         if (isNaN(date.getTime()) || date < new Date(new Date().setHours(0,0,0,0))) {
@@ -89,7 +89,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     try {
       const taskData = {
         ...formData,
-        deadline: parseDateForDB(formData.deadline),
+        deadline: formData.deadline ? parseDateForDB(formData.deadline) : null,
         user_id: user.id,
         completed: initialTask?.completed || false,
         activetask: initialTask?.activetask || false
@@ -175,7 +175,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         <div className={`grid gap-4 ${initialAssignment ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
           {!initialAssignment && (
             <div>
-              <label htmlFor="assignment" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Assignment
               </label>
               <AutocompleteInput
@@ -190,7 +190,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             </div>
           )}
           <div>
-            <label htmlFor="title" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+            <label htmlFor="title" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
               Title
             </label>
             <FormInput
@@ -204,7 +204,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           </div>
         </div>
 
-        <label htmlFor="description" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+        <label htmlFor="description" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
           Description
         </label>
         <FormTextarea
@@ -217,7 +217,46 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>
-            <label htmlFor="deadline" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+            <label className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
+              Difficulty
+            </label>
+            <div className="flex items-center justify-center gap-8">
+              {difficultyOptions.map((option) => (
+                <div key={option.value} className="flex flex-col items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleChange('difficulty', option.value)}
+                    className="p-1 rounded-full transition-all duration-200 hover:scale-110 focus:shadow-[0_0_0_2px_rgba(255,255,255,0.1)] focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleChange('difficulty', option.value);
+                      }
+                    }}
+                  >
+                    {formData.difficulty === option.value ? (
+                      <CheckCircle2
+                        size={22}
+                        className={getDifficultyColor(option.value)}
+                      />
+                    ) : (
+                      <Circle
+                        size={22}
+                        className={getDifficultyColor(option.value)}
+                      />
+                    )}
+                  </button>
+                  <span className="text-base text-[var(--text-primary)]">{option.label}</span>
+                </div>
+              ))}
+            </div>
+            {errors.difficulty && (
+              <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="deadline" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
               Deadline
             </label>
             <div className="relative flex items-center">
@@ -270,46 +309,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
               </button>
             </div>
             {errors.deadline && (
-              <p className="mt-1 text-sm text-red-500">{errors.deadline}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
-              Difficulty
-            </label>
-            <div className="flex items-center justify-center gap-8">
-              {difficultyOptions.map((option) => (
-                <div key={option.value} className="flex flex-col items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleChange('difficulty', option.value)}
-                    className="p-1 rounded-full transition-all duration-200 hover:scale-110 focus:shadow-[0_0_0_2px_rgba(255,255,255,0.1)] focus:outline-none"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleChange('difficulty', option.value);
-                      }
-                    }}
-                  >
-                    {formData.difficulty === option.value ? (
-                      <CheckCircle2
-                        size={22}
-                        className={getDifficultyColor(option.value)}
-                      />
-                    ) : (
-                      <Circle
-                        size={22}
-                        className={getDifficultyColor(option.value)}
-                      />
-                    )}
-                  </button>
-                  <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
-                </div>
-              ))}
-            </div>
-            {errors.difficulty && (
-              <p className="mt-1 text-sm text-red-500">{errors.difficulty}</p>
+              <p className="mt-1 text-base text-red-500">{errors.deadline}</p>
             )}
           </div>
         </div>

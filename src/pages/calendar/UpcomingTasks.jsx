@@ -39,9 +39,10 @@ const UpcomingTasks = () => {
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
 
-  // Filtrar tareas pasadas (no completadas y deadline < hoy)
+  // Filtrar tareas pasadas (no completadas y deadline < hoy, solo si deadline existe)
   const pastTasks = tasks
     .filter(task => {
+      if (!task.deadline || task.deadline === '' || task.deadline === null) return false;
       const taskDate = new Date(task.deadline);
       taskDate.setHours(0, 0, 0, 0);
       return taskDate < today && !task.completed;
@@ -80,13 +81,6 @@ const UpcomingTasks = () => {
         year: taskDate.getFullYear(),
         tasks: []
       };
-      // Initialize expanded state for new month groups only if they don't exist
-      if (!(monthKey in expandedGroups)) {
-        setExpandedGroups(prev => ({
-          ...prev,
-          [monthKey]: false
-        }));
-      }
     }
     groups[monthKey].tasks.push(task);
     return groups;
@@ -98,21 +92,18 @@ const UpcomingTasks = () => {
     return a.month - b.month;
   });
 
-  // Clean up expanded state for months that no longer have tasks
+  // Ensure all static groups are initialized in expandedGroups
   useEffect(() => {
-    const currentMonthKeys = sortedMonths.map(({ month, year }) => `${year}-${month}`);
-    // Solo limpiar claves de meses, nunca 'today', 'thisWeek' ni 'pastTasks'
-    const allMonthKeys = Object.keys(expandedGroups).filter(key => !['today', 'thisWeek', 'pastTasks'].includes(key));
-    
-    const monthsToRemove = allMonthKeys.filter(key => !currentMonthKeys.includes(key));
-    if (monthsToRemove.length > 0) {
-      setExpandedGroups(prev => {
-        const newState = { ...prev };
-        monthsToRemove.forEach(key => delete newState[key]);
-        return newState;
+    setExpandedGroups(prev => {
+      const newState = { ...prev };
+      ['noDeadline', 'today', 'thisWeek', 'pastTasks'].forEach(key => {
+        if (!(key in newState)) {
+          newState[key] = false;
+        }
       });
-    }
-  }, [sortedMonths]);
+      return newState;
+    });
+  }, []);
 
   const toggleGroup = (group) => {
     setExpandedGroups(prev => {
@@ -145,6 +136,9 @@ const UpcomingTasks = () => {
         return 'text-[var(--text-secondary)]';
     }
   };
+
+  // Add No Deadline group
+  const noDeadlineTasks = tasks.filter(task => (!task.deadline || task.deadline === '' || task.deadline === null) && !task.completed);
 
   if (upcomingTasks.length === 0) {
     return (
@@ -221,6 +215,8 @@ const UpcomingTasks = () => {
         </div>
       </div>
       <div className="space-y-3">
+        {/* No Deadline Tasks */}
+        <TaskGroup title="No Deadline" tasks={noDeadlineTasks} groupKey="noDeadline" />
         {/* Past Tasks */}
         <TaskGroup title="Past Tasks" tasks={pastTasks} groupKey="pastTasks" />
         {/* Upcoming Tasks */}

@@ -529,14 +529,14 @@ const Pomodoro = () => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center w-full px-4 py-3">
+      <div className="flex items-center justify-center w-full px-4 py-3 relative">
         {/* Centered Title with Icon */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Timer size={22} className="icon" />
+        <div className="flex items-center gap-2 mx-auto">
+          <Timer size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg truncate">Pomo Timer</span>
         </div>
         {/* Right side: Settings Button */}
-        <div className="ml-auto flex items-center">
+        <div className="absolute right-4 flex items-center">
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -613,7 +613,7 @@ const Pomodoro = () => {
       </div>
 
       {/* Modo actual: Work, Break o Long Break */}
-      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded text-[var(--text-secondary)]">
+      <div className="flex items-center justify-center mb-4 text-lg font-bold px-4 py-1 rounded text-[var(--text-primary)]">
         <span>
           {pomoState.currentMode === 'work' && 'Work'}
           {pomoState.currentMode === 'break' && 'Break'}

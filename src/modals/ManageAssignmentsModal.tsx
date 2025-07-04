@@ -76,7 +76,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                     <h3 className="font-medium text-[var(--text-primary)]">
                       {assignment}
                     </h3>
-                    <p className="text-sm text-[var(--text-secondary)]">
+                    <p className="text-base text-[var(--text-secondary)]">
                       {tasks.filter((task: Task) => task.assignment === assignment).length} tasks
                     </p>
                   </div>
