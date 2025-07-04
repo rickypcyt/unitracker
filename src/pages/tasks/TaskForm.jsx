@@ -39,7 +39,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const initialFormState = {
     title: initialTask?.title || '',
     description: initialTask?.description || '',
-    deadline: initialDeadline ? (typeof initialDeadline === 'string' ? initialDeadline : formatDateForInput(initialDeadline)) : (initialTask?.deadline ? formatDateForInput(new Date(initialTask.deadline)) : formatDateForInput(new Date())),
+    deadline: initialDeadline ? (typeof initialDeadline === 'string' ? initialDeadline : formatDateForInput(initialDeadline)) : (initialTask?.deadline ? formatDateForInput(new Date(initialTask.deadline)) : ''),
     difficulty: initialTask?.difficulty || 'medium',
     assignment: initialTask?.assignment || initialAssignment || ''
   };
@@ -168,28 +168,29 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     <BaseModal
       isOpen={true}
       onClose={onClose}
-      title={initialTask ? 'Edit Task' : 'Add Task'}
+      title={initialTask ? 'Edit Task' : (initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task')}
       maxWidth="max-w-lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid gap-4 ${initialAssignment ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+          {!initialAssignment && (
+            <div>
+              <label htmlFor="assignment" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+                Assignment
+              </label>
+              <AutocompleteInput
+                id="assignment"
+                value={formData.assignment}
+                onChange={(value) => handleChange('assignment', value)}
+                error={errors.assignment}
+                required
+                placeholder="Enter assignment name"
+                suggestions={uniqueAssignments}
+              />
+            </div>
+          )}
           <div>
-            <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Assignment
-            </label>
-            <AutocompleteInput
-              id="assignment"
-              value={formData.assignment}
-              onChange={(value) => handleChange('assignment', value)}
-              error={errors.assignment}
-              required
-              placeholder="Enter assignment name"
-              suggestions={uniqueAssignments}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="title" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
               Title
             </label>
             <FormInput
@@ -203,9 +204,11 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           </div>
         </div>
 
+        <label htmlFor="description" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
+          Description
+        </label>
         <FormTextarea
           id="description"
-          label="Description"
           value={formData.description}
           onChange={(value) => handleChange('description', value)}
           error={errors.description}
@@ -214,10 +217,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label htmlFor="deadline" className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
               Deadline
             </label>
-            <div className="relative">
+            <div className="relative flex items-center">
               <DatePicker
                 id="deadline"
                 ref={datePickerRef}
@@ -229,7 +232,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                   <input
                     type="text"
                     readOnly
-                    className={`w-full pl-3 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${
+                    value={formData.deadline || 'None'}
+                    className={`w-full pl-3 pr-16 py-2 bg-[var(--bg-primary)] border-2 ${
                       errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
                     } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2px`}
                   />
@@ -242,6 +246,16 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                 }
                 showPopperArrow={false}
               />
+              <button
+                type="button"
+                onClick={() => handleChange('deadline', '')}
+                className="absolute right-10 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer"
+                tabIndex={-1}
+                title="Clear deadline"
+                style={{ zIndex: 2 }}
+              >
+                <span className="text-xl font-bold">×</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -261,7 +275,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 text-center">
               Difficulty
             </label>
             <div className="flex items-center justify-center gap-8">

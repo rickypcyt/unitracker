@@ -61,8 +61,8 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4 relative py-3">
-          <div className="flex-1 flex justify-center items-center absolute left-0 right-0 pointer-events-none">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto">
+          <div className="flex-1 flex justify-center items-center absolute left-0 right-0 w-full pointer-events-none">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto w-full text-center truncate">
               {title}
             </h2>
           </div>
