@@ -15,7 +15,8 @@ const TaskSelectionPanel = ({
   showNewTaskButton = true,
   maxHeight = '400px',
   activeTitle = 'Active Tasks',
-  availableTitle = 'Available Tasks'
+  availableTitle = 'Available Tasks',
+  hideAssignmentAndDescriptionAvailable = false
 }) => {
   const { isLoggedIn } = useAuth();
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -71,7 +72,7 @@ const TaskSelectionPanel = ({
     onAddTask();
   };
 
-  const renderTaskCard = (task, isActive) => {
+  const renderTaskCard = (task, isActive, isAvailableCustom = false) => {
     if (!task || typeof task !== 'object' || !task.id) {
       return null;
     }
@@ -82,6 +83,30 @@ const TaskSelectionPanel = ({
       isActive ? 'task-item-active' : 
       'bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] border border-[var(--border-primary)] hover:border-[var(--border-primary)]/70'
     }`;
+
+    // Compacto y con assignment en active tasks
+    if (isActive && mode === 'move') {
+      return (
+        <div
+          key={task.id}
+          className={taskClasses + ' px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem]'}
+        >
+          <div className="flex items-center gap-2 w-full">
+            {task.assignment && (
+              <span className="text-[var(--accent-primary)] font-semibold text-sm whitespace-nowrap">[{task.assignment}]</span>
+            )}
+            <span className="font-medium text-[var(--text-primary)] truncate">{task.title}</span>
+            <button
+              onClick={() => onMoveTask(task, false)}
+              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded-full transition-colors ml-auto"
+              title="Move to Available Tasks"
+            >
+              <ArrowRight size={18} className="text-[var(--text-secondary)]" />
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     if (mode === 'select') {
       return (
@@ -113,6 +138,31 @@ const TaskSelectionPanel = ({
     }
 
     // For 'move' and 'edit' modes
+    if (isAvailableCustom) {
+      // Solo título y flecha a la izquierda, compacto
+      return (
+        <div
+          key={task.id}
+          className={taskClasses + ' px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem]'}
+          onClick={() => !isActive && onMoveTask(task, true)}
+        >
+          <div className="flex items-center gap-2 w-full">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onMoveTask(task, true);
+              }}
+              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded-full transition-colors"
+              title="Move to Active Tasks"
+            >
+              <ArrowLeft size={18} className="text-[var(--text-secondary)]" />
+            </button>
+            <div className="font-medium text-[var(--text-primary)] truncate">{task.title}</div>
+          </div>
+        </div>
+      );
+    }
+    // Default render
     return (
       <div
         key={task.id}
@@ -211,7 +261,7 @@ const TaskSelectionPanel = ({
               </button>
               {expandedGroups[assignment] && (
                 <div className="p-2 space-y-2 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
-                  {tasksByAssignment[assignment].map(task => renderTaskCard(task, false))}
+                  {tasksByAssignment[assignment].map(task => renderTaskCard(task, false, hideAssignmentAndDescriptionAvailable))}
                 </div>
               )}
             </div>
@@ -227,7 +277,7 @@ const TaskSelectionPanel = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-6 h-auto">
+    <div className="grid grid-cols-2 gap-4 h-auto">
       {/* Left Column - Active Tasks */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">

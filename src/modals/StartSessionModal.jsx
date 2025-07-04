@@ -229,11 +229,14 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           availableTasks={tasks.filter(task => !selectedTasks.includes(task.id))}
           onMoveTask={handleMoveTask}
           onAddTask={() => setShowTaskForm(true)}
-          mode="move"
           selectedTasks={selectedTasks}
+          onTaskSelect={id => handleMoveTask(tasks.find(t => t.id === id), true)}
+          mode="move"
           showNewTaskButton={true}
+          maxHeight="350px"
           activeTitle="Active Tasks"
           availableTitle="Available Tasks"
+          hideAssignmentAndDescriptionAvailable={true}
         />
 
         <FormActions>

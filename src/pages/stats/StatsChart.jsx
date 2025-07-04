@@ -65,12 +65,12 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
     dayLabel = label;
   }
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px]">
-      <div className="font-semibold text-[var(--accent-primary)] mb-1">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
-      <div className="text-[var(--text-primary)]">Time: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
-      <div className="text-[var(--text-primary)]">Tasks: <b>{dayTasks.length}</b></div>
+    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px] text-center">
+      <div className="font-semibold text-[var(--accent-primary)] mb-1 text-center">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
+      <div className="text-[var(--text-primary)] text-center">Time: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
+      <div className="text-[var(--text-primary)] text-center">Tasks: <b>{dayTasks.length}</b></div>
       {tags.length > 0 && (
-        <div className="text-[var(--text-primary)]">Tags: <span className="italic">{tags.map(tag => `"${tag}"`).join(', ')}</span></div>
+        <div className="text-[var(--text-primary)] text-center">Tags: <span className="italic">{tags.map(tag => `"${tag}"`).join(', ')}</span></div>
       )}
     </div>
   );
@@ -89,13 +89,26 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 30, right: 0, bottom: 20, left: 32 }} barCategoryGap={12}>
             <XAxis
-              dataKey="realDay"
+              dataKey={
+                title === 'This Week' || title === 'Last Week'
+                  ? 'dayName'
+                  : title === 'This Year'
+                  ? 'dayName'
+                  : 'realDay'
+              }
               stroke="var(--text-secondary)"
               tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
               axisLine={false}
               tickLine={false}
               interval={0}
               minTickGap={0}
+              tickFormatter={
+                title === 'This Week' || title === 'Last Week'
+                  ? (v) => v
+                  : title === 'This Year'
+                  ? (v) => v
+                  : undefined
+              }
             />
             <YAxis
               stroke="var(--text-secondary)"

@@ -174,11 +174,11 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-neutral-900 rounded-lg p-6 w-full max-w-4xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-4xl border-2 border-[var(--border-primary)] shadow-xl">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Finish Session</h2>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Finish Session</h2>
+          <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <X size={22} />
           </button>
         </div>
@@ -186,7 +186,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mb-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="sessionTitle" className="block text-sm font-medium text-neutral-500 mb-2">
+              <label htmlFor="sessionTitle" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Session Title
               </label>
               <input
@@ -194,21 +194,21 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
                 id="sessionTitle"
                 value={sessionTitle}
                 onChange={(e) => setSessionTitle(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
                 placeholder="Session title"
                 disabled
               />
             </div>
 
             <div>
-              <label htmlFor="sessionDescription" className="block text-sm font-medium text-neutral-500 mb-2">
+              <label htmlFor="sessionDescription" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Session Notes
               </label>
               <textarea
                 id="sessionDescription"
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
                 rows="3"
                 placeholder="Add notes about this session..."
               />
@@ -223,20 +223,20 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
           onAddTask={() => setShowTaskForm(true)}
           mode="move"
           showNewTaskButton={true}
-          activeTitle="Active Tasks"
+          activeTitle="Finished Tasks"
           availableTitle="Available Tasks"
         />
 
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray hover:text-neutral-500"
+            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleFinish}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80"
+            className="px-4 py-2 rounded-lg font-semibold transition-colors bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80"
           >
             Finish Session
           </button>

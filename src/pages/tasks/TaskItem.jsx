@@ -57,7 +57,7 @@ export const TaskItem = ({
 
     return (
         <div
-            className="relative flex p-3 py-4 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
+            className="relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
@@ -68,7 +68,7 @@ export const TaskItem = ({
                 onClick={handleDeleteClick}
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
-                className="absolute top-2 right-2 hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 hover:scale-110 z-10 bg-transparent border-none p-1 rounded-full"
+                className="absolute top-2 right-2 md:top-3 md:right-3 hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 z-20 bg-transparent border-none p-1 rounded-full"
                 aria-label="Delete task"
             >
                 <Trash2 size={22} />

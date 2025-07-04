@@ -49,11 +49,11 @@ const BaseModal = ({
 
   return (
     <div 
-      className={`fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-sm`}
+      className={`fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-md`}
       onClick={handleOverlayClick}
     >
       <div 
-        className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl border-2 border-[var(--border-primary)]`}
+        className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
