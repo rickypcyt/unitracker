@@ -1,6 +1,8 @@
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-import React from 'react';
+import { supabase } from '@/utils/supabaseClient';
+import usePomodorosToday from '@/hooks/usePomodorosToday';
 import { useSelector } from 'react-redux';
 
 // Tipos para las entidades
@@ -29,6 +31,8 @@ interface StatData {
   avgPerDay: number;
   totalTasks: number;
   pomodoros: number;
+  pomodoroMinutes: number;
+  pomodorosToday: number;
 }
 
 interface StatCard {
@@ -127,6 +131,36 @@ function getPomodoros(laps: Lap[]): number {
   return laps.filter(lap => lap.type === 'pomodoro' || (lap.name && lap.name.toLowerCase().includes('pomo'))).length;
 }
 
+function getPomodoroMinutes(laps: Lap[]): number {
+  return laps
+    .filter(lap => lap.type === 'pomodoro' || (lap.name && lap.name.toLowerCase().includes('pomo')))
+    .reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
+}
+
+function usePomodorosAllTime(userId: string | undefined) {
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    if (!userId) {
+      setTotal(0);
+      return;
+    }
+    const fetchAllTime = async () => {
+      const { data, error } = await supabase
+        .from('study_laps')
+        .select('pomodoros_completed')
+        .eq('user_id', userId);
+      if (!error && data) {
+        const sum = data.reduce((acc: number, row: { pomodoros_completed?: number }) => acc + (row.pomodoros_completed || 0), 0);
+        setTotal(sum);
+      }
+    };
+    fetchAllTime();
+  }, [userId]);
+
+  return total;
+}
+
 const statCards: StatCard[] = [
   {
     label: 'Today (h)',
@@ -173,7 +207,7 @@ const statCards: StatCard[] = [
   {
     label: 'Pomodoros',
     icon: <CheckCircle2 size={22} className="text-red-500" />, 
-    value: s => s.pomodoros,
+    value: s => s.pomodoros ?? 0,
     sub: () => 'total',
   },
 ];
@@ -189,11 +223,20 @@ const Statistics: React.FC = () => {
   const avgPerDay = getAveragePerDay(laps);
   const totalTasks = tasks.filter((t: Task) => t.completed).length;
   const pomodoros = getPomodoros(laps);
+  const pomodoroMinutes = getPomodoroMinutes(laps);
+
+  // Pomodoros completados hoy (de la base de datos)
+  const { total: pomodorosToday } = usePomodorosToday(user?.id);
+
+  // Pomodoros completados all time (de la base de datos)
+  const pomodorosAllTime = usePomodorosAllTime(user?.id);
 
   const statData: StatData = {
     todayMinutes, weekMinutes, monthMinutes, yearMinutes,
     doneToday, doneWeek, doneMonth, doneYear,
-    longestStreak, avgPerDay, totalTasks, pomodoros
+    longestStreak, avgPerDay, totalTasks, pomodoros: pomodorosAllTime,
+    pomodoroMinutes,
+    pomodorosToday,
   };
 
   return (

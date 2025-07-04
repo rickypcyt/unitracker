@@ -52,9 +52,9 @@ const StatsPage = memo(() => {
           <StatsChartsPanel />
         </div>
         <div>
-          <StudySessions />
-          <Statistics />
 
+          <Statistics />
+          <StudySessions />
         </div>
       </div>
     </div>

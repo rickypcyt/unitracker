@@ -52,11 +52,14 @@ const Navbar = ({ onOpenSettings }) => {
               <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks')}>
                 Tasks
               </button>
+              <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar')}>
+                Calendar
+              </button>
               <button onClick={() => navigateTo('session')} className={navLinkClass('session')}>
                 Session
               </button>
-              <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar')}>
-                Calendar
+              <button onClick={() => navigateTo('notes')} className={navLinkClass('notes')}>
+                Notes
               </button>
               <button onClick={() => navigateTo('stats')} className={navLinkClass('stats')}>
                 Statistics
@@ -143,16 +146,22 @@ const Navbar = ({ onOpenSettings }) => {
                 Tasks
               </button>
               <button onClick={() => {
+                navigateTo('calendar');
+                setIsMenuOpen(false);
+              }} className={navLinkClass('calendar')}>
+                Calendar
+              </button>
+              <button onClick={() => {
                 navigateTo('session');
                 setIsMenuOpen(false);
               }} className={navLinkClass('session')}>
                 Session
               </button>
               <button onClick={() => {
-                navigateTo('calendar');
+                navigateTo('notes');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('calendar')}>
-                Calendar
+              }} className={navLinkClass('notes')}>
+                Notes
               </button>
               <button onClick={() => {
                 navigateTo('stats');

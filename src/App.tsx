@@ -6,6 +6,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
 import { NoiseProvider } from '@/utils/NoiseContext';
+import Notes from './Notes';
 import SessionPage from '@/pages/session/SessionPage';
 import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
@@ -32,6 +33,7 @@ const PageContent: React.FC<PageContentProps> = ({ onOpenSettings }) => {
         {activePage === 'tasks' && <TasksPage />}
         {activePage === 'calendar' && <CalendarPage />}
         {activePage === 'stats' && <StatsPage />}
+        {activePage === 'notes' && <Notes />}
       </div>
     </div>
   );

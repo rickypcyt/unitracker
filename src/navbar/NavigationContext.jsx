@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 const NavigationContext = createContext();
 
@@ -19,10 +19,11 @@ export const NavigationProvider = ({ children }) => {
   const handleKeyPress = useCallback((event) => {
     if (event.ctrlKey) {
       const pageMap = {
-        'session': { left: 'tasks', right: 'calendar' },
-        'tasks': { left: 'stats', right: 'session' },
-        'calendar': { left: 'session', right: 'stats' },
-        'stats': { left: 'calendar', right: 'tasks' }
+        'tasks': { left: 'stats', right: 'calendar' },
+        'calendar': { left: 'tasks', right: 'session' },
+        'session': { left: 'calendar', right: 'notes' },
+        'notes': { left: 'session', right: 'stats' },
+        'stats': { left: 'notes', right: 'tasks' },
       };
 
       const routes = pageMap[activePage] || pageMap['session'];
