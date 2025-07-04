@@ -529,15 +529,14 @@ const Pomodoro = () => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full px-4 py-3">
         {/* Centered Title with Icon */}
-        <div className="section-title flex-1">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <Timer size={22} className="icon" />
-          <span>Pomo Timer</span>
+          <span className="font-bold text-lg truncate">Pomo Timer</span>
         </div>
-
         {/* Right side: Settings Button */}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center">
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"

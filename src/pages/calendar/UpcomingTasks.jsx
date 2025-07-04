@@ -196,7 +196,14 @@ const UpcomingTasks = () => {
                 onToggleCompletion={handleToggleCompletion}
                 onDelete={handleDeleteTask}
                 onEditTask={handleEditTask}
+                onContextMenu={(e, t) => {
+                  e.preventDefault();
+                  // Aquí puedes abrir tu menú contextual reutilizable, por ahora solo log
+                  // console.log('Context menu for task:', t);
+                  // Si ya tienes un handler global, llama aquí
+                }}
                 showAssignment={true}
+                assignmentLeftOfDate={true}
               />
             ))}
           </div>

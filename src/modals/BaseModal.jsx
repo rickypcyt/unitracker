@@ -22,10 +22,14 @@ const BaseModal = ({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
+      document.body.classList.remove('overflow-hidden');
     };
   }, [isOpen]);
 
@@ -56,14 +60,16 @@ const BaseModal = ({
         className={`bg-[var(--bg-primary)] rounded-lg p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-            {title}
-          </h2>
+        <div className="flex justify-between items-center mb-4 relative py-3">
+          <div className="flex-1 flex justify-center items-center absolute left-0 right-0 pointer-events-none">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto">
+              {title}
+            </h2>
+          </div>
           {showCloseButton && (
             <button
               onClick={handleClose}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors ml-auto relative z-10 mr-2"
             >
               <X size={22} />
             </button>

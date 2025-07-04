@@ -11,7 +11,8 @@ export const TaskItem = ({
     onContextMenu,
     assignmentId,
     isSelected = false,
-    showAssignment = false
+    showAssignment = false,
+    assignmentLeftOfDate = false
 }) => {
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
@@ -57,7 +58,7 @@ export const TaskItem = ({
 
     return (
         <div
-            className="relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[var(--border-primary)]/70 transition-colors cursor-pointer gap-3"
+            className="relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-colors cursor-pointer gap-3"
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
@@ -110,6 +111,11 @@ export const TaskItem = ({
                 </div>
                 {/* Prioridad, assignment, fecha abajo */}
                 <div className="flex items-center gap-2 mt-1 w-full">
+                    {assignmentLeftOfDate && showAssignment && task.assignment && (
+                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
+                            {task.assignment}
+                        </div>
+                    )}
                     <div className="text-sm text-[var(--text-secondary)]">
                         {task.deadline && (
                             <span>{formatDateShort(task.deadline)}</span>
@@ -121,7 +127,7 @@ export const TaskItem = ({
                             <span className="capitalize">{task.priority}</span>
                         </div>
                     )}
-                    {showAssignment && task.assignment && (
+                    {!assignmentLeftOfDate && showAssignment && task.assignment && (
                         <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
                             {task.assignment}
                         </div>

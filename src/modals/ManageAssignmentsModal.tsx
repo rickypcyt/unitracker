@@ -53,58 +53,46 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[999999]"
-        onClick={onClose}
+      <BaseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Manage Assignments"
+        maxWidth="max-w-md"
+        className="!p-0"
       >
-        <div 
-          className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-md mx-4 p-6"
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">Manage Assignments</h2>
-            <button
-              onClick={onClose}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {assignments.length === 0 ? (
-              <p className="text-[var(--text-secondary)] text-center py-4">
-                No assignments found
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {assignments.map((assignment) => (
-                  <div
-                    key={assignment}
-                    className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg"
-                  >
-                    <div>
-                      <h3 className="font-medium text-[var(--text-primary)]">
-                        {assignment}
-                      </h3>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        {tasks.filter((task: Task) => task.assignment === assignment).length} tasks
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteAssignment(assignment)}
-                      className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete assignment and all its tasks"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+        <div className="space-y-4 p-6">
+          {assignments.length === 0 ? (
+            <p className="text-[var(--text-secondary)] text-center py-4">
+              No assignments found
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {assignments.map((assignment) => (
+                <div
+                  key={assignment}
+                  className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg"
+                >
+                  <div>
+                    <h3 className="font-medium text-[var(--text-primary)]">
+                      {assignment}
+                    </h3>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {tasks.filter((task: Task) => task.assignment === assignment).length} tasks
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <button
+                    onClick={() => handleDeleteAssignment(assignment)}
+                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                    title="Delete assignment and all its tasks"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      </BaseModal>
 
       {showDeleteModal && assignmentToDelete && (
         <DeleteCompletedModal
