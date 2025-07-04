@@ -22,7 +22,8 @@ export const TaskItem = ({
     assignmentId,
     isSelected = false,
     showAssignment = false,
-    assignmentLeftOfDate = false
+    assignmentLeftOfDate = false,
+    active = false
 }) => {
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
@@ -37,15 +38,24 @@ export const TaskItem = ({
         }
     };
 
-    const getDifficultyColor = (difficulty) => {
+    const getDifficultyColor = (difficulty, type = 'text') => {
+        // type: 'text' | 'bg' | 'border'
         switch (difficulty?.toLowerCase()) {
             case 'easy':
-                return 'text-[#00FF41]'; /* Matrix green */
+                if (type === 'bg') return 'bg-green-900/60';
+                if (type === 'border') return 'border-green-500';
+                return 'text-[#00FF41]';
             case 'medium':
-                return 'text-[#1E90FF]'; /* Electric neon blue */
+                if (type === 'bg') return 'bg-blue-900/60';
+                if (type === 'border') return 'border-blue-500';
+                return 'text-[#1E90FF]';
             case 'hard':
-                return 'text-[#FF003C]'; /* Neon red */
+                if (type === 'bg') return 'bg-red-900/60';
+                if (type === 'border') return 'border-red-500';
+                return 'text-[#FF003C]';
             default:
+                if (type === 'bg') return 'bg-[var(--bg-secondary)]';
+                if (type === 'border') return 'border-[var(--border-primary)]';
                 return 'text-[var(--text-secondary)]';
         }
     };
@@ -79,7 +89,10 @@ export const TaskItem = ({
 
     return (
         <div
-            className="relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-colors cursor-pointer gap-3"
+            className={`relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg transition-colors cursor-pointer gap-3 
+                bg-[var(--bg-secondary)] 
+                ${active ? `${getDifficultyColor(task.difficulty, 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
+            `}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}

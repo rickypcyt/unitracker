@@ -574,8 +574,8 @@ const Pomodoro = () => {
       <div className="flex items-center justify-center w-full px-4 py-3 relative">
         {/* Centered Title with Icon */}
         <div className="flex items-center gap-2 mx-auto">
-          <Timer size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg truncate">Pomo Timer</span>
+          <Timer size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
+          <span className="font-bold text-lg truncate mb-0 self-center">Pomo Timer</span>
         </div>
         {/* Right side: Settings Button */}
         <div className="absolute right-4 flex items-center">

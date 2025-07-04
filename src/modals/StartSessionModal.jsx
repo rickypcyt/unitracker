@@ -2,6 +2,7 @@ import { Check, Plus, X } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
 import React, { useEffect, useState } from 'react';
 
+import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
@@ -15,6 +16,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
   const [titleError, setTitleError] = useState(false);
+  const [assignment, setAssignment] = useState('');
+  const [assignments, setAssignments] = useState([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -22,7 +25,9 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       setSessionTitle('');
       setSessionDescription('');
       setSelectedTasks([]);
+      setAssignment('');
       setTitleError(false);
+      fetchAssignments();
     }
   }, [isOpen]);
 
@@ -61,6 +66,24 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       console.error('Error in fetchSessionTasks:', error);
       setTasks([]);
       setSelectedTasks([]);
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('assignment')
+        .eq('user_id', user.id)
+        .not('assignment', 'is', null)
+        .not('assignment', 'eq', '')
+        .order('assignment');
+      if (error) throw error;
+      setAssignments([...new Set(data.map((task) => task.assignment))]);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
     }
   };
 
@@ -146,7 +169,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           name: sessionTitle.trim(),
           description: sessionDescription.trim(),
           session_number: nextSessionNumber,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          session_assignment: assignment || null,
         }])
         .select()
         .single();
@@ -205,19 +229,38 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     >
       <div className="space-y-6">
         <div className="space-y-4">
-          <FormInput
-            id="sessionTitle"
-            label="Session Title"
-            value={sessionTitle}
-            onChange={setSessionTitle}
-            error={titleError ? "Please enter a session title" : null}
-            required
-            placeholder="Enter session title"
-          />
-
+          <div className="flex flex-col md:flex-row gap-2 mb-4">
+            <div className="flex-1">
+              <label htmlFor="sessionTitle" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center md:text-left">
+                Title
+              </label>
+              <FormInput
+                id="sessionTitle"
+                value={sessionTitle}
+                onChange={setSessionTitle}
+                error={titleError ? 'Title is required' : ''}
+                required
+                placeholder="Enter session title"
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center md:text-left">
+                Assignment (optional)
+              </label>
+              <AutocompleteInput
+                id="assignment"
+                value={assignment}
+                onChange={setAssignment}
+                placeholder="Enter assignment name"
+                suggestions={assignments}
+              />
+            </div>
+          </div>
+          <label htmlFor="sessionDescription" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
+            Description (Optional)
+          </label>
           <FormTextarea
             id="sessionDescription"
-            label="Description (Optional)"
             value={sessionDescription}
             onChange={setSessionDescription}
             placeholder="Enter session description"
@@ -234,8 +277,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           mode="move"
           showNewTaskButton={true}
           maxHeight="350px"
-          activeTitle="Active Tasks"
-          availableTitle="Available Tasks"
+          activeTitle={<span className="font-bold text-center block">Active Tasks</span>}
+          availableTitle={<span className="font-bold text-center block">Available Tasks</span>}
           hideAssignmentAndDescriptionAvailable={true}
         />
 

@@ -9,6 +9,7 @@ import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import StartSessionModal from "@/modals/StartSessionModal";
+import moment from 'moment';
 import { setStudyRunning } from "@/store/slices/uiSlice";
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from "react-hot-toast";
@@ -231,7 +232,8 @@ const StudyTimer = ({ onSyncChange }) => {
           time: prev.time,
           lastStart: null,
           timeAtStart: prev.time,
-          sessionStatus: 'paused'
+          sessionStatus: 'paused',
+          lastPausedAt: Date.now(),
         }));
 
         window.dispatchEvent(
@@ -519,14 +521,22 @@ const StudyTimer = ({ onSyncChange }) => {
     }
   };
 
+  // Calcular tiempo desde el último pause
+  let lastPausedAgo = null;
+  if (currentSessionId && studyState.sessionStatus === 'paused' && studyState.lastStart === null) {
+    // Buscar el último momento en que se pausó (cuando se puso lastStart a null)
+    // Usar el timestamp de cuando se pausó: no se guarda explícitamente, pero podemos guardar uno nuevo
+    // Solución: guardar un campo lastPausedAt en studyState cuando se pausa
+  }
+
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="flex items-center justify-center w-full px-4 py-3 relative">
         {/* Centered Title with Icon */}
         <div className="flex items-center gap-2 mx-auto">
-          <Clock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg truncate">Study Timer</span>
+          <Clock size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
+          <span className="font-bold text-lg truncate mb-0 self-center">Study Timer</span>
         </div>
         {/* Right side: Settings Button or Placeholder */}
         <div className="absolute right-4 flex items-center">
@@ -717,7 +727,21 @@ const StudyTimer = ({ onSyncChange }) => {
         </button>
       </div>
 
-
+      {currentSessionId && studyState.sessionStatus === 'paused' && studyState.lastPausedAt && (
+        <div className="text-base mt-1 text-[var(--text-secondary)]">
+          Last paused: {(() => {
+            const diffMs = Date.now() - studyState.lastPausedAt;
+            const diffMin = Math.floor(diffMs / 60000);
+            const diffHr = Math.floor(diffMin / 60);
+            const min = diffMin % 60;
+            if (diffHr > 0) {
+              return `${diffHr} hour${diffHr > 1 ? 's' : ''}${min > 0 ? ` and ${min} minute${min > 1 ? 's' : ''}` : ''} ago`;
+            } else {
+              return `${min} minute${min !== 1 ? 's' : ''} ago`;
+            }
+          })()}
+        </div>
+      )}
 
       <StartSessionModal
         isOpen={isStartModalOpen}

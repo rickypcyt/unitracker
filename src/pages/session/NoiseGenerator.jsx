@@ -293,6 +293,15 @@ export default function NoiseGenerator() {
           />
         ))}
       </div>
+      <div className="w-full flex justify-center mt-6">
+        <button
+          className="text-[var(--accent-primary)] font-semibold hover:opacity-80 transition"
+          onClick={() => window.open('https://music4study.vercel.app/', '_blank', 'noopener,noreferrer')}
+          type="button"
+        >
+          More Sounds
+        </button>
+      </div>
     </div>
   );
 }

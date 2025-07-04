@@ -69,6 +69,7 @@ export const SortableColumn = ({
               onEditTask={onEditTask}
               onContextMenu={(e) => onTaskContextMenu(e, task)}
               assignmentId={id}
+              active={!!task.activetask}
             />
           ))}
         </div>

@@ -81,15 +81,22 @@ const TaskSelectionPanel = ({
     const taskClasses = `task-item-base task-item-flex ${
       mode === 'select' && selectedTasks.includes(task.id) ? 'task-item-active' : 
       isActive ? 'task-item-active' : 
-      'bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] border border-[var(--border-primary)] hover:border-[var(--border-primary)]/70'
+      'bg-[var(--bg-secondary)] border border-[var(--border-primary)]'
     }`;
+
+    let borderColor = '';
+    if (isActive && task.difficulty) {
+      if (task.difficulty.toLowerCase() === 'easy') borderColor = 'border-green-500';
+      else if (task.difficulty.toLowerCase() === 'medium') borderColor = 'border-blue-500';
+      else if (task.difficulty.toLowerCase() === 'hard') borderColor = 'border-red-500';
+    }
 
     // Compacto y con assignment en active tasks
     if (isActive && mode === 'move') {
       return (
         <div
           key={task.id}
-          className={taskClasses + ' px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem]'}
+          className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem] ${borderColor} bg-[var(--bg-secondary)]`}
         >
           <div className="flex items-center gap-2 w-full">
             <span className="font-medium text-[var(--text-primary)] truncate">{task.title}</span>
@@ -109,7 +116,7 @@ const TaskSelectionPanel = ({
       return (
         <div
           key={task.id}
-          className={taskClasses}
+          className={`task-item-base task-item-flex ${isActive ? borderColor + ' border-2' : 'bg-[var(--bg-secondary)] border border-[var(--border-primary)]'}`}
           onClick={() => onTaskSelect(task.id)}
         >
           <div className="flex items-center justify-between">

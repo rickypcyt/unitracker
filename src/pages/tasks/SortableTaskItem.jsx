@@ -43,6 +43,7 @@ export const SortableTaskItem = ({
         onDoubleClick={onDoubleClick}
         onContextMenu={onContextMenu}
         isEditing={isEditing}
+        active={!!task.activetask}
       />
     </div>
   );
