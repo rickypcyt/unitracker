@@ -165,7 +165,7 @@ const statCards: StatCard[] = [
     sub: () => 'average',
   },
   {
-    label: 'Completed Tasks',
+    label: 'Tasks Done',
     icon: <ListChecks size={22} className="text-green-500" />, 
     value: s => s.totalTasks,
     sub: () => 'total',
@@ -199,7 +199,7 @@ const Statistics: React.FC = () => {
   return (
     <div className="maincard px-2 md:px-6">
       <div
-        className="grid gap-1 md:gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center"
+        className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center"
       >
         {statCards.map((card, i) => (
           <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px]">

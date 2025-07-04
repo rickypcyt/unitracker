@@ -203,7 +203,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
   return (
     <div className={`bar ${className || ''}`}>
       <label className="noisegentitle flex items-center gap-2">
-        <Icon size={20} className="text-[var(--text-primary)]" />
+        <Icon size={22} className="text-[var(--text-primary)]" />
         <span className="card-text font-medium text-[var(--text-primary)] text-base sm:text-md">{label}</span>
       </label>
       <div className="slider flex items-center gap-3">
@@ -242,7 +242,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
               onClick={start}
               className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
             >
-              <Play size={20} />
+              <Play size={22} />
             </button>
           ) : (
             <button
@@ -250,7 +250,7 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
               onClick={stop}
               className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
             >
-              <Pause size={20} />
+              <Pause size={22} />
             </button>
           )}
         </div>

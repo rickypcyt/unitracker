@@ -399,12 +399,14 @@ const StudyTimer = ({ onSyncChange }) => {
 
       // Only finalize if duration is not 00:00:00
       if (formattedDuration !== '00:00:00') {
+        const pomodorosThisSession = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
         const { error } = await supabase
           .from('study_laps')
           .update({
             duration: formattedDuration,
             tasks_completed: completedTasks.length,
-            ended_at: endedAt
+            ended_at: endedAt,
+            pomodoros_completed: pomodorosThisSession,
           })
           .eq('id', currentSessionId);
 
@@ -415,21 +417,25 @@ const StudyTimer = ({ onSyncChange }) => {
         }
 
         toast.success(`Congrats! During this session you completed ${completedTasks.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
-          position: 'top-right',
+          position: 'top-center',
           style: {
-            backgroundColor: '#fff',
-            color: '#000',
+            backgroundColor: '#000',
+            color: '#fff',
             border: '2px solid var(--border-primary)',
           },
         });
         window.dispatchEvent(new CustomEvent('refreshStats'));
       }
 
+      // Dispatch finishSession event so Pomodoro can reset its session counter
+      window.dispatchEvent(new CustomEvent('finishSession'));
+
       // Reset session state
       studyControls.reset();
       setCurrentSessionId(null);
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
+      setStudyState(prev => ({ ...prev, sessionTitle: undefined, sessionDescription: undefined }));
 
       if (isSyncedWithStudyTimer) {
          window.dispatchEvent(new CustomEvent("resetPomodoro"));
@@ -500,6 +506,7 @@ const StudyTimer = ({ onSyncChange }) => {
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
       setIsDeleteModalOpen(false);
+      setStudyState(prev => ({ ...prev, sessionTitle: undefined, sessionDescription: undefined }));
 
       // If synced with Pomodoro, reset it too
       if (isSyncedWithStudyTimer) {
@@ -643,7 +650,7 @@ const StudyTimer = ({ onSyncChange }) => {
           className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Reset timer"
         >
-          <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
+          <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
         </button>
         {!isStudyRunningRedux ? (
           <button
@@ -651,7 +658,7 @@ const StudyTimer = ({ onSyncChange }) => {
             className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Start timer"
           >
-            <Play size={20} style={{ color: "var(--accent-primary)" }} />
+            <Play size={24} style={{ color: "var(--accent-primary)" }} />
           </button>
         ) : (
           <button
@@ -659,7 +666,7 @@ const StudyTimer = ({ onSyncChange }) => {
             className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Pause timer"
           >
-            <Pause size={20} style={{ color: "var(--accent-primary)" }} />
+            <Pause size={24} style={{ color: "var(--accent-primary)" }} />
           </button>
         )}
         {currentSessionId && (
@@ -669,7 +676,7 @@ const StudyTimer = ({ onSyncChange }) => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] transition-colors"
               aria-label="Exit session"
             >
-              <X size={20} style={{ color: "var(--accent-primary)" }} />
+              <X size={24} style={{ color: "var(--accent-primary)" }} />
             </button>
             <button
               onClick={() => {
@@ -681,7 +688,7 @@ const StudyTimer = ({ onSyncChange }) => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Finish session"
             >
-              <Check size={20} style={{ color: "var(--accent-primary)" }} />
+              <Check size={24} style={{ color: "var(--accent-primary)" }} />
             </button>
           </>
         )}

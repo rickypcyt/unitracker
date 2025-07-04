@@ -112,7 +112,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         // Create new task
         const { data, error } = await supabase
           .from('tasks')
-          .insert([taskData])
+          .insert([{ ...taskData, activetask: true }])
           .select()
           .single();
 
@@ -121,6 +121,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         if (onTaskCreated) {
           onTaskCreated(data.id);
         }
+        // Dispara evento global para refrescar la lista
+        window.dispatchEvent(new CustomEvent('refreshTaskList'));
       }
 
       onClose();

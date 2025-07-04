@@ -126,15 +126,14 @@ const StudySessions = () => {
             {selectedMonth ? (
                 // Vista detallada del mes seleccionado
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-center mb-4 relative">
                         <button
                             onClick={() => setSelectedMonth(null)}
-                            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+                            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2 absolute left-0"
                         >
-                            <ArrowLeft size={20}/>Back to Months                             
-
+                            <ArrowLeft size={20}/>Back to Months
                         </button>
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)]">{selectedMonth}</h3>
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">{selectedMonth}</h3>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -148,11 +147,11 @@ const StudySessions = () => {
                                 {/* Duración arriba del título */}
                                 <div className="flex items-center gap-1 mb-1">
                                     <Clock size={18} className="text-[var(--text-secondary)]" />
-                                    <span className="text-base text-[var(--text-primary)] font-medium">{lap.duration}</span>
+                                    <span className="text-sm text-[var(--text-primary)] font-medium">{lap.duration}</span>
                                 </div>
                                 {/* Primera línea: #, título */}
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-base text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
+                                    <span className="text-lg text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
                                     <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
                                 </div>
                                 {/* Segunda línea: fecha, tasks done y trash icon */}
@@ -196,7 +195,7 @@ const StudySessions = () => {
                         return orderedYears.map(year => (
                             <div key={year} className="mb-2">
                                 <div className="border-b border-[var(--border-primary)] mb-6 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
-                                <div className="grid gap-3 md:gap-4 w-full grid-cols-2 md:grid-cols-6 lg:grid-cols-4 xl:grid-cols-6">
+                                <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center">
                                     {monthsByYear[year]
                                         .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                                         .map(({ month, monthYear, lapsOfMonth }) => {
@@ -204,18 +203,18 @@ const StudySessions = () => {
                                             return (
                                                 <div
                                                     key={monthYear}
-                                                    className="stat-card bg-[var(--bg-secondary)] rounded-md p-2 border-2 border-[var(--border-primary)] flex flex-col min-w-[100px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
+                                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
                                                     onClick={() => setSelectedMonth(monthYear)}
                                                 >
-                                                    <div className="flex items-center gap-2 mb-1 align-middle">
+                                                    <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">
                                                         <Calendar size={20} className="text-[var(--accent-primary)]" />
-                                                        <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle">{month}</span>
+                                                        <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle text-center">{month}</span>
                                                     </div>
-                                                    <div className="mb-1">
-                                                        <span className="text-lg font-bold text-[var(--text-primary)]">{stats.totalSessions}</span>
-                                                        <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                                    <div className="mb-1 text-center">
+                                                        <span className="text-lg font-bold text-[var(--text-primary)] text-center">{stats.totalSessions}</span>
+                                                        <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[var(--text-secondary)] text-base">
+                                                    <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base text-center">
                                                         <Clock size={18} />
                                                         <span>{formatMinutesToHHMM(stats.totalMinutes)}</span>
                                                     </div>
@@ -253,7 +252,7 @@ const StudySessions = () => {
                             setSelectedSession(contextMenu.lap);
                             setContextMenu(null);
                         }}
-                        className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                        className="w-full px-2 py-2 text-center text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
                     >
                         <Info size={16} /> Edit Session
                     </button>
@@ -262,7 +261,7 @@ const StudySessions = () => {
                             handleDeleteClick(contextMenu.lap.id);
                             setContextMenu(null);
                         }}
-                        className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                        className="w-full px-2 py-2 text-center text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
                     >
                         <Trash2 size={16} /> Delete Session
                     </button>
