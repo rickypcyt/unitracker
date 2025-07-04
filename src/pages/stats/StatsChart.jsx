@@ -21,6 +21,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   const entry = payload[0].payload;
   let date = undefined;
   let year, month;
+  let monthIdx;
   if (title === "This Month") {
     // Buscar el objeto cuyo dayName sea igual al del entry
     const dayData = data.find(d => d.dayName === entry.dayName);
@@ -34,17 +35,34 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
       year = d.getFullYear();
       month = d.getMonth();
     }
+  } else if (title === "This Year") {
+    // Para 'This Year', filtrar tasks por mes y año
+    const yearStr = entry.date.split('-')[0];
+    const monthStr = entry.date.split('-')[1];
+    year = parseInt(yearStr, 10);
+    monthIdx = parseInt(monthStr, 10) - 1;
+    // date = primer día del mes para formato
+    date = entry.date;
   } else {
     // Para otros gráficos, mantener la lógica anterior
     const dayData = data.find(d => d.dayName === entry.dayName || d.dayName === label);
     date = dayData?.date;
   }
-  // Filtrar tareas por fecha
-  const dayTasks = tasks.filter(t => {
-    if (!t.completed_at) return false;
-    const completedDate = new Date(t.completed_at).toISOString().split('T')[0];
-    return completedDate === date;
-  });
+  // Filtrar tareas por fecha o mes según el gráfico
+  let dayTasks = [];
+  if (title === "This Year" && typeof monthIdx === 'number' && typeof year === 'number') {
+    dayTasks = tasks.filter(t => {
+      if (!t.completed_at) return false;
+      const completedDate = new Date(t.completed_at);
+      return completedDate.getFullYear() === year && completedDate.getMonth() === monthIdx;
+    });
+  } else {
+    dayTasks = tasks.filter(t => {
+      if (!t.completed_at) return false;
+      const completedDate = new Date(t.completed_at).toISOString().split('T')[0];
+      return completedDate === date;
+    });
+  }
   const tags = Array.from(new Set(dayTasks.flatMap(t => t.tags || [])));
   // Formato de fecha para mostrar
   let dayLabel;

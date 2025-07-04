@@ -67,10 +67,10 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
             </p>
           ) : (
             <div className="space-y-2">
-              {assignments.map((assignment) => (
+              {assignments.map((assignment, idx) => (
                 <div
                   key={assignment}
-                  className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg"
+                  className={`flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg ${idx !== assignments.length - 1 ? 'border-b border-[var(--border-primary)]' : ''}`}
                 >
                   <div>
                     <h3 className="font-medium text-[var(--text-primary)]">

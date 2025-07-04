@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ACCENT_COLORS } from "@/utils/theme";
 import BaseModal from './BaseModal';
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
+import ManageCompletedTasksModal from '@/modals/ManageCompletedTasksModal';
 import Switch from "react-switch";
 import useTheme from "@/hooks/useTheme";
 
@@ -24,6 +25,7 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const { currentTheme, handleThemeChange, accentPalette, setAccentPalette } = useTheme();
   const [showAssignments, setShowAssignments] = useState(false);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);
@@ -113,6 +115,12 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             >
               Manage Assignments
             </button>
+            <button
+              onClick={() => setShowCompletedTasks(true)}
+              className="w-full mt-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              Manage Completed Tasks
+            </button>
           </div>
         </div>
       </BaseModal>
@@ -120,6 +128,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <ManageAssignmentsModal
         isOpen={showAssignments}
         onClose={() => setShowAssignments(false)}
+      />
+      <ManageCompletedTasksModal
+        isOpen={showCompletedTasks}
+        onClose={() => setShowCompletedTasks(false)}
       />
     </>
   );
