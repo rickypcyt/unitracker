@@ -474,6 +474,9 @@ const StudyTimer = ({ onSyncChange }) => {
       // Update sessions today count
       fetchSessionsTodayCount();
 
+      // Dispatch session started event for Pomodoro to reset session counter
+      window.dispatchEvent(new CustomEvent("sessionStarted"));
+
       window.dispatchEvent(
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
       );

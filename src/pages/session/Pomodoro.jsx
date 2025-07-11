@@ -63,7 +63,7 @@ const Pomodoro = () => {
           startTime: Number(parsed.startTime) || 0,
           pausedTime: Number(parsed.pausedTime) || 0,
           lastManualAdjustment: 0, // Add this to track last manual adjustment
-          pomodorosThisSession: 0, // New session-specific counter
+          pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0'), // Load from localStorage
         };
       } catch (error) {
         console.error('Error parsing saved state:', error);
@@ -78,7 +78,7 @@ const Pomodoro = () => {
           startTime: 0,
           pausedTime: 0,
           lastManualAdjustment: 0, // Add this to track last manual adjustment
-          pomodorosThisSession: 0, // New session-specific counter
+          pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0'), // Load from localStorage
         };
       }
     }
@@ -93,7 +93,7 @@ const Pomodoro = () => {
       startTime: 0,
       pausedTime: 0,
       lastManualAdjustment: 0, // Add this to track last manual adjustment
-      pomodorosThisSession: 0, // New session-specific counter
+      pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0'), // Load from localStorage
     };
   });
 
@@ -371,6 +371,7 @@ const Pomodoro = () => {
         currentMode: shouldBeWorkMode ? "work" : "break",
         timeLeft: shouldBeWorkMode ? totalWorkTime : totalBreakTime,
         pomodoroToday: shouldBeWorkMode ? prev.pomodoroToday + 1 : prev.pomodoroToday,
+        pomodorosThisSession: shouldBeWorkMode ? prev.pomodorosThisSession + 1 : prev.pomodorosThisSession, // Increment session counter
         isRunning: true // Mantener el estado de ejecución
       }));
 
@@ -437,6 +438,14 @@ const Pomodoro = () => {
 
   // Listen for finishSession event to reset session pomodoro counter
   useEventListener("finishSession", () => {
+    setPomoState(prev => ({
+      ...prev,
+      pomodorosThisSession: 0
+    }));
+  }, []);
+
+  // Listen for session start event to reset session pomodoro counter
+  useEventListener("sessionStarted", () => {
     setPomoState(prev => ({
       ...prev,
       pomodorosThisSession: 0
