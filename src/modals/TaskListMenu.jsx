@@ -41,10 +41,19 @@ export const TaskListMenu = ({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-[var(--bg-primary)] p-2 rounded-lg shadow-lg z-50 border border-[var(--border-primary)]"
+      className="fixed bg-[var(--bg-primary)] p-2 rounded-lg shadow-lg border border-[var(--border-primary)]"
       style={{
+        position: 'fixed',
         left: contextMenu.x,
         top: contextMenu.y,
+        zIndex: 9999,
+        backgroundColor: 'var(--bg-primary)',
+        border: '2px solid var(--border-primary)',
+        borderRadius: '0.75rem',
+        padding: '0.75rem 0.5rem',
+        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(30,144,255,0.10)',
+        minWidth: '220px',
+        color: 'var(--text-primary)',
       }}
     >
       <div className="space-y-1">

@@ -244,8 +244,20 @@ const StudySessions = () => {
             {/* Context Menu para sesión */}
             {contextMenu && (
                 <div
-                    className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-50 p-2 flex flex-col min-w-[160px]"
-                    style={{ left: contextMenu.x, top: contextMenu.y }}
+                    className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]"
+                    style={{ 
+                        position: 'fixed',
+                        left: contextMenu.x, 
+                        top: contextMenu.y,
+                        zIndex: 9999,
+                        backgroundColor: 'var(--bg-primary)',
+                        border: '2px solid var(--border-primary)',
+                        borderRadius: '0.75rem',
+                        padding: '0.75rem 0.5rem',
+                        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(30,144,255,0.10)',
+                        minWidth: '220px',
+                        color: 'var(--text-primary)',
+                    }}
                 >
                     <button
                         onClick={() => {

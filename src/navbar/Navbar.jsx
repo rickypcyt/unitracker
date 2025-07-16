@@ -220,7 +220,15 @@ const Navbar = ({ onOpenSettings }) => {
                   <ChevronDown size={16} />
                 </button>
                 {workspaceMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-68 max-w-xs bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]">
+                  <div 
+                    className="fixed w-68 max-w-xs bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]"
+                    style={{
+                      position: 'fixed',
+                      top: workspaceDropdownRef.current ? workspaceDropdownRef.current.getBoundingClientRect().bottom + 8 : 0,
+                      right: workspaceDropdownRef.current ? window.innerWidth - workspaceDropdownRef.current.getBoundingClientRect().right : 0,
+                      zIndex: 9999,
+                    }}
+                  >
                     <div className="max-h-60 overflow-y-auto">
                       {workspaces.map(ws => (
                         <div key={ws.id} className="group">
@@ -323,7 +331,15 @@ const Navbar = ({ onOpenSettings }) => {
                   <Settings size={22} />
                 </button>
                 {isSettingsOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]">
+                  <div 
+                    className="fixed w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]"
+                    style={{
+                      position: 'fixed',
+                      top: settingsRef.current ? settingsRef.current.getBoundingClientRect().bottom + 8 : 0,
+                      right: settingsRef.current ? window.innerWidth - settingsRef.current.getBoundingClientRect().right : 0,
+                      zIndex: 9999,
+                    }}
+                  >
                     <button
                       onClick={() => {
                         onOpenSettings();

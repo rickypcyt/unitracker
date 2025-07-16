@@ -7,7 +7,7 @@ const DayTooltip = ({ date, tasks, studiedHours }) => {
   const totalTasks = tasks?.length || 0;
 
   return (
-    <div className="absolute z-50 bg-neutral-900 border border-neutral-800 rounded-lg p-3 shadow-lg min-w-[200px] transform -translate-y-full -translate-x-1/2 left-1/2 -top-2">
+    <div className="absolute z-[9999] bg-neutral-900 border border-neutral-800 rounded-lg p-3 shadow-lg min-w-[200px] transform -translate-y-full -translate-x-1/2 left-1/2 -top-2">
       <div className="text-base font-medium text-white mb-2">
         {formatDate(date.toISOString())}
       </div>

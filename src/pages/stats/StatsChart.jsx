@@ -117,14 +117,16 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
               stroke="var(--text-secondary)"
               tick={
                 (title === 'This Month')
-                  ? { fill: "var(--text-secondary)", fontSize: "0.6rem" }
+                  ? { fill: "var(--text-secondary)", fontSize: "0.6rem", angle: -90, textAnchor: 'end' }
+                  : title === 'This Year'
+                  ? { fill: "var(--text-secondary)", fontSize: "0.65rem" }
                   : { fill: "var(--text-secondary)", fontSize: "0.65rem" }
               }
               axisLine={false}
               tickLine={false}
               interval={0}
               minTickGap={0}
-              tickMargin={16}
+              tickMargin={title === 'This Month' ? 25 : 16}
               tickFormatter={
                 title === 'This Week' || title === 'Last Week'
                   ? (v) => v

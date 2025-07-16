@@ -74,9 +74,19 @@ export const KanbanBoard = () => {
   const dispatch = useDispatch();
 
   const handleSortClick = (assignmentId, position) => {
+    // Calcular el ancho estimado del menú (aproximadamente 220px)
+    const menuWidth = 220;
+    const windowWidth = window.innerWidth;
+    
+    // Si el menú se saldría por la derecha, moverlo hacia la izquierda
+    let x = position.x;
+    if (position.x + menuWidth > windowWidth) {
+      x = Math.max(10, windowWidth - menuWidth - 10); // 10px de margen del borde
+    }
+    
     setSortMenu({
       assignmentId,
-      x: position.x,
+      x: x,
       y: position.y,
     });
   };

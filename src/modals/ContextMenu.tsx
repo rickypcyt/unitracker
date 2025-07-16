@@ -1,6 +1,6 @@
 import { Settings, Trash2 } from "lucide-react";
 
-import BaseMenu from '@/common/BaseMenu';
+import BaseMenu from '@/modals/BaseMenu';
 import React from "react";
 
 interface ContextMenuProps {

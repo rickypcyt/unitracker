@@ -48,7 +48,7 @@ export const SortMenu = ({
       y={y}
       onClose={onClose}
       aria-label="Sort options"
-      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] z-[9999]"
     >
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li

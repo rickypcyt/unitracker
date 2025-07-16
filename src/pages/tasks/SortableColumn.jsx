@@ -1,7 +1,7 @@
 import { ChevronDown, ChevronUp, ListOrdered, MoreVertical, Plus } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
-import BaseMenu from '@/modals/BaseMenu';
+import { ColumnMenu } from '@/modals/ColumnMenu';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 
 export const SortableColumn = ({
@@ -17,15 +17,18 @@ export const SortableColumn = ({
   onTaskContextMenu,
   onSortClick,
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
-  const moreBtnRef = useRef(null);
+  const [columnMenu, setColumnMenu] = useState(null);
 
-  const handleMoreClick = (e) => {
-    e.stopPropagation();
-    const rect = moreBtnRef.current.getBoundingClientRect();
-    setMenuPos({ x: rect.left, y: rect.bottom });
-    setMenuOpen(true);
+  const handleColumnMenuClick = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setColumnMenu({
+      x: rect.left,
+      y: rect.bottom,
+    });
+  };
+
+  const handleCloseColumnMenu = () => {
+    setColumnMenu(null);
   };
 
   return (
@@ -62,40 +65,21 @@ export const SortableColumn = ({
               const rect = event.currentTarget.getBoundingClientRect();
               onSortClick(assignment, { x: rect.left, y: rect.bottom });
             }}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]  mr-2"
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             title="Sort tasks"
           >
             <ListOrdered size={22} />
           </button>
           <button
-            ref={moreBtnRef}
-            onClick={handleMoreClick}
+            onClick={handleColumnMenuClick}
             className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            title="Más opciones"
+            title="More options"
           >
             <MoreVertical size={22} />
           </button>
         </div>
       </div>
-      {menuOpen && (
-        <BaseMenu
-          x={menuPos.x}
-          y={menuPos.y}
-          onClose={() => setMenuOpen(false)}
-          zIndex="z-[9999]"
-        >
-          <button
-            className="block w-full text-left px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
-            onClick={() => {
-              setMenuOpen(false);
-              // Aquí irá la lógica para mover tasks de assignment
-              alert('Mover todos los tasks de este assignment a otro workspace');
-            }}
-          >
-            Mover todos los tasks de este assignment a otro workspace
-          </button>
-        </BaseMenu>
-      )}
+
       
       {!collapsed && (
         <div
@@ -116,6 +100,21 @@ export const SortableColumn = ({
             />
           ))}
         </div>
+      )}
+
+      {/* Column Menu */}
+      {columnMenu && (
+        <ColumnMenu
+          x={columnMenu.x}
+          y={columnMenu.y}
+          assignment={assignment}
+          onAddTask={onAddTask}
+          onSortClick={onSortClick}
+          onToggleCollapse={onToggleCollapse}
+          onClose={handleCloseColumnMenu}
+          collapsed={collapsed}
+          tasks={tasks}
+        />
       )}
     </div>
   );

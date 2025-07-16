@@ -373,7 +373,7 @@ const Calendar = () => {
       {/* Add centered tooltip container at the top of the calendar */}
       {tooltipContent && (
         <div 
-          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base rounded shadow-lg border border-[var(--border-color)] z-10 transition-all duration-200"
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base rounded shadow-lg border border-[var(--border-color)] z-[9999] transition-all duration-200"
           style={{
             top: '0',
             minWidth: '180px',
