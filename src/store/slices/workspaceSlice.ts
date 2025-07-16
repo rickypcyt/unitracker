@@ -6,6 +6,7 @@ import { supabase } from '@/utils/supabaseClient';
 export interface Workspace {
   id: string;
   name: string;
+  icon?: string; // nombre del icono de lucide-react
 }
 
 interface WorkspaceState {

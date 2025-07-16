@@ -1,4 +1,4 @@
-import { Briefcase, ChevronDown, Info, LogIn, LogOut, Menu, Plus, Settings, X } from 'lucide-react';
+import { Book, Briefcase, Check, ChevronDown, Code, Globe, Info, LogIn, LogOut, Menu, Pencil, Plus, Settings, Star, User, X, X as XIcon } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { addWorkspace, setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,6 +7,15 @@ import AboutModal from '@/modals/AboutModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
+
+const ICON_OPTIONS = [
+  { name: 'Briefcase', icon: Briefcase },
+  { name: 'Book', icon: Book },
+  { name: 'Code', icon: Code },
+  { name: 'Globe', icon: Globe },
+  { name: 'Star', icon: Star },
+  { name: 'User', icon: User },
+];
 
 const Navbar = ({ onOpenSettings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,6 +31,11 @@ const Navbar = ({ onOpenSettings }) => {
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [showNewWorkspaceInput, setShowNewWorkspaceInput] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [editingWorkspaceId, setEditingWorkspaceId] = useState(null);
+  const [editingWorkspaceName, setEditingWorkspaceName] = useState('');
+  const [editingWorkspaceIcon, setEditingWorkspaceIcon] = useState('Briefcase');
+  const [isEditingLoading, setIsEditingLoading] = useState(false);
+  const [editingError, setEditingError] = useState('');
 
   // Cargar workspaces desde Supabase al montar
   useEffect(() => {
@@ -67,6 +81,61 @@ const Navbar = ({ onOpenSettings }) => {
       setNewWorkspaceName('');
       setWorkspaceMenuOpen(false);
     }
+  };
+
+  const handleEditWorkspaceClick = (ws) => {
+    setEditingWorkspaceId(ws.id);
+    setEditingWorkspaceName(ws.name);
+    setEditingWorkspaceIcon(ws.icon || 'Briefcase');
+    setEditingError('');
+  };
+
+  const handleEditWorkspaceChange = (e) => {
+    setEditingWorkspaceName(e.target.value);
+  };
+
+  const handleEditWorkspaceIconChange = (iconName) => {
+    setEditingWorkspaceIcon(iconName);
+  };
+
+  const handleEditWorkspaceCancel = () => {
+    setEditingWorkspaceId(null);
+    setEditingWorkspaceName('');
+    setEditingError('');
+  };
+
+  const handleEditWorkspaceSave = async (ws) => {
+    if (editingWorkspaceName.trim().length < 2) {
+      setEditingError('Name too short');
+      return;
+    }
+    setIsEditingLoading(true);
+    setEditingError('');
+    // Log cambio
+    console.log('[Workspace Edit] Guardando cambios:', {
+      id: ws.id,
+      nuevoNombre: editingWorkspaceName,
+      nuevoIcono: editingWorkspaceIcon
+    });
+    try {
+      const { data, error } = await supabase
+        .from('workspaces')
+        .update({ name: editingWorkspaceName, icon: editingWorkspaceIcon })
+        .eq('id', ws.id)
+        .select()
+        .single();
+      if (error) {
+        setEditingError('Error updating name');
+      } else if (data) {
+        // Actualiza el store solo con el dato real de la base de datos
+        dispatch(setWorkspaces(workspaces.map(w => w.id === ws.id ? data : w)));
+        setEditingWorkspaceId(null);
+        setEditingWorkspaceName('');
+      }
+    } catch (e) {
+      setEditingError('Error updating name');
+    }
+    setIsEditingLoading(false);
   };
 
   const isActive = (page) => {
@@ -133,7 +202,10 @@ const Navbar = ({ onOpenSettings }) => {
                   onClick={() => setWorkspaceMenuOpen((v) => !v)}
                   className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
                 >
-                  <Briefcase size={18} />
+                  {(() => {
+                    const Icon = ICON_OPTIONS.find(opt => opt.name === (activeWorkspace?.icon || 'Briefcase'))?.icon || Briefcase;
+                    return <Icon size={18} />;
+                  })()}
                   <span className="font-medium">{activeWorkspace?.name || 'Workspace'}</span>
                   <ChevronDown size={16} />
                 </button>
@@ -141,13 +213,71 @@ const Navbar = ({ onOpenSettings }) => {
                   <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
                     <div className="max-h-60 overflow-y-auto">
                       {workspaces.map(ws => (
-                        <button
-                          key={ws.id}
-                          onClick={() => handleSelectWorkspace(ws)}
-                          className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-[var(--bg-primary)] transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}
-                        >
-                          <Briefcase size={14} /> {ws.name}
-                        </button>
+                        <div key={ws.id} className="group">
+                          {editingWorkspaceId === ws.id ? (
+                            <div className="flex flex-col gap-1 px-4 py-2 bg-[var(--bg-primary)]">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  className="flex-1 px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-primary)]"
+                                  value={editingWorkspaceName}
+                                  onChange={handleEditWorkspaceChange}
+                                  disabled={isEditingLoading}
+                                  autoFocus
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') handleEditWorkspaceSave(ws);
+                                    if (e.key === 'Escape') handleEditWorkspaceCancel();
+                                  }}
+                                />
+                                <button onClick={() => handleEditWorkspaceSave(ws)} disabled={isEditingLoading} className="text-green-600 hover:text-green-800 disabled:opacity-50"><Check size={16} /></button>
+                                <button onClick={handleEditWorkspaceCancel} disabled={isEditingLoading} className="text-red-500 hover:text-red-700 disabled:opacity-50"><XIcon size={16} /></button>
+                                {isEditingLoading && <span className="ml-2 text-xs text-[var(--accent-primary)]">...</span>}
+                              </div>
+                              <div className="flex gap-2 mt-1">
+                                {ICON_OPTIONS.map(opt => {
+                                  const Icon = opt.icon;
+                                  return (
+                                    <button
+                                      key={opt.name}
+                                      onClick={() => {
+                                        handleEditWorkspaceIconChange(opt.name);
+                                        // Si el input está enfocado y presionas Enter, también guarda
+                                        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+                                          // Nada, ya el input maneja Enter
+                                        } else {
+                                          handleEditWorkspaceSave(ws);
+                                        }
+                                      }}
+                                      className={`p-1 rounded-full border ${editingWorkspaceIcon === opt.name ? 'border-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'border-transparent'}`}
+                                      disabled={isEditingLoading}
+                                      title={opt.name}
+                                      type="button"
+                                    >
+                                      <Icon size={18} className={editingWorkspaceIcon === opt.name ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} />
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleSelectWorkspace(ws)}
+                              className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-[var(--bg-primary)] transition-colors group ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}
+                            >
+                              {(() => {
+                                const Icon = ICON_OPTIONS.find(opt => opt.name === (ws.icon || 'Briefcase'))?.icon || Briefcase;
+                                return <Icon size={14} />;
+                              })()}
+                              <span className="flex-1 truncate">{ws.name}</span>
+                              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-150" onClick={e => { e.stopPropagation(); handleEditWorkspaceClick(ws); }}>
+                                <Pencil size={16} className="text-[var(--accent-primary)] cursor-pointer" title="Edit workspace name" />
+                              </span>
+                            </button>
+                          )}
+                          {editingWorkspaceId === ws.id && editingError && (
+                            <div className="text-xs text-red-500 px-4 pb-1">{editingError}</div>
+                          )}
+                        </div>
                       ))}
                     </div>
                     <div className="border-t border-[var(--border-primary)] px-4 py-2">
