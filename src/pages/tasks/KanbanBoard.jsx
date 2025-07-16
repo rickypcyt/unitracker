@@ -1,5 +1,6 @@
 import { Archive, ChevronDown, ChevronUp, ClipboardCheck, Filter, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
@@ -12,7 +13,6 @@ import { fetchTasks } from '@/store/TaskActions';
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useAuth } from '@/hooks/useAuth';
-import { useDispatch } from 'react-redux';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
 export const KanbanBoard = () => {
@@ -24,6 +24,22 @@ export const KanbanBoard = () => {
     handleDeleteTask: originalHandleDeleteTask,
   } = useTaskManager();
   const { isLoggedIn } = useAuth();
+  const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
+
+  // Filtrar tareas por workspace activo
+  const filteredTasks = activeWorkspace
+    ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
+    : tasks;
+
+  // Debug: ver qué está pasando
+  console.log('Debug KanbanBoard:', {
+    totalTasks: tasks.length,
+    activeWorkspace: activeWorkspace?.name,
+    activeWorkspaceId: activeWorkspace?.id,
+    filteredTasks: filteredTasks.length,
+    tasksWithWorkspace: tasks.filter(t => t.workspace_id).length,
+    tasksWithoutWorkspace: tasks.filter(t => !t.workspace_id).length
+  });
 
   const [contextMenu, setContextMenu] = useState(null);
   const [collapsedColumns, setCollapsedColumns] = useState({});
@@ -148,12 +164,12 @@ export const KanbanBoard = () => {
     }
   }, []);
 
-  const completedTasks = tasks.filter((task) => task.completed);
-  const incompletedTasks = tasks.filter((task) => !task.completed);
+  const completedTasks = filteredTasks.filter((task) => task.completed);
+  const incompletedTasks = filteredTasks.filter((task) => !task.completed);
 
-  const allAssignments = useMemo(() => 
-    [...new Set(tasks.map(task => task.assignment || "No assignment"))].sort(),
-    [tasks]
+  const allAssignments = useMemo(() =>
+    [...new Set(filteredTasks.map(task => task.assignment || "No assignment"))].sort(),
+    [filteredTasks]
   );
 
   const groupTasksByAssignment = (tasksToGroup) => {
@@ -161,7 +177,7 @@ export const KanbanBoard = () => {
       const assignment = task.assignment || "No assignment";
       if (!acc[assignment]) acc[assignment] = [];
       // Check if task is already in another assignment
-      const isTaskInOtherAssignment = Object.values(acc).some(tasks => 
+      const isTaskInOtherAssignment = Object.values(acc).some(tasks =>
         tasks.some(t => t.id === task.id)
       );
       if (!isTaskInOtherAssignment) {
@@ -177,7 +193,7 @@ export const KanbanBoard = () => {
     if (savedOrder && savedOrder.length > 0) {
       // Create a map for quick lookup
       const taskMap = new Map(tasksToSort.map(task => [task.id, task]));
-      
+
       // Sort based on saved order
       const sortedTasks = [];
       savedOrder.forEach(taskId => {
@@ -187,10 +203,10 @@ export const KanbanBoard = () => {
           taskMap.delete(taskId);
         }
       });
-      
+
       // Add any remaining tasks that weren't in the saved order
       taskMap.forEach(task => sortedTasks.push(task));
-      
+
       return sortedTasks;
     }
     return tasksToSort;
@@ -198,7 +214,7 @@ export const KanbanBoard = () => {
 
   const incompletedByAssignment = useMemo(() => {
     const grouped = groupTasksByAssignment(incompletedTasks);
-    
+
     // Apply sorting to each assignment
     Object.keys(grouped).forEach(assignment => {
       const sortConfig = assignmentSortConfig[assignment];
@@ -207,7 +223,7 @@ export const KanbanBoard = () => {
         grouped[assignment] = sortedTasks;
       }
     });
-    
+
     return grouped;
   }, [incompletedTasks, assignmentSortConfig, taskOrder]);
 

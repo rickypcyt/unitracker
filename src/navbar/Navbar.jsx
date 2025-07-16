@@ -1,7 +1,10 @@
-import { Info, LogIn, LogOut, Menu, Settings, X } from 'lucide-react';
+import { Briefcase, ChevronDown, Info, LogIn, LogOut, Menu, Plus, Settings, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { addWorkspace, setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import AboutModal from '@/modals/AboutModal';
+import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
 
@@ -12,6 +15,58 @@ const Navbar = ({ onOpenSettings }) => {
   const { isLoggedIn, loginWithGoogle, logout } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const settingsRef = useRef(null);
+  const dispatch = useDispatch();
+  const workspaces = useSelector(state => state.workspace.workspaces);
+  const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [showNewWorkspaceInput, setShowNewWorkspaceInput] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+
+  // Cargar workspaces desde Supabase al montar
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+      if (!error && data) {
+        dispatch(setWorkspaces(data));
+        // Seleccionar el workspace activo guardado en localStorage
+        const savedId = localStorage.getItem('activeWorkspaceId');
+        if (savedId) {
+          const found = data.find(ws => ws.id === savedId);
+          if (found) dispatch(setActiveWorkspace(found));
+        }
+      }
+    };
+    fetchWorkspaces();
+  }, [dispatch]);
+
+  const handleSelectWorkspace = (ws) => {
+    dispatch(setActiveWorkspace(ws));
+    setWorkspaceMenuOpen(false);
+    // Aquí puedes disparar fetchTasks filtrando por workspace
+  };
+
+  const handleCreateWorkspace = async () => {
+    if (newWorkspaceName.trim().length < 2) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('workspaces')
+      .insert([{ name: newWorkspaceName, user_id: user.id }])
+      .select()
+      .single();
+    if (!error && data) {
+      dispatch(addWorkspace(data));
+      setShowNewWorkspaceInput(false);
+      setNewWorkspaceName('');
+      setWorkspaceMenuOpen(false);
+    }
+  };
 
   const isActive = (page) => {
     return activePage === page;
@@ -47,8 +102,8 @@ const Navbar = ({ onOpenSettings }) => {
               <span className="text-[var(--accent-primary)] font-bold text-2xl">Tracker</span>
             </div>
 
-            {/* Enlaces de navegación - Desktop */}
-            <div className="hidden md:flex items-center space-x-8">
+            {/* Enlaces de navegación - Desktop - CENTRADOS */}
+            <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
               <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks')}>
                 Tasks
               </button>
@@ -67,60 +122,111 @@ const Navbar = ({ onOpenSettings }) => {
             </div>
 
             {/* Settings Menu - Desktop */}
-            <div className="hidden md:block relative" ref={settingsRef}>
-              <button
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors"
-              >
-                <Settings size={22} />
-              </button>
-              {isSettingsOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
-                  <button
-                    onClick={() => {
-                      onOpenSettings();
-                      setIsSettingsOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
-                  >
-                    <Settings size={16} />
-                    Settings
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAbout(true);
-                      setIsSettingsOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
-                  >
-                    <Info size={16} />
-                    About
-                  </button>
-                  {isLoggedIn ? (
+            <div className="flex items-center gap-2">
+              {/* Workspace Dropdown */}
+              <div className="hidden md:block relative mr-2">
+                <button
+                  onClick={() => setWorkspaceMenuOpen((v) => !v)}
+                  className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+                >
+                  <Briefcase size={18} />
+                  <span className="font-medium">{activeWorkspace?.name || 'Workspace'}</span>
+                  <ChevronDown size={16} />
+                </button>
+                {workspaceMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-56 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
+                    <div className="max-h-60 overflow-y-auto">
+                      {workspaces.map(ws => (
+                        <button
+                          key={ws.id}
+                          onClick={() => handleSelectWorkspace(ws)}
+                          className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-[var(--bg-primary)] transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}
+                        >
+                          <Briefcase size={14} /> {ws.name}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="border-t border-[var(--border-primary)] px-4 py-2">
+                      {showNewWorkspaceInput ? (
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            className="flex-1 px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)]"
+                            placeholder="New workspace name"
+                            value={newWorkspaceName}
+                            onChange={e => setNewWorkspaceName(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleCreateWorkspace(); }}
+                            autoFocus
+                          />
+                          <button onClick={handleCreateWorkspace} className="text-[var(--accent-primary)]"><Plus size={18} /></button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowNewWorkspaceInput(true)}
+                          className="flex items-center gap-2 text-[var(--accent-primary)] hover:underline mt-1"
+                        >
+                          <Plus size={16} /> New workspace
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="hidden md:block relative" ref={settingsRef}>
+                <button
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors"
+                >
+                  <Settings size={22} />
+                </button>
+                {isSettingsOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
                     <button
                       onClick={() => {
-                        logout();
+                        onOpenSettings();
                         setIsSettingsOpen(false);
                       }}
                       className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
                     >
-                      <LogOut size={16} />
-                      Log Out
+                      <Settings size={16} />
+                      Settings
                     </button>
-                  ) : (
                     <button
                       onClick={() => {
-                        loginWithGoogle();
+                        setShowAbout(true);
                         setIsSettingsOpen(false);
                       }}
                       className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
                     >
-                      <LogIn size={16} />
-                      Log In
+                      <Info size={16} />
+                      About
                     </button>
-                  )}
-                </div>
-              )}
+                    {isLoggedIn ? (
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsSettingsOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+                      >
+                        <LogOut size={16} />
+                        Log Out
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          loginWithGoogle();
+                          setIsSettingsOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+                      >
+                        <LogIn size={16} />
+                        Log In
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Botón de menú móvil */}

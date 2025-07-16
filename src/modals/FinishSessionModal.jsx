@@ -155,7 +155,11 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
       // Update task activetask status (set all to false)
       const { error: tasksUpdateError } = await supabase
         .from('tasks')
-        .update({ activetask: false })
+        .update({ 
+          activetask: false,
+          completed: true,
+          completed_at: new Date().toISOString()
+        })
         .in('id', activeTasks.map(t => t.id));
 
       if (tasksUpdateError) throw tasksUpdateError;

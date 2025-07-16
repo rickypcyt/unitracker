@@ -27,7 +27,7 @@ export const fetchTasks = () => async (dispatch, getState) => {
   try {
     dispatch(fetchTasksStart());
     const { tasks } = getState();
-    
+    const { workspace } = getState();
     // Check if we have a valid cache
     if (tasks.isCached && tasks.lastFetch && (Date.now() - tasks.lastFetch < CACHE_DURATION)) {
       return; // Use cached data
@@ -39,12 +39,17 @@ export const fetchTasks = () => async (dispatch, getState) => {
       throw new Error('Usuario no autenticado');
     }
 
-    // Obtener todas las tareas del usuario y solo los campos necesarios
-    const { data, error } = await supabase
+    let query = supabase
       .from('tasks')
-      .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline')
+      .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id')
       .eq('user_id', user.id)
       .order('assignment');
+
+    // if (workspace?.activeWorkspace?.id) {
+    //   query = query.eq('workspace_id', workspace.activeWorkspace.id);
+    // }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
@@ -56,9 +61,10 @@ export const fetchTasks = () => async (dispatch, getState) => {
 };
 
 // Acción para obtener tareas
-export const addTask = (newTask) => async (dispatch) => {
+export const addTask = (newTask) => async (dispatch, getState) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    const { workspace } = getState();
 
     if (!user) {
       // If no user, generate a local ID and store in localStorage
@@ -80,7 +86,8 @@ export const addTask = (newTask) => async (dispatch) => {
       user_id: user.id,
       created_at: new Date().toISOString(),
       completed: false,
-      activetask: false
+      activetask: false,
+      workspace_id: workspace?.activeWorkspace?.id || null
     };
 
     const { data, error } = await supabase

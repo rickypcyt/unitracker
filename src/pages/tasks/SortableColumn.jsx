@@ -59,7 +59,11 @@ export const SortableColumn = ({
       </div>
       
       {!collapsed && (
-        <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-14rem)] min-h-[6rem] custom-scrollbar pr-1">
+        <div
+          className={
+            `space-y-2 overflow-y-auto max-h-[calc(100vh-14rem)] min-h-[6rem] custom-scrollbar pr-1`
+          }
+        >
           {tasks.map((task) => (
             <TaskItem
               key={task.id}

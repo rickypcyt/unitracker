@@ -2,6 +2,7 @@ import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
 import React, { useEffect, useState } from 'react';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 
+import type { AppDispatch } from '@/store/store';
 import { AuthProvider } from '@/hooks/useAuth';
 import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
@@ -12,6 +13,7 @@ import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import WelcomeModal from '@/modals/WelcomeModal';
+import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
 import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
@@ -64,7 +66,7 @@ function useSupabaseAuthSync() {
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
   const handleOpenSettings = () => {
     setShowSettings(true);
@@ -102,6 +104,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     dispatch(hydrateTasksFromLocalStorage());
+    dispatch(fetchWorkspaces());
   }, [dispatch]);
 
   useSupabaseAuthSync();

@@ -81,6 +81,19 @@
   <!-- Security Headers -->
   <!-- Eliminada la metaetiqueta Content-Security-Policy para evitar bloqueos de CSP -->
   <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <script>
+    try {
+      const theme = localStorage.getItem('theme');
+      if (
+        theme === 'dark' ||
+        (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      ) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {}
+  </script>
 </head>
 
 <body>

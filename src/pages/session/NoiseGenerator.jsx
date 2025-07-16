@@ -1,4 +1,4 @@
-import { AudioLines, Cloud, CloudRain, Pause, Play, Waves } from "lucide-react";
+import { AudioLines, Cloud, CloudRain, Pause, Play, SquareArrowOutUpRight, Waves } from "lucide-react";
 
 import React from "react";
 import ReactSlider from "react-slider";
@@ -299,7 +299,7 @@ export default function NoiseGenerator() {
           onClick={() => window.open('https://music4study.vercel.app/', '_blank', 'noopener,noreferrer')}
           type="button"
         >
-          More Sounds
+          More Sounds <SquareArrowOutUpRight className="inline ml-2" size={18} />
         </button>
       </div>
     </div>
