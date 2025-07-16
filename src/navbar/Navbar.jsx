@@ -15,6 +15,7 @@ const Navbar = ({ onOpenSettings }) => {
   const { isLoggedIn, loginWithGoogle, logout } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const settingsRef = useRef(null);
+  const workspaceDropdownRef = useRef(null);
   const dispatch = useDispatch();
   const workspaces = useSelector(state => state.workspace.workspaces);
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
@@ -85,6 +86,9 @@ const Navbar = ({ onOpenSettings }) => {
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setIsSettingsOpen(false);
       }
+      if (workspaceDropdownRef.current && !workspaceDropdownRef.current.contains(event.target)) {
+        setWorkspaceMenuOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -124,7 +128,7 @@ const Navbar = ({ onOpenSettings }) => {
             {/* Settings Menu - Desktop */}
             <div className="flex items-center gap-2">
               {/* Workspace Dropdown */}
-              <div className="hidden md:block relative mr-2">
+              <div className="hidden md:block relative mr-2" ref={workspaceDropdownRef}>
                 <button
                   onClick={() => setWorkspaceMenuOpen((v) => !v)}
                   className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
@@ -134,7 +138,7 @@ const Navbar = ({ onOpenSettings }) => {
                   <ChevronDown size={16} />
                 </button>
                 {workspaceMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-56 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
+                  <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
                     <div className="max-h-60 overflow-y-auto">
                       {workspaces.map(ws => (
                         <button

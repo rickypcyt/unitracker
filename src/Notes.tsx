@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import LoginPromptModal from './modals/LoginPromptModal';
 import NoteList from './NoteList';
 import NotesCreateModal from './modals/NotesCreateModal';
 import NotesForm from './NotesForm';
@@ -26,6 +27,7 @@ const Notes: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
@@ -135,7 +137,10 @@ const Notes: React.FC = () => {
     <div className="w-full mx-auto p-6 mt-8 relative">
       <button
         className="fixed bottom-8 right-8 z-50 bg-[var(--accent-primary)] text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-lg hover:bg-blue-700 transition-colors"
-        onClick={() => setShowCreateModal(true)}
+        onClick={() => {
+          if (!user) setShowLoginModal(true);
+          else setShowCreateModal(true);
+        }}
         aria-label="Add Note"
       >
         +
@@ -147,6 +152,10 @@ const Notes: React.FC = () => {
         loading={loading}
         initialValues={showEditModal && editNote ? editNote : undefined}
         isEdit={showEditModal}
+      />
+      <LoginPromptModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
       <div className="">
         <NotesPanel

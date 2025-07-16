@@ -23,7 +23,7 @@ const NotesCreateModal: React.FC<NotesCreateModalProps> = ({ isOpen, onClose, on
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-[var(--bg-primary)] rounded-xl p-6 w-full max-w-full shadow-lg border border-[var(--border-primary)] relative">
+      <div className="bg-[var(--bg-primary)] rounded-xl p-4 w-full max-w-lg h-[80vh] shadow-lg border border-[var(--border-primary)] relative flex flex-col justify-start overflow-y-auto">
         <button
           className="absolute top-2 right-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xl"
           onClick={onClose}

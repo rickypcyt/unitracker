@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import MarkdownWysiwyg from './MarkdownWysiwyg';
 
 interface Note {
   id?: string;
@@ -8,8 +10,6 @@ interface Note {
   date: string;
   user_id?: string;
 }
-
-const getToday = () => new Date().toISOString().slice(0, 10);
 
 interface NotesFormProps {
   onAdd: (note: Omit<Note, 'id'>) => Promise<void>;
@@ -25,6 +25,11 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
     assignment: '',
     description: '',
   });
+  // Use a single state for the wysiwyg fields
+  const [wysiwyg, setWysiwyg] = useState({
+    title: initialValues?.title || '',
+    body: initialValues?.description || '',
+  });
 
   useEffect(() => {
     if (initialValues) {
@@ -33,75 +38,78 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
         assignment: initialValues.assignment || '',
         description: initialValues.description || '',
       });
+      setWysiwyg({
+        title: initialValues.title || '',
+        body: initialValues.description || '',
+      });
     }
   }, [initialValues]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleAssignmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, assignment: e.target.value });
+  };
+
+  const handleWysiwygChange = (data: { title: string; body: string }) => {
+    setWysiwyg(data);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return;
+    if (!wysiwyg.title.trim()) return;
     await onAdd({
-      title: form.title,
+      title: wysiwyg.title,
       assignment: form.assignment,
-      description: form.description,
+      description: wysiwyg.body,
       date: getToday(),
     });
     setForm({ title: '', assignment: '', description: '' });
+    setWysiwyg({ title: '', body: '' });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mb-8">
       <input
-        name="title"
-        value={form.title}
-        onChange={handleChange}
-        placeholder="Title"
-        className="w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-        required
-        disabled={loading}
-      />
-      <input
         name="assignment"
         value={form.assignment}
-        onChange={handleChange}
+        onChange={handleAssignmentChange}
         placeholder="Assignment (opcional)"
         className="w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
         disabled={loading}
       />
-      <textarea
-        name="description"
-        value={form.description}
-        onChange={handleChange}
-        placeholder="Description"
-        className="w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] min-h-[80px]"
-        disabled={loading}
-      />
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          className="button w-full mt-2 bg-[var(--accent-primary)] text-white"
-          style={{ background: 'var(--accent-primary)' }}
-          disabled={loading}
-        >
-          {loading ? (isEdit ? 'Saving...' : 'Saving...') : isEdit ? 'Save' : 'Add Note'}
-        </button>
+      <div className="w-full min-h-[300px]">
+        <MarkdownWysiwyg
+          initialTitle={wysiwyg.title}
+          initialBody={wysiwyg.body}
+          onChange={handleWysiwygChange}
+          className="min-h-[300px] h-[350px] md:h-[400px]"
+        />
+      </div>
+      <div className="flex justify-between mt-4 gap-2">
         {onCancel && (
           <button
             type="button"
-            className="button w-full mt-2 bg-gray-400 text-white"
+            className="px-3 py-1 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-black rounded text-sm font-medium hover:bg-[var(--accent-primary)] hover:text-black transition-colors"
             onClick={onCancel}
             disabled={loading}
-            style={{ background: '#9ca3af' }}
           >
-            Cancel
+            Cancelar
           </button>
         )}
+        <button
+          type="submit"
+          className="px-3 py-1 bg-[var(--accent-primary)] text-black rounded text-sm font-medium hover:bg-[var(--accent-secondary)] transition-colors ml-auto"
+          disabled={loading}
+        >
+          {loading ? 'Guardando...' : isEdit ? 'Guardar' : 'Agregar'}
+        </button>
       </div>
     </form>
   );
 };
+
+function getToday() {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+}
 
 export default NotesForm; 
