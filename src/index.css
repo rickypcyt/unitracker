@@ -50,6 +50,7 @@
     --bg-secondary: #ffffff;
     --text-secondary: #666666;
     --accent-deep: #187BCD; /* Darker electric blue */
+    --muted-strong: #b5b5b599;
 
     --radius: 0.5rem;
   }
@@ -91,6 +92,7 @@
     --bg-secondary: #000000;
     --text-secondary: #b5b5b5;
     --accent-deep: #187BCD; /* Darker electric blue */
+    --muted-strong: #b5b5b599;
   }
 
   /* Fuente base */

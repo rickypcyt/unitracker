@@ -57,7 +57,7 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-3 pt-6 relative min-h-[calc(100vh-4rem)]">
+    <div className="w-full px-3 pt-6 relative min-h-[calc(100vh-4rem)] z-0">
       {!isLoggedIn ? (
         <div className="text-center text-[var(--text-secondary)] py-8">
           Please log in to manage your tasks.
@@ -69,10 +69,10 @@ const TasksPage = memo(() => {
       {/* Floating Action Button */}
       <button
         onClick={handleAddTask}
-        className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-[var(--accent-primary)] text-white shadow-lg hover:bg-[var(--accent-primary)]/90 transition-colors flex items-center justify-center z-50"
+        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
         aria-label="Add new task"
       >
-        <Plus size={22} />
+        <Plus size={32} />
       </button>
 
       {/* Task Form Modal */}

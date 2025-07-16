@@ -33,6 +33,7 @@ const parseDateForDB = (dateString) => {
 const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }) => {
   const { user, tasks } = useTaskManager();
   const assignments = useSelector(state => state.assignments.list);
+  const activeWorkspace = useSelector(state => state.workspace.activeWorkspace); // <-- Add this line
   const dispatch = useDispatch();
   const datePickerRef = useRef(null);
 
@@ -92,7 +93,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         deadline: formData.deadline ? parseDateForDB(formData.deadline) : null,
         user_id: user.id,
         completed: initialTask?.completed || false,
-        activetask: initialTask?.activetask || false
+        activetask: initialTask?.activetask || false,
+        ...(initialTask ? {} : { workspace_id: activeWorkspace?.id || null }) // <-- Only set for new tasks
       };
 
       console.log('Saving task data:', taskData);

@@ -56,7 +56,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
             <div className="text-[var(--text-secondary)] whitespace-pre-line mb-2 w-full prose prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: note.description }}
             />
-            <div className="flex justify-center w-full mt-1">
+            <div className="flex justify-center w-full">
               <span className="text-base text-[var(--text-secondary)]">{note.date}</span>
             </div>
             <div className="flex gap-4 mt-2">

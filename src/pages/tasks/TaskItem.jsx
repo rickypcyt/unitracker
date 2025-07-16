@@ -89,7 +89,7 @@ export const TaskItem = ({
 
     return (
         <div
-            className={`relative flex p-3 py-4 pr-10 md:pr-12 rounded-lg transition-colors cursor-pointer gap-3 
+            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-3 
                 bg-[var(--bg-secondary)] 
                 ${active ? `${getDifficultyColor(task.difficulty, 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
             `}
@@ -99,15 +99,7 @@ export const TaskItem = ({
             role="listitem"
         >
             {/* Botón de eliminar en la esquina superior derecha */}
-            <button
-                onClick={handleDeleteClick}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                className="absolute top-2 right-2 md:top-3 md:right-3 hover:text-red-500 text-[var(--text-secondary)] transition-colors duration-200 z-20 bg-transparent border-none p-1 rounded-full"
-                aria-label="Delete task"
-            >
-                <Trash2 size={22} />
-            </button>
+            {/* Move delete button to bottom right, next to date */}
             <div className="flex flex-col justify-between items-center py-0.5">
                 <button
                     onClick={handleToggleClick}
@@ -137,14 +129,18 @@ export const TaskItem = ({
                     >
                         {task.title}
                     </span>
-                    {task.description && (
-                        <span className="text-[var(--text-secondary)] text-md mt-0.5">
+                    {task.description ? (
+                        <span className="text-md mt-0.5" style={{ color: 'var(--muted-strong)' }}>
                             {task.description}
+                        </span>
+                    ) : (
+                        <span className="text-md mt-0.5 italic" style={{ color: 'var(--muted-strong)' }}>
+                            No description
                         </span>
                     )}
                 </div>
-                {/* Prioridad, assignment, fecha abajo */}
-                <div className="flex items-center gap-2 mt-1 w-full">
+                {/* Prioridad, assignment, fecha y tacho abajo */}
+                <div className={`flex items-center gap-2 w-full${task.description ? ' ' : ''}`}>
                     {task.priority && (
                         <div className={`flex items-center gap-1 text-md ${getPriorityColor(task.priority)}`}> 
                             <Clock size={11} />
@@ -156,19 +152,32 @@ export const TaskItem = ({
                             {task.assignment}
                         </div>
                     )}
-                    <div className="text-base text-[var(--text-secondary)]">
-                        <span>
-                          {task.deadline && task.deadline !== '' ? (
-                            <>
-                              <span className={isPast(task.deadline) ? 'text-red-500' : ''}>
-                                {formatDateShort(task.deadline)}
-                              </span>
-                              {renderDateLabel(task.deadline)}
-                            </>
-                          ) : 'No Deadline'}
-                        </span>
-                    </div>
                     <div className="flex-1" />
+                    {/* Fecha y tacho alineados a la derecha */}
+                    <div className="flex items-center gap-2">
+                        <div className="text-base" style={{ color: 'var(--muted-strong)' }}>
+                            <span>
+                              {task.deadline && task.deadline !== '' ? (
+                                <>
+                                  <span className={isPast(task.deadline) ? 'text-red-500' : ''}>
+                                    {formatDateShort(task.deadline)}
+                                  </span>
+                                  {renderDateLabel(task.deadline)}
+                                </>
+                              ) : 'No Deadline'}
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleDeleteClick}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            className="transition-colors duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:text-red-500"
+                            aria-label="Delete task"
+                            style={{ color: 'var(--muted-strong)' }}
+                        >
+                            <Trash2 size={22} />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

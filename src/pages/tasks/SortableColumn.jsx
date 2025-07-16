@@ -1,6 +1,7 @@
-import { ChevronDown, ChevronUp, ListOrdered, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, ListOrdered, MoreVertical, Plus } from 'lucide-react';
+import React, { useRef, useState } from 'react';
 
-import React from 'react';
+import BaseMenu from '@/modals/BaseMenu';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 
 export const SortableColumn = ({
@@ -16,6 +17,17 @@ export const SortableColumn = ({
   onTaskContextMenu,
   onSortClick,
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
+  const moreBtnRef = useRef(null);
+
+  const handleMoreClick = (e) => {
+    e.stopPropagation();
+    const rect = moreBtnRef.current.getBoundingClientRect();
+    setMenuPos({ x: rect.left, y: rect.bottom });
+    setMenuOpen(true);
+  };
+
   return (
     <div className="flex flex-col flex-1 min-w-[16rem] p-1 border-none">
       <div className="flex items-center justify-between w-full mb-3">
@@ -39,6 +51,13 @@ export const SortableColumn = ({
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={onAddTask}
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] "
+            title="Add task"
+          >
+            <Plus size={22} />
+          </button>
+          <button
             onClick={(event) => {
               const rect = event.currentTarget.getBoundingClientRect();
               onSortClick(assignment, { x: rect.left, y: rect.bottom });
@@ -49,14 +68,34 @@ export const SortableColumn = ({
             <ListOrdered size={22} />
           </button>
           <button
-            onClick={onAddTask}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] "
-            title="Add task"
+            ref={moreBtnRef}
+            onClick={handleMoreClick}
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            title="Más opciones"
           >
-            <Plus size={22} />
+            <MoreVertical size={22} />
           </button>
         </div>
       </div>
+      {menuOpen && (
+        <BaseMenu
+          x={menuPos.x}
+          y={menuPos.y}
+          onClose={() => setMenuOpen(false)}
+          zIndex="z-[9999]"
+        >
+          <button
+            className="block w-full text-left px-4 py-2 text-[var(--text-primary)] hover:bg-[var(--bg-primary)]"
+            onClick={() => {
+              setMenuOpen(false);
+              // Aquí irá la lógica para mover tasks de assignment
+              alert('Mover todos los tasks de este assignment a otro workspace');
+            }}
+          >
+            Mover todos los tasks de este assignment a otro workspace
+          </button>
+        </BaseMenu>
+      )}
       
       {!collapsed && (
         <div

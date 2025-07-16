@@ -40,14 +40,15 @@ const BaseMenu = ({
     position: 'fixed',
     top: y,
     left: x,
-    zIndex: 1000,
-    backgroundColor: 'var(--bg-secondary)', // Changed to bg-secondary
+    zIndex: 9999,
+    backgroundColor: 'var(--bg-secondary)',
     border: '2px solid var(--border-primary)',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 0',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)', // Darkened shadow for better contrast
-    minWidth: minWidth,
+    borderRadius: '0.75rem',
+    padding: '0.75rem 0.5rem',
+    boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(30,144,255,0.10)',
+    minWidth: '220px',
     maxWidth: maxWidth,
+    color: 'var(--text-primary)',
   };
 
   return (

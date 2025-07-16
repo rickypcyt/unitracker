@@ -60,9 +60,16 @@ const Navbar = ({ onOpenSettings }) => {
     fetchWorkspaces();
   }, [dispatch]);
 
+  const resetWorkspaceEdit = () => {
+    setEditingWorkspaceId(null);
+    setEditingWorkspaceName('');
+    setEditingError('');
+  };
+
   const handleSelectWorkspace = (ws) => {
     dispatch(setActiveWorkspace(ws));
     setWorkspaceMenuOpen(false);
+    resetWorkspaceEdit();
     // Aquí puedes disparar fetchTasks filtrando por workspace
   };
 
@@ -166,40 +173,43 @@ const Navbar = ({ onOpenSettings }) => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-50">
-        <div className="w-full px-2">
+      <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden">
+        <div className="w-full px-2 overflow-x-hidden">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               <span className="text-[var(--text-primary)] font-bold text-2xl">Uni</span>
               <span className="text-[var(--accent-primary)] font-bold text-2xl">Tracker</span>
             </div>
 
             {/* Enlaces de navegación - Desktop - CENTRADOS */}
-            <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
-              <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks')}>
+            <div className="hidden md:flex flex-1 justify-center items-center space-x-4 lg:space-x-8">
+              <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks') + ' text-base lg:text-xl'}>
                 Tasks
               </button>
-              <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar')}>
+              <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar') + ' text-base lg:text-xl'}>
                 Calendar
               </button>
-              <button onClick={() => navigateTo('session')} className={navLinkClass('session')}>
+              <button onClick={() => navigateTo('session')} className={navLinkClass('session') + ' text-base lg:text-xl'}>
                 Session
               </button>
-              <button onClick={() => navigateTo('notes')} className={navLinkClass('notes')}>
+              <button onClick={() => navigateTo('notes')} className={navLinkClass('notes') + ' text-base lg:text-xl'}>
                 Notes
               </button>
-              <button onClick={() => navigateTo('stats')} className={navLinkClass('stats')}>
+              <button onClick={() => navigateTo('stats')} className={navLinkClass('stats') + ' text-base lg:text-xl'}>
                 Statistics
               </button>
             </div>
 
             {/* Settings Menu - Desktop */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
               {/* Workspace Dropdown */}
-              <div className="hidden md:block relative mr-2" ref={workspaceDropdownRef}>
+              <div className="hidden md:block relative mr-1 md:mr-2" ref={workspaceDropdownRef}>
                 <button
-                  onClick={() => setWorkspaceMenuOpen((v) => !v)}
+                  onClick={() => {
+                    if (workspaceMenuOpen) resetWorkspaceEdit();
+                    setWorkspaceMenuOpen((v) => !v);
+                  }}
                   className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
                 >
                   {(() => {
@@ -210,7 +220,7 @@ const Navbar = ({ onOpenSettings }) => {
                   <ChevronDown size={16} />
                 </button>
                 {workspaceMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
+                  <div className="absolute right-0 mt-2 w-68 max-w-xs bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]">
                     <div className="max-h-60 overflow-y-auto">
                       {workspaces.map(ws => (
                         <div key={ws.id} className="group">
@@ -219,7 +229,7 @@ const Navbar = ({ onOpenSettings }) => {
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
-                                  className="flex-1 px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-primary)]"
+                                  className={`px-2 py-1 rounded bg-[var(--bg-secondary)] border ${editingWorkspaceId === ws.id ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]' : 'border-[var(--border-primary)] text-[var(--text-primary)]'}`}
                                   value={editingWorkspaceName}
                                   onChange={handleEditWorkspaceChange}
                                   disabled={isEditingLoading}
@@ -229,8 +239,15 @@ const Navbar = ({ onOpenSettings }) => {
                                     if (e.key === 'Escape') handleEditWorkspaceCancel();
                                   }}
                                 />
-                                <button onClick={() => handleEditWorkspaceSave(ws)} disabled={isEditingLoading} className="text-green-600 hover:text-green-800 disabled:opacity-50"><Check size={16} /></button>
-                                <button onClick={handleEditWorkspaceCancel} disabled={isEditingLoading} className="text-red-500 hover:text-red-700 disabled:opacity-50"><XIcon size={16} /></button>
+                                <button
+                                  onClick={() => handleEditWorkspaceSave(ws)}
+                                  disabled={isEditingLoading}
+                                  className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 disabled:opacity-50 transition-colors"
+                                  title="Save changes"
+                                >
+                                  <Check size={16} />
+                                </button>
+                                <button onClick={() => { handleEditWorkspaceCancel(); resetWorkspaceEdit(); }} disabled={isEditingLoading} className="text-red-500 hover:text-red-700 disabled:opacity-50"><XIcon size={16} /></button>
                                 {isEditingLoading && <span className="ml-2 text-xs text-[var(--accent-primary)]">...</span>}
                               </div>
                               <div className="flex gap-2 mt-1">
@@ -239,16 +256,8 @@ const Navbar = ({ onOpenSettings }) => {
                                   return (
                                     <button
                                       key={opt.name}
-                                      onClick={() => {
-                                        handleEditWorkspaceIconChange(opt.name);
-                                        // Si el input está enfocado y presionas Enter, también guarda
-                                        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-                                          // Nada, ya el input maneja Enter
-                                        } else {
-                                          handleEditWorkspaceSave(ws);
-                                        }
-                                      }}
-                                      className={`p-1 rounded-full border ${editingWorkspaceIcon === opt.name ? 'border-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'border-transparent'}`}
+                                      onClick={() => handleEditWorkspaceIconChange(opt.name)}
+                                      className={`p-1 rounded-full border ${editingWorkspaceIcon === opt.name ? 'border-[var(--accent-primary)] bg-[var(--bg-secondary)] text-[var(--accent-primary)]' : 'border-transparent text-[var(--text-secondary)]'}`}
                                       disabled={isEditingLoading}
                                       title={opt.name}
                                       type="button"
@@ -285,19 +294,19 @@ const Navbar = ({ onOpenSettings }) => {
                         <div className="flex gap-2 items-center">
                           <input
                             type="text"
-                            className="flex-1 px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)]"
-                            placeholder="New workspace name"
+                            className="px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] text-xs max-w-[100px]"
+                            placeholder="New workspace"
                             value={newWorkspaceName}
                             onChange={e => setNewWorkspaceName(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') handleCreateWorkspace(); }}
                             autoFocus
                           />
-                          <button onClick={handleCreateWorkspace} className="text-[var(--accent-primary)]"><Plus size={18} /></button>
+                          <button onClick={handleCreateWorkspace} className="text-[var(--accent-primary)] text-base p-1"><Plus size={16} /></button>
                         </div>
                       ) : (
                         <button
                           onClick={() => setShowNewWorkspaceInput(true)}
-                          className="flex items-center gap-2 text-[var(--accent-primary)] hover:underline mt-1"
+                          className="flex text-xs items-center gap-1 text-[var(--accent-primary)] hover:underline mt-1"
                         >
                           <Plus size={16} /> New workspace
                         </button>
@@ -314,7 +323,7 @@ const Navbar = ({ onOpenSettings }) => {
                   <Settings size={22} />
                 </button>
                 {isSettingsOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-50 border border-[var(--border-primary)]">
+                  <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-secondary)] rounded-lg shadow-lg z-[9999] border border-[var(--border-primary)]">
                     <button
                       onClick={() => {
                         onOpenSettings();
@@ -364,7 +373,7 @@ const Navbar = ({ onOpenSettings }) => {
             </div>
 
             {/* Botón de menú móvil */}
-            <div className="md:hidden">
+            <div className="md:hidden flex-shrink-0">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none"
@@ -382,31 +391,31 @@ const Navbar = ({ onOpenSettings }) => {
               <button onClick={() => {
                 navigateTo('tasks');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('tasks')}>
+              }} className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center">
                 Tasks
               </button>
               <button onClick={() => {
                 navigateTo('calendar');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('calendar')}>
+              }} className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center">
                 Calendar
               </button>
               <button onClick={() => {
                 navigateTo('session');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('session')}>
+              }} className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center">
                 Session
               </button>
               <button onClick={() => {
                 navigateTo('notes');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('notes')}>
+              }} className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center">
                 Notes
               </button>
               <button onClick={() => {
                 navigateTo('stats');
                 setIsMenuOpen(false);
-              }} className={navLinkClass('stats')}>
+              }} className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center">
                 Statistics
               </button>
               <button
@@ -414,7 +423,7 @@ const Navbar = ({ onOpenSettings }) => {
                   onOpenSettings();
                   setIsMenuOpen(false);
                 }}
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-4 py-2 rounded-md text-xl font-medium"
+                className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center"
               >
                 Settings
               </button>
@@ -423,7 +432,7 @@ const Navbar = ({ onOpenSettings }) => {
                   setShowAbout(true);
                   setIsMenuOpen(false);
                 }}
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-4 py-2 rounded-md text-xl font-medium"
+                className="px-3 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] w-full text-center"
               >
                 About
               </button>

@@ -44,7 +44,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         maxWidth="max-w-md"
         className="!p-0"
       >
-        <div className="space-y-4 p-6">
+        <div className=" p-2">
           {/* Theme Section */}
           <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
             <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">

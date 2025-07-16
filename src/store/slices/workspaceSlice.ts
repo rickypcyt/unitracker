@@ -71,7 +71,7 @@ export const fetchWorkspaces = () => async (dispatch: AppDispatch) => {
   if (!user) return;
   const { data, error } = await supabase
     .from('workspaces')
-    .select('id, name')
+    .select('id, name, icon')
     .eq('user_id', user.id)
     .order('name');
   if (!error && data) {
