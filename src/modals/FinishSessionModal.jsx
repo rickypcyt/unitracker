@@ -230,6 +230,11 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
           activeTitle="Finished Tasks"
           availableTitle="Available Tasks"
         />
+        {(activeTasks.length === 0 && availableTasks.length === 0) && (
+          <div className="text-center text-gray-400 py-6 text-lg font-medium">
+            There are no tasks to complete.
+          </div>
+        )}
 
         <div className="mt-6 flex justify-end gap-2">
           <button

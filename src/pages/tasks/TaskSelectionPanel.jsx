@@ -265,6 +265,13 @@ const TaskSelectionPanel = ({
     );
   };
 
+  if (validActiveTasks.length === 0 && validAvailableTasks.length === 0) {
+    return (
+      <div className="col-span-2 text-center text-gray-400 py-6 text-lg font-medium">
+        There are no tasks to complete.
+      </div>
+    );
+  }
   return (
     <div className="grid grid-cols-2 gap-4 h-auto">
       {/* Left Column - Active Tasks */}

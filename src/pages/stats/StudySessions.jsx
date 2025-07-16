@@ -193,8 +193,8 @@ const StudySessions = () => {
                             'July', 'August', 'September', 'October', 'November', 'December'
                         ];
                         return orderedYears.map(year => (
-                            <div key={year} className="mb-2">
-                                <div className="border-b border-[var(--border-primary)] mb-6 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
+                            <div key={year} className="mb-1">
+                                <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center">
                                     {monthsByYear[year]
                                         .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))

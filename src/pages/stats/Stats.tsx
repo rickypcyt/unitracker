@@ -240,7 +240,7 @@ const Statistics: React.FC = () => {
   };
 
   return (
-    <div className="maincard px-2 md:px-6">
+    <div className="maincard p-3 md:p-3">
       <div
         className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center"
       >

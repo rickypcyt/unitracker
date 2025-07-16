@@ -37,7 +37,7 @@ function getMonthDays(date) {
   });
 }
 
-const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const monthLabels = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

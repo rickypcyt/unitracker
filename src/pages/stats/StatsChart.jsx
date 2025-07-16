@@ -103,9 +103,9 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
       <div className="w-full flex flex-col items-center mt-2 mb-2">
         {customTitle ? customTitle : <span className="text-lg font-semibold">{title}</span>}
       </div>
-      <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] p-2 z-10 overflow-visible`}>
+      <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] z-10 overflow-visible`}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 30, right: 0, bottom: 20, left: 32 }} barCategoryGap={12}>
+          <BarChart data={data} margin={{ top: 30, right: 0, bottom: 30, left: 32 }} barCategoryGap={20}>
             <XAxis
               dataKey={
                 title === 'This Week' || title === 'Last Week'
@@ -115,11 +115,16 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
                   : 'realDay'
               }
               stroke="var(--text-secondary)"
-              tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
+              tick={
+                (title === 'This Month')
+                  ? { fill: "var(--text-secondary)", fontSize: "0.6rem" }
+                  : { fill: "var(--text-secondary)", fontSize: "0.65rem" }
+              }
               axisLine={false}
               tickLine={false}
               interval={0}
               minTickGap={0}
+              tickMargin={16}
               tickFormatter={
                 title === 'This Week' || title === 'Last Week'
                   ? (v) => v

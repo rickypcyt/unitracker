@@ -9,7 +9,7 @@ const SessionPage = memo(() => {
   const location = useLocation();
 
   return (
-    <div className="w-full pt-14 px-2 md:px-2">
+    <div className="w-full pt-10 px-2 md:px-2">
       <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full max-w-6xl mx-auto items-stretch justify-center">
         {/* Pomodoro */}
         <div className="maincard w-full md:w-1/3 flex-1 mx-auto">

@@ -300,6 +300,19 @@ export const KanbanBoard = () => {
     }
   };
 
+  const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
+
+  if (noTasks) {
+    return (
+      <div className="flex flex-1 items-center justify-center h-full min-h-[40vh]">
+        <div className="text-white
+         text-lg font-medium text-center">
+          There are no tasks to complete.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col md:flex-row items-start gap-2 w-full mt-2">
