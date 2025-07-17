@@ -58,14 +58,7 @@ const TasksPage = memo(() => {
 
   return (
     <div className="w-full px-3 pt-6 relative min-h-[calc(100vh-4rem)] z-0">
-      {!isLoggedIn ? (
-        <div className="text-center text-[var(--text-secondary)] py-8">
-          Please log in to manage your tasks.
-        </div>
-      ) : (
-        <KanbanBoard />
-      )}
-      
+      <KanbanBoard />
       {/* Floating Action Button */}
       <button
         onClick={handleAddTask}
@@ -74,7 +67,6 @@ const TasksPage = memo(() => {
       >
         <Plus size={32} />
       </button>
-
       {/* Task Form Modal */}
       {showTaskForm && (
         <TaskForm
@@ -85,7 +77,6 @@ const TasksPage = memo(() => {
           }}
         />
       )}
-
       {/* Login Prompt Modal */}
       <LoginPromptModal
         isOpen={isLoginPromptOpen}

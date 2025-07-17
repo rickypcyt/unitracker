@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import StatsChart from './StatsChart';
+import useDemoMode from '@/utils/useDemoMode';
 import { useSelector } from 'react-redux';
 
 function formatMinutesToHHMM(minutes) {
@@ -38,7 +39,6 @@ function getMonthDays(date) {
 }
 
 const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 const monthLabels = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
@@ -46,6 +46,7 @@ const monthLabels = [
 
 const StatsChartsPanel = () => {
   const { laps } = useSelector((state) => state.laps);
+  const { isDemo } = useDemoMode();
   const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
 
   // Estado para el mes mostrado
@@ -152,6 +153,79 @@ const StatsChartsPanel = () => {
       date: `${year}-${String(idx+1).padStart(2,'0')}-01`,
     }));
   }, [laps]);
+
+  // Si es demo, usar datos fake llenos
+  if (isDemo) {
+    const demoWeek = [60, 90, 120, 80, 100, 110, 70];
+    // Demo mensual más realista
+    const demoMonth = [60, 80, 120, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 110, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 90];
+    const demoYear = [120, 90, 100, 80, 110, 130, 120, 100, 90, 110, 120, 100];
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - today.getDay() + 1);
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return d.toISOString().split('T')[0];
+    });
+    const thisWeekData = weekDays.map((date, idx) => ({
+      date,
+      minutes: demoWeek[idx],
+      hoursLabel: formatMinutesToHHMM(demoWeek[idx]),
+      dayName: weekDayLabels[idx],
+    }));
+    const lastWeekData = weekDays.map((date, idx) => ({
+      date,
+      minutes: demoWeek[(idx + 2) % 7],
+      hoursLabel: formatMinutesToHHMM(demoWeek[(idx + 2) % 7]),
+      dayName: weekDayLabels[idx],
+    }));
+    const shownMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const shownMonthData = Array.from({ length: daysInMonth }, (_, i) => {
+      const date = new Date(shownMonthDate);
+      date.setDate(i + 1);
+      return {
+        date: date.toISOString().split('T')[0],
+        minutes: demoMonth[i % demoMonth.length],
+        hoursLabel: formatMinutesToHHMM(demoMonth[i % demoMonth.length]),
+        dayName: i.toString(),
+        realDay: (i + 1).toString(),
+      };
+    });
+    const thisYearData = monthLabels.map((label, idx) => ({
+      month: label,
+      minutes: demoYear[idx],
+      hoursLabel: formatMinutesToHHMM(demoYear[idx]),
+      dayName: label,
+      date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
+    }));
+    return (
+      <div className="w-full flex flex-col gap-1">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="w-full md:w-1/2">
+            <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
+          </div>
+          <div className="w-full md:w-1/2">
+            <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
+          </div>
+        </div>
+        <StatsChart
+          data={shownMonthData}
+          title="This Month"
+          accentColor={accentColor}
+          customTitle={
+            <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
+              <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
+                {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+              </span>
+            </div>
+          }
+        />
+        <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col gap-1">

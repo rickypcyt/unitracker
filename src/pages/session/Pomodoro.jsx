@@ -674,9 +674,11 @@ const Pomodoro = () => {
           Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{pomodorosToday}</span>
         </span>
         {/* Session-specific pomodoro counter */}
-        <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
-          Pomodoros during session: <span className="text-[var(--text-primary)] font-semibold">{activeSessionId ? pomoState.pomodorosThisSession : 'No Session'}</span>
-        </span>
+        {activeSessionId && (
+          <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
+            Pomodoros during session: <span className="text-[var(--text-primary)] font-semibold">{pomoState.pomodorosThisSession}</span>
+          </span>
+        )}
       </div>
 
       {/* Add Pomodoro Settings Modal */}

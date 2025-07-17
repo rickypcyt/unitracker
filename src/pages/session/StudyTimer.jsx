@@ -706,9 +706,12 @@ const StudyTimer = ({ onSyncChange }) => {
           </>
         )}
       </div>
-      <div className="text-base mt-2 text-[var(--text-secondary)]">
-        Session Title: <span className="text-[var(--text-primary)]">{studyState.sessionTitle || 'No Session'}</span>
-      </div>
+      {/* Session Title: Only show if session is active */}
+      {currentSessionId && (
+        <div className="text-base mt-2 text-[var(--text-secondary)]">
+          Session Title: <span className="text-[var(--text-primary)]">{studyState.sessionTitle || 'No Session'}</span>
+        </div>
+      )}
       
       {/* Sync with Pomodoro button */}
       <div className="flex items-center justify-center mt-2">

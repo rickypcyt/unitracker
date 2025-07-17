@@ -6,11 +6,14 @@ import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { fetchTasks } from '@/store/TaskActions';
+import useDemoMode from '@/utils/useDemoMode';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
 const UpcomingTasks = () => {
   const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
-  const tasks = useSelector((state) => state.tasks.tasks);
+  const realTasks = useSelector((state) => state.tasks.tasks);
+  const { isDemo, demoTasks } = useDemoMode();
+  const tasks = isDemo ? demoTasks : realTasks;
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({

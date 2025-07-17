@@ -4,6 +4,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Note {
   id?: string;
@@ -25,6 +26,7 @@ interface NoteListProps {
 }
 
 const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDelete, editingId, editForm }) => {
+  const { isLoggedIn } = useAuth();
   if (loading && notes.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -51,8 +53,14 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
+          <Pencil className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
           <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No notes yet</h3>
           <p className="text-[var(--text-secondary)]">Create your first note to get started</p>
+          {!isLoggedIn && (
+            <p className="text-sm text-[var(--text-secondary)] opacity-70 mt-2">
+              Remember to login first
+            </p>
+          )}
         </div>
       </div>
     );

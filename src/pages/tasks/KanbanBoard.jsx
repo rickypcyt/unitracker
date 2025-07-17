@@ -15,19 +15,30 @@ import { setActiveWorkspace } from '@/store/slices/workspaceSlice';
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useAuth } from '@/hooks/useAuth';
+import useDemoMode from '@/utils/useDemoMode';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
 export const KanbanBoard = () => {
   const {
     user,
-    tasks,
+    tasks: realTasks,
     handleToggleCompletion,
     handleUpdateTask,
     handleDeleteTask: originalHandleDeleteTask,
   } = useTaskManager();
   const { isLoggedIn } = useAuth();
+  const {
+    isDemo,
+    demoTasks,
+    loginPromptOpen,
+    showLoginPrompt,
+    closeLoginPrompt,
+  } = useDemoMode();
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
   const workspaces = useSelector(state => state.workspace.workspaces);
+
+  // Usar tasks demo si isDemo
+  const tasks = isDemo ? demoTasks : realTasks;
 
   // Filtrar tareas por workspace activo
   const filteredTasks = activeWorkspace
@@ -308,7 +319,12 @@ export const KanbanBoard = () => {
 
   const handleCloseContextMenu = () => setContextMenu(null);
 
+  // Bloquear acciones en modo demo
   const handleAddTask = (assignment = null) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
     if (!isLoggedIn) {
       setIsLoginPromptOpen(true);
       return;
@@ -323,6 +339,10 @@ export const KanbanBoard = () => {
   };
 
   const handleEditTask = (task) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
     setEditingTask(task);
     setShowTaskForm(true);
   };
@@ -334,6 +354,10 @@ export const KanbanBoard = () => {
   };
 
   const handleConfirmDeleteTask = (taskId) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
     const task = tasks.find(t => t.id === taskId);
     if (task) {
         setTaskToDelete(task);
@@ -352,10 +376,20 @@ export const KanbanBoard = () => {
 
   if (noTasks) {
     return (
-      <div className="flex flex-1 items-center justify-center h-full min-h-[40vh]">
-        <div className="text-white
-         text-lg font-medium text-center">
-          There are no tasks to complete.
+      <div className="flex items-center justify-center py-12 min-h-[40vh]">
+        <div className="text-center">
+          <ClipboardCheck className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
+          <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+            No Tasks Yet
+          </h3>
+          <p className="text-base text-[var(--text-secondary)] mb-1">
+            Create your first task to get started
+          </p>
+          {!isLoggedIn && (
+            <p className="text-sm text-[var(--text-secondary)] opacity-70 mt-2">
+              Remember to login first
+            </p>
+          )}
         </div>
       </div>
     );
@@ -467,8 +501,11 @@ export const KanbanBoard = () => {
 
       {/* Login Prompt Modal */}
       <LoginPromptModal
-        isOpen={isLoginPromptOpen}
-        onClose={() => setIsLoginPromptOpen(false)}
+        isOpen={isLoginPromptOpen || loginPromptOpen}
+        onClose={() => {
+          setIsLoginPromptOpen(false);
+          closeLoginPrompt();
+        }}
       />
 
       {/* Workspace Selection Modal */}

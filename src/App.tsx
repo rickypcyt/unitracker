@@ -1,9 +1,9 @@
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
 import React, { useEffect, useState } from 'react';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 
 import type { AppDispatch } from '@/store/store';
-import { AuthProvider } from '@/hooks/useAuth';
 import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
 import { NoiseProvider } from '@/utils/NoiseContext';
@@ -12,6 +12,8 @@ import SessionPage from '@/pages/session/SessionPage';
 import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
+import Tour from './components/Tour';
+import TourManager from './components/TourManager';
 import WelcomeModal from '@/modals/WelcomeModal';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
@@ -65,7 +67,7 @@ function useSupabaseAuthSync() {
 
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
-  const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
+  const { currentTheme, handleThemeChange } = useTheme();
   const dispatch: AppDispatch = useDispatch();
 
   const handleOpenSettings = () => {
@@ -86,12 +88,6 @@ const App: React.FC = () => {
             try {
               const newPermission = await Notification.requestPermission();
               localStorage.setItem('notificationPermissionRequested', 'true');
-              if (newPermission === 'granted') {
-                toast.success('Notifications enabled! You will be notified about your study sessions.', {
-                  duration: 4000,
-                  position: 'top-center',
-                });
-              }
             } catch (error) {
               console.error('Error requesting notification permission:', error);
             }
@@ -112,22 +108,19 @@ const App: React.FC = () => {
   return (
     <NoiseProvider>
       <AuthProvider>
-        <NavigationProvider>
-          <PageContent onOpenSettings={handleOpenSettings} />
-          {showSettings && (
-            <Settings
-              isOpen={showSettings}
-              onClose={handleCloseSettings}
-              currentTheme={currentTheme}
-              handleThemeChange={handleThemeChange}
-            />
-          )}
-          {showWelcomeModal && (
-            <WelcomeModal
-              onClose={handleCloseWelcome}
-            />
-          )}
-        </NavigationProvider>
+        <TourManager>
+          <NavigationProvider>
+            <PageContent onOpenSettings={handleOpenSettings} />
+            {showSettings && (
+              <Settings
+                isOpen={showSettings}
+                onClose={handleCloseSettings}
+                currentTheme={currentTheme}
+                handleThemeChange={handleThemeChange}
+              />
+            )}
+          </NavigationProvider>
+        </TourManager>
       </AuthProvider>
     </NoiseProvider>
   );

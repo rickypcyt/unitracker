@@ -2,6 +2,7 @@ import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from
 import React, { useEffect, useState } from 'react';
 
 import { supabase } from '@/utils/supabaseClient';
+import useDemoMode from '@/utils/useDemoMode';
 import usePomodorosToday from '@/hooks/usePomodorosToday';
 import { useSelector } from 'react-redux';
 
@@ -216,6 +217,7 @@ const Statistics: React.FC = () => {
   const { tasks } = useSelector((state: any) => state.tasks);
   const { laps } = useSelector((state: any) => state.laps);
   const user = useSelector((state: any) => state.auth.user);
+  const { isDemo, demoStats } = useDemoMode();
 
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
   const { todayMinutes, weekMinutes, monthMinutes, yearMinutes } = useLapStats(laps);
@@ -238,6 +240,24 @@ const Statistics: React.FC = () => {
     pomodoroMinutes,
     pomodorosToday,
   };
+
+  // Si es demo, usar demoStats
+  if (isDemo) {
+    return (
+      <div className="maincard p-3 md:p-3">
+        <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center">
+          {statCards.map((card, i) => (
+            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px]">
+              <div className="mb-1">{card.icon}</div>
+              <div className="text-[var(--text-secondary)] text-base font-medium">{card.label}</div>
+              <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(demoStats)}</div>
+              <div className="text-[var(--text-secondary)] text-base">{card.sub(demoStats)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="maincard p-3 md:p-3">

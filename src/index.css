@@ -774,3 +774,7 @@ h1 {
 .section-title .icon {
   @apply text-[var(--accent-primary)];
 }
+
+.react-hot-toast-container, .react-hot-toast {
+  z-index: 99999 !important;
+}

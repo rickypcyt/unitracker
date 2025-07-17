@@ -9,6 +9,7 @@ import NotesPanel from './NotesPanel';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
+import useDemoMode from '@/utils/useDemoMode';
 
 interface Note {
   id?: string;
@@ -23,6 +24,13 @@ const getToday = () => new Date().toISOString().slice(0, 10);
 
 const Notes: React.FC = () => {
   const { user } = useAuth();
+  const {
+    isDemo,
+    demoNotes,
+    loginPromptOpen,
+    showLoginPrompt,
+    closeLoginPrompt,
+  } = useDemoMode();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,12 +152,16 @@ const Notes: React.FC = () => {
     setNoteToDelete(null);
   };
 
+  // Usar demoNotes si isDemo
+  const notesToShow = isDemo ? demoNotes : notes;
+
   return (
     <div className="w-full mx-auto p-6 mt-3 relative">
       {/* Floating Action Button - estilo dashed, border, animación bacán */}
       <button
         onClick={() => {
-          if (!user) setShowLoginModal(true);
+          if (isDemo) showLoginPrompt();
+          else if (!user) setShowLoginModal(true);
           else setShowCreateModal(true);
         }}
         className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
@@ -166,16 +178,16 @@ const Notes: React.FC = () => {
         isEdit={showEditModal}
       />
       <LoginPromptModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
+        isOpen={showLoginModal || loginPromptOpen}
+        onClose={() => { setShowLoginModal(false); closeLoginPrompt(); }}
       />
       <div className="">
         <NotesPanel
-          notes={notes as Note[]}
+          notes={notesToShow as Note[]}
           loading={loading}
           error={error}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={isDemo ? showLoginPrompt : handleEdit}
+          onDelete={isDemo ? showLoginPrompt : handleDelete}
         />
       </div>
       {noteToDelete && (
