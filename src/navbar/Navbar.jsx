@@ -1,11 +1,12 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { Briefcase, Check, ChevronDown, Edit, FolderOpen, Info, LogIn, LogOut, Menu, Settings, X } from 'lucide-react';
+import { Briefcase, Check, ChevronDown, Edit, FolderOpen, Info, LogIn, LogOut, Menu, Settings, User, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
+import UserModal from '@/modals/UserModal';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import WorkspaceDropdown from '@/components/WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
@@ -18,6 +19,7 @@ const Navbar = ({ onOpenSettings }) => {
   const [showAbout, setShowAbout] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [showManageWorkspacesModal, setShowManageWorkspacesModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   const { isLoggedIn, loginWithGoogle, logout } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const settingsRef = useRef(null);
@@ -362,7 +364,13 @@ const Navbar = ({ onOpenSettings }) => {
                       <Settings size={16} />
                       Settings
                     </DropdownMenu.Item>
-                    
+                    <DropdownMenu.Item
+                      onClick={() => setShowUserModal(true)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                    >
+                      <User size={16} />
+                      User
+                    </DropdownMenu.Item>
                     <DropdownMenu.Item
                       onClick={() => setShowAbout(true)}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
@@ -454,6 +462,8 @@ const Navbar = ({ onOpenSettings }) => {
         onWorkspaceUpdated={handleWorkspaceUpdated}
         onWorkspaceDeleted={handleWorkspaceDeleted}
       />
+      {/* User Modal */}
+      <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />
     </>
   );
 };
