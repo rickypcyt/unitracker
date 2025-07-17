@@ -11,6 +11,7 @@ import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { fetchTasks } from '@/store/TaskActions';
+import { setActiveWorkspace } from '@/store/slices/workspaceSlice';
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useAuth } from '@/hooks/useAuth';
@@ -199,6 +200,12 @@ export const KanbanBoard = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (activeWorkspace) {
+      dispatch(fetchTasks());
+    }
+  }, [activeWorkspace, dispatch]);
 
   const completedTasks = filteredTasks.filter((task) => task.completed);
   const incompletedTasks = filteredTasks.filter((task) => !task.completed);
@@ -475,29 +482,31 @@ export const KanbanBoard = () => {
             try {
               // Obtener todas las tareas del assignment actual
               const tasksInAssignment = incompletedByAssignment[selectedAssignment] || [];
-              
-              if (tasksInAssignment.length === 0) {
-                console.log('No tasks to move');
-                setShowWorkspaceSelectionModal(false);
-                return;
+
+              // Actualización optimista: actualiza el estado de Redux localmente
+              tasksInAssignment.forEach(task => {
+                dispatch(updateTaskSuccess({ ...task, workspace_id: workspace.id }));
+              });
+
+              if (tasksInAssignment.length > 0) {
+                // Actualizar el workspace_id de todas las tareas del assignment en la base de datos
+                const { data, error } = await supabase
+                  .from('tasks')
+                  .update({ workspace_id: workspace.id })
+                  .in('id', tasksInAssignment.map(task => task.id));
+
+                if (error) {
+                  console.error('Error moving tasks to workspace:', error);
+                  return;
+                }
+
+                console.log(`Successfully moved ${tasksInAssignment.length} tasks from assignment "${selectedAssignment}" to workspace "${workspace.name}"`);
               }
 
-              // Actualizar el workspace_id de todas las tareas del assignment
-              const { data, error } = await supabase
-                .from('tasks')
-                .update({ workspace_id: workspace.id })
-                .in('id', tasksInAssignment.map(task => task.id));
-
-              if (error) {
-                console.error('Error moving tasks to workspace:', error);
-                return;
-              }
-
-              console.log(`Successfully moved ${tasksInAssignment.length} tasks from assignment "${selectedAssignment}" to workspace "${workspace.name}"`);
-              
-              // Refrescar las tareas inmediatamente para actualizar la vista
+              // Refrescar las tareas inmediatamente para sincronizar con el backend
               await dispatch(fetchTasks());
-              
+              setSelectedAssignment(null);
+
               // Cerrar el modal después de que se actualicen los datos
               setShowWorkspaceSelectionModal(false);
             } catch (error) {
@@ -505,6 +514,7 @@ export const KanbanBoard = () => {
             }
           }}
           assignment={selectedAssignment}
+          tasks={tasks}
         />
       )}
 

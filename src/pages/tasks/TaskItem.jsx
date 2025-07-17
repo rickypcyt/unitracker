@@ -2,6 +2,9 @@ import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
 import { formatDate, formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
 
 import React from "react";
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 
 // Helper para saber si la fecha es pasada
 const isPast = (dateStr) => {
@@ -130,9 +133,11 @@ export const TaskItem = ({
                         {task.title}
                     </span>
                     {task.description ? (
-                        <span className="text-md mt-0.5" style={{ color: 'var(--muted-strong)' }}>
-                            {task.description}
-                        </span>
+                        <div className="text-md mt-0.5 prose prose-sm prose-invert max-w-none" style={{ color: 'var(--muted-strong)' }}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                                {task.description}
+                            </ReactMarkdown>
+                        </div>
                     ) : (
                         <span className="text-md mt-0.5 italic" style={{ color: 'var(--muted-strong)' }}>
                             No description
@@ -171,7 +176,7 @@ export const TaskItem = ({
                             onClick={handleDeleteClick}
                             onMouseDown={(e) => e.stopPropagation()}
                             onTouchStart={(e) => e.stopPropagation()}
-                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:bg-red-500/10 hover:text-red-500 hover:scale-110"
+                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:bg-red-500/10 hover:text-red-500"
                             aria-label="Delete task"
                             style={{ color: 'var(--muted-strong)' }}
                         >

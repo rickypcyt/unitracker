@@ -16,6 +16,7 @@ interface WorkspaceSelectionModalProps {
   activeWorkspace: Workspace | null;
   onSelectWorkspace: (workspace: Workspace) => void;
   assignment: string;
+  tasks: any[];
 }
 
 const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
@@ -25,10 +26,16 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
   activeWorkspace,
   onSelectWorkspace,
   assignment,
+  tasks = [],
 }) => {
   const handleWorkspaceSelect = (workspace: Workspace) => {
     onSelectWorkspace(workspace);
     onClose();
+  };
+
+  // Función para contar tareas por workspace
+  const getTaskCountByWorkspace = (workspaceId: string) => {
+    return tasks.filter(task => task.workspace_id === workspaceId && !task.completed).length;
   };
 
   return (
@@ -46,7 +53,7 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
         </div>
         
         <div className="space-y-2">
-          {workspaces.map((workspace) => (
+          {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map((workspace) => (
             <button
               key={workspace.id}
               onClick={() => handleWorkspaceSelect(workspace)}
@@ -71,7 +78,7 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
                     ? 'text-[var(--accent-primary)]'
                     : 'text-[var(--text-primary)]'
                 }`}>
-                  {workspace.name}
+                  {workspace.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(workspace.id)})</span>
                 </span>
               </div>
               

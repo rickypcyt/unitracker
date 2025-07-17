@@ -123,6 +123,16 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     setError('');
   };
 
+  const handleKeyPress = (e, workspace) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSave(workspace);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
+
   const handleClose = () => {
     handleCancel();
     onClose();
@@ -184,6 +194,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => handleKeyPress(e, workspace)}
                         className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
                         placeholder="Workspace name"
                         autoFocus

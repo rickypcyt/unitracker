@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { deleteTask, updateTask } from "@/store/TaskActions";
 
 import BaseModal from "@/modals/BaseModal";
+import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
@@ -158,13 +159,16 @@ const TaskDetailsModal = ({
           />
         </div>
 
-        <FormTextarea
-          id="description"
-          label="Description"
-          value={formData.description}
-          onChange={(value) => handleChange('description', value)}
-          error={errors.description}
-        />
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-base font-medium text-[var(--text-primary)]">
+            Description
+          </label>
+          <MarkdownWysiwyg
+            initialBody={formData.description}
+            onChange={({ body }) => handleChange('description', body)}
+            className="min-h-[200px]"
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

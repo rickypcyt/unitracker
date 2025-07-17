@@ -51,7 +51,6 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <span className="text-[var(--text-secondary)] text-4xl mb-4 block">📝</span>
           <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No notes yet</h3>
           <p className="text-[var(--text-secondary)]">Create your first note to get started</p>
         </div>
