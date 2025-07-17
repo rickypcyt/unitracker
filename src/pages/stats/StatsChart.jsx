@@ -97,6 +97,25 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
 const StatsChart = ({ data, title, accentColor, small = false, customTitle }) => {
   const chartRef = useRef(null);
   const tasks = useSelector((state) => state.tasks.tasks || []);
+  // Detectar el índice del día actual
+  const today = new Date();
+  let todayIndex = -1;
+  if (title === 'This Month') {
+    todayIndex = data.findIndex(d => {
+      const dDate = new Date(d.date);
+      return dDate.getDate() === today.getDate() && dDate.getMonth() === today.getMonth() && dDate.getFullYear() === today.getFullYear();
+    });
+  } else if (title === 'This Week' || title === 'Last Week') {
+    todayIndex = data.findIndex(d => {
+      const dDate = new Date(d.date);
+      return dDate.toDateString() === today.toDateString();
+    });
+  } else if (title === 'This Year') {
+    todayIndex = data.findIndex(d => {
+      const dDate = new Date(d.date);
+      return dDate.getMonth() === today.getMonth() && dDate.getFullYear() === today.getFullYear();
+    });
+  }
 
   return (
     <div className="maincard p-0.5 mb-3">
@@ -105,7 +124,16 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
       </div>
       <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] z-10 overflow-visible`}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 30, right: 0, bottom: 30, left: 32 }} barCategoryGap={20}>
+          <BarChart 
+            data={data} 
+            margin={{ 
+              top: 30, 
+              right: title === 'This Month' ? 16 : 0, 
+              bottom: 30, 
+              left: title === 'This Month' ? 16 : 32 
+            }} 
+            barCategoryGap={title === 'This Month' ? 8 : 20}
+          >
             <XAxis
               dataKey={
                 title === 'This Week' || title === 'Last Week'
@@ -115,25 +143,35 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
                   : 'realDay'
               }
               stroke="var(--text-secondary)"
-              tick={
-                (title === 'This Month')
-                  ? { fill: "var(--text-secondary)", fontSize: "0.6rem", angle: -90, textAnchor: 'end' }
-                  : title === 'This Year'
-                  ? { fill: "var(--text-secondary)", fontSize: "0.65rem" }
-                  : { fill: "var(--text-secondary)", fontSize: "0.65rem" }
-              }
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
               interval={0}
               minTickGap={0}
-              tickMargin={title === 'This Month' ? 25 : 16}
-              tickFormatter={
-                title === 'This Week' || title === 'Last Week'
-                  ? (v) => v
-                  : title === 'This Year'
-                  ? (v) => v
-                  : undefined
-              }
+              tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
+              tickFormatter={(v) => v}
+              tick={{
+                fill: (tickProps) => {
+                  // Para This Week/Last Week: comparar index con todayIndex
+                  if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
+                    return 'var(--accent-primary)';
+                  }
+                  // Para This Month: comparar realDay con el día actual
+                  if (title === 'This Month') {
+                    const dayNum = parseInt(tickProps.value, 10);
+                    if (!isNaN(dayNum) && dayNum === today.getDate()) {
+                      return 'var(--accent-primary)';
+                    }
+                  }
+                  // Para This Year: comparar mes actual
+                  if (title === 'This Year' && tickProps.index === todayIndex) {
+                    return 'var(--accent-primary)';
+                  }
+                  return 'var(--text-secondary)';
+                },
+                fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
+                angle: 0,
+                textAnchor: title === 'This Month' ? 'middle' : title === 'This Year' ? 'middle' : undefined,
+              }}
             />
             <YAxis
               stroke="var(--text-secondary)"
@@ -151,12 +189,12 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
               dataKey="minutes"
               fill={accentColor}
               radius={[6, 6, 0, 0]}
-              barSize={18}
+              barSize={title === 'This Month' ? 10 : title === 'This Year' ? 28 : 18}
               animationDuration={0}
               ref={chartRef}
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} />
+                <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
               ))}
             </Bar>
           </BarChart>

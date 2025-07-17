@@ -204,10 +204,10 @@ const StatsChartsPanel = () => {
       <div className="w-full flex flex-col gap-1">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-1/2">
-            <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
+            <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
           </div>
           <div className="w-full md:w-1/2">
-            <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
+            <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
           </div>
         </div>
         <StatsChart
@@ -231,10 +231,10 @@ const StatsChartsPanel = () => {
     <div className="w-full flex flex-col gap-1">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="w-full md:w-1/2">
-          <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
+          <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
         </div>
         <div className="w-full md:w-1/2">
-          <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
+          <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
         </div>
       </div>
       {/* Card mensual con título y flechas dentro */}
