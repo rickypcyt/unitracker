@@ -1,12 +1,14 @@
 import { AppDispatch, RootState } from '@/store/store';
+import { LogIn, LogOut, Settings as SettingsIcon, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Trash2, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ACCENT_COLORS } from '@/utils/theme';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import ManageAssignmentsModal from '@/modals/ManageAssignmentsModal';
 import { deleteTask } from '@/store/actions/TaskActions';
+import { toast } from 'react-toastify';
+import { useAuth } from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
 
 interface SettingsProps {
@@ -20,6 +22,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const { isLoggedIn, loginWithGoogle, logout } = useAuth();
 
   const handleDeleteCompletedTasks = () => {
     const completedTasks = tasks.filter(task => task.completed);
@@ -27,6 +30,19 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       dispatch(deleteTask(task.id));
     });
     setShowDeleteCompletedModal(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('You have been logged out.', {
+      containerId: 'main-toast-container',
+      position: 'top-center',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
   if (!isOpen) return null;
@@ -72,6 +88,26 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Auth Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Account</h3>
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-red-500 bg-[var(--bg-secondary)] hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-2 justify-center"
+                >
+                  <LogOut size={20} /> Log Out
+                </button>
+              ) : (
+                <button
+                  onClick={loginWithGoogle}
+                  className="w-full px-4 py-2 text-[var(--accent-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors flex items-center gap-2 justify-center"
+                >
+                  <LogIn size={20} /> Log In with Google
+                </button>
+              )}
             </div>
 
             {/* Task Management Section */}

@@ -1,7 +1,5 @@
 import { BarChart2, Calendar, CheckCircle2, Clock, Music } from "lucide-react";
-
-import BaseModal from "@/modals/BaseModal";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 interface WelcomeModalProps {
   onClose: () => void;
@@ -31,17 +29,30 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     }
   ];
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar con click fuera
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [onClose]);
+
   return (
-    <BaseModal
-      isOpen={true}
-      onClose={onClose}
-      title=""
-      maxWidth="max-w-3xl"
-      zIndex="z-[99999]"
-      showCloseButton={false}
-    >
-      <div className="">
-        <div className="flex-1 mb-4">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-3xl mx-4 p-8 relative shadow-xl animate-fadeIn">
+        <div className="flex-1 mb-4 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-accent-primary mb-1">
             Welcome to UniTracker
           </h3>
@@ -50,30 +61,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className="bg-[var(--bg-secondary)] p-4 rounded-xl hover:bg-[var(--bg-primary)] transition-all duration-200 animate-slideUp border-2 border-[var(--border-primary)]"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-1.5 bg-accent-primary/20 rounded-lg text-accent-primary">
-                  {feature.icon}
-                </div>
-                <div>
-                  <h4 className="text-base font-semibold text-neutral-500 mb-1">
-                    {feature.title}
-                  </h4>
-                  <p className="text-base text-gray">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
+        {/* Getting Started section first */}
         <div className="bg-[var(--bg-secondary)] p-4 rounded-xl mb-4 border-2 border-[var(--border-primary)]">
           <h4 className="text-lg font-semibold text-accent-primary mb-2 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
@@ -104,6 +92,31 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </div>
         </div>
 
+        {/* Features cards after */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="bg-[var(--bg-secondary)] p-4 rounded-xl hover:bg-[var(--bg-primary)] transition-all duration-200 animate-slideUp border-2 border-[var(--border-primary)]"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-accent-primary/20 rounded-lg text-accent-primary">
+                  {feature.icon}
+                </div>
+                <div>
+                  <h4 className="text-base font-semibold text-neutral-500 mb-1">
+                    {feature.title}
+                  </h4>
+                  <p className="text-base text-gray">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div className="flex justify-end">
           <button
             onClick={onClose}
@@ -113,7 +126,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </button>
         </div>
       </div>
-    </BaseModal>
+    </div>
   );
 };
 
