@@ -121,6 +121,12 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             >
               Manage Completed Tasks
             </button>
+            <button
+              onClick={() => alert('Add Friend (próximamente)')}
+              className="w-full mt-4 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white font-semibold hover:bg-[var(--accent-primary)]/90 transition-colors"
+            >
+              Add Friend
+            </button>
           </div>
         </div>
       </BaseModal>

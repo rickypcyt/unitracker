@@ -1,12 +1,13 @@
 import React, { memo, useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import { Plus } from 'lucide-react';
 import TaskForm from '@/pages/tasks/TaskForm';
+import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { fetchTasks } from '@/store/TaskActions';
 import { useAuth } from '@/hooks/useAuth';
-import { useDispatch } from 'react-redux';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const TasksPage = memo(() => {
@@ -16,6 +17,8 @@ const TasksPage = memo(() => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const workspaces = useSelector(state => state.workspace.workspaces);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
@@ -45,11 +48,20 @@ const TasksPage = memo(() => {
       setIsLoginPromptOpen(true);
       return;
     }
+    if (!workspaces || workspaces.length === 0) {
+      setShowWorkspaceModal(true);
+      return;
+    }
     setShowTaskForm(true);
   };
 
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
+  };
+
+  const handleWorkspaceCreated = () => {
+    setShowWorkspaceModal(false);
+    setShowTaskForm(true);
   };
 
   if (!isVisible) {
@@ -75,6 +87,14 @@ const TasksPage = memo(() => {
             dispatch(fetchTasks());
             handleCloseTaskForm();
           }}
+        />
+      )}
+      {/* Workspace Create Modal */}
+      {showWorkspaceModal && (
+        <WorkspaceCreateModal
+          isOpen={showWorkspaceModal}
+          onClose={() => setShowWorkspaceModal(false)}
+          onWorkspaceCreated={handleWorkspaceCreated}
         />
       )}
       {/* Login Prompt Modal */}

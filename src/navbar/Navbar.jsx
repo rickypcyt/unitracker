@@ -5,8 +5,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import AddFriendModal from '@/modals/AddFriendModal';
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import UserModal from '@/modals/UserModal';
+import { UserPlus } from 'lucide-react';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import WorkspaceDropdown from '@/components/WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
@@ -20,13 +22,40 @@ const Navbar = ({ onOpenSettings }) => {
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
   const [showManageWorkspacesModal, setShowManageWorkspacesModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
-  const { isLoggedIn, loginWithGoogle, logout } = useAuth();
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  // Dummy requests y badge para demo
+  const [friendRequests, setFriendRequests] = useState([
+    // { username: 'john_doe' },
+  ]);
+  const hasRequests = friendRequests.length > 0;
+  const { isLoggedIn, loginWithGoogle, logout, user } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const settingsRef = useRef(null);
   const dispatch = useDispatch();
   const workspaces = useSelector(state => state.workspace.workspaces);
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
   const tasks = useSelector(state => state.tasks.tasks);
+
+  // Abrir UserModal automáticamente si falta username, con delay y consulta a profiles
+  useEffect(() => {
+    let timeout;
+    async function checkUsername() {
+      if (isLoggedIn && user && user.id) {
+        // Espera 1 segundo para asegurar que el perfil esté sincronizado
+        await new Promise(res => setTimeout(res, 1000));
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+        if (!error && (!data || !data.username)) {
+          setShowUserModal(true);
+        }
+      }
+    }
+    checkUsername();
+    return () => clearTimeout(timeout);
+  }, [isLoggedIn, user]);
 
   // Función para contar tareas por workspace
   const getTaskCountByWorkspace = (workspaceId) => {
@@ -61,7 +90,12 @@ const Navbar = ({ onOpenSettings }) => {
   useEffect(() => {
     const fetchWorkspaces = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        dispatch(setWorkspaces([]));
+        localStorage.removeItem('activeWorkspaceId');
+        localStorage.removeItem('workspacesHydrated');
+        return;
+      }
       const { data, error } = await supabase
         .from('workspaces')
         .select('*')
@@ -79,6 +113,14 @@ const Navbar = ({ onOpenSettings }) => {
     };
     fetchWorkspaces();
   }, [dispatch]);
+  // Limpia workspaces si no está logueado
+  useEffect(() => {
+    if (!isLoggedIn) {
+      dispatch(setWorkspaces([]));
+      localStorage.removeItem('activeWorkspaceId');
+      localStorage.removeItem('workspacesHydrated');
+    }
+  }, [isLoggedIn, dispatch]);
 
   const handleSelectWorkspace = (ws) => {
     dispatch(setActiveWorkspace(ws));
@@ -343,10 +385,14 @@ const Navbar = ({ onOpenSettings }) => {
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                 <button
-                    className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-15 active:scale-95"
-                    title="Settings"
+                  className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-15 active:scale-95 relative"
+                  title="Settings"
                 >
                   <Settings size={22} />
+                  {/* Badge sobre el icono de Add Friend en la barra de herramientas */}
+                  {hasRequests && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)] z-10"></span>
+                  )}
                 </button>
                 </DropdownMenu.Trigger>
 
@@ -372,6 +418,18 @@ const Navbar = ({ onOpenSettings }) => {
                       User
                     </DropdownMenu.Item>
                     <DropdownMenu.Item
+                      onClick={() => setShowAddFriendModal(true)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors relative"
+                    >
+                      <span className="relative">
+                        <UserPlus size={16} />
+                        {hasRequests && (
+                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)]"></span>
+                        )}
+                      </span>
+                      Add Friend
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Item
                       onClick={() => setShowAbout(true)}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
                     >
@@ -381,8 +439,13 @@ const Navbar = ({ onOpenSettings }) => {
                     
                     {isLoggedIn ? (
                       <DropdownMenu.Item
-                        onClick={logout}
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                        onClick={async () => {
+                          await logout();
+                          dispatch(setWorkspaces([]));
+                          localStorage.removeItem('activeWorkspaceId');
+                          localStorage.removeItem('workspacesHydrated');
+                        }}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
                       >
                         <LogOut size={16} />
                         Log Out
@@ -464,6 +527,21 @@ const Navbar = ({ onOpenSettings }) => {
       />
       {/* User Modal */}
       <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />
+      <AddFriendModal
+        isOpen={showAddFriendModal}
+        onClose={() => setShowAddFriendModal(false)}
+        onSendRequest={(username, { onSuccess, onError }) => {
+          // Aquí iría la lógica real
+          setTimeout(() => {
+            setFriendRequests([...friendRequests, { username }]);
+            onSuccess && onSuccess();
+          }, 500);
+        }}
+        requests={friendRequests}
+        onAccept={req => setFriendRequests(friendRequests.filter(r => r !== req))}
+        onReject={req => setFriendRequests(friendRequests.filter(r => r !== req))}
+        hasRequests={hasRequests}
+      />
     </>
   );
 };

@@ -11,11 +11,13 @@ const BaseModal = ({
   hasUnsavedChanges = false,
   showCloseButton = true,
   maxWidth = 'max-w-md',
-  zIndex = 'z-[10001]'
+  zIndex = 'z-[10001]',
+  closeOnEsc = true,
+  closeOnOverlayClick = true
 }) => {
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && closeOnEsc) {
         handleClose();
       }
     };
@@ -31,7 +33,7 @@ const BaseModal = ({
       document.removeEventListener('keydown', handleEscape);
       document.body.classList.remove('overflow-hidden');
     };
-  }, [isOpen]);
+  }, [isOpen, closeOnEsc]);
 
   const handleClose = () => {
     if (hasUnsavedChanges) {
@@ -44,7 +46,7 @@ const BaseModal = ({
   };
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && closeOnOverlayClick) {
       handleClose();
     }
   };

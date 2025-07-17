@@ -14,12 +14,14 @@ export const AuthProvider = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      if (session?.user) ensureProfile(session.user);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      if (session?.user) ensureProfile(session.user);
       
       if (session) {
         // Dismiss any existing toasts first
@@ -74,6 +76,22 @@ export const AuthProvider = ({ children }) => {
       });
     }
   };
+
+  // Asegura que el perfil existe en la tabla profiles
+  async function ensureProfile(user) {
+    if (!user?.id || !user?.email) return;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+    if (!data) {
+      await supabase.from('profiles').insert({
+        id: user.id,
+        email: user.email,
+      });
+    }
+  }
 
   const value = {
     user,
