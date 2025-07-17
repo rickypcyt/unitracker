@@ -733,6 +733,13 @@ h1 {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Remove Tiptap/ProseMirror focus border */
+.ProseMirror-focused {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--border-primary) !important;
+}
+
 /* =========================
    7. Cards de Estadísticas
    ========================= */

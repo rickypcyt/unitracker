@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
+import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { supabase } from '@/utils/supabaseClient';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -211,13 +212,15 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         <label htmlFor="description" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
           Description
         </label>
-        <FormTextarea
-          id="description"
-          value={formData.description}
-          onChange={(value) => handleChange('description', value)}
-          error={errors.description}
-          placeholder="Enter task description"
+        <MarkdownWysiwyg
+          initialTitle={formData.title}
+          initialBody={formData.description}
+          onChange={({ body }) => handleChange('description', body)}
+          className=""
         />
+        {errors.description && (
+          <p className="mt-1 text-base text-red-500">{errors.description}</p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>

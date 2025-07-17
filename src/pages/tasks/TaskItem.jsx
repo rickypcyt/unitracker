@@ -133,11 +133,11 @@ export const TaskItem = ({
                         {task.title}
                     </span>
                     {task.description ? (
-                        <div className="text-md mt-0.5 prose prose-sm prose-invert max-w-none" style={{ color: 'var(--muted-strong)' }}>
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                                {task.description}
-                            </ReactMarkdown>
-                        </div>
+                        <div
+                            className="text-md mt-0.5 prose prose-sm prose-invert max-w-none"
+                            style={{ color: 'var(--muted-strong)' }}
+                            dangerouslySetInnerHTML={{ __html: task.description }}
+                        />
                     ) : (
                         <span className="text-md mt-0.5 italic" style={{ color: 'var(--muted-strong)' }}>
                             No description
@@ -176,11 +176,10 @@ export const TaskItem = ({
                             onClick={handleDeleteClick}
                             onMouseDown={(e) => e.stopPropagation()}
                             onTouchStart={(e) => e.stopPropagation()}
-                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:bg-red-500/10 hover:text-red-500"
+                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full"
                             aria-label="Delete task"
-                            style={{ color: 'var(--muted-strong)' }}
                         >
-                            <Trash2 size={22} />
+                            <Trash2 size={22} className="text-red-500" />
                         </button>
                     </div>
                 </div>

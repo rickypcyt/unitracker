@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import DeleteCompletedModal from './modals/DeleteTasksPop';
 import LoginPromptModal from './modals/LoginPromptModal';
 import NoteList from './NoteList';
 import NotesCreateModal from './modals/NotesCreateModal';
@@ -116,22 +117,31 @@ const Notes: React.FC = () => {
     setShowEditModal(false);
   };
 
-  // Handler para borrar nota
-  const handleDelete = async (note: Note) => {
-    if (!window.confirm('Are you sure you want to delete this note?')) return;
+  // Confirm delete modal state
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+
+  // Handler para borrar nota (abre modal)
+  const handleDelete = (note: Note) => {
+    setNoteToDelete(note);
+  };
+
+  // Confirmación real de borrado
+  const confirmDeleteNote = async () => {
+    if (!noteToDelete) return;
     setLoading(true);
     setError(null);
-    if (user && note.id) {
+    if (user && noteToDelete.id) {
       const { error } = await supabase
         .from('notes')
         .delete()
-        .eq('id', note.id);
+        .eq('id', noteToDelete.id);
       if (error) setError('Error deleting note');
-      else setNotes(notes.filter(n => n.id !== note.id));
-    } else if (note.id) {
-      setNotes(notes.filter(n => n.id !== note.id));
+      else setNotes(notes.filter(n => n.id !== noteToDelete.id));
+    } else if (noteToDelete.id) {
+      setNotes(notes.filter(n => n.id !== noteToDelete.id));
     }
     setLoading(false);
+    setNoteToDelete(null);
   };
 
   return (
@@ -168,6 +178,14 @@ const Notes: React.FC = () => {
           onDelete={handleDelete}
         />
       </div>
+      {noteToDelete && (
+        <DeleteCompletedModal
+          onClose={() => setNoteToDelete(null)}
+          onConfirm={confirmDeleteNote}
+          message={`Are you sure you want to delete the note "${noteToDelete.title || 'Untitled'}"? This action cannot be undone.`}
+          confirmButtonText="Delete Note"
+        />
+      )}
     </div>
   );
 };

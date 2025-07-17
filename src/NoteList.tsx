@@ -65,6 +65,10 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
           <div
             key={note.id || note.title + note.date}
             className="relative flex flex-col bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group min-h-[260px]"
+            onDoubleClick={() => onEdit(note)}
+            tabIndex={0}
+            role="button"
+            aria-label="Edit note"
           >
             {/* Card Header */}
             <div className="mb-2 flex flex-col gap-1">
@@ -80,8 +84,9 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
             {/* Card Content */}
             <div className="mb-3 flex-1 overflow-hidden">
-              <div 
-                className="text-[var(--text-secondary)] text-sm prose prose-sm prose-invert max-w-none max-h-48flow-y-auto custom-scrollbar"
+              <div
+                className="text-[var(--text-secondary)] text-sm prose prose-sm prose-invert max-w-none max-h-48 flow-y-auto custom-scrollbar bg-transparent p-0 border-0 shadow-none rounded-none"
+                style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
                 dangerouslySetInnerHTML={{ __html: note.description }}
               />
             </div>
