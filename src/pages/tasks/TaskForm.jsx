@@ -328,7 +328,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           </FormButton>
           <FormButton
             type="submit"
-            variant="primary"
+            variant="custom"
+            className="border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             {initialTask ? 'Save Changes' : 'Add Task'}
           </FormButton>

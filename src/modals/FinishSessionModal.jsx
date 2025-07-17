@@ -178,7 +178,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] backdrop-blur-sm">
       <div className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-4xl border-2 border-[var(--border-primary)] shadow-xl">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Finish Session</h2>

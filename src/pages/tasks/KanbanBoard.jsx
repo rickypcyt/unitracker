@@ -9,6 +9,7 @@ import { SortableColumn } from '@/pages/tasks/SortableColumn';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
+import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { fetchTasks } from '@/store/TaskActions';
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
@@ -25,6 +26,7 @@ export const KanbanBoard = () => {
   } = useTaskManager();
   const { isLoggedIn } = useAuth();
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
+  const workspaces = useSelector(state => state.workspace.workspaces);
 
   // Filtrar tareas por workspace activo
   const filteredTasks = activeWorkspace
@@ -64,12 +66,14 @@ export const KanbanBoard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const [sortMenu, setSortMenu] = useState(null);
+  const [columnMenu, setColumnMenu] = useState(null);
   const [assignmentSortConfig, setAssignmentSortConfig] = useState(() => {
     const savedConfig = localStorage.getItem('kanbanAssignmentSortConfig');
     return savedConfig ? JSON.parse(savedConfig) : {};
   });
 
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [showWorkspaceSelectionModal, setShowWorkspaceSelectionModal] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -93,6 +97,28 @@ export const KanbanBoard = () => {
 
   const handleCloseSortMenu = () => {
     setSortMenu(null);
+  };
+
+  const handleColumnMenuClick = (assignmentId, position) => {
+    // Calcular el ancho estimado del menú (aproximadamente 220px)
+    const menuWidth = 220;
+    const windowWidth = window.innerWidth;
+    
+    // Si el menú se saldría por la derecha, moverlo hacia la izquierda
+    let x = position.x;
+    if (position.x + menuWidth > windowWidth) {
+      x = Math.max(10, windowWidth - menuWidth - 10); // 10px de margen del borde
+    }
+    
+    setColumnMenu({
+      assignmentId,
+      x: x,
+      y: position.y,
+    });
+  };
+
+  const handleCloseColumnMenu = () => {
+    setColumnMenu(null);
   };
 
   const handleSelectSort = (assignmentId, sortType, sortDirection = 'asc') => {
@@ -310,6 +336,11 @@ export const KanbanBoard = () => {
     }
   };
 
+  const handleMoveToWorkspace = (assignment) => {
+    setSelectedAssignment(assignment);
+    setShowWorkspaceSelectionModal(true);
+  };
+
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
   if (noTasks) {
@@ -325,9 +356,9 @@ export const KanbanBoard = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-col md:flex-row items-start gap-2 w-full mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2 h-full">
         {assignmentsWithIncompleteTasks.map((assignment, idx) => (
-          <React.Fragment key={assignment}>
+          <div key={assignment} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
             <SortableColumn
               id={assignment}
               assignment={assignment}
@@ -340,17 +371,12 @@ export const KanbanBoard = () => {
               onEditTask={handleEditTask}
               onTaskContextMenu={handleTaskContextMenu}
               onSortClick={handleSortClick}
+              onColumnMenuClick={handleColumnMenuClick}
+              columnMenu={columnMenu?.assignmentId === assignment ? columnMenu : null}
+              onCloseColumnMenu={handleCloseColumnMenu}
+              onMoveToWorkspace={handleMoveToWorkspace}
             />
-            {/* Línea divisoria entre columnas: vertical en desktop, horizontal en móvil */}
-            {idx < assignmentsWithIncompleteTasks.length - 1 && (
-              <>
-                {/* Desktop: vertical */}
-                <div className="hidden md:block h-[calc(100vh-10rem)] w-px bg-[var(--border-primary)] mx-2 rounded-full opacity-80" />
-                {/* Móvil: horizontal */}
-                <div className="block md:hidden w-full h-px bg-[var(--border-primary)] my-2 rounded-full opacity-80" />
-              </>
-            )}
-          </React.Fragment>
+          </div>
         ))}
       </div>
 
@@ -437,6 +463,50 @@ export const KanbanBoard = () => {
         isOpen={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
       />
+
+      {/* Workspace Selection Modal */}
+      {showWorkspaceSelectionModal && (
+        <WorkspaceSelectionModal
+          isOpen={showWorkspaceSelectionModal}
+          onClose={() => setShowWorkspaceSelectionModal(false)}
+          workspaces={workspaces}
+          activeWorkspace={activeWorkspace}
+          onSelectWorkspace={async (workspace) => {
+            try {
+              // Obtener todas las tareas del assignment actual
+              const tasksInAssignment = incompletedByAssignment[selectedAssignment] || [];
+              
+              if (tasksInAssignment.length === 0) {
+                console.log('No tasks to move');
+                setShowWorkspaceSelectionModal(false);
+                return;
+              }
+
+              // Actualizar el workspace_id de todas las tareas del assignment
+              const { data, error } = await supabase
+                .from('tasks')
+                .update({ workspace_id: workspace.id })
+                .in('id', tasksInAssignment.map(task => task.id));
+
+              if (error) {
+                console.error('Error moving tasks to workspace:', error);
+                return;
+              }
+
+              console.log(`Successfully moved ${tasksInAssignment.length} tasks from assignment "${selectedAssignment}" to workspace "${workspace.name}"`);
+              
+              // Refrescar las tareas inmediatamente para actualizar la vista
+              await dispatch(fetchTasks());
+              
+              // Cerrar el modal después de que se actualicen los datos
+              setShowWorkspaceSelectionModal(false);
+            } catch (error) {
+              console.error('Error moving tasks to workspace:', error);
+            }
+          }}
+          assignment={selectedAssignment}
+        />
+      )}
 
       {/* Delete Task Confirmation Modal */}
       {showDeleteTaskConfirmation && taskToDelete && (

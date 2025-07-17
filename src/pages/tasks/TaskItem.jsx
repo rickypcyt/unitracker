@@ -171,7 +171,7 @@ export const TaskItem = ({
                             onClick={handleDeleteClick}
                             onMouseDown={(e) => e.stopPropagation()}
                             onTouchStart={(e) => e.stopPropagation()}
-                            className="transition-colors duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:text-red-500"
+                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full hover:bg-red-500/10 hover:text-red-500 hover:scale-110"
                             aria-label="Delete task"
                             style={{ color: 'var(--muted-strong)' }}
                         >

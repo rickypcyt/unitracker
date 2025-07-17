@@ -21,7 +21,7 @@ interface NotesFormModalProps {
 const NotesFormModal: React.FC<NotesFormModalProps> = ({ isOpen, onClose, onSave, loading, initialValues }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/60">
       <div className="bg-[var(--bg-primary)] rounded-xl p-6 w-full max-w-full shadow-lg border border-[var(--border-primary)] relative">
         <button
           className="absolute top-2 right-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xl"

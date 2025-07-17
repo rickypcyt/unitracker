@@ -1,7 +1,7 @@
-import { ChevronDown, ChevronUp, ListOrdered, MoreVertical, Plus } from 'lucide-react';
-import React, { useState } from 'react';
+import { ChevronDown, ChevronUp, ListOrdered, Plus } from 'lucide-react';
 
-import { ColumnMenu } from '@/modals/ColumnMenu';
+import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
+import React from 'react';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 
 export const SortableColumn = ({
@@ -16,28 +16,18 @@ export const SortableColumn = ({
   onEditTask,
   onTaskContextMenu,
   onSortClick,
+  onColumnMenuClick,
+  columnMenu,
+  onCloseColumnMenu,
+  onMoveToWorkspace,
 }) => {
-  const [columnMenu, setColumnMenu] = useState(null);
-
-  const handleColumnMenuClick = (event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setColumnMenu({
-      x: rect.left,
-      y: rect.bottom,
-    });
-  };
-
-  const handleCloseColumnMenu = () => {
-    setColumnMenu(null);
-  };
-
   return (
-    <div className="flex flex-col flex-1 min-w-[16rem] p-1 border-none">
+    <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between w-full mb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <button
             onClick={onToggleCollapse}
-            className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors"
+            className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors flex-shrink-0"
           >
             {collapsed ? (
               <ChevronDown size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
@@ -45,17 +35,17 @@ export const SortableColumn = ({
               <ChevronUp size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
             )}
           </button>
-          <h3 className="font-medium text-lg text-[var(--text-primary)] group-hover:text-[var(--text-primary)]">
+          <h3 className="font-medium text-lg text-[var(--text-primary)] group-hover:text-[var(--text-primary)] truncate">
             {assignment}
           </h3>
-          <span className="text-base text-[var(--text-secondary)]">
+          <span className="text-base text-[var(--text-secondary)] flex-shrink-0">
             ({tasks.length})
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           <button
             onClick={onAddTask}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] "
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
             title="Add task"
           >
             <Plus size={22} />
@@ -65,18 +55,19 @@ export const SortableColumn = ({
               const rect = event.currentTarget.getBoundingClientRect();
               onSortClick(assignment, { x: rect.left, y: rect.bottom });
             }}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
             title="Sort tasks"
           >
             <ListOrdered size={22} />
           </button>
-          <button
-            onClick={handleColumnMenuClick}
-            className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            title="More options"
-          >
-            <MoreVertical size={22} />
-          </button>
+          
+          {/* Radix UI Dropdown Menu */}
+          <ColumnDropdownMenu
+            assignment={assignment}
+            tasks={tasks}
+            onMoveToWorkspace={onMoveToWorkspace}
+            columnMenu={columnMenu}
+          />
         </div>
       </div>
 
@@ -84,7 +75,7 @@ export const SortableColumn = ({
       {!collapsed && (
         <div
           className={
-            `space-y-2 overflow-y-auto max-h-[calc(100vh-14rem)] min-h-[6rem] custom-scrollbar pr-1`
+            `space-y-2 overflow-y-auto flex-1 min-h-0 custom-scrollbar pr-1`
           }
         >
           {tasks.map((task) => (
@@ -102,7 +93,7 @@ export const SortableColumn = ({
         </div>
       )}
 
-      {/* Column Menu */}
+      {/* Column Menu - Mantenemos el menú original para compatibilidad */}
       {columnMenu && (
         <ColumnMenu
           x={columnMenu.x}
@@ -111,7 +102,7 @@ export const SortableColumn = ({
           onAddTask={onAddTask}
           onSortClick={onSortClick}
           onToggleCollapse={onToggleCollapse}
-          onClose={handleCloseColumnMenu}
+          onClose={onCloseColumnMenu}
           collapsed={collapsed}
           tasks={tasks}
         />

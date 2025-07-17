@@ -2,6 +2,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import React, { useCallback, useState } from "react";
 
 import StarterKit from "@tiptap/starter-kit";
+
 // Quitamos import de tiptap-markdown
 
 interface MarkdownWysiwygProps {
@@ -37,13 +38,13 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
   return (
     <div className={`flex flex-col gap-4 ${className}`}>
       <input
-        className="border border-[var(--accent-primary)] bg-black text-[var(--text-primary)] rounded px-3 py-2 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+        className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none text-lg font-semibold"
         type="text"
-        placeholder="Título de la nota"
+        placeholder="Note Title"
         value={title}
         onChange={handleTitleChange}
       />
-      <div className="border border-[var(--accent-primary)] rounded bg-black">
+      <div className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
         <EditorContent editor={editor} className="min-h-[120px] px-3 py-2 text-[var(--text-primary)] focus:outline-none" />
       </div>
     </div>

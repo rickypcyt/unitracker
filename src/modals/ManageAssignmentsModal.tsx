@@ -57,10 +57,10 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Manage Assignments"
-        maxWidth="max-w-md"
+        maxWidth="max-w-2xl"
         className="!p-0"
       >
-        <div className="space-y-4 p-6">
+        <div className="space-y-4 p-6 max-h-[70vh] overflow-y-auto">
           {assignments.length === 0 ? (
             <p className="text-[var(--text-secondary)] text-center py-4">
               No assignments found

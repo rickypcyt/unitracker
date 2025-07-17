@@ -1,6 +1,5 @@
-import { Github, Mail } from 'lucide-react';
-
 import BaseModal from '@/modals/BaseModal';
+import { Mail } from 'lucide-react';
 import React from 'react';
 
 const AboutModal = ({ isOpen, onClose }) => {
@@ -34,7 +33,7 @@ const AboutModal = ({ isOpen, onClose }) => {
           <div className="flex items-center gap-2">
             <Mail size={20} className="text-[var(--accent-primary)]" />
             <a 
-              href="mailto:rickypcyt3@gmail.com" 
+              href="mailto:rickypcyt@gmail.com" 
               className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors hover:underline"
             >
               rickypcyt@gmail.com

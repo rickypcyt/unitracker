@@ -5,6 +5,7 @@ import NoteList from './NoteList';
 import NotesCreateModal from './modals/NotesCreateModal';
 import NotesForm from './NotesForm';
 import NotesPanel from './NotesPanel';
+import { Plus } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -35,11 +36,11 @@ const Notes: React.FC = () => {
     const fetchNotes = async () => {
       setLoading(true);
       setError(null);
-      if (user) {
+      if (user && (user as any).id) {
         const { data, error } = await supabase
           .from('notes')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', (user as any).id)
           .order('created_at', { ascending: false });
         if (error) setError('Error loading notes');
         else setNotes((data as Note[]) || []);
@@ -63,10 +64,10 @@ const Notes: React.FC = () => {
   const handleAddNote = async (note: Omit<Note, 'id'>) => {
     setLoading(true);
     setError(null);
-    if (user) {
+    if (user && (user as any).id) {
       const { data, error } = await supabase
         .from('notes')
-        .insert([{ ...note, user_id: user.id }])
+        .insert([{ ...note, user_id: (user as any).id }])
         .select()
         .single();
       if (error) setError('Error saving note');
@@ -134,16 +135,17 @@ const Notes: React.FC = () => {
   };
 
   return (
-    <div className="w-full mx-auto p-6 mt-8 relative">
+    <div className="w-full mx-auto p-6 mt-3 relative">
+      {/* Floating Action Button - estilo dashed, border, animación bacán */}
       <button
-        className="fixed bottom-8 right-8 z-50 bg-[var(--accent-primary)] text-white rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-lg hover:bg-blue-700 transition-colors"
         onClick={() => {
           if (!user) setShowLoginModal(true);
           else setShowCreateModal(true);
         }}
+        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
         aria-label="Add Note"
       >
-        +
+        <Plus size={32} />
       </button>
       <NotesCreateModal
         isOpen={showCreateModal || showEditModal}
@@ -164,8 +166,6 @@ const Notes: React.FC = () => {
           error={error}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          editingId={editingId}
-          editForm={null}
         />
       </div>
     </div>

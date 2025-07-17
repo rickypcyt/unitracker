@@ -11,7 +11,7 @@ const BaseModal = ({
   hasUnsavedChanges = false,
   showCloseButton = true,
   maxWidth = 'max-w-md',
-  zIndex = 'z-50'
+  zIndex = 'z-[10001]'
 }) => {
   useEffect(() => {
     const handleEscape = (e) => {

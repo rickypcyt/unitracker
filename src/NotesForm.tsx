@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { FileText, Save, X } from 'lucide-react';
+import { FormActions, FormButton, FormInput } from './modals/FormElements';
+import React, { useEffect, useState } from 'react';
 
 import MarkdownWysiwyg from './MarkdownWysiwyg';
 
@@ -21,11 +23,8 @@ interface NotesFormProps {
 
 const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, onCancel, isEdit }) => {
   const [form, setForm] = useState({
-    title: '',
     assignment: '',
-    description: '',
   });
-  // Use a single state for the wysiwyg fields
   const [wysiwyg, setWysiwyg] = useState({
     title: initialValues?.title || '',
     body: initialValues?.description || '',
@@ -34,9 +33,7 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
   useEffect(() => {
     if (initialValues) {
       setForm({
-        title: initialValues.title || '',
         assignment: initialValues.assignment || '',
-        description: initialValues.description || '',
       });
       setWysiwyg({
         title: initialValues.title || '',
@@ -45,8 +42,8 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
     }
   }, [initialValues]);
 
-  const handleAssignmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, assignment: e.target.value });
+  const handleAssignmentChange = (value: string) => {
+    setForm({ ...form, assignment: value });
   };
 
   const handleWysiwygChange = (data: { title: string; body: string }) => {
@@ -62,47 +59,55 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
       description: wysiwyg.body,
       date: getToday(),
     });
-    setForm({ title: '', assignment: '', description: '' });
+    setForm({ assignment: '' });
     setWysiwyg({ title: '', body: '' });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-      <input
-        name="assignment"
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <FormInput
+        id="assignment"
+        label="Assignment (optional)"
         value={form.assignment}
         onChange={handleAssignmentChange}
-        placeholder="Assignment (opcional)"
-        className="w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-        disabled={loading}
+        placeholder="Enter assignment name..."
+        error={null}
       />
-      <div className="w-full min-h-[300px]">
-        <MarkdownWysiwyg
-          initialTitle={wysiwyg.title}
-          initialBody={wysiwyg.body}
-          onChange={handleWysiwygChange}
-          className="min-h-[300px] h-[350px] md:h-[400px]"
-        />
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-base font-medium text-[var(--text-primary)]">
+          <FileText size={16} className="text-[var(--accent-primary)]" />
+          Note Content
+        </label>
+        <div className="overflow-hidden">
+          <MarkdownWysiwyg
+            initialTitle={wysiwyg.title}
+            initialBody={wysiwyg.body}
+            onChange={handleWysiwygChange}
+            className="min-h-[300px]"
+          />
+        </div>
       </div>
-      <div className="flex justify-between mt-4 gap-2">
+      <FormActions className="pt-4">
         {onCancel && (
-          <button
+          <FormButton
             type="button"
-            className="px-3 py-1 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-black rounded text-sm font-medium hover:bg-[var(--accent-primary)] hover:text-black transition-colors"
+            variant="secondary"
             onClick={onCancel}
             disabled={loading}
           >
-            Cancelar
-          </button>
+            <X size={18} className="mr-2" />
+            Cancel
+          </FormButton>
         )}
-        <button
+        <FormButton
           type="submit"
-          className="px-3 py-1 bg-[var(--accent-primary)] text-black rounded text-sm font-medium hover:bg-[var(--accent-secondary)] transition-colors ml-auto"
+          variant="primary"
           disabled={loading}
         >
-          {loading ? 'Guardando...' : isEdit ? 'Guardar' : 'Agregar'}
-        </button>
-      </div>
+          <Save size={18} className="mr-2" />
+          {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Note'}
+        </FormButton>
+      </FormActions>
     </form>
   );
 };

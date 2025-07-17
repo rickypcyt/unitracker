@@ -106,7 +106,7 @@ const StudySessions = () => {
 
     if (!isLoggedIn) {
         return (
-            <div className="maincard">
+            <div className="maincard p-3">
                 <div className="flex justify-center items-center">
                     <div className="section-title">
                         <BookOpen size={22} className="icon" />

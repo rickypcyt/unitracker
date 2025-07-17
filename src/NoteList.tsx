@@ -1,7 +1,9 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
+import remarkGfm from 'remark-gfm';
 
 interface Note {
   id?: string;
@@ -22,67 +24,103 @@ interface NoteListProps {
   editForm: React.ReactNode;
 }
 
-const getGridClass = (count: number) => {
-  if (count === 1) return 'grid-cols-1';
-  if (count === 2) return 'grid-cols-2';
-  if (count === 3) return 'grid-cols-2 grid-rows-2';
-  if (count === 4) return 'grid-cols-2';
-  if (count <= 6) return 'grid-cols-3';
-  return 'grid-cols-4';
-};
-
 const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDelete, editingId, editForm }) => {
-  const gridClass = getGridClass(notes.length);
+  if (loading && notes.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)]">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">{error}</div>
+          <p className="text-[var(--text-secondary)]">Failed to load notes</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (notes.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <span className="text-[var(--text-secondary)] text-4xl mb-4 block">📝</span>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No notes yet</h3>
+          <p className="text-[var(--text-secondary)]">Create your first note to get started</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`grid ${gridClass} gap-6 justify-items-center w-full max-w-5xl mx-auto`}>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      {loading && notes.length === 0 ? (
-        <p className="text-[var(--text-secondary)]">Loading...</p>
-      ) : notes.length === 0 ? (
-        <p className="text-[var(--text-secondary)]">No notes yet.</p>
-      ) : (
-        notes.map((note, idx) => (
+    <div className="py-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className={`maincard p-4 border-2 border-[var(--accent-primary)] rounded-xl flex flex-col justify-between w-80 max-w-xs mx-auto items-center
-              ${notes.length === 3 && idx === 2 ? 'col-span-2 mx-auto' : ''}`}
+            className="relative flex flex-col bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group min-h-[260px]"
           >
-            <div className="flex justify-center items-center mb-1 w-full">
-              <span className="font-bold text-lg text-[var(--text-primary)] text-center w-full">{note.title}</span>
+            {/* Card Header */}
+            <div className="mb-2 flex flex-col gap-1">
+              <h3 className="font-semibold text-lg text-[var(--text-primary)] truncate mb-1">
+                {note.title}
+              </h3>
+              {note.assignment && (
+                <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
+                  {note.assignment}
+                </span>
+              )}
             </div>
-            {note.assignment && (
-              <div className="text-base  text-[var(--accent-primary)] mb-1"> {note.assignment}</div>
-            )}
-            <div className="text-[var(--text-secondary)] whitespace-pre-line mb-2 w-full prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: note.description }}
-            />
-            <div className="flex justify-center w-full">
-              <span className="text-base text-[var(--text-secondary)]">{note.date}</span>
+
+            {/* Card Content */}
+            <div className="mb-3 flex-1 overflow-hidden">
+              <div 
+                className="text-[var(--text-secondary)] text-sm prose prose-sm prose-invert max-w-none max-h-48flow-y-auto custom-scrollbar"
+                dangerouslySetInnerHTML={{ __html: note.description }}
+              />
             </div>
-            <div className="flex gap-4 mt-2">
-              <button
-                className="text-[var(--accent-primary)] hover:text-blue-400 p-1 rounded-full"
-                onClick={() => onEdit(note)}
-                aria-label="Edit note"
-                title="Edit"
-              >
-                <Pencil size={20} />
-              </button>
-              <button
-                className="text-red-500 hover:text-red-400 p-1 rounded-full"
-                onClick={() => onDelete(note)}
-                aria-label="Delete note"
-                title="Delete"
-              >
-                <Trash2 size={20} />
-              </button>
+
+            {/* Card Footer */}
+            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
+              <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                <Calendar size={14} />
+                <span>{new Date(note.date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button
+                  className="p-2 rounded-lg text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                  onClick={() => onEdit(note)}
+                  aria-label="Edit note"
+                  title="Edit"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                  onClick={() => onDelete(note)}
+                  aria-label="Delete note"
+                  title="Delete"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
+            {/* Edit Form Overlay */}
             {editingId === note.id && (
-              <div className="mt-4">{editForm}</div>
+              <div className="absolute inset-0 bg-[var(--bg-primary)]/95 backdrop-blur-sm rounded-xl p-4 z-10 flex items-center justify-center">
+                {editForm}
+              </div>
             )}
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 };
