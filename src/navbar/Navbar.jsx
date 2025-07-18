@@ -242,42 +242,42 @@ const Navbar = ({ onOpenSettings }) => {
   return (
     <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden">
       <div className="w-full px-2 overflow-x-hidden">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-16 w-full">
+          {/* Logo a la izquierda */}
           <div className="flex items-center flex-shrink-0">
-            <span className="text-[var(--text-primary)] font-bold text-2xl">Uni</span>
-            <span className="text-[var(--accent-primary)] font-bold text-2xl">Tracker</span>
+            <span className="text-[var(--text-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl">Uni</span>
+            <span className="text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl">Tracker</span>
           </div>
-          {/* Navigation links - Desktop only (lg+) - CENTERED */}
-          {/* Desktop: texto, md y menor: iconos compactos */}
-          <div className="hidden lg:flex flex-1 justify-center items-center space-x-4 lg:space-x-8">
-            {navIcons.map(({ page, icon: Icon, label }) => (
-              <button
-                key={page}
-                onClick={() => navigateTo(page)}
-                className={navLinkClass(page) + ' text-base lg:text-xl flex items-center gap-2'}
-                title={label}
-              >
-                <Icon className="w-6 h-6 mr-1" />
-                <span className="hidden md:inline">{label}</span>
-              </button>
-            ))}
+          {/* Botones de páginas al centro */}
+          <div className="flex-1 flex justify-center items-center">
+            <div className="hidden lg:flex space-x-4 lg:space-x-8">
+              {navIcons.map(({ page, icon: Icon, label }) => (
+                <button
+                  key={page}
+                  onClick={() => navigateTo(page)}
+                  className={navLinkClass(page) + ' text-xs sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-2'}
+                  title={label}
+                >
+                  <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6 mr-1" />
+                  <span className="hidden md:inline text-xs sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1">
+              {navIcons.map(({ page, icon: Icon, label }) => (
+                <button
+                  key={page}
+                  onClick={() => navigateTo(page)}
+                  className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
+                  title={label}
+                >
+                  <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
+                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden xs:inline">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-          {/* md y menor: solo iconos, tooltips al hacer hover */}
-          <div className="flex lg:hidden flex-1 justify-center items-center space-x-2 sm:space-x-3 md:space-x-4">
-            {navIcons.map(({ page, icon: Icon, label }) => (
-              <button
-                key={page}
-                onClick={() => navigateTo(page)}
-                className={`p-2 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
-                title={label}
-              >
-                <Icon className="w-6 h-6" />
-                <span className="text-[10px] mt-0.5 font-medium hidden xs:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-          {/* WorkspaceDropdown and SettingsButton */}
+          {/* Briefcase y Settings a la derecha */}
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
             <WorkspaceDropdown
               workspaces={workspacesWithTaskCount}

@@ -96,13 +96,13 @@ const TaskSelectionPanel = ({
       return (
         <div
           key={task.id}
-          className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem] ${borderColor} bg-[var(--bg-secondary)]`}
+          className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-md ${borderColor} bg-[var(--bg-secondary)]`}
         >
           <div className="flex items-center gap-2 w-full">
             <span className="font-medium text-[var(--text-primary)] truncate">{task.title}</span>
             <button
               onClick={() => onMoveTask(task, false)}
-              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded-full transition-colors ml-auto"
+              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded transition-colors ml-auto"
               title="Move to Available Tasks"
             >
               <ArrowRight size={18} className="text-[var(--text-secondary)]" />
@@ -147,7 +147,7 @@ const TaskSelectionPanel = ({
       return (
         <div
           key={task.id}
-          className={taskClasses + ' px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-[1rem]'}
+          className={taskClasses + ' px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-md'}
           onClick={() => !isActive && onMoveTask(task, true)}
         >
           <div className="flex items-center gap-2 w-full">
@@ -156,7 +156,7 @@ const TaskSelectionPanel = ({
                 e.stopPropagation();
                 onMoveTask(task, true);
               }}
-              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded-full transition-colors"
+              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded transition-colors"
               title="Move to Active Tasks"
             >
               <ArrowLeft size={18} className="text-[var(--text-secondary)]" />

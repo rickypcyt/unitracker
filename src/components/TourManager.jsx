@@ -32,14 +32,7 @@ const TourManager = ({ children }) => {
     <>
       {children}
       {showWelcomeModal && (
-        <WelcomeModal onClose={handleCloseWelcomeAndStartTour} />
-      )}
-      {showTour && (
-        <Tour
-          steps={tourSteps}
-          run={showTour}
-          onClose={() => setShowTour(false)}
-        />
+        <WelcomeModal onClose={handleCloseWelcome} />
       )}
     </>
   );

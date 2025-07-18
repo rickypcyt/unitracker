@@ -123,40 +123,40 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
             })}
           </div>
         </div>
-        <div>
-          <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-            Workspace Name
-          </label>
-          <input
-            type="text"
-            id="workspaceName"
-            value={workspaceName}
-            onChange={(e) => setWorkspaceName(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-            placeholder="Enter workspace name..."
-            autoFocus
-          />
-        </div>
-        {error && (
-          <div className="text-red-500 text-sm">{error}</div>
-        )}
-        <div className="flex gap-3 pt-4">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex-1 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading || !workspaceName.trim()}
-            className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Creating...' : 'Create Workspace'}
-          </button>
-        </div>
-      </form>
+          <div>
+            <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              Workspace Name
+            </label>
+            <input
+              type="text"
+              id="workspaceName"
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+              placeholder="Enter workspace name..."
+              autoFocus
+            />
+          </div>
+          {error && (
+            <div className="text-red-500 text-sm">{error}</div>
+          )}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !workspaceName.trim()}
+              className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? 'Creating...' : 'Create Workspace'}
+            </button>
+          </div>
+        </form>
     </BaseModal>
   );
 };

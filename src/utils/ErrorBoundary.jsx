@@ -37,10 +37,10 @@ class ErrorBoundary extends React.Component {
           </p>
           <details style={{ whiteSpace: 'pre-wrap' }} className="w-full max-w-md mx-auto mb-4 bg-[var(--bg-secondary)] rounded p-3 text-left text-xs border border-[var(--border-primary)]">
             <summary className="cursor-pointer font-semibold mb-2">Error Details</summary>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo && this.state.errorInfo.componentStack}
-          </details>
+              {this.state.error && this.state.error.toString()}
+              <br />
+              {this.state.errorInfo && this.state.errorInfo.componentStack}
+            </details>
           <button
             onClick={() => window.location.reload()}
             className="retry-button px-4 py-2 rounded bg-[var(--accent-primary)] text-white font-semibold mt-2"

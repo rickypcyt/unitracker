@@ -51,40 +51,40 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-3xl mx-4 p-8 relative shadow-xl animate-fadeIn">
+      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-4 sm:p-8 relative shadow-xl animate-fadeIn">
         <div className="flex-1 mb-4 text-center">
-          <h3 className="text-xl sm:text-2xl font-bold text-accent-primary mb-1">
+          <h3 className="text-lg sm:text-2xl font-bold text-accent-primary mb-1">
             Welcome to UniTracker
           </h3>
-          <p className="text-gray text-base sm:text-base">
+          <p className="text-gray text-sm sm:text-base">
             Your all-in-one study companion
           </p>
         </div>
 
         {/* Getting Started section first */}
-        <div className="bg-[var(--bg-secondary)] p-4 rounded-xl mb-4 border-2 border-[var(--border-primary)]">
-          <h4 className="text-lg font-semibold text-accent-primary mb-2 flex items-center gap-2">
+        <div className="bg-[var(--bg-secondary)] p-3 sm:p-4 rounded-xl mb-4 border-2 border-[var(--border-primary)]">
+          <h4 className="text-base sm:text-lg font-semibold text-accent-primary mb-2 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             Getting Started
           </h4>
           <div className="space-y-2">
-            <p className="text-base text-gray">
+            <p className="text-sm sm:text-base text-gray">
               UniTracker helps you manage your study time effectively. Here's what you can do:
             </p>
             <ul className="space-y-2">
-              <li className="flex items-center gap-2 text-base text-gray">
+              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Create and organize your study tasks
               </li>
-              <li className="flex items-center gap-2 text-base text-gray">
+              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Track your study sessions with the built-in timer
               </li>
-              <li className="flex items-center gap-2 text-base text-gray">
+              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Use the Pomodoro technique for focused study sessions
               </li>
-              <li className="flex items-center gap-2 text-base text-gray">
+              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
                 <div className="w-1 h-1 rounded-full bg-accent-primary" />
                 Monitor your progress with detailed statistics
               </li>
@@ -93,11 +93,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         </div>
 
         {/* Features cards after */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="bg-[var(--bg-secondary)] p-4 rounded-xl hover:bg-[var(--bg-primary)] transition-all duration-200 animate-slideUp border-2 border-[var(--border-primary)]"
+              className="bg-[var(--bg-secondary)] p-3 sm:p-4 rounded-xl hover:bg-[var(--bg-primary)] transition-all duration-200 animate-slideUp border-2 border-[var(--border-primary)]"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start gap-3">
@@ -105,10 +105,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                   {feature.icon}
                 </div>
                 <div>
-                  <h4 className="text-base font-semibold text-neutral-500 mb-1">
+                  <h4 className="text-sm sm:text-base font-semibold text-neutral-500 mb-1">
                     {feature.title}
                   </h4>
-                  <p className="text-base text-gray">
+                  <p className="text-sm sm:text-base text-gray">
                     {feature.description}
                   </p>
                 </div>

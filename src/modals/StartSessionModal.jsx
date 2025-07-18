@@ -287,13 +287,14 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             type="button"
             variant="secondary"
             onClick={onClose}
+            className="rounded-md"
           >
             Cancel
           </FormButton>
           <button
             type="button"
             onClick={handleStart}
-            className="px-6 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-semibold"
+            className="px-6 py-2 rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-semibold"
           >
             Start Session
           </button>
