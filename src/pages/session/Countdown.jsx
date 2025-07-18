@@ -1,324 +1,216 @@
 import { AlarmClock, Pause, Play, RotateCcw } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import toast from 'react-hot-toast';
 
-const pad = (n) => n.toString().padStart(2, '0');
+const fields = ['hours', 'minutes', 'seconds'];
+const fieldMax = { hours: 23, minutes: 59, seconds: 59 };
 
-const MAX = { hours: 23, minutes: 59, seconds: 59 };
+const pad = (n, field) => {
+  const max = fieldMax[field];
+  const val = Math.min(Math.max(n, 0), max);
+  return val.toString().padStart(2, '0');
+};
 
 const Countdown = () => {
   const [time, setTime] = useState({ hours: 1, minutes: 0, seconds: 0 });
-  const [initialTime, setInitialTime] = useState({ hours: 1, minutes: 0, seconds: 0 });
-  const [activeField, setActiveField] = useState('hours'); // 'hours' | 'minutes' | 'seconds'
+  const [initialTime, setInitialTime] = useState(time);
+  const [activeField, setActiveField] = useState('hours');
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef(null);
-  const inputRefs = {
-    hours: useRef(null),
-    minutes: useRef(null),
-    seconds: useRef(null)
-  };
-
-  // Para sobrescribir el campo activo con el último dígito ingresado
-  const lastInputDigit = useRef(null);
-  const [skipField, setSkipField] = useState(null);
   const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isRunning) return;
-      const active = document.activeElement;
-      const fields = ['hours', 'minutes', 'seconds'];
-      // Si un input está enfocado, SOLO permitir navegación y flechas, NO sobrescribir el valor con un solo dígito
-      if (active && (active.tagName === 'INPUT' && active.type === 'text')) {
-        const idx = fields.indexOf(activeField);
-        if (e.key === 'ArrowLeft') {
-          const prev = idx === 0 ? 2 : idx - 1;
-          setActiveField(fields[prev]);
-          inputRefs[fields[prev]].current?.focus();
-          e.preventDefault();
-        } else if (e.key === 'ArrowRight') {
-          const next = idx === 2 ? 0 : idx + 1;
-          setActiveField(fields[next]);
-          inputRefs[fields[next]].current?.focus();
-          e.preventDefault();
-        } else if (e.key === 'ArrowUp') {
-          setTime(t => {
-            const next = { ...t };
-            const step = activeField === 'minutes' ? 5 : 1;
-            next[activeField] = Math.min(next[activeField] + step, MAX[activeField]);
-            return next;
-          });
-          e.preventDefault();
-        } else if (e.key === 'ArrowDown') {
-          setTime(t => {
-            const next = { ...t };
-            const step = activeField === 'minutes' ? 5 : 1;
-            next[activeField] = Math.max(next[activeField] - step, 0);
-            return next;
-          });
-          e.preventDefault();
-        }
-        // NO sobrescribir el valor con un solo dígito aquí
-        return;
-      }
-      // Si ningún input está enfocado, navegación rápida
-      if (e.key === 'ArrowLeft') {
-        setActiveField(f => {
-          const idx = fields.indexOf(f);
-          const prev = idx === 0 ? 2 : idx - 1;
-          inputRefs[fields[prev]].current?.focus();
-          return fields[prev];
-        });
-        e.preventDefault();
-      } else if (e.key === 'ArrowRight') {
-        setActiveField(f => {
-          const idx = fields.indexOf(f);
-          const next = idx === 2 ? 0 : idx + 1;
-          inputRefs[fields[next]].current?.focus();
-          return fields[next];
-        });
-        e.preventDefault();
-      } else if (e.key === 'ArrowUp') {
-        setTime(t => {
-          const next = { ...t };
-          next[activeField] = Math.min(next[activeField] + 1, MAX[activeField]);
-          return next;
-        });
-        e.preventDefault();
-      } else if (e.key === 'ArrowDown') {
-        setTime(t => {
-          const next = { ...t };
-          next[activeField] = Math.max(next[activeField] - 1, 0);
-          return next;
-        });
-        e.preventDefault();
-      } else if (/^[0-9]$/.test(e.key)) {
-        setTime(t => {
-          let val = parseInt(e.key, 10);
-          if (val > MAX[activeField]) val = MAX[activeField];
-          lastInputDigit.current = val;
-          return { ...t, [activeField]: val };
-        });
-        e.preventDefault();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeField, isRunning, inputRefs]);
 
-  // Iniciar countdown
+  const inputRefs = useRef({
+    hours: React.createRef(),
+    minutes: React.createRef(),
+    seconds: React.createRef()
+  });
+
+  const calculateSeconds = ({ hours, minutes, seconds }) =>
+    hours * 3600 + minutes * 60 + seconds;
+
   const startCountdown = () => {
-    setInitialTime(time); // Guardar el tiempo inicial antes de empezar
-    setSecondsLeft(time.hours * 3600 + time.minutes * 60 + time.seconds);
-    setIsRunning(true);
+    const total = calculateSeconds(time);
+    if (total > 0) {
+      setInitialTime(time);
+      setSecondsLeft(total);
+      setIsRunning(true);
+    }
   };
 
-  // Manejar el timer
   useEffect(() => {
-    if (!isRunning) {
-      clearInterval(intervalRef.current);
-      return;
-    }
-    intervalRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(intervalRef.current);
+    if (!isRunning) return;
+
+    const interval = setInterval(() => {
+      setSecondsLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
           setIsRunning(false);
-          // Sonido
+
           try {
-            const audio = new window.Audio('/sounds/countdownend.mp3');
-            audio.play();
-          } catch (e) {}
-          // Toast
+            new Audio('/sounds/countdownend.mp3').play();
+          } catch {}
+
           toast.success('Countdown finished! Session complete.', {
             position: 'top-center',
             style: {
               backgroundColor: '#000',
               color: '#fff',
-              border: '2px solid var(--border-primary)',
-            },
+              border: '2px solid var(--border-primary)'
+            }
           });
-          // Desktop notification
-          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+
+          if (Notification.permission === 'granted') {
             try {
-              const notification = new window.Notification('Countdown finished!', {
+              const notification = new Notification('Countdown finished!', {
                 body: 'Your session is complete.',
                 silent: false,
-                vibrate: [200, 100, 200],
+                vibrate: [200, 100, 200]
               });
               setTimeout(() => notification.close(), 5000);
-            } catch (e) {}
+            } catch {}
           }
           return 0;
         }
-        return s - 1;
+        return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(intervalRef.current);
+
+    return () => clearInterval(interval);
   }, [isRunning]);
 
-  // Actualiza el tiempo mostrado cuando cambia secondsLeft
   useEffect(() => {
-    if (!isRunning) return;
-    setTime({
-      hours: Math.floor(secondsLeft / 3600),
-      minutes: Math.floor((secondsLeft % 3600) / 60),
-      seconds: secondsLeft % 60
-    });
+    if (isRunning) {
+      setTime({
+        hours: Math.floor(secondsLeft / 3600),
+        minutes: Math.floor((secondsLeft % 3600) / 60),
+        seconds: secondsLeft % 60
+      });
+    }
   }, [secondsLeft, isRunning]);
 
-  const handleInputChange = (field, value) => {
-    let clean = value.replace(/\D/g, '');
-    if (clean.length === 0) {
-      setTime(t => ({ ...t, [field]: 0 }));
-      return;
-    }
-    let val;
-    if (field === 'hours') {
-      val = parseInt(clean[0], 10); // Solo el primer dígito
-      setTime(t => {
-        setSkipField(field); // Salta automáticamente a minutos
-        return { ...t, [field]: isNaN(val) ? 0 : val };
-      });
-      lastInputDigit.current = val;
-      return;
-    }
-    if (clean.length === 1) {
-      val = parseInt(clean, 10);
-      setTime(t => ({ ...t, [field]: val }));
-      // Mueve el cursor a la posición 1 después del primer dígito
-      setTimeout(() => {
-        inputRefs[field].current?.setSelectionRange(1, 1);
-      }, 0);
-      lastInputDigit.current = val;
-      return;
-    } else {
-      val = parseInt(clean.slice(0, 2), 10);
-      if (val > MAX[field]) val = MAX[field];
-    }
-    setTime(t => {
-      if (clean.length === 2) {
-        setSkipField(field);
-      }
-      return { ...t, [field]: val };
-    });
-    lastInputDigit.current = val;
-  };
-
-  // useEffect para hacer el skip automático después de actualizar el valor
-  useEffect(() => {
-    if (!skipField) return;
-    const fields = ['hours', 'minutes', 'seconds'];
-    const idx = fields.indexOf(skipField);
-    if (idx < 2) {
-      const nextField = fields[idx + 1];
-      setActiveField(nextField);
-      setProgrammaticFocusField(nextField); // Marcar que el próximo focus es programático
-      setTimeout(() => {
-        inputRefs[nextField].current?.focus();
-      }, 0);
-    }
-    setSkipField(null);
-  }, [time, skipField]);
-
-  // Mejorar navegación con Tab, Shift+Tab y Enter
-  const handleInputKeyDown = (e, field) => {
-    const fields = ['hours', 'minutes', 'seconds'];
-    const idx = fields.indexOf(field);
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        // Ir al campo anterior
-        const prev = idx === 0 ? 2 : idx - 1;
-        setActiveField(fields[prev]);
-        inputRefs[fields[prev]].current?.focus();
-      } else {
-        // Ir al campo siguiente
-        const next = idx === 2 ? 0 : idx + 1;
-        setActiveField(fields[next]);
-        inputRefs[fields[next]].current?.focus();
-      }
-    }
-  };
-
-  // Reset timer
   const handleReset = () => {
     setIsRunning(false);
     setSecondsLeft(0);
-    setTime(initialTime); // Restaurar el tiempo inicial
+    setTime(initialTime);
+  };
+
+  const handleInputChange = useCallback((field, value) => {
+    const clean = value.replace(/\D/g, ''); // Solo números
+    let val = parseInt(clean, 10);
+    if (isNaN(val)) val = 0;
+    if (val > fieldMax[field]) val = fieldMax[field];
+    setTime(prev => ({ ...prev, [field]: val }));
+  }, []);
+
+  const navigateField = useCallback((direction, currentIdx) => {
+    const newIndex = (currentIdx + direction + fields.length) % fields.length;
+    const nextField = fields[newIndex];
+    setActiveField(nextField);
+    setProgrammaticFocusField(nextField);
+    inputRefs.current[nextField].current?.focus();
+  }, []);
+
+  const handleInputKeyDown = useCallback((e, field) => {
+    const idx = fields.indexOf(field);
+    const step = field === 'minutes' ? 5 : 1;
+
+    switch (e.key) {
+      case 'Tab':
+        e.preventDefault();
+        navigateField(e.shiftKey ? -1 : 1, idx);
+        break;
+      case 'Enter':
+      case 'ArrowRight':
+        e.preventDefault();
+        navigateField(1, idx);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        navigateField(-1, idx);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setTime(prev => {
+          const next = (prev[field] + step) % (fieldMax[field] + 1);
+          return { ...prev, [field]: next };
+        });
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        setTime(prev => {
+          const next = (prev[field] - step + (fieldMax[field] + 1)) % (fieldMax[field] + 1);
+          return { ...prev, [field]: next };
+        });
+        break;
+      default:
+        break;
+    }
+  }, [navigateField]);
+
+  const handleFocus = (field, e) => {
+    setActiveField(field);
+    setTimeout(() => {
+      e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+      setProgrammaticFocusField(null);
+    }, 0);
   };
 
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="flex items-center justify-center w-full px-4 py-3 relative">
         <div className="flex items-center gap-2 mx-auto">
-          <AlarmClock size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg truncate mb-0 self-center">Countdown</span>
+          <AlarmClock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
+          <span className="font-bold text-lg">Countdown</span>
         </div>
-        <div className="absolute right-4 flex items-center"><div className="w-[28px]"></div></div>
       </div>
+
       <div className="flex items-center justify-center mb-6">
-        {['hours', 'minutes', 'seconds'].map((field, idx) => (
+        {fields.map((field, idx) => (
           <React.Fragment key={field}>
             <input
-              ref={inputRefs[field]}
+              ref={inputRefs.current[field]}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={pad(time[field])}
-              onFocus={e => {
-                setActiveField(field);
-                setTimeout(() => {
-                  if (field === 'hours') {
-                    e.target.setSelectionRange(0, 0);
-                  } else if (programmaticFocusField === field) {
-                    const val = e.target.value;
-                    if (val.length === 1) {
-                      e.target.setSelectionRange(1, 1);
-                    } else {
-                      e.target.setSelectionRange(val.length, val.length);
-                    }
-                    setProgrammaticFocusField(null); // Limpiar bandera
-                  }
-                  // Si es focus por click, no mover el cursor
-                }, 0);
-              }}
+              value={pad(time[field], field)}
+              onFocus={e => handleFocus(field, e)}
               onChange={e => handleInputChange(field, e.target.value)}
               onKeyDown={e => handleInputKeyDown(e, field)}
-              className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono font-normal bg-transparent border-none ring-0 outline-none focus:outline-none focus:ring-0 transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'} ${isRunning ? 'pointer-events-none' : ''}`}
-              disabled={isRunning}
+              className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
               tabIndex={idx + 1}
               style={{ letterSpacing: '0.05em' }}
             />
-            {field !== 'seconds' && <span className="text-5xl font-mono font-normal text-[var(--text-primary)] select-none mx-1">:</span>}
+            {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-1">:</span>}
           </React.Fragment>
         ))}
       </div>
-      <div className="timer-controls flex justify-center items-center gap-3 mb-2">
+
+      <div className="flex justify-center items-center gap-3 mb-2">
         <button
           onClick={handleReset}
-          className="control-button flex items-center justify-center bg-transparent text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20 transition-colors rounded-full"
+          className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
           aria-label="Reset timer"
         >
           <RotateCcw size={24} className="text-[var(--accent-primary)]" />
         </button>
-        {!isRunning ? (
+
+        {isRunning ? (
           <button
-            className="control-button flex items-center justify-center bg-transparent text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20 transition-colors rounded-full"
-            onClick={startCountdown}
-            disabled={time.hours === 0 && time.minutes === 0}
-            aria-label="Start countdown"
-          >
-            <Play size={24} className="text-[var(--accent-primary)]" />
-          </button>
-        ) : (
-          <button
-            className="control-button flex items-center justify-center bg-transparent text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20 transition-colors rounded-full"
             onClick={() => setIsRunning(false)}
+            className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
             aria-label="Pause countdown"
           >
             <Pause size={24} className="text-[var(--accent-primary)]" />
+          </button>
+        ) : (
+          <button
+            onClick={startCountdown}
+            disabled={calculateSeconds(time) === 0}
+            className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
+            aria-label="Start countdown"
+          >
+            <Play size={24} className="text-[var(--accent-primary)]" />
           </button>
         )}
       </div>
@@ -326,4 +218,4 @@ const Countdown = () => {
   );
 };
 
-export default Countdown; 
+export default Countdown;
