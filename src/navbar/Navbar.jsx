@@ -35,6 +35,8 @@ const Navbar = ({ onOpenSettings }) => {
   const workspaces = useSelector(state => state.workspace.workspaces);
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
   const tasks = useSelector(state => state.tasks.tasks);
+  const [receivedRequests, setReceivedRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
 
   // Abrir UserModal automáticamente si falta username, con delay y consulta a profiles
   useEffect(() => {
@@ -48,7 +50,10 @@ const Navbar = ({ onOpenSettings }) => {
           .select('username')
           .eq('id', user.id)
           .single();
-        if (!error && (!data || !data.username)) {
+        console.log('Profile data:', data, 'Error:', error); // <-- Log para depuración
+        if (!error && data && data.username) {
+          setShowUserModal(false);
+        } else {
           setShowUserModal(true);
         }
       }
@@ -121,6 +126,78 @@ const Navbar = ({ onOpenSettings }) => {
       localStorage.removeItem('workspacesHydrated');
     }
   }, [isLoggedIn, dispatch]);
+
+  // Cargar solicitudes de amistad desde Supabase
+  useEffect(() => {
+    if (!user) {
+      setReceivedRequests([]);
+      setSentRequests([]);
+      return;
+    }
+    const fetchRequests = async () => {
+      // Recibidas
+      const { data: rec, error: recErr } = await supabase
+        .from('friend_requests')
+        .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url)')
+        .eq('to_user_id', user.id)
+        .eq('status', 'pending');
+      // Enviadas
+      const { data: sent, error: sentErr } = await supabase
+        .from('friend_requests')
+        .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
+        .eq('from_user_id', user.id)
+        .eq('status', 'pending');
+      setReceivedRequests(rec || []);
+      setSentRequests(sent || []);
+    };
+    fetchRequests();
+  }, [user]);
+
+  // Función para enviar solicitud de amistad real
+  const handleSendRequest = async (username, { onSuccess, onError }) => {
+    try {
+      // 1. Busca el usuario destino
+      const { data: userTo, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .single();
+      if (userError || !userTo) throw new Error('Usuario no encontrado');
+      if (userTo.id === user.id) throw new Error('No puedes enviarte una solicitud a ti mismo');
+      // 2. Verifica que no exista ya una solicitud pendiente
+      const { data: existing } = await supabase
+        .from('friend_requests')
+        .select('id')
+        .or(`and(from_user_id.eq.${user.id},to_user_id.eq.${userTo.id})`, `and(from_user_id.eq.${userTo.id},to_user_id.eq.${user.id})`)
+        .eq('status', 'pending');
+      if (existing && existing.length > 0) throw new Error('Ya existe una solicitud pendiente entre ustedes');
+      // 3. Inserta la solicitud
+      const { error } = await supabase
+        .from('friend_requests')
+        .insert({ from_user_id: user.id, to_user_id: userTo.id, status: 'pending' });
+      if (error) throw error;
+      onSuccess && onSuccess();
+    } catch (err) {
+      onError && onError(err.message);
+    }
+  };
+
+  // Función para aceptar solicitud
+  const handleAccept = async (req) => {
+    await supabase
+      .from('friend_requests')
+      .update({ status: 'accepted' })
+      .eq('id', req.id);
+    setReceivedRequests(receivedRequests.filter(r => r.id !== req.id));
+  };
+  // Función para rechazar solicitud
+  const handleReject = async (req) => {
+    await supabase
+      .from('friend_requests')
+      .update({ status: 'rejected' })
+      .eq('id', req.id);
+    setReceivedRequests(receivedRequests.filter(r => r.id !== req.id));
+  };
 
   const handleSelectWorkspace = (ws) => {
     dispatch(setActiveWorkspace(ws));
@@ -411,14 +488,26 @@ const Navbar = ({ onOpenSettings }) => {
                       Settings
                     </DropdownMenu.Item>
                     <DropdownMenu.Item
-                      onClick={() => setShowUserModal(true)}
+                      onClick={() => {
+                        if (!isLoggedIn) {
+                          loginWithGoogle();
+                        } else {
+                          setShowUserModal(true);
+                        }
+                      }}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
                     >
                       <User size={16} />
                       User
                     </DropdownMenu.Item>
                     <DropdownMenu.Item
-                      onClick={() => setShowAddFriendModal(true)}
+                      onClick={() => {
+                        if (!isLoggedIn) {
+                          loginWithGoogle();
+                        } else {
+                          setShowAddFriendModal(true);
+                        }
+                      }}
                       className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors relative"
                     >
                       <span className="relative">
@@ -530,17 +619,12 @@ const Navbar = ({ onOpenSettings }) => {
       <AddFriendModal
         isOpen={showAddFriendModal}
         onClose={() => setShowAddFriendModal(false)}
-        onSendRequest={(username, { onSuccess, onError }) => {
-          // Aquí iría la lógica real
-          setTimeout(() => {
-            setFriendRequests([...friendRequests, { username }]);
-            onSuccess && onSuccess();
-          }, 500);
-        }}
-        requests={friendRequests}
-        onAccept={req => setFriendRequests(friendRequests.filter(r => r !== req))}
-        onReject={req => setFriendRequests(friendRequests.filter(r => r !== req))}
-        hasRequests={hasRequests}
+        onSendRequest={handleSendRequest}
+        receivedRequests={receivedRequests}
+        sentRequests={sentRequests}
+        onAccept={handleAccept}
+        onReject={handleReject}
+        hasRequests={receivedRequests.length > 0}
       />
     </>
   );

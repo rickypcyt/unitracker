@@ -21,8 +21,8 @@ const TourManager = ({ children }) => {
     {
       target: 'body',
       placement: 'center',
-      title: '¡Bienvenido a UniTracker!',
-      content: 'Te mostraremos cómo funciona la app con tareas de ejemplo. Haz clic en Siguiente para comenzar.',
+      title: 'Welcome to UniTracker!',
+      content: 'We will show you how the app works with example tasks. Click Next to start.',
       disableBeacon: true,
     },
     // ...más pasos después

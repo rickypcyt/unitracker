@@ -68,7 +68,6 @@ const UserModal = ({ isOpen, onClose }) => {
   const uploadAvatar = async (file, user) => {
     if (!user) {
       console.error('No authenticated user');
-      alert('No hay usuario autenticado.');
       return { success: false };
     }
 
@@ -86,7 +85,6 @@ const UserModal = ({ isOpen, onClose }) => {
 
     if (error) {
       console.error('Error uploading avatar:', error);
-      alert('Error uploading avatar: ' + error.message);
       return { success: false };
     }
 
@@ -97,7 +95,6 @@ const UserModal = ({ isOpen, onClose }) => {
 
     if (publicUrlError) {
       console.error('Error getting public URL:', publicUrlError);
-      alert('Error getting public URL: ' + publicUrlError.message);
       return { success: false };
     }
 
@@ -109,11 +106,9 @@ const UserModal = ({ isOpen, onClose }) => {
 
     if (updateError) {
       console.error('Error updating profile:', updateError);
-      alert('Error updating profile: ' + updateError.message);
       return { success: false };
     }
 
-    alert('¡Avatar subido y guardado correctamente!');
     return { success: true, publicUrl: publicUrlData.publicUrl };
   };
 
@@ -129,12 +124,10 @@ const UserModal = ({ isOpen, onClose }) => {
       files: fileInputRef.current?.files,
     });
     if (!file) {
-      alert('No se seleccionó ningún archivo.');
       console.error('No file selected:', fileInputRef.current?.files);
       return;
     }
     if (!user?.id) {
-      alert('No hay usuario autenticado.');
       console.error('No user ID:', user);
       return;
     }
@@ -149,7 +142,6 @@ const UserModal = ({ isOpen, onClose }) => {
       }
     } catch (err) {
       console.error('Error inesperado:', err);
-      alert('Error inesperado: ' + (err?.message || err));
     } finally {
       setUploading(false);
     }
@@ -181,7 +173,7 @@ const UserModal = ({ isOpen, onClose }) => {
   return (
     <BaseModal
       isOpen={isOpen}
-      onClose={(!username && !usernameValid) ? () => {} : onClose}
+      onClose={onClose}
       title="User Info"
       maxWidth="max-w-md"
       showCloseButton={!!username && usernameValid}
@@ -190,21 +182,21 @@ const UserModal = ({ isOpen, onClose }) => {
         {/* Avatar y email */}
         <div
           className="relative group mb-2 cursor-pointer"
-          style={{ width: '5rem', height: '5rem' }}
+          style={{ width: '7rem', height: '7rem' }}
           onClick={() => fileInputRef.current.click()}
         >
           {preview ? (
-            <img src={preview} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
+            <img src={preview} alt="Preview" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
           ) : avatarUrl ? (
-            <img src={avatarUrl} alt="User avatar" className="w-20 h-20 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
+            <img src={avatarUrl} alt="User avatar" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-3xl text-[var(--accent-primary)]">
+            <div className="w-28 h-28 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-5xl text-[var(--accent-primary)]">
               {user?.email?.[0]?.toUpperCase() || '?'}
             </div>
           )}
           {/* Overlay al hacer hover solo con ícono lápiz */}
           <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <Pencil className="w-7 h-7 text-white" />
+            <Pencil className="w-10 h-10 text-white" />
           </div>
         </div>
         <div className="text-lg font-semibold text-[var(--text-primary)]">

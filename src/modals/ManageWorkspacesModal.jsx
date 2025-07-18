@@ -1,6 +1,7 @@
 import { BookOpen, Briefcase, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Save, Settings, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, X, Zap } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
+import DeleteCompletedModal from './DeleteTasksPop';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useModalClose } from '@/hooks/useModalClose';
@@ -39,6 +40,8 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
   const [expandedIconSelector, setExpandedIconSelector] = useState(null);
   const { user } = useAuth();
   const tasks = useSelector(state => state.tasks.tasks);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
 
   // Función para contar tareas por workspace
   const getTaskCountByWorkspace = (workspaceId) => {
@@ -86,28 +89,29 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     }
   };
 
-  const handleDelete = async (workspace) => {
-    if (!window.confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) {
-      return;
-    }
+  const handleDelete = (workspace) => {
+    setWorkspaceToDelete(workspace);
+    setShowDeleteModal(true);
+  };
 
+  const confirmDeleteWorkspace = async () => {
+    if (!workspaceToDelete) return;
     setLoading(true);
     setError('');
-
     try {
       const { error } = await supabase
         .from('workspaces')
         .delete()
-        .eq('id', workspace.id);
-
+        .eq('id', workspaceToDelete.id);
       if (error) throw error;
-
-      onWorkspaceDeleted(workspace.id);
-      if (editingId === workspace.id) {
+      onWorkspaceDeleted(workspaceToDelete.id);
+      if (editingId === workspaceToDelete.id) {
         setEditingId(null);
         setEditName('');
         setEditIcon('Briefcase');
       }
+      setShowDeleteModal(false);
+      setWorkspaceToDelete(null);
     } catch (error) {
       console.error('Error deleting workspace:', error);
       setError('Failed to delete workspace');
@@ -279,6 +283,17 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
             );
           })}
         </div>
+        {showDeleteModal && workspaceToDelete && (
+          <DeleteCompletedModal
+            onClose={() => {
+              setShowDeleteModal(false);
+              setWorkspaceToDelete(null);
+            }}
+            onConfirm={confirmDeleteWorkspace}
+            message={`Are you sure you want to delete the workspace "${workspaceToDelete.name}"? This action cannot be undone.`}
+            confirmButtonText="Delete Workspace"
+          />
+        )}
       </div>
     </div>
   );
