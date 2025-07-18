@@ -136,43 +136,45 @@ const StudySessions = () => {
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">{selectedMonth}</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {groupedLaps[selectedMonth]?.map((lap) => (
-                            <div
-                                key={lap.id}
-                                className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative"
-                                onDoubleClick={() => setSelectedSession(lap)}
-                                onContextMenu={(e) => handleSessionContextMenu(e, lap)}
-                            >
-                                {/* Duración arriba del título */}
-                                <div className="flex items-center gap-1 mb-1">
-                                    <Clock size={18} className="text-[var(--text-secondary)]" />
-                                    <span className="text-sm text-[var(--text-primary)] font-medium">{lap.duration}</span>
-                                </div>
-                                {/* Primera línea: #, título */}
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-lg text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
-                                    <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
-                                </div>
-                                {/* Segunda línea: fecha, tasks done y trash icon */}
-                                <div className="flex items-center justify-between text-sm text-[var(--text-secondary)] mt-1">
-                                    <span>{formatDateShort(lap.created_at)}</span>
-                                    <div className="flex items-center gap-2 ml-auto">
-                                        <span className="text-sm font-normal ">Tasks Done: {lap.tasks_completed ?? 0}</span>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteClick(lap.id);
-                                            }}
-                                            className="text-red-500 hover:text-red-600 transition-colors duration-200 ml-2"
-                                            aria-label={`Delete session ${lap.name}`}
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
+                    <div className="max-w-6xl mx-auto px-2">
+                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center">
+                            {groupedLaps[selectedMonth]?.map((lap) => (
+                                <div
+                                    key={lap.id}
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full max-w-xs"
+                                    onDoubleClick={() => setSelectedSession(lap)}
+                                    onContextMenu={(e) => handleSessionContextMenu(e, lap)}
+                                >
+                                    {/* Duración arriba del título */}
+                                    <div className="flex items-center gap-1 mb-1">
+                                        <Clock size={18} className="text-[var(--text-secondary)]" />
+                                        <span className="text-sm text-[var(--text-primary)] font-medium">{lap.duration}</span>
+                                    </div>
+                                    {/* Primera línea: #, título */}
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-lg text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
+                                        <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
+                                    </div>
+                                    {/* Segunda línea: fecha, tasks done y trash icon */}
+                                    <div className="flex items-center justify-between text-sm text-[var(--text-secondary)] mt-1">
+                                        <span>{formatDateShort(lap.created_at)}</span>
+                                        <div className="flex items-center gap-2 ml-auto">
+                                            <span className="text-sm font-normal ">Tasks Done: {lap.tasks_completed ?? 0}</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteClick(lap.id);
+                                                }}
+                                                className="text-red-500 hover:text-red-600 transition-colors duration-200 ml-2"
+                                                aria-label={`Delete session ${lap.name}`}
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -195,32 +197,34 @@ const StudySessions = () => {
                         return orderedYears.map(year => (
                             <div key={year} className="mb-1">
                                 <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
-                                <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center">
-                                    {monthsByYear[year]
-                                        .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
-                                        .map(({ month, monthYear, lapsOfMonth }) => {
-                                            const stats = getMonthStats(lapsOfMonth);
-                                            return (
-                                                <div
-                                                    key={monthYear}
-                                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center min-w-[140px] min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
-                                                    onClick={() => setSelectedMonth(monthYear)}
-                                                >
-                                                    <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">
-                                                        <Calendar size={20} className="text-[var(--accent-primary)]" />
-                                                        <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle text-center">{month}</span>
+                                <div className="max-w-6xl mx-auto px-2">
+                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center">
+                                        {monthsByYear[year]
+                                            .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
+                                            .map(({ month, monthYear, lapsOfMonth }) => {
+                                                const stats = getMonthStats(lapsOfMonth);
+                                                return (
+                                                    <div
+                                                        key={monthYear}
+                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
+                                                        onClick={() => setSelectedMonth(monthYear)}
+                                                    >
+                                                        <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">
+                                                            <Calendar size={20} className="text-[var(--accent-primary)]" />
+                                                            <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle text-center">{month}</span>
+                                                        </div>
+                                                        <div className="mb-1 text-center">
+                                                            <span className="text-lg font-bold text-[var(--text-primary)] text-center">{stats.totalSessions}</span>
+                                                            <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base text-center">
+                                                            <Clock size={18} />
+                                                            <span>{formatMinutesToHHMM(stats.totalMinutes)}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="mb-1 text-center">
-                                                        <span className="text-lg font-bold text-[var(--text-primary)] text-center">{stats.totalSessions}</span>
-                                                        <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base text-center">
-                                                        <Clock size={18} />
-                                                        <span>{formatMinutesToHHMM(stats.totalMinutes)}</span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            })}
+                                    </div>
                                 </div>
                             </div>
                         ));

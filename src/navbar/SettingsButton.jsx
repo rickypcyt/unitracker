@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 
 import AddFriendModal from '@/modals/AddFriendModal';
 import FriendsModal from '@/modals/FriendsModal';
+import { Settings as SettingsIcon } from 'lucide-react';
+import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
 
 const SettingsButton = ({
@@ -25,6 +27,7 @@ const SettingsButton = ({
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   return (
     <>
@@ -47,6 +50,13 @@ const SettingsButton = ({
             align="end"
             collisionPadding={10}
           >
+            <DropdownMenu.Item
+              onClick={() => setShowSettingsModal(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors font-semibold border-b border-[var(--border-primary)] mb-1"
+            >
+              <SettingsIcon size={16} />
+              Settings
+            </DropdownMenu.Item>
             <DropdownMenu.Item
               onClick={onOpenAbout || (() => setShowAbout(true))}
               className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
@@ -132,6 +142,7 @@ const SettingsButton = ({
         friends={friends}
         onRemoveFriend={undefined}
       />
+      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
       {/* About Modal */}
       {showAbout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center p-4">

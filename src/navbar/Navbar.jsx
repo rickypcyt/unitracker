@@ -21,6 +21,7 @@ const Navbar = ({ onOpenSettings }) => {
   const [sentRequests, setSentRequests] = useState([]);
   const [friends, setFriends] = useState([]);
   const [sharedWorkspaces, setSharedWorkspaces] = useState({});
+  const [showSettings, setShowSettings] = useState(false);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -133,6 +134,12 @@ const Navbar = ({ onOpenSettings }) => {
     });
     setSharedWorkspaces(shared);
   }, [user, friends, workspaces]);
+
+  // Calcula el número de tasks por workspace
+  const workspacesWithTaskCount = workspaces.map(ws => ({
+    ...ws,
+    taskCount: tasks.filter(task => task.workspace_id === ws.id).length
+  }));
 
   // Workspace handlers
   const handleSelectWorkspace = ws => {
@@ -254,13 +261,14 @@ const Navbar = ({ onOpenSettings }) => {
           {/* WorkspaceDropdown and SettingsButton */}
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
             <WorkspaceDropdown
-              workspaces={workspaces}
+              workspaces={workspacesWithTaskCount}
               activeWorkspace={activeWorkspace}
               onSelectWorkspace={handleSelectWorkspace}
               onCreateWorkspace={handleCreateWorkspace}
               onEditWorkspace={handleEditWorkspace}
               onDeleteWorkspace={handleDeleteWorkspace}
               friends={friends}
+              onOpenSettings={() => setShowSettings(true)}
             />
             <SettingsButton
               isLoggedIn={isLoggedIn}
@@ -280,6 +288,12 @@ const Navbar = ({ onOpenSettings }) => {
           </div>
         </div>
       </div>
+      {showSettings && (
+        <Settings
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
     </nav>
   );
 };

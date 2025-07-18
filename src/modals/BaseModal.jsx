@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { X } from 'lucide-react';
 
@@ -15,6 +15,8 @@ const BaseModal = ({
   closeOnEsc = true,
   closeOnOverlayClick = true
 }) => {
+  const lastActiveElement = useRef(null);
+
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && closeOnEsc) {
@@ -23,10 +25,20 @@ const BaseModal = ({
     };
 
     if (isOpen) {
+      lastActiveElement.current = document.activeElement;
+      // Opcional: enfoca el primer botón del modal
+      setTimeout(() => {
+        const firstButton = document.querySelector('.BaseModal button, .BaseModal [tabindex="0"]');
+        if (firstButton) firstButton.focus();
+      }, 0);
       document.addEventListener('keydown', handleEscape);
       document.body.classList.add('overflow-hidden');
     } else {
       document.body.classList.remove('overflow-hidden');
+      // Devuelve el foco al trigger
+      if (lastActiveElement.current && typeof lastActiveElement.current.focus === 'function') {
+        lastActiveElement.current.focus();
+      }
     }
 
     return () => {
@@ -55,7 +67,7 @@ const BaseModal = ({
 
   return (
     <div 
-      className={`fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-md`}
+      className={`BaseModal fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-md`}
       onClick={handleOverlayClick}
     >
       <div 

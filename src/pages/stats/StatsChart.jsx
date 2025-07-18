@@ -118,7 +118,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
   }
 
   return (
-    <div className="maincard p-0.5 mb-3">
+    <div className="maincard p-0.5 mb-1">
       <div className="w-full flex flex-col items-center mt-2 mb-2">
         {customTitle ? customTitle : <span className="text-lg font-semibold">{title}</span>}
       </div>

@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { Briefcase, Check, ChevronDown, Edit, FolderOpen } from 'lucide-react';
+import { Briefcase, Check, ChevronDown, Edit, FolderOpen, Settings as SettingsIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
@@ -16,7 +16,8 @@ const WorkspaceDropdown = ({
   onCreateWorkspace,
   onEditWorkspace,
   onDeleteWorkspace,
-  friends
+  friends,
+  onOpenSettings // <-- nueva prop
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
@@ -67,7 +68,7 @@ const WorkspaceDropdown = ({
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   <Briefcase size={14} />
-                  <span className="flex-1">{ws.name} ({getTaskCountByWorkspace(ws)})</span>
+                  <span className="flex-1">{ws.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
                   {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
                 </DropdownMenu.Item>
               ))}
@@ -93,6 +94,7 @@ const WorkspaceDropdown = ({
                 <Edit size={14} />
                 Share workspace
               </DropdownMenu.Item>
+              <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
@@ -114,7 +116,7 @@ const WorkspaceDropdown = ({
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   <Briefcase size={14} />
-                  <span className="flex-1">{ws.name} ({getTaskCountByWorkspace(ws)})</span>
+                  <span className="flex-1">{ws.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
                   {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
                 </DropdownMenu.Item>
               ))}
@@ -140,6 +142,7 @@ const WorkspaceDropdown = ({
                 <Edit size={14} />
                 Share workspace
               </DropdownMenu.Item>
+              <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
