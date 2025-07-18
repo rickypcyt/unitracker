@@ -227,7 +227,7 @@ const UserModal = ({ isOpen, onClose }) => {
                 {usernameLoading ? 'Guardando...' : 'Guardar username'}
               </button>
               {usernameSaveSuccess && (
-                <div className="mt-1 text-green-600 text-sm">¡Username guardado!</div>
+                <div className="mt-1 text-green-600 text-sm">Username saved!</div>
               )}
               {usernameError && (
                 <div className="mt-1 text-red-600 text-sm">{usernameError}</div>

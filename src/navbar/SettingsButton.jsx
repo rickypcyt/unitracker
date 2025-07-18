@@ -4,6 +4,7 @@ import { Info, LogIn, LogOut, Settings, User, UserPlus } from 'lucide-react';
 import React, { useState } from 'react';
 
 import AddFriendModal from '@/modals/AddFriendModal';
+import FriendsModal from '@/modals/FriendsModal';
 import UserModal from '@/modals/UserModal';
 
 const SettingsButton = ({
@@ -17,11 +18,13 @@ const SettingsButton = ({
   onSendRequest,
   onAccept,
   onReject,
-  user
+  user,
+  friends = []
 }) => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
 
   return (
     <>
@@ -82,6 +85,13 @@ const SettingsButton = ({
               </span>
               Add Friend
             </DropdownMenu.Item>
+            <DropdownMenu.Item
+              onClick={() => setShowFriendsModal(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+            >
+              <User size={16} />
+              Friends
+            </DropdownMenu.Item>
             {isLoggedIn ? (
               <DropdownMenu.Item
                 onClick={async () => {
@@ -115,6 +125,12 @@ const SettingsButton = ({
         onAccept={onAccept}
         onReject={onReject}
         hasRequests={hasFriendRequests}
+      />
+      <FriendsModal
+        isOpen={showFriendsModal}
+        onClose={() => setShowFriendsModal(false)}
+        friends={friends}
+        onRemoveFriend={undefined}
       />
       {/* About Modal */}
       {showAbout && (
