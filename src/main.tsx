@@ -17,14 +17,6 @@ import { store } from '@/store/store';
 
 logger.info('Application starting', { environment: import.meta.env.MODE });
 
-// Solo activa eruda en desarrollo, nunca en producción
-if (import.meta.env.DEV) {
-  import('eruda').then(({ default: eruda }) => {
-    eruda.init();
-    console.log('Eruda mobile console initialized');
-  });
-}
-
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>
     <Provider store={store}>
