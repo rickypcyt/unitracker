@@ -189,6 +189,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     }
     setAiLoading(true);
     // Limpia el draft solo si se envía
+    setAiPrompt('');
     localStorage.removeItem('aiPromptDraft');
     try {
       const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
