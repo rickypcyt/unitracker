@@ -549,12 +549,12 @@ const Pomodoro = () => {
   }, [fetchPomodoros]);
 
   const showNotification = (title, options) => {
-    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+    if (typeof window === 'undefined' || typeof Notification === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
       return;
     }
 
     try {
-      const notification = new Notification(title, {
+      const notification = new window.Notification(title, {
         ...options,
         silent: false,
         vibrate: [200, 100, 200]
