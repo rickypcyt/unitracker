@@ -22,6 +22,8 @@ const Countdown = () => {
 
   // Para sobrescribir el campo activo con el último dígito ingresado
   const lastInputDigit = useRef(null);
+  const [skipField, setSkipField] = useState(null);
+  const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (isRunning) return;
@@ -167,36 +169,58 @@ const Countdown = () => {
   }, [secondsLeft, isRunning]);
 
   const handleInputChange = (field, value) => {
-    // Permite hasta dos dígitos y edición normal
     let clean = value.replace(/\D/g, '');
     if (clean.length === 0) {
       setTime(t => ({ ...t, [field]: 0 }));
       return;
     }
-    let val = parseInt(clean.slice(0, 2), 10);
-    if (isNaN(val)) val = 0;
-    if (val > MAX[field]) val = MAX[field];
+    let val;
+    if (field === 'hours') {
+      val = parseInt(clean[0], 10); // Solo el primer dígito
+      setTime(t => {
+        setSkipField(field); // Salta automáticamente a minutos
+        return { ...t, [field]: isNaN(val) ? 0 : val };
+      });
+      lastInputDigit.current = val;
+      return;
+    }
+    if (clean.length === 1) {
+      val = parseInt(clean, 10);
+      setTime(t => ({ ...t, [field]: val }));
+      // Mueve el cursor a la posición 1 después del primer dígito
+      setTimeout(() => {
+        inputRefs[field].current?.setSelectionRange(1, 1);
+      }, 0);
+      lastInputDigit.current = val;
+      return;
+    } else {
+      val = parseInt(clean.slice(0, 2), 10);
+      if (val > MAX[field]) val = MAX[field];
+    }
     setTime(t => {
-      const prev = t[field].toString();
-      // Skip automático:
-      const fields = ['hours', 'minutes', 'seconds'];
-      const idx = fields.indexOf(field);
-      if (
-        (field === 'hours' && clean.length === 1) ||
-        ((field === 'minutes' || field === 'seconds') && prev.length < 2 && clean.length === 2)
-      ) {
-        if (idx < 2) {
-          const nextField = fields[idx + 1];
-          setActiveField(nextField);
-          setTimeout(() => {
-            inputRefs[nextField].current?.focus();
-          }, 0);
-        }
+      if (clean.length === 2) {
+        setSkipField(field);
       }
       return { ...t, [field]: val };
     });
     lastInputDigit.current = val;
   };
+
+  // useEffect para hacer el skip automático después de actualizar el valor
+  useEffect(() => {
+    if (!skipField) return;
+    const fields = ['hours', 'minutes', 'seconds'];
+    const idx = fields.indexOf(skipField);
+    if (idx < 2) {
+      const nextField = fields[idx + 1];
+      setActiveField(nextField);
+      setProgrammaticFocusField(nextField); // Marcar que el próximo focus es programático
+      setTimeout(() => {
+        inputRefs[nextField].current?.focus();
+      }, 0);
+    }
+    setSkipField(null);
+  }, [time, skipField]);
 
   // Mejorar navegación con Tab, Shift+Tab y Enter
   const handleInputKeyDown = (e, field) => {
@@ -246,7 +270,18 @@ const Countdown = () => {
               onFocus={e => {
                 setActiveField(field);
                 setTimeout(() => {
-                  e.target.select();
+                  if (field === 'hours') {
+                    e.target.setSelectionRange(0, 0);
+                  } else if (programmaticFocusField === field) {
+                    const val = e.target.value;
+                    if (val.length === 1) {
+                      e.target.setSelectionRange(1, 1);
+                    } else {
+                      e.target.setSelectionRange(val.length, val.length);
+                    }
+                    setProgrammaticFocusField(null); // Limpiar bandera
+                  }
+                  // Si es focus por click, no mover el cursor
                 }, 0);
               }}
               onChange={e => handleInputChange(field, e.target.value)}
