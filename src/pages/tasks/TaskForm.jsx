@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { addTaskSuccess, updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
+import AIPreviewModal from './AIPreviewModal';
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
@@ -170,6 +171,132 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     .sort();
 
   const [activeTab, setActiveTab] = useState('manual'); // 'manual' or 'ai'
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const aiTextareaRef = useRef(null);
+  const [aiParsedTasks, setAiParsedTasks] = useState(null); // array|null
+  const [showAIPreview, setShowAIPreview] = useState(false);
+
+  // Helper to call DeepSeek API
+  async function handleAIPromptSubmit(e) {
+    e.preventDefault();
+    setAiError('');
+    if (!aiPrompt.trim()) {
+      setAiError('Prompt required');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': window.location.origin,
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-chat-v3-0324:free',
+          messages: [
+            { role: 'system', content: 'Extrae todas las tareas del siguiente texto y devuélvelas en un ARRAY JSON válido. Cada tarea debe tener: "task" (descripción), "date" (fecha completa en formato YYYY-MM-DD, nunca solo el año ni texto), "subject" (si aplica). Si no hay fecha, usa "null". Devuelve SOLO el array JSON, sin texto extra, sin explicación, sin formato markdown. Ejemplo de salida: [{"task": "Hacer tarea de matemáticas", "date": "2024-07-19", "subject": "matemáticas"}]' },
+            { role: 'user', content: `Texto: "${aiPrompt}"` }
+          ],
+          max_tokens: 256,
+          stream: false
+        })
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        setAiError('AI request failed: ' + response.status + ' ' + errorText);
+        setAiLoading(false);
+        return;
+      }
+      const data = await response.json();
+      console.log('AI response:', data); // Debug log
+      // Limpia bloque markdown si existe
+      let content = data.choices?.[0]?.message?.content || '';
+      content = content.replace(/```json|```/g, '').trim();
+      let parsed = null;
+      try {
+        parsed = JSON.parse(content);
+      } catch (err) {
+        setAiError('Could not parse AI response. Raw content: ' + content);
+        setAiLoading(false);
+        return;
+      }
+      // Si es objeto, conviértelo en array
+      const tasksArr = Array.isArray(parsed) ? parsed : [parsed];
+      setAiParsedTasks(tasksArr);
+      setShowAIPreview(true);
+      setAiLoading(false);
+      // No rellenes el form aún, espera a que el usuario acepte
+    } catch (err) {
+      setAiError('Error: ' + (err.message || err));
+      setAiLoading(false);
+    }
+  }
+
+  // Valida formato YYYY-MM-DD
+  function isValidDate(dateStr) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+  }
+
+  // Convierte fechas relativas comunes a YYYY-MM-DD y valida formato
+  function normalizeDate(dateStr) {
+    if (!dateStr) return '';
+    const lower = dateStr.toLowerCase().trim();
+
+    // Hoy
+    if (lower === 'hoy' || lower === 'today') {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Mañana
+    if (lower === 'mañana' || lower === 'tomorrow') {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const year = tomorrow.getFullYear();
+      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const day = String(tomorrow.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Pasado mañana
+    if (lower === 'pasado mañana' || lower === 'day after tomorrow') {
+      const dat = new Date();
+      dat.setDate(dat.getDate() + 2);
+      const year = dat.getFullYear();
+      const month = String(dat.getMonth() + 1).padStart(2, '0');
+      const day = String(dat.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Próxima semana
+    if (
+      lower === 'próxima semana' ||
+      lower === 'la próxima semana' ||
+      lower === 'next week' ||
+      lower === 'the next week'
+    ) {
+      const dat = new Date();
+      dat.setDate(dat.getDate() + 7);
+      const year = dat.getFullYear();
+      const month = String(dat.getMonth() + 1).padStart(2, '0');
+      const day = String(dat.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Si ya es una fecha válida, la devuelve igual
+    if (isValidDate(dateStr)) return dateStr;
+
+    // Si no es válida, devuelve vacío
+    return '';
+  }
 
   return (
     <BaseModal
@@ -359,27 +486,47 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           </FormActions>
         </form>
       ) : (
-        <form className="space-y-4 flex flex-col items-center justify-center">
+        <form className="space-y-4 flex flex-col items-center justify-center" onSubmit={handleAIPromptSubmit}>
           <label htmlFor="aiPrompt" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
             Write a prompt for making a new task:
           </label>
           <textarea
             id="aiPrompt"
+            ref={aiTextareaRef}
+            value={aiPrompt}
+            onChange={e => setAiPrompt(e.target.value)}
             className="w-full min-h-[120px] max-w-md px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-            placeholder="Describe la tarea que quieres que la IA genere..."
+            placeholder="Describe the task you want AI to generate..."
+            disabled={aiLoading}
           />
+          {aiError && <div className="text-red-500 text-sm text-center">{aiError}</div>}
           <FormActions>
             <FormButton
-              type="button"
+              type="submit"
               variant="custom"
               className="border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
-              // onClick: aquí irá la lógica de IA en el futuro
+              disabled={aiLoading}
             >
-              Enviar
+              {aiLoading ? 'Generating...' : 'Send'}
             </FormButton>
           </FormActions>
         </form>
       )}
+      {/* AI Preview Modal */}
+      <AIPreviewModal
+        isOpen={showAIPreview}
+        tasks={aiParsedTasks || []}
+        onAccept={task => {
+          handleChange('title', task.task || '');
+          handleChange('description', task.subject ? `Asignatura: ${task.subject}` : '');
+          handleChange('deadline', task.date && task.date !== 'null' ? normalizeDate(task.date) : '');
+          setShowAIPreview(false);
+          setActiveTab('manual');
+        }}
+        onCancel={() => {
+          setShowAIPreview(false);
+        }}
+      />
     </BaseModal>
   );
 };
