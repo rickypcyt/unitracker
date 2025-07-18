@@ -37,7 +37,7 @@ const SettingsButton = ({
             className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-15 active:scale-95 relative"
             title="Settings"
           >
-            <Settings size={22} />
+            <Settings size={24} />
             {hasFriendRequests && (
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)] z-10"></span>
             )}

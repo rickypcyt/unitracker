@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { Briefcase, Check, ChevronDown, Edit, FolderOpen, Settings as SettingsIcon } from 'lucide-react';
+import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Settings, Settings as SettingsIcon, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
@@ -8,6 +8,30 @@ import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useSelector } from 'react-redux';
+
+const iconOptions = {
+  Briefcase,
+  FolderOpen,
+  Home,
+  Settings,
+  User,
+  Users,
+  Zap,
+  BookOpen,
+  Coffee,
+  Gamepad2,
+  Heart,
+  Music,
+  Plane,
+  ShoppingBag,
+  Smartphone,
+  Star,
+  Target,
+  Trophy,
+  Umbrella,
+  Wifi,
+  Workflow,
+};
 
 const WorkspaceDropdown = ({
   workspaces = [],
@@ -67,7 +91,10 @@ const WorkspaceDropdown = ({
                   onClick={() => onSelectWorkspace(ws)}
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
-                  <Briefcase size={14} />
+                  {(() => {
+                    const IconComp = iconOptions[ws.icon] || Briefcase;
+                    return <IconComp size={14} />;
+                  })()}
                   <span className="flex-1">{ws.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
                   {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
                 </DropdownMenu.Item>
@@ -77,7 +104,7 @@ const WorkspaceDropdown = ({
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Briefcase size={14} />
+                <Plus size={14} />
                 New workspace
               </DropdownMenu.Item>
               <DropdownMenu.Item
@@ -91,7 +118,7 @@ const WorkspaceDropdown = ({
                 onClick={() => setShowShareModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Edit size={14} />
+                <Share size={14} />
                 Share workspace
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
@@ -104,7 +131,7 @@ const WorkspaceDropdown = ({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg">
-              <Briefcase size={28} />
+              <Briefcase size={24} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -115,7 +142,10 @@ const WorkspaceDropdown = ({
                   onClick={() => onSelectWorkspace(ws)}
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
-                  <Briefcase size={14} />
+                  {(() => {
+                    const IconComp = iconOptions[ws.icon] || Briefcase;
+                    return <IconComp size={14} />;
+                  })()}
                   <span className="flex-1">{ws.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
                   {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
                 </DropdownMenu.Item>
@@ -125,7 +155,7 @@ const WorkspaceDropdown = ({
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Briefcase size={14} />
+                <Plus size={14} />
                 New workspace
               </DropdownMenu.Item>
               <DropdownMenu.Item
@@ -139,7 +169,7 @@ const WorkspaceDropdown = ({
                 onClick={() => setShowShareModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Edit size={14} />
+                <Share size={14} />
                 Share workspace
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />

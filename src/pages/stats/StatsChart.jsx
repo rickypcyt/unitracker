@@ -128,11 +128,11 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
             data={data} 
             margin={{ 
               top: 30, 
-              right: title === 'This Month' ? 16 : 0, 
+              right: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Month' ? 16 : 30), 
               bottom: 30, 
-              left: title === 'This Month' ? 16 : 32 
+              left: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Month' ? 16 : 30) 
             }} 
-            barCategoryGap={title === 'This Month' ? 8 : 20}
+            barCategoryGap={title === 'This Week' || title === 'Last Week' ? 16 : (title === 'This Month' ? 8 : 20)}
           >
             <XAxis
               dataKey={
@@ -151,18 +151,15 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
               tickFormatter={(v) => v}
               tick={{
                 fill: (tickProps) => {
-                  // Para This Week/Last Week: comparar index con todayIndex
                   if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
                     return 'var(--accent-primary)';
                   }
-                  // Para This Month: comparar realDay con el día actual
                   if (title === 'This Month') {
                     const dayNum = parseInt(tickProps.value, 10);
                     if (!isNaN(dayNum) && dayNum === today.getDate()) {
                       return 'var(--accent-primary)';
                     }
                   }
-                  // Para This Year: comparar mes actual
                   if (title === 'This Year' && tickProps.index === todayIndex) {
                     return 'var(--accent-primary)';
                   }
@@ -170,7 +167,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
                 },
                 fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
                 angle: 0,
-                textAnchor: title === 'This Month' ? 'middle' : title === 'This Year' ? 'middle' : undefined,
+                textAnchor: (title === 'This Week' || title === 'Last Week' || title === 'This Month' || title === 'This Year') ? 'middle' : undefined,
               }}
             />
             <YAxis

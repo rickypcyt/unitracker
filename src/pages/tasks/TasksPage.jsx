@@ -74,10 +74,10 @@ const TasksPage = memo(() => {
       {/* Floating Action Button */}
       <button
         onClick={handleAddTask}
-        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
+        className="fixed bottom-6 right-6 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
         aria-label="Add new task"
       >
-        <Plus size={32} />
+        <Plus className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9" />
       </button>
       {/* Task Form Modal */}
       {showTaskForm && (

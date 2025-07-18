@@ -215,7 +215,7 @@ const StudySessions = () => {
                                                         </div>
                                                         <div className="mb-1 text-center">
                                                             <span className="text-lg font-bold text-[var(--text-primary)] text-center">{stats.totalSessions}</span>
-                                                            <span className="text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                                            <span className="text-xs md:text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
                                                         </div>
                                                         <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base text-center">
                                                             <Clock size={18} />

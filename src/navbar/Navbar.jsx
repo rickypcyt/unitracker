@@ -1,8 +1,8 @@
+import { BarChart3, BookOpen, Calendar, ListTodo, Menu, Timer } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Menu } from 'lucide-react';
 import SettingsButton from './SettingsButton';
 import WorkspaceDropdown from './WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
@@ -135,10 +135,10 @@ const Navbar = ({ onOpenSettings }) => {
     setSharedWorkspaces(shared);
   }, [user, friends, workspaces]);
 
-  // Calcula el número de tasks por workspace
+  // Calcula el número de tasks por workspace (solo incompletas)
   const workspacesWithTaskCount = workspaces.map(ws => ({
     ...ws,
-    taskCount: tasks.filter(task => task.workspace_id === ws.id).length
+    taskCount: tasks.filter(task => task.workspace_id === ws.id && !task.completed).length
   }));
 
   // Workspace handlers
@@ -231,6 +231,14 @@ const Navbar = ({ onOpenSettings }) => {
   const navLinkClass = page =>
     `px-4 py-2 rounded-md text-xl ${isActive(page) ? 'text-[var(--accent-primary)] ' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'}`;
 
+  const navIcons = [
+    { page: 'tasks', icon: ListTodo, label: 'Tasks' },
+    { page: 'calendar', icon: Calendar, label: 'Calendar' },
+    { page: 'session', icon: Timer, label: 'Session' },
+    { page: 'notes', icon: BookOpen, label: 'Notes' },
+    { page: 'stats', icon: BarChart3, label: 'Statistics' },
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden">
       <div className="w-full px-2 overflow-x-hidden">
@@ -241,22 +249,33 @@ const Navbar = ({ onOpenSettings }) => {
             <span className="text-[var(--accent-primary)] font-bold text-2xl">Tracker</span>
           </div>
           {/* Navigation links - Desktop only (lg+) - CENTERED */}
+          {/* Desktop: texto, md y menor: iconos compactos */}
           <div className="hidden lg:flex flex-1 justify-center items-center space-x-4 lg:space-x-8">
-            <button onClick={() => navigateTo('tasks')} className={navLinkClass('tasks') + ' text-base lg:text-xl'}>
-              Tasks
-            </button>
-            <button onClick={() => navigateTo('calendar')} className={navLinkClass('calendar') + ' text-base lg:text-xl'}>
-              Calendar
-            </button>
-            <button onClick={() => navigateTo('session')} className={navLinkClass('session') + ' text-base lg:text-xl'}>
-              Session
-            </button>
-            <button onClick={() => navigateTo('notes')} className={navLinkClass('notes') + ' text-base lg:text-xl'}>
-              Notes
-            </button>
-            <button onClick={() => navigateTo('stats')} className={navLinkClass('stats') + ' text-base lg:text-xl'}>
-              Statistics
-            </button>
+            {navIcons.map(({ page, icon: Icon, label }) => (
+              <button
+                key={page}
+                onClick={() => navigateTo(page)}
+                className={navLinkClass(page) + ' text-base lg:text-xl flex items-center gap-2'}
+                title={label}
+              >
+                <Icon className="w-6 h-6 mr-1" />
+                <span className="hidden md:inline">{label}</span>
+              </button>
+            ))}
+          </div>
+          {/* md y menor: solo iconos, tooltips al hacer hover */}
+          <div className="flex lg:hidden flex-1 justify-center items-center space-x-2 sm:space-x-3 md:space-x-4">
+            {navIcons.map(({ page, icon: Icon, label }) => (
+              <button
+                key={page}
+                onClick={() => navigateTo(page)}
+                className={`p-2 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
+                title={label}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-[10px] mt-0.5 font-medium hidden xs:inline">{label}</span>
+              </button>
+            ))}
           </div>
           {/* WorkspaceDropdown and SettingsButton */}
           <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">

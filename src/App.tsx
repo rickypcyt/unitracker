@@ -1,6 +1,6 @@
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 
 import type { AppDispatch } from '@/store/store';
@@ -96,7 +96,17 @@ const App: React.FC = () => {
       }
     };
     checkNotificationPermission();
-  }, []);
+
+    // Ctrl+N para cambiar entre light y dark mode
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
+        e.preventDefault();
+        handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentTheme, handleThemeChange]);
 
   useEffect(() => {
     dispatch(hydrateTasksFromLocalStorage());
@@ -104,6 +114,39 @@ const App: React.FC = () => {
   }, [dispatch]);
 
   useSupabaseAuthSync();
+
+  // Swipe navigation para mobile
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const navPages = ['tasks', 'calendar', 'session', 'notes', 'stats'];
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.changedTouches[0].screenX;
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX.current = e.changedTouches[0].screenX;
+      const diff = touchEndX.current - touchStartX.current;
+      if (Math.abs(diff) > 60) {
+        // Detecta swipe
+        const currentIdx = navPages.indexOf(window.localStorage.getItem('lastVisitedPage') || 'session');
+        if (diff < 0 && currentIdx < navPages.length - 1) {
+          // Swipe left: siguiente página
+          window.localStorage.setItem('lastVisitedPage', navPages[currentIdx + 1]);
+          window.dispatchEvent(new Event('navigationchange'));
+        } else if (diff > 0 && currentIdx > 0) {
+          // Swipe right: página anterior
+          window.localStorage.setItem('lastVisitedPage', navPages[currentIdx - 1]);
+          window.dispatchEvent(new Event('navigationchange'));
+        }
+      }
+    };
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
   return (
     <NoiseProvider>
