@@ -15,6 +15,17 @@ import { Toaster } from 'react-hot-toast';
 import { logger } from '@/utils/logger';
 import { store } from '@/store/store';
 
+// Polyfill para Notification en browsers que no la soportan (ej: iOS Safari)
+if (typeof window !== 'undefined' && typeof window.Notification === 'undefined') {
+  function FakeNotification() { /* noop */ }
+  Object.defineProperty(FakeNotification, 'permission', {
+    get: () => 'denied',
+  });
+  FakeNotification.requestPermission = () => Promise.resolve('denied');
+  // @ts-ignore
+  window.Notification = FakeNotification;
+}
+
 logger.info('Application starting', { environment: import.meta.env.MODE });
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
