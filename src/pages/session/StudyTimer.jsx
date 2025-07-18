@@ -583,6 +583,7 @@ const StudyTimer = ({ onSyncChange }) => {
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 10 minutes"
+          disabled={!currentSessionId}
         >
           -10
         </button>
@@ -606,6 +607,7 @@ const StudyTimer = ({ onSyncChange }) => {
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 5 minutes"
+          disabled={!currentSessionId}
         >
           -5
         </button>
@@ -629,6 +631,7 @@ const StudyTimer = ({ onSyncChange }) => {
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 5 minutes"
+          disabled={!currentSessionId}
         >
           +5
         </button>
@@ -652,6 +655,7 @@ const StudyTimer = ({ onSyncChange }) => {
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 10 minutes"
+          disabled={!currentSessionId}
         >
           +10
         </button>

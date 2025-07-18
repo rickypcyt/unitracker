@@ -67,6 +67,9 @@ const taskSlice = createSlice({
     },
     invalidateCache: (state) => {
       state.isCached = false;
+    },
+    clearTasks: (state) => {
+      state.tasks = [];
     }
   }
 });
@@ -80,7 +83,8 @@ export const {
   deleteTaskSuccess,
   updateTaskSuccess,
   taskError,
-  invalidateCache
+  invalidateCache,
+  clearTasks
 } = taskSlice.actions;
 
 export default taskSlice.reducer; 

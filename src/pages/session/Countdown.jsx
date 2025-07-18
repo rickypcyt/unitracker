@@ -1,4 +1,4 @@
-import { AlarmClock, Pause, Play, RotateCcw } from 'lucide-react';
+import { AlarmClock, Bell, BellOff, Pause, Play, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import toast from 'react-hot-toast';
@@ -21,6 +21,17 @@ const Countdown = () => {
   const [startTimestamp, setStartTimestamp] = useState(null); // Nuevo: timestamp de inicio
   const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
   // Eliminamos fieldPrevValue y fieldOverwrite
+  const [alarmEnabled, setAlarmEnabled] = useState(() => {
+    const saved = localStorage.getItem('countdownAlarmEnabled');
+    return saved === null ? true : saved === 'true';
+  });
+
+  const toggleAlarm = () => {
+    setAlarmEnabled(prev => {
+      localStorage.setItem('countdownAlarmEnabled', String(!prev));
+      return !prev;
+    });
+  };
 
   const inputRefs = useRef({
     hours: React.createRef(),
@@ -58,9 +69,11 @@ const Countdown = () => {
       if (newSecondsLeft <= 0) {
         clearInterval(interval);
         setIsRunning(false);
-        try {
-          new Audio('/sounds/countdownend.mp3').play();
-        } catch {}
+        if (alarmEnabled) {
+          try {
+            new Audio('/sounds/countdownend.mp3').play();
+          } catch {}
+        }
         toast.success('Countdown finished! Session complete.', {
           position: 'top-center',
           style: {
@@ -83,7 +96,7 @@ const Countdown = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, startTimestamp, initialTime]);
+  }, [isRunning, startTimestamp, initialTime, alarmEnabled]);
 
   useEffect(() => {
     if (isRunning) {
@@ -196,12 +209,35 @@ const Countdown = () => {
     setTime(prev => ({ ...prev, [field]: val }));
   };
 
+  // Ajusta el tiempo total del countdown (en segundos)
+  const handleTimeAdjustment = (adjustment) => {
+    if (isRunning) return; // No permitir ajuste mientras corre
+    const totalSeconds = calculateSeconds(time) + adjustment;
+    const clamped = Math.max(0, totalSeconds);
+    const h = Math.floor(clamped / 3600);
+    const m = Math.floor((clamped % 3600) / 60);
+    const s = clamped % 60;
+    setTime({ hours: h, minutes: m, seconds: s });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="flex items-center justify-center w-full px-4 py-3 relative">
         <div className="flex items-center gap-2 mx-auto">
           <AlarmClock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg">Countdown</span>
+          <button
+            onClick={toggleAlarm}
+            className="ml-2 p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+            title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
+            aria-label="Toggle alarm sound"
+          >
+            {alarmEnabled ? (
+              <Bell size={20} className="text-[var(--accent-primary)]" />
+            ) : (
+              <BellOff size={20} className="text-[var(--accent-primary)]" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -241,6 +277,58 @@ const Countdown = () => {
             </React.Fragment>
           );
         })}
+      </div>
+
+      {/* Time adjustment buttons */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => handleTimeAdjustment(-1800)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Subtract 30 minutes"
+          disabled={isRunning}
+        >
+          -30
+        </button>
+        <button
+          onClick={() => handleTimeAdjustment(-900)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Subtract 15 minutes"
+          disabled={isRunning}
+        >
+          -15
+        </button>
+        <button
+          onClick={() => handleTimeAdjustment(-300)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Subtract 5 minutes"
+          disabled={isRunning}
+        >
+          -5
+        </button>
+        <button
+          onClick={() => handleTimeAdjustment(300)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Add 5 minutes"
+          disabled={isRunning}
+        >
+          +5
+        </button>
+        <button
+          onClick={() => handleTimeAdjustment(900)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Add 15 minutes"
+          disabled={isRunning}
+        >
+          +15
+        </button>
+        <button
+          onClick={() => handleTimeAdjustment(1800)}
+          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Add 30 minutes"
+          disabled={isRunning}
+        >
+          +30
+        </button>
       </div>
 
       <div className="flex justify-center items-center gap-3 mb-2">

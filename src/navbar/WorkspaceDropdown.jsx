@@ -85,7 +85,7 @@ const WorkspaceDropdown = ({
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content className="min-w-[200px] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95" sideOffset={5} align="end" collisionPadding={10}>
-              {workspaces.map(ws => (
+              {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
                   onClick={() => onSelectWorkspace(ws)}
@@ -136,7 +136,7 @@ const WorkspaceDropdown = ({
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content className="min-w-[200px] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95" sideOffset={5} align="end" collisionPadding={10}>
-              {workspaces.map(ws => (
+              {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
                   onClick={() => onSelectWorkspace(ws)}

@@ -1,4 +1,4 @@
-import { CheckSquare, Coffee, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
+import { Bell, BellOff, CheckSquare, Coffee, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
@@ -103,6 +103,17 @@ const Pomodoro = () => {
   });
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [alarmEnabled, setAlarmEnabled] = useState(() => {
+    const saved = localStorage.getItem('pomodoroAlarmEnabled');
+    return saved === null ? true : saved === 'true';
+  });
+
+  const toggleAlarm = () => {
+    setAlarmEnabled(prev => {
+      localStorage.setItem('pomodoroAlarmEnabled', String(!prev));
+      return !prev;
+    });
+  };
 
   // Detectar si hay sesión activa
   const activeSessionId = localStorage.getItem('activeSessionId');
@@ -526,6 +537,11 @@ const Pomodoro = () => {
         const newTimeLeft = Math.max(0, startCountingDownFrom - elapsed);
 
         if (newTimeLeft <= 0) {
+          if (alarmEnabled) {
+            try {
+              new Audio('/sounds/pomo-end.mp3').play();
+            } catch {}
+          }
           handlePomodoroComplete();
           return;
         }
@@ -537,7 +553,7 @@ const Pomodoro = () => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [pomoState.isRunning, pomoState.timeLeft]);
+  }, [pomoState.isRunning, pomoState.timeLeft, alarmEnabled]);
 
   // Fetch al montar y al terminar sesión
   useEffect(() => {
@@ -585,6 +601,18 @@ const Pomodoro = () => {
         <div className="flex items-center gap-2 mx-auto">
           <Timer size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg truncate mb-0 self-center">Pomo Timer</span>
+          <button
+            onClick={toggleAlarm}
+            className="ml-2 p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+            title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
+            aria-label="Toggle alarm sound"
+          >
+            {alarmEnabled ? (
+              <Bell size={20} className="text-[var(--accent-primary)]" />
+            ) : (
+              <BellOff size={20} className="text-[var(--accent-primary)]" />
+            )}
+          </button>
         </div>
         {/* Right side: Settings Button */}
         <div className="absolute right-4 flex items-center">

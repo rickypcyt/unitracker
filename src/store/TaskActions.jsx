@@ -24,13 +24,14 @@ function saveTasksToLocalStorage(tasks) {
 
 // En tu archivo TaskActions.js
 export const fetchTasks = () => async (dispatch, getState) => {
+  dispatch(fetchTasksStart());
   try {
-    dispatch(fetchTasksStart());
     const { tasks } = getState();
     const { workspace } = getState();
     // Check if we have a valid cache
     if (tasks.isCached && tasks.lastFetch && (Date.now() - tasks.lastFetch < CACHE_DURATION)) {
-      return; // Use cached data
+      dispatch(fetchTasksSuccess(tasks.tasks)); // Use cached data, but apaga loading
+      return;
     }
 
     const { data: { user } } = await supabase.auth.getUser();

@@ -6,6 +6,7 @@ import LoginPromptModal from '@/modals/LoginPromptModal';
 import { Plus } from 'lucide-react';
 import TaskForm from '@/pages/tasks/TaskForm';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
+import { clearTasks } from '@/store/slices/TaskSlice';
 import { fetchTasks } from '@/store/TaskActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
@@ -20,11 +21,11 @@ const TasksPage = memo(() => {
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const workspaces = useSelector(state => state.workspace.workspaces);
   const tasks = useSelector(state => state.tasks.tasks || []);
-  const [loadingTasks, setLoadingTasks] = useState(false);
+  const loading = useSelector(state => state.tasks.loading);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
-      setLoadingTasks(true);
+      dispatch(clearTasks());
       dispatch(fetchTasks()); // Fetch tasks when the page is visible
     }
   }, [isVisible, dispatch]);
@@ -36,7 +37,7 @@ const TasksPage = memo(() => {
     // Listen for the custom refresh event
     const handleRefreshEvent = () => {
       console.log('refreshTaskList event received'); // Log for debugging
-      setLoadingTasks(true);
+      dispatch(clearTasks());
       dispatch(fetchTasks());
     };
 
@@ -46,13 +47,6 @@ const TasksPage = memo(() => {
       window.removeEventListener('refreshTaskList', handleRefreshEvent);
     };
   }, [handleRefresh, dispatch]);
-
-  // Detect when tasks are loaded
-  useEffect(() => {
-    if (loadingTasks && tasks.length > 0) {
-      setLoadingTasks(false);
-    }
-  }, [tasks, loadingTasks]);
 
   const handleAddTask = () => {
     if (!isLoggedIn) {
@@ -79,7 +73,7 @@ const TasksPage = memo(() => {
     return null;
   }
 
-  if (loadingTasks && tasks.length === 0) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12 min-h-[calc(100vh-4rem)]">
         <div className="text-center">
