@@ -18,6 +18,7 @@ const Countdown = () => {
   const [activeField, setActiveField] = useState('hours');
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [startTimestamp, setStartTimestamp] = useState(null); // Nuevo: timestamp de inicio
   const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
   // Eliminamos fieldPrevValue y fieldOverwrite
 
@@ -42,50 +43,47 @@ const Countdown = () => {
     if (total > 0) {
       setInitialTime(correctedTime);
       setSecondsLeft(total);
+      setStartTimestamp(Date.now()); // Guardar el timestamp de inicio
       setIsRunning(true);
     }
   };
 
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || !startTimestamp) return;
 
     const interval = setInterval(() => {
-      setSecondsLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsRunning(false);
-
-          try {
-            new Audio('/sounds/countdownend.mp3').play();
-          } catch {}
-
-          toast.success('Countdown finished! Session complete.', {
-            position: 'top-center',
-            style: {
-              backgroundColor: '#000',
-              color: '#fff',
-              border: '2px solid var(--border-primary)'
-            }
-          });
-
-          if (Notification.permission === 'granted') {
-            try {
-              const notification = new Notification('Countdown finished!', {
-                body: 'Your session is complete.',
-                silent: false,
-                vibrate: [200, 100, 200]
-              });
-              setTimeout(() => notification.close(), 5000);
-            } catch {}
+      const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+      const newSecondsLeft = Math.max(0, calculateSeconds(initialTime) - elapsed);
+      setSecondsLeft(newSecondsLeft);
+      if (newSecondsLeft <= 0) {
+        clearInterval(interval);
+        setIsRunning(false);
+        try {
+          new Audio('/sounds/countdownend.mp3').play();
+        } catch {}
+        toast.success('Countdown finished! Session complete.', {
+          position: 'top-center',
+          style: {
+            backgroundColor: '#000',
+            color: '#fff',
+            border: '2px solid var(--border-primary)'
           }
-          return 0;
+        });
+        if (Notification.permission === 'granted') {
+          try {
+            const notification = new Notification('Countdown finished!', {
+              body: 'Your session is complete.',
+              silent: false,
+              vibrate: [200, 100, 200]
+            });
+            setTimeout(() => notification.close(), 5000);
+          } catch {}
         }
-        return prev - 1;
-      });
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, [isRunning, startTimestamp, initialTime]);
 
   useEffect(() => {
     if (isRunning) {
@@ -97,9 +95,28 @@ const Countdown = () => {
     }
   }, [secondsLeft, isRunning]);
 
+  // Sincroniza al volver a enfocar la ventana
+  useEffect(() => {
+    if (!isRunning || !startTimestamp) return;
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+        const newSecondsLeft = Math.max(0, calculateSeconds(initialTime) - elapsed);
+        setSecondsLeft(newSecondsLeft);
+        // Si el tiempo se acabó mientras estaba fuera, detener
+        if (newSecondsLeft === 0) {
+          setIsRunning(false);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [isRunning, startTimestamp, initialTime]);
+
   const handleReset = () => {
     setIsRunning(false);
     setSecondsLeft(0);
+    setStartTimestamp(null); // Resetear timestamp
     setTime(initialTime);
   };
 
@@ -189,26 +206,41 @@ const Countdown = () => {
       </div>
 
       <div className="flex items-center justify-center mb-6">
-        {fields.map((field, idx) => (
-          <React.Fragment key={field}>
-            <input
-              ref={inputRefs.current[field]}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={pad(time[field], field)}
-              placeholder={undefined}
-              onFocus={e => handleFocus(field, e)}
-              onBlur={e => handleBlur(field, e)}
-              onChange={e => handleInputChange(field, e.target.value)}
-              onKeyDown={e => handleInputKeyDown(e, field)}
-              className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
-              tabIndex={idx + 1}
-              style={{ letterSpacing: '0.05em' }}
-            />
-            {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-1">:</span>}
-          </React.Fragment>
-        ))}
+        {fields.map((field, idx) => {
+          // Si está corriendo, calcula el valor desde secondsLeft
+          let value;
+          if (isRunning) {
+            const h = Math.floor(secondsLeft / 3600);
+            const m = Math.floor((secondsLeft % 3600) / 60);
+            const s = secondsLeft % 60;
+            if (field === 'hours') value = pad(h, 'hours');
+            if (field === 'minutes') value = pad(m, 'minutes');
+            if (field === 'seconds') value = pad(s, 'seconds');
+          } else {
+            value = pad(time[field], field);
+          }
+          return (
+            <React.Fragment key={field}>
+              <input
+                ref={inputRefs.current[field]}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={value}
+                placeholder={undefined}
+                onFocus={e => handleFocus(field, e)}
+                onBlur={e => handleBlur(field, e)}
+                onChange={e => handleInputChange(field, e.target.value)}
+                onKeyDown={e => handleInputKeyDown(e, field)}
+                className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                tabIndex={idx + 1}
+                style={{ letterSpacing: '0.05em' }}
+                disabled={isRunning} // Opcional: deshabilita edición durante cuenta regresiva
+              />
+              {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-1">:</span>}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       <div className="flex justify-center items-center gap-3 mb-2">
