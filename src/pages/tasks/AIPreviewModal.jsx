@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
 
-const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onCancel }) => {
+const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onEdit, onCancel }) => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const hasMultiple = tasks.length > 1;
 
@@ -54,16 +54,23 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onCancel }) => {
       <div className="flex justify-end gap-2 mt-6">
         <button
           onClick={onCancel}
-          className="px-4 py-2 rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="px-4 py-2 rounded-md border-2 border-[var(--border-primary)] text-[var(--text-secondary)] font-semibold"
         >
-          Cancelar
+          Cancel
+        </button>
+        <button
+          onClick={() => onEdit(tasks[selectedIdx])}
+          className="px-4 py-2 rounded-md border-2 border-[var(--border-primary)] text-[var(--text-secondary)] font-semibold"
+          disabled={tasks.length === 0}
+        >
+          Edit
         </button>
         <button
           onClick={() => onAccept(tasks[selectedIdx])}
-          className="px-4 py-2 rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-semibold hover:bg-[var(--accent-primary)]/10"
+          className="px-4 py-2 rounded-md border-2 border-[var(--border-primary)] text-[var(--text-secondary)] font-semibold"
           disabled={tasks.length === 0}
         >
-          Aceptar
+          Accept
         </button>
       </div>
     </BaseModal>

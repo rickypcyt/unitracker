@@ -19,9 +19,12 @@ const TasksPage = memo(() => {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const workspaces = useSelector(state => state.workspace.workspaces);
+  const tasks = useSelector(state => state.tasks.tasks || []);
+  const [loadingTasks, setLoadingTasks] = useState(false);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
+      setLoadingTasks(true);
       dispatch(fetchTasks()); // Fetch tasks when the page is visible
     }
   }, [isVisible, dispatch]);
@@ -33,6 +36,7 @@ const TasksPage = memo(() => {
     // Listen for the custom refresh event
     const handleRefreshEvent = () => {
       console.log('refreshTaskList event received'); // Log for debugging
+      setLoadingTasks(true);
       dispatch(fetchTasks());
     };
 
@@ -42,6 +46,13 @@ const TasksPage = memo(() => {
       window.removeEventListener('refreshTaskList', handleRefreshEvent);
     };
   }, [handleRefresh, dispatch]);
+
+  // Detect when tasks are loaded
+  useEffect(() => {
+    if (loadingTasks && tasks.length > 0) {
+      setLoadingTasks(false);
+    }
+  }, [tasks, loadingTasks]);
 
   const handleAddTask = () => {
     if (!isLoggedIn) {
@@ -66,6 +77,17 @@ const TasksPage = memo(() => {
 
   if (!isVisible) {
     return null;
+  }
+
+  if (loadingTasks && tasks.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12 min-h-[calc(100vh-4rem)]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)]">Loading tasks...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

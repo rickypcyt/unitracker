@@ -45,16 +45,6 @@ export const KanbanBoard = () => {
     ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
     : tasks;
 
-  // Debug: ver qué está pasando
-  console.log('Debug KanbanBoard:', {
-    totalTasks: tasks.length,
-    activeWorkspace: activeWorkspace?.name,
-    activeWorkspaceId: activeWorkspace?.id,
-    filteredTasks: filteredTasks.length,
-    tasksWithWorkspace: tasks.filter(t => t.workspace_id).length,
-    tasksWithoutWorkspace: tasks.filter(t => !t.workspace_id).length
-  });
-
   const [contextMenu, setContextMenu] = useState(null);
   const [collapsedColumns, setCollapsedColumns] = useState({});
   const [showCompleted, setShowCompleted] = useState(false);

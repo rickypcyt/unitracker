@@ -528,6 +528,22 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         isOpen={showAIPreview}
         tasks={aiParsedTasks || []}
         onAccept={task => {
+          // Crear la tarea directamente (sin pasar por el formulario manual)
+          // Simula el submit manual con los datos de la tarea
+          handleChange('title', task.task || '');
+          handleChange('description', task.description || (task.subject ? `Asignatura: ${task.subject}` : ''));
+          handleChange('assignment', task.subject || '');
+          handleChange('deadline', task.date && task.date !== 'null' ? ymdToDmy(normalizeDate(task.date)) : '');
+          handleChange('difficulty', task.difficulty || 'medium');
+          setShowAIPreview(false);
+          setActiveTab('manual');
+          // Llama a handleSubmit con los datos actuales del formulario
+          setTimeout(() => {
+            const fakeEvent = { preventDefault: () => {} };
+            handleSubmit(fakeEvent);
+          }, 0);
+        }}
+        onEdit={task => {
           handleChange('title', task.task || '');
           handleChange('description', task.description || (task.subject ? `Asignatura: ${task.subject}` : ''));
           handleChange('assignment', task.subject || '');
