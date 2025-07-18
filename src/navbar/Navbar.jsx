@@ -162,16 +162,16 @@ const Navbar = ({ onOpenSettings }) => {
         .select('id')
         .eq('username', username)
         .single();
-      if (userError || !userTo) throw new Error('Usuario no encontrado');
-      if (userTo.id === user.id) throw new Error('No puedes enviarte una solicitud a ti mismo');
-      // 2. Verifica que no exista ya una solicitud pendiente
+      if (userError || !userTo) throw new Error('User not found');
+      if (userTo.id === user.id) throw new Error('You cannot send a request to yourself');
+      // 2. Check if there is already a pending request
       const { data: existing } = await supabase
         .from('friend_requests')
         .select('id')
         .or(`and(from_user_id.eq.${user.id},to_user_id.eq.${userTo.id})`, `and(from_user_id.eq.${userTo.id},to_user_id.eq.${user.id})`)
         .eq('status', 'pending');
-      if (existing && existing.length > 0) throw new Error('Ya existe una solicitud pendiente entre ustedes');
-      // 3. Inserta la solicitud
+      if (existing && existing.length > 0) throw new Error('There is already a pending request between you');
+      // 3. Insert the request
       const { error } = await supabase
         .from('friend_requests')
         .insert({ from_user_id: user.id, to_user_id: userTo.id, status: 'pending' });
@@ -263,6 +263,106 @@ const Navbar = ({ onOpenSettings }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // --- FRIEND SYSTEM DISCORD-LIKE ---
+
+  // Buscar usuario por username (case-insensitive, exacto)
+  const searchUserByUsername = async (searchTerm) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .ilike('username', searchTerm);
+    return { data, error };
+  };
+
+  // Enviar solicitud de amistad
+  const sendFriendRequest = async (toUserId, onSuccess, onError) => {
+    try {
+      if (toUserId === user.id) throw new Error('You cannot send a request to yourself');
+      // Verifica que no exista ya una solicitud pendiente
+      const { data: existing } = await supabase
+        .from('friend_requests')
+        .select('id')
+        .or(`and(from_user_id.eq.${user.id},to_user_id.eq.${toUserId})`, `and(from_user_id.eq.${toUserId},to_user_id.eq.${user.id})`)
+        .eq('status', 'pending');
+      if (existing && existing.length > 0) throw new Error('There is already a pending request between you');
+      // Inserta la solicitud
+      const { error } = await supabase
+        .from('friend_requests')
+        .insert({ from_user_id: user.id, to_user_id: toUserId, status: 'pending' });
+      if (error) throw error;
+      onSuccess && onSuccess();
+    } catch (err) {
+      onError && onError(err.message);
+    }
+  };
+
+  // Ver solicitudes recibidas
+  const fetchReceivedRequests = async () => {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url)')
+      .eq('to_user_id', user.id)
+      .eq('status', 'pending');
+    return { data, error };
+  };
+
+  // Ver solicitudes enviadas
+  const fetchSentRequests = async () => {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
+      .eq('from_user_id', user.id)
+      .eq('status', 'pending');
+    return { data, error };
+  };
+
+  // Aceptar solicitud
+  const acceptFriendRequest = async (requestId, onSuccess, onError) => {
+    try {
+      const { error } = await supabase
+        .from('friend_requests')
+        .update({ status: 'accepted' })
+        .eq('id', requestId);
+      if (error) throw error;
+      onSuccess && onSuccess();
+    } catch (err) {
+      onError && onError(err.message);
+    }
+  };
+
+  // Rechazar solicitud
+  const rejectFriendRequest = async (requestId, onSuccess, onError) => {
+    try {
+      const { error } = await supabase
+        .from('friend_requests')
+        .update({ status: 'rejected' })
+        .eq('id', requestId);
+      if (error) throw error;
+      onSuccess && onSuccess();
+    } catch (err) {
+      onError && onError(err.message);
+    }
+  };
+
+  // Mostrar lista de amigos
+  const fetchFriends = async () => {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url), to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
+      .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+      .eq('status', 'accepted');
+    // Filtra para mostrar solo el otro usuario
+    const friends = (data || []).map(req => {
+      if (req.from_user_id === user.id) {
+        return req.to_user;
+      } else {
+        return req.from_user;
+      }
+    });
+    return { friends, error };
+  };
+  // --- END FRIEND SYSTEM ---
 
   return (
     <>
