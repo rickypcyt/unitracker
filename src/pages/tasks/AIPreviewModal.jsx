@@ -34,18 +34,18 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onEdit, onCancel }) => {
             <div className="font-bold text-lg text-[var(--text-primary)] mb-1">{task.task}</div>
             {task.description && (
               <div className="text-base text-[var(--text-secondary)] mb-1">
-                <span className="font-semibold">Descripción:</span> {task.description}
+                <span className="font-semibold">Description:</span> {task.description}
               </div>
             )}
             <div className="text-base text-[var(--text-secondary)] mb-1">
-              <span className="font-semibold">Subject:</span> {task.subject || <span className="italic">None</span>}
+              <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
             </div>
             <div className="text-base text-[var(--text-secondary)] mb-1">
               <span className="font-semibold">Date:</span> {task.date || <span className="italic">None</span>}
             </div>
             {task.difficulty && (
               <div className="text-base text-[var(--text-secondary)]">
-                <span className="font-semibold">Dificultad:</span> {task.difficulty}
+                <span className="font-semibold">Difficulty:</span> {task.difficulty}
               </div>
             )}
           </label>

@@ -12,6 +12,7 @@ import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
+import { addTask } from '@/store/TaskActions';
 import { supabase } from '@/utils/supabaseClient';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -170,8 +171,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     .filter((assignment) => assignment && assignment !== 'No Assignment')
     .sort();
 
-  const [activeTab, setActiveTab] = useState('manual'); // 'manual' or 'ai'
-  const [aiPrompt, setAiPrompt] = useState('');
+  const [activeTab, setActiveTab] = useState('ai'); // 'manual' or 'ai'
+  const [aiPrompt, setAiPrompt] = useState(() => localStorage.getItem('aiPromptDraft') || '');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
   const aiTextareaRef = useRef(null);
@@ -187,6 +188,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       return;
     }
     setAiLoading(true);
+    // Limpia el draft solo si se envía
+    localStorage.removeItem('aiPromptDraft');
     try {
       const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
       // Obtén la fecha y zona horaria actual
@@ -309,6 +312,13 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     return `${day}/${month}/${year}`;
   }
 
+  // Limpia el draft al cerrar el modal completamente
+  useEffect(() => {
+    if (!showAIPreview && activeTab === 'ai' && !aiLoading && !aiError) {
+      // No limpiar draft aquí, solo cuando se envía o manualmente
+    }
+  }, [showAIPreview, activeTab, aiLoading, aiError]);
+
   return (
     <BaseModal
       isOpen={true}
@@ -319,17 +329,17 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       {/* Simple text selector for Manual | AI */}
       <div className="flex justify-center items-center gap-2 mb-6 select-none">
         <span
-          className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'manual' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
-          onClick={() => setActiveTab('manual')}
-        >
-          Manual
-        </span>
-        <span className="text-[var(--border-primary)] font-bold">|</span>
-        <span
           className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
           onClick={() => setActiveTab('ai')}
         >
           AI
+        </span>
+        <span className="text-[var(--border-primary)] font-bold">|</span>
+        <span
+          className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'manual' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
+          onClick={() => setActiveTab('manual')}
+        >
+          Manual
         </span>
       </div>
       {/* Tab Content */}
@@ -505,7 +515,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             id="aiPrompt"
             ref={aiTextareaRef}
             value={aiPrompt}
-            onChange={e => setAiPrompt(e.target.value)}
+            onChange={e => {
+              setAiPrompt(e.target.value);
+              localStorage.setItem('aiPromptDraft', e.target.value);
+            }}
             className="w-full min-h-[120px] max-w-md px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
             placeholder="Describe the task you want AI to generate..."
             disabled={aiLoading}
@@ -527,21 +540,21 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       <AIPreviewModal
         isOpen={showAIPreview}
         tasks={aiParsedTasks || []}
-        onAccept={task => {
-          // Crear la tarea directamente (sin pasar por el formulario manual)
-          // Simula el submit manual con los datos de la tarea
-          handleChange('title', task.task || '');
-          handleChange('description', task.description || (task.subject ? `Asignatura: ${task.subject}` : ''));
-          handleChange('assignment', task.subject || '');
-          handleChange('deadline', task.date && task.date !== 'null' ? ymdToDmy(normalizeDate(task.date)) : '');
-          handleChange('difficulty', task.difficulty || 'medium');
+        onAccept={async task => {
+          // Mapea los datos de la tarea AI a los campos de la base de datos
+          const normalizedDate = task.date && task.date !== 'null' ? normalizeDate(task.date) : null;
+          const newTask = {
+            title: task.task || '',
+            description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),
+            assignment: task.subject || '',
+            deadline: normalizedDate || null, // null si no hay fecha
+            difficulty: task.difficulty || 'medium',
+          };
+          await dispatch(addTask(newTask));
           setShowAIPreview(false);
           setActiveTab('manual');
-          // Llama a handleSubmit con los datos actuales del formulario
-          setTimeout(() => {
-            const fakeEvent = { preventDefault: () => {} };
-            handleSubmit(fakeEvent);
-          }, 0);
+          // Opcional: resetea el formulario manual
+          resetForm && resetForm();
         }}
         onEdit={task => {
           handleChange('title', task.task || '');
