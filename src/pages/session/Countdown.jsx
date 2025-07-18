@@ -19,6 +19,7 @@ const Countdown = () => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
+  // Eliminamos fieldPrevValue y fieldOverwrite
 
   const inputRefs = useRef({
     hours: React.createRef(),
@@ -30,9 +31,16 @@ const Countdown = () => {
     hours * 3600 + minutes * 60 + seconds;
 
   const startCountdown = () => {
-    const total = calculateSeconds(time);
+    // Corrige los valores antes de iniciar
+    const correctedTime = {
+      hours: Math.min(Math.max(time.hours, 0), fieldMax.hours),
+      minutes: Math.min(Math.max(time.minutes, 0), fieldMax.minutes),
+      seconds: Math.min(Math.max(time.seconds, 0), fieldMax.seconds),
+    };
+    setTime(correctedTime);
+    const total = calculateSeconds(correctedTime);
     if (total > 0) {
-      setInitialTime(time);
+      setInitialTime(correctedTime);
       setSecondsLeft(total);
       setIsRunning(true);
     }
@@ -99,7 +107,6 @@ const Countdown = () => {
     const clean = value.replace(/\D/g, ''); // Solo números
     let val = parseInt(clean, 10);
     if (isNaN(val)) val = 0;
-    if (val > fieldMax[field]) val = fieldMax[field];
     setTime(prev => ({ ...prev, [field]: val }));
   }, []);
 
@@ -121,6 +128,14 @@ const Countdown = () => {
         navigateField(e.shiftKey ? -1 : 1, idx);
         break;
       case 'Enter':
+        if (field === 'seconds') {
+          e.preventDefault();
+          startCountdown();
+        } else {
+          e.preventDefault();
+          navigateField(1, idx);
+        }
+        break;
       case 'ArrowRight':
         e.preventDefault();
         navigateField(1, idx);
@@ -146,14 +161,22 @@ const Countdown = () => {
       default:
         break;
     }
-  }, [navigateField]);
+  }, [navigateField, startCountdown]);
 
   const handleFocus = (field, e) => {
     setActiveField(field);
+    setTime(prev => ({ ...prev, [field]: 0 }));
     setTimeout(() => {
       e.target.setSelectionRange(e.target.value.length, e.target.value.length);
       setProgrammaticFocusField(null);
     }, 0);
+  };
+
+  const handleBlur = (field, e) => {
+    let val = parseInt(e.target.value.replace(/\D/g, ''), 10);
+    if (isNaN(val)) val = 0;
+    if (val > fieldMax[field]) val = fieldMax[field];
+    setTime(prev => ({ ...prev, [field]: val }));
   };
 
   return (
@@ -174,7 +197,9 @@ const Countdown = () => {
               inputMode="numeric"
               pattern="[0-9]*"
               value={pad(time[field], field)}
+              placeholder={undefined}
               onFocus={e => handleFocus(field, e)}
+              onBlur={e => handleBlur(field, e)}
               onChange={e => handleInputChange(field, e.target.value)}
               onKeyDown={e => handleInputKeyDown(e, field)}
               className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
