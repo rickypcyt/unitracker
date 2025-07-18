@@ -189,6 +189,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     setAiLoading(true);
     try {
       const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+      // Obtén la fecha y zona horaria actual
+      const now = new Date();
+      const currentDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -199,7 +203,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         body: JSON.stringify({
           model: 'deepseek/deepseek-chat-v3-0324:free',
           messages: [
-            { role: 'system', content: 'Extrae todas las tareas del siguiente texto y devuélvelas en un ARRAY JSON válido. Cada tarea debe tener: "task" (descripción), "date" (fecha completa en formato YYYY-MM-DD, nunca solo el año ni texto), "subject" (si aplica). Si no hay fecha, usa "null". Devuelve SOLO el array JSON, sin texto extra, sin explicación, sin formato markdown. Ejemplo de salida: [{"task": "Hacer tarea de matemáticas", "date": "2024-07-19", "subject": "matemáticas"}]' },
+            { role: 'system', content: `Hoy es ${currentDate} y la zona horaria del usuario es ${tz}. Extrae todas las tareas del siguiente texto y devuélvelas en un ARRAY JSON válido. Cada tarea debe tener: "task" (nombre), "description" (descripción corta), "date" (si el texto dice 'hoy', 'mañana', etc., calcula la fecha real según la fecha y zona horaria dadas y ponla en formato YYYY-MM-DD; si hay una fecha específica, ponla en formato YYYY-MM-DD; si no hay fecha, pon null), "subject" (si aplica), "difficulty" (easy, medium o hard; si no se menciona, pon medium). Devuelve SOLO el array JSON, sin texto extra, sin explicación, sin formato markdown. Ejemplo de salida: [{"task": "Hacer tarea de matemáticas", "description": "Resolver ejercicios de álgebra", "date": "YYYY-MM-DD", "subject": "matemáticas", "difficulty": "medium"}]` },
             { role: 'user', content: `Texto: "${aiPrompt}"` }
           ],
           max_tokens: 256,
@@ -296,6 +300,13 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
 
     // Si no es válida, devuelve vacío
     return '';
+  }
+
+  // Convierte YYYY-MM-DD a DD/MM/YYYY
+  function ymdToDmy(dateStr) {
+    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
   }
 
   return (
@@ -518,8 +529,10 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         tasks={aiParsedTasks || []}
         onAccept={task => {
           handleChange('title', task.task || '');
-          handleChange('description', task.subject ? `Asignatura: ${task.subject}` : '');
-          handleChange('deadline', task.date && task.date !== 'null' ? normalizeDate(task.date) : '');
+          handleChange('description', task.description || (task.subject ? `Asignatura: ${task.subject}` : ''));
+          handleChange('assignment', task.subject || '');
+          handleChange('deadline', task.date && task.date !== 'null' ? ymdToDmy(normalizeDate(task.date)) : '');
+          handleChange('difficulty', task.difficulty || 'medium');
           setShowAIPreview(false);
           setActiveTab('manual');
         }}
