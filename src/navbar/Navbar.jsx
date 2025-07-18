@@ -260,6 +260,7 @@ const Navbar = ({ onOpenSettings }) => {
               onCreateWorkspace={handleCreateWorkspace}
               onEditWorkspace={handleEditWorkspace}
               onDeleteWorkspace={handleDeleteWorkspace}
+              friends={friends}
             />
             <SettingsButton
               isLoggedIn={isLoggedIn}

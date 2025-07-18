@@ -50,11 +50,16 @@ const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWor
                     tabIndex={0}
                     role="button"
                   >
-                    <img
-                      src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
-                      alt={friend.username || friend.email || 'Avatar'}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
-                    />
+                    <div className="relative">
+                      <img
+                        src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
+                        alt={friend.username || friend.email || friend.id}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
+                      />
+                      {sharedWorkspaces[friend.id]?.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[var(--accent-primary)] border-2 border-white"></span>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-[var(--text-primary)] truncate">{friend.username || friend.email || friend.id}</div>
                       <div className="text-xs text-[var(--text-secondary)] truncate">{friend.email}</div>
