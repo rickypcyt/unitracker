@@ -117,86 +117,229 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
     });
   }
 
+  const isThisYear = title === 'This Year';
   return (
-    <div className="maincard p-0.5 mb-1">
+    <div className={`maincard p-0.5 ${isThisYear ? 'mb-2' : 'mb-1'}`}>
       <div className="w-full flex flex-col items-center mt-2 mb-2">
         {customTitle ? customTitle : <span className="text-lg font-semibold">{title}</span>}
       </div>
-      <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] z-10 overflow-visible`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart 
-            data={data} 
-            margin={{ 
-              top: 30, 
-              right: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Month' ? 16 : 30), 
-              bottom: 30, 
-              left: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Month' ? 16 : 30) 
-            }} 
-            barCategoryGap={title === 'This Week' || title === 'Last Week' ? 16 : (title === 'This Month' ? 8 : 20)}
-          >
-            <XAxis
-              dataKey={
-                title === 'This Week' || title === 'Last Week'
-                  ? 'dayName'
-                  : title === 'This Year'
-                  ? 'dayName'
-                  : 'realDay'
-              }
-              stroke="var(--text-secondary)"
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              minTickGap={0}
-              tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
-              tickFormatter={(v) => v}
-              tick={{
-                fill: (tickProps) => {
-                  if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
-                    return 'var(--accent-primary)';
-                  }
-                  if (title === 'This Month') {
-                    const dayNum = parseInt(tickProps.value, 10);
-                    if (!isNaN(dayNum) && dayNum === today.getDate()) {
-                      return 'var(--accent-primary)';
+      {title === 'This Month' ? (
+        <div className="w-full">
+          <div className="overflow-x-auto">
+            <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} min-w-[700px] rounded-lg bg-[var(--bg-secondary)] z-10`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={data} 
+                  margin={{ 
+                    top: 30, 
+                    right: 16, 
+                    bottom: 30, 
+                    left: 16
+                  }} 
+                  barCategoryGap={8}
+                >
+                  <XAxis
+                    dataKey={
+                      title === 'This Week' || title === 'Last Week'
+                        ? 'dayName'
+                        : title === 'This Year'
+                        ? 'dayName'
+                        : 'realDay'
                     }
-                  }
-                  if (title === 'This Year' && tickProps.index === todayIndex) {
-                    return 'var(--accent-primary)';
-                  }
-                  return 'var(--text-secondary)';
-                },
-                fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
-                angle: 0,
-                textAnchor: (title === 'This Week' || title === 'Last Week' || title === 'This Month' || title === 'This Year') ? 'middle' : undefined,
-              }}
-            />
-            <YAxis
-              stroke="var(--text-secondary)"
-              tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
-              tickFormatter={(v) => formatMinutesToHHMM(v)}
-              axisLine={false}
-              tickLine={false}
-              width={40}
-              domain={[0, 'auto']}
-              tickMargin={8}
-            />
-            <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
-            <Bar
-              dataKey="minutes"
-              fill={accentColor}
-              radius={[6, 6, 0, 0]}
-              barSize={title === 'This Month' ? 10 : title === 'This Year' ? 28 : 18}
-              animationDuration={0}
-              ref={chartRef}
+                    stroke="var(--text-secondary)"
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    minTickGap={0}
+                    tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
+                    tickFormatter={(v) => v}
+                    tick={{
+                      fill: (tickProps) => {
+                        if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
+                          return 'var(--accent-primary)';
+                        }
+                        if (title === 'This Month') {
+                          const dayNum = parseInt(tickProps.value, 10);
+                          if (!isNaN(dayNum) && dayNum === today.getDate()) {
+                            return 'var(--accent-primary)';
+                          }
+                        }
+                        if (title === 'This Year' && tickProps.index === todayIndex) {
+                          return 'var(--accent-primary)';
+                        }
+                        return 'var(--text-secondary)';
+                      },
+                      fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
+                      angle: title === 'This Year' ? 0 : 0,
+                      textAnchor: title === 'This Year' ? 'middle' : (title === 'This Week' || title === 'Last Week' || title === 'This Month' ? 'middle' : undefined),
+                    }}
+                  />
+                  <YAxis
+                    stroke="var(--text-secondary)"
+                    tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
+                    tickFormatter={(v) => formatMinutesToHHMM(v)}
+                    axisLine={false}
+                    tickLine={false}
+                    width={40}
+                    domain={[0, 'auto']}
+                    tickMargin={8}
+                  />
+                  <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
+                  <Bar
+                    dataKey="minutes"
+                    fill={accentColor}
+                    radius={[6, 6, 0, 0]}
+                    barSize={title === 'This Month' ? 10 : title === 'This Year' ? 18 : 18}
+                    animationDuration={0}
+                    ref={chartRef}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      ) : ['This Week', 'Last Week', 'This Year'].includes(title) ? (
+        <div className="w-full">
+          <div className="overflow-x-auto">
+            <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] z-10`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={data} 
+                  margin={{ 
+                    top: 30, 
+                    right: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Year' ? 16 : 30), 
+                    bottom: 30, 
+                    left: (title === 'This Week' || title === 'Last Week') ? 16 : (title === 'This Year' ? 16 : 30) 
+                  }} 
+                  barCategoryGap={title === 'This Week' || title === 'Last Week' ? 16 : (title === 'This Year' ? 18 : 20)}
+                >
+                  <XAxis
+                    dataKey={
+                      title === 'This Week' || title === 'Last Week'
+                        ? 'dayName'
+                        : title === 'This Year'
+                        ? 'dayName'
+                        : 'realDay'
+                    }
+                    stroke="var(--text-secondary)"
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    minTickGap={0}
+                    tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
+                    tickFormatter={(v) => v}
+                    tick={{
+                      fill: (tickProps) => {
+                        if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
+                          return 'var(--accent-primary)';
+                        }
+                        if (title === 'This Month') {
+                          const dayNum = parseInt(tickProps.value, 10);
+                          if (!isNaN(dayNum) && dayNum === today.getDate()) {
+                            return 'var(--accent-primary)';
+                          }
+                        }
+                        if (title === 'This Year' && tickProps.index === todayIndex) {
+                          return 'var(--accent-primary)';
+                        }
+                        return 'var(--text-secondary)';
+                      },
+                      fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
+                      angle: title === 'This Year' ? 0 : 0,
+                      textAnchor: title === 'This Year' ? 'middle' : (title === 'This Week' || title === 'Last Week' || title === 'This Month' ? 'middle' : undefined),
+                    }}
+                  />
+                  <YAxis
+                    stroke="var(--text-secondary)"
+                    tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
+                    tickFormatter={(v) => formatMinutesToHHMM(v)}
+                    axisLine={false}
+                    tickLine={false}
+                    width={40}
+                    domain={[0, 'auto']}
+                    tickMargin={8}
+                  />
+                  <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
+                  <Bar
+                    dataKey="minutes"
+                    fill={accentColor}
+                    radius={[6, 6, 0, 0]}
+                    barSize={title === 'This Month' ? 10 : title === 'This Year' ? 18 : 18}
+                    animationDuration={0}
+                    ref={chartRef}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={`${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} rounded-lg bg-[var(--bg-secondary)] z-10 overflow-visible`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={data} 
+              margin={{ 
+                top: 30, 
+                right: 30, 
+                bottom: 30, 
+                left: 30
+              }} 
+              barCategoryGap={20}
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+              <XAxis
+                dataKey={'realDay'}
+                stroke="var(--text-secondary)"
+                tickLine={false}
+                axisLine={false}
+                interval={0}
+                minTickGap={0}
+                tickMargin={16}
+                tickFormatter={(v) => v}
+                tick={{
+                  fill: 'var(--text-secondary)',
+                  fontSize: '0.65rem',
+                  angle: 0,
+                  textAnchor: undefined,
+                }}
+              />
+              <YAxis
+                stroke="var(--text-secondary)"
+                tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
+                tickFormatter={(v) => formatMinutesToHHMM(v)}
+                axisLine={false}
+                tickLine={false}
+                width={40}
+                domain={[0, 'auto']}
+                tickMargin={8}
+              />
+              <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
+              <Bar
+                dataKey="minutes"
+                fill={accentColor}
+                radius={[6, 6, 0, 0]}
+                barSize={18}
+                animationDuration={0}
+                ref={chartRef}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 };

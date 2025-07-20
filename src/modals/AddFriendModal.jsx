@@ -4,6 +4,7 @@ import BaseModal from './BaseModal';
 import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useSelector } from 'react-redux';
 
 const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, hasRequests, onRefreshRequests }) => {
   const [tab, setTab] = useState('send');
@@ -16,6 +17,8 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const [deletingIds, setDeletingIds] = useState([]);
   const [visibleSentRequests, setVisibleSentRequests] = useState(sentRequests);
   const { user } = useAuth();
+  // Get friends from Redux if available
+  const friends = useSelector(state => state?.friends?.friends || []);
 
   // Check if user exists in DB when username changes
   useEffect(() => {
@@ -52,6 +55,12 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const handleSend = () => {
     if (!username.trim()) {
       setError('Enter a username');
+      return;
+    }
+    // Check if already a friend (case-insensitive)
+    const alreadyFriend = friends.some(f => (f.username || '').toLowerCase() === username.trim().toLowerCase());
+    if (alreadyFriend) {
+      setError('This user is already your friend.');
       return;
     }
     setError('');

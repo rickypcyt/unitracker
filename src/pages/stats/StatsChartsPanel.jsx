@@ -89,32 +89,28 @@ const StatsChartsPanel = () => {
     });
   }, [laps, shownMonthDate]);
 
-  // This Week
-  const thisWeekData = useMemo(() => {
-    const today = new Date();
-    const monday = getMonday(today, 0);
-    const weekDays = getWeekDays(monday);
-    const dailyMinutes = laps.reduce((acc, lap) => {
-      const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
-      const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-      if (weekDays.includes(lapDate)) {
-        acc[lapDate] = (acc[lapDate] || 0) + minutes;
-      }
-      return acc;
-    }, {});
-    return weekDays.map((date, idx) => ({
-      date,
-      minutes: dailyMinutes[date] || 0,
-      hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
-      dayName: weekDayLabels[idx],
-    }));
-  }, [laps]);
+  // Estado para la semana mostrada
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = esta semana, -1 = semana pasada, etc.
 
-  // Last Week
-  const lastWeekData = useMemo(() => {
+  // Calcular la fecha base del lunes de la semana mostrada
+  const shownWeekMonday = useMemo(() => {
     const today = new Date();
-    const monday = getMonday(today, 7);
-    const weekDays = getWeekDays(monday);
+    // offset en días: 0 = esta semana, 7 = semana pasada, etc.
+    return getMonday(today, weekOffset * 7);
+  }, [weekOffset]);
+
+  // Calcular el número de semana ISO (Monday-based)
+  function getISOWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+  }
+
+  // Datos de la semana mostrada
+  const shownWeekData = useMemo(() => {
+    const weekDays = getWeekDays(shownWeekMonday);
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
       const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
@@ -129,7 +125,9 @@ const StatsChartsPanel = () => {
       hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
       dayName: weekDayLabels[idx],
     }));
-  }, [laps]);
+  }, [laps, shownWeekMonday]);
+
+  const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
 
   // This Year
   const thisYearData = useMemo(() => {
@@ -202,12 +200,15 @@ const StatsChartsPanel = () => {
     }));
     return (
       <div className="w-full flex flex-col gap-1">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="w-full md:w-1/2">
-            <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
-          </div>
-          <div className="w-full md:w-1/2">
-            <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
+        {/* Semana navegable */}
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[600px]">
+            <StatsChart
+              data={thisWeekData}
+              title="This Week"
+              accentColor={accentColor}
+              small
+            />
           </div>
         </div>
         <StatsChart
@@ -222,52 +223,90 @@ const StatsChartsPanel = () => {
             </div>
           }
         />
-        <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[600px]">
+            <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="w-full flex flex-col gap-1">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="w-full md:w-1/2">
-          <StatsChart data={lastWeekData} title="Last Week" accentColor={accentColor} small />
-        </div>
-        <div className="w-full md:w-1/2">
-          <StatsChart data={thisWeekData} title="This Week" accentColor={accentColor} small />
+      {/* Semana navegable */}
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[600px]">
+          <StatsChart
+            data={shownWeekData}
+            title={`Week ${shownWeekNumber}`}
+            accentColor={accentColor}
+            small
+            xAxisDataKey="dayName"
+            customTitle={
+              <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
+                <button
+                  onClick={() => setWeekOffset((prev) => prev + 1)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  aria-label="Previous week"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
+                  {`Week ${shownWeekNumber}`}
+                </span>
+                <button
+                  onClick={() => setWeekOffset((prev) => prev - 1)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  aria-label="Next week"
+                  disabled={weekOffset === 0}
+                >
+                  <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
+                </button>
+              </div>
+            }
+          />
         </div>
       </div>
       {/* Card mensual con título y flechas dentro */}
-      <StatsChart
-        data={shownMonthData}
-        title="This Month"
-        accentColor={accentColor}
-        customTitle={
-          <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
-            <button
-              onClick={() => setMonthOffset((prev) => prev - 1)}
-              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-              aria-label="Mes anterior"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <span
-              className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
-            >
-              {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </span>
-            <button
-              onClick={() => setMonthOffset((prev) => prev + 1)}
-              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-              aria-label="Mes siguiente"
-              disabled={monthOffset >= 0}
-            >
-              <ChevronRight size={20} className={monthOffset >= 0 ? 'opacity-40 cursor-not-allowed' : ''} />
-            </button>
-          </div>
-        }
-      />
-      <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
+      <div className="w-full overflow-x-auto">
+        <div style={{ minWidth: `${shownMonthData.length * 36}px` }}>
+          <StatsChart
+            data={shownMonthData}
+            title="This Month"
+            accentColor={accentColor}
+            customTitle={
+              <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
+                <button
+                  onClick={() => setMonthOffset((prev) => prev - 1)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  aria-label="Mes anterior"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span
+                  className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                >
+                  {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={() => setMonthOffset((prev) => prev + 1)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  aria-label="Mes siguiente"
+                  disabled={monthOffset >= 0}
+                >
+                  <ChevronRight size={20} className={monthOffset >= 0 ? 'opacity-40 cursor-not-allowed' : ''} />
+                </button>
+              </div>
+            }
+          />
+        </div>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[600px]">
+          <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
+        </div>
+      </div>
     </div>
   );
 };

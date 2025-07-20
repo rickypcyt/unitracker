@@ -788,3 +788,24 @@ h1 {
 .react-hot-toast[data-y="top"][data-x="right"] {
   margin-top: 64px !important;
 }
+/* Add bottom margin for toasts (especially on mobile) */
+.react-hot-toast-container,
+.react-hot-toast {
+  margin-top: 1.5rem !important; /* mt-6 */
+}
+@media (min-width: 640px) {
+  .react-hot-toast-container,
+  .react-hot-toast {
+    margin-top: 2.5rem !important; /* mt-10 */
+  }
+}
+
+.go2072408551 {
+  margin-top: 3.5rem !important; /* mt-10 */
+  z-index: 999999 !important;
+}
+@media (max-width: 639px) {
+  .go2072408551 {
+    margin-top: 4.5rem !important; /* mt-6 */
+  }
+}

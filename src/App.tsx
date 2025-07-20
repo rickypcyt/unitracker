@@ -12,6 +12,7 @@ import SessionPage from '@/pages/session/SessionPage';
 import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
+import { Toaster } from 'react-hot-toast';
 import Tour from './components/Tour';
 import TourManager from './components/TourManager';
 import UserModal from '@/modals/UserModal';
@@ -178,24 +179,39 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <NoiseProvider>
-      <AuthProvider>
-        <TourManager>
-          <UserModalGate />
-          <NavigationProvider>
-            <PageContent onOpenSettings={handleOpenSettings} />
-            {showSettings && (
-              <Settings
-                isOpen={showSettings}
-                onClose={handleCloseSettings}
-                currentTheme={currentTheme}
-                handleThemeChange={handleThemeChange}
-              />
-            )}
-          </NavigationProvider>
-        </TourManager>
-      </AuthProvider>
-    </NoiseProvider>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '8px',
+            border: '2px solid var(--border-primary)',
+          },
+        }}
+      />
+      <NoiseProvider>
+        <AuthProvider>
+          <TourManager>
+            <UserModalGate />
+            <NavigationProvider>
+              <PageContent onOpenSettings={handleOpenSettings} />
+              {showSettings && (
+                <Settings
+                  isOpen={showSettings}
+                  onClose={handleCloseSettings}
+                  currentTheme={currentTheme}
+                  handleThemeChange={handleThemeChange}
+                />
+              )}
+            </NavigationProvider>
+          </TourManager>
+        </AuthProvider>
+      </NoiseProvider>
+    </>
   );
 }
 

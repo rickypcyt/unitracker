@@ -29,6 +29,23 @@ if (typeof window !== 'undefined' && typeof window.Notification === 'undefined')
 
 logger.info('Application starting', { environment: import.meta.env.MODE });
 
+// Render Toaster at the very top level, outside all app wrappers, for maximum visibility
+createPortal(
+  <Toaster
+    position="top-right"
+    toastOptions={{
+      duration: 3000,
+      style: {
+        background: '#333',
+        color: '#fff',
+        padding: '16px',
+        borderRadius: '8px',
+        border: '2px solid var(--border-primary)',
+      },
+    }}
+  />, document.body
+);
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <ErrorBoundary>
     <Provider store={store}>
@@ -38,19 +55,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <App />
             <Analytics />
             <SpeedInsights />
-            {createPortal(
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: '#333',
-                    color: '#fff',
-                    padding: '16px',
-                    borderRadius: '8px',
-                  },
-                }}
-              />, document.body)}
           </BrowserRouter>
         </HelmetProvider>
       </ChakraProvider>
