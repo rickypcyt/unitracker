@@ -1,6 +1,7 @@
 import { AlarmClock, Bell, BellOff, Pause, Play, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import SectionTitle from '@/components/SectionTitle';
 import toast from 'react-hot-toast';
 
 const fields = ['hours', 'minutes', 'seconds'];
@@ -222,25 +223,21 @@ const Countdown = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="flex items-center justify-center w-full px-4 py-3 relative">
-        <div className="flex items-center gap-2 mx-auto">
-          <AlarmClock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg">Countdown</span>
-        </div>
-        <div className="absolute right-4 flex items-center gap-1">
-          <button
-            onClick={toggleAlarm}
-            className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
-            aria-label="Toggle alarm sound"
-          >
-            {alarmEnabled ? (
-              <Bell size={20} className="text-[var(--text-secondary)]" />
-            ) : (
-              <BellOff size={20} className="text-[var(--text-secondary)]" />
-            )}
-          </button>
-        </div>
+      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+        <AlarmClock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Countdown</span>
+        <button
+          onClick={toggleAlarm}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
+          aria-label="Toggle alarm sound"
+        >
+          {alarmEnabled ? (
+            <Bell size={20} className="text-[var(--text-secondary)]" />
+          ) : (
+            <BellOff size={20} className="text-[var(--text-secondary)]" />
+          )}
+        </button>
       </div>
 
       <div className="flex items-center justify-center mb-6">
@@ -298,22 +295,6 @@ const Countdown = () => {
           disabled={isRunning}
         >
           -15
-        </button>
-        <button
-          onClick={() => handleTimeAdjustment(-300)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Subtract 5 minutes"
-          disabled={isRunning}
-        >
-          -5
-        </button>
-        <button
-          onClick={() => handleTimeAdjustment(300)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Add 5 minutes"
-          disabled={isRunning}
-        >
-          +5
         </button>
         <button
           onClick={() => handleTimeAdjustment(900)}

@@ -114,9 +114,7 @@
     color-scheme: dark;
   }
 
-  html.light {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+  html:not(.dark) {
     color-scheme: light;
   }
 
@@ -784,4 +782,9 @@ h1 {
 }
 .react-hot-toast {
   pointer-events: auto;
+}
+
+.react-hot-toast-container[data-y="top"][data-x="right"],
+.react-hot-toast[data-y="top"][data-x="right"] {
+  margin-top: 64px !important;
 }

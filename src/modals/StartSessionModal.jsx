@@ -306,18 +306,17 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         />
 
         <FormActions>
-          <FormButton
+          <button
             type="button"
-            variant="secondary"
             onClick={onClose}
-            className="rounded-md"
+            className="px-6 py-2 rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
             Cancel
-          </FormButton>
+          </button>
           <button
             type="button"
             onClick={handleStart}
-            className="px-6 py-2 rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-semibold"
+            className="px-6 py-2 rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
             Start Session
           </button>

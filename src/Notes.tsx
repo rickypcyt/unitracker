@@ -42,8 +42,8 @@ const Notes: React.FC = () => {
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
   useEffect(() => {
+    setLoading(true); // Always show spinner on mount/user change
     const fetchNotes = async () => {
-      setLoading(true);
       setError(null);
       if (user && (user as any).id) {
         const { data, error } = await supabase

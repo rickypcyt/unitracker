@@ -36,9 +36,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <HelmetProvider>
           <BrowserRouter>
             <App />
+            <Analytics />
+            <SpeedInsights />
             {createPortal(
               <Toaster
-                position="top-center"
+                position="top-right"
                 toastOptions={{
                   duration: 3000,
                   style: {
@@ -49,8 +51,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                   },
                 }}
               />, document.body)}
-            <Analytics />
-            <SpeedInsights />
           </BrowserRouter>
         </HelmetProvider>
       </ChakraProvider>

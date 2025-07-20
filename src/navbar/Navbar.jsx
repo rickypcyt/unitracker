@@ -283,17 +283,17 @@ const Navbar = ({ onOpenSettings }) => {
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo a la izquierda */}
           <div className="flex items-center flex-shrink-0">
-            <span className="text-[var(--text-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl">Uni</span>
-            <span className="text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl">Tracker</span>
+            <span className="text-[var(--text-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl lg:screen xl:text-2xl">Uni</span>
+            <span className="text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl lg:screen xl:text-2xl">Tracker</span>
           </div>
           {/* Botones de páginas al centro */}
           <div className="flex-1 flex justify-center items-center">
-            <div className="hidden lg:flex space-x-4 lg:space-x-8">
+            <div className="hidden lg:flex space-x-4 lg:space-x-4">
               {navIcons.map(({ page, icon: Icon, label }) => (
                 <button
                   key={page}
                   onClick={() => navigateTo(page)}
-                  className={navLinkClass(page) + ' text-xs sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-2'}
+                  className={navLinkClass(page) + ' text-xs sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
                   title={label}
                 >
                   <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6 mr-1" />

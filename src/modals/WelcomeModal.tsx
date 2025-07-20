@@ -3,9 +3,10 @@ import React, { useEffect, useRef } from "react";
 
 interface WelcomeModalProps {
   onClose: () => void;
+  onStartTour?: () => void;
 }
 
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
+const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
   const features = [
     {
       icon: <Clock className="w-6 h-6" />,
@@ -31,7 +32,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar con click fuera
+  // Close on click outside or Escape
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -48,81 +49,59 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
       document.removeEventListener('keydown', handleEsc);
     };
   }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-4 sm:p-8 relative shadow-xl animate-fadeIn">
-        <div className="flex-1 mb-4 text-center">
-          <h3 className="text-lg sm:text-2xl font-bold text-accent-primary mb-1">
-            Welcome to UniTracker
-          </h3>
-          <p className="text-gray text-sm sm:text-base">
-            Your all-in-one study companion
-          </p>
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div
+        ref={modalRef}
+        className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-2 sm:p-6 md:p-10 relative shadow-2xl animate-fadeIn max-h-screen overflow-y-auto"
+      >
+        <button
+          className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl font-bold focus:outline-none"
+          onClick={onClose}
+          aria-label="Close"
+        >×</button>
+        <div className="flex flex-col items-center mb-6">
+          <h1 className="flex items-center justify-center gap-1 mb-2 text-center">
+            <span className="text-[var(--text-primary)] font-bold text-2xl sm:text-3xl md:text-4xl">Uni</span>
+            <span className="text-[var(--accent-primary)] font-bold text-2xl sm:text-3xl md:text-4xl">Tracker</span>
+          </h1>
+          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] font-medium mb-2 text-center">Your all-in-one study companion</p>
+          <p className="text-sm sm:text-base md:text-base text-[var(--text-secondary)] max-w-xs sm:max-w-xl text-center">Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.</p>
         </div>
-
-        {/* Getting Started section first */}
-        <div className="bg-[var(--bg-secondary)] p-3 sm:p-4 rounded-xl mb-4 border-2 border-[var(--border-primary)]">
-          <h4 className="text-base sm:text-lg font-semibold text-accent-primary mb-2 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            Getting Started
-          </h4>
-          <div className="space-y-2">
-            <p className="text-sm sm:text-base text-gray">
-              UniTracker helps you manage your study time effectively. Here's what you can do:
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
-                <div className="w-1 h-1 rounded-full bg-accent-primary" />
-                Create and organize your study tasks
-              </li>
-              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
-                <div className="w-1 h-1 rounded-full bg-accent-primary" />
-                Track your study sessions with the built-in timer
-              </li>
-              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
-                <div className="w-1 h-1 rounded-full bg-accent-primary" />
-                Use the Pomodoro technique for focused study sessions
-              </li>
-              <li className="flex items-center gap-2 text-sm sm:text-base text-gray">
-                <div className="w-1 h-1 rounded-full bg-accent-primary" />
-                Monitor your progress with detailed statistics
-              </li>
-            </ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <Clock className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+            <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">AI Task Creation</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Quickly create tasks with the help of AI. Let the assistant generate, organize, and describe your study tasks for you.</span>
+          </div>
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <BarChart2 className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+            <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Weekly & Monthly Stats</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">See your progress for last week, this week, and the current month. Track your productivity and streaks over time.</span>
+          </div>
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <Calendar className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+            <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Calendar Planning</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Plan your study sessions and deadlines visually with the integrated calendar. Never miss an important date.</span>
+          </div>
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <CheckCircle2 className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+            <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Advanced Task System</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Organize, prioritize, and track your tasks with a powerful kanban board and assignment system.</span>
           </div>
         </div>
-
-        {/* Features cards after */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4">
-          {features.map((feature, index) => (
-            <div
-              key={feature.title}
-              className="bg-[var(--bg-secondary)] p-3 sm:p-4 rounded-xl hover:bg-[var(--bg-primary)] transition-all duration-200 animate-slideUp border-2 border-[var(--border-primary)]"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="p-1.5 bg-accent-primary/20 rounded-lg text-accent-primary">
-                  {feature.icon}
-                </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-semibold text-neutral-500 mb-1">
-                    {feature.title}
-                  </h4>
-                  <p className="text-sm sm:text-base text-gray">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-2 w-full">
           <button
+            className="w-full sm:w-auto px-6 py-3 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-base sm:text-lg bg-transparent cursor-pointer"
             onClick={onClose}
-            className="px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 text-white rounded-lg font-semibold transition-all duration-200 transform hover:scale-105"
           >
-            Get Started
+            Start using UniTracker
+          </button>
+          <button
+            className="w-full sm:w-auto px-6 py-3 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-base sm:text-lg bg-transparent cursor-pointer"
+            onClick={() => onStartTour && onStartTour()}
+          >
+            Take a Guided Tour
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import LoginPromptModal from '@/modals/LoginPromptModal';
 import Tour from './Tour';
 import WelcomeModal from '@/modals/WelcomeModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,11 +10,12 @@ const TourManager = ({ children }) => {
   const { isLoggedIn } = useAuth();
   const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
   const [showTour, setShowTour] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // Cuando se cierra el WelcomeModal, lanzar el tour si no está logueado
-  const handleCloseWelcomeAndStartTour = () => {
+  // Cuando se cierra el WelcomeModal, mostrar login si no está logueado
+  const handleCloseWelcomeAndMaybeLogin = () => {
     handleCloseWelcome();
-    if (!isLoggedIn) setShowTour(true);
+    if (!isLoggedIn) setShowLoginPrompt(true);
   };
 
   // Pasos iniciales del tour (luego se expandirá)
@@ -32,8 +34,9 @@ const TourManager = ({ children }) => {
     <>
       {children}
       {showWelcomeModal && (
-        <WelcomeModal onClose={handleCloseWelcome} />
+        <WelcomeModal onClose={handleCloseWelcomeAndMaybeLogin} />
       )}
+      <LoginPromptModal isOpen={showLoginPrompt} onClose={() => setShowLoginPrompt(false)} />
     </>
   );
 };

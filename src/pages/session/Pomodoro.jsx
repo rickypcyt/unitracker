@@ -2,6 +2,7 @@ import { Bell, BellOff, CheckSquare, Coffee, MoreVertical, Pause, Play, RotateCc
 import React, { useCallback, useEffect, useState } from "react";
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
+import SectionTitle from '@/components/SectionTitle';
 import { formatPomoTime } from "@/hooks/useTimers";
 import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
@@ -120,6 +121,11 @@ const Pomodoro = () => {
   // Hook para pomodoros today
   const { total: pomodorosToday, fetchPomodoros } = usePomodorosToday(user?.id);
 
+  const [pomodorosTodayLocal, setPomodorosTodayLocal] = useState(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+  });
+
   // All function declarations first
   const handlePomodoroComplete = useCallback(() => {
     const isWork = pomoState.currentMode === "work";
@@ -138,14 +144,23 @@ const Pomodoro = () => {
 
     // Update state
     setPomoState(prev => {
-      // Incrementar pomodoroToday al terminar un work
+      // Increment pomodoroToday at the end of a work session
       const shouldIncrementPomodoro = isWork;
+      const newPomodoroToday = shouldIncrementPomodoro ? prev.pomodoroToday + 1 : prev.pomodoroToday;
+      // Immediately update localStorage for daily count
+      if (shouldIncrementPomodoro) {
+        const today = new Date().toISOString().slice(0, 10);
+        const prevCount = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+        const newCount = prevCount + 1;
+        localStorage.setItem(`pomodoroDailyCount_${today}`, String(newCount));
+        setPomodorosTodayLocal(newCount);
+      }
       const newWorkSessionsCompleted = isWork ? prev.workSessionsCompleted + 1 : prev.workSessionsCompleted;
       return {
         ...prev,
         currentMode: nextMode,
         timeLeft: modes[prev.modeIndex][nextMode],
-        pomodoroToday: shouldIncrementPomodoro ? prev.pomodoroToday + 1 : prev.pomodoroToday,
+        pomodoroToday: newPomodoroToday,
         workSessionsCompleted: newWorkSessionsCompleted,
         pomodorosThisSession: shouldIncrementPomodoro ? prev.pomodorosThisSession + 1 : prev.pomodorosThisSession, // Increment session counter
       };
@@ -156,7 +171,7 @@ const Pomodoro = () => {
       if (shouldTakeLongBreak) {
         toast.success("Work session complete! Time for a long break. 🎉", {
           duration: 3000,
-          position: 'top-center',
+          position: 'top-right',
           style: {
             backgroundColor: '#000',
             color: '#fff',
@@ -165,6 +180,7 @@ const Pomodoro = () => {
         });
       } else {
         toast.success("Work session complete! Time for a break.", {
+          position: 'top-right',
           style: {
             backgroundColor: '#000',
             color: '#fff',
@@ -175,7 +191,7 @@ const Pomodoro = () => {
     } else {
       toast.success("Break is over! Let's get back to work! 💪", {
         duration: 3000,
-        position: 'top-center',
+        position: 'top-right',
         style: {
           backgroundColor: '#000',
           color: '#fff',
@@ -395,7 +411,7 @@ const Pomodoro = () => {
       if (shouldBeWorkMode) {
         toast.success("Break is over! Let's get back to work! 💪", {
           duration: 3000,
-          position: 'top-center',
+          position: 'top-right',
           style: {
             backgroundColor: '#000',
             color: '#fff',
@@ -404,6 +420,7 @@ const Pomodoro = () => {
         });
       } else {
         toast.success("Work session complete! Time for a break.", {
+          position: 'top-right',
           style: {
             backgroundColor: '#000',
             color: '#fff',
@@ -489,6 +506,12 @@ const Pomodoro = () => {
   useEffect(() => {
     localStorage.setItem('pomodorosThisSession', pomoState.pomodorosThisSession.toString());
   }, [pomoState.pomodorosThisSession]);
+
+  // On mount, update pomodorosTodayLocal in case the day changed
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    setPomodorosTodayLocal(parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10));
+  }, []);
 
   // Resetear el contador diario a medianoche
   useEffect(() => {
@@ -596,13 +619,10 @@ const Pomodoro = () => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center justify-center w-full px-4 py-3 relative">
-        <div className="flex items-center gap-2 mx-auto">
-          <Timer size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg truncate mb-0 self-center">Pomo Timer</span>
-        </div>
-        {/* Right side: Bell and Settings Button */}
-        <div className="absolute right-4 flex items-center gap-1">
+      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+        <Timer size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Pomo Timer</span>
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <button
             onClick={toggleAlarm}
             className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -698,10 +718,7 @@ const Pomodoro = () => {
           {pomoState.currentMode === 'longBreak' && 'Long Break'}
         </span>
         <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
-          Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{user ? pomodorosToday : (() => {
-            const today = new Date().toISOString().slice(0, 10);
-            return parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
-          })()}</span>
+          Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{user ? pomodorosToday : pomodorosTodayLocal}</span>
         </span>
         {/* Session-specific pomodoro counter */}
         {activeSessionId && (

@@ -8,6 +8,7 @@ import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
+import SectionTitle from '@/components/SectionTitle';
 import StartSessionModal from "@/modals/StartSessionModal";
 import moment from 'moment';
 import { setStudyRunning } from "@/store/slices/uiSlice";
@@ -537,27 +538,20 @@ const StudyTimer = ({ onSyncChange }) => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="flex items-center justify-center w-full px-4 py-3 relative">
-        {/* Centered Title with Icon */}
-        <div className="flex items-center gap-2 mx-auto">
-          <Clock size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
-          <span className="font-bold text-lg truncate mb-0 self-center">Study Timer</span>
-        </div>
-        {/* Right side: Settings Button or Placeholder */}
-        <div className="absolute right-4 flex items-center">
-          {currentSessionId ? (
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-              aria-label="Configure session"
-            >
-              <MoreVertical size={20} />
-            </button>
-          ) : (
-            // Placeholder to maintain alignment
-            <div className="w-[28px]"></div> 
-          )}
-        </div>
+      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+        <Clock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Study Timer</span>
+        {currentSessionId ? (
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Configure session"
+          >
+            <MoreVertical size={20} />
+          </button>
+        ) : (
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[28px]"></div>
+        )}
       </div>
 
       <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">

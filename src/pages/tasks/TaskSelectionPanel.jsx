@@ -267,8 +267,14 @@ const TaskSelectionPanel = ({
 
   if (validActiveTasks.length === 0 && validAvailableTasks.length === 0) {
     return (
-      <div className="col-span-2 text-center text-gray-400 py-6 text-lg font-medium">
-        There are no tasks to complete.
+      <div className="col-span-2 text-center text-gray-400 py-6 text-lg font-medium flex flex-col items-center justify-center gap-4">
+        <div className="text-2xl font-bold text-[var(--text-primary)] mb-2">Create your first task</div>
+        <button
+          onClick={handleAddTask}
+          className="px-6 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold text-base hover:bg-[var(--accent-primary)]/10 transition-colors shadow-none focus:outline-none"
+        >
+          New task +
+        </button>
       </div>
     );
   }
