@@ -119,6 +119,21 @@ const StudySessions = () => {
             </div>
         );
     }
+    if (laps.length === 0) {
+        return (
+            <div className="maincard p-3">
+                <div className="flex justify-center items-center">
+                    <div className="section-title">
+                        <BookOpen size={22} className="icon" />
+                        <span>Study Sessions</span>
+                    </div>
+                </div>
+                <div className="text-center text-[var(--text-secondary)] py-8">
+                    Create your first Study Sessions first!
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="maincard">
@@ -137,7 +152,7 @@ const StudySessions = () => {
                     </div>
 
                     <div className="max-w-6xl mx-auto px-2">
-                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center">
+                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
                             {groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
@@ -198,7 +213,7 @@ const StudySessions = () => {
                             <div key={year} className="mb-1">
                                 <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="max-w-6xl mx-auto px-2">
-                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center">
+                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
                                         {monthsByYear[year]
                                             .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                                             .map(({ month, monthYear, lapsOfMonth }) => {

@@ -1,4 +1,4 @@
-import { Check, Plus, X } from 'lucide-react';
+import { Check, Plus, Square, X } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
 import React, { useEffect, useState } from 'react';
 
@@ -18,6 +18,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [titleError, setTitleError] = useState(false);
   const [assignment, setAssignment] = useState('');
   const [assignments, setAssignments] = useState([]);
+  const [syncPomo, setSyncPomo] = useState(false);
+  const [syncCountdown, setSyncCountdown] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -208,7 +210,9 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       onStart({
         sessionId: session.id,
         tasks: selectedTasks,
-        title: sessionTitle.trim()
+        title: sessionTitle.trim(),
+        syncPomo,
+        syncCountdown
       });
 
       // Close the modal after successful session start
@@ -265,6 +269,25 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             onChange={setSessionDescription}
             placeholder="Enter session description"
           />
+        </div>
+        {/* Controles de sincronización */}
+        <div className="flex flex-col gap-1 mt-2">
+          <button
+            type="button"
+            onClick={() => setSyncPomo((v) => !v)}
+            className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
+          >
+            <span>Start pomodoro at the same time</span>
+            {syncPomo ? <Check size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSyncCountdown((v) => !v)}
+            className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
+          >
+            <span>Start countdown at the same time</span>
+            {syncCountdown ? <Check size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
+          </button>
         </div>
 
         <TaskSelectionPanel

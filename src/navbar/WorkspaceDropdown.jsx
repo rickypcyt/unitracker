@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Settings, Settings as SettingsIcon, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Network, Plane, Plus, Settings, Settings as SettingsIcon, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
@@ -78,7 +78,7 @@ const WorkspaceDropdown = ({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)]">
-              <FolderOpen size={18} />
+              <Network size={18} />
               <span className="font-medium truncate max-w-[100px]">{activeWorkspace?.name || 'Workspace'}</span>
               <ChevronDown size={16} />
             </button>
@@ -131,7 +131,7 @@ const WorkspaceDropdown = ({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg">
-              <Briefcase size={24} />
+              <Network size={24} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>

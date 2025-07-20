@@ -468,7 +468,9 @@ const StudyTimer = ({ onSyncChange }) => {
         lastStart: now,
         timeAtStart: prev.time,
         sessionStatus: 'active',
-        sessionTitle: sessionData.title
+        sessionTitle: sessionData.title,
+        syncPomo: sessionData.syncPomo,
+        syncCountdown: sessionData.syncCountdown
       }));
 
       // Update sessions today count
@@ -718,22 +720,7 @@ const StudyTimer = ({ onSyncChange }) => {
       )}
       
       <div className="flex flex-col gap-1 mt-4">
-        <button
-          type="button"
-          onClick={() => setStudyState(prev => ({ ...prev, syncPomo: !prev.syncPomo }))}
-          className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
-        >
-          <span>Start pomodoro at the same time</span>
-          {studyState.syncPomo ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
-        </button>
-        <button
-          type="button"
-          onClick={() => setStudyState(prev => ({ ...prev, syncCountdown: !prev.syncCountdown }))}
-          className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
-        >
-          <span>Start countdown at the same time</span>
-          {studyState.syncCountdown ? <CheckSquare size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
-        </button>
+        {/* Controles de sincronización movidos al modal */}
       </div>
 
       {currentSessionId && studyState.sessionStatus === 'paused' && studyState.lastPausedAt && (

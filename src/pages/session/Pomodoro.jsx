@@ -597,25 +597,24 @@ const Pomodoro = () => {
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="flex items-center justify-center w-full px-4 py-3 relative">
-        {/* Centered Title with Icon */}
         <div className="flex items-center gap-2 mx-auto">
           <Timer size={22} className="icon self-center" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg truncate mb-0 self-center">Pomo Timer</span>
+        </div>
+        {/* Right side: Bell and Settings Button */}
+        <div className="absolute right-4 flex items-center gap-1">
           <button
             onClick={toggleAlarm}
-            className="ml-2 p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+            className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
             aria-label="Toggle alarm sound"
           >
             {alarmEnabled ? (
-              <Bell size={20} className="text-[var(--accent-primary)]" />
+              <Bell size={20} className="text-[var(--text-secondary)]" />
             ) : (
-              <BellOff size={20} className="text-[var(--accent-primary)]" />
+              <BellOff size={20} className="text-[var(--text-secondary)]" />
             )}
           </button>
-        </div>
-        {/* Right side: Settings Button */}
-        <div className="absolute right-4 flex items-center">
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -699,7 +698,10 @@ const Pomodoro = () => {
           {pomoState.currentMode === 'longBreak' && 'Long Break'}
         </span>
         <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
-          Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{pomodorosToday}</span>
+          Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{user ? pomodorosToday : (() => {
+            const today = new Date().toISOString().slice(0, 10);
+            return parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+          })()}</span>
         </span>
         {/* Session-specific pomodoro counter */}
         {activeSessionId && (

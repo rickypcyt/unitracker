@@ -245,7 +245,7 @@ const Statistics: React.FC = () => {
   if (isDemo) {
     return (
       <div className="maincard p-3 md:p-3">
-        <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-center items-center">
+        <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
           {statCards.map((card, i) => (
             <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px]">
               <div className="mb-1">{card.icon}</div>
@@ -260,10 +260,10 @@ const Statistics: React.FC = () => {
   }
 
   return (
-    <div className="maincard mb-1 p-3 md:p-3">
+    <div className="maincard mb-2 p-3 md:p-3">
       <div className="max-w-6xl mx-auto px-2">
         <div
-          className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center items-center"
+          className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"
         >
           {statCards.map((card, i) => (
             <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-2 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px]">

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import BaseModal from './BaseModal';
 import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
+import { useAuth } from '@/hooks/useAuth';
 
 const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, hasRequests, onRefreshRequests }) => {
   const [tab, setTab] = useState('send');
@@ -12,8 +13,9 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const [requestSent, setRequestSent] = useState(false);
   const [userExists, setUserExists] = useState(undefined); // undefined: not checked, true: exists, false: not found
   const [checkingUser, setCheckingUser] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deletingIds, setDeletingIds] = useState([]);
   const [visibleSentRequests, setVisibleSentRequests] = useState(sentRequests);
+  const { user } = useAuth();
 
   // Check if user exists in DB when username changes
   useEffect(() => {
@@ -69,8 +71,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
 
   const handleDeletePending = async (request) => {
     console.log('[DEBUG] handleDeletePending called for request:', request);
-    setDeletingId(request.id);
-    // Optimistic UI: remove from visibleSentRequests immediately
+    setDeletingIds(prev => [...prev, request.id]);
     setVisibleSentRequests(prev => prev.filter(r => r.id !== request.id));
     try {
       const { error, data } = await supabase
@@ -91,33 +92,40 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       setError('Unexpected error: ' + (err?.message || err));
       console.error('[DEBUG] Unexpected error in handleDeletePending:', err);
     } finally {
-      setDeletingId(null);
+      setDeletingIds(prev => prev.filter(id => id !== request.id));
       console.log('[DEBUG] handleDeletePending finished for request:', request);
     }
   };
 
+  const isSelfRequest = user && username.trim().length > 0 && username.trim().toLowerCase() === (user.username || '').toLowerCase();
+
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="Add Friend" maxWidth="max-w-md">
-      <div className="flex items-center justify-center gap-2 mb-2">
+      <div className="flex items-center justify-evenly gap-0 mb-2 w-full">
         <button
-          className={`px-4 py-1 font-semibold ${tab === 'send' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold ${tab === 'send' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
           onClick={() => setTab('send')}
         >
           Send
         </button>
         <span className="text-[var(--border-primary)] font-bold">|</span>
         <button
-          className={`px-4 py-1 font-semibold ${tab === 'received' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'received' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
           onClick={() => setTab('received')}
         >
-          Received
+          <span className="relative inline-block">
+            Received
+            {receivedRequests.length > 0 && (
+              <span className="absolute -top-2 -right-4 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)]"></span>
+            )}
+          </span>
         </button>
         <span className="text-[var(--border-primary)] font-bold">|</span>
         <button
-          className={`px-4 py-1 font-semibold ${tab === 'pending' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'pending' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
           onClick={() => setTab('pending')}
         >
-          Pending{visibleSentRequests.length > 0 ? ` (${visibleSentRequests.length})` : ''}
+          Sent{visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length > 0 ? ` (${visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length})` : ''}
         </button>
       </div>
       {tab === 'send' && (
@@ -140,10 +148,13 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
           <button
             className="mt-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white font-semibold hover:bg-[var(--accent-primary)]/90 w-full disabled:opacity-60"
             onClick={handleSend}
-            disabled={requestSent || userExists === false}
+            disabled={requestSent || userExists === false || isSelfRequest}
           >
             {requestSent ? 'Request Sent!' : 'Send Request'}
           </button>
+          {isSelfRequest && (
+            <div className="text-xs text-red-600 mt-1">You cannot send a friend request to yourself.</div>
+          )}
           {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
         </div>
       )}
@@ -176,10 +187,10 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       )}
       {tab === 'pending' && (
         <div className="w-full flex flex-col gap-2 py-4">
-          {visibleSentRequests.length === 0 ? (
+          {visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length === 0 ? (
             <div className="text-[var(--text-secondary)] text-center">No pending requests</div>
           ) : (
-            visibleSentRequests.map((req, i) => (
+            visibleSentRequests.filter(req => !deletingIds.includes(req.id)).map((req, i) => (
               <div key={i} className="flex flex-row items-center bg-[var(--bg-secondary)] rounded-lg px-3 py-2 min-h-[2.5rem]">
                 <div className="flex-1 flex items-center min-w-0">
                   <span className="text-[var(--text-primary)] font-medium whitespace-nowrap">{req.to_user?.username || req.to_user_id}</span>
@@ -189,10 +200,10 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
                   <button
                     className="p-1 rounded-full hover:bg-red-500/20 text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                     onClick={() => handleDeletePending(req)}
-                    disabled={deletingId === req.id}
+                    disabled={deletingIds.includes(req.id)}
                     title="Delete request"
                   >
-                    {deletingId === req.id ? (
+                    {deletingIds.includes(req.id) ? (
                       <span className="w-4 h-4 animate-spin border-2 border-red-500 border-t-transparent rounded-full inline-block"></span>
                     ) : (
                       <X size={16} />

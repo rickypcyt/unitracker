@@ -226,16 +226,18 @@ const Countdown = () => {
         <div className="flex items-center gap-2 mx-auto">
           <AlarmClock size={22} className="icon" style={{ color: 'var(--accent-primary)' }} />
           <span className="font-bold text-lg">Countdown</span>
+        </div>
+        <div className="absolute right-4 flex items-center gap-1">
           <button
             onClick={toggleAlarm}
-            className="ml-2 p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+            className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
             aria-label="Toggle alarm sound"
           >
             {alarmEnabled ? (
-              <Bell size={20} className="text-[var(--text-primary)] active:text-[var(--accent-primary)]" />
+              <Bell size={20} className="text-[var(--text-secondary)]" />
             ) : (
-              <BellOff size={20} className="text-[var(--text-primary)] active:text-[var(--accent-primary)]" />
+              <BellOff size={20} className="text-[var(--text-secondary)]" />
             )}
           </button>
         </div>

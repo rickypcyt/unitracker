@@ -104,7 +104,6 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
     backface-visibility: hidden;
-    transform: translateZ(0);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     font-size: 18px; /* o 20px */
   }
@@ -776,5 +775,13 @@ h1 {
 }
 
 .react-hot-toast-container, .react-hot-toast {
-  z-index: 99999 !important;
+  z-index: 999999 !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  pointer-events: none;
+}
+.react-hot-toast {
+  pointer-events: auto;
 }

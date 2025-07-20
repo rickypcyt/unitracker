@@ -1,8 +1,9 @@
-import { AudioLines, Cloud, CloudRain, Pause, Play, SquareArrowOutUpRight, Waves } from "lucide-react";
+import { AudioLines, Cloud, CloudRain, MoreVertical, Pause, Play, SquareArrowOutUpRight, Waves } from "lucide-react";
 
 import React from "react";
 import ReactSlider from "react-slider";
 import { useNoise } from '@/utils/NoiseContext';
+import { useState } from 'react';
 
 // Configuración de cada sonido
 const SOUND_CONFIGS = [
@@ -259,8 +260,28 @@ function SoundControl({ label, icon: Icon, min, max, volume, setVolume, isPlayin
   );
 }
 
+function NoiseSettingsModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40">
+      <div className="bg-[var(--bg-primary)] rounded-xl p-6 w-full max-w-md shadow-xl border border-[var(--border-primary)] relative">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+        <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">Noise Generator Settings</h2>
+        <div className="text-[var(--text-secondary)]">(Aquí puedes agregar opciones de configuración en el futuro)</div>
+      </div>
+    </div>
+  );
+}
+
 // Componente principal
 export default function NoiseGenerator() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { sounds, startSound, stopSound, setVolume, isInitialized, initializeAudio } = useNoise();
 
   const handleStart = async (index) => {
@@ -272,9 +293,16 @@ export default function NoiseGenerator() {
 
   return (
     <div className="w-full">
-      <div className="section-title justify-center mb-4">
+      <div className="section-title justify-center mb-4 relative">
         <AudioLines size={22} className="icon" />
         <span>Noise Generator</span>
+        <button
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          onClick={() => setIsSettingsOpen(true)}
+          aria-label="Noise generator settings"
+        >
+          <MoreVertical size={20} />
+        </button>
       </div>
       <div className="space-y-6 w-full">
         {sounds.map((sound, idx) => (
@@ -302,6 +330,7 @@ export default function NoiseGenerator() {
           More Sounds <SquareArrowOutUpRight className="inline ml-2" size={18} />
         </button>
       </div>
+      <NoiseSettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }

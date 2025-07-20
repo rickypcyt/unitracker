@@ -12,6 +12,7 @@ import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom/client';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Toaster } from 'react-hot-toast';
+import { createPortal } from 'react-dom';
 import { logger } from '@/utils/logger';
 import { store } from '@/store/store';
 
@@ -35,18 +36,19 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <HelmetProvider>
           <BrowserRouter>
             <App />
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: '#333',
-                  color: '#fff',
-                  padding: '16px',
-                  borderRadius: '8px',
-                },
-              }}
-            />
+            {createPortal(
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#333',
+                    color: '#fff',
+                    padding: '16px',
+                    borderRadius: '8px',
+                  },
+                }}
+              />, document.body)}
             <Analytics />
             <SpeedInsights />
           </BrowserRouter>
