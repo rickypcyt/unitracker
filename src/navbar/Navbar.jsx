@@ -60,26 +60,26 @@ const Navbar = ({ onOpenSettings }) => {
   }, [isLoggedIn, dispatch]);
 
   // Load friend requests from Supabase
-  useEffect(() => {
+  const fetchRequests = async () => {
     if (!user) {
       setReceivedRequests([]);
       setSentRequests([]);
       return;
     }
-    const fetchRequests = async () => {
-      const { data: rec } = await supabase
-        .from('friend_requests')
-        .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url)')
-        .eq('to_user_id', user.id)
-        .eq('status', 'pending');
-      const { data: sent } = await supabase
-        .from('friend_requests')
-        .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
-        .eq('from_user_id', user.id)
-        .eq('status', 'pending');
-      setReceivedRequests(rec || []);
-      setSentRequests(sent || []);
-    };
+    const { data: rec } = await supabase
+      .from('friend_requests')
+      .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url)')
+      .eq('to_user_id', user.id)
+      .eq('status', 'pending');
+    const { data: sent } = await supabase
+      .from('friend_requests')
+      .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
+      .eq('from_user_id', user.id)
+      .eq('status', 'pending');
+    setReceivedRequests(rec || []);
+    setSentRequests(sent || []);
+  };
+  useEffect(() => {
     fetchRequests();
   }, [user]);
 
@@ -166,8 +166,46 @@ const Navbar = ({ onOpenSettings }) => {
     }
   };
 
-  // SettingsButton handlers (dummy, replace with real logic as needed)
-  const handleSendRequest = () => {};
+  // Send friend request logic
+  const handleSendRequest = async (username, { onSuccess, onError }) => {
+    try {
+      if (!user) {
+        onError && onError('You must be logged in to send a friend request.');
+        return;
+      }
+      // 1. Find user by username
+      const { data: toUser, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .maybeSingle();
+      if (userError || !toUser) {
+        onError && onError('User not found.');
+        return;
+      }
+      if (toUser.id === user.id) {
+        onError && onError('You cannot send a friend request to yourself.');
+        return;
+      }
+      // 2. Insert friend request
+      const { error: insertError } = await supabase
+        .from('friend_requests')
+        .insert({ from_user_id: user.id, to_user_id: toUser.id, status: 'pending' });
+      if (insertError) {
+        if (insertError.message && insertError.message.includes('duplicate')) {
+          onError && onError('Friend request already sent.');
+        } else {
+          onError && onError('Error sending friend request: ' + insertError.message);
+        }
+        return;
+      }
+      // 3. Refresh requests
+      await fetchRequests();
+      onSuccess && onSuccess();
+    } catch (err) {
+      onError && onError('Unexpected error: ' + (err?.message || err));
+    }
+  };
   const handleAccept = async (request) => {
     try {
       console.log('[ACCEPT] Iniciando proceso para request:', request);

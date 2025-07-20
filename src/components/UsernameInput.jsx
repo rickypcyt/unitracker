@@ -17,10 +17,10 @@ export default function UsernameInput({
   const [success, setSuccess] = useState(false);
 
   const validateFormat = (value) => {
-    if (!value) return 'El username es obligatorio';
-    if (!USERNAME_REGEX.test(value)) return 'Solo letras, números y _';
-    if (value.length < 3) return 'Mínimo 3 caracteres';
-    if (value.length > 32) return 'Máximo 32 caracteres';
+    if (!value) return 'Username is required';
+    if (!USERNAME_REGEX.test(value)) return 'Only letters, numbers, and _ are allowed';
+    if (value.length < 3) return 'Minimum 3 characters';
+    if (value.length > 32) return 'Maximum 32 characters';
     return '';
   };
 
@@ -37,11 +37,11 @@ export default function UsernameInput({
       .maybeSingle();
     setChecking(false);
     if (dbError) {
-      setError('Error al verificar username');
+      setError('Error checking username');
       return false;
     }
     if (data) {
-      setError('Este username ya está en uso');
+      setError('This username is already taken');
       return false;
     }
     setSuccess(true);
@@ -83,14 +83,14 @@ export default function UsernameInput({
             ? 'border-green-500'
             : ''
         }`}
-        placeholder="Elige tu username único"
+        placeholder="Choose your unique username"
         minLength={3}
         maxLength={32}
         autoComplete="off"
       />
-      {checking && <span className="text-xs text-gray-500">Verificando...</span>}
+      {checking && <span className="text-xs text-gray-500">Checking...</span>}
       {error && <span className="text-xs text-red-600">{error}</span>}
-      {success && <span className="text-xs text-green-600">¡Disponible!</span>}
+      {success && <span className="text-xs text-green-600">Available!</span>}
     </div>
   );
 } 

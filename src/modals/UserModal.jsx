@@ -21,7 +21,7 @@ const UserModal = ({ isOpen, onClose }) => {
   const fileInputRef = useRef();
   const usernameEditRef = useRef();
 
-  // Obtiene el avatar y username actual desde la tabla profiles
+  // Fetch avatar and username from profiles table
   useEffect(() => {
     const fetchProfile = async () => {
       if (user?.id) {
@@ -33,7 +33,7 @@ const UserModal = ({ isOpen, onClose }) => {
         if (!error && data) {
           setAvatarUrl(data.avatar_url);
           setUsername(data.username || '');
-          setEditingUsername(!data.username); // Si no tiene username, forzar edición
+          setEditingUsername(!data.username); // If no username, force edit
         } else {
           setAvatarUrl(null);
           setUsername('');
@@ -44,7 +44,7 @@ const UserModal = ({ isOpen, onClose }) => {
     if (isOpen) fetchProfile();
   }, [user, isOpen]);
 
-  // Cerrar edición de username al hacer click fuera
+  // Close username edit on outside click
   useEffect(() => {
     if (!editingUsername) return;
     function handleClickOutside(e) {
@@ -64,7 +64,7 @@ const UserModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // Nueva función modular para subir el avatar
+  // Modular function to upload avatar
   const uploadAvatar = async (file, user) => {
     if (!user) {
       console.error('No authenticated user');
@@ -72,14 +72,14 @@ const UserModal = ({ isOpen, onClose }) => {
     }
 
     const fileExt = file.name.split('.').pop();
-    const fileName = `avatar.${fileExt}`; // nombre fijo, pero mantiene extensión
+    const fileName = `avatar.${fileExt}`; // fixed name, but keeps extension
     const filePath = `${user.id}/${fileName}`;
-    console.log('Subiendo avatar:', { filePath, fileType: file.type, file });
+    console.log('Uploading avatar:', { filePath, fileType: file.type, file });
 
     const { data, error } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
-        upsert: true, // sobrescribe si ya existe
+        upsert: true, // overwrite if exists
         contentType: file.type,
       });
 
@@ -88,7 +88,7 @@ const UserModal = ({ isOpen, onClose }) => {
       return { success: false };
     }
 
-    // Obtener la URL pública
+    // Get public URL
     const { data: publicUrlData, error: publicUrlError } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
@@ -98,7 +98,7 @@ const UserModal = ({ isOpen, onClose }) => {
       return { success: false };
     }
 
-    // Guardar en profiles
+    // Save to profiles
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ avatar_url: publicUrlData.publicUrl })
@@ -114,8 +114,8 @@ const UserModal = ({ isOpen, onClose }) => {
 
   const handleUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
-    // Debug: Estado inicial
-    console.log('DEBUG: Estado inicial', {
+    // Debug: Initial state
+    console.log('DEBUG: Initial state', {
       user,
       file,
       fileInputRef,
@@ -141,13 +141,13 @@ const UserModal = ({ isOpen, onClose }) => {
         setSuccess(true);
       }
     } catch (err) {
-      console.error('Error inesperado:', err);
+      console.error('Unexpected error:', err);
     } finally {
       setUploading(false);
     }
   };
 
-  // Guardar username en Supabase
+  // Save username to Supabase
   const handleSaveUsername = async () => {
     if (!usernameValid || !username) return;
     setUsernameLoading(true);
@@ -159,12 +159,12 @@ const UserModal = ({ isOpen, onClose }) => {
         .update({ username })
         .eq('id', user.id);
       if (error) {
-        setUsernameError('Error al guardar username: ' + error.message);
+        setUsernameError('Error saving username: ' + error.message);
         return;
       }
       setUsernameSaveSuccess(true);
     } catch (err) {
-      setUsernameError('Error inesperado: ' + (err?.message || err));
+      setUsernameError('Unexpected error: ' + (err?.message || err));
     } finally {
       setUsernameLoading(false);
     }
@@ -179,7 +179,7 @@ const UserModal = ({ isOpen, onClose }) => {
       showCloseButton={!!username && usernameValid}
     >
       <div className="flex flex-col items-center gap-4 py-6">
-        {/* Avatar y email */}
+        {/* Avatar and email */}
         <div
           className="relative group mb-2 cursor-pointer"
           style={{ width: '7rem', height: '7rem' }}
@@ -194,7 +194,7 @@ const UserModal = ({ isOpen, onClose }) => {
               {user?.email?.[0]?.toUpperCase() || '?'}
             </div>
           )}
-          {/* Overlay al hacer hover solo con ícono lápiz */}
+          {/* Overlay on hover with pencil icon */}
           <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <Pencil className="w-10 h-10 text-white" />
           </div>
@@ -224,7 +224,7 @@ const UserModal = ({ isOpen, onClose }) => {
                 }}
                 disabled={!usernameValid || usernameLoading || !username}
               >
-                {usernameLoading ? 'Guardando...' : 'Guardar username'}
+                {usernameLoading ? 'Saving...' : 'Save username'}
               </button>
               {usernameSaveSuccess && (
                 <div className="mt-1 text-green-600 text-sm">Username saved!</div>
@@ -240,7 +240,7 @@ const UserModal = ({ isOpen, onClose }) => {
                 <button
                   className="p-1 rounded-full hover:bg-[var(--bg-secondary)] border-2 border-transparent hover:border-[var(--accent-primary)] transition-colors"
                   onClick={() => setEditingUsername(true)}
-                  aria-label="Editar username"
+                  aria-label="Edit username"
                 >
                   <Pencil className="w-5 h-5 text-[var(--accent-primary)]" />
                 </button>
@@ -248,7 +248,7 @@ const UserModal = ({ isOpen, onClose }) => {
             </div>
           )}
         </div>
-        {/* Avatar file input y botones */}
+        {/* Avatar file input and buttons */}
         <input
           type="file"
           accept="image/*"
@@ -262,15 +262,15 @@ const UserModal = ({ isOpen, onClose }) => {
             onClick={handleUpload}
             disabled={uploading}
           >
-            {uploading ? 'Subiendo...' : 'Subir avatar'}
+            {uploading ? 'Uploading...' : 'Upload avatar'}
           </button>
         )}
         {success && (
-          <div className="mt-2 text-green-600 font-medium">¡Avatar actualizado!</div>
+          <div className="mt-2 text-green-600 font-medium">Avatar updated!</div>
         )}
-        {/* Si no tiene username, mensaje bloqueante */}
+        {/* If no username, blocking message */}
         {!username && (
-          <div className="mt-4 text-red-600 text-center text-sm font-medium">Debes elegir un username único para continuar.</div>
+          <div className="mt-4 text-red-600 text-center text-sm font-medium">You must choose a unique username to continue.</div>
         )}
       </div>
     </BaseModal>

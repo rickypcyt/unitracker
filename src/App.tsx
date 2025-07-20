@@ -14,6 +14,7 @@ import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import Tour from './components/Tour';
 import TourManager from './components/TourManager';
+import UserModal from '@/modals/UserModal';
 import WelcomeModal from '@/modals/WelcomeModal';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
@@ -65,10 +66,38 @@ function useSupabaseAuthSync() {
   }, [dispatch]);
 }
 
+// Componente que muestra el UserModal si el usuario está logueado y no tiene username
+const UserModalGate: React.FC = () => {
+  const { user, isLoggedIn } = useAuth() as { user: any, isLoggedIn: boolean };
+  const [showUserModal, setShowUserModal] = useState(false);
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (isLoggedIn && user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', user.id)
+          .single();
+        if (!error && (!data || !data.username)) {
+          setShowUserModal(true);
+        } else {
+          setShowUserModal(false);
+        }
+      } else {
+        setShowUserModal(false);
+      }
+    };
+    checkUsername();
+  }, [isLoggedIn, user]);
+  return <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />;
+};
+
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const { currentTheme, handleThemeChange } = useTheme();
   const dispatch: AppDispatch = useDispatch();
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const handleOpenSettings = () => {
     setShowSettings(true);
@@ -152,6 +181,7 @@ const App: React.FC = () => {
     <NoiseProvider>
       <AuthProvider>
         <TourManager>
+          <UserModalGate />
           <NavigationProvider>
             <PageContent onOpenSettings={handleOpenSettings} />
             {showSettings && (

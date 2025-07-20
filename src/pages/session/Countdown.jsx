@@ -233,9 +233,9 @@ const Countdown = () => {
             aria-label="Toggle alarm sound"
           >
             {alarmEnabled ? (
-              <Bell size={20} className="text-[var(--accent-primary)]" />
+              <Bell size={20} className="text-[var(--text-primary)] active:text-[var(--accent-primary)]" />
             ) : (
-              <BellOff size={20} className="text-[var(--accent-primary)]" />
+              <BellOff size={20} className="text-[var(--text-primary)] active:text-[var(--accent-primary)]" />
             )}
           </button>
         </div>
