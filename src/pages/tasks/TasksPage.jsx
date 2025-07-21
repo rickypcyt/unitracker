@@ -25,7 +25,6 @@ const TasksPage = memo(() => {
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
-      dispatch(clearTasks());
       dispatch(fetchTasks()); // Fetch tasks when the page is visible
     }
   }, [isVisible, dispatch]);
@@ -37,7 +36,6 @@ const TasksPage = memo(() => {
     // Listen for the custom refresh event
     const handleRefreshEvent = () => {
       console.log('refreshTaskList event received'); // Log for debugging
-      dispatch(clearTasks());
       dispatch(fetchTasks());
     };
 

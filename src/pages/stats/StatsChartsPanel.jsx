@@ -1,9 +1,16 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import StatsChart from './StatsChart';
+import MonthStatsCard from './MonthStatsCard';
+import WeekStatsCard from './WeekStatsCard';
+import YearStatsCard from './YearStatsCard';
 import useDemoMode from '@/utils/useDemoMode';
 import { useSelector } from 'react-redux';
+
+const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const monthLabels = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
 
 function formatMinutesToHHMM(minutes) {
   const h = Math.floor(minutes / 60);
@@ -32,74 +39,22 @@ function getMonthDays(date) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
-    // Usar Date.UTC para evitar desfases de zona horaria
     const date = new Date(Date.UTC(year, month, day));
     return date.toISOString().split('T')[0];
   });
 }
-
-const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-const monthLabels = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
 
 const StatsChartsPanel = () => {
   const { laps } = useSelector((state) => state.laps);
   const { isDemo } = useDemoMode();
   const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
 
-  // Estado para el mes mostrado
-  const [monthOffset, setMonthOffset] = useState(0); // 0 = mes actual, -1 = mes anterior, etc.
-
-  // Calcular la fecha base del mes mostrado
-  const shownMonthDate = useMemo(() => {
-    const now = new Date();
-    // Usar UTC para evitar desfases de zona horaria
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    d.setUTCMonth(d.getUTCMonth() + monthOffset);
-    return d;
-  }, [monthOffset]);
-
-  // Datos del mes mostrado
-  const shownMonthData = useMemo(() => {
-    const year = shownMonthDate.getFullYear();
-    const month = shownMonthDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const monthDays = getMonthDays(shownMonthDate);
-    const dailyMinutes = laps.reduce((acc, lap) => {
-      const lapDateObj = new Date(lap.created_at);
-      // Solo contar si el mes y año coinciden exactamente
-      if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
-        const lapDate = lapDateObj.toISOString().split('T')[0];
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-        acc[lapDate] = (acc[lapDate] || 0) + minutes;
-      }
-      return acc;
-    }, {});
-    return monthDays.map((date, idx) => {
-      // dayName ahora es idx (0 para el primer día, 1 para el segundo, ...)
-      return {
-        date,
-        minutes: dailyMinutes[date] || 0,
-        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
-        dayName: idx.toString(),
-        realDay: (idx + 1).toString(), // para mostrar el número real si se necesita
-      };
-    });
-  }, [laps, shownMonthDate]);
-
-  // Estado para la semana mostrada
-  const [weekOffset, setWeekOffset] = useState(0); // 0 = esta semana, -1 = semana pasada, etc.
-
-  // Calcular la fecha base del lunes de la semana mostrada
+  // Semana
+  const [weekOffset, setWeekOffset] = useState(0);
   const shownWeekMonday = useMemo(() => {
     const today = new Date();
-    // offset en días: 0 = esta semana, 7 = semana pasada, etc.
     return getMonday(today, weekOffset * 7);
   }, [weekOffset]);
-
-  // Calcular el número de semana ISO (Monday-based)
   function getISOWeekNumber(date) {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -107,33 +62,62 @@ const StatsChartsPanel = () => {
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
     return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
   }
-
-  // Datos de la semana mostrada
+  const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
   const shownWeekData = useMemo(() => {
-    const weekDays = getWeekDays(shownWeekMonday);
+    const weekDays = getWeekDays(shownWeekMonday); // array de fechas (YYYY-MM-DD) de lunes a domingo
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
       const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-      if (weekDays.includes(lapDate)) {
+      acc[lapDate] = (acc[lapDate] || 0) + minutes;
+      return acc;
+    }, {});
+    // Siempre 7 elementos, uno por cada día de la semana
+    return weekDayLabels.map((label, idx) => {
+      const date = weekDays[idx];
+      return {
+        date,
+        minutes: dailyMinutes[date] || 0,
+        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
+        dayName: label,
+      };
+    });
+  }, [laps, shownWeekMonday]);
+
+  // Mes
+  const [monthOffset, setMonthOffset] = useState(0);
+  const shownMonthDate = useMemo(() => {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    d.setUTCMonth(d.getUTCMonth() + monthOffset);
+    return d;
+  }, [monthOffset]);
+  const shownMonthData = useMemo(() => {
+    const year = shownMonthDate.getFullYear();
+    const month = shownMonthDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthDays = getMonthDays(shownMonthDate);
+    const dailyMinutes = laps.reduce((acc, lap) => {
+      const lapDateObj = new Date(lap.created_at);
+      if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
+        const lapDate = lapDateObj.toISOString().split('T')[0];
+        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
         acc[lapDate] = (acc[lapDate] || 0) + minutes;
       }
       return acc;
     }, {});
-    return weekDays.map((date, idx) => ({
+    return monthDays.map((date, idx) => ({
       date,
       minutes: dailyMinutes[date] || 0,
       hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
-      dayName: weekDayLabels[idx],
+      dayName: idx.toString(),
+      realDay: (idx + 1).toString(),
     }));
-  }, [laps, shownWeekMonday]);
+  }, [laps, shownMonthDate]);
 
-  const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
-
-  // This Year
+  // Año
   const thisYearData = useMemo(() => {
     const today = new Date();
     const year = today.getFullYear();
-    // Inicializar array de 12 meses
     const monthlyMinutes = Array(12).fill(0);
     laps.forEach(lap => {
       const lapDate = new Date(lap.created_at);
@@ -152,10 +136,9 @@ const StatsChartsPanel = () => {
     }));
   }, [laps]);
 
-  // Si es demo, usar datos fake llenos
+  // Demo data
   if (isDemo) {
     const demoWeek = [60, 90, 120, 80, 100, 110, 70];
-    // Demo mensual más realista
     const demoMonth = [60, 80, 120, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 110, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 90];
     const demoYear = [120, 90, 100, 80, 110, 130, 120, 100, 90, 110, 120, 100];
     const today = new Date();
@@ -166,18 +149,15 @@ const StatsChartsPanel = () => {
       d.setDate(monday.getDate() + i);
       return d.toISOString().split('T')[0];
     });
-    const thisWeekData = weekDays.map((date, idx) => ({
-      date,
-      minutes: demoWeek[idx],
-      hoursLabel: formatMinutesToHHMM(demoWeek[idx]),
-      dayName: weekDayLabels[idx],
-    }));
-    const lastWeekData = weekDays.map((date, idx) => ({
-      date,
-      minutes: demoWeek[(idx + 2) % 7],
-      hoursLabel: formatMinutesToHHMM(demoWeek[(idx + 2) % 7]),
-      dayName: weekDayLabels[idx],
-    }));
+    const thisWeekData = weekDayLabels.map((label, idx) => {
+      const date = weekDays[idx];
+      return {
+        date,
+        minutes: demoWeek[idx],
+        hoursLabel: formatMinutesToHHMM(demoWeek[idx]),
+        dayName: label,
+      };
+    });
     const shownMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const shownMonthData = Array.from({ length: daysInMonth }, (_, i) => {
@@ -198,164 +178,57 @@ const StatsChartsPanel = () => {
       dayName: label,
       date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
     }));
-    // --- Demo mode ---
     return (
       <div className="w-full flex flex-col gap-1">
-        {/* Semana navegable */}
-        <div className="w-full">
-          <div className="maincard p-0.5 mb-1">
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[600px]">
-                <StatsChart
-                  data={thisWeekData}
-                  title="This Week"
-                  accentColor={accentColor}
-                  small
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Card mensual con título y flechas dentro del card */}
-        <div className="w-full">
-          <div className="maincard p-0.5 mb-1">
-            <div className="w-full flex flex-col items-center mt-2 mb-2">
-              <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
-                <button
-                  onClick={() => setMonthOffset((prev) => prev - 1)}
-                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                  aria-label="Mes anterior"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <span
-                  className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
-                >
-                  {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                </span>
-                <button
-                  onClick={() => setMonthOffset((prev) => prev + 1)}
-                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                  aria-label="Mes siguiente"
-                  disabled={monthOffset >= 0}
-                >
-                  <ChevronRight size={20} className={monthOffset >= 0 ? 'opacity-40 cursor-not-allowed' : ''} />
-                </button>
-              </div>
-            </div>
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[600px]">
-                <StatsChart
-                  data={shownMonthData}
-                  title="This Month"
-                  accentColor={accentColor}
-                  customTitle={<></>}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="w-full overflow-x-auto">
-          <div className="maincard p-0.5 mb-1">
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[600px]">
-                <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
-              </div>
-            </div>
-          </div>
-        </div>
+        <WeekStatsCard
+          data={thisWeekData}
+          accentColor={accentColor}
+          shownWeekNumber={shownWeekNumber}
+          weekOffset={weekOffset}
+          setWeekOffset={setWeekOffset}
+          isDemo={true}
+        />
+        <MonthStatsCard
+          data={shownMonthData}
+          accentColor={accentColor}
+          shownMonthDate={shownMonthDate}
+          setMonthOffset={setMonthOffset}
+          monthOffset={monthOffset}
+          isDemo={true}
+        />
+        <YearStatsCard
+          data={thisYearData}
+          accentColor={accentColor}
+          isDemo={true}
+        />
       </div>
     );
   }
 
+  // Logueado
   return (
     <div className="w-full flex flex-col gap-1">
-      {/* Semana navegable */}
-      <div className="w-full">
-        <div className="maincard p-0.5 mb-1">
-          <div className="overflow-x-auto w-full">
-            <div className="min-w-[600px]">
-              <StatsChart
-                data={shownWeekData}
-                title={`Week ${shownWeekNumber}`}
-                accentColor={accentColor}
-                small
-                xAxisDataKey="dayName"
-                customTitle={
-                  <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
-                    <button
-                      onClick={() => setWeekOffset((prev) => prev + 1)}
-                      className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                      aria-label="Previous week"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
-                      {`Week ${shownWeekNumber}`}
-                    </span>
-                    <button
-                      onClick={() => setWeekOffset((prev) => prev - 1)}
-                      className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                      aria-label="Next week"
-                      disabled={weekOffset === 0}
-                    >
-                      <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
-                    </button>
-                  </div>
-                }
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Card mensual con título y flechas dentro del card */}
-      <div className="w-full">
-        <div className="maincard p-0.5 mb-1">
-          <div className="w-full flex flex-col items-center mt-2 mb-2">
-            <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
-              <button
-                onClick={() => setMonthOffset((prev) => prev - 1)}
-                className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                aria-label="Mes anterior"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <span
-                className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
-              >
-                {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-              </span>
-              <button
-                onClick={() => setMonthOffset((prev) => prev + 1)}
-                className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-                aria-label="Mes siguiente"
-                disabled={monthOffset >= 0}
-              >
-                <ChevronRight size={20} className={monthOffset >= 0 ? 'opacity-40 cursor-not-allowed' : ''} />
-              </button>
-            </div>
-          </div>
-          <div className="overflow-x-auto w-full">
-            <div className="min-w-[600px]">
-              <StatsChart
-                data={shownMonthData}
-                title="This Month"
-                accentColor={accentColor}
-                customTitle={<></>}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="w-full overflow-x-auto">
-        <div className="maincard p-0.5 mb-1">
-          <div className="overflow-x-auto w-full">
-            <div className="min-w-[600px]">
-              <StatsChart data={thisYearData} title="This Year" accentColor={accentColor} />
-            </div>
-          </div>
-        </div>
-      </div>
+      <WeekStatsCard
+        data={shownWeekData}
+        accentColor={accentColor}
+        shownWeekNumber={shownWeekNumber}
+        weekOffset={weekOffset}
+        setWeekOffset={setWeekOffset}
+        isDemo={false}
+      />
+      <MonthStatsCard
+        data={shownMonthData}
+        accentColor={accentColor}
+        shownMonthDate={shownMonthDate}
+        setMonthOffset={setMonthOffset}
+        monthOffset={monthOffset}
+        isDemo={false}
+      />
+      <YearStatsCard
+        data={thisYearData}
+        accentColor={accentColor}
+        isDemo={false}
+      />
     </div>
   );
 };

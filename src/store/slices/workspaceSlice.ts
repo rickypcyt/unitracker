@@ -30,17 +30,25 @@ const workspaceSlice = createSlice({
         const found = state.workspaces.find(ws => ws.id === lastActiveId);
         if (found) {
           state.activeWorkspace = found;
+          localStorage.setItem('activeWorkspaceId', found.id);
           return;
         }
       }
       if (!state.workspaces.find(ws => ws.id === state.activeWorkspace?.id)) {
         state.activeWorkspace = state.workspaces[0] || null;
+        if (state.activeWorkspace) {
+          localStorage.setItem('activeWorkspaceId', state.activeWorkspace.id);
+        } else {
+          localStorage.removeItem('activeWorkspaceId');
+        }
       }
     },
     setActiveWorkspace(state, action: PayloadAction<Workspace | null>) {
       state.activeWorkspace = action.payload;
       if (action.payload) {
         localStorage.setItem('activeWorkspaceId', action.payload.id);
+      } else {
+        localStorage.removeItem('activeWorkspaceId');
       }
     },
     addWorkspace(state, action: PayloadAction<Workspace>) {

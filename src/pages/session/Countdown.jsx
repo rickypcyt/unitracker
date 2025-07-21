@@ -13,8 +13,15 @@ const pad = (n, field) => {
   return val.toString().padStart(2, '0');
 };
 
+const getInitialTime = () => {
+  try {
+    const saved = localStorage.getItem('countdownLastTime');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { hours: 1, minutes: 0, seconds: 0 };
+};
 const Countdown = () => {
-  const [time, setTime] = useState({ hours: 1, minutes: 0, seconds: 0 });
+  const [time, setTime] = useState(getInitialTime());
   const [initialTime, setInitialTime] = useState(time);
   const [activeField, setActiveField] = useState('hours');
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -138,7 +145,11 @@ const Countdown = () => {
     const clean = value.replace(/\D/g, ''); // Solo números
     let val = parseInt(clean, 10);
     if (isNaN(val)) val = 0;
-    setTime(prev => ({ ...prev, [field]: val }));
+    setTime(prev => {
+      const updated = { ...prev, [field]: val };
+      localStorage.setItem('countdownLastTime', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
   const navigateField = useCallback((direction, currentIdx) => {

@@ -645,9 +645,24 @@ const Pomodoro = () => {
         </div>
       </div>
 
-      {/* Timer display */}
-      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
-        {formatPomoTime(pomoState.timeLeft)}
+      {/* Timer display con tooltip */}
+      <div className="relative group text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
+        <span>{formatPomoTime(pomoState.timeLeft)}</span>
+        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+          <div className="font-semibold mb-1">
+            {pomoState.currentMode === 'work' && 'Work'}
+            {pomoState.currentMode === 'break' && 'Break'}
+            {pomoState.currentMode === 'longBreak' && 'Long Break'}
+          </div>
+          <div>
+            Pomodoros done today: <b>{user ? pomodorosToday : pomodorosTodayLocal}</b>
+          </div>
+          {activeSessionId && (
+            <div>
+              Pomodoros during session: <b>{pomoState.pomodorosThisSession}</b>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Time adjustment buttons */}
@@ -710,23 +725,7 @@ const Pomodoro = () => {
         )}
       </div>
 
-      {/* Modo actual: Work, Break o Long Break */}
-      <div className="flex flex-col items-center justify-center mb-1 text-lg font-bold px-4 py-1 rounded text-[var(--text-primary)]">
-        <span>
-          {pomoState.currentMode === 'work' && 'Work'}
-          {pomoState.currentMode === 'break' && 'Break'}
-          {pomoState.currentMode === 'longBreak' && 'Long Break'}
-        </span>
-        <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
-          Pomodoros done today: <span className="text-[var(--text-primary)] font-semibold">{user ? pomodorosToday : pomodorosTodayLocal}</span>
-        </span>
-        {/* Session-specific pomodoro counter */}
-        {activeSessionId && (
-          <span className="text-sm text-[var(--text-secondary)] mt-1 font-normal">
-            Pomodoros during session: <span className="text-[var(--text-primary)] font-semibold">{pomoState.pomodorosThisSession}</span>
-          </span>
-        )}
-      </div>
+      {/* Quitar visualización directa de modo y pomodoros debajo del timer */}
 
       {/* Add Pomodoro Settings Modal */}
       <PomodoroSettingsModal

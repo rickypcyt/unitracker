@@ -94,7 +94,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   );
 };
 
-const StatsChart = ({ data, title, accentColor, small = false, customTitle }) => {
+const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks }) => {
   const chartRef = useRef(null);
   const tasks = useSelector((state) => state.tasks.tasks || []);
   // Detectar el índice del día actual
@@ -160,30 +160,8 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle }) =>
                 interval={0}
                 minTickGap={0}
                 tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
-                ticks={title === 'This Week' || title === 'Last Week' ? weekDayInitials : undefined}
-                tickFormatter={
-                  (v) => (title === 'This Week' || title === 'Last Week') ? v : v
-                }
-                tick={{
-                  fill: (tickProps) => {
-                    if ((title === 'This Week' || title === 'Last Week') && tickProps.index === todayIndex) {
-                      return 'var(--accent-primary)';
-                    }
-                    if (title === 'This Month') {
-                      const dayNum = parseInt(tickProps.value, 10);
-                      if (!isNaN(dayNum) && dayNum === today.getDate()) {
-                        return 'var(--accent-primary)';
-                      }
-                    }
-                    if (title === 'This Year' && tickProps.index === todayIndex) {
-                      return 'var(--accent-primary)';
-                    }
-                    return 'var(--text-secondary)';
-                  },
-                  fontSize: title === 'This Month' ? '0.7rem' : title === 'This Year' ? '0.85rem' : '0.65rem',
-                  angle: title === 'This Year' ? 0 : 0,
-                  textAnchor: title === 'This Year' ? 'middle' : (title === 'This Week' || title === 'Last Week' || title === 'This Month' ? 'middle' : undefined),
-                }}
+                ticks={xAxisTicks}
+                tickFormatter={v => v}
               />
               <YAxis
                 stroke="var(--text-secondary)"

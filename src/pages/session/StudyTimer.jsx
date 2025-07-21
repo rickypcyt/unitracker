@@ -554,8 +554,15 @@ const StudyTimer = ({ onSyncChange }) => {
         )}
       </div>
 
-      <div className="text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
-        {formatStudyTime(Math.max(0, studyState.time), false)}
+      {/* Timer display con tooltip para Session Title */}
+      <div className="relative group text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
+        <span>{formatStudyTime(Math.max(0, studyState.time), false)}</span>
+        {currentSessionId && (
+          <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+            <div className="font-semibold mb-1">Session Title</div>
+            <div>{studyState.sessionTitle || 'No Session'}</div>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-2 mb-6">
@@ -706,12 +713,6 @@ const StudyTimer = ({ onSyncChange }) => {
           </>
         )}
       </div>
-      {/* Session Title: Only show if session is active */}
-      {currentSessionId && (
-        <div className="text-base mt-2 text-[var(--text-secondary)]">
-          Session Title: <span className="text-[var(--text-primary)]">{studyState.sessionTitle || 'No Session'}</span>
-        </div>
-      )}
       
       <div className="flex flex-col gap-1 mt-4">
         {/* Controles de sincronización movidos al modal */}
