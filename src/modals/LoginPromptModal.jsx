@@ -32,7 +32,7 @@ const LoginPromptModal = ({ isOpen, onClose }) => {
       <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-lg p-6 max-w-md w-full mx-4 border border-[var(--border-primary)] shadow-xl">
         <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">Login Required</h2>
         <p className="text-[var(--text-secondary)] mb-6 text-center">
-          Please log in to start a study session and track your progress.
+          Signing in will save and sync your tasks to the cloud database.
         </p>
         <div className="flex flex-col gap-3">
           <button

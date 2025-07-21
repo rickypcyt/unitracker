@@ -92,12 +92,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => 
           >
             Start using UniTracker
           </button>
-          <button
-            className="w-full sm:w-auto px-6 py-3 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-base sm:text-lg bg-transparent cursor-pointer"
-            onClick={() => onStartTour && onStartTour()}
-          >
-            Take a Guided Tour
-          </button>
         </div>
       </div>
     </div>

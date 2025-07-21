@@ -1,6 +1,8 @@
 import { Check, Plus, Square, X } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
 import React, { useEffect, useState } from 'react';
+import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
@@ -9,6 +11,9 @@ import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
 import { supabase } from '@/utils/supabaseClient';
 
 const StartSessionModal = ({ isOpen, onClose, onStart }) => {
+  const dispatch = useDispatch();
+  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -18,8 +23,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const [titleError, setTitleError] = useState(false);
   const [assignment, setAssignment] = useState('');
   const [assignments, setAssignments] = useState([]);
-  const [syncPomo, setSyncPomo] = useState(false);
-  const [syncCountdown, setSyncCountdown] = useState(false);
+  const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
+  const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
 
   useEffect(() => {
     if (isOpen) {
@@ -32,6 +37,11 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       fetchAssignments();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    setSyncPomo(syncPomodoroWithTimer);
+    setSyncCountdown(syncCountdownWithTimer);
+  }, [syncPomodoroWithTimer, syncCountdownWithTimer, isOpen]);
 
   useEffect(() => {
     if (lastAddedTaskId) {

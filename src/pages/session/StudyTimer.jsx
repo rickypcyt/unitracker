@@ -1,7 +1,8 @@
-import { Check, CheckSquare, Clock, FileText, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
+import { Check, CheckSquare, Clock, FileText, Link2, Link2Off, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
+import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
@@ -42,15 +43,26 @@ const StudyTimer = ({ onSyncChange }) => {
     return savedState ? JSON.parse(savedState) : false;
   });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
+
+  // Handler para el toggle visual
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
     const activeSessionId = localStorage.getItem("activeSessionId");
     if (savedState) {
-      const parsed = JSON.parse(savedState);
+      let parsed;
+      try {
+        parsed = JSON.parse(savedState);
+      } catch {
+        parsed = {};
+      }
       return {
-        ...parsed,
-        sessionStatus: parsed.sessionStatus || 'inactive',
+        time: Number.isFinite(Number(parsed.time)) ? Number(parsed.time) : 0,
+        isRunning: typeof parsed.isRunning === 'boolean' ? parsed.isRunning : false,
+        lastStart: Number.isFinite(Number(parsed.lastStart)) ? Number(parsed.lastStart) : null,
+        timeAtStart: Number.isFinite(Number(parsed.timeAtStart)) ? Number(parsed.timeAtStart) : 0,
+        sessionStatus: typeof parsed.sessionStatus === 'string' ? parsed.sessionStatus : 'inactive',
       };
     }
     return {
@@ -125,14 +137,20 @@ const StudyTimer = ({ onSyncChange }) => {
   }, [isStudyRunningRedux, studyState.lastStart, studyState.timeAtStart]);
 
   useEffect(() => {
+    // Solo guardar propiedades primitivas para evitar referencias circulares
     const stateToSave = {
-      time: studyState.time,
-      isRunning: isStudyRunningRedux,
-      lastStart: studyState.lastStart,
-      timeAtStart: studyState.timeAtStart,
-      sessionStatus: studyState.sessionStatus,
+      time: typeof studyState.time === 'number' ? studyState.time : 0,
+      isRunning: typeof studyState.isRunning === 'boolean' ? studyState.isRunning : false,
+      lastStart: typeof studyState.lastStart === 'number' ? studyState.lastStart : null,
+      timeAtStart: typeof studyState.timeAtStart === 'number' ? studyState.timeAtStart : 0,
+      sessionStatus: typeof studyState.sessionStatus === 'string' ? studyState.sessionStatus : 'inactive',
     };
-    localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
+    try {
+      localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
+    } catch (e) {
+      // Si hay error de referencia circular, ignorar y loguear
+      console.error('Error saving studyTimerState:', e);
+    }
     if (currentSessionId) {
       localStorage.setItem("activeSessionId", currentSessionId);
     } else {
@@ -186,21 +204,40 @@ const StudyTimer = ({ onSyncChange }) => {
     localStorage.setItem('isSyncedWithStudyTimer', JSON.stringify(isSyncedWithStudyTimer));
   }, [isSyncedWithStudyTimer]);
 
+  useEventListener("playTimerSync", (event) => {
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    if (!isStudyRunningRedux) {
+      studyControls.start(baseTimestamp, true); // true = viene de sync
+    }
+  }, [isStudyRunningRedux, lastSyncTimestamp]);
+
+  useEventListener("pauseTimerSync", (event) => {
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    if (isStudyRunningRedux) {
+      studyControls.pause(true); // true = viene de sync
+    }
+  }, [isStudyRunningRedux, lastSyncTimestamp]);
+
+  useEventListener("resetTimerSync", (event) => {
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    studyControls.reset(true); // true = viene de sync
+  }, [lastSyncTimestamp]);
+
   const studyControls = {
-    start: async () => {
+    start: async (baseTimestamp, fromSync) => {
       if (!isStudyRunningRedux && !isHandlingEvent) {
         if (!isLoggedIn) {
           setIsLoginPromptOpen(true);
           return;
         }
-        
         if (currentSessionId) {
-          const now = Date.now();
-          console.log('Timer Started:', {
-            timestamp: new Date(now).toISOString(),
-            timeAtStart: studyState.time,
-            sessionId: currentSessionId
-          });
+          const now = baseTimestamp || Date.now();
           dispatch(setStudyRunning(true));
           setStudyState(prev => ({
             ...prev,
@@ -209,23 +246,22 @@ const StudyTimer = ({ onSyncChange }) => {
             timeAtStart: prev.time,
             sessionStatus: 'active'
           }));
-
           window.dispatchEvent(
             new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
           );
-
-          // If synced with Pomodoro, start it too
-          if (isSyncedWithStudyTimer) {
-            window.dispatchEvent(new CustomEvent("playTimerSync"));
+          if (!fromSync) {
+            const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
+            if (syncFlag) {
+              window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
+            }
           }
         } else {
           setIsStartModalOpen(true);
         }
       }
     },
-    pause: () => {
+    pause: (fromSync) => {
       if (isStudyRunningRedux) {
-        console.log('Timer Paused', { timestamp: new Date().toISOString(), time: studyState.time });
         dispatch(setStudyRunning(false));
         setStudyState(prev => ({
           ...prev,
@@ -236,27 +272,24 @@ const StudyTimer = ({ onSyncChange }) => {
           sessionStatus: 'paused',
           lastPausedAt: Date.now(),
         }));
-
         window.dispatchEvent(
           new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
         );
-
-        // If synced with Pomodoro, pause it too
-        if (isSyncedWithStudyTimer) {
-          window.dispatchEvent(new CustomEvent("pauseTimerSync"));
+        if (!fromSync) {
+          const now = Date.now();
+          if (isPomodoroSync) {
+            window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: now } }));
+          }
+          if (isCountdownSync) {
+            window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: now } }));
+          }
         }
       }
     },
-    reset: () => {
+    reset: (fromSync) => {
       if (isStudyRunningRedux) {
         dispatch(setStudyRunning(false));
       }
-      console.log('Timer Reset:', {
-        timestamp: new Date().toISOString(),
-        finalTime: studyState.time.toFixed(2),
-        sessionId: currentSessionId
-      });
-
       setStudyState((prev) => ({
         ...prev,
         isRunning: false,
@@ -265,28 +298,26 @@ const StudyTimer = ({ onSyncChange }) => {
         timeAtStart: 0,
         sessionStatus: 'inactive'
       }));
-
       dispatch(resetTimerState());
-
       window.dispatchEvent(
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
       );
-
-      // If synced with Pomodoro, reset it too
-      if (isSyncedWithStudyTimer) {
-        window.dispatchEvent(new CustomEvent("resetPomodoro"));
+      if (!fromSync) {
+        const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
+        if (syncFlag) {
+          const now = Date.now();
+          window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+        }
       }
     },
     resume: () => {
       if (!isStudyRunningRedux && studyState.sessionStatus === 'active' && !isHandlingEvent) {
-        console.log('Timer Resumed', { timestamp: new Date().toISOString(), time: studyState.time });
         const now = Date.now();
         dispatch(setStudyRunning(true));
         setStudyState(prev => ({ ...prev, lastStart: now }));
-
-        // If synced with Pomodoro, start it too
-        if (isSyncedWithStudyTimer) {
-          window.dispatchEvent(new CustomEvent("playTimerSync"));
+        const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
+        if (syncFlag) {
+          window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
         }
       }
     },
@@ -474,7 +505,7 @@ const StudyTimer = ({ onSyncChange }) => {
         syncCountdown: sessionData.syncCountdown
       }));
 
-      // Update sessions today count
+      // Update sssions today count
       fetchSessionsTodayCount();
 
       // Dispatch session started event for Pomodoro to reset session counter
@@ -535,12 +566,29 @@ const StudyTimer = ({ onSyncChange }) => {
     // Solución: guardar un campo lastPausedAt en studyState cuando se pausa
   }
 
+  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
+  // En vez de isSyncedWithStudyTimer, usar los flags de Redux
+  const isPomodoroSync = syncPomodoroWithTimer;
+  const isCountdownSync = syncCountdownWithTimer;
+
+  // Al activar sync en mitad de sesión, emitir evento para alinear Pomodoro/Countdown con el tiempo actual
+  useEffect(() => {
+    if (isPomodoroSync) {
+      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { detail: { time: studyState.time } }));
+    }
+    if (isCountdownSync) {
+      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { detail: { time: studyState.time } }));
+    }
+  }, [isPomodoroSync, isCountdownSync]);
+
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
         <Clock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
         <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Study Timer</span>
+        {/* Botón de configuración de sesión */}
         {currentSessionId ? (
           <button
             onClick={() => setIsEditModalOpen(true)}
@@ -561,6 +609,22 @@ const StudyTimer = ({ onSyncChange }) => {
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>
             <div>{studyState.sessionTitle || 'No Session'}</div>
+            {/* Last paused info */}
+            {studyState.sessionStatus === 'paused' && studyState.lastPausedAt && (
+              <div className="mt-2 text-xs text-[var(--text-secondary)]">
+                Last paused: {(() => {
+                  const diffMs = Date.now() - studyState.lastPausedAt;
+                  const diffMin = Math.floor(diffMs / 60000);
+                  const diffHr = Math.floor(diffMin / 60);
+                  const min = diffMin % 60;
+                  if (diffHr > 0) {
+                    return `${diffHr} hour${diffHr > 1 ? 's' : ''}${min > 0 ? ` and ${min} minute${min > 1 ? 's' : ''}` : ''} ago`;
+                  } else {
+                    return `${min} minute${min !== 1 ? 's' : ''} ago`;
+                  }
+                })()}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -580,8 +644,11 @@ const StudyTimer = ({ onSyncChange }) => {
             } else {
               setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time + adjustment) }));
             }
-            if (isSyncedWithStudyTimer) {
-              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            if (isPomodoroSync) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment } }));
+            }
+            if (isCountdownSync) {
+              window.dispatchEvent(new CustomEvent("adjustCountdownTime", { detail: { adjustment } }));
             }
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -604,8 +671,11 @@ const StudyTimer = ({ onSyncChange }) => {
             } else {
               setStudyState(prev => ({ ...prev, time: Math.max(0, prev.time + adjustment) }));
             }
-            if (isSyncedWithStudyTimer) {
-              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            if (isPomodoroSync) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment } }));
+            }
+            if (isCountdownSync) {
+              window.dispatchEvent(new CustomEvent("adjustCountdownTime", { detail: { adjustment } }));
             }
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -628,8 +698,11 @@ const StudyTimer = ({ onSyncChange }) => {
             } else {
               setStudyState(prev => ({ ...prev, time: prev.time + adjustment }));
             }
-            if (isSyncedWithStudyTimer) {
-              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            if (isPomodoroSync) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment } }));
+            }
+            if (isCountdownSync) {
+              window.dispatchEvent(new CustomEvent("adjustCountdownTime", { detail: { adjustment } }));
             }
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -652,8 +725,11 @@ const StudyTimer = ({ onSyncChange }) => {
             } else {
               setStudyState(prev => ({ ...prev, time: prev.time + adjustment }));
             }
-            if (isSyncedWithStudyTimer) {
-              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment: -adjustment } }));
+            if (isPomodoroSync) {
+              window.dispatchEvent(new CustomEvent("adjustPomodoroTime", { detail: { adjustment } }));
+            }
+            if (isCountdownSync) {
+              window.dispatchEvent(new CustomEvent("adjustCountdownTime", { detail: { adjustment } }));
             }
           }}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -718,21 +794,7 @@ const StudyTimer = ({ onSyncChange }) => {
         {/* Controles de sincronización movidos al modal */}
       </div>
 
-      {currentSessionId && studyState.sessionStatus === 'paused' && studyState.lastPausedAt && (
-        <div className="text-base mt-1 text-[var(--text-secondary)]">
-          Last paused: {(() => {
-            const diffMs = Date.now() - studyState.lastPausedAt;
-            const diffMin = Math.floor(diffMs / 60000);
-            const diffHr = Math.floor(diffMin / 60);
-            const min = diffMin % 60;
-            if (diffHr > 0) {
-              return `${diffHr} hour${diffHr > 1 ? 's' : ''}${min > 0 ? ` and ${min} minute${min > 1 ? 's' : ''}` : ''} ago`;
-            } else {
-              return `${min} minute${min !== 1 ? 's' : ''} ago`;
-            }
-          })()}
-        </div>
-      )}
+      {/* Quitar visualización directa de 'Last paused' debajo del timer */}
 
       <StartSessionModal
         isOpen={isStartModalOpen}

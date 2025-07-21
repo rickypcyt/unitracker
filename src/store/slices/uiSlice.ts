@@ -5,13 +5,17 @@ interface UiState {
   syncTimers: boolean;
   isStudyRunning: boolean;
   isPomoRunning: boolean;
+  syncPomodoroWithTimer: boolean;
+  syncCountdownWithTimer: boolean;
 }
 
 const initialState: UiState = {
   isCalendarVisible: true,
   syncTimers: false,
   isStudyRunning: false,
-  isPomoRunning: false
+  isPomoRunning: false,
+  syncPomodoroWithTimer: localStorage.getItem('syncPomodoroWithTimer') === 'true',
+  syncCountdownWithTimer: localStorage.getItem('syncCountdownWithTimer') === 'true',
 };
 
 const uiSlice = createSlice({
@@ -29,9 +33,17 @@ const uiSlice = createSlice({
     },
     setPomoRunning: (state, action: PayloadAction<boolean>) => {
       state.isPomoRunning = action.payload;
-    }
+    },
+    setSyncPomodoroWithTimer: (state, action: PayloadAction<boolean>) => {
+      state.syncPomodoroWithTimer = action.payload;
+      localStorage.setItem('syncPomodoroWithTimer', action.payload ? 'true' : 'false');
+    },
+    setSyncCountdownWithTimer: (state, action: PayloadAction<boolean>) => {
+      state.syncCountdownWithTimer = action.payload;
+      localStorage.setItem('syncCountdownWithTimer', action.payload ? 'true' : 'false');
+    },
   }
 });
 
-export const { setCalendarVisibility, toggleSyncTimers, setStudyRunning, setPomoRunning } = uiSlice.actions;
+export const { setCalendarVisibility, toggleSyncTimers, setStudyRunning, setPomoRunning, setSyncPomodoroWithTimer, setSyncCountdownWithTimer } = uiSlice.actions;
 export default uiSlice.reducer; 

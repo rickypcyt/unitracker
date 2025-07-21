@@ -1,11 +1,16 @@
-import { ArrowLeft, ArrowRight, Plus, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Plus, Square, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
 import { supabase } from '@/utils/supabaseClient';
 
 const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }) => {
+  const dispatch = useDispatch();
+  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
   const [activeTasks, setActiveTasks] = useState([]);
   const [availableTasks, setAvailableTasks] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -13,9 +18,8 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [titleError, setTitleError] = useState(false);
-  const [syncPomo, setSyncPomo] = useState(() => {
-    return localStorage.getItem("syncPomoWithTimer") === "true";
-  });
+  const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
+  const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
 
   useEffect(() => {
     if (isOpen && sessionId) {
@@ -23,6 +27,11 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
       fetchSessionDetails(sessionId);
     }
   }, [isOpen, sessionId]);
+
+  useEffect(() => {
+    setSyncPomo(syncPomodoroWithTimer);
+    setSyncCountdown(syncCountdownWithTimer);
+  }, [syncPomodoroWithTimer, syncCountdownWithTimer, isOpen]);
 
   useEffect(() => {
     if (lastAddedTaskId) {
@@ -130,6 +139,10 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
 
       if (error) throw error;
 
+      // Guardar sincronización en Redux y localStorage
+      dispatch(setSyncPomodoroWithTimer(syncPomo));
+      dispatch(setSyncCountdownWithTimer(syncCountdown));
+
       if (onSessionDetailsUpdated) {
         onSessionDetailsUpdated();
       }
@@ -198,6 +211,26 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
               />
             </div>
           </div>
+        </div>
+
+        {/* Controles de sincronización */}
+        <div className="flex flex-col gap-1 mt-2 mb-4">
+          <button
+            type="button"
+            onClick={() => setSyncPomo((v) => !v)}
+            className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
+          >
+            <span>Start pomodoro at the same time</span>
+            {syncPomo ? <Check size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSyncCountdown((v) => !v)}
+            className="flex items-center justify-between w-full gap-2 px-2 py-1 rounded-lg bg-transparent hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer text-[var(--text-secondary)] text-sm select-none"
+          >
+            <span>Start countdown at the same time</span>
+            {syncCountdown ? <Check size={20} style={{ color: "var(--accent-primary)" }} /> : <Square size={20} style={{ color: "var(--accent-primary)" }} />}
+          </button>
         </div>
 
         <TaskSelectionPanel
