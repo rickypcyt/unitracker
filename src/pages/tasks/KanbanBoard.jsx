@@ -370,10 +370,10 @@ export const KanbanBoard = () => {
         <div className="text-center">
           <ClipboardCheck className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
           <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-            No Tasks Yet
+            {activeWorkspace ? `No tasks in "${activeWorkspace.name}"` : 'No Tasks Yet'}
           </h3>
           <p className="text-base text-[var(--text-secondary)] mb-1">
-            Create your first task to get started
+            {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
           </p>
           {!isLoggedIn && (
             <p className="text-sm text-[var(--text-secondary)] opacity-70 mt-2">

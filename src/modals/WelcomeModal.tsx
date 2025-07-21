@@ -53,13 +53,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => 
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-2 sm:p-6 md:p-10 py-6 sm:py-10 relative shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto"
+        className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-2 sm:p-6 md:p-10 py-6 sm:py-10 relative shadow-2xl animate-fadeIn"
       >
-        <button
-          className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl font-bold focus:outline-none"
-          onClick={onClose}
-          aria-label="Close"
-        >×</button>
         <div className="flex flex-col items-center mb-6">
           <h1 className="flex items-center justify-center gap-1 mb-2 text-center">
             <span className="text-[var(--text-primary)] font-bold text-2xl sm:text-3xl md:text-4xl">Uni</span>

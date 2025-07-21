@@ -540,7 +540,7 @@ const StudyTimer = ({ onSyncChange }) => {
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
         <Clock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Study Timer</span>
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Study Timer</span>
         {currentSessionId ? (
           <button
             onClick={() => setIsEditModalOpen(true)}

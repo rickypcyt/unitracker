@@ -121,12 +121,18 @@ export const useTaskManager = () => {
       if (error) {
         // Si hay error, revertir el estado local
         dispatch(fetchTasks());
-        toast.error('Error eliminando la tarea: ' + error.message);
+        if (error.message && error.message.includes('violates foreign key constraint')) {
+          toast.error('Cannot delete this task because it is associated with an active session. Please deactivate the task first.');
+        } else {
+          toast.error('Error deleting task: ' + error.message);
+        }
         throw error;
       }
     } catch (error) {
-      if (!error.message?.includes('eliminando la tarea')) {
-        toast.error('Error eliminando la tarea: ' + (error.message || error));
+      if (error.message && error.message.includes('violates foreign key constraint')) {
+        toast.error('Cannot delete this task because it is associated with an active session. Please deactivate the task first.');
+      } else if (!error.message?.includes('eliminando la tarea')) {
+        toast.error('Error deleting task: ' + (error.message || error));
       }
       console.error('Error deleting task:', error);
     }

@@ -621,7 +621,7 @@ const Pomodoro = () => {
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
         <Timer size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Pomo Timer</span>
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Pomo Timer</span>
         <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <button
             onClick={toggleAlarm}

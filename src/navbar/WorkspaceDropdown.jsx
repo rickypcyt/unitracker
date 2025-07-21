@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Network, Plane, Plus, Settings, Settings as SettingsIcon, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
@@ -33,6 +33,9 @@ const iconOptions = {
   Workflow,
 };
 
+// Key para localStorage
+const LAST_WORKSPACE_KEY = 'lastSelectedWorkspaceId';
+
 const WorkspaceDropdown = ({
   workspaces = [],
   activeWorkspace,
@@ -50,6 +53,19 @@ const WorkspaceDropdown = ({
   const user = useSelector(state => state.auth.user);
 
   const getTaskCountByWorkspace = ws => ws.taskCount || 0;
+
+  // Restaurar workspace seleccionado al montar
+  useEffect(() => {
+    if (!activeWorkspace && workspaces.length > 0) {
+      const lastId = localStorage.getItem(LAST_WORKSPACE_KEY);
+      if (lastId) {
+        const found = workspaces.find(ws => ws.id === lastId);
+        if (found) {
+          onSelectWorkspace(found);
+        }
+      }
+    }
+  }, [workspaces, activeWorkspace, onSelectWorkspace]);
 
   const handleShareWorkspace = async (workspaceId, receivedBy, sharedBy, { onSuccess, onError }) => {
     try {
@@ -71,6 +87,13 @@ const WorkspaceDropdown = ({
     console.warn('WorkspaceDropdown: friends prop is missing. The autocomplete for friends will be empty.');
   }
 
+  // Envolver onSelectWorkspace para guardar en localStorage
+  const handleSelectWorkspace = (ws) => {
+    localStorage.setItem(LAST_WORKSPACE_KEY, ws.id);
+    console.log(`Workspace changed: saved workspace id ${ws.id} to localStorage`);
+    onSelectWorkspace(ws);
+  };
+
   return (
     <>
       {/* Desktop Dropdown */}
@@ -78,7 +101,10 @@ const WorkspaceDropdown = ({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)]">
-              <Network size={18} />
+              {(() => {
+                const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
+                return <IconComp size={18} />;
+              })()}
               <span className="font-medium truncate max-w-[100px]">{activeWorkspace?.name || 'Workspace'}</span>
               <ChevronDown size={16} />
             </button>
@@ -88,7 +114,7 @@ const WorkspaceDropdown = ({
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
-                  onClick={() => onSelectWorkspace(ws)}
+                  onClick={() => handleSelectWorkspace(ws)}
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   {(() => {
@@ -131,7 +157,10 @@ const WorkspaceDropdown = ({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg">
-              <Network size={24} />
+              {(() => {
+                const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
+                return <IconComp size={24} />;
+              })()}
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -139,7 +168,7 @@ const WorkspaceDropdown = ({
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
-                  onClick={() => onSelectWorkspace(ws)}
+                  onClick={() => handleSelectWorkspace(ws)}
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   {(() => {

@@ -245,7 +245,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
               {isEditing && expandedIconSelector === workspace.id && (
                 <div className="mt-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3">
                   <div className="text-xs font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-12 gap-2">
                     {iconOptions.map((option) => {
                       const IconComp = option.icon;
                       return (

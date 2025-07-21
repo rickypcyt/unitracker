@@ -24,6 +24,7 @@ const Countdown = () => {
   const [time, setTime] = useState(getInitialTime());
   const [initialTime, setInitialTime] = useState(time);
   const [activeField, setActiveField] = useState('hours');
+  const [focusedField, setFocusedField] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [startTimestamp, setStartTimestamp] = useState(null); // Nuevo: timestamp de inicio
@@ -207,6 +208,7 @@ const Countdown = () => {
 
   const handleFocus = (field, e) => {
     setActiveField(field);
+    setFocusedField(field);
     setTime(prev => ({ ...prev, [field]: 0 }));
     setTimeout(() => {
       e.target.setSelectionRange(e.target.value.length, e.target.value.length);
@@ -219,6 +221,7 @@ const Countdown = () => {
     if (isNaN(val)) val = 0;
     if (val > fieldMax[field]) val = fieldMax[field];
     setTime(prev => ({ ...prev, [field]: val }));
+    setFocusedField(null);
   };
 
   // Ajusta el tiempo total del countdown (en segundos)
@@ -236,7 +239,7 @@ const Countdown = () => {
     <div className="flex flex-col items-center justify-center">
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
         <AlarmClock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-2">Countdown</span>
+        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Countdown</span>
         <button
           onClick={toggleAlarm}
           className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -278,12 +281,12 @@ const Countdown = () => {
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-14 sm:w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${activeField === field ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunning ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
                 disabled={isRunning} // Opcional: deshabilita edición durante cuenta regresiva
               />
-              {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-1">:</span>}
+              {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
           );
         })}
