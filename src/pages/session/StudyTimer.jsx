@@ -250,9 +250,12 @@ const StudyTimer = ({ onSyncChange }) => {
             new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
           );
           if (!fromSync) {
-            const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
-            if (syncFlag) {
-              window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
+            const now = Date.now();
+            if (isPomodoroSync) {
+              window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
+            }
+            if (isCountdownSync) {
+              window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
             }
           }
         } else {

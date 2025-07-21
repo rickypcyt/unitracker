@@ -379,6 +379,16 @@ const Pomodoro = () => {
     }
   }, [syncPomodoroWithTimer, pomoState.isRunning, lastSyncTimestamp]);
 
+  useEventListener("playPomodoroSync", (event) => {
+    if (!syncPomodoroWithTimer) return;
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    if (!pomoState.isRunning) {
+      handleStart(baseTimestamp, true);
+    }
+  }, [syncPomodoroWithTimer, pomoState.isRunning, lastSyncTimestamp]);
+
   useEventListener("pausePomodoroSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();

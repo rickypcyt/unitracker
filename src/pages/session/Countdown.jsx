@@ -150,11 +150,14 @@ const Countdown = () => {
 
   useEffect(() => {
     if (!isRunning || !startTimestamp) return;
-
+    let prevSecondsLeft = secondsLeft;
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
       const newSecondsLeft = Math.max(0, calculateSeconds(initialTime) - elapsed);
-      setSecondsLeft(newSecondsLeft);
+      if (newSecondsLeft !== prevSecondsLeft) {
+        setSecondsLeft(newSecondsLeft);
+        prevSecondsLeft = newSecondsLeft;
+      }
       if (newSecondsLeft <= 0) {
         clearInterval(interval);
         setIsRunning(false);
@@ -183,7 +186,6 @@ const Countdown = () => {
         }
       }
     }, 1000);
-
     return () => clearInterval(interval);
   }, [isRunning, startTimestamp, initialTime, alarmEnabled]);
 
@@ -227,7 +229,7 @@ const Countdown = () => {
   };
 
   // Sincronización con StudyTimer
-  useEventListener('playTimerSync', (event) => {
+  useEventListener('playCountdownSync', (event) => {
     if (!syncCountdownWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
