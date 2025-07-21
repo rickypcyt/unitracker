@@ -60,6 +60,8 @@ const Countdown = () => {
     return savedState ? JSON.parse(savedState) : false;
   });
   const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
+  const isStudyRunningRedux = useSelector(state => state.ui.isStudyRunning);
+  const isRunningGlobal = syncCountdownWithTimer ? isStudyRunningRedux : isRunning;
 
   // Estado local para el toggle visual
   const [syncToggle, setSyncToggle] = useState(() => {
@@ -116,10 +118,10 @@ const Countdown = () => {
       setSecondsLeft(total);
       setStartTimestamp(baseTimestamp || Date.now());
       setIsRunning(true);
-      if (!fromSync && isSyncedWithStudyTimer) {
+      if (!fromSync && syncCountdownWithTimer) {
         const now = baseTimestamp || Date.now();
-        window.dispatchEvent(new CustomEvent("startStudyTimer"));
-        window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
+        window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
+        window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
       }
     }
   };
@@ -136,20 +138,20 @@ const Countdown = () => {
     setSecondsLeft(0);
     setStartTimestamp(null); // Resetear timestamp
     setTime(initialTime);
+    // Limpiar localStorage
+    localStorage.removeItem('countdownLastTime');
     if (fromSync) {
       // No emitir eventos de sincronización si viene de sync
       return;
     }
-    if (isSyncedWithStudyTimer) {
-      window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: Date.now() } }));
-      window.dispatchEvent(new CustomEvent("resetStudyTimer"));
-      window.dispatchEvent(new CustomEvent("resetPomodoro"));
-      window.dispatchEvent(new CustomEvent("resetCountdown"));
+    if (syncCountdownWithTimer) {
+      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: Date.now() } }));
     }
   };
 
   useEffect(() => {
-    if (!isRunning || !startTimestamp) return;
+    if (!isRunningGlobal || !startTimestamp) return;
     let prevSecondsLeft = secondsLeft;
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
@@ -187,7 +189,7 @@ const Countdown = () => {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isRunning, startTimestamp, initialTime, alarmEnabled]);
+  }, [isRunningGlobal, startTimestamp, initialTime, alarmEnabled]);
 
   useEffect(() => {
     if (isRunning) {
@@ -225,7 +227,9 @@ const Countdown = () => {
     const h = Math.floor(clamped / 3600);
     const m = Math.floor((clamped % 3600) / 60);
     const s = clamped % 60;
-    setTime(setSafeTime({ hours: h, minutes: m, seconds: s }));
+    const updated = { hours: h, minutes: m, seconds: s };
+    setTime(updated);
+    setInitialTime(updated); // <-- Actualiza initialTime
   };
 
   // Sincronización con StudyTimer
@@ -288,7 +292,12 @@ const Countdown = () => {
     const clean = value.replace(/\D/g, ''); // Solo números
     let val = parseInt(clean, 10);
     if (isNaN(val)) val = 0;
-    setTime(prev => setSafeTime({ ...prev, [field]: val }));
+    setTime(prev => {
+      const updated = { ...prev, [field]: val };
+      localStorage.setItem('countdownLastTime', JSON.stringify(updated));
+      setInitialTime(updated); // <-- Actualiza initialTime
+      return updated;
+    });
   }, []);
 
   const navigateField = useCallback((direction, currentIdx) => {
@@ -371,6 +380,24 @@ const Countdown = () => {
     return safeTime;
   };
 
+  const handlePlayPause = () => {
+    if (syncCountdownWithTimer) {
+      if (isStudyRunningRedux) {
+        window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+        window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+      } else {
+        window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+        window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+      }
+    } else {
+      if (isRunning) {
+        handlePause();
+      } else {
+        startCountdown();
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
@@ -395,7 +422,7 @@ const Countdown = () => {
         {fields.map((field, idx) => {
           // Si está corriendo, calcula el valor desde secondsLeft
           let value;
-          if (isRunning) {
+          if (isRunningGlobal) {
             const h = Math.floor(secondsLeft / 3600);
             const m = Math.floor((secondsLeft % 3600) / 60);
             const s = secondsLeft % 60;
@@ -418,10 +445,10 @@ const Countdown = () => {
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunning ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
-                disabled={isRunning} // Opcional: deshabilita edición durante cuenta regresiva
+                disabled={isRunningGlobal} // Opcional: deshabilita edición durante cuenta regresiva
               />
               {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
@@ -435,7 +462,7 @@ const Countdown = () => {
           onClick={() => handleTimeAdjustment(-1800)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 30 minutes"
-          disabled={isRunning}
+          disabled={isRunningGlobal}
         >
           -30
         </button>
@@ -443,7 +470,7 @@ const Countdown = () => {
           onClick={() => handleTimeAdjustment(-900)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Subtract 15 minutes"
-          disabled={isRunning}
+          disabled={isRunningGlobal}
         >
           -15
         </button>
@@ -451,7 +478,7 @@ const Countdown = () => {
           onClick={() => handleTimeAdjustment(900)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 15 minutes"
-          disabled={isRunning}
+          disabled={isRunningGlobal}
         >
           +15
         </button>
@@ -459,7 +486,7 @@ const Countdown = () => {
           onClick={() => handleTimeAdjustment(1800)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Add 30 minutes"
-          disabled={isRunning}
+          disabled={isRunningGlobal}
         >
           +30
         </button>
@@ -474,9 +501,9 @@ const Countdown = () => {
           <RotateCcw size={24} className="text-[var(--accent-primary)]" />
         </button>
 
-        {isRunning ? (
+        {isRunningGlobal ? (
           <button
-            onClick={() => setIsRunning(false)}
+            onClick={() => handlePlayPause()}
             className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
             aria-label="Pause countdown"
           >
@@ -484,7 +511,7 @@ const Countdown = () => {
           </button>
         ) : (
           <button
-            onClick={() => startCountdown()}
+            onClick={() => handlePlayPause()}
             disabled={calculateSeconds(time) === 0}
             className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
             aria-label="Start countdown"

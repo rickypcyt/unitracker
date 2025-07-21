@@ -44,6 +44,7 @@ const Pomodoro = () => {
   });
 
   const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
+  const isStudyRunningRedux = useSelector(state => state.ui.isStudyRunning);
 
   // Usar syncPomodoroWithTimer en vez de isSyncedWithStudyTimer en todos los listeners y lógica de sincronización
   // Restaurar pomoState de localStorage de forma segura
@@ -54,22 +55,42 @@ const Pomodoro = () => {
     const defaultMode = "work";
     const defaultTimeLeft = INITIAL_MODES[defaultModeIndex][defaultMode];
     const defaultWorkSessionsBeforeLongBreak = 4;
+    const safe = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState);
-        return {
-          modeIndex: Number.isFinite(Number(parsed.modeIndex)) ? Number(parsed.modeIndex) : defaultModeIndex,
+        const safeState = {
+          modeIndex: safe(Number(parsed.modeIndex)),
           currentMode: typeof parsed.currentMode === 'string' ? parsed.currentMode : defaultMode,
-          timeLeft: Number.isFinite(Number(parsed.timeLeft)) ? Number(parsed.timeLeft) : defaultTimeLeft,
-          isRunning: false, // Siempre iniciar en pausa tras refresh
-          pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || "0"),
-          workSessionsBeforeLongBreak: Number.isFinite(Number(parsed.workSessionsBeforeLongBreak)) ? Number(parsed.workSessionsBeforeLongBreak) : defaultWorkSessionsBeforeLongBreak,
-          workSessionsCompleted: Number.isFinite(Number(parsed.workSessionsCompleted)) ? Number(parsed.workSessionsCompleted) : 0,
-          startTime: Number.isFinite(Number(parsed.startTime)) ? Number(parsed.startTime) : 0,
-          pausedTime: Number.isFinite(Number(parsed.pausedTime)) ? Number(parsed.pausedTime) : 0,
+          timeLeft: safe(Number(parsed.timeLeft)) || defaultTimeLeft,
+          isRunning: false,
+          pomodoroToday: safe(parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || "0")),
+          workSessionsBeforeLongBreak: safe(Number(parsed.workSessionsBeforeLongBreak)) || defaultWorkSessionsBeforeLongBreak,
+          workSessionsCompleted: safe(Number(parsed.workSessionsCompleted)),
+          startTime: safe(Number(parsed.startTime)),
+          pausedTime: safe(Number(parsed.pausedTime)),
           lastManualAdjustment: 0,
-          pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0'),
+          pomodorosThisSession: safe(parseInt(localStorage.getItem('pomodorosThisSession') || '0')),
         };
+        if (Object.values(safeState).some(v => typeof v === 'number' && !Number.isFinite(v))) {
+          localStorage.removeItem('pomodoroState');
+          localStorage.removeItem('pomodoroIsRunning');
+          localStorage.removeItem('pomodorosThisSession');
+          return {
+            modeIndex: defaultModeIndex,
+            currentMode: defaultMode,
+            timeLeft: defaultTimeLeft,
+            isRunning: false,
+            pomodoroToday: 0,
+            workSessionsBeforeLongBreak: defaultWorkSessionsBeforeLongBreak,
+            workSessionsCompleted: 0,
+            startTime: 0,
+            pausedTime: 0,
+            lastManualAdjustment: 0,
+            pomodorosThisSession: 0,
+          };
+        }
+        return safeState;
       } catch (error) {
         return {
           modeIndex: defaultModeIndex,
@@ -259,8 +280,8 @@ const Pomodoro = () => {
       lastManualAdjustment: now
     }));
     if (!fromSync && syncPomodoroWithTimer) {
-      window.dispatchEvent(new CustomEvent("startStudyTimer"));
-      window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
+      window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
+      window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
     }
   }, [pomoState.modeIndex, pomoState.currentMode, modes, syncPomodoroWithTimer]);
 
@@ -287,8 +308,13 @@ const Pomodoro = () => {
       pausedTime: 0,
       lastManualAdjustment: Date.now()
     }));
+    // Limpiar localStorage
+    localStorage.removeItem('pomodoroState');
+    localStorage.removeItem('pomodoroIsRunning');
+    localStorage.removeItem('pomodorosThisSession');
     if (!fromSync && syncPomodoroWithTimer) {
-      window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: Date.now() } }));
+      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: Date.now() } }));
     }
   }, [pomoState.modeIndex, modes, syncPomodoroWithTimer]);
 
@@ -615,7 +641,7 @@ const Pomodoro = () => {
   // Timer logic
   useEffect(() => {
     let interval;
-    if (pomoState.isRunning && pomoState.timeLeft > 0) {
+    if (isStudyRunningRedux && pomoState.timeLeft > 0) {
       // Restart interval whenever isRunning or timeLeft changes
       const startTime = Date.now();
       const startCountingDownFrom = pomoState.timeLeft;
@@ -641,7 +667,7 @@ const Pomodoro = () => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [pomoState.isRunning, pomoState.timeLeft, alarmEnabled]);
+  }, [isStudyRunningRedux, pomoState.timeLeft, alarmEnabled]);
 
   // Fetch al montar y al terminar sesión
   useEffect(() => {
@@ -678,6 +704,25 @@ const Pomodoro = () => {
       };
     } catch (error) {
       console.error('Error showing notification:', error);
+    }
+  };
+
+  const isRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
+  const handlePlayPause = () => {
+    if (syncPomodoroWithTimer) {
+      if (isStudyRunningRedux) {
+        window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+        window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+      } else {
+        window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+        window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+      }
+    } else {
+      if (pomoState.isRunning) {
+        handleStop();
+      } else {
+        handleStart();
+      }
     }
   };
 
@@ -758,7 +803,7 @@ const Pomodoro = () => {
         >
           <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
         </button>
-        {!pomoState.isRunning ? (
+        {!isRunning ? (
           <button
             onClick={() => handleStart()}
             className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"

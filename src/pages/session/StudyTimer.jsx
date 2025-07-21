@@ -50,6 +50,7 @@ const StudyTimer = ({ onSyncChange }) => {
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
     const activeSessionId = localStorage.getItem("activeSessionId");
+    const safe = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
     if (savedState) {
       let parsed;
       try {
@@ -57,13 +58,25 @@ const StudyTimer = ({ onSyncChange }) => {
       } catch {
         parsed = {};
       }
-      return {
-        time: Number.isFinite(Number(parsed.time)) ? Number(parsed.time) : 0,
+      const safeState = {
+        time: safe(Number(parsed.time)),
         isRunning: typeof parsed.isRunning === 'boolean' ? parsed.isRunning : false,
-        lastStart: Number.isFinite(Number(parsed.lastStart)) ? Number(parsed.lastStart) : null,
-        timeAtStart: Number.isFinite(Number(parsed.timeAtStart)) ? Number(parsed.timeAtStart) : 0,
+        lastStart: safe(Number(parsed.lastStart)),
+        timeAtStart: safe(Number(parsed.timeAtStart)),
         sessionStatus: typeof parsed.sessionStatus === 'string' ? parsed.sessionStatus : 'inactive',
       };
+      if (Object.values(safeState).some(v => typeof v === 'number' && !Number.isFinite(v))) {
+        localStorage.removeItem('studyTimerState');
+        localStorage.removeItem('activeSessionId');
+        return {
+          time: 0,
+          isRunning: false,
+          lastStart: null,
+          timeAtStart: 0,
+          sessionStatus: 'inactive',
+        };
+      }
+      return safeState;
     }
     return {
       time: 0,
@@ -110,6 +123,12 @@ const StudyTimer = ({ onSyncChange }) => {
   // Timer logic
   useEffect(() => {
     const syncTimer = () => {
+      console.log('TICK', {
+        isStudyRunningRedux,
+        lastStart: studyState.lastStart,
+        timeAtStart: studyState.timeAtStart,
+        time: studyState.time
+      });
       if (isStudyRunningRedux && studyState.lastStart) {
         const now = Date.now();
         const elapsed = studyState.timeAtStart + ((now - studyState.lastStart) / 1000);
@@ -236,16 +255,22 @@ const StudyTimer = ({ onSyncChange }) => {
           setIsLoginPromptOpen(true);
           return;
         }
+        if (!currentSessionId) {
+          setIsStartModalOpen(true);
+          return;
+        }
         if (currentSessionId) {
-          const now = baseTimestamp || Date.now();
-          dispatch(setStudyRunning(true));
+          const now = (typeof baseTimestamp === 'number' && Number.isFinite(baseTimestamp)) ? baseTimestamp : Date.now();
           setStudyState(prev => ({
             ...prev,
             isRunning: true,
             lastStart: now,
-            timeAtStart: prev.time,
+            timeAtStart: Number.isFinite(prev.time) ? prev.time : 0,
+            time: Number.isFinite(prev.time) ? prev.time : 0,
             sessionStatus: 'active'
           }));
+          dispatch(setStudyRunning(true));
+          localStorage.setItem('studyTimerStartedAt', now.toString());
           window.dispatchEvent(
             new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
           );
@@ -258,8 +283,6 @@ const StudyTimer = ({ onSyncChange }) => {
               window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
             }
           }
-        } else {
-          setIsStartModalOpen(true);
         }
       }
     },
@@ -302,14 +325,20 @@ const StudyTimer = ({ onSyncChange }) => {
         sessionStatus: 'inactive'
       }));
       dispatch(resetTimerState());
+      // Limpiar localStorage
+      localStorage.removeItem('studyTimerState');
+      localStorage.removeItem('activeSessionId');
+      localStorage.removeItem('studyTimerStartedAt');
       window.dispatchEvent(
         new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
       );
       if (!fromSync) {
-        const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
-        if (syncFlag) {
-          const now = Date.now();
-          window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+        const now = Date.now();
+        if (isPomodoroSync) {
+          window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
+        }
+        if (isCountdownSync) {
+          window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
         }
       }
     },
@@ -410,6 +439,8 @@ const StudyTimer = ({ onSyncChange }) => {
       // Get session time range
       const startedAt = session.started_at;
       const endedAt = new Date().toISOString();
+      // Leer hora de inicio local
+      const localStartedAt = localStorage.getItem('studyTimerStartedAt');
 
       // Fetch all completed tasks for the user in the session time range
       const { data: completedTasks, error: tasksError } = await supabase
@@ -437,14 +468,19 @@ const StudyTimer = ({ onSyncChange }) => {
       // Only finalize if duration is not 00:00:00
       if (formattedDuration !== '00:00:00') {
         const pomodorosThisSession = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
+        // Al actualizar la sesión en la base de datos, incluir el startedAt local si existe
+        const updateData = {
+          duration: formattedDuration,
+          tasks_completed: completedTasks.length,
+          ended_at: endedAt,
+          pomodoros_completed: pomodorosThisSession,
+        };
+        if (localStartedAt) {
+          updateData.started_at_local = new Date(Number(localStartedAt)).toISOString();
+        }
         const { error } = await supabase
           .from('study_laps')
-          .update({
-            duration: formattedDuration,
-            tasks_completed: completedTasks.length,
-            ended_at: endedAt,
-            pomodoros_completed: pomodorosThisSession,
-          })
+          .update(updateData)
           .eq('id', currentSessionId);
 
         if (error) {
@@ -473,6 +509,8 @@ const StudyTimer = ({ onSyncChange }) => {
       dispatch(setCurrentSession(null));
       localStorage.removeItem("activeSessionId");
       setStudyState(prev => ({ ...prev, sessionTitle: undefined, sessionDescription: undefined }));
+      // Limpiar hora de inicio local
+      localStorage.removeItem('studyTimerStartedAt');
 
       if (isSyncedWithStudyTimer) {
          window.dispatchEvent(new CustomEvent("resetPomodoro"));
@@ -607,7 +645,7 @@ const StudyTimer = ({ onSyncChange }) => {
 
       {/* Timer display con tooltip para Session Title */}
       <div className="relative group text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
-        <span>{formatStudyTime(Math.max(0, studyState.time), false)}</span>
+        <span>{formatStudyTime(Number.isFinite(studyState.time) ? Math.max(0, studyState.time) : 0, false)}</span>
         {currentSessionId && (
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>
