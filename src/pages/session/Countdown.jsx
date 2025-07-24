@@ -103,6 +103,7 @@ const Countdown = () => {
     hours * 3600 + minutes * 60 + seconds;
 
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
+  const [pausedSecondsLeft, setPausedSecondsLeft] = useState(null);
 
   const startCountdown = (baseTimestamp, fromSync) => {
     // Corrige los valores antes de iniciar
@@ -128,8 +129,23 @@ const Countdown = () => {
 
   const handlePause = (fromSync) => {
     setIsRunning(false);
-    if (!fromSync && isSyncedWithStudyTimer) {
-      window.dispatchEvent(new CustomEvent("pauseTimerSync", { detail: { baseTimestamp: Date.now() } }));
+    setPausedSecondsLeft(secondsLeft); // Guarda el tiempo restante al pausar
+    if (!fromSync && syncCountdownWithTimer) {
+      window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
+      window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+    }
+  };
+
+  const handleResume = () => {
+    if (pausedSecondsLeft !== null) {
+      setStartTimestamp(Date.now());
+      setInitialTime({
+        hours: Math.floor(pausedSecondsLeft / 3600),
+        minutes: Math.floor((pausedSecondsLeft % 3600) / 60),
+        seconds: pausedSecondsLeft % 60
+      });
+      setIsRunning(true);
+      setPausedSecondsLeft(null);
     }
   };
 
@@ -392,6 +408,8 @@ const Countdown = () => {
     } else {
       if (isRunning) {
         handlePause();
+      } else if (pausedSecondsLeft !== null) {
+        handleResume();
       } else {
         startCountdown();
       }
