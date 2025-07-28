@@ -313,8 +313,10 @@ const Pomodoro = () => {
     localStorage.removeItem('pomodoroIsRunning');
     localStorage.removeItem('pomodorosThisSession');
     if (!fromSync && syncPomodoroWithTimer) {
-      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
-      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+      const now = Date.now();
+      console.log('[Pomodoro] Emitiendo eventos de reset');
+      window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
     }
   }, [pomoState.modeIndex, modes, syncPomodoroWithTimer]);
 
@@ -427,6 +429,25 @@ const Pomodoro = () => {
 
   useEventListener("resetTimerSync", (event) => {
     if (!syncPomodoroWithTimer) return;
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    handleReset(true);
+  }, [syncPomodoroWithTimer, lastSyncTimestamp]);
+
+  // Escuchar eventos de reset de StudyTimer y Countdown cuando están sincronizados
+  useEventListener("resetPomodoroSync", (event) => {
+    if (!syncPomodoroWithTimer) return;
+    console.log('[Pomodoro] Recibido resetPomodoroSync');
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    handleReset(true);
+  }, [syncPomodoroWithTimer, lastSyncTimestamp]);
+
+  useEventListener("resetCountdownSync", (event) => {
+    if (!syncPomodoroWithTimer) return;
+    console.log('[Pomodoro] Recibido resetCountdownSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);

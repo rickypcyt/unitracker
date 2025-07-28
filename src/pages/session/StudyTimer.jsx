@@ -45,6 +45,12 @@ const StudyTimer = ({ onSyncChange }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
 
+  // Declarar las variables de sincronización antes de los event listeners
+  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
+  const isPomodoroSync = syncPomodoroWithTimer;
+  const isCountdownSync = syncCountdownWithTimer;
+
   // Handler para el toggle visual
 
   const [studyState, setStudyState] = useState(() => {
@@ -248,6 +254,25 @@ const StudyTimer = ({ onSyncChange }) => {
     studyControls.reset(true); // true = viene de sync
   }, [lastSyncTimestamp]);
 
+  // Escuchar eventos de reset de Pomodoro y Countdown cuando están sincronizados
+  useEventListener("resetPomodoroSync", (event) => {
+    if (!isPomodoroSync) return;
+    console.log('[StudyTimer] Recibido resetPomodoroSync');
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    studyControls.reset(true); // true = viene de sync
+  }, [isPomodoroSync, lastSyncTimestamp]);
+
+  useEventListener("resetCountdownSync", (event) => {
+    if (!isCountdownSync) return;
+    console.log('[StudyTimer] Recibido resetCountdownSync');
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    studyControls.reset(true); // true = viene de sync
+  }, [isCountdownSync, lastSyncTimestamp]);
+
   const studyControls = {
     start: async (baseTimestamp, fromSync) => {
       if (!isStudyRunningRedux && !isHandlingEvent) {
@@ -334,6 +359,11 @@ const StudyTimer = ({ onSyncChange }) => {
       );
       if (!fromSync) {
         const now = Date.now();
+        console.log('[StudyTimer] Emitiendo eventos de reset:', { isPomodoroSync, isCountdownSync });
+        // Solo emitir eventos de reset si está habilitada la sincronización
+        if (isPomodoroSync || isCountdownSync) {
+          window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+        }
         if (isPomodoroSync) {
           window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
         }
@@ -607,11 +637,7 @@ const StudyTimer = ({ onSyncChange }) => {
     // Solución: guardar un campo lastPausedAt en studyState cuando se pausa
   }
 
-  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
-  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
-  // En vez de isSyncedWithStudyTimer, usar los flags de Redux
-  const isPomodoroSync = syncPomodoroWithTimer;
-  const isCountdownSync = syncCountdownWithTimer;
+  // Las variables de sincronización ya están declaradas arriba
 
   // Al activar sync en mitad de sesión, emitir evento para alinear Pomodoro/Countdown con el tiempo actual
   useEffect(() => {

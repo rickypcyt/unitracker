@@ -153,16 +153,17 @@ const Countdown = () => {
     setIsRunning(false);
     setSecondsLeft(0);
     setStartTimestamp(null); // Resetear timestamp
-    setTime(initialTime);
+    // Poner el tiempo por defecto en 1 hora en lugar del tiempo inicial
+    const defaultTime = { hours: 1, minutes: 0, seconds: 0 };
+    setTime(defaultTime);
+    setInitialTime(defaultTime);
     // Limpiar localStorage
     localStorage.removeItem('countdownLastTime');
-    if (fromSync) {
-      // No emitir eventos de sincronización si viene de sync
-      return;
-    }
-    if (syncCountdownWithTimer) {
-      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
-      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: Date.now() } }));
+    if (!fromSync && syncCountdownWithTimer) {
+      const now = Date.now();
+      console.log('[Countdown] Emitiendo eventos de reset');
+      window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
     }
   };
 
@@ -271,6 +272,25 @@ const Countdown = () => {
 
   useEventListener('resetTimerSync', (event) => {
     if (!syncCountdownWithTimer) return;
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    handleReset(true);
+  }, [syncCountdownWithTimer, lastSyncTimestamp]);
+
+  // Escuchar eventos de reset de StudyTimer y Pomodoro cuando están sincronizados
+  useEventListener('resetPomodoroSync', (event) => {
+    if (!syncCountdownWithTimer) return;
+    console.log('[Countdown] Recibido resetPomodoroSync');
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
+    handleReset(true);
+  }, [syncCountdownWithTimer, lastSyncTimestamp]);
+
+  useEventListener('resetCountdownSync', (event) => {
+    if (!syncCountdownWithTimer) return;
+    console.log('[Countdown] Recibido resetCountdownSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);

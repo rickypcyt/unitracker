@@ -161,7 +161,13 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 minTickGap={0}
                 tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
                 ticks={xAxisTicks}
-                tickFormatter={v => v}
+                tickFormatter={(value, index) => {
+                  // Para gráficos de semana, usar las etiquetas de días de la semana
+                  if ((title === 'This Week' || title === 'Last Week') && xAxisTicks && xAxisTicks[index]) {
+                    return xAxisTicks[index];
+                  }
+                  return value;
+                }}
               />
               <YAxis
                 stroke="var(--text-secondary)"

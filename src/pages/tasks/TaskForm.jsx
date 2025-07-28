@@ -553,9 +553,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           };
           await dispatch(addTask(newTask));
           setShowAIPreview(false);
-          setActiveTab('manual');
-          // Opcional: resetea el formulario manual
-          resetForm && resetForm();
+          // Cerrar el modal principal después de aceptar
+          onClose();
         }}
         onEdit={task => {
           handleChange('title', task.task || '');

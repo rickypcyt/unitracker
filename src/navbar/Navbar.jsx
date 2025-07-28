@@ -215,7 +215,7 @@ const Navbar = ({ onOpenSettings }) => {
         .update({ status: 'accepted' })
         .eq('id', request.id);
       if (updateError) {
-        alert('Error updating request: ' + updateError.message);
+        toast.error('Error updating request: ' + updateError.message);
         return;
       }
       console.log('[ACCEPT] Solicitud actualizada a accepted');
@@ -225,7 +225,7 @@ const Navbar = ({ onOpenSettings }) => {
         .from('friends')
         .insert([{ user1, user2 }]);
       if (insertError && !insertError.message.includes('duplicate key value')) {
-        alert('Error creating friendship: ' + insertError.message);
+        toast.error('Error creating friendship: ' + insertError.message);
         return;
       }
       if (insertError && insertError.message.includes('duplicate key value')) {
@@ -237,13 +237,34 @@ const Navbar = ({ onOpenSettings }) => {
       await fetchRequests();
       await fetchFriends();
       console.log('[ACCEPT] Solicitudes y amigos refrescados');
-      alert('Friend request accepted!');
+      toast.success('Friend request accepted!');
     } catch (error) {
-      alert('Unexpected error: ' + error.message);
+      toast.error('Unexpected error: ' + error.message);
       console.error('[ACCEPT] Error inesperado:', error);
     }
   };
-  const handleReject = () => {};
+  const handleReject = async (request) => {
+    try {
+      console.log('[REJECT] Iniciando proceso para request:', request);
+      // 1. Actualiza la solicitud a "rejected"
+      const { error: updateError } = await supabase
+        .from('friend_requests')
+        .update({ status: 'rejected' })
+        .eq('id', request.id);
+      if (updateError) {
+        toast.error('Error updating request: ' + updateError.message);
+        return;
+      }
+      console.log('[REJECT] Solicitud actualizada a rejected');
+      // 2. Refresca solicitudes
+      await fetchRequests();
+      console.log('[REJECT] Solicitudes refrescadas');
+      toast.success('Friend request rejected!');
+    } catch (error) {
+      toast.error('Unexpected error: ' + error.message);
+      console.error('[REJECT] Error inesperado:', error);
+    }
+  };
 
   const handleRemoveFriend = async (friend) => {
     try {
@@ -253,13 +274,13 @@ const Navbar = ({ onOpenSettings }) => {
         .delete()
         .or(`and(user1.eq.${user.id},user2.eq.${friend.id}),and(user1.eq.${friend.id},user2.eq.${user.id})`);
       if (error) {
-        alert('Error removing friend: ' + error.message);
+        toast.error('Error removing friend: ' + error.message);
         return;
       }
       await fetchFriends();
-      alert('Friend removed!');
+      toast.success('Friend removed!');
     } catch (error) {
-      alert('Unexpected error: ' + error.message);
+      toast.error('Unexpected error: ' + error.message);
       console.error('[REMOVE FRIEND] Error:', error);
     }
   };
