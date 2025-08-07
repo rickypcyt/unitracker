@@ -1,5 +1,4 @@
 import { CSS } from '@dnd-kit/utilities';
-import React from 'react';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { useSortable } from '@dnd-kit/sortable';
 

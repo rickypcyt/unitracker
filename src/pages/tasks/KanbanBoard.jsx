@@ -1,5 +1,5 @@
-import { Archive, ChevronDown, ChevronUp, ClipboardCheck, Filter, Plus, Trash2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { ClipboardCheck, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -11,7 +11,7 @@ import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { fetchTasks } from '@/store/TaskActions';
-import { setActiveWorkspace } from '@/store/slices/workspaceSlice';
+
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,7 +20,6 @@ import { useTaskManager } from '@/hooks/useTaskManager';
 
 export const KanbanBoard = () => {
   const {
-    user,
     tasks: realTasks,
     handleToggleCompletion,
     handleUpdateTask,
@@ -47,15 +46,14 @@ export const KanbanBoard = () => {
 
   const [contextMenu, setContextMenu] = useState(null);
   const [collapsedColumns, setCollapsedColumns] = useState({});
-  const [showCompleted, setShowCompleted] = useState(false);
+  const [showCompleted] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
-  const [columnOrder, setColumnOrder] = useState(() => {
+  const [columnOrder] = useState(() => {
     const savedOrder = localStorage.getItem('kanbanColumnOrder');
     return savedOrder ? JSON.parse(savedOrder) : [];
   });
@@ -64,8 +62,6 @@ export const KanbanBoard = () => {
     const savedTaskOrder = localStorage.getItem('kanbanTaskOrder');
     return savedTaskOrder ? JSON.parse(savedTaskOrder) : {};
   });
-
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const [sortMenu, setSortMenu] = useState(null);
   const [columnMenu, setColumnMenu] = useState(null);
@@ -137,38 +133,70 @@ export const KanbanBoard = () => {
     let sortedTasks = [...tasksInAssignment];
 
     switch (sortType) {
-      case 'alphabetical':
+      case 'alphabetical': {
+        const currentDirection = newAssignmentSortConfig[assignmentId].direction;
+        const updatedConfig = { ...newAssignmentSortConfig };
+        updatedConfig.direction = currentDirection === 'asc' ? 'desc' : 'asc';
+        setAssignmentSortConfig(updatedConfig);
+        localStorage.setItem('kanbanAssignmentSortConfig', JSON.stringify(updatedConfig));
         sortedTasks.sort((a, b) => a.title.localeCompare(b.title));
+        if (currentDirection === 'desc') {
+          sortedTasks.reverse();
+        }
         break;
-      case 'deadline':
+      }
+      case 'deadline': {
+        const currentDirection = newAssignmentSortConfig[assignmentId].direction;
+        const updatedConfig = { ...newAssignmentSortConfig };
+        updatedConfig.direction = currentDirection === 'asc' ? 'desc' : 'asc';
+        setAssignmentSortConfig(updatedConfig);
+        localStorage.setItem('kanbanAssignmentSortConfig', JSON.stringify(updatedConfig));
         sortedTasks.sort((a, b) => {
           if (!a.deadline && !b.deadline) return 0;
           if (!a.deadline) return 1;
           if (!b.deadline) return -1;
           return new Date(a.deadline) - new Date(b.deadline);
         });
+        if (currentDirection === 'desc') {
+          sortedTasks.reverse();
+        }
         break;
-      case 'difficulty':
+      }
+      case 'difficulty': {
+        const currentDirection = newAssignmentSortConfig[assignmentId].direction;
+        const updatedConfig = { ...newAssignmentSortConfig };
+        updatedConfig.direction = currentDirection === 'asc' ? 'desc' : 'asc';
+        setAssignmentSortConfig(updatedConfig);
+        localStorage.setItem('kanbanAssignmentSortConfig', JSON.stringify(updatedConfig));
         const difficultyOrder = { 'easy': 1, 'medium': 2, 'hard': 3 };
         sortedTasks.sort((a, b) => {
           const aDifficulty = difficultyOrder[a.difficulty?.toLowerCase()] || 4;
           const bDifficulty = difficultyOrder[b.difficulty?.toLowerCase()] || 4;
           return aDifficulty - bDifficulty;
         });
+        if (currentDirection === 'desc') {
+          sortedTasks.reverse();
+        }
         break;
-      case 'dateAdded':
+      }
+      case 'dateAdded': {
+        const currentDirection = newAssignmentSortConfig[assignmentId].direction;
+        const updatedConfig = { ...newAssignmentSortConfig };
+        updatedConfig.direction = currentDirection === 'asc' ? 'desc' : 'asc';
+        setAssignmentSortConfig(updatedConfig);
+        localStorage.setItem('kanbanAssignmentSortConfig', JSON.stringify(updatedConfig));
         sortedTasks.sort((a, b) => {
           const dateA = new Date(a.created_at);
           const dateB = new Date(b.created_at);
           return dateA - dateB;
         });
+        if (currentDirection === 'desc') {
+          sortedTasks.reverse();
+        }
         break;
+      }
       default:
         break;
-    }
-
-    if (direction === 'desc') {
-        sortedTasks.reverse();
     }
 
     setTaskOrder(prevOrder => ({
@@ -180,27 +208,6 @@ export const KanbanBoard = () => {
       [assignmentId]: sortedTasks.map(task => task.id)
     }));
   };
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Initialize sort configuration from localStorage
-  useEffect(() => {
-    const savedSortConfig = localStorage.getItem('kanbanAssignmentSortConfig');
-    if (savedSortConfig) {
-      try {
-        const parsedConfig = JSON.parse(savedSortConfig);
-        setAssignmentSortConfig(parsedConfig);
-      } catch (error) {
-        console.error('Error parsing saved sort configuration:', error);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -220,13 +227,7 @@ export const KanbanBoard = () => {
     const grouped = tasksToGroup.reduce((acc, task) => {
       const assignment = task.assignment || "No assignment";
       if (!acc[assignment]) acc[assignment] = [];
-      // Check if task is already in another assignment
-      const isTaskInOtherAssignment = Object.values(acc).some(tasks =>
-        tasks.some(t => t.id === task.id)
-      );
-      if (!isTaskInOtherAssignment) {
-        acc[assignment].push(task);
-      }
+      acc[assignment].push(task);
       return acc;
     }, {});
     return grouped;
@@ -235,10 +236,7 @@ export const KanbanBoard = () => {
   const sortTasksByPosition = (tasksToSort, assignment) => {
     const savedOrder = taskOrder[assignment];
     if (savedOrder && savedOrder.length > 0) {
-      // Create a map for quick lookup
       const taskMap = new Map(tasksToSort.map(task => [task.id, task]));
-
-      // Sort based on saved order
       const sortedTasks = [];
       savedOrder.forEach(taskId => {
         const task = taskMap.get(taskId);
@@ -247,10 +245,7 @@ export const KanbanBoard = () => {
           taskMap.delete(taskId);
         }
       });
-
-      // Add any remaining tasks that weren't in the saved order
       taskMap.forEach(task => sortedTasks.push(task));
-
       return sortedTasks;
     }
     return tasksToSort;
@@ -258,8 +253,6 @@ export const KanbanBoard = () => {
 
   const incompletedByAssignment = useMemo(() => {
     const grouped = groupTasksByAssignment(incompletedTasks);
-
-    // Apply sorting to each assignment
     Object.keys(grouped).forEach(assignment => {
       const sortConfig = assignmentSortConfig[assignment];
       if (sortConfig) {
@@ -267,27 +260,34 @@ export const KanbanBoard = () => {
         grouped[assignment] = sortedTasks;
       }
     });
-
     return grouped;
-  }, [incompletedTasks, assignmentSortConfig, taskOrder]);
+  }, [incompletedTasks, assignmentSortConfig, taskOrder, sortTasksByPosition]);
 
-  const assignmentsWithIncompleteTasks = useMemo(() => {
-    const assignments = Object.keys(incompletedByAssignment).filter(
-      (assignment) => (incompletedByAssignment[assignment] && incompletedByAssignment[assignment].length > 0)
-    );
-    // Si tenemos un orden guardado de columnas, usarlo y agregar nuevos assignments al final
-    if (columnOrder.length > 0) {
-      const orderedAssignments = [...columnOrder];
-      assignments.forEach(assignment => {
-        if (!orderedAssignments.includes(assignment)) {
-          orderedAssignments.push(assignment);
-        }
-      });
-      // Solo devolver los assignments que tienen tareas incompletas
-      return orderedAssignments.filter(a => assignments.includes(a));
-    }
-    return assignments;
-  }, [incompletedByAssignment, columnOrder]);
+  const sortedIncompletedAssignments = useMemo(() => {
+    const grouped = groupTasksByAssignment(incompletedTasks);
+    Object.keys(grouped).forEach(assignment => {
+      const sortConfig = assignmentSortConfig[assignment];
+      if (sortConfig) {
+        const sortedTasks = sortTasksByPosition(grouped[assignment], assignment);
+        grouped[assignment] = sortedTasks;
+      }
+    });
+    return Object.keys(grouped);
+  }, [incompletedTasks, assignmentSortConfig, taskOrder, groupTasksByAssignment, sortTasksByPosition]);
+
+  const assignments = Object.keys(incompletedByAssignment).filter(
+    (assignment) => (incompletedByAssignment[assignment] && incompletedByAssignment[assignment].length > 0)
+  );
+  if (columnOrder.length > 0) {
+    const orderedAssignments = [...columnOrder];
+    assignments.forEach(assignment => {
+      if (!orderedAssignments.includes(assignment)) {
+        orderedAssignments.push(assignment);
+      }
+    });
+    return orderedAssignments.filter(a => assignments.includes(a));
+  }
+  return assignments;
 
   const toggleColumn = (assignment) => {
     setCollapsedColumns(prev => ({
@@ -337,7 +337,7 @@ export const KanbanBoard = () => {
     setShowTaskForm(true);
   };
 
-  const handleCloseTaskForm = (newTaskId) => {
+  const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setSelectedAssignment(null);
     setEditingTask(null);
@@ -388,7 +388,7 @@ export const KanbanBoard = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2 h-full">
-        {assignmentsWithIncompleteTasks.map((assignment, idx) => (
+        {sortedIncompletedAssignments.map((assignment) => (
           <div key={assignment} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
             <SortableColumn
               id={assignment}
@@ -428,7 +428,7 @@ export const KanbanBoard = () => {
               <Trash2 size={20} />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {completedTasks.map((task) => (
               <TaskItem
                 key={task.id}
@@ -460,7 +460,7 @@ export const KanbanBoard = () => {
           onClose={handleCloseTaskForm}
           initialAssignment={selectedAssignment}
           initialTask={editingTask}
-          onTaskCreated={(newTaskId) => {
+          onTaskCreated={() => {
             dispatch(fetchTasks());
             handleCloseTaskForm();
           }}
@@ -517,7 +517,7 @@ export const KanbanBoard = () => {
 
               if (tasksInAssignment.length > 0) {
                 // Actualizar el workspace_id de todas las tareas del assignment en la base de datos
-                const { data, error } = await supabase
+                const { error } = await supabase
                   .from('tasks')
                   .update({ workspace_id: workspace.id })
                   .in('id', tasksInAssignment.map(task => task.id));

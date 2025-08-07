@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import DeleteCompletedModal from './modals/DeleteTasksPop';
 import LoginPromptModal from './modals/LoginPromptModal';
-import NoteList from './NoteList';
 import NotesCreateModal from './modals/NotesCreateModal';
-import NotesForm from './NotesForm';
-import NotesPanel from './NotesPanel';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,7 +16,6 @@ interface Note {
   user_id?: string;
 }
 
-const getToday = () => new Date().toISOString().slice(0, 10);
 
 const Notes: React.FC = () => {
   const { user } = useAuth();
@@ -34,11 +29,10 @@ const Notes: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editNote, setEditNote] = useState<Note | null>(null);
+  const [editNote, setEditNote] = useState<Partial<Note> | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
   useEffect(() => {
@@ -70,94 +64,132 @@ const Notes: React.FC = () => {
   }, [notes, user]);
 
   // Handler para agregar nota
-  const handleAddNote = async (note: Omit<Note, 'id'>) => {
+  const getSafeDate = (dateStr: string | null | undefined): string => {
+    if (dateStr && dateStr.trim().length > 0) {
+      return dateStr;
+    }
+    // Return current date in YYYY-MM-DD format
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleAddNote = async (noteData: Omit<Note, 'id'>) => {
     setLoading(true);
     setError(null);
-    if (user && (user as any).id) {
-      const { data, error } = await supabase
-        .from('notes')
-        .insert([{ ...note, user_id: (user as any).id }])
-        .select()
-        .single();
-      if (error) setError('Error saving note');
-      else setNotes([(data as Note), ...notes]);
-    } else {
-      setNotes([{ ...note, id: Date.now().toString() }, ...notes]);
+    try {
+      const safeDate = getSafeDate(noteData.date);
+      
+      if (user) {
+        const { data, error: insertError } = await supabase
+          .from('notes')
+          .insert([{ 
+            title: noteData.title || '',
+            assignment: noteData.assignment || 'Unassigned',
+            description: noteData.description || '',
+            date: safeDate,
+            user_id: user.id 
+          }])
+          .select()
+          .single();
+          
+        if (insertError) throw insertError;
+        if (data) {
+          setNotes([data as Note, ...notes]);
+        }
+      } else {
+        const newNote: Note = {
+          id: Date.now().toString(),
+          title: noteData.title || '',
+          assignment: noteData.assignment || 'Unassigned',
+          description: noteData.description || '',
+          date: safeDate
+        };
+        setNotes([newNote, ...notes]);
+      }
+      setEditNote(null);
+      setShowCreateModal(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    setShowCreateModal(false);
   };
 
   // Handler para iniciar edición
-  const handleEdit = (note: Note) => {
-    setEditingId(note.id || null);
-    setEditNote(note);
-    setShowEditModal(true);
-  };
-
-  // Handler para guardar edición
-  const handleSaveEdit = async (updated: Omit<Note, 'id'>) => {
-    if (!editNote) return;
+  const handleUpdateNote = async (note: Omit<Note, 'id'>) => {
+    if (!editNote?.id) return;
     setLoading(true);
     setError(null);
-    if (user && editNote.id) {
-      const { data, error } = await supabase
+    if (user) {
+      const { data, error: updateError } = await supabase
         .from('notes')
-        .update({ ...updated })
+        .update(note)
         .eq('id', editNote.id)
         .select()
         .single();
-      if (error) setError('Error updating note');
-      else setNotes(notes.map(n => n.id === editNote.id ? (data as Note) : n));
-    } else if (editNote.id) {
-      setNotes(notes.map(n => n.id === editNote.id ? { ...n, ...updated } : n));
+      if (updateError) {
+        setError(updateError.message);
+      } else if (data) {
+        setNotes(notes.map(n => n.id === editNote.id ? data as Note : n));
+      }
+    } else {
+      setNotes(notes.map(n => n.id === editNote.id ? { ...n, ...note } as Note : n));
     }
-    setEditingId(null);
     setEditNote(null);
-    setShowEditModal(false);
+    setShowCreateModal(false);
     setLoading(false);
   };
 
-  // Handler para cancelar edición
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditNote(null);
-    setShowEditModal(false);
+  const handleEditNote = (note: Note) => {
+    setEditNote(note);
+    setShowCreateModal(true);
   };
 
-  // Confirm delete modal state
-  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
-
-  // Handler para borrar nota (abre modal)
-  const handleDelete = (note: Note) => {
-    setNoteToDelete(note);
-  };
-
-  // Confirmación real de borrado
-  const confirmDeleteNote = async () => {
-    if (!noteToDelete) return;
+  const handleDeleteNote = async (id: string) => {
     setLoading(true);
     setError(null);
-    if (user && noteToDelete.id) {
+    if (user) {
       const { error } = await supabase
         .from('notes')
         .delete()
-        .eq('id', noteToDelete.id);
-      if (error) setError('Error deleting note');
-      else setNotes(notes.filter(n => n.id !== noteToDelete.id));
-    } else if (noteToDelete.id) {
-      setNotes(notes.filter(n => n.id !== noteToDelete.id));
+        .eq('id', id);
+      if (error) {
+        setError(error.message);
+      } else {
+        setNotes(notes.filter(n => n.id !== id));
+      }
+    } else {
+      setNotes(notes.filter(n => n.id !== id));
     }
     setLoading(false);
-    setNoteToDelete(null);
   };
 
-  // Usar demoNotes si isDemo
+  const confirmDeleteNote = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    if (user) {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', id);
+      if (error) {
+        setError(error.message);
+      } else {
+        setNotes(notes.filter(n => n.id !== id));
+      }
+    } else {
+      setNotes(notes.filter(n => n.id !== id));
+    }
+    setLoading(false);
+  };
+
   const notesToShow = isDemo ? demoNotes : notes;
 
   return (
     <div className="w-full mx-auto p-6 mt-3 relative">
-      {/* Floating Action Button - estilo dashed, border, animación bacán */}
       <button
         onClick={() => {
           if (isDemo) showLoginPrompt();
@@ -170,33 +202,86 @@ const Notes: React.FC = () => {
         <Plus size={32} />
       </button>
       <NotesCreateModal
-        isOpen={showCreateModal || showEditModal}
-        onClose={() => { setShowCreateModal(false); setShowEditModal(false); setEditNote(null); setEditingId(null); }}
-        onAdd={showEditModal ? handleSaveEdit : handleAddNote}
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setEditNote(null);
+        }}
+        onAdd={editNote?.id ? handleUpdateNote : handleAddNote}
         loading={loading}
-        initialValues={showEditModal && editNote ? editNote : undefined}
-        isEdit={showEditModal}
+        initialValues={{
+          title: editNote?.title ?? '',
+          assignment: editNote?.assignment ?? 'Unassigned',
+          description: editNote?.description ?? '',
+          date: editNote?.date ?? new Date().toISOString().split('T')[0]
+        } as Partial<Note>}
+        isEdit={!!editNote?.id}
       />
       <LoginPromptModal
         isOpen={showLoginModal || loginPromptOpen}
         onClose={() => { setShowLoginModal(false); closeLoginPrompt(); }}
       />
-      <div className="">
-        <NotesPanel
-          notes={notesToShow as Note[]}
-          loading={loading}
-          error={error}
-          onEdit={isDemo ? showLoginPrompt : handleEdit}
-          onDelete={isDemo ? showLoginPrompt : handleDelete}
-        />
+      <div className="space-y-4">
+        {notesToShow.map((note) => (
+          <div key={note.id} className="p-4 border rounded-lg">
+            <h3 className="font-bold">{note.title}</h3>
+            <p className="text-sm text-gray-600">{note.assignment}</p>
+            <p className="mt-2">{note.description}</p>
+            <div className="flex justify-between items-center mt-2 text-sm text-gray-500">
+              <span>{note.date}</span>
+              <div className="space-x-2">
+                <button 
+                  onClick={() => handleEditNote(note)}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDeleteNote(note.id || '')}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+      {error && (
+        <div className="p-4 mb-4 text-red-700 bg-red-100 rounded">
+          {error}
+        </div>
+      )}
       {noteToDelete && (
-        <DeleteCompletedModal
-          onClose={() => setNoteToDelete(null)}
-          onConfirm={confirmDeleteNote}
-          message={`Are you sure you want to delete the note "${noteToDelete.title || 'Untitled'}"? This action cannot be undone.`}
-          confirmButtonText="Delete Note"
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Delete Note</h3>
+            <p className="mb-6">
+              Are you sure you want to delete the note "{noteToDelete.title || 'Untitled'}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setNoteToDelete(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (noteToDelete.id) {
+                    confirmDeleteNote(noteToDelete.id);
+                    setNoteToDelete(null);
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Note'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

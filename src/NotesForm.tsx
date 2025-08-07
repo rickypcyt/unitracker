@@ -1,6 +1,6 @@
 import { FileText, Save, X } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from './modals/FormElements';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import MarkdownWysiwyg from './MarkdownWysiwyg';
 
@@ -21,26 +21,41 @@ interface NotesFormProps {
   isEdit?: boolean;
 }
 
-const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, onCancel, isEdit }) => {
-  const [form, setForm] = useState({
-    assignment: '',
-  });
-  const [wysiwyg, setWysiwyg] = useState({
-    title: initialValues?.title || '',
-    body: initialValues?.description || '',
+const NotesForm: React.FC<NotesFormProps> = ({ 
+  onAdd, 
+  loading, 
+  initialValues, 
+  onCancel, 
+  isEdit 
+}) => {
+  // Ensure initialValues is always defined with default values
+  const safeInitialValues = useMemo(() => ({
+    title: '',
+    assignment: 'Unassigned',
+    description: '',
+    date: getToday(),
+    ...initialValues
+  }), [initialValues]);
+
+  const [form, setForm] = useState<{ assignment: string }>({
+    assignment: safeInitialValues.assignment,
   });
 
+  const [wysiwyg, setWysiwyg] = useState<{ title: string; body: string }>({
+    title: safeInitialValues.title,
+    body: safeInitialValues.description,
+  });
+
+  // Update form when initialValues change
   useEffect(() => {
-    if (initialValues) {
-      setForm({
-        assignment: initialValues.assignment || '',
-      });
-      setWysiwyg({
-        title: initialValues.title || '',
-        body: initialValues.description || '',
-      });
-    }
-  }, [initialValues]);
+    setForm({
+      assignment: safeInitialValues.assignment,
+    });
+    setWysiwyg({
+      title: safeInitialValues.title,
+      body: safeInitialValues.description,
+    });
+  }, [safeInitialValues]);
 
   const handleAssignmentChange = (value: string) => {
     setForm({ ...form, assignment: value });
@@ -52,15 +67,24 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!wysiwyg.title.trim()) return;
-    await onAdd({
-      title: wysiwyg.title,
-      assignment: form.assignment,
-      description: wysiwyg.body,
-      date: getToday(),
-    });
-    setForm({ assignment: '' });
-    setWysiwyg({ title: '', body: '' });
+    const title = wysiwyg.title.trim();
+    if (!title) return;
+    
+    const today = getToday();
+    const noteData: Omit<Note, 'id'> = {
+      title,
+      assignment: form.assignment.trim() || 'Unassigned',
+      description: wysiwyg.body || '',
+      date: today,
+    };
+    
+    try {
+      await onAdd(noteData);
+      setForm({ assignment: '' });
+      setWysiwyg({ title: '', body: '' });
+    } catch (error) {
+      console.error('Error saving note:', error);
+    }
   };
 
   return (
@@ -112,9 +136,12 @@ const NotesForm: React.FC<NotesFormProps> = ({ onAdd, loading, initialValues, on
   );
 };
 
-function getToday() {
+function getToday(): string {
   const today = new Date();
-  return today.toISOString().split('T')[0];
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export default NotesForm; 

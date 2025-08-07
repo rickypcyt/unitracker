@@ -1,6 +1,6 @@
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
-import React, { useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 
 import type { AppDispatch } from '@/store/store';
@@ -8,19 +8,17 @@ import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
 import { NoiseProvider } from '@/utils/NoiseContext';
 import Notes from './Notes';
+
 import SessionPage from '@/pages/session/SessionPage';
 import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import { Toaster } from 'react-hot-toast';
-import Tour from './components/Tour';
 import TourManager from './components/TourManager';
 import UserModal from '@/modals/UserModal';
-import WelcomeModal from '@/modals/WelcomeModal';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
 import { supabase } from '@/utils/supabaseClient';
-import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import useTheme from '@/hooks/useTheme';
 
@@ -28,7 +26,7 @@ interface PageContentProps {
   onOpenSettings: () => void;
 }
 
-const PageContent: React.FC<PageContentProps> = ({ onOpenSettings }) => {
+const PageContent: FC<PageContentProps> = ({ onOpenSettings }) => {
   const { activePage } = useNavigation();
 
   return (
@@ -56,7 +54,7 @@ function useSupabaseAuthSync() {
     });
 
     // Suscríbete a cambios de sesión
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) dispatch(setUser(session.user));
       else dispatch(clearUser());
     });
@@ -68,7 +66,7 @@ function useSupabaseAuthSync() {
 }
 
 // Componente que muestra el UserModal si el usuario está logueado y no tiene username
-const UserModalGate: React.FC = () => {
+const UserModalGate: FC = () => {
   const { user, isLoggedIn } = useAuth() as { user: any, isLoggedIn: boolean };
   const [showUserModal, setShowUserModal] = useState(false);
   useEffect(() => {
@@ -93,12 +91,10 @@ const UserModalGate: React.FC = () => {
   return <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />;
 };
 
-const App: React.FC = () => {
+const App: FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const { currentTheme, handleThemeChange } = useTheme();
   const dispatch: AppDispatch = useDispatch();
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const handleOpenSettings = () => {
     setShowSettings(true);
@@ -116,7 +112,7 @@ const App: React.FC = () => {
           const hasRequestedBefore = localStorage.getItem('notificationPermissionRequested');
           if (!hasRequestedBefore) {
             try {
-              const newPermission = await Notification.requestPermission();
+              await Notification.requestPermission();
               localStorage.setItem('notificationPermissionRequested', 'true');
             } catch (error) {
               console.error('Error requesting notification permission:', error);
@@ -127,15 +123,13 @@ const App: React.FC = () => {
     };
     checkNotificationPermission();
 
-    // Ctrl+N para cambiar entre light y dark mode
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
-        e.preventDefault();
-        handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark');
-      }
+    // La lógica de handleKeyDown se ha movido fuera del componente
+    const keydownListener = (e: KeyboardEvent) => handleKeyDown(e, currentTheme, handleThemeChange);
+    window.addEventListener('keydown', keydownListener);
+
+    return () => {
+      window.removeEventListener('keydown', keydownListener);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentTheme, handleThemeChange]);
 
   useEffect(() => {
@@ -148,33 +142,16 @@ const App: React.FC = () => {
   // Swipe navigation para mobile
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  const navPages = ['tasks', 'calendar', 'session', 'notes', 'stats'];
   useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.changedTouches[0].screenX;
-    };
-    const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX.current = e.changedTouches[0].screenX;
-      const diff = touchEndX.current - touchStartX.current;
-      if (Math.abs(diff) > 60) {
-        // Detecta swipe
-        const currentIdx = navPages.indexOf(window.localStorage.getItem('lastVisitedPage') || 'session');
-        if (diff < 0 && currentIdx < navPages.length - 1) {
-          // Swipe left: siguiente página
-          window.localStorage.setItem('lastVisitedPage', navPages[currentIdx + 1]);
-          window.dispatchEvent(new Event('navigationchange'));
-        } else if (diff > 0 && currentIdx > 0) {
-          // Swipe right: página anterior
-          window.localStorage.setItem('lastVisitedPage', navPages[currentIdx - 1]);
-          window.dispatchEvent(new Event('navigationchange'));
-        }
-      }
-    };
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    const touchStartListener = (e: TouchEvent) => handleTouchStart(e, touchStartX);
+    const touchEndListener = (e: TouchEvent) => handleTouchEnd(e, touchStartX, touchEndX);
+
+    window.addEventListener('touchstart', touchStartListener, { passive: true });
+    window.addEventListener('touchend', touchEndListener, { passive: true });
+
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchstart', touchStartListener);
+      window.removeEventListener('touchend', touchEndListener);
     };
   }, []);
 
@@ -204,7 +181,7 @@ const App: React.FC = () => {
                   isOpen={showSettings}
                   onClose={handleCloseSettings}
                   currentTheme={currentTheme}
-                  handleThemeChange={handleThemeChange}
+                  handleThemeChange={(theme: string) => handleThemeChange(theme as 'light' | 'dark')}
                 />
               )}
             </NavigationProvider>
@@ -214,5 +191,48 @@ const App: React.FC = () => {
     </>
   );
 }
+
+// Helpers
+const navPages = ['tasks', 'calendar', 'session', 'notes', 'stats'];
+
+const handleKeyDown = (
+  e: KeyboardEvent,
+  currentTheme: string,
+  handleThemeChange: (theme: 'light' | 'dark') => void
+) => {
+  if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
+    e.preventDefault();
+    handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark');
+  }
+};
+
+const handleTouchStart = (e: TouchEvent, touchStartX: React.MutableRefObject<number>) => {
+  touchStartX.current = e.changedTouches[0]?.screenX || 0;
+};
+
+const handleTouchEnd = (
+  e: TouchEvent,
+  touchStartX: React.MutableRefObject<number>,
+  touchEndX: React.MutableRefObject<number>
+) => {
+  touchEndX.current = e.changedTouches[0]?.screenX || 0;
+  const diff = touchEndX.current - touchStartX.current;
+  if (Math.abs(diff) > 60) {
+    const currentIdx = navPages.indexOf(window.localStorage.getItem('lastVisitedPage') || 'session');
+    if (diff < 0 && currentIdx < navPages.length - 1) {
+      const nextPage = navPages[currentIdx + 1];
+      if (nextPage) {
+        window.localStorage.setItem('lastVisitedPage', nextPage);
+        window.dispatchEvent(new Event('navigationchange'));
+      }
+    } else if (diff > 0 && currentIdx > 0) {
+      const prevPage = navPages[currentIdx - 1];
+      if (prevPage) {
+        window.localStorage.setItem('lastVisitedPage', prevPage);
+        window.dispatchEvent(new Event('navigationchange'));
+      }
+    }
+  }
+};
 
 export default App; 

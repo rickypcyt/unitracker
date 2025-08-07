@@ -1,38 +1,75 @@
 {
   "compilerOptions": {
-    // Enable latest features
-    "lib": ["ESNext", "DOM"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
+    /* Base Options */
     "esModuleInterop": true,
-
-    // Bundler mode
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
-    "verbatimModuleSyntax": false,
-    "noEmit": false,
-
-    // Best practices
-    "strict": true,
     "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
+    "target": "ES2020",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
 
-    // Some stricter flags
+    /* Module Resolution */
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitOverride": true,
+    "noStrictGenericChecks": false,
+    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
     "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
 
-    // Import alias
+    /* Paths */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    
+    /* Type checking */
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["vite/client", "node"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.js",
+    "src/**/*.jsx",
+    "next-env.d.ts",
+    "**/*.d.ts",
+    "./vite.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/__tests__/**",
+    "**/__mocks__/**"
+  ]
 }

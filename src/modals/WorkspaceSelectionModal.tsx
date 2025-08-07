@@ -1,4 +1,4 @@
-import { Check, Move } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 import BaseModal from './BaseModal';
 import React from 'react';

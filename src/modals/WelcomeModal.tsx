@@ -1,4 +1,4 @@
-import { BarChart2, Calendar, CheckCircle2, Clock, Music } from "lucide-react";
+import { BarChart2, Calendar, CheckCircle2, Clock } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 
 interface WelcomeModalProps {
@@ -6,29 +6,8 @@ interface WelcomeModalProps {
   onStartTour?: () => void;
 }
 
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
-  const features = [
-    {
-      icon: <Clock className="w-6 h-6" />,
-      title: "Study Timer",
-      description: "Track your study sessions with a built-in timer and Pomodoro technique"
-    },
-    {
-      icon: <Calendar className="w-6 h-6" />,
-      title: "Task Management",
-      description: "Create, organize, and track your study tasks efficiently"
-    },
-    {
-      icon: <BarChart2 className="w-6 h-6" />,
-      title: "Progress Tracking",
-      description: "Visualize your study progress and statistics with detailed analytics"
-    },
-    {
-      icon: <Music className="w-6 h-6" />,
-      title: "Focus Sounds",
-      description: "Enhance your focus with customizable background sounds"
-    }
-  ];
+const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
+  
 
   const modalRef = useRef<HTMLDivElement>(null);
 

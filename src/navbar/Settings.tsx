@@ -1,4 +1,4 @@
-import { AppDispatch, RootState } from '@/store/store';
+import type { AppDispatch, RootState } from '@/store/store';
 import { LogIn, LogOut, Settings as SettingsIcon, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +9,7 @@ import ManageAssignmentsModal from '@/modals/ManageAssignmentsModal';
 import { deleteTask } from '@/store/actions/TaskActions';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
+import type { User } from '@supabase/supabase-js';
 import useTheme from '@/hooks/useTheme';
 
 interface SettingsProps {
@@ -18,11 +19,17 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentTheme, handleThemeChange, accentPalette, setAccentPalette } = useTheme();
+  const { accentPalette, setAccentPalette } = useTheme();
+  // Note: currentTheme and handleThemeChange are not used in this component
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
-  const { isLoggedIn, loginWithGoogle, logout } = useAuth();
+  const { isLoggedIn, loginWithGoogle, logout } = useAuth() as {
+    isLoggedIn: boolean;
+    loginWithGoogle: () => Promise<void>;
+    logout: () => Promise<void>;
+    user: User | null;
+  };
 
   const handleDeleteCompletedTasks = () => {
     const completedTasks = tasks.filter(task => task.completed);
@@ -33,16 +40,23 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   };
 
   const handleLogout = async () => {
-    await logout();
-    toast.success('You have been logged out.', {
-      containerId: 'main-toast-container',
-      position: 'top-center',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    try {
+      if (typeof logout === 'function') {
+        await logout();
+        toast.success('You have been logged out.', {
+          containerId: 'main-toast-container',
+          position: 'top-center',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast.error('Failed to log out. Please try again.');
+    }
   };
 
   if (!isOpen) return null;

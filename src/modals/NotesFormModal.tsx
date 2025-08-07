@@ -15,7 +15,7 @@ interface NotesFormModalProps {
   onClose: () => void;
   onSave: (note: Omit<Note, 'id'>) => Promise<void>;
   loading: boolean;
-  initialValues?: Partial<Note>;
+  initialValues: Partial<Note>; // Required prop with Partial<Note>
 }
 
 const NotesFormModal: React.FC<NotesFormModalProps> = ({ isOpen, onClose, onSave, loading, initialValues }) => {

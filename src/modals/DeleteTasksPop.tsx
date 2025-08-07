@@ -1,6 +1,6 @@
 import BaseModal from './BaseModal';
 import React from "react";
-import { X } from "lucide-react";
+
 
 interface DeleteCompletedModalProps {
   onClose: () => void;

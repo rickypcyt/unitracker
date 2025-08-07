@@ -16,11 +16,18 @@ interface NotesCreateModalProps {
   onClose: () => void;
   onAdd: (note: Omit<Note, 'id'>) => Promise<void>;
   loading: boolean;
-  initialValues?: Partial<Note>;
+  initialValues: Partial<Note>; // Required prop with Partial<Note>
   isEdit?: boolean;
 }
 
-const NotesCreateModal: React.FC<NotesCreateModalProps> = ({ isOpen, onClose, onAdd, loading, initialValues, isEdit }) => {
+const NotesCreateModal: React.FC<NotesCreateModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onAdd, 
+  loading, 
+  initialValues, 
+  isEdit = false 
+}) => {
   return (
     <BaseModal
       isOpen={isOpen}

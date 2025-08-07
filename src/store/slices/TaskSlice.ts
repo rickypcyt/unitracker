@@ -1,6 +1,7 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction} from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { Task } from '@/utils/taskStorage';
+import type { Task } from '@/types/taskStorage';
 
 interface TaskState {
   tasks: Task[];
@@ -47,7 +48,6 @@ const taskSlice = createSlice({
     toggleTaskStatusOptimistic: (state, action: PayloadAction<{ id: string; completed: boolean }>) => {
       const task = state.tasks.find(t => t.id === action.payload.id);
       if (task) {
-        const newStatus = action.payload.completed ? 'completed' : 'not completed';
         task.completed = action.payload.completed;
         task.completed_at = action.payload.completed ? new Date().toISOString() : null;
       }

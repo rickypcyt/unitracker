@@ -1,4 +1,4 @@
-import { Info, ListTodo, LogIn, LogOut, Moon, Palette, Sun, X } from "lucide-react";
+import { ListTodo, Moon, Palette, Sun } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
@@ -22,8 +22,8 @@ interface SettingsProps {
   handleThemeChange: (theme: string) => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const { currentTheme, handleThemeChange, accentPalette, setAccentPalette } = useTheme();
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, handleThemeChange }) => {
+  const { accentPalette, setAccentPalette } = useTheme();
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 

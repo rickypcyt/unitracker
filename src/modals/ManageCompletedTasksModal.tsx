@@ -1,11 +1,11 @@
-import { AppDispatch, RootState } from '@/store/store';
-import { ChevronDown, ChevronRight, Edit2, Trash2, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import type { AppDispatch, RootState } from '@/store/store';
+import { ChevronDown, ChevronRight, Edit2, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
-import { Task } from '@/pages/tasks/taskStorage';
+import type { Task } from '@/pages/tasks/taskStorage';
 import { deleteTask } from '@/store/TaskActions';
 import moment from 'moment';
 
@@ -34,7 +34,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
       ? moment(task.completed_at).format('MMMM YYYY')
       : 'Unknown';
     if (!groupedByMonth[month]) groupedByMonth[month] = [];
-    groupedByMonth[month].push(task);
+    (groupedByMonth[month] as Task[]).push(task);
   });
   const months = Object.keys(groupedByMonth).sort((a, b) => moment(b, 'MMMM YYYY').valueOf() - moment(a, 'MMMM YYYY').valueOf());
 
@@ -82,7 +82,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
             <div className="space-y-6">
               {months.map((month) => {
                 // Ordenar tareas de más reciente a más antiguo
-                const tasksOfMonth = groupedByMonth[month].slice().sort((a, b) => {
+                const tasksOfMonth = (groupedByMonth[month] || []).slice().sort((a, b) => {
                   const dateA = a.completed_at ? new Date(a.completed_at).getTime() : 0;
                   const dateB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
                   return dateB - dateA;

@@ -1,10 +1,11 @@
 import { AlarmClock, Bell, BellOff, Link2, Link2Off, Pause, Play, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import SectionTitle from '@/components/SectionTitle';
+import { setCountdownState } from '@/store/slices/uiSlice';
 import toast from 'react-hot-toast';
 import useEventListener from '@/hooks/useEventListener';
-import { useSelector } from 'react-redux';
 
 const fields = ['hours', 'minutes', 'seconds'];
 const fieldMax = { hours: 23, minutes: 59, seconds: 59 };
@@ -22,7 +23,8 @@ const getInitialTime = () => {
   } catch {}
   return { hours: 1, minutes: 0, seconds: 0 };
 };
-const Countdown = () => {
+const Countdown = ({ isSynced, isRunning, resetKey }) => {
+  const dispatch = useDispatch();
   const [time, setTime] = useState(() => {
     try {
       const saved = localStorage.getItem('countdownLastTime');
@@ -47,7 +49,7 @@ const Countdown = () => {
   const [activeField, setActiveField] = useState('hours');
   const [focusedField, setFocusedField] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+  const [isCountdownRunning, setIsCountdownRunning] = useState(false);
   const [startTimestamp, setStartTimestamp] = useState(null); // Nuevo: timestamp de inicio
   const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
   // Eliminamos fieldPrevValue y fieldOverwrite
@@ -104,6 +106,7 @@ const Countdown = () => {
 
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
   const [pausedSecondsLeft, setPausedSecondsLeft] = useState(null);
+  const [localResetKey, setLocalResetKey] = useState(0);
 
   const startCountdown = (baseTimestamp, fromSync) => {
     // Corrige los valores antes de iniciar
@@ -118,7 +121,8 @@ const Countdown = () => {
       setInitialTime(correctedTime);
       setSecondsLeft(total);
       setStartTimestamp(baseTimestamp || Date.now());
-      setIsRunning(true);
+      setIsCountdownRunning(true);
+      dispatch(setCountdownState('running'));
       if (!fromSync && syncCountdownWithTimer) {
         const now = baseTimestamp || Date.now();
         window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
@@ -128,8 +132,9 @@ const Countdown = () => {
   };
 
   const handlePause = (fromSync) => {
-    setIsRunning(false);
+    setIsCountdownRunning(false);
     setPausedSecondsLeft(secondsLeft); // Guarda el tiempo restante al pausar
+    dispatch(setCountdownState('paused'));
     if (!fromSync && syncCountdownWithTimer) {
       window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
       window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
@@ -144,24 +149,25 @@ const Countdown = () => {
         minutes: Math.floor((pausedSecondsLeft % 3600) / 60),
         seconds: pausedSecondsLeft % 60
       });
-      setIsRunning(true);
+      setIsCountdownRunning(true);
       setPausedSecondsLeft(null);
     }
   };
 
   const handleReset = (fromSync = false) => {
-    setIsRunning(false);
+    setIsCountdownRunning(false);
     setSecondsLeft(0);
     setStartTimestamp(null); // Resetear timestamp
-    // Poner el tiempo por defecto en 1 hora en lugar del tiempo inicial
-    const defaultTime = { hours: 1, minutes: 0, seconds: 0 };
-    setTime(defaultTime);
-    setInitialTime(defaultTime);
+    dispatch(setCountdownState('stopped'));
+    // Usar el tiempo guardado o el tiempo por defecto
+    const savedTime = getInitialTime();
+    console.log('[Countdown] Reset - tiempo guardado:', savedTime);
+    setTime(savedTime);
+    setInitialTime(savedTime);
     // Limpiar localStorage
     localStorage.removeItem('countdownLastTime');
     if (!fromSync && syncCountdownWithTimer) {
       const now = Date.now();
-      console.log('[Countdown] Emitiendo eventos de reset');
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
       window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
     }
@@ -179,7 +185,7 @@ const Countdown = () => {
       }
       if (newSecondsLeft <= 0) {
         clearInterval(interval);
-        setIsRunning(false);
+        setIsCountdownRunning(false);
         if (alarmEnabled) {
           try {
             new Audio('/sounds/countdownend.mp3').play();
@@ -209,18 +215,29 @@ const Countdown = () => {
   }, [isRunningGlobal, startTimestamp, initialTime, alarmEnabled]);
 
   useEffect(() => {
-    if (isRunning) {
+    if (isCountdownRunning) {
       setTime({
         hours: Math.floor(secondsLeft / 3600),
         minutes: Math.floor((secondsLeft % 3600) / 60),
         seconds: secondsLeft % 60
       });
+    } else {
+      // Cuando no está corriendo, mostrar el tiempo configurado
+      setTime(initialTime);
     }
-  }, [secondsLeft, isRunning]);
+  }, [secondsLeft, isCountdownRunning, initialTime]);
+
+  // Asegurar que el tiempo se actualice cuando cambie initialTime (para reset)
+  useEffect(() => {
+    if (!isCountdownRunning) {
+      console.log('[Countdown] Actualizando tiempo visual desde initialTime:', initialTime);
+      setTime(initialTime);
+    }
+  }, [initialTime, isCountdownRunning]);
 
   // Sincroniza al volver a enfocar la ventana
   useEffect(() => {
-    if (!isRunning || !startTimestamp) return;
+    if (!isCountdownRunning || !startTimestamp) return;
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
@@ -228,17 +245,17 @@ const Countdown = () => {
         setSecondsLeft(newSecondsLeft);
         // Si el tiempo se acabó mientras estaba fuera, detener
         if (newSecondsLeft === 0) {
-          setIsRunning(false);
+          setIsCountdownRunning(false);
         }
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [isRunning, startTimestamp, initialTime]);
+  }, [isCountdownRunning, startTimestamp, initialTime]);
 
   // Ajusta el tiempo total del countdown (en segundos)
   const handleTimeAdjustment = (adjustment) => {
-    if (isRunning) return; // No permitir ajuste mientras corre
+    if (isCountdownRunning) return; // No permitir ajuste mientras corre
     const totalSeconds = calculateSeconds(time) + adjustment;
     const clamped = Math.max(0, totalSeconds);
     const h = Math.floor(clamped / 3600);
@@ -281,7 +298,6 @@ const Countdown = () => {
   // Escuchar eventos de reset de StudyTimer y Pomodoro cuando están sincronizados
   useEventListener('resetPomodoroSync', (event) => {
     if (!syncCountdownWithTimer) return;
-    console.log('[Countdown] Recibido resetPomodoroSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
@@ -290,7 +306,6 @@ const Countdown = () => {
 
   useEventListener('resetCountdownSync', (event) => {
     if (!syncCountdownWithTimer) return;
-    console.log('[Countdown] Recibido resetCountdownSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
@@ -298,11 +313,11 @@ const Countdown = () => {
   }, [syncCountdownWithTimer, lastSyncTimestamp]);
 
   useEventListener('adjustCountdownTime', (event) => {
-    if (isSyncedWithStudyTimer && !isRunning) {
+    if (isSyncedWithStudyTimer && !isCountdownRunning) {
       const { adjustment } = event.detail;
       handleTimeAdjustment(adjustment);
     }
-  }, [isSyncedWithStudyTimer, isRunning, handleTimeAdjustment]);
+  }, [isSyncedWithStudyTimer, isCountdownRunning, handleTimeAdjustment]);
 
   useEventListener('studyTimerSyncStateChanged', (event) => {
     const { isSyncedWithStudyTimer: newSyncState } = event.detail;
@@ -313,7 +328,7 @@ const Countdown = () => {
     if (isSyncedWithStudyTimer) {
       const studyTime = Math.floor(event.detail.time);
       // Solo sincronizar si está corriendo
-      if (isRunning) {
+      if (isCountdownRunning) {
         // Actualiza el tiempo restante para que coincida con el Study Timer
         const h = Math.floor(studyTime / 3600);
         const m = Math.floor((studyTime % 3600) / 60);
@@ -322,7 +337,43 @@ const Countdown = () => {
         setSecondsLeft(studyTime);
       }
     }
-  }, [isSyncedWithStudyTimer, isRunning]);
+  }, [isSyncedWithStudyTimer, isCountdownRunning]);
+
+  // Manejar sincronización global
+  useEffect(() => {
+    if (!isSynced) return;
+
+    // Escuchar eventos globales de sincronización
+    const handleGlobalSync = (event) => {
+      const { isRunning: globalIsRunning } = event.detail;
+      
+      if (globalIsRunning !== isCountdownRunning) {
+        if (globalIsRunning) {
+          startCountdown(Date.now(), true);
+        } else {
+          handlePause(true);
+        }
+      }
+    };
+
+    // Escuchar eventos de reset global
+    const handleGlobalReset = (event) => {
+      const { resetKey: globalResetKey } = event.detail;
+      console.log('[Countdown] Recibido globalResetSync:', { globalResetKey, localResetKey });
+      if (globalResetKey !== localResetKey) {
+        console.log('[Countdown] Ejecutando reset desde globalResetSync');
+        setLocalResetKey(globalResetKey);
+        handleReset(true);
+      }
+    };
+
+    window.addEventListener('globalTimerSync', handleGlobalSync);
+    window.addEventListener('globalResetSync', handleGlobalReset);
+    return () => {
+      window.removeEventListener('globalTimerSync', handleGlobalSync);
+      window.removeEventListener('globalResetSync', handleGlobalReset);
+    };
+  }, [isSynced, isCountdownRunning, localResetKey]);
 
   const handleInputChange = useCallback((field, value) => {
     const clean = value.replace(/\D/g, ''); // Solo números
@@ -426,7 +477,7 @@ const Countdown = () => {
         window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: Date.now() } }));
       }
     } else {
-      if (isRunning) {
+      if (isCountdownRunning) {
         handlePause();
       } else if (pausedSecondsLeft !== null) {
         handleResume();
@@ -530,34 +581,36 @@ const Countdown = () => {
         </button>
       </div>
 
-      <div className="flex justify-center items-center gap-3 mb-2">
-        <button
-          onClick={handleReset}
-          className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
-          aria-label="Reset timer"
-        >
-          <RotateCcw size={24} className="text-[var(--accent-primary)]" />
-        </button>
+      {!isSynced && (
+        <div className="flex justify-center items-center gap-3 mb-2">
+          <button
+            onClick={handleReset}
+            className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
+            aria-label="Reset timer"
+          >
+            <RotateCcw size={24} className="text-[var(--accent-primary)]" />
+          </button>
 
-        {isRunningGlobal ? (
-          <button
-            onClick={() => handlePlayPause()}
-            className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
-            aria-label="Pause countdown"
-          >
-            <Pause size={24} className="text-[var(--accent-primary)]" />
-          </button>
-        ) : (
-          <button
-            onClick={() => handlePlayPause()}
-            disabled={calculateSeconds(time) === 0}
-            className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
-            aria-label="Start countdown"
-          >
-            <Play size={24} className="text-[var(--accent-primary)]" />
-          </button>
-        )}
-      </div>
+          {isRunningGlobal ? (
+            <button
+              onClick={() => handlePlayPause()}
+              className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
+              aria-label="Pause countdown"
+            >
+              <Pause size={24} className="text-[var(--accent-primary)]" />
+            </button>
+          ) : (
+            <button
+              onClick={() => handlePlayPause()}
+              disabled={calculateSeconds(time) === 0}
+              className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
+              aria-label="Start countdown"
+            >
+              <Play size={24} className="text-[var(--accent-primary)]" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,11 +1,11 @@
-import { AppDispatch, RootState } from '@/store/store';
+import type { AppDispatch, RootState } from '@/store/store';
 import React, { useEffect, useState } from 'react';
-import { Trash2, X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
-import { Task } from '@/pages/tasks/taskStorage';
+import type { Task } from '@/pages/tasks/taskStorage';
 import { deleteTask } from '@/store/TaskActions';
 
 interface ManageAssignmentsModalProps {

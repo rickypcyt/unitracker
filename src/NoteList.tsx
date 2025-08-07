@@ -1,10 +1,6 @@
-import { Calendar, Pencil, Trash2 } from 'lucide-react';
-
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkGfm from 'remark-gfm';
 import { useAuth } from '@/hooks/useAuth';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 interface Note {
   id?: string;

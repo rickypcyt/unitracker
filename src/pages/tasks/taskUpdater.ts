@@ -1,8 +1,9 @@
-import { AnyAction, Dispatch } from "redux";
-import { Task, getLocalTasks, setLocalTasks } from "@/taskStorage";
+import type { AnyAction, Dispatch } from "redux";
+import type { Task} from "@/types/taskStorage";
+import { getLocalTasks, setLocalTasks } from "@/types/taskStorage";
 import { deleteTask, toggleTaskStatus, updateTask } from "@/store/actions/TaskActions";
 
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface User {
     id: string;
@@ -37,15 +38,20 @@ export const updateTaskStatus = async ({ user, task, dispatch, supabase }: TaskU
         setLocalTasks(tasks);
     } else {
         // Remote
-        await dispatch(toggleTaskStatus(task.id, !task.completed) as unknown as AnyAction);
+        const newCompletedStatus = !task.completed;
+        await dispatch(toggleTaskStatus(task.id) as unknown as AnyAction);
         try {
             const { error } = await supabase
                 .from("tasks")
-                .update({ completed: !task.completed })
+                .update({ 
+                    completed: newCompletedStatus,
+                    completed_at: newCompletedStatus ? new Date().toISOString() : null 
+                })
                 .eq("id", task.id);
             if (error) throw error;
         } catch (error) {
-            await dispatch(toggleTaskStatus(task.id, task.completed) as unknown as AnyAction);
+            // Revert the optimistic update if the API call fails
+            await dispatch(toggleTaskStatus(task.id) as unknown as AnyAction);
             console.error("Error updating task:", error);
         }
     }

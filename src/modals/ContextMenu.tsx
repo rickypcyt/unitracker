@@ -18,7 +18,7 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
-  componentId,
+  componentId: _componentId,
   colIndex,
   itemIndex,
   isEditing,

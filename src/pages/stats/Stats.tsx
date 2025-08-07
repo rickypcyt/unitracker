@@ -46,7 +46,7 @@ interface StatCard {
 function durationToMinutes(duration: string | undefined): number {
   if (!duration) return 0;
   const [h, m] = duration.split(':');
-  return parseInt(h) * 60 + parseInt(m);
+  return parseInt(h || '0') * 60 + parseInt(m || '0');
 }
 
 function formatMinutesToHHMM(minutes: number): string {
@@ -71,9 +71,11 @@ function useTaskStats(tasks: Task[]) {
       const completedDate = task.completed_at ? new Date(task.completed_at) : null;
       if (!completedDate) return;
       const completedStr = completedDate.toISOString().split('T')[0];
-      if (completedStr === today) doneToday++;
-      if (completedDate >= weekStart) doneWeek++;
-      if (completedStr.startsWith(thisMonth)) doneMonth++;
+      if (completedStr) {
+        if (completedStr === today) doneToday++;
+        if (completedDate >= weekStart) doneWeek++;
+        if (completedStr.startsWith(thisMonth)) doneMonth++;
+      }
       if (completedDate.getFullYear() === thisYear) doneYear++;
     }
   });
@@ -95,9 +97,11 @@ function useLapStats(laps: Lap[]) {
     const lapDate = new Date(lap.created_at);
     const dateStr = lapDate.toISOString().split('T')[0];
     const minutes = durationToMinutes(lap.duration);
-    if (dateStr === today) todayMinutes += minutes;
-    if (lapDate >= weekStart) weekMinutes += minutes;
-    if (dateStr.startsWith(thisMonth)) monthMinutes += minutes;
+    if (dateStr) {
+        if (dateStr === today) todayMinutes += minutes;
+        if (lapDate >= weekStart) weekMinutes += minutes;
+        if (dateStr.startsWith(thisMonth)) monthMinutes += minutes;
+    }
     if (lapDate.getFullYear() === thisYear) yearMinutes += minutes;
   });
   return { todayMinutes, weekMinutes, monthMinutes, yearMinutes };
@@ -111,10 +115,12 @@ function getLongestStreak(tasks: Task[]): number {
   if (completed.length === 0) return 0;
   let streak = 1, maxStreak = 1;
   for (let i = 1; i < completed.length; i++) {
-    if (completed[i] - completed[i-1] === 86400000) {
+    const current = completed[i];
+    const previous = completed[i-1];
+    if (current && previous && current - previous === 86400000) {
       streak++;
       maxStreak = Math.max(maxStreak, streak);
-    } else if (completed[i] !== completed[i-1]) {
+    } else if (current && previous && current !== previous) {
       streak = 1;
     }
   }
@@ -126,10 +132,6 @@ function getAveragePerDay(laps: Lap[]): number {
   const days = new Set(laps.map(lap => new Date(lap.created_at).toISOString().split('T')[0]));
   const totalMinutes = laps.reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
   return days.size ? totalMinutes / days.size : 0;
-}
-
-function getPomodoros(laps: Lap[]): number {
-  return laps.filter(lap => lap.type === 'pomodoro' || (lap.name && lap.name.toLowerCase().includes('pomo'))).length;
 }
 
 function getPomodoroMinutes(laps: Lap[]): number {
@@ -224,7 +226,6 @@ const Statistics: React.FC = () => {
   const longestStreak = getLongestStreak(tasks);
   const avgPerDay = getAveragePerDay(laps);
   const totalTasks = tasks.filter((t: Task) => t.completed).length;
-  const pomodoros = getPomodoros(laps);
   const pomodoroMinutes = getPomodoroMinutes(laps);
 
   // Pomodoros completados hoy (de la base de datos)

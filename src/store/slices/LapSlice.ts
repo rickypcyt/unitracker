@@ -1,4 +1,5 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import type { PayloadAction} from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 interface Lap {
   id: string;
@@ -34,12 +35,6 @@ const initialState: LapState = {
   status: 'idle',
   lastFetch: null,
   isCached: false
-};
-
-const formatDuration = (duration: number): string => {
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-  return `${minutes}m ${seconds}s`;
 };
 
 const lapSlice = createSlice({

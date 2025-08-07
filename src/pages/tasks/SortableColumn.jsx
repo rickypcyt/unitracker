@@ -1,8 +1,9 @@
 import { ChevronDown, ChevronUp, ListOrdered, Plus } from 'lucide-react';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
-import React from 'react';
+
 import { TaskItem } from '@/pages/tasks/TaskItem';
+import { ColumnMenu } from '@/modals/ColumnMenu';
 
 export const SortableColumn = ({
   id,
@@ -16,7 +17,7 @@ export const SortableColumn = ({
   onEditTask,
   onTaskContextMenu,
   onSortClick,
-  onColumnMenuClick,
+
   columnMenu,
   onCloseColumnMenu,
   onMoveToWorkspace,

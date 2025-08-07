@@ -1,14 +1,15 @@
 import { AlarmClock, Bell, BellOff, CheckSquare, Coffee, Link2, Link2Off, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
 import SectionTitle from '@/components/SectionTitle';
 import { formatPomoTime } from "@/hooks/useTimers";
+import { setPomodoroState } from '@/store/slices/uiSlice';
 import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
 import usePomodorosToday from '@/hooks/usePomodorosToday';
-import { useSelector } from 'react-redux';
 import useTheme from "@/hooks/useTheme";
 
 // Initial modes
@@ -32,10 +33,11 @@ Object.values(sounds).forEach(sound => {
   sound.volume = 0.5;
 });
 
-const Pomodoro = () => {
+const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
   const { accentPalette } = useTheme();
   const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
   const { user } = useAuth();
+  const dispatch = useDispatch();
 
   // State declarations
   const [modes, setModes] = useState(() => {
@@ -174,6 +176,7 @@ const Pomodoro = () => {
   };
 
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
+  const [localResetKey, setLocalResetKey] = useState(0);
 
   // All function declarations first
   const handlePomodoroComplete = useCallback(() => {
@@ -279,11 +282,12 @@ const Pomodoro = () => {
       timeLeft: prev.pausedTime > 0 ? prev.timeLeft : modeDuration,
       lastManualAdjustment: now
     }));
+    dispatch(setPomodoroState('running'));
     if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
       window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
     }
-  }, [pomoState.modeIndex, pomoState.currentMode, modes, syncPomodoroWithTimer]);
+  }, [pomoState.modeIndex, pomoState.currentMode, modes, syncPomodoroWithTimer, dispatch]);
 
   const handleStop = useCallback((fromSync) => {
     setPomoState(prev => ({
@@ -292,10 +296,11 @@ const Pomodoro = () => {
       pausedTime: Date.now() / 1000,
       lastManualAdjustment: Date.now()
     }));
+    dispatch(setPomodoroState('paused'));
     if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent("pauseTimerSync", { detail: { baseTimestamp: Date.now() } }));
     }
-  }, [syncPomodoroWithTimer]);
+  }, [syncPomodoroWithTimer, dispatch]);
 
   const handleReset = useCallback((fromSync) => {
     const modeDuration = modes[pomoState.modeIndex]['work'];
@@ -308,17 +313,17 @@ const Pomodoro = () => {
       pausedTime: 0,
       lastManualAdjustment: Date.now()
     }));
+    dispatch(setPomodoroState('stopped'));
     // Limpiar localStorage
     localStorage.removeItem('pomodoroState');
     localStorage.removeItem('pomodoroIsRunning');
     localStorage.removeItem('pomodorosThisSession');
     if (!fromSync && syncPomodoroWithTimer) {
       const now = Date.now();
-      console.log('[Pomodoro] Emitiendo eventos de reset');
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
       window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
     }
-  }, [pomoState.modeIndex, modes, syncPomodoroWithTimer]);
+  }, [pomoState.modeIndex, modes, syncPomodoroWithTimer, dispatch]);
 
   const handleModeChange = useCallback((index) => {
     const safeIndex = Math.min(index, modes.length - 1);
@@ -438,7 +443,6 @@ const Pomodoro = () => {
   // Escuchar eventos de reset de StudyTimer y Countdown cuando están sincronizados
   useEventListener("resetPomodoroSync", (event) => {
     if (!syncPomodoroWithTimer) return;
-    console.log('[Pomodoro] Recibido resetPomodoroSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
@@ -447,7 +451,6 @@ const Pomodoro = () => {
 
   useEventListener("resetCountdownSync", (event) => {
     if (!syncPomodoroWithTimer) return;
-    console.log('[Pomodoro] Recibido resetCountdownSync');
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
@@ -699,6 +702,42 @@ const Pomodoro = () => {
     return () => window.removeEventListener('refreshStats', handler);
   }, [fetchPomodoros]);
 
+  // Manejar sincronización global
+  useEffect(() => {
+    if (!isSynced) return;
+
+    // Escuchar eventos globales de sincronización
+    const handleGlobalSync = (event) => {
+      const { isRunning: globalIsRunning } = event.detail;
+      
+      if (globalIsRunning !== pomoState.isRunning) {
+        if (globalIsRunning) {
+          handleStart(Date.now(), true);
+        } else {
+          handleStop(true);
+        }
+      }
+    };
+
+    // Escuchar eventos de reset global
+    const handleGlobalReset = (event) => {
+      const { resetKey: globalResetKey } = event.detail;
+      console.log('[Pomodoro] Recibido globalResetSync:', { globalResetKey, localResetKey });
+      if (globalResetKey !== localResetKey) {
+        console.log('[Pomodoro] Ejecutando reset desde globalResetSync');
+        setLocalResetKey(globalResetKey);
+        handleReset(true);
+      }
+    };
+
+    window.addEventListener('globalTimerSync', handleGlobalSync);
+    window.addEventListener('globalResetSync', handleGlobalReset);
+    return () => {
+      window.removeEventListener('globalTimerSync', handleGlobalSync);
+      window.removeEventListener('globalResetSync', handleGlobalReset);
+    };
+  }, [isSynced, pomoState.isRunning, localResetKey]);
+
   const showNotification = (title, options) => {
     if (typeof window === 'undefined' || typeof Notification === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
       return;
@@ -728,7 +767,7 @@ const Pomodoro = () => {
     }
   };
 
-  const isRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
+  const isPomodoroRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
   const handlePlayPause = () => {
     if (syncPomodoroWithTimer) {
       if (isStudyRunningRedux) {
@@ -817,29 +856,33 @@ const Pomodoro = () => {
 
       {/* Timer controls */}
       <div className="timer-controls flex justify-center items-center gap-3">
-        <button
-          onClick={handleReset}
-          className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Reset timer"
-        >
-          <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
-        </button>
-        {!isRunning ? (
-          <button
-            onClick={() => handleStart()}
-            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label="Start timer"
-          >
-            <Play size={24} style={{ color: "var(--accent-primary)" }} />
-          </button>
-        ) : (
-          <button
-            onClick={handleStop}
-            className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label="Pause timer"
-          >
-            <Pause size={24} style={{ color: "var(--accent-primary)" }} />
-          </button>
+        {!isSynced && (
+          <>
+            <button
+              onClick={handleReset}
+              className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Reset timer"
+            >
+              <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
+            </button>
+            {!isPomodoroRunning ? (
+              <button
+                onClick={() => handleStart()}
+                className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label="Start timer"
+              >
+                <Play size={24} style={{ color: "var(--accent-primary)" }} />
+              </button>
+            ) : (
+              <button
+                onClick={handleStop}
+                className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                aria-label="Pause timer"
+              >
+                <Pause size={24} style={{ color: "var(--accent-primary)" }} />
+              </button>
+            )}
+          </>
         )}
       </div>
 

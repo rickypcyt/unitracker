@@ -1,10 +1,10 @@
-import { AppDispatch, RootState } from "@/store/store";
-import { addTask as addTaskAction, fetchTasks } from "@/store/actions/TaskActions";
+import type { AppDispatch, RootState } from "@/store/store";
+import { setTasks } from "@/store/actions/TaskActions";
 import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "@/store/slices/TaskSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
-import { Task } from "@/utils/taskStorage";
+import type { Task } from "@/types/taskStorage";
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 
@@ -57,17 +57,37 @@ export const useTaskStorage = (): TaskStorageHook => {
         const loadData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
-            
-            if (user) {
-                // Clear local tasks when user logs in
-                localStorage.removeItem("localTasks");
-                setLocalTasks([]);
-                dispatch(fetchTasks() as any); // Type assertion needed for thunk actions
-            }
         };
         loadData();
+    }, []);
 
-        // Listen for storage changes
+    useEffect(() => {
+        if (user) {
+            const initializeTasks = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('tasks')
+                        .select('*')
+                        .eq('user_id', user.id);
+
+                    if (error) throw error;
+                    if (data) {
+                        dispatch(setTasks(data));
+                    }
+                } catch (error) {
+                    console.error('Error initializing tasks:', error);
+                }
+            };
+
+            initializeTasks();
+        } else {
+            // If no user, use local tasks
+            dispatch(setTasks(localTasks));
+        }
+    }, [user, dispatch, localTasks, supabase]);
+
+    // Listen for storage changes
+    useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === "localTasks") {
                 const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
@@ -175,7 +195,7 @@ export const useTaskStorage = (): TaskStorageHook => {
             // Clear local tasks after successful sync
             localStorage.removeItem("localTasks");
             setLocalTasks([]);
-            dispatch(fetchTasks() as any); // Type assertion needed for thunk actions
+            dispatch(setTasks(data)); 
 
             return data;
         } catch (error) {

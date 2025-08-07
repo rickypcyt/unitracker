@@ -2,8 +2,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, Circle } from 'lucide-react';
-import { FormActions, FormButton, FormInput, FormSelect, FormTextarea } from '@/modals/FormElements';
-import React, { useEffect, useRef, useState } from 'react';
+import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
+import { useEffect, useRef, useState } from 'react';
 import { addTaskSuccess, updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -35,7 +35,7 @@ const parseDateForDB = (dateString) => {
 
 const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }) => {
   const { user, tasks } = useTaskManager();
-  const assignments = useSelector(state => state.assignments.list);
+
   const activeWorkspace = useSelector(state => state.workspace.activeWorkspace); // <-- Add this line
   const dispatch = useDispatch();
   const datePickerRef = useRef(null);
@@ -70,17 +70,15 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const {
     formData,
     errors,
-    isDirty,
     handleChange,
-    validateForm,
-    resetForm
+    validateForm
   } = useFormState(initialFormState, validationRules);
 
   useEffect(() => {
     if (initialAssignment) {
       handleChange('assignment', initialAssignment);
     }
-  }, [initialAssignment]);
+  }, [initialAssignment, handleChange]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,7 +124,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         if (onTaskCreated) {
           onTaskCreated(data.id);
         }
-        // Dispara evento global para refrescar la lista
         window.dispatchEvent(new CustomEvent('refreshTaskList'));
       }
 
@@ -139,9 +136,9 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const getDifficultyColor = (difficulty) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
-        return 'text-[#00FF41]'; /* Matrix green */
+        return 'text-[#00FF41]'; 
       case 'medium':
-        return 'text-[#1E90FF]'; /* Electric neon blue */
+        return 'text-[#1E90FF]'; 
       case 'hard':
         return 'text-[#FF003C]'; /* Neon red */
       default:
@@ -228,7 +225,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       let parsed = null;
       try {
         parsed = JSON.parse(content);
-      } catch (err) {
+      } catch {
         setAiError('Could not parse AI response. Raw content: ' + content);
         setAiLoading(false);
         return;
