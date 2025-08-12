@@ -13,12 +13,12 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
 
   // Close on click outside or Escape
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent): void => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
-    const handleEsc = (e: KeyboardEvent) => {
+    const handleEsc = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('mousedown', handleClick);
@@ -29,10 +29,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     };
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-2 sm:p-6 md:p-10 py-6 sm:py-10 relative shadow-2xl animate-fadeIn"
+        className="bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-primary)] w-full max-w-3xl mx-2 sm:mx-4 p-4 sm:p-6 md:p-10 relative shadow-2xl animate-fadeIn max-h-[85vh] sm:max-h-[80vh] overflow-y-auto"
       >
         <div className="flex flex-col items-center mb-6">
           <h1 className="flex items-center justify-center gap-1 mb-2 text-center">
@@ -40,26 +40,26 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             <span className="text-[var(--accent-primary)] font-bold text-2xl sm:text-3xl md:text-4xl">Tracker</span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] font-medium mb-2 text-center">Your all-in-one study companion</p>
-          <p className="text-sm sm:text-base md:text-base text-[var(--text-secondary)] max-w-xs sm:max-w-xl text-center">Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.</p>
+          <p className="text-sm sm:text-base md:text-base text-[var(--text-secondary)] max-w-sm sm:max-w-xl text-center">Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
-          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
-            <Clock className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--accent-primary)] mb-2" />
             <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">AI Task Creation</span>
             <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Quickly create tasks with the help of AI. Let the assistant generate, organize, and describe your study tasks for you.</span>
           </div>
-          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
-            <BarChart2 className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <BarChart2 className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--accent-primary)] mb-2" />
             <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Weekly & Monthly Stats</span>
             <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">See your progress for last week, this week, and the current month. Track your productivity and streaks over time.</span>
           </div>
-          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
-            <Calendar className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--accent-primary)] mb-2" />
             <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Calendar Planning</span>
             <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Plan your study sessions and deadlines visually with the integrated calendar. Never miss an important date.</span>
           </div>
-          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-5 border-2 border-[var(--border-primary)] shadow-sm">
-            <CheckCircle2 className="w-8 h-8 text-[var(--accent-primary)] mb-2" />
+          <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)] shadow-sm">
+            <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-[var(--accent-primary)] mb-2" />
             <span className="font-bold text-base sm:text-lg mb-1 text-[var(--text-primary)] text-center">Advanced Task System</span>
             <span className="text-[var(--text-secondary)] text-center text-sm sm:text-base">Organize, prioritize, and track your tasks with a powerful kanban board and assignment system.</span>
           </div>

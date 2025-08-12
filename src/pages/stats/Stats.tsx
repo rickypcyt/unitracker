@@ -245,14 +245,14 @@ const Statistics: React.FC = () => {
   // Si es demo, usar demoStats
   if (isDemo) {
     return (
-      <div className="maincard p-3 md:p-3">
+      <div className="maincard">
         <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
           {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px]">
+            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px]">
               <div className="mb-1">{card.icon}</div>
-              <div className="text-[var(--text-secondary)] text-sm md:text-xs font-medium">{card.label}</div>
-              <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(demoStats)}</div>
-              <div className="text-[var(--text-secondary)] text-base">{card.sub(demoStats)}</div>
+              <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
+              <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(demoStats)}</div>
+              <div className="text-[var(--text-secondary)] text-base mb-1">{card.sub(demoStats)}</div>
             </div>
           ))}
         </div>
@@ -267,11 +267,11 @@ const Statistics: React.FC = () => {
           className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"
         >
           {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-2 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px]">
+            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px]">
               <div className="mb-1">{card.icon}</div>
-              <div className="text-[var(--text-secondary)] text-sm md:text-xs font-medium">{card.label}</div>
-              <div className="text-xl font-bold text-[var(--text-primary)]">{card.value(statData)}</div>
-              <div className="text-[var(--text-secondary)] text-base">{card.sub(statData)}</div>
+              <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
+              <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(statData)}</div>
+              <div className="text-[var(--text-secondary)] text-base mb-1">{card.sub(statData)}</div>
             </div>
           ))}
         </div>

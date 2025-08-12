@@ -6,7 +6,7 @@ import YearStatsCard from './YearStatsCard';
 import useDemoMode from '@/utils/useDemoMode';
 import { useSelector } from 'react-redux';
 
-const weekDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthLabels = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'

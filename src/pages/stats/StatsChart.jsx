@@ -118,11 +118,25 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   }
 
   const isThisYear = title === 'This Year';
+  // Detectar gráfico semanal también cuando el título no sea exactamente "This Week/Last Week"
+  const isWeekChart = (
+    title === 'This Week' ||
+    title === 'Last Week' ||
+    (Array.isArray(xAxisTicks) && xAxisTicks.length === 7)
+  );
   // Unificar clases para el contenedor scrollable y altura
   const scrollContainerClass = 'w-full overflow-x-auto';
   const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} min-w-[700px] rounded-lg bg-[var(--bg-secondary)] z-10`;
 
   const weekDayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  // Configurar YAxis dependiendo si hay datos (minutos) o no
+  const maxMinutes = Array.isArray(data) && data.length
+    ? Math.max(...data.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)))
+    : 0;
+  const noMinutesData = !maxMinutes; // true si todos son 0 o no hay datos
+  const yDomain = noMinutesData ? [0, 180] : [0, 'auto'];
+  const yTicks = noMinutesData ? [0, 60, 120, 180] : undefined;
 
   return (
     <>
@@ -148,7 +162,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
             >
               <XAxis
                 dataKey={
-                  title === 'This Week' || title === 'Last Week'
+                  isWeekChart
                     ? 'dayName'
                     : title === 'This Year'
                     ? 'dayName'
@@ -160,10 +174,10 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 interval={0}
                 minTickGap={0}
                 tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
-                ticks={xAxisTicks}
+                ticks={isWeekChart ? xAxisTicks : undefined}
                 tickFormatter={(value, index) => {
                   // Para gráficos de semana, usar las etiquetas de días de la semana
-                  if ((title === 'This Week' || title === 'Last Week') && xAxisTicks && xAxisTicks[index]) {
+                  if (isWeekChart && xAxisTicks && xAxisTicks[index]) {
                     return xAxisTicks[index];
                   }
                   return value;
@@ -171,12 +185,14 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               />
               <YAxis
                 stroke="var(--text-secondary)"
-                tick={{ fill: "var(--text-secondary)", fontSize: "0.75rem" }}
+                tick={{ fill: "var(--text-secondary)", fontSize: "0.7rem", dx: 4 }}
                 tickFormatter={(v) => formatMinutesToHHMM(v)}
                 axisLine={false}
                 tickLine={false}
                 width={40}
-                domain={[0, 'auto']}
+                domain={yDomain}
+                ticks={yTicks}
+                allowDecimals={false}
                 tickMargin={8}
               />
               <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />

@@ -62,7 +62,7 @@ const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWor
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-[var(--text-primary)] truncate">{friend.username || friend.email || friend.id}</div>
-                      <div className="text-xs text-[var(--text-secondary)] truncate">{friend.email}</div>
+                      <div className="text-sm text-[var(--text-secondary)] truncate">{friend.email}</div>
                     </div>
                     {onRemoveFriend && (
                       <button

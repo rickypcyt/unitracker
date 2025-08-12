@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
+import NoteList from './NoteList';
 
 interface Note {
   id?: string;
@@ -221,37 +222,15 @@ const Notes: React.FC = () => {
         isOpen={showLoginModal || loginPromptOpen}
         onClose={() => { setShowLoginModal(false); closeLoginPrompt(); }}
       />
-      <div className="space-y-4">
-        {notesToShow.map((note) => (
-          <div key={note.id} className="p-4 border rounded-lg">
-            <h3 className="font-bold">{note.title}</h3>
-            <p className="text-sm text-gray-600">{note.assignment}</p>
-            <p className="mt-2">{note.description}</p>
-            <div className="flex justify-between items-center mt-2 text-sm text-gray-500">
-              <span>{note.date}</span>
-              <div className="space-x-2">
-                <button 
-                  onClick={() => handleEditNote(note)}
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  Edit
-                </button>
-                <button 
-                  onClick={() => handleDeleteNote(note.id || '')}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {error && (
-        <div className="p-4 mb-4 text-red-700 bg-red-100 rounded">
-          {error}
-        </div>
-      )}
+      <NoteList
+        notes={notesToShow}
+        loading={loading}
+        error={error}
+        onEdit={handleEditNote}
+        onDelete={(note) => note.id && confirmDeleteNote(note.id)}
+        editingId={null}
+        editForm={null}
+      />
       {noteToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">

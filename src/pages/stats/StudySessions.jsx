@@ -156,7 +156,7 @@ const StudySessions = () => {
                             {groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
-                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full max-w-xs"
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full max-w-sm"
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
@@ -170,17 +170,19 @@ const StudySessions = () => {
                                         <span className="text-lg text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
                                         <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
                                     </div>
-                                    {/* Segunda línea: fecha, tasks done y trash icon */}
-                                    <div className="flex items-center justify-between text-sm text-[var(--text-secondary)] mt-1">
-                                        <span>{formatDateShort(lap.created_at)}</span>
-                                        <div className="flex items-center gap-2 ml-auto">
-                                            <span className="text-sm font-normal ">Tasks Done: {lap.tasks_completed ?? 0}</span>
+                                    {/* Footer: izquierda (fecha y tasks) en columna; derecha trash alineado con la última línea */}
+                                    <div className="flex items-end justify-between mt-1">
+                                        <div className="flex flex-col text-sm">
+                                            <span className="text-[var(--text-secondary)] leading-tight">{formatDateShort(lap.created_at)}</span>
+                                            <span className="text-[var(--text-secondary)] leading-tight">Tasks Done: {lap.tasks_completed ?? 0}</span>
+                                        </div>
+                                        <div className="ml-3">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleDeleteClick(lap.id);
                                                 }}
-                                                className="text-red-500 hover:text-red-600 transition-colors duration-200 ml-2"
+                                                className="text-red-500 hover:text-red-600 transition-colors duration-200"
                                                 aria-label={`Delete session ${lap.name}`}
                                             >
                                                 <Trash2 size={20} />
@@ -221,7 +223,7 @@ const StudySessions = () => {
                                                 return (
                                                     <div
                                                         key={monthYear}
-                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-xs min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
+                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
                                                         onClick={() => setSelectedMonth(monthYear)}
                                                     >
                                                         <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">
@@ -230,7 +232,7 @@ const StudySessions = () => {
                                                         </div>
                                                         <div className="mb-1 text-center">
                                                             <span className="text-lg font-bold text-[var(--text-primary)] text-center">{stats.totalSessions}</span>
-                                                            <span className="text-xs md:text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                                            <span className="text-sm md:text-sm font-normal text-[var(--text-secondary)] ml-1 align-middle text-center">session{stats.totalSessions !== 1 ? 's' : ''}</span>
                                                         </div>
                                                         <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base text-center">
                                                             <Clock size={18} />

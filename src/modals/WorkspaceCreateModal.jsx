@@ -99,7 +99,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Create New Workspace</h2>
         </div>
         <div>
-          <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">Choose Icon</div>
+          <div className="text-sm font-medium text-[var(--text-secondary)] mb-2">Choose Icon</div>
           <div className="flex gap-2 flex-wrap mb-2">
             {iconOptions.map((option) => {
               const IconComp = option.icon;

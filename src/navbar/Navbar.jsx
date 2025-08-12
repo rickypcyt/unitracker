@@ -314,11 +314,11 @@ const Navbar = ({ onOpenSettings }) => {
                 <button
                   key={page}
                   onClick={() => navigateTo(page)}
-                  className={navLinkClass(page) + ' text-xs sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
+                  className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
                   title={label}
                 >
                   <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6 mr-1" />
-                  <span className="hidden md:inline text-xs sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
+                  <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
                 </button>
               ))}
             </div>
@@ -331,7 +331,7 @@ const Navbar = ({ onOpenSettings }) => {
                   title={label}
                 >
                   <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
-                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden xs:inline">{label}</span>
+                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline">{label}</span>
                 </button>
               ))}
             </div>

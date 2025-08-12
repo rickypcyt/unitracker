@@ -15,9 +15,34 @@ interface WorkspaceState {
   activeWorkspace: Workspace | null;
 }
 
+// Hydrate desde localStorage para persistencia inmediata al refrescar
+let initialWorkspaces: Workspace[] = [];
+let initialActive: Workspace | null = null;
+try {
+  const cached = localStorage.getItem('workspacesHydrated');
+  const lastId = localStorage.getItem('activeWorkspaceId');
+  const lastActiveObjRaw = localStorage.getItem('lastActiveWorkspace');
+  const lastActiveObj: Workspace | null = lastActiveObjRaw ? JSON.parse(lastActiveObjRaw) : null;
+  if (cached) {
+    const parsed = JSON.parse(cached);
+    if (Array.isArray(parsed)) {
+      initialWorkspaces = parsed;
+      if (lastId) {
+        const found = initialWorkspaces.find(ws => ws.id === lastId);
+        initialActive = found || lastActiveObj || (initialWorkspaces[0] || null);
+      } else {
+        initialActive = lastActiveObj || (initialWorkspaces[0] || null);
+      }
+    }
+  } else if (lastActiveObj) {
+    // Si no hay lista cacheada aún, al menos mostrarmos el último workspace activo
+    initialActive = lastActiveObj;
+  }
+} catch {}
+
 const initialState: WorkspaceState = {
-  workspaces: [],
-  activeWorkspace: null,
+  workspaces: initialWorkspaces,
+  activeWorkspace: initialActive,
 };
 
 const workspaceSlice = createSlice({
@@ -27,6 +52,8 @@ const workspaceSlice = createSlice({
     setWorkspaces(state, action: PayloadAction<Workspace[]>) {
       state.workspaces = action.payload;
       const lastActiveId = localStorage.getItem('activeWorkspaceId');
+      const lastActiveObjRaw = localStorage.getItem('lastActiveWorkspace');
+      const lastActiveObj: Workspace | null = lastActiveObjRaw ? JSON.parse(lastActiveObjRaw) : null;
       if (lastActiveId) {
         const found = state.workspaces.find(ws => ws.id === lastActiveId);
         if (found) {
@@ -34,13 +61,23 @@ const workspaceSlice = createSlice({
           localStorage.setItem('activeWorkspaceId', found.id);
           return;
         }
+        // Si no se encuentra aún en la lista (latencia, filtro, etc.), usa el objeto almacenado
+        if (lastActiveObj) {
+          state.activeWorkspace = lastActiveObj;
+          return;
+        }
       }
-      if (!state.workspaces.find(ws => ws.id === state.activeWorkspace?.id)) {
+      // Solo elegir el primero si NO hay activo actual ni persistido
+      const hasPersisted = Boolean(lastActiveId) || Boolean(lastActiveObj);
+      const hasCurrentActive = Boolean(state.activeWorkspace?.id);
+      if (!hasPersisted && !hasCurrentActive) {
         state.activeWorkspace = state.workspaces[0] || null;
         if (state.activeWorkspace) {
           localStorage.setItem('activeWorkspaceId', state.activeWorkspace.id);
+          localStorage.setItem('lastActiveWorkspace', JSON.stringify(state.activeWorkspace));
         } else {
           localStorage.removeItem('activeWorkspaceId');
+          localStorage.removeItem('lastActiveWorkspace');
         }
       }
     },
@@ -48,14 +85,17 @@ const workspaceSlice = createSlice({
       state.activeWorkspace = action.payload;
       if (action.payload) {
         localStorage.setItem('activeWorkspaceId', action.payload.id);
+        localStorage.setItem('lastActiveWorkspace', JSON.stringify(action.payload));
       } else {
         localStorage.removeItem('activeWorkspaceId');
+        localStorage.removeItem('lastActiveWorkspace');
       }
     },
     addWorkspace(state, action: PayloadAction<Workspace>) {
       state.workspaces.push(action.payload);
       state.activeWorkspace = action.payload;
       localStorage.setItem('activeWorkspaceId', action.payload.id);
+      localStorage.setItem('lastActiveWorkspace', JSON.stringify(action.payload));
     },
   },
 });

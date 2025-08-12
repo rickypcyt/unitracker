@@ -35,7 +35,7 @@ class ErrorBoundary extends React.Component {
           <p className="mb-4">We're sorry, but there was an error loading this page.<br />
             <span className="text-sm text-[var(--text-secondary)]">Try refreshing or clearing your browser cache. If the problem persists, contact support.</span>
           </p>
-          <details style={{ whiteSpace: 'pre-wrap' }} className="w-full max-w-md mx-auto mb-4 bg-[var(--bg-secondary)] rounded p-3 text-left text-xs border border-[var(--border-primary)]">
+          <details style={{ whiteSpace: 'pre-wrap' }} className="w-full max-w-md mx-auto mb-4 bg-[var(--bg-secondary)] rounded p-3 text-left text-sm border border-[var(--border-primary)]">
             <summary className="cursor-pointer font-semibold mb-2">Error Details</summary>
               {this.state.error && this.state.error.toString()}
               <br />

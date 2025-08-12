@@ -90,7 +90,7 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
                         className="w-6 h-6 rounded-full object-cover border border-[var(--accent-primary)] bg-[var(--bg-primary)] mr-2"
                       />
                       <span>{f.username || f.email || f.id}</span>
-                      <span className="text-xs text-[var(--text-secondary)] ml-2">{f.email}</span>
+                      <span className="text-sm text-[var(--text-secondary)] ml-2">{f.email}</span>
                     </SelectItem>
                   ))}
                 </Select.Viewport>

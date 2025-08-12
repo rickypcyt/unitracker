@@ -63,7 +63,7 @@ const ColumnDropdownMenu = ({
             className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] cursor-default"
             disabled
           >
-            <span className="text-xs font-medium">{tasks.length} tasks</span>
+            <span className="text-sm font-medium">{tasks.length} tasks</span>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

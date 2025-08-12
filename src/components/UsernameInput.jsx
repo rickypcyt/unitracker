@@ -88,9 +88,9 @@ export default function UsernameInput({
         maxLength={32}
         autoComplete="off"
       />
-      {checking && <span className="text-xs text-gray-500">Checking...</span>}
-      {error && <span className="text-xs text-red-600">{error}</span>}
-      {success && <span className="text-xs text-green-600">Available!</span>}
+      {checking && <span className="text-sm text-gray-500">Checking...</span>}
+      {error && <span className="text-sm text-red-600">{error}</span>}
+      {success && <span className="text-sm text-green-600">Available!</span>}
     </div>
   );
 } 

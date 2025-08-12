@@ -711,7 +711,7 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
             <div>{studyState.sessionTitle || 'No Session'}</div>
             {/* Last paused info */}
             {studyState.sessionStatus === 'paused' && studyState.lastPausedAt && (
-              <div className="mt-2 text-xs text-[var(--text-secondary)]">
+              <div className="mt-2 text-sm text-[var(--text-secondary)]">
                 Last paused: {(() => {
                   const diffMs = Date.now() - studyState.lastPausedAt;
                   const diffMin = Math.floor(diffMs / 60000);

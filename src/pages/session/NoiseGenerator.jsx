@@ -235,7 +235,7 @@ function SoundControl({ label, icon: Icon, volume, setVolume, isPlaying, start, 
             return <div key={key} {...rest} />;
           }}
         />
-        <span className="w-10 text-xs text-[var(--text-secondary)] text-right select-none">{Math.round((volume / max) * 100)}%</span>
+        <span className="w-10 text-sm text-[var(--text-secondary)] text-right select-none">{Math.round((volume / max) * 100)}%</span>
         <div className="w-8 flex justify-center">
           {!isPlaying ? (
             <button
@@ -351,7 +351,7 @@ function NoiseSettingsModal({ isOpen, onClose, sounds, setVolume, maxVolumes, se
                   <span className="font-semibold text-[var(--text-primary)]">{sound.label}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-[var(--text-secondary)]">Max Volume:</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Max Volume:</span>
                   <input
                     type="number"
                     min={0.1}
@@ -363,7 +363,7 @@ function NoiseSettingsModal({ isOpen, onClose, sounds, setVolume, maxVolumes, se
                       setMaxVolumes(vols => vols.map((v, i) => (i === idx ? value : v)));
                       if (sounds[idx].volume > value) setVolume(idx, value);
                     }}
-                    className="w-16 px-2 py-1 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-xs text-[var(--text-primary)] focus:outline-none"
+                    className="w-16 px-2 py-1 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none"
                   />
                 </div>
                 <div className="flex gap-2 mt-1">
@@ -371,7 +371,7 @@ function NoiseSettingsModal({ isOpen, onClose, sounds, setVolume, maxVolumes, se
                     <button
                       key={preset.label}
                       className={
-                        `px-2 py-1 rounded border text-xs transition ` +
+                        `px-2 py-1 rounded border text-sm transition ` +
                         (selectedPresets[idx] === pIdx
                           ? 'bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]'
                           : 'bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--accent-primary)] hover:text-white')

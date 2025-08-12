@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
 import StatsChart from './StatsChart';
 
-const weekDayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const weekDayInitials = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset, isDemo }) => {
   // Asegura que siempre haya 7 elementos, uno por cada día de la semana

@@ -65,11 +65,11 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
   return (
     <div className="py-1">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className="relative flex flex-col bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-2xl p-5 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group min-h-[260px]"
+            className="relative flex flex-col bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80 max-h-80 sm:max-h-96"
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"
@@ -81,39 +81,41 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
                 {note.title}
               </h3>
               {note.assignment && (
-                <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
+                <span className="inline-block py-0.5 rounded-full text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
                   {note.assignment}
                 </span>
               )}
             </div>
 
             {/* Card Content */}
-            <div className="mb-3 flex-1 overflow-hidden">
+            <div className="mb-1.5 flex-1 overflow-hidden relative">
               <div
-                className="text-[var(--text-secondary)] text-sm prose prose-sm prose-invert max-w-none max-h-48 flow-y-auto custom-scrollbar bg-transparent p-0 border-0 shadow-none rounded-none"
+                className="text-white text-sm sm:text-base prose prose-sm prose-invert prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-li:my-0 prose-headings:mt-0 prose-headings:mb-1 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-24 sm:max-h-28 md:max-h-32 lg:max-h-40 xl:max-h-48"
                 style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
                 dangerouslySetInnerHTML={{ __html: note.description }}
               />
+              {/* Fade bottom to indicate more content */}
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent" />
             </div>
 
             {/* Card Footer */}
             <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
-              <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+              <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                 <Calendar size={14} />
                 <span>{new Date(note.date).toLocaleDateString()}</span>
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="flex items-center gap-1">
                 <button
-                  className="p-2 rounded-lg text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-                  onClick={() => onEdit(note)}
+                  className="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); onEdit(note); }}
                   aria-label="Edit note"
                   title="Edit"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
-                  className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-                  onClick={() => onDelete(note)}
+                  className="p-2 rounded-md text-red-500 hover:bg-red-500/10 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); onDelete(note); }}
                   aria-label="Delete note"
                   title="Delete"
                 >

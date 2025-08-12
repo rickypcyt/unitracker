@@ -1,5 +1,5 @@
 import { ClipboardCheck, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -223,7 +223,7 @@ export const KanbanBoard = () => {
     [filteredTasks]
   );
 
-  const groupTasksByAssignment = (tasksToGroup) => {
+  const groupTasksByAssignment = useCallback((tasksToGroup) => {
     const grouped = tasksToGroup.reduce((acc, task) => {
       const assignment = task.assignment || "No assignment";
       if (!acc[assignment]) acc[assignment] = [];
@@ -231,9 +231,9 @@ export const KanbanBoard = () => {
       return acc;
     }, {});
     return grouped;
-  };
+  }, []);
 
-  const sortTasksByPosition = (tasksToSort, assignment) => {
+  const sortTasksByPosition = useCallback((tasksToSort, assignment) => {
     const savedOrder = taskOrder[assignment];
     if (savedOrder && savedOrder.length > 0) {
       const taskMap = new Map(tasksToSort.map(task => [task.id, task]));
@@ -249,7 +249,7 @@ export const KanbanBoard = () => {
       return sortedTasks;
     }
     return tasksToSort;
-  };
+  }, [taskOrder]);
 
   const incompletedByAssignment = useMemo(() => {
     const grouped = groupTasksByAssignment(incompletedTasks);
@@ -261,9 +261,10 @@ export const KanbanBoard = () => {
       }
     });
     return grouped;
-  }, [incompletedTasks, assignmentSortConfig, taskOrder, sortTasksByPosition]);
+  }, [incompletedTasks, assignmentSortConfig, taskOrder, sortTasksByPosition, groupTasksByAssignment]);
 
   const sortedIncompletedAssignments = useMemo(() => {
+    // Group tasks and apply per-assignment task sort if configured
     const grouped = groupTasksByAssignment(incompletedTasks);
     Object.keys(grouped).forEach(assignment => {
       const sortConfig = assignmentSortConfig[assignment];
@@ -272,22 +273,25 @@ export const KanbanBoard = () => {
         grouped[assignment] = sortedTasks;
       }
     });
-    return Object.keys(grouped);
-  }, [incompletedTasks, assignmentSortConfig, taskOrder, groupTasksByAssignment, sortTasksByPosition]);
 
-  const assignments = Object.keys(incompletedByAssignment).filter(
-    (assignment) => (incompletedByAssignment[assignment] && incompletedByAssignment[assignment].length > 0)
-  );
-  if (columnOrder.length > 0) {
-    const orderedAssignments = [...columnOrder];
-    assignments.forEach(assignment => {
-      if (!orderedAssignments.includes(assignment)) {
-        orderedAssignments.push(assignment);
-      }
-    });
-    return orderedAssignments.filter(a => assignments.includes(a));
-  }
-  return assignments;
+    // Build list of assignments that actually have tasks
+    const assignments = Object.keys(grouped).filter(
+      (assignment) => grouped[assignment] && grouped[assignment].length > 0
+    );
+
+    // Respect saved column order if present, but include any new assignments at the end
+    if (columnOrder.length > 0) {
+      const orderedAssignments = [...columnOrder];
+      assignments.forEach(assignment => {
+        if (!orderedAssignments.includes(assignment)) {
+          orderedAssignments.push(assignment);
+        }
+      });
+      return orderedAssignments.filter(a => assignments.includes(a));
+    }
+
+    return assignments;
+  }, [incompletedTasks, assignmentSortConfig, taskOrder, columnOrder, groupTasksByAssignment, sortTasksByPosition]);
 
   const toggleColumn = (assignment) => {
     setCollapsedColumns(prev => ({

@@ -149,10 +149,10 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
             disabled={requestSent}
           />
           {checkingUser && username.trim().length >= 3 && (
-            <div className="text-xs text-gray-500 mt-1">Checking username...</div>
+            <div className="text-sm text-gray-500 mt-1">Checking username...</div>
           )}
           {userExists === false && username.trim().length >= 3 && !checkingUser && (
-            <div className="text-xs text-red-600 mt-1">No user found with that username.</div>
+            <div className="text-sm text-red-600 mt-1">No user found with that username.</div>
           )}
           <button
             className="mt-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white font-semibold hover:bg-[var(--accent-primary)]/90 w-full disabled:opacity-60"
@@ -162,7 +162,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
             {requestSent ? 'Request Sent!' : 'Send Request'}
           </button>
           {isSelfRequest && (
-            <div className="text-xs text-red-600 mt-1">You cannot send a friend request to yourself.</div>
+            <div className="text-sm text-red-600 mt-1">You cannot send a friend request to yourself.</div>
           )}
           {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
         </div>
@@ -177,13 +177,13 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
                 <span className="text-[var(--text-primary)] font-medium">{req.from_user?.username || req.from_user_id}</span>
                 <div className="flex gap-2">
                   <button
-                    className="px-2 py-1 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700"
+                    className="px-2 py-1 rounded bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
                     onClick={() => onAccept && onAccept(req)}
                   >
                     Accept
                   </button>
                   <button
-                    className="px-2 py-1 rounded bg-red-600 text-white text-xs font-semibold hover:bg-red-700"
+                    className="px-2 py-1 rounded bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
                     onClick={() => onReject && onReject(req)}
                   >
                     Reject
@@ -205,7 +205,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
                   <span className="text-[var(--text-primary)] font-medium whitespace-nowrap">{req.to_user?.username || req.to_user_id}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[var(--text-secondary)] font-semibold capitalize text-right">{req.status}</span>
+                  <span className="text-sm text-[var(--text-secondary)] font-semibold capitalize text-right">{req.status}</span>
                   <button
                     className="p-1 rounded-full hover:bg-red-500/20 text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                     onClick={() => handleDeletePending(req)}

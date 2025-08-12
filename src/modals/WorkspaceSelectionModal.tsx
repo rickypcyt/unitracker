@@ -78,12 +78,12 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
                     ? 'text-[var(--accent-primary)]'
                     : 'text-[var(--text-primary)]'
                 }`}>
-                  {workspace.name} <span className="text-xs text-[var(--text-secondary)]">({getTaskCountByWorkspace(workspace.id)})</span>
+                  {workspace.name} <span className="text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(workspace.id)})</span>
                 </span>
               </div>
               
               {activeWorkspace?.id === workspace.id && (
-                <span className="text-xs text-[var(--accent-primary)] font-medium">
+                <span className="text-sm text-[var(--accent-primary)] font-medium">
                   Current
                 </span>
               )}

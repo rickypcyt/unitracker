@@ -137,7 +137,7 @@ const WorkspaceDropdown = ({
                       >
                         <XIcon size={16} />
                       </button>
-                      {isEditingLoading && <span className="ml-2 text-xs text-[var(--accent-primary)]">...</span>}
+                      {isEditingLoading && <span className="ml-2 text-sm text-[var(--accent-primary)]">...</span>}
                     </div>
                     <div className="flex gap-2 mt-1">
                       {ICON_OPTIONS.map(opt => {
@@ -159,7 +159,12 @@ const WorkspaceDropdown = ({
                   </div>
                 ) : (
                   <DropdownMenu.Item
-                    onClick={() => onSelectWorkspace(ws)}
+                    onClick={() => {
+                      try {
+                        localStorage.setItem('activeWorkspaceId', ws.id);
+                      } catch (e) { /* noop */ }
+                      onSelectWorkspace(ws);
+                    }}
                     className={`w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-[var(--bg-primary)] transition-colors cursor-pointer outline-none ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}
                   >
                     {(() => {
@@ -180,7 +185,7 @@ const WorkspaceDropdown = ({
                   </DropdownMenu.Item>
                 )}
                 {editingWorkspaceId === ws.id && editingError && (
-                  <div className="text-xs text-red-500 px-3 pb-1">{editingError}</div>
+                  <div className="text-sm text-red-500 px-3 pb-1">{editingError}</div>
                 )}
               </div>
             ))}
@@ -193,7 +198,7 @@ const WorkspaceDropdown = ({
               <div className="flex gap-2 items-center">
                 <input
                   type="text"
-                  className="px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] text-xs flex-1"
+                  className="px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] text-sm flex-1"
                   placeholder="New workspace"
                   value={newWorkspaceName}
                   onChange={e => setNewWorkspaceName(e.target.value)}
@@ -210,7 +215,7 @@ const WorkspaceDropdown = ({
             ) : (
               <DropdownMenu.Item
                 onClick={() => setShowNewWorkspaceInput(true)}
-                className="flex text-xs items-center gap-1 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 cursor-pointer outline-none"
+                className="flex text-sm items-center gap-1 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 cursor-pointer outline-none"
               >
                 <Plus size={16} /> New workspace
               </DropdownMenu.Item>

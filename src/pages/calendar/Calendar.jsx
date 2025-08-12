@@ -492,7 +492,7 @@ const Calendar = () => {
         isOpen={isOptionsOpen}
         onClose={() => setIsOptionsOpen(false)}
         title="Calendar Options"
-        maxWidth="max-w-xs"
+        maxWidth="max-w-sm"
       >
         <div className="flex flex-col gap-4">
           <div>
