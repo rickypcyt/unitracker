@@ -1,10 +1,9 @@
 import { BookOpen, Briefcase, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Save, Settings, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, X, Zap } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
 import DeleteCompletedModal from './DeleteTasksPop';
 import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
 import { useModalClose } from '@/hooks/useModalClose';
 import { useSelector } from 'react-redux';
 
@@ -39,7 +38,6 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [expandedIconSelector, setExpandedIconSelector] = useState(null);
-  const { user } = useAuth();
   const tasks = useSelector(state => state.tasks.tasks);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
@@ -167,23 +165,6 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
           return (
             <div key={workspace.id}>
               <div className="flex items-center gap-3 p-3 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
-                <div className="flex-shrink-0">
-                  {isEditing ? (
-                    <div className="relative">
-                      <button
-                        onClick={() => setExpandedIconSelector(expandedIconSelector === workspace.id ? null : workspace.id)}
-                        className="p-2 rounded-lg border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-colors"
-                      >
-                        {(() => {
-                          const IconComp = iconOptions.find(opt => opt.name === editIcon)?.icon || Briefcase;
-                          return <IconComp size={20} className="text-[var(--text-secondary)]" />;
-                        })()}
-                      </button>
-                    </div>
-                  ) : (
-                    <IconComponent size={20} className="text-[var(--text-secondary)]" />
-                  )}
-                </div>
                 <div className="flex-1">
                   {isEditing ? (
                     <input
@@ -199,6 +180,24 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                     <span className="text-[var(--text-primary)] font-medium">
                       {workspace.name} ({getTaskCountByWorkspace(workspace.id)})
                     </span>
+                  )}
+                </div>
+                <div className="flex-shrink-0">
+                  {isEditing ? (
+                    <div className="relative">
+                      <button
+                        onClick={() => setExpandedIconSelector(expandedIconSelector === workspace.id ? null : workspace.id)}
+                        className="p-2 rounded-lg border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-colors"
+                        title="Choose icon"
+                      >
+                        {(() => {
+                          const IconComp = iconOptions.find(opt => opt.name === editIcon)?.icon || Briefcase;
+                          return <IconComp size={20} className="text-[var(--text-secondary)]" />;
+                        })()}
+                      </button>
+                    </div>
+                  ) : (
+                    <IconComponent size={20} className="text-[var(--text-secondary)]" />
                   )}
                 </div>
                 <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 import { BookOpen, Briefcase, Coffee, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
 import { supabase } from '@/utils/supabaseClient';
@@ -89,6 +89,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
       onClose={handleClose}
       title="Create New Workspace"
       maxWidth="max-w-md"
+      showHeader={false}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-center gap-3 mb-6">
@@ -97,6 +98,20 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
             return <IconComp size={24} className="text-[var(--accent-primary)]" />;
           })()}
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Create New Workspace</h2>
+        </div>
+        <div>
+            <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+              Workspace Name
+            </label>
+            <input
+              type="text"
+              id="workspaceName"
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+              placeholder="Enter workspace name..."
+              autoFocus
+            />
         </div>
         <div>
           <div className="text-sm font-medium text-[var(--text-secondary)] mb-2">Choose Icon</div>
@@ -123,20 +138,6 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
             })}
           </div>
         </div>
-          <div>
-            <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Workspace Name
-            </label>
-            <input
-              type="text"
-              id="workspaceName"
-              value={workspaceName}
-              onChange={(e) => setWorkspaceName(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              placeholder="Enter workspace name..."
-              autoFocus
-            />
-          </div>
           {error && (
             <div className="text-red-500 text-sm">{error}</div>
           )}

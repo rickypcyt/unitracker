@@ -1,8 +1,8 @@
 import { Briefcase, Edit, FolderOpen, Home, Settings, User, Users, Zap } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import BaseModal from './BaseModal';
 import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
 import { useModalClose } from '@/hooks/useModalClose';
 
 const iconOptions = [
@@ -20,7 +20,6 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
   const [selectedIcon, setSelectedIcon] = useState('Briefcase');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
 
   useEffect(() => {
     if (workspace) {
@@ -50,7 +49,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
       if (error) throw error;
       onWorkspaceUpdated(data);
       onClose();
-    } catch (error) {
+    } catch {
       setError('Failed to update workspace');
     } finally {
       setLoading(false);
@@ -70,8 +69,14 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
   if (!isOpen || !workspace) return null;
 
   return (
-    <div className="fixed inset-0 z-[10050] flex items-center justify-center bg-black/60 backdrop-blur-md">
-      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-xl p-4 w-full max-w-md mx-4 border border-[var(--border-primary)]">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Edit Workspace"
+      maxWidth="max-w-md"
+      showHeader={false}
+    >
+      <div ref={modalRef}>
         <div className="flex items-center gap-3 mb-6">
           <Edit size={24} className="text-[var(--accent-primary)]" />
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Workspace</h2>
@@ -137,7 +142,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
           </div>
         </form>
       </div>
-    </div>
+    </BaseModal>
   );
 };
 

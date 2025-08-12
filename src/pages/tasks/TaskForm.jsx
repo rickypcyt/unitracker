@@ -115,7 +115,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         // Create new task
         const { data, error } = await supabase
           .from('tasks')
-          .insert([{ ...taskData, activetask: true }])
+          .insert([taskData])
           .select()
           .single();
 

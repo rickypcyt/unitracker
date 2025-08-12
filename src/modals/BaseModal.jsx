@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { X } from 'lucide-react';
 
@@ -13,9 +13,21 @@ const BaseModal = ({
   maxWidth = 'max-w-md',
   zIndex = 'z-[10001]',
   closeOnEsc = true,
-  closeOnOverlayClick = true
+  closeOnOverlayClick = true,
+  showHeader = true,
 }) => {
   const lastActiveElement = useRef(null);
+
+  // Define handleClose before useEffect to avoid TDZ in dependency array
+  const handleClose = useCallback(() => {
+    if (hasUnsavedChanges) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  }, [hasUnsavedChanges, onClose]);
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -45,17 +57,7 @@ const BaseModal = ({
       document.removeEventListener('keydown', handleEscape);
       document.body.classList.remove('overflow-hidden');
     };
-  }, [isOpen, closeOnEsc]);
-
-  const handleClose = () => {
-    if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
-        onClose();
-      }
-    } else {
-      onClose();
-    }
-  };
+  }, [isOpen, closeOnEsc, handleClose]);
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget && closeOnOverlayClick) {
@@ -71,24 +73,26 @@ const BaseModal = ({
       onClick={handleOverlayClick}
     >
       <div 
-        className={`bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl`}
+        className={`bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-6 w-full ${maxWidth} mx-4 ${className} shadow-xl max-h-[85vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4 relative mt-5">
-          <div className="flex-1 flex justify-center items-center absolute left-0 right-0 w-full pointer-events-none">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto w-full text-center truncate">
-              {title}
-            </h2>
+        {showHeader && (
+          <div className="flex justify-between items-center mb-4 relative mt-5">
+            <div className="flex-1 flex justify-center items-center absolute left-0 right-0 w-full pointer-events-none">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto w-full text-center truncate">
+                {title}
+              </h2>
+            </div>
+            {showCloseButton && (
+              <button
+                onClick={handleClose}
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors ml-auto relative z-10 mr-2"
+              >
+                <X size={22} />
+              </button>
+            )}
           </div>
-          {showCloseButton && (
-            <button
-              onClick={handleClose}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors ml-auto relative z-10 mr-2"
-            >
-              <X size={22} />
-            </button>
-          )}
-        </div>
+        )}
         {children}
       </div>
     </div>

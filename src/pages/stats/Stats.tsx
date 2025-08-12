@@ -246,9 +246,9 @@ const Statistics: React.FC = () => {
   if (isDemo) {
     return (
       <div className="maincard">
-        <div className="grid gap-4 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
+        <div className="grid gap-4 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
           {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px]">
+            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px]">
               <div className="mb-1">{card.icon}</div>
               <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
               <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(demoStats)}</div>
@@ -264,10 +264,10 @@ const Statistics: React.FC = () => {
     <div className="maincard mb-2 p-3 md:p-3">
       <div className="max-w-6xl mx-auto px-2">
         <div
-          className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"
+          className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"
         >
           {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px]">
+            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px]">
               <div className="mb-1">{card.icon}</div>
               <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
               <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(statData)}</div>
