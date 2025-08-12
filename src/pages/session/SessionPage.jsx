@@ -1,20 +1,16 @@
-import React, { memo, useEffect, useState } from 'react';
-import { setIsRunning, triggerReset } from '@/store/slices/uiSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { memo, useEffect, useState } from 'react';
+import { } from '@/store/slices/uiSlice';
+import { useSelector } from 'react-redux';
 
 import Countdown from './Countdown';
 import GlobalTimerControls from '@/components/GlobalTimerControls';
 import NoiseGenerator from '@/pages/session/NoiseGenerator';
 import Pomodoro from '@/pages/session/Pomodoro';
 import StudyTimer from '@/pages/session/StudyTimer';
-import SyncToggle from '@/components/SyncToggle';
 import TimerSettings from '@/components/TimerSettings';
-import { Settings } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+ 
 
 const SessionPage = memo(() => {
-  const location = useLocation();
-  const dispatch = useDispatch();
   const isSynced = useSelector(state => state.ui.isSynced);
   const isRunning = useSelector(state => state.ui.isRunning);
   const resetKey = useSelector(state => state.ui.resetKey);
@@ -52,18 +48,7 @@ const SessionPage = memo(() => {
   return (
     <div className="w-full pt-10 px-2 md:px-8">
       <div className="flex flex-col gap-4 md:gap-8 w-full max-w-6xl mx-auto items-stretch justify-center">
-        {/* Header con toggle de sincronización y configuración */}
-        <div className="flex justify-between items-center mb-6">
-          <SyncToggle />
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors border border-[var(--border-primary)]"
-            aria-label="Timer settings"
-          >
-            <Settings size={18} />
-            Settings
-          </button>
-        </div>
+        {/* Header removido: SyncToggle y botón de Settings */}
         
         {/* Controles globales (solo visibles cuando está sincronizado) */}
         <GlobalTimerControls />
