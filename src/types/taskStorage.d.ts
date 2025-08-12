@@ -10,6 +10,7 @@ export interface Task {
   priority?: number;
   tags?: string[];
   user_id?: string;
+  workspace_id?: string;
   activetask?: boolean;
   difficulty?: string;
   assignment?: string;

@@ -121,7 +121,8 @@ export const useTaskStorage = (): TaskStorageHook => {
                 },
                 (payload: RealtimePostgresChangesPayload<Task>) => {
                     // Evitar procesar el mismo evento múltiples veces
-                    const eventKey = `${payload.eventType}-${payload.new?.id || payload.old?.id}-${Date.now()}`;
+                    const eventId = (payload.new as Task | undefined)?.id ?? (payload.old as Task | undefined)?.id ?? 'unknown';
+                    const eventKey = `${payload.eventType}-${eventId}-${Date.now()}`;
                     if (lastProcessedEvent === eventKey) return;
                     lastProcessedEvent = eventKey;
 
