@@ -1,16 +1,15 @@
-import { AlarmClock, Bell, BellOff, CheckSquare, Coffee, Link2, Link2Off, MoreVertical, Pause, Play, RotateCcw, Square, Timer } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { AlarmClock, MoreVertical, Pause, Play, RotateCcw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
-import SectionTitle from '@/components/SectionTitle';
 import { formatPomoTime } from "@/hooks/useTimers";
 import { setPomodoroState } from '@/store/slices/uiSlice';
 import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
 import usePomodorosToday from '@/hooks/usePomodorosToday';
-import useTheme from "@/hooks/useTheme";
+// import useTheme from "@/hooks/useTheme";
 
 // Initial modes
 const INITIAL_MODES = [
@@ -33,9 +32,7 @@ Object.values(sounds).forEach(sound => {
   sound.volume = 0.5;
 });
 
-const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
-  const { accentPalette } = useTheme();
-  const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
+const Pomodoro = () => {
   const { user } = useAuth();
   const dispatch = useDispatch();
 
@@ -93,7 +90,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
           };
         }
         return safeState;
-      } catch (error) {
+      } catch {
         return {
           modeIndex: defaultModeIndex,
           currentMode: defaultMode,
@@ -124,23 +121,13 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
     };
   });
 
-  const [isSyncedWithStudyTimer, setIsSyncedWithStudyTimer] = useState(() => {
+  const [, setIsSyncedWithStudyTimer] = useState(() => {
     const savedState = localStorage.getItem('isSyncedWithStudyTimer');
     return savedState ? JSON.parse(savedState) : false;
   });
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [alarmEnabled, setAlarmEnabled] = useState(() => {
-    const saved = localStorage.getItem('pomodoroAlarmEnabled');
-    return saved === null ? true : saved === 'true';
-  });
-
-  const toggleAlarm = () => {
-    setAlarmEnabled(prev => {
-      localStorage.setItem('pomodoroAlarmEnabled', String(!prev));
-      return !prev;
-    });
-  };
+  // Removed unused alarm toggle state and function
 
   // Detectar si hay sesión activa
   const activeSessionId = localStorage.getItem('activeSessionId');
@@ -152,28 +139,9 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
     return parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
   });
 
-  // Estado local para el toggle visual
-  const [syncToggle, setSyncToggle] = useState(() => {
-    return localStorage.getItem('isSyncedWithStudyTimer') === 'true';
-  });
+  // Removed unused visual sync toggle state and listener
 
-  // Mantener syncToggle en sync con cambios externos
-  useEffect(() => {
-    const handler = (e) => {
-      setSyncToggle(e.detail.isSyncedWithStudyTimer);
-    };
-    window.addEventListener('studyTimerSyncStateChanged', handler);
-    return () => window.removeEventListener('studyTimerSyncStateChanged', handler);
-  }, []);
-
-  // Handler para el toggle visual
-  const handleSyncToggle = () => {
-    const newSync = !syncToggle;
-    setSyncToggle(newSync);
-    localStorage.setItem('isSyncedWithStudyTimer', newSync ? 'true' : 'false');
-    setIsSyncedWithStudyTimer(newSync);
-    window.dispatchEvent(new CustomEvent('studyTimerSyncStateChanged', { detail: { isSyncedWithStudyTimer: newSync } }));
-  };
+  // Removed unused handleSyncToggle
 
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
   const [localResetKey, setLocalResetKey] = useState(0);
@@ -269,7 +237,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
         requireInteraction: true
       }
     );
-  }, [pomoState.currentMode, pomoState.modeIndex, pomoState.workSessionsCompleted, pomoState.workSessionsBeforeLongBreak, Notification.permission, modes]);
+  }, [pomoState.currentMode, pomoState.workSessionsCompleted, pomoState.workSessionsBeforeLongBreak, modes]);
 
   const handleStart = useCallback((baseTimestamp, fromSync) => {
     const modeDuration = modes[pomoState.modeIndex][pomoState.currentMode];
@@ -566,7 +534,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
       timeLeft: Math.max(0, timeLeft),
       isRunning: prev.isRunning // Solo mantener corriendo si ya estaba corriendo
     }));
-  }, [syncPomodoroWithTimer, modes, pomoState.modeIndex, pomoState.currentMode, pomoState.lastManualAdjustment, Notification.permission]);
+  }, [syncPomodoroWithTimer, modes, pomoState.modeIndex, pomoState.currentMode, pomoState.lastManualAdjustment]);
 
   useEventListener("adjustPomodoroTime", (event) => {
     const { adjustment } = event.detail;
@@ -675,10 +643,12 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
         const newTimeLeft = Math.max(0, startCountingDownFrom - elapsed);
 
         if (newTimeLeft <= 0) {
-          if (alarmEnabled) {
+          const alarmPref = localStorage.getItem('pomodoroAlarmEnabled');
+          const shouldAlarm = alarmPref === null ? true : alarmPref === 'true';
+          if (shouldAlarm) {
             try {
               new Audio('/sounds/pomo-end.mp3').play();
-            } catch {}
+            } catch { /* ignore audio play error */ }
           }
           handlePomodoroComplete();
           return;
@@ -691,7 +661,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isStudyRunningRedux, pomoState.timeLeft, alarmEnabled]);
+  }, [isStudyRunningRedux, pomoState.timeLeft, handlePomodoroComplete]);
 
   // Fetch al montar y al terminar sesión
   useEffect(() => {
@@ -704,7 +674,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
 
   // Manejar sincronización global
   useEffect(() => {
-    if (!isSynced) return;
+    if (!syncPomodoroWithTimer) return;
 
     // Escuchar eventos globales de sincronización
     const handleGlobalSync = (event) => {
@@ -722,9 +692,9 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
     // Escuchar eventos de reset global
     const handleGlobalReset = (event) => {
       const { resetKey: globalResetKey } = event.detail;
-      console.log('[Pomodoro] Recibido globalResetSync:', { globalResetKey, localResetKey });
+      console.warn('[Pomodoro] Recibido globalResetSync:', { globalResetKey, localResetKey });
       if (globalResetKey !== localResetKey) {
-        console.log('[Pomodoro] Ejecutando reset desde globalResetSync');
+        console.warn('[Pomodoro] Ejecutando reset desde globalResetSync');
         setLocalResetKey(globalResetKey);
         handleReset(true);
       }
@@ -736,7 +706,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
       window.removeEventListener('globalTimerSync', handleGlobalSync);
       window.removeEventListener('globalResetSync', handleGlobalReset);
     };
-  }, [isSynced, pomoState.isRunning, localResetKey]);
+  }, [syncPomodoroWithTimer, pomoState.isRunning, localResetKey, handleStart, handleStop, handleReset]);
 
   const showNotification = (title, options) => {
     if (typeof window === 'undefined' || typeof Notification === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
@@ -768,23 +738,6 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
   };
 
   const isPomodoroRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
-  const handlePlayPause = () => {
-    if (syncPomodoroWithTimer) {
-      if (isStudyRunningRedux) {
-        window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
-        window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
-      } else {
-        window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: Date.now() } }));
-        window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: Date.now() } }));
-      }
-    } else {
-      if (pomoState.isRunning) {
-        handleStop();
-      } else {
-        handleStart();
-      }
-    }
-  };
 
   return (
     <div className="flex flex-col items-center h-full">
@@ -856,7 +809,7 @@ const Pomodoro = ({ isSynced, isRunning, resetKey }) => {
 
       {/* Timer controls */}
       <div className="timer-controls flex justify-center items-center gap-3">
-        {!isSynced && (
+        {!syncPomodoroWithTimer && (
           <>
             <button
               onClick={handleReset}

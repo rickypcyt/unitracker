@@ -1,10 +1,5 @@
-import { Calendar, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
-import { formatDate, formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
-
-import React from "react";
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkGfm from 'remark-gfm';
+import { CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
+import { formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
 
 // Helper para saber si la fecha es pasada
 const isPast = (dateStr) => {
@@ -22,8 +17,8 @@ export const TaskItem = ({
     onDelete,
     onEditTask,
     onContextMenu,
-    assignmentId,
-    isSelected = false,
+    // assignmentId (unused)
+    // isSelected (unused)
     showAssignment = false,
     assignmentLeftOfDate = false,
     active = false

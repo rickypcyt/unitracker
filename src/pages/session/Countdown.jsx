@@ -1,8 +1,7 @@
-import { AlarmClock, Bell, BellOff, Link2, Link2Off, Pause, Play, RotateCcw } from 'lucide-react';
+import { AlarmClock, Bell, BellOff, Pause, Play, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import SectionTitle from '@/components/SectionTitle';
 import { setCountdownState } from '@/store/slices/uiSlice';
 import toast from 'react-hot-toast';
 import useEventListener from '@/hooks/useEventListener';
@@ -20,10 +19,12 @@ const getInitialTime = () => {
   try {
     const saved = localStorage.getItem('countdownLastTime');
     if (saved) return JSON.parse(saved);
-  } catch {}
+  } catch {
+    // ignore parse error and fall back to default
+  }
   return { hours: 1, minutes: 0, seconds: 0 };
 };
-const Countdown = ({ isSynced, isRunning, resetKey }) => {
+const Countdown = ({ isSynced, isRunning }) => {
   const dispatch = useDispatch();
   const [time, setTime] = useState(() => {
     try {
@@ -42,16 +43,16 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
         }
         return safeTime;
       }
-    } catch {}
+    } catch {
+      // ignore parse error and fall back to default
+    }
     return { hours: 1, minutes: 0, seconds: 0 };
   });
   const [initialTime, setInitialTime] = useState(time);
-  const [activeField, setActiveField] = useState('hours');
   const [focusedField, setFocusedField] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCountdownRunning, setIsCountdownRunning] = useState(false);
   const [startTimestamp, setStartTimestamp] = useState(null); // Nuevo: timestamp de inicio
-  const [programmaticFocusField, setProgrammaticFocusField] = useState(null);
   // Eliminamos fieldPrevValue y fieldOverwrite
   const [alarmEnabled, setAlarmEnabled] = useState(() => {
     const saved = localStorage.getItem('countdownAlarmEnabled');
@@ -65,28 +66,8 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
   const isStudyRunningRedux = useSelector(state => state.ui.isStudyRunning);
   const isRunningGlobal = syncCountdownWithTimer ? isStudyRunningRedux : isRunning;
 
-  // Estado local para el toggle visual
-  const [syncToggle, setSyncToggle] = useState(() => {
-    return localStorage.getItem('isSyncedWithStudyTimer') === 'true';
-  });
-
-  // Mantener syncToggle en sync con cambios externos
-  useEffect(() => {
-    const handler = (e) => {
-      setSyncToggle(e.detail.isSyncedWithStudyTimer);
-    };
-    window.addEventListener('studyTimerSyncStateChanged', handler);
-    return () => window.removeEventListener('studyTimerSyncStateChanged', handler);
-  }, []);
-
-  // Handler para el toggle visual
-  const handleSyncToggle = () => {
-    const newSync = !syncToggle;
-    setSyncToggle(newSync);
-    localStorage.setItem('isSyncedWithStudyTimer', newSync ? 'true' : 'false');
-    setIsSyncedWithStudyTimer(newSync);
-    window.dispatchEvent(new CustomEvent('studyTimerSyncStateChanged', { detail: { isSyncedWithStudyTimer: newSync } }));
-  };
+  // Track previous secondsLeft without creating a dependency on it in effects
+  const prevSecondsLeftRef = useRef(null);
 
   const toggleAlarm = () => {
     setAlarmEnabled(prev => {
@@ -108,7 +89,7 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
   const [pausedSecondsLeft, setPausedSecondsLeft] = useState(null);
   const [localResetKey, setLocalResetKey] = useState(0);
 
-  const startCountdown = (baseTimestamp, fromSync) => {
+  const startCountdown = useCallback((baseTimestamp, fromSync) => {
     // Corrige los valores antes de iniciar
     const correctedTime = {
       hours: Math.min(Math.max(time.hours, 0), fieldMax.hours),
@@ -129,9 +110,9 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
         window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
       }
     }
-  };
+  }, [time, dispatch, syncCountdownWithTimer]);
 
-  const handlePause = (fromSync) => {
+  const handlePause = useCallback((fromSync) => {
     setIsCountdownRunning(false);
     setPausedSecondsLeft(secondsLeft); // Guarda el tiempo restante al pausar
     dispatch(setCountdownState('paused'));
@@ -139,9 +120,9 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
       window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: Date.now() } }));
       window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: Date.now() } }));
     }
-  };
+  }, [secondsLeft, dispatch, syncCountdownWithTimer]);
 
-  const handleResume = () => {
+  const handleResume = useCallback(() => {
     if (pausedSecondsLeft !== null) {
       setStartTimestamp(Date.now());
       setInitialTime({
@@ -152,16 +133,16 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
       setIsCountdownRunning(true);
       setPausedSecondsLeft(null);
     }
-  };
+  }, [pausedSecondsLeft]);
 
-  const handleReset = (fromSync = false) => {
+  const handleReset = useCallback((fromSync = false) => {
     setIsCountdownRunning(false);
     setSecondsLeft(0);
     setStartTimestamp(null); // Resetear timestamp
     dispatch(setCountdownState('stopped'));
     // Usar el tiempo guardado o el tiempo por defecto
     const savedTime = getInitialTime();
-    console.log('[Countdown] Reset - tiempo guardado:', savedTime);
+    console.warn('[Countdown] Reset - tiempo guardado:', savedTime);
     setTime(savedTime);
     setInitialTime(savedTime);
     // Limpiar localStorage
@@ -171,17 +152,16 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
       window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
     }
-  };
+  }, [dispatch, syncCountdownWithTimer]);
 
   useEffect(() => {
     if (!isRunningGlobal || !startTimestamp) return;
-    let prevSecondsLeft = secondsLeft;
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
       const newSecondsLeft = Math.max(0, calculateSeconds(initialTime) - elapsed);
-      if (newSecondsLeft !== prevSecondsLeft) {
+      if (newSecondsLeft !== prevSecondsLeftRef.current) {
         setSecondsLeft(newSecondsLeft);
-        prevSecondsLeft = newSecondsLeft;
+        prevSecondsLeftRef.current = newSecondsLeft;
       }
       if (newSecondsLeft <= 0) {
         clearInterval(interval);
@@ -189,7 +169,9 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
         if (alarmEnabled) {
           try {
             new Audio('/sounds/countdownend.mp3').play();
-          } catch {}
+          } catch {
+            // ignore audio play error
+          }
         }
         toast.success('Countdown finished! Session complete.', {
           position: 'top-center',
@@ -207,7 +189,9 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
               vibrate: [200, 100, 200]
             });
             setTimeout(() => notification.close(), 5000);
-          } catch {}
+          } catch {
+            // ignore notification errors
+          }
         }
       }
     }, 1000);
@@ -230,7 +214,7 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
   // Asegurar que el tiempo se actualice cuando cambie initialTime (para reset)
   useEffect(() => {
     if (!isCountdownRunning) {
-      console.log('[Countdown] Actualizando tiempo visual desde initialTime:', initialTime);
+      console.warn('[Countdown] Actualizando tiempo visual desde initialTime:', initialTime);
       setTime(initialTime);
     }
   }, [initialTime, isCountdownRunning]);
@@ -359,9 +343,9 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
     // Escuchar eventos de reset global
     const handleGlobalReset = (event) => {
       const { resetKey: globalResetKey } = event.detail;
-      console.log('[Countdown] Recibido globalResetSync:', { globalResetKey, localResetKey });
+      console.warn('[Countdown] Recibido globalResetSync:', { globalResetKey, localResetKey });
       if (globalResetKey !== localResetKey) {
-        console.log('[Countdown] Ejecutando reset desde globalResetSync');
+        console.warn('[Countdown] Ejecutando reset desde globalResetSync');
         setLocalResetKey(globalResetKey);
         handleReset(true);
       }
@@ -373,7 +357,7 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
       window.removeEventListener('globalTimerSync', handleGlobalSync);
       window.removeEventListener('globalResetSync', handleGlobalReset);
     };
-  }, [isSynced, isCountdownRunning, localResetKey]);
+  }, [isSynced, isCountdownRunning, localResetKey, startCountdown, handlePause, handleReset]);
 
   const handleInputChange = useCallback((field, value) => {
     const clean = value.replace(/\D/g, ''); // Solo números
@@ -388,16 +372,14 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
   }, []);
 
   const navigateField = useCallback((direction, currentIdx) => {
-    const newIndex = (currentIdx + direction + fields.length) % fields.length;
-    const nextField = fields[newIndex];
-    setActiveField(nextField);
-    setProgrammaticFocusField(nextField);
-    inputRefs.current[nextField].current?.focus();
+    const nextIdx = (currentIdx + direction + fields.length) % fields.length;
+    const nextField = fields[nextIdx];
+    inputRefs.current[nextField]?.current?.focus();
   }, []);
 
   const handleInputKeyDown = useCallback((e, field) => {
     const idx = fields.indexOf(field);
-    const step = field === 'minutes' ? 5 : 1;
+    const step = e.shiftKey ? 10 : 1;
 
     switch (e.key) {
       case 'Tab':
@@ -405,13 +387,7 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
         navigateField(e.shiftKey ? -1 : 1, idx);
         break;
       case 'Enter':
-        if (field === 'seconds') {
-          e.preventDefault();
-          startCountdown();
-        } else {
-          e.preventDefault();
-          navigateField(1, idx);
-        }
+        if (!isRunningGlobal) startCountdown();
         break;
       case 'ArrowRight':
         e.preventDefault();
@@ -432,15 +408,13 @@ const Countdown = ({ isSynced, isRunning, resetKey }) => {
       default:
         break;
     }
-  }, [navigateField, startCountdown]);
+  }, [navigateField, startCountdown, isRunningGlobal]);
 
   const handleFocus = (field, e) => {
-    setActiveField(field);
     setFocusedField(field);
     setTime(prev => setSafeTime({ ...prev, [field]: 0 }));
     setTimeout(() => {
       e.target.setSelectionRange(e.target.value.length, e.target.value.length);
-      setProgrammaticFocusField(null);
     }, 0);
   };
 

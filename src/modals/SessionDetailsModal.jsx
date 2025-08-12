@@ -1,9 +1,9 @@
-import { Edit2, Save, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
-import { deleteLap } from '@/store/LapActions';
+import { deleteLap, updateLap } from '@/store/LapActions';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';

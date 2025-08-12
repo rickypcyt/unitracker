@@ -1,13 +1,12 @@
-import { ArrowLeft, BookOpen, Calendar, CheckSquare, Clock, Info, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, Clock, Info, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { formatDateShort, formatDateTimeWithAmPm } from '@/utils/dateUtils';
+import { formatDateShort } from '@/utils/dateUtils';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { deleteLap } from '@/store/LapActions';
 import { getMonthYear } from '@/hooks/useTimers';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -94,7 +93,7 @@ const StudySessions = () => {
     // Cerrar menú contextual
     React.useEffect(() => {
         if (!contextMenu) return;
-        const handleClick = (e) => setContextMenu(null);
+        const handleClick = () => setContextMenu(null);
         const handleEsc = (e) => { if (e.key === 'Escape') setContextMenu(null); };
         document.addEventListener('mousedown', handleClick);
         document.addEventListener('keydown', handleEsc);

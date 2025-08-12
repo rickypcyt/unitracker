@@ -1,5 +1,5 @@
-import { Calendar, CheckCircle2, ChevronDown, ChevronUp, Circle, Clock, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TaskForm from '@/pages/tasks/TaskForm';
@@ -10,7 +10,7 @@ import useDemoMode from '@/utils/useDemoMode';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
 const UpcomingTasks = () => {
-  const { user, handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
   const realTasks = useSelector((state) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
@@ -128,19 +128,7 @@ const UpcomingTasks = () => {
     setEditingTask(null);
   };
 
-  // Agregar función para color de dificultad
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy':
-        return 'text-[#00FF41]'; // Matrix green
-      case 'medium':
-        return 'text-[#1E90FF]'; // Electric neon blue
-      case 'hard':
-        return 'text-[#FF003C]'; // Neon red
-      default:
-        return 'text-[var(--text-secondary)]';
-    }
-  };
+  // Removed unused getDifficultyColor
 
   // Add No Deadline group
   const noDeadlineTasks = tasks.filter(task => (!task.deadline || task.deadline === '' || task.deadline === null) && !task.completed);

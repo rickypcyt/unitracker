@@ -84,7 +84,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     e.preventDefault();
     
     if (!validateForm()) {
-      console.log('Validation errors:', errors);
+      console.warn('Validation errors:', errors);
       return;
     }
 
@@ -98,7 +98,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         ...(initialTask ? {} : { workspace_id: activeWorkspace?.id || null }) // <-- Only set for new tasks
       };
 
-      console.log('Saving task data:', taskData);
+      console.warn('Saving task data:', taskData);
 
       if (initialTask) {
         // Update existing task
@@ -218,7 +218,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         return;
       }
       const data = await response.json();
-      console.log('AI response:', data); // Debug log
+      console.warn('AI response:', data); // Debug log
       // Limpia bloque markdown si existe
       let content = data.choices?.[0]?.message?.content || '';
       content = content.replace(/```json|```/g, '').trim();

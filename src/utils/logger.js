@@ -24,11 +24,11 @@ class Logger {
     const formattedMessage = this.formatMessage(level, message, data);
     
     if (this.isDevelopment) {
-      console.log(JSON.stringify(formattedMessage, null, 2));
+      console.warn(JSON.stringify(formattedMessage, null, 2));
     } else {
       // In production, you might want to send this to a logging service
       // like Sentry, LogRocket, or your own logging endpoint
-      console.log(JSON.stringify(formattedMessage));
+      console.warn(JSON.stringify(formattedMessage));
     }
   }
 

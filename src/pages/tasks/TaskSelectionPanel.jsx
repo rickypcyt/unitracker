@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,23 +39,20 @@ const TaskSelectionPanel = ({
     [validAvailableTasks]
   );
 
-  // Initialize expanded state for new groups
+  // Initialize expanded state for new groups (functional update to avoid expandedGroups dep)
   useEffect(() => {
-    const newExpandedState = { ...expandedGroups };
-    let hasChanges = false;
-
-    assignments.forEach(assignment => {
-      if (newExpandedState[assignment] === undefined) {
-        newExpandedState[assignment] = false; // Start collapsed
-        hasChanges = true;
-      }
+    setExpandedGroups(prev => {
+      const newExpandedState = { ...prev };
+      let hasChanges = false;
+      assignments.forEach(assignment => {
+        if (newExpandedState[assignment] === undefined) {
+          newExpandedState[assignment] = false; // Start collapsed
+          hasChanges = true;
+        }
+      });
+      return hasChanges ? newExpandedState : prev;
     });
-
-    // Only update state if there are actual changes
-    if (hasChanges) {
-      setExpandedGroups(newExpandedState);
-    }
-  }, [assignments]); // Only depend on the memoized assignments array
+  }, [assignments]);
 
   const toggleGroup = (assignment) => {
     setExpandedGroups(prev => ({
@@ -206,7 +203,7 @@ const TaskSelectionPanel = ({
   };
 
   const renderActiveTasks = () => (
-    <div className="space-y-2 h-auto overflow-y-auto custom-scrollbar">
+    <div className="space-y-2 h-auto overflow-y-auto custom-scrollbar" style={{ maxHeight }}>
       {validActiveTasks.map(task => renderTaskCard(task, true))}
       {validActiveTasks.length === 0 && (
         <div className="text-center text-[var(--text-secondary)] py-4">
@@ -233,7 +230,7 @@ const TaskSelectionPanel = ({
     const sortedAssignments = Object.keys(tasksByAssignment).sort();
 
     return (
-      <div className="h-auto overflow-y-auto custom-scrollbar">
+      <div className="h-auto overflow-y-auto custom-scrollbar" style={{ maxHeight }}>
         <div className="space-y-2">
           {sortedAssignments.map(assignment => (
             <div key={assignment} className="border border-[var(--border-primary)] rounded-lg overflow-hidden">

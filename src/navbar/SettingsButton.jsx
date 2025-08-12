@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 import { Info, LogIn, LogOut, Settings, User, UserPlus } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import AboutModal from '@/modals/AboutModal';
 import AddFriendModal from '@/modals/AddFriendModal';
@@ -21,7 +21,6 @@ const SettingsButton = ({
   onSendRequest,
   onAccept,
   onReject,
-  user,
   friends = []
 }) => {
   const [showUserModal, setShowUserModal] = useState(false);

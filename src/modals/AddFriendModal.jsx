@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import BaseModal from './BaseModal';
 import { X } from 'lucide-react';
@@ -6,11 +6,10 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useSelector } from 'react-redux';
 
-const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, hasRequests, onRefreshRequests }) => {
+const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, onRefreshRequests }) => {
   const [tab, setTab] = useState('send');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [requestSent, setRequestSent] = useState(false);
   const [userExists, setUserExists] = useState(undefined); // undefined: not checked, true: exists, false: not found
   const [checkingUser, setCheckingUser] = useState(false);
@@ -64,11 +63,9 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       return;
     }
     setError('');
-    setSuccess('');
     if (onSendRequest) {
       onSendRequest(username.trim(), {
         onSuccess: () => {
-          setSuccess('Request sent!');
           setUsername('');
           setRequestSent(true);
           setTimeout(() => setRequestSent(false), 2000);
@@ -79,7 +76,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   };
 
   const handleDeletePending = async (request) => {
-    console.log('[DEBUG] handleDeletePending called for request:', request);
+    console.warn('[DEBUG] handleDeletePending called for request:', request);
     setDeletingIds(prev => [...prev, request.id]);
     setVisibleSentRequests(prev => prev.filter(r => r.id !== request.id));
     try {
@@ -87,7 +84,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
         .from('friend_requests')
         .delete()
         .eq('id', request.id);
-      console.log('[DEBUG] supabase delete result:', { error, data });
+      console.warn('[DEBUG] supabase delete result:', { error, data });
       if (error) {
         setError('Error deleting request: ' + error.message);
         console.error('[DEBUG] Error deleting request:', error);
@@ -95,14 +92,14 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
         if (onRefreshRequests) {
           await onRefreshRequests();
         }
-        console.log('[DEBUG] Request deleted successfully');
+        console.warn('[DEBUG] Request deleted successfully');
       }
     } catch (err) {
       setError('Unexpected error: ' + (err?.message || err));
       console.error('[DEBUG] Unexpected error in handleDeletePending:', err);
     } finally {
       setDeletingIds(prev => prev.filter(id => id !== request.id));
-      console.log('[DEBUG] handleDeletePending finished for request:', request);
+      console.warn('[DEBUG] handleDeletePending finished for request:', request);
     }
   };
 

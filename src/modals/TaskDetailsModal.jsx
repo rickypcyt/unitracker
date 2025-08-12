@@ -1,6 +1,6 @@
 import { CheckCircle2, Circle, Play, Save, Trash2 } from "lucide-react";
-import { FormActions, FormButton, FormInput, FormSelect, FormTextarea } from "@/modals/FormElements";
-import React, { useEffect } from "react";
+import { FormActions, FormButton, FormInput } from "@/modals/FormElements";
+import { useEffect } from "react";
 import { deleteTask, updateTask } from "@/store/TaskActions";
 
 import BaseModal from "@/modals/BaseModal";
@@ -15,8 +15,6 @@ const TaskDetailsModal = ({
   onClose,
   task,
   onSave,
-  onEditChange,
-  editedTask,
   onToggleCompletion,
   onSetActiveTask,
 }) => {
@@ -43,7 +41,7 @@ const TaskDetailsModal = ({
     if (task) {
       setFormData(task);
     }
-  }, [task]);
+  }, [task, setFormData]);
 
   const handleSave = async () => {
     if (!validateForm()) {

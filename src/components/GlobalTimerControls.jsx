@@ -5,7 +5,6 @@ import { setIsRunning, triggerReset } from '@/store/slices/uiSlice';
 
 const GlobalTimerControls = () => {
   const dispatch = useDispatch();
-  const isRunning = useSelector(state => state.ui.isRunning);
   const isSynced = useSelector(state => state.ui.isSynced);
   const studyTimerState = useSelector(state => state.ui.studyTimerState);
   const pomodoroState = useSelector(state => state.ui.pomodoroState);

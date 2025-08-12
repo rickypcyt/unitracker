@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';

@@ -4,7 +4,7 @@ import { createSlice } from '@reduxjs/toolkit';
 interface LayoutItem {
   id: string;
   type: string;
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
 }
 
 interface LayoutState {

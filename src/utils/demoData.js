@@ -42,18 +42,6 @@ export const demoSessions = [
   { id: 'demo-session-5', name: 'Demo Study Session 5 Days Ago', started_at: format(addDays(today, -5)) + 'T08:00:00', ended_at: format(addDays(today, -5)) + 'T09:00:00', duration: '01:00:00', tasks_completed: 1, pomodoros_completed: 2 },
 ];
 
-// Generar datos demo variados y pseudo-random para los charts
-function pseudoRandom(seed) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-function genArray(seed, min, max, len) {
-  return Array.from({ length: len }, (_, i) => {
-    const v = pseudoRandom(seed + i) * (max - min) + min;
-    return Math.round(v * 10) / 10;
-  });
-}
-
 // Demo StatData completo para evitar NaN
 export const demoStats = {
   todayMinutes: 90,

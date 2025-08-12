@@ -1,9 +1,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import React from 'react';
 import StatsChart from './StatsChart';
 
-const MonthStatsCard = ({ data, accentColor, shownMonthDate, setMonthOffset, monthOffset, isDemo }) => (
+const MonthStatsCard = ({ data, accentColor, shownMonthDate, setMonthOffset, monthOffset }) => (
   <div className="w-full">
     <div className="maincard p-0.5 mb-1">
       <div className="w-full flex flex-col items-center mt-2 mb-2">

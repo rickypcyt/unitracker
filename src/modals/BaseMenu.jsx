@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const BaseMenu = ({
   x,
@@ -8,7 +8,6 @@ const BaseMenu = ({
   className = '',
   zIndex = 'z-50',
   maxWidth = 'max-w-md',
-  minWidth = 'min-w-[200px]',
   role = 'menu',
   'aria-label': ariaLabel = 'Menu options'
 }) => {

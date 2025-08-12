@@ -1,5 +1,4 @@
 import BaseModal from './BaseModal';
-import React from 'react';
 
 const AboutModal = ({ isOpen, onClose }) => {
   return (

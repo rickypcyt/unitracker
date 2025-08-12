@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Network, Plane, Plus, Settings, Settings as SettingsIcon, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Settings, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
@@ -44,7 +44,7 @@ const WorkspaceDropdown = ({
   onEditWorkspace,
   onDeleteWorkspace,
   friends,
-  onOpenSettings // <-- nueva prop
+  
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);

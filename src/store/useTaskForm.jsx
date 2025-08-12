@@ -7,12 +7,6 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 
 export const useTaskForm = () => {
   const dispatch = useDispatch();
@@ -23,11 +17,11 @@ export const useTaskForm = () => {
     difficulty: "medium",
     assignment: "",
   });
-  const [error, setError] = useState("");
+  const [error] = useState("");
   const [assignments, setAssignments] = useState([]);
   const tasks = useSelector((state) => state.tasks.tasks); // Tareas remotas
   const [localTasks, setLocalTasks] = useState([]); // Tareas locales
-  const [user, setUser] = useState(null);
+  const [user] = useState(null);
 
 
   // Extrae fetchAssignments para reutilizarla

@@ -38,13 +38,17 @@ const Notes: React.FC = () => {
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
   useEffect(() => {
     setLoading(true); // Always show spinner on mount/user change
-    const fetchNotes = async () => {
+    const fetchNotes = async (): Promise<void> => {
       setError(null);
-      if (user && (user as any).id) {
+      // Safely extract user id without using any
+      const userId: string | undefined = (user && typeof user === 'object' && 'id' in (user as object))
+        ? (user as { id?: string }).id
+        : undefined;
+      if (userId) {
         const { data, error } = await supabase
           .from('notes')
           .select('*')
-          .eq('user_id', (user as any).id)
+          .eq('user_id', userId)
           .order('created_at', { ascending: false });
         if (error) setError('Error loading notes');
         else setNotes((data as Note[]) || []);
@@ -77,7 +81,7 @@ const Notes: React.FC = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const handleAddNote = async (noteData: Omit<Note, 'id'>) => {
+  const handleAddNote = async (noteData: Omit<Note, 'id'>): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
@@ -120,7 +124,7 @@ const Notes: React.FC = () => {
   };
 
   // Handler para iniciar edición
-  const handleUpdateNote = async (note: Omit<Note, 'id'>) => {
+  const handleUpdateNote = async (note: Omit<Note, 'id'>): Promise<void> => {
     if (!editNote?.id) return;
     setLoading(true);
     setError(null);
@@ -144,31 +148,12 @@ const Notes: React.FC = () => {
     setLoading(false);
   };
 
-  const handleEditNote = (note: Note) => {
+  const handleEditNote = (note: Note): void => {
     setEditNote(note);
     setShowCreateModal(true);
   };
 
-  const handleDeleteNote = async (id: string) => {
-    setLoading(true);
-    setError(null);
-    if (user) {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', id);
-      if (error) {
-        setError(error.message);
-      } else {
-        setNotes(notes.filter(n => n.id !== id));
-      }
-    } else {
-      setNotes(notes.filter(n => n.id !== id));
-    }
-    setLoading(false);
-  };
-
-  const confirmDeleteNote = async (id: string) => {
+  const confirmDeleteNote = async (id: string): Promise<void> => {
     setLoading(true);
     setError(null);
     if (user) {

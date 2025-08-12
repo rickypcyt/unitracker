@@ -1,16 +1,6 @@
-import * as Tone from 'tone';
-
-import { Clock, Cloud, CloudRain, Pause, Play, Timer, Waves, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Clock, Play, Timer } from 'lucide-react';
 
 import BaseMenu from '@/modals/BaseMenu';
-import { motion } from 'framer-motion';
-import { setCalendarVisibility } from '@/redux/uiSlice';
-import { toast } from 'react-toastify';
-import { updateTask } from '@/redux/TaskActions';
-import { useAuth } from '@/hooks/useAuth';
-import { useDispatch } from 'react-redux';
-import { useTaskManager } from '@/hooks/useTaskManager';
 
 const StartSessionMenu = ({
   x,

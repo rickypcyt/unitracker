@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import MonthStatsCard from './MonthStatsCard';
 import WeekStatsCard from './WeekStatsCard';
@@ -94,7 +94,6 @@ const StatsChartsPanel = () => {
   const shownMonthData = useMemo(() => {
     const year = shownMonthDate.getFullYear();
     const month = shownMonthDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const monthDays = getMonthDays(shownMonthDate);
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDateObj = new Date(lap.created_at);

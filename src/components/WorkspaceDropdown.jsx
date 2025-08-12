@@ -79,6 +79,7 @@ const WorkspaceDropdown = ({
       setEditingWorkspaceName('');
     } catch (error) {
       setEditingError('Error updating workspace');
+      console.error('Error updating workspace:', error);
     }
     
     setIsEditingLoading(false);
@@ -162,7 +163,7 @@ const WorkspaceDropdown = ({
                     onClick={() => {
                       try {
                         localStorage.setItem('activeWorkspaceId', ws.id);
-                      } catch (e) { /* noop */ }
+                      } catch (_e) { void _e; /* noop */ }
                       onSelectWorkspace(ws);
                     }}
                     className={`w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-[var(--bg-primary)] transition-colors cursor-pointer outline-none ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)]'}`}

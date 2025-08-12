@@ -1,4 +1,4 @@
-import { setPomoRunning, setStudyRunning, toggleSyncTimers } from "@/store/slices/uiSlice";
+import { setPomoRunning, setStudyRunning } from "@/store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 
@@ -93,7 +93,7 @@ export function usePomoTimer(callback, duration, initialRemaining) {
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [isRunning, duration, syncTimers, dispatch]);
+  }, [isRunning, duration, initialRemaining, syncTimers, dispatch]);
 }
 
 // Funciones de utilidad mejoradas

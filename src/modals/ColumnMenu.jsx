@@ -1,5 +1,4 @@
 import BaseMenu from '@/modals/BaseMenu';
-import React from 'react';
 
 export const ColumnMenu = ({
   x,

@@ -7,7 +7,7 @@ import useTheme from '@/hooks/useTheme';
 
 const TourManager = ({ children }) => {
   const { isLoggedIn } = useAuth();
-  const { showWelcomeModal, handleCloseWelcome, currentTheme, handleThemeChange } = useTheme();
+  const { showWelcomeModal, handleCloseWelcome } = useTheme();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // Cuando se cierra el WelcomeModal, mostrar login si no está logueado

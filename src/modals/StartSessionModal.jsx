@@ -1,8 +1,7 @@
-import { Check, Plus, Square, X } from 'lucide-react';
-import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
-import React, { useEffect, useState } from 'react';
-import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { Check, Square } from 'lucide-react';
+import { FormActions, FormInput, FormTextarea } from '@/modals/FormElements';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
@@ -11,7 +10,6 @@ import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
 import { supabase } from '@/utils/supabaseClient';
 
 const StartSessionModal = ({ isOpen, onClose, onStart }) => {
-  const dispatch = useDispatch();
   const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
   const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
   const [sessionTitle, setSessionTitle] = useState('');
@@ -136,7 +134,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       // Get today's date for session number calculation
       const today = new Date().toISOString().split("T")[0];
-      console.log('Fetching latest session for date:', today);
+      console.warn('Fetching latest session for date:', today);
 
       const { data: latestSession, error: latestSessionError } = await supabase
         .from('study_laps')
@@ -151,7 +149,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       // Calculate next session number
       const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
-      console.log('Creating new session with number:', nextSessionNumber);
+      console.warn('Creating new session with number:', nextSessionNumber);
 
       // Check if a session with this title already exists today
       const { data: existingSession, error: checkError } = await supabase
@@ -188,7 +186,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         .single();
 
       if (sessionError) throw sessionError;
-      console.log('Successfully created new session:', session.id);
+      console.warn('Successfully created new session:', session.id);
 
       // Link selected tasks to the new session and set activetask to true
       if (selectedTasks.length > 0) {

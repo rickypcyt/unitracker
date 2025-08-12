@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
 import { Pencil } from 'lucide-react';
@@ -74,9 +74,9 @@ const UserModal = ({ isOpen, onClose }) => {
     const fileExt = file.name.split('.').pop();
     const fileName = `avatar.${fileExt}`; // fixed name, but keeps extension
     const filePath = `${user.id}/${fileName}`;
-    console.log('Uploading avatar:', { filePath, fileType: file.type, file });
+    console.warn('Uploading avatar:', { filePath, fileType: file.type, file });
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
         upsert: true, // overwrite if exists
@@ -115,7 +115,7 @@ const UserModal = ({ isOpen, onClose }) => {
   const handleUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
     // Debug: Initial state
-    console.log('DEBUG: Initial state', {
+    console.warn('DEBUG: Initial state', {
       user,
       file,
       fileInputRef,

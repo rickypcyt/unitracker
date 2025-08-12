@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // Configuración de cada sonido
 const SOUND_CONFIGS = [
@@ -12,7 +12,7 @@ const SOUND_CONFIGS = [
     max: 3,
     defaultVolume: 1.5,
     volumeMultiplier: 0.5,
-    create: (volume, masterGain) => {
+    create: (volume) => {
       const noise = new Tone.Noise("brown").start();
       const filter = new Tone.Filter(200, "lowpass");
       const limiter = new Tone.Limiter(-3).toDestination();
@@ -31,7 +31,7 @@ const SOUND_CONFIGS = [
     max: 3,
     defaultVolume: 1,
     volumeMultiplier: 0.2,
-    create: (volume, masterGain) => {
+    create: (volume) => {
       const noise = new Tone.Noise("pink").start();
       const highpass = new Tone.Filter(200, "highpass");
       const lowpass = new Tone.Filter(1500, "lowpass");
@@ -70,7 +70,7 @@ const SOUND_CONFIGS = [
     max: 3,
     defaultVolume: 1,
     volumeMultiplier: 0.2,
-    create: (volume, masterGain) => {
+    create: (volume) => {
       const pinkNoise = new Tone.Noise("pink").start();
       const pinkHighpass = new Tone.Filter(200, "highpass");
       const pinkLowpass = new Tone.Filter(1200, "lowpass");
@@ -139,7 +139,7 @@ const NoiseContext = createContext();
 export function NoiseProvider({ children }) {
   const masterGainRef = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [sounds, setSounds] = useState(() => 
+  const [sounds, setSounds] = useState(
     SOUND_CONFIGS.map(config => ({
       ...config,
       volume: parseFloat(localStorage.getItem(config.key + "Volume")) || config.defaultVolume,
@@ -147,6 +147,12 @@ export function NoiseProvider({ children }) {
       soundRef: null
     }))
   );
+
+  // Mantener referencia al último estado de sounds para usarlo en cleanup sin depender de 'sounds'
+  const soundsRef = useRef(sounds);
+  useEffect(() => {
+    soundsRef.current = sounds;
+  }, [sounds]);
 
   const initializeAudio = async () => {
     if (!isInitialized) {
@@ -175,7 +181,7 @@ export function NoiseProvider({ children }) {
     }
     
     if (!sound.soundRef) {
-      sound.soundRef = sound.create(sound.volume, masterGainRef.current);
+      sound.soundRef = sound.create(sound.volume);
     }
     
     setSounds(prev => {
@@ -261,7 +267,7 @@ export function NoiseProvider({ children }) {
 
   useEffect(() => {
     return () => {
-      sounds.forEach(sound => {
+      soundsRef.current.forEach(sound => {
         if (sound.soundRef) {
           Object.values(sound.soundRef).forEach(node => node.dispose && node.dispose());
         }
@@ -287,10 +293,11 @@ export function NoiseProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useNoise() {
   const context = useContext(NoiseContext);
   if (!context) {
     throw new Error("useNoise must be used within a NoiseProvider");
   }
   return context;
-} 
+}

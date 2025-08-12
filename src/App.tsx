@@ -1,6 +1,7 @@
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
-import { FC, useEffect, useRef, useState } from 'react';
+import type { FC, MutableRefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { clearUser, setUser } from '@/store/slices/authSlice';
 
 import type { AppDispatch } from '@/store/store';
@@ -10,7 +11,6 @@ import { NoiseProvider } from '@/utils/NoiseContext';
 import Notes from './Notes';
 
 import SessionPage from '@/pages/session/SessionPage';
-import Settings from '@/modals/Settings';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import { Toaster } from 'react-hot-toast';
@@ -21,17 +21,14 @@ import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
 import { supabase } from '@/utils/supabaseClient';
 import { useDispatch } from 'react-redux';
 import useTheme from '@/hooks/useTheme';
+import type { User } from '@supabase/supabase-js';
 
-interface PageContentProps {
-  onOpenSettings: () => void;
-}
-
-const PageContent: FC<PageContentProps> = ({ onOpenSettings }) => {
+const PageContent: FC = () => {
   const { activePage } = useNavigation();
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
-      <Navbar onOpenSettings={onOpenSettings} />
+      <Navbar />
       <div className="pt-12">
         {activePage === 'session' && <SessionPage />}
         {activePage === 'tasks' && <TasksPage />}
@@ -43,7 +40,7 @@ const PageContent: FC<PageContentProps> = ({ onOpenSettings }) => {
   );
 };
 
-function useSupabaseAuthSync() {
+function useSupabaseAuthSync(): void {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -67,10 +64,10 @@ function useSupabaseAuthSync() {
 
 // Componente que muestra el UserModal si el usuario está logueado y no tiene username
 const UserModalGate: FC = () => {
-  const { user, isLoggedIn } = useAuth() as { user: any, isLoggedIn: boolean };
+  const { user, isLoggedIn } = useAuth() as { user: User | null; isLoggedIn: boolean };
   const [showUserModal, setShowUserModal] = useState(false);
   useEffect(() => {
-    const checkUsername = async () => {
+    const checkUsername = async (): Promise<void> => {
       if (isLoggedIn && user?.id) {
         const { data, error } = await supabase
           .from('profiles')
@@ -92,20 +89,11 @@ const UserModalGate: FC = () => {
 };
 
 const App: FC = () => {
-  const [showSettings, setShowSettings] = useState(false);
   const { currentTheme, handleThemeChange } = useTheme();
   const dispatch: AppDispatch = useDispatch();
 
-  const handleOpenSettings = () => {
-    setShowSettings(true);
-  };
-
-  const handleCloseSettings = () => {
-    setShowSettings(false);
-  };
-
   useEffect(() => {
-    const checkNotificationPermission = async () => {
+    const checkNotificationPermission = async (): Promise<void> => {
       if (typeof window !== 'undefined' && 'Notification' in window) {
         const permission = Notification.permission;
         if (permission === 'default') {
@@ -124,7 +112,9 @@ const App: FC = () => {
     checkNotificationPermission();
 
     // La lógica de handleKeyDown se ha movido fuera del componente
-    const keydownListener = (e: KeyboardEvent) => handleKeyDown(e, currentTheme, handleThemeChange);
+    const keydownListener = (e: KeyboardEvent): void => {
+      handleKeyDown(e, currentTheme, handleThemeChange);
+    };
     window.addEventListener('keydown', keydownListener);
 
     return () => {
@@ -143,8 +133,8 @@ const App: FC = () => {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   useEffect(() => {
-    const touchStartListener = (e: TouchEvent) => handleTouchStart(e, touchStartX);
-    const touchEndListener = (e: TouchEvent) => handleTouchEnd(e, touchStartX, touchEndX);
+    const touchStartListener = (e: TouchEvent): void => handleTouchStart(e, touchStartX);
+    const touchEndListener = (e: TouchEvent): void => handleTouchEnd(e, touchStartX, touchEndX);
 
     window.addEventListener('touchstart', touchStartListener, { passive: true });
     window.addEventListener('touchend', touchEndListener, { passive: true });
@@ -175,15 +165,7 @@ const App: FC = () => {
           <TourManager>
             <UserModalGate />
             <NavigationProvider>
-              <PageContent onOpenSettings={handleOpenSettings} />
-              {showSettings && (
-                <Settings
-                  isOpen={showSettings}
-                  onClose={handleCloseSettings}
-                  currentTheme={currentTheme}
-                  handleThemeChange={(theme: string) => handleThemeChange(theme as 'light' | 'dark')}
-                />
-              )}
+              <PageContent />
             </NavigationProvider>
           </TourManager>
         </AuthProvider>
@@ -199,22 +181,22 @@ const handleKeyDown = (
   e: KeyboardEvent,
   currentTheme: string,
   handleThemeChange: (theme: 'light' | 'dark') => void
-) => {
+): void => {
   if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
     e.preventDefault();
     handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark');
   }
 };
 
-const handleTouchStart = (e: TouchEvent, touchStartX: React.MutableRefObject<number>) => {
+const handleTouchStart = (e: TouchEvent, touchStartX: MutableRefObject<number>): void => {
   touchStartX.current = e.changedTouches[0]?.screenX || 0;
 };
 
 const handleTouchEnd = (
   e: TouchEvent,
-  touchStartX: React.MutableRefObject<number>,
-  touchEndX: React.MutableRefObject<number>
-) => {
+  touchStartX: MutableRefObject<number>,
+  touchEndX: MutableRefObject<number>
+): void => {
   touchEndX.current = e.changedTouches[0]?.screenX || 0;
   const diff = touchEndX.current - touchStartX.current;
   if (Math.abs(diff) > 60) {

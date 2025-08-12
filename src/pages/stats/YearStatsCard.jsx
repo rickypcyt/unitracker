@@ -1,7 +1,6 @@
-import React from 'react';
 import StatsChart from './StatsChart';
 
-const YearStatsCard = ({ data, accentColor, isDemo }) => (
+const YearStatsCard = ({ data, accentColor }) => (
   <div className="w-full">
     <div className="maincard p-0.5 mb-1">
       <div className="flex items-center justify-center w-full mb-1 mt-1">

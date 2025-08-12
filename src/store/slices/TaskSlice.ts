@@ -29,7 +29,7 @@ const taskSlice = createSlice({
         if (local) {
           state.tasks = JSON.parse(local);
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     },

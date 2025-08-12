@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
@@ -6,7 +6,6 @@ import LoginPromptModal from '@/modals/LoginPromptModal';
 import { Plus } from 'lucide-react';
 import TaskForm from '@/pages/tasks/TaskForm';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
-import { clearTasks } from '@/store/slices/TaskSlice';
 import { fetchTasks } from '@/store/TaskActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
@@ -20,7 +19,7 @@ const TasksPage = memo(() => {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const workspaces = useSelector(state => state.workspace.workspaces);
-  const tasks = useSelector(state => state.tasks.tasks || []);
+  // const tasks = useSelector(state => state.tasks.tasks || []);
   const loading = useSelector(state => state.tasks.loading);
 
   const handleRefresh = useCallback(() => {
@@ -35,7 +34,7 @@ const TasksPage = memo(() => {
 
     // Listen for the custom refresh event
     const handleRefreshEvent = () => {
-      console.log('refreshTaskList event received'); // Log for debugging
+      console.warn('refreshTaskList event received'); // Log for debugging
       dispatch(fetchTasks());
     };
 

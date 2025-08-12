@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import BaseModal from '@/modals/BaseModal';
 
 const TimerSettings = ({ isOpen, onClose }) => {

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
 import type { Task } from "@/types/taskStorage";
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 
@@ -118,19 +119,19 @@ export const useTaskStorage = (): TaskStorageHook => {
                     table: "tasks",
                     filter: `user_id=eq.${user.id}`,
                 },
-                (payload: any) => {
+                (payload: RealtimePostgresChangesPayload<Task>) => {
                     // Evitar procesar el mismo evento múltiples veces
                     const eventKey = `${payload.eventType}-${payload.new?.id || payload.old?.id}-${Date.now()}`;
                     if (lastProcessedEvent === eventKey) return;
                     lastProcessedEvent = eventKey;
 
                     // Solo actualizar si el cambio no fue causado por nosotros
-                    if (payload.eventType === 'INSERT' && payload.new.user_id === user.id) {
+                    if (payload.eventType === 'INSERT' && payload.new && payload.new.user_id === user.id) {
                         dispatch(addTaskSuccess(payload.new));
-                    } else if (payload.eventType === 'UPDATE' && payload.new.user_id === user.id) {
+                    } else if (payload.eventType === 'UPDATE' && payload.new && payload.new.user_id === user.id) {
                         dispatch(updateTaskSuccess(payload.new));
-                    } else if (payload.eventType === 'DELETE' && payload.old.user_id === user.id) {
-                        dispatch(deleteTaskSuccess(payload.old.id));
+                    } else if (payload.eventType === 'DELETE' && payload.old && payload.old.user_id === user.id) {
+                        dispatch(deleteTaskSuccess(payload.old.id as string));
                     }
                 }
             )

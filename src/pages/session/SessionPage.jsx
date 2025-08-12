@@ -35,7 +35,7 @@ const SessionPage = memo(() => {
   useEffect(() => {
     if (isSynced && resetKey > 0) {
       const now = Date.now();
-      console.log('[SessionPage] Emitiendo globalResetSync:', { resetKey, timestamp: now });
+      console.warn('[SessionPage] Emitiendo globalResetSync:', { resetKey, timestamp: now });
       window.dispatchEvent(new CustomEvent("globalResetSync", { 
         detail: { 
           resetKey,

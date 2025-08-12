@@ -1,5 +1,6 @@
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReactNode, ReactElement } from 'react';
 
 import { supabase } from '@/utils/supabaseClient';
 import useDemoMode from '@/utils/useDemoMode';
@@ -38,7 +39,7 @@ interface StatData {
 
 interface StatCard {
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   value: (s: StatData) => string | number;
   sub: (s: StatData) => string;
 }
@@ -55,7 +56,7 @@ function formatMinutesToHHMM(minutes: number): string {
   return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
-function useTaskStats(tasks: Task[]) {
+function useTaskStats(tasks: Task[]): { doneToday: number; doneWeek: number; doneMonth: number; doneYear: number } {
   const today = new Date().toISOString().split('T')[0];
   const thisMonth = new Date().toISOString().slice(0, 7);
   const thisYear = new Date().getFullYear();
@@ -82,7 +83,7 @@ function useTaskStats(tasks: Task[]) {
   return { doneToday, doneWeek, doneMonth, doneYear };
 }
 
-function useLapStats(laps: Lap[]) {
+function useLapStats(laps: Lap[]): { todayMinutes: number; weekMinutes: number; monthMinutes: number; yearMinutes: number } {
   const today = new Date().toISOString().split('T')[0];
   const thisMonth = new Date().toISOString().slice(0, 7);
   const thisYear = new Date().getFullYear();
@@ -107,10 +108,14 @@ function useLapStats(laps: Lap[]) {
   return { todayMinutes, weekMinutes, monthMinutes, yearMinutes };
 }
 
+function hasCompletedAt(task: Task): task is Task & { completed_at: string } {
+  return typeof task.completed_at === 'string' && task.completed_at.length > 0;
+}
+
 function getLongestStreak(tasks: Task[]): number {
   const completed = tasks
-    .filter(t => t.completed && t.completed_at)
-    .map(t => new Date(t.completed_at!).setHours(0,0,0,0))
+    .filter((t): t is Task & { completed_at: string } => t.completed && hasCompletedAt(t))
+    .map(t => new Date(t.completed_at).setHours(0,0,0,0))
     .sort((a, b) => a - b);
   if (completed.length === 0) return 0;
   let streak = 1, maxStreak = 1;
@@ -140,7 +145,7 @@ function getPomodoroMinutes(laps: Lap[]): number {
     .reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
 }
 
-function usePomodorosAllTime(userId: string | undefined) {
+function usePomodorosAllTime(userId: string | undefined): number {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -148,7 +153,7 @@ function usePomodorosAllTime(userId: string | undefined) {
       setTotal(0);
       return;
     }
-    const fetchAllTime = async () => {
+    const fetchAllTime = async (): Promise<void> => {
       const { data, error } = await supabase
         .from('study_laps')
         .select('pomodoros_completed')
@@ -215,10 +220,16 @@ const statCards: StatCard[] = [
   },
 ];
 
-const Statistics: React.FC = () => {
-  const { tasks } = useSelector((state: any) => state.tasks);
-  const { laps } = useSelector((state: any) => state.laps);
-  const user = useSelector((state: any) => state.auth.user);
+interface RootState {
+  tasks: { tasks: Task[] };
+  laps: { laps: Lap[] };
+  auth: { user?: { id?: string } };
+}
+
+const Statistics = (): ReactElement => {
+  const { tasks } = useSelector((state: RootState) => state.tasks);
+  const { laps } = useSelector((state: RootState) => state.laps);
+  const user = useSelector((state: RootState) => state.auth.user);
   const { isDemo, demoStats } = useDemoMode();
 
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);

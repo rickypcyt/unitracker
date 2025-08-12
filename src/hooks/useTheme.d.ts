@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 declare type Theme = 'light' | 'dark';
 
 declare const useTheme: () => {
@@ -7,7 +8,7 @@ declare const useTheme: () => {
   setAccentPalette: (color: string) => void;
   showWelcomeModal: boolean;
   handleCloseWelcome: () => void;
-  handleOverlayClick: (e: React.MouseEvent) => void;
+  handleOverlayClick: (e: MouseEvent) => void;
   // Add other methods if they exist in the hook
 };
 

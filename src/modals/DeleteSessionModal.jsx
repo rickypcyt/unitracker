@@ -1,6 +1,5 @@
 import BaseModal from '@/modals/BaseModal';
-import React from 'react';
-import { X } from 'lucide-react';
+ 
 
 const DeleteSessionModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;

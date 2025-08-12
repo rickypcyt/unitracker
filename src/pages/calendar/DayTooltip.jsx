@@ -1,6 +1,4 @@
 import { CheckCircle2, Clock } from 'lucide-react';
-
-import React from 'react';
 import { formatDate } from '@/utils/dateUtils';
 
 const DayTooltip = ({ date, tasks, studiedHours }) => {
@@ -29,4 +27,4 @@ const DayTooltip = ({ date, tasks, studiedHours }) => {
   );
 };
 
-export default DayTooltip; 
+export default DayTooltip;

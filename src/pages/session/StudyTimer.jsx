@@ -1,30 +1,24 @@
-import { Check, CheckSquare, Clock, FileText, Link2, Link2Off, MoreVertical, Pause, Play, RotateCcw, Square, X } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
 import { setStudyRunning, setStudyTimerState } from "@/store/slices/uiSlice";
-import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
-import SectionTitle from '@/components/SectionTitle';
 import StartSessionModal from "@/modals/StartSessionModal";
-import moment from 'moment';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
-import useTheme from "@/hooks/useTheme";
+// import useTheme from "@/hooks/useTheme";
 
-const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
-  const { accentPalette } = useTheme();
-  const iconColor = accentPalette === "#ffffff" ? "#000000" : "#ffffff";
+const StudyTimer = ({ onSyncChange, isSynced }) => {
   const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
-  const { currentSession } = useSelector((state) => state.laps);
   const isStudyRunningRedux = useSelector((state) => state.ui.isStudyRunning);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
@@ -35,10 +29,9 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
     return savedSessionId || null;
   });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isPauseFromSync, setIsPauseFromSync] = useState(false);
-  const [isHandlingEvent, setIsHandlingEvent] = useState(false);
-  const [sessionsTodayCount, setSessionsTodayCount] = useState(0);
-  const [isSyncedWithStudyTimer, setIsSyncedWithStudyTimer] = useState(() => {
+  const [isHandlingEvent] = useState(false);
+  const [, setSessionsTodayCount] = useState(0);
+  const [isSyncedWithStudyTimer] = useState(() => {
     const savedState = localStorage.getItem('isSyncedWithStudyTimer');
     return savedState ? JSON.parse(savedState) : false;
   });
@@ -56,7 +49,6 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
-    const activeSessionId = localStorage.getItem("activeSessionId");
     const safe = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
     if (savedState) {
       let parsed;
@@ -267,7 +259,7 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
     studyControls.reset(true); // true = viene de sync
   }, [isCountdownSync, lastSyncTimestamp]);
 
-  const studyControls = {
+  const studyControls = useMemo(() => ({
     start: async (baseTimestamp, fromSync) => {
       if (!isStudyRunningRedux && !isHandlingEvent) {
         if (!isLoggedIn) {
@@ -278,30 +270,26 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
           setIsStartModalOpen(true);
           return;
         }
-        if (currentSessionId) {
-          const now = (typeof baseTimestamp === 'number' && Number.isFinite(baseTimestamp)) ? baseTimestamp : Date.now();
-          setStudyState(prev => ({
-            ...prev,
-            isRunning: true,
-            lastStart: now,
-            timeAtStart: Number.isFinite(prev.time) ? prev.time : 0,
-            time: Number.isFinite(prev.time) ? prev.time : 0,
-            sessionStatus: 'active'
-          }));
-          dispatch(setStudyRunning(true));
-          dispatch(setStudyTimerState('running'));
-          localStorage.setItem('studyTimerStartedAt', now.toString());
-          window.dispatchEvent(
-            new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
-          );
-          if (!fromSync) {
-            const now = Date.now();
-            if (isPomodoroSync) {
-              window.dispatchEvent(new CustomEvent("playPomodoroSync", { detail: { baseTimestamp: now } }));
-            }
-            if (isCountdownSync) {
-              window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
-            }
+        const now = (typeof baseTimestamp === 'number' && Number.isFinite(baseTimestamp)) ? baseTimestamp : Date.now();
+        setStudyState(prev => ({
+          ...prev,
+          isRunning: true,
+          lastStart: now,
+          timeAtStart: Number.isFinite(prev.time) ? prev.time : 0,
+          time: Number.isFinite(prev.time) ? prev.time : 0,
+          sessionStatus: 'active'
+        }));
+        dispatch(setStudyRunning(true));
+        dispatch(setStudyTimerState('running'));
+        localStorage.setItem('studyTimerStartedAt', now.toString());
+        window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: true } }));
+        if (!fromSync) {
+          const emitTs = Date.now();
+          if (isPomodoroSync) {
+            window.dispatchEvent(new CustomEvent('playPomodoroSync', { detail: { baseTimestamp: emitTs } }));
+          }
+          if (isCountdownSync) {
+            window.dispatchEvent(new CustomEvent('playCountdownSync', { detail: { baseTimestamp: emitTs } }));
           }
         }
       }
@@ -319,52 +307,41 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
           sessionStatus: 'paused',
           lastPausedAt: Date.now(),
         }));
-        window.dispatchEvent(
-          new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
-        );
+        window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
         if (!fromSync) {
-          const now = Date.now();
+          const emitTs = Date.now();
           if (isPomodoroSync) {
-            window.dispatchEvent(new CustomEvent("pausePomodoroSync", { detail: { baseTimestamp: now } }));
+            window.dispatchEvent(new CustomEvent('pausePomodoroSync', { detail: { baseTimestamp: emitTs } }));
           }
           if (isCountdownSync) {
-            window.dispatchEvent(new CustomEvent("pauseCountdownSync", { detail: { baseTimestamp: now } }));
+            window.dispatchEvent(new CustomEvent('pauseCountdownSync', { detail: { baseTimestamp: emitTs } }));
           }
         }
       }
     },
     reset: (fromSync) => {
-      if (isStudyRunningRedux) {
-        dispatch(setStudyRunning(false));
-        dispatch(setStudyTimerState('stopped'));
-      }
-      setStudyState((prev) => ({
+      setStudyState(prev => ({
         ...prev,
         isRunning: false,
-        time: 0,
         lastStart: null,
         timeAtStart: 0,
-        sessionStatus: 'inactive'
+        time: 0,
+        sessionStatus: 'inactive',
       }));
+      dispatch(setStudyRunning(false));
+      dispatch(setStudyTimerState('stopped'));
       dispatch(resetTimerState());
-      // Limpiar localStorage
       localStorage.removeItem('studyTimerState');
       localStorage.removeItem('activeSessionId');
       localStorage.removeItem('studyTimerStartedAt');
-      window.dispatchEvent(
-        new CustomEvent("studyTimerStateChanged", { detail: { isRunning: false } })
-      );
+      window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
       if (!fromSync) {
-        const now = Date.now();
-        // Solo emitir eventos de reset si está habilitada la sincronización
-        if (isPomodoroSync || isCountdownSync) {
-          window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
-        }
+        const emitTs = Date.now();
         if (isPomodoroSync) {
-          window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
+          window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
         }
         if (isCountdownSync) {
-          window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
+          window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
         }
       }
     },
@@ -376,11 +353,20 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
         setStudyState(prev => ({ ...prev, lastStart: now }));
         const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
         if (syncFlag) {
-          window.dispatchEvent(new CustomEvent("playTimerSync", { detail: { baseTimestamp: now } }));
+          window.dispatchEvent(new CustomEvent('playTimerSync', { detail: { baseTimestamp: now } }));
         }
       }
-    },
-  };
+    }
+  }), [
+    isStudyRunningRedux,
+    isHandlingEvent,
+    isLoggedIn,
+    currentSessionId,
+    dispatch,
+    isPomodoroSync,
+    isCountdownSync,
+    studyState.sessionStatus,
+  ]);
 
   // Add useEffect to recover state on page load
   useEffect(() => {
@@ -460,9 +446,9 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
     // Escuchar eventos de reset global
     const handleGlobalReset = (event) => {
       const { resetKey: globalResetKey } = event.detail;
-      console.log('[StudyTimer] Recibido globalResetSync:', { globalResetKey, localResetKey });
+      console.warn('[StudyTimer] Recibido globalResetSync:', { globalResetKey, localResetKey });
       if (globalResetKey !== localResetKey) {
-        console.log('[StudyTimer] Ejecutando reset desde globalResetSync');
+        console.warn('[StudyTimer] Ejecutando reset desde globalResetSync');
         setLocalResetKey(globalResetKey);
         studyControls.reset(true);
       }
@@ -474,7 +460,7 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
       window.removeEventListener('globalTimerSync', handleGlobalSync);
       window.removeEventListener('globalResetSync', handleGlobalReset);
     };
-  }, [isSynced, isStudyRunningRedux, localResetKey]);
+  }, [isSynced, isStudyRunningRedux, localResetKey, studyControls]);
 
   const handleFinishSession = async () => {
     try {
@@ -663,12 +649,7 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
   };
 
   // Calcular tiempo desde el último pause
-  let lastPausedAgo = null;
-  if (currentSessionId && studyState.sessionStatus === 'paused' && studyState.lastStart === null) {
-    // Buscar el último momento en que se pausó (cuando se puso lastStart a null)
-    // Usar el timestamp de cuando se pausó: no se guarda explícitamente, pero podemos guardar uno nuevo
-    // Solución: guardar un campo lastPausedAt en studyState cuando se pausa
-  }
+  // removed unused lastPausedAgo calculation
 
   // Las variables de sincronización ya están declaradas arriba
 
@@ -680,7 +661,7 @@ const StudyTimer = ({ onSyncChange, isSynced, isRunning, resetKey }) => {
     if (isCountdownSync) {
       window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { detail: { time: studyState.time } }));
     }
-  }, [isPomodoroSync, isCountdownSync]);
+  }, [isPomodoroSync, isCountdownSync, studyState.time]);
 
   return (
     <div className="flex flex-col items-center h-full">

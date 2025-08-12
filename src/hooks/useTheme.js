@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const useTheme = () => {
   // Función para obtener el tema inicial
@@ -27,13 +27,13 @@ const useTheme = () => {
   );
 
   // Función para aplicar el tema
-  const applyTheme = (theme) => {
+  const applyTheme = useCallback((theme) => {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     // Actualizar el color-scheme meta tag
     document.documentElement.style.colorScheme = theme;
-  };
+  }, []);
 
   const handleCloseWelcome = () => {
     setShowWelcomeModal(false);
@@ -44,21 +44,16 @@ const useTheme = () => {
     if (e.target === e.currentTarget) handleCloseWelcome();
   };
 
-  const handleThemeChange = (theme) => {
+  const handleThemeChange = useCallback((theme) => {
     setCurrentTheme(theme);
     localStorage.setItem("theme", theme);
     applyTheme(theme);
-  };
-
-  // Efecto para inicializar el tema
-  useEffect(() => {
-    applyTheme(currentTheme);
-  }, []); // Solo se ejecuta al montar el componente
+  }, [applyTheme]);
 
   // Efecto para manejar cambios en el tema
   useEffect(() => {
     applyTheme(currentTheme);
-  }, [currentTheme]);
+  }, [currentTheme, applyTheme]);
 
   // Efecto para manejar cambios en el color de acento
   useEffect(() => {
@@ -78,7 +73,7 @@ const useTheme = () => {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  }, [handleThemeChange]);
 
   return {
     currentTheme,

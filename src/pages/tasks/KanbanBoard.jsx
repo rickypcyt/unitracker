@@ -218,10 +218,7 @@ export const KanbanBoard = () => {
   const completedTasks = filteredTasks.filter((task) => task.completed);
   const incompletedTasks = filteredTasks.filter((task) => !task.completed);
 
-  const allAssignments = useMemo(() =>
-    [...new Set(filteredTasks.map(task => task.assignment || "No assignment"))].sort(),
-    [filteredTasks]
-  );
+  
 
   const groupTasksByAssignment = useCallback((tasksToGroup) => {
     const grouped = tasksToGroup.reduce((acc, task) => {
@@ -261,7 +258,7 @@ export const KanbanBoard = () => {
       }
     });
     return grouped;
-  }, [incompletedTasks, assignmentSortConfig, taskOrder, sortTasksByPosition, groupTasksByAssignment]);
+  }, [incompletedTasks, assignmentSortConfig, sortTasksByPosition, groupTasksByAssignment]);
 
   const sortedIncompletedAssignments = useMemo(() => {
     // Group tasks and apply per-assignment task sort if configured
@@ -291,7 +288,7 @@ export const KanbanBoard = () => {
     }
 
     return assignments;
-  }, [incompletedTasks, assignmentSortConfig, taskOrder, columnOrder, groupTasksByAssignment, sortTasksByPosition]);
+  }, [incompletedTasks, assignmentSortConfig, columnOrder, groupTasksByAssignment, sortTasksByPosition]);
 
   const toggleColumn = (assignment) => {
     setCollapsedColumns(prev => ({
@@ -531,7 +528,7 @@ export const KanbanBoard = () => {
                   return;
                 }
 
-                console.log(`Successfully moved ${tasksInAssignment.length} tasks from assignment "${selectedAssignment}" to workspace "${workspace.name}"`);
+                console.warn(`Successfully moved ${tasksInAssignment.length} tasks from assignment "${selectedAssignment}" to workspace "${workspace.name}"`);
               }
 
               // Refrescar las tareas inmediatamente para sincronizar con el backend

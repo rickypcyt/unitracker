@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
 import { FormInput } from '@/modals/FormElements';

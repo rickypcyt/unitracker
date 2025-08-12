@@ -1,5 +1,5 @@
-import { BarChart3, BookOpen, Calendar, ListTodo, Menu, Timer } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { BarChart3, BookOpen, Calendar, ListTodo, Timer } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -8,9 +8,10 @@ import WorkspaceDropdown from './WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
+import { toast } from 'react-hot-toast';
+import Settings from './Settings';
 
-const Navbar = ({ onOpenSettings }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Navbar = () => {
   const { isLoggedIn, loginWithGoogle, logout, user } = useAuth();
   const { activePage, navigateTo } = useNavigation();
   const dispatch = useDispatch();
@@ -60,7 +61,7 @@ const Navbar = ({ onOpenSettings }) => {
   }, [isLoggedIn, dispatch]);
 
   // Load friend requests from Supabase
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!user) {
       setReceivedRequests([]);
       setSentRequests([]);
@@ -78,12 +79,12 @@ const Navbar = ({ onOpenSettings }) => {
       .eq('status', 'pending');
     setReceivedRequests(rec || []);
     setSentRequests(sent || []);
-  };
+  }, [user]);
   useEffect(() => {
     fetchRequests();
-  }, [user]);
+  }, [fetchRequests]);
 
-  const fetchFriends = async () => {
+  const fetchFriends = useCallback(async () => {
     if (!user) {
       setFriends([]);
       return;
@@ -112,11 +113,11 @@ const Navbar = ({ onOpenSettings }) => {
       return;
     }
     setFriends(profiles);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchFriends();
-  }, [user]);
+  }, [fetchFriends]);
 
   useEffect(() => {
     // Calcular workspaces compartidos para cada amigo
@@ -208,7 +209,7 @@ const Navbar = ({ onOpenSettings }) => {
   };
   const handleAccept = async (request) => {
     try {
-      console.log('[ACCEPT] Iniciando proceso para request:', request);
+      console.warn('[ACCEPT] Iniciando proceso para request:', request);
       // 1. Actualiza la solicitud a "accepted"
       const { error: updateError } = await supabase
         .from('friend_requests')
@@ -218,7 +219,7 @@ const Navbar = ({ onOpenSettings }) => {
         toast.error('Error updating request: ' + updateError.message);
         return;
       }
-      console.log('[ACCEPT] Solicitud actualizada a accepted');
+      console.warn('[ACCEPT] Solicitud actualizada a accepted');
       // 2. Inserta en la tabla friends (amistad simétrica)
       const [user1, user2] = [request.from_user_id, request.to_user_id].sort();
       const { error: insertError } = await supabase
@@ -229,14 +230,14 @@ const Navbar = ({ onOpenSettings }) => {
         return;
       }
       if (insertError && insertError.message.includes('duplicate key value')) {
-        console.log('[ACCEPT] Amistad ya existía, ignorando error de duplicado.');
+        console.warn('[ACCEPT] Amistad ya existía, ignorando error de duplicado.');
       } else {
-        console.log('[ACCEPT] Amistad insertada en tabla friends');
+        console.warn('[ACCEPT] Amistad insertada en tabla friends');
       }
       // 3. Refresca solicitudes y amigos
       await fetchRequests();
       await fetchFriends();
-      console.log('[ACCEPT] Solicitudes y amigos refrescados');
+      console.warn('[ACCEPT] Solicitudes y amigos refrescados');
       toast.success('Friend request accepted!');
     } catch (error) {
       toast.error('Unexpected error: ' + error.message);
@@ -245,7 +246,7 @@ const Navbar = ({ onOpenSettings }) => {
   };
   const handleReject = async (request) => {
     try {
-      console.log('[REJECT] Iniciando proceso para request:', request);
+      console.warn('[REJECT] Iniciando proceso para request:', request);
       // 1. Actualiza la solicitud a "rejected"
       const { error: updateError } = await supabase
         .from('friend_requests')
@@ -255,10 +256,10 @@ const Navbar = ({ onOpenSettings }) => {
         toast.error('Error updating request: ' + updateError.message);
         return;
       }
-      console.log('[REJECT] Solicitud actualizada a rejected');
+      console.warn('[REJECT] Solicitud actualizada a rejected');
       // 2. Refresca solicitudes
       await fetchRequests();
-      console.log('[REJECT] Solicitudes refrescadas');
+      console.warn('[REJECT] Solicitudes refrescadas');
       toast.success('Friend request rejected!');
     } catch (error) {
       toast.error('Unexpected error: ' + error.message);

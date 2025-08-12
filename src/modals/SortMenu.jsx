@@ -1,5 +1,4 @@
 import { ArrowUpDown } from "lucide-react";
-import React from "react";
 
 export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }) => {
   return (

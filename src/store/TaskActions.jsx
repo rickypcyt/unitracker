@@ -3,7 +3,6 @@ import {
   deleteTaskSuccess,
   fetchTasksStart,
   fetchTasksSuccess,
-  hydrateTasksFromLocalStorage,
   invalidateCache,
   taskError,
   toggleTaskStatusOptimistic,
@@ -19,7 +18,9 @@ const CACHE_DURATION = 5 * 60 * 1000;
 function saveTasksToLocalStorage(tasks) {
   try {
     localStorage.setItem('tasksHydrated', JSON.stringify(tasks));
-  } catch (e) {}
+  } catch {
+    // no-op
+  }
 }
 
 // En tu archivo TaskActions.js
@@ -27,10 +28,9 @@ export const fetchTasks = () => async (dispatch, getState) => {
   dispatch(fetchTasksStart());
   try {
     const { tasks } = getState();
-    const { workspace } = getState();
     // Check if we have a valid cache
     if (tasks.isCached && tasks.lastFetch && (Date.now() - tasks.lastFetch < CACHE_DURATION)) {
-      dispatch(fetchTasksSuccess(tasks.tasks)); // Use cached data, but apaga loading
+      dispatch(fetchTasksSuccess(tasks.tasks)); // Use cached data, pero apaga loading
       return;
     }
 
@@ -220,7 +220,9 @@ async function getTasksFromStoreOrLocalStorage() {
   try {
     const local = localStorage.getItem('tasksHydrated');
     if (local) return JSON.parse(local);
-  } catch (e) {}
+  } catch {
+    // no-op
+  }
   return [];
 }
 

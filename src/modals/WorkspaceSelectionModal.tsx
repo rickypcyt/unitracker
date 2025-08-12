@@ -2,6 +2,7 @@ import { Check } from 'lucide-react';
 
 import BaseModal from './BaseModal';
 import React from 'react';
+import type { Task } from '@/types/taskStorage';
 
 interface Workspace {
   id: string;
@@ -16,7 +17,7 @@ interface WorkspaceSelectionModalProps {
   activeWorkspace: Workspace | null;
   onSelectWorkspace: (workspace: Workspace) => void;
   assignment: string;
-  tasks: any[];
+  tasks: Array<Pick<Task, 'workspace_id' | 'completed'>>;
 }
 
 const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
@@ -28,13 +29,13 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
   assignment,
   tasks = [],
 }) => {
-  const handleWorkspaceSelect = (workspace: Workspace) => {
+  const handleWorkspaceSelect = (workspace: Workspace): void => {
     onSelectWorkspace(workspace);
     onClose();
   };
 
   // Función para contar tareas por workspace
-  const getTaskCountByWorkspace = (workspaceId: string) => {
+  const getTaskCountByWorkspace = (workspaceId: string): number => {
     return tasks.filter(task => task.workspace_id === workspaceId && !task.completed).length;
   };
 

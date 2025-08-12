@@ -77,7 +77,7 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="flex justify-between items-center mb-4 relative mt-5">
+          <div className="flex justify-between items-center mb-4 relative mt-2 sm:mt-5">
             <div className="flex-1 flex justify-center items-center absolute left-0 right-0 w-full pointer-events-none">
               <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto w-full text-center truncate">
                 {title}

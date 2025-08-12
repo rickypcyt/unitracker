@@ -18,13 +18,24 @@ import { store } from '@/store/store';
 
 // Polyfill para Notification en browsers que no la soportan (ej: iOS Safari)
 if (typeof window !== 'undefined' && typeof window.Notification === 'undefined') {
-  function FakeNotification() { /* noop */ }
-  Object.defineProperty(FakeNotification, 'permission', {
-    get: () => 'denied',
-  });
-  FakeNotification.requestPermission = () => Promise.resolve('denied');
-  // @ts-ignore
-  window.Notification = FakeNotification;
+  class FakeNotificationClass {
+    // Match static members of Notification
+    static permission: NotificationPermission = 'denied'
+    static requestPermission(): Promise<NotificationPermission> {
+      return Promise.resolve('denied')
+    }
+
+    // Instance members used by the app
+    onclick: ((this: Notification, ev: Event) => unknown) | null = null
+    constructor(_title: string, _options?: NotificationOptions) {
+      // no-op
+    }
+    close(): void {
+      // no-op
+    }
+  }
+  // Cast to align with the DOM Notification constructor type
+  window.Notification = FakeNotificationClass as unknown as typeof Notification;
 }
 
 logger.info('Application starting', { environment: import.meta.env.MODE });

@@ -38,7 +38,9 @@ try {
     // Si no hay lista cacheada aún, al menos mostrarmos el último workspace activo
     initialActive = lastActiveObj;
   }
-} catch {}
+} catch {
+  // no-op
+}
 
 const initialState: WorkspaceState = {
   workspaces: initialWorkspaces,
@@ -112,7 +114,9 @@ export const fetchWorkspaces = () => async (dispatch: AppDispatch) => {
       if (Array.isArray(parsed)) {
         dispatch(setWorkspaces(parsed));
       }
-    } catch {}
+    } catch {
+      // no-op
+    }
   }
 
   // 2. Fetch real a la base de datos

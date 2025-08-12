@@ -1,7 +1,5 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import React, { useRef } from 'react';
-
-import { Activity } from 'lucide-react';
+import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 
 function formatMinutesToHHMM(minutes) {
@@ -117,18 +115,13 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     });
   }
 
-  const isThisYear = title === 'This Year';
   // Detectar gráfico semanal también cuando el título no sea exactamente "This Week/Last Week"
   const isWeekChart = (
     title === 'This Week' ||
     title === 'Last Week' ||
     (Array.isArray(xAxisTicks) && xAxisTicks.length === 7)
   );
-  // Unificar clases para el contenedor scrollable y altura
-  const scrollContainerClass = 'w-full overflow-x-auto';
   const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} min-w-[700px] rounded-lg bg-[var(--bg-secondary)] z-10`;
-
-  const weekDayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   // Configurar YAxis dependiendo si hay datos (minutos) o no
   const maxMinutes = Array.isArray(data) && data.length

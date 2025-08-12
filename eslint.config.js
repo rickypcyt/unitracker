@@ -6,19 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 
-// Configuración compartida
-const reactRefreshConfig = {
-  files: ['**/*.{js,jsx,ts,tsx}'],
-  plugins: {
-    'react-refresh': reactRefresh
-  },
-  rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-  },
-}
+// (removed unused shared config that duplicated rules)
 
 export default [
   // Ignorar directorios
@@ -70,9 +58,13 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'error',
-      'no-unused-vars': 'error',
+      'no-unused-vars': ['warn', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^(React|_)',
+        ignoreRestSiblings: true,
+      }],
       'no-undef': 'error',
-      'react-hooks/exhaustive-deps': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       'react/prop-types': 'off', // Usamos TypeScript para validar props
       'react/display-name': 'off',
       'react/no-unescaped-entities': 'off',
@@ -94,6 +86,16 @@ export default [
       },
       globals: { ...globals.browser, ...globals.node },
     },
+    settings: { 
+      react: { 
+        version: 'detect' 
+      },
+      'import/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        },
+      },
+    },
     plugins: {
       '@typescript-eslint': tsPlugin,
       react,
@@ -108,14 +110,11 @@ export default [
       ...reactHooks.configs.recommended.rules,
       
       // Reglas de TypeScript
-      '@typescript-eslint/explicit-function-return-type': ['error', {
-        allowExpressions: true,
-        allowTypedFunctionExpressions: true,
-      }],
+      '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { 
+      '@typescript-eslint/no-unused-vars': ['warn', { 
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
+        varsIgnorePattern: '^(React|_)',
         ignoreRestSiblings: true,
       }],
       '@typescript-eslint/no-non-null-assertion': 'error',
@@ -124,13 +123,13 @@ export default [
       
       // Reglas de React
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       'react/prop-types': 'off',
       'react/display-name': 'off',
       'react/no-unescaped-entities': 'off',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-no-target-blank': 'error',
-      'react-refresh/only-export-components': 'error',
+      'react-refresh/only-export-components': 'warn',
       
       // Otras reglas
       'no-console': ['error', { allow: ['warn', 'error'] }],

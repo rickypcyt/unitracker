@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react';
+import { memo, useEffect } from 'react';
 
 import Calendar from '@/pages/calendar/Calendar';
 import UpcomingTasks from '@/pages/calendar/UpcomingTasks';
