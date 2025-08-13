@@ -1,29 +1,28 @@
 import { useEffect, useRef } from "react";
 
 export default function useEventListener(event, handler, deps = []) {
-    const savedHandler = useRef();
-    const eventListenerRef = useRef();
+  const savedHandler = useRef();
 
-    // Update the saved handler if it changes
-    useEffect(() => {
-        savedHandler.current = handler;
-    }, [handler]);
+  // Always keep latest handler in ref so listener stays stable
+  useEffect(() => {
+    savedHandler.current = handler;
+  }, [handler]);
 
-    useEffect(() => {
-        // Create a wrapper that uses the latest handler
-        const eventListener = (e) => savedHandler.current(e);
-        
-        // Store the current event listener reference
-        eventListenerRef.current = eventListener;
-        
-        // Add the event listener
-        window.addEventListener(event, eventListener);
-        
-        // Cleanup function
-        return () => {
-            // Only remove the specific event listener we added
-            window.removeEventListener(event, eventListenerRef.current);
-        };
+  useEffect(() => {
+    // Create a stable wrapper bound for this effect run
+    const listener = (e) => {
+      if (typeof savedHandler.current === "function") {
+        savedHandler.current(e);
+      }
+    };
+
+    // Add listener to window
+    window.addEventListener(event, listener);
+
+    // Cleanup removes the exact same function reference added above
+    return () => {
+      window.removeEventListener(event, listener);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [event, ...deps]);
+  }, [event, ...deps]);
 }

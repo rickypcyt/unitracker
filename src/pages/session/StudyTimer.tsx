@@ -1,8 +1,8 @@
-import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
-import { setStudyRunning, setStudyTimerState } from "@/store/slices/uiSlice";
+import { setStudyRunning, setStudyTimerState, setSyncPomodoroWithTimer, setSyncCountdownWithTimer } from "@/store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
@@ -561,56 +561,64 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       // Limpiar hora de inicio local
       localStorage.removeItem('studyTimerStartedAt');
 
-      if (isSyncedWithStudyTimer) {
-         window.dispatchEvent(new CustomEvent("resetPomodoro"));
+      // Emit synchronized resets for linked timers
+      const emitTs = Date.now();
+      if (isPomodoroSync) {
+        window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
       }
-
+      if (isCountdownSync) {
+        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
+      }
     } catch (error) {
       console.error('Error finishing session:', error);
       toast.error('An error occurred while finishing the session.');
     }
   };
 
-  const handleStartSession = async (sessionData) => {
-    try {
-      const now = Date.now();
-      
-      // Use the session that was already created by StartSessionModal
-      if (!sessionData.sessionId) {
-        console.error('No session ID provided');
-        return;
-      }
-
-      // Set both states to ensure session is active
-      dispatch(setCurrentSession(sessionData.sessionId));
-      setCurrentSessionId(sessionData.sessionId);
-      setStudyState((prev) => ({
-        ...prev,
-        isRunning: true,
-        lastStart: now,
-        timeAtStart: prev.time,
-        sessionStatus: 'active',
-        sessionTitle: sessionData.title,
-        syncPomo: sessionData.syncPomo,
-        syncCountdown: sessionData.syncCountdown
-      }));
-
-      // Update sssions today count
-      fetchSessionsTodayCount();
-
-      // Dispatch session started event for Pomodoro to reset session counter
-      window.dispatchEvent(new CustomEvent("sessionStarted"));
-
-      window.dispatchEvent(
-        new CustomEvent("studyTimerStateChanged", { detail: { isRunning: true } })
-      );
-    } catch (error) {
-      console.error('Error starting session:', error);
-    }
-  };
-
   const handleExitSession = async () => {
     setIsDeleteModalOpen(true);
+  };
+  
+  // Handler passed to StartSessionModal to create and start a new session
+  const handleStartSession = ({
+    sessionId,
+    title,
+    syncPomo,
+    syncCountdown,
+  }: {
+    sessionId: string;
+    title?: string;
+    syncPomo?: boolean;
+    syncCountdown?: boolean;
+  }) => {
+    try {
+      if (!sessionId) return;
+      // Persist and set the newly created session
+      setCurrentSessionId(sessionId);
+      localStorage.setItem("activeSessionId", sessionId);
+      setStudyState(prev => ({
+        ...prev,
+        sessionTitle: title || prev.sessionTitle,
+        sessionDescription: prev.sessionDescription,
+        sessionStatus: 'active',
+      }));
+
+      // Apply chosen sync preferences from the modal
+      if (typeof syncPomo === 'boolean') {
+        dispatch(setSyncPomodoroWithTimer(!!syncPomo));
+      }
+      if (typeof syncCountdown === 'boolean') {
+        dispatch(setSyncCountdownWithTimer(!!syncCountdown));
+      }
+
+      // Start the timer after state updates are queued
+      setTimeout(() => {
+        studyControls.start(Date.now(), false);
+      }, 0);
+    } catch (e) {
+      console.error('Error in handleStartSession:', e);
+      toast.error('Could not start the session.');
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -637,11 +645,14 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       setIsDeleteModalOpen(false);
       setStudyState(prev => ({ ...prev, sessionTitle: undefined, sessionDescription: undefined }));
 
-      // If synced with Pomodoro, reset it too
-      if (isSyncedWithStudyTimer) {
-         window.dispatchEvent(new CustomEvent("resetPomodoro"));
+      // If timers are synced, reset both Pomodoro and Countdown
+      const emitTs = Date.now();
+      if (isPomodoroSync) {
+        window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
       }
-
+      if (isCountdownSync) {
+        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
+      }
     } catch (error) {
       console.error('Error exiting session:', error);
       toast.error('An error occurred while exiting the session.');
@@ -667,7 +678,6 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
-        <Clock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
         <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Study Timer</span>
         {/* Botón de configuración de sesión */}
         {currentSessionId ? (

@@ -1,10 +1,10 @@
-import { AlarmClock, MoreVertical, Pause, Play, RotateCcw } from "lucide-react";
+import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
 import { formatPomoTime } from "@/hooks/useTimers";
-import { setPomodoroState } from '@/store/slices/uiSlice';
+import { setPomodoroState, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
@@ -362,8 +362,14 @@ const Pomodoro = () => {
   }, []);
 
   // All event listeners after all function declarations
+  useEffect(() => {
+    console.log('[Pomodoro] mounted');
+    return () => console.log('[Pomodoro] unmounted');
+  }, []);
+
   useEventListener("startPomodoro", handleStart, [handleStart]);
   useEventListener("pauseTimerSync", () => {
+    console.log('[Pomodoro] pauseTimerSync event received', { syncPomodoroWithTimer, isRunning: pomoState.isRunning });
     if (pomoState.isRunning && syncPomodoroWithTimer) {
       handleStop();
     }
@@ -373,6 +379,7 @@ const Pomodoro = () => {
   useEventListener("playTimerSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] playTimerSync event', { baseTimestamp, isRunning: pomoState.isRunning });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     if (!pomoState.isRunning) {
@@ -383,6 +390,7 @@ const Pomodoro = () => {
   useEventListener("playPomodoroSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] playPomodoroSync event', { baseTimestamp, isRunning: pomoState.isRunning });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     if (!pomoState.isRunning) {
@@ -393,16 +401,21 @@ const Pomodoro = () => {
   useEventListener("pausePomodoroSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] pausePomodoroSync event', { baseTimestamp, isRunning: pomoState.isRunning });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     if (pomoState.isRunning) {
+      console.log('[Pomodoro] applying pause from StudyTimer (pausePomodoroSync)');
       handleStop(true);
+    } else {
+      console.log('[Pomodoro] already paused/stopped, ignoring pausePomodoroSync');
     }
   }, [syncPomodoroWithTimer, pomoState.isRunning, lastSyncTimestamp]);
 
   useEventListener("resetTimerSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] resetTimerSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
@@ -412,6 +425,7 @@ const Pomodoro = () => {
   useEventListener("resetPomodoroSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] resetPomodoroSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
@@ -420,24 +434,28 @@ const Pomodoro = () => {
   useEventListener("resetCountdownSync", (event) => {
     if (!syncPomodoroWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Pomodoro] resetCountdownSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
   }, [syncPomodoroWithTimer, lastSyncTimestamp]);
 
   useEventListener("studyTimerReset", () => {
+    console.log('[Pomodoro] studyTimerReset event');
     if (syncPomodoroWithTimer) {
       handleReset();
     }
   }, [syncPomodoroWithTimer, handleReset]);
 
   useEventListener("studyTimerPause", () => {
+    console.log('[Pomodoro] studyTimerPause event', { isRunning: pomoState.isRunning });
     if (syncPomodoroWithTimer && pomoState.isRunning) {
       handleStop();
     }
   }, [syncPomodoroWithTimer, pomoState.isRunning, handleStop]);
 
   useEventListener("studyTimerStart", () => {
+    console.log('[Pomodoro] studyTimerStart event', { isRunning: pomoState.isRunning });
     if (syncPomodoroWithTimer && !pomoState.isRunning) {
       handleStart();
     }
@@ -445,6 +463,7 @@ const Pomodoro = () => {
 
   useEventListener("studyTimerSyncStateChanged", (event) => {
     const { isSyncedWithStudyTimer: newSyncState } = event.detail;
+    console.log('[Pomodoro] studyTimerSyncStateChanged', { newSyncState });
     setIsSyncedWithStudyTimer(newSyncState);
   }, []);
 
@@ -743,7 +762,19 @@ const Pomodoro = () => {
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
-        <AlarmClock size={24} className="icon" style={{ color: 'var(--accent-primary)' }} />
+        <button
+          type="button"
+          onClick={() => dispatch(setSyncPomodoroWithTimer(!syncPomodoroWithTimer))}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
+          aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'}
+          title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}
+        >
+          {syncPomodoroWithTimer ? (
+            <RefreshCw size={20} className="icon" style={{ color: 'var(--accent-primary)' }} />
+          ) : (
+            <RefreshCwOff size={20} className="icon" style={{ color: 'var(--accent-primary)' }} />
+          )}
+        </button>
         <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Pomodoro</span>
         {/* Botón de configuración de sesión */}
         <button
