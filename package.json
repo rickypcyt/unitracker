@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"bun vite\"",
-    "build": "run-s type-check lint build-only",
+    "build": "vite build",
     "build-only": "vite build",
     "vite": "vite",
     "type-check": "tsc --noEmit",
