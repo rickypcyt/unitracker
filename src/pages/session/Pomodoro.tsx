@@ -271,6 +271,13 @@ const Pomodoro = () => {
   }, [syncPomodoroWithTimer, dispatch]);
 
   const handleReset = useCallback((fromSync) => {
+    console.log('[Pomodoro] handleReset()', {
+      fromSync,
+      modeIndex: pomoState.modeIndex,
+      currentMode: pomoState.currentMode,
+      syncPomodoroWithTimer,
+    });
+    const now = Date.now();
     const modeDuration = modes[pomoState.modeIndex]['work'];
     setPomoState(prev => ({
       ...prev,
@@ -286,9 +293,19 @@ const Pomodoro = () => {
     localStorage.removeItem('pomodoroState');
     localStorage.removeItem('pomodoroIsRunning');
     localStorage.removeItem('pomodorosThisSession');
-    if (!fromSync && syncPomodoroWithTimer) {
-      const now = Date.now();
+    if (!fromSync) {
+      console.log('[Pomodoro] Emitting reset events from local reset', {
+        baseTimestamp: now,
+        willEmitResetTimerSync: true,
+        willEmitResetCountdownSync: !!syncPomodoroWithTimer,
+      });
+      // Emitir un reset global para forzar reseteo de todos los timers (StudyTimer y Countdown)
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
+    }
+    // Además, cuando Pomodoro está sincronizado, emitir SIEMPRE el reset específico de Countdown
+    // incluso si este reset vino "desde sync" (globalResetSync u otro origen)
+    if (syncPomodoroWithTimer) {
+      console.log('[Pomodoro] Emitting resetCountdownSync (always when synced)', { baseTimestamp: now, fromSync });
       window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
     }
   }, [pomoState.modeIndex, modes, syncPomodoroWithTimer, dispatch]);
@@ -413,7 +430,10 @@ const Pomodoro = () => {
   }, [syncPomodoroWithTimer, pomoState.isRunning, lastSyncTimestamp]);
 
   useEventListener("resetTimerSync", (event) => {
-    if (!syncPomodoroWithTimer) return;
+    if (!syncPomodoroWithTimer) {
+      console.warn('[Pomodoro] Ignorando resetTimerSync: syncPomodoroWithTimer=false');
+      return;
+    }
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     console.log('[Pomodoro] resetTimerSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
@@ -423,7 +443,10 @@ const Pomodoro = () => {
 
   // Escuchar eventos de reset de StudyTimer y Countdown cuando están sincronizados
   useEventListener("resetPomodoroSync", (event) => {
-    if (!syncPomodoroWithTimer) return;
+    if (!syncPomodoroWithTimer) {
+      console.warn('[Pomodoro] Ignorando resetPomodoroSync: syncPomodoroWithTimer=false');
+      return;
+    }
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     console.log('[Pomodoro] resetPomodoroSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
@@ -432,7 +455,10 @@ const Pomodoro = () => {
   }, [syncPomodoroWithTimer, lastSyncTimestamp]);
 
   useEventListener("resetCountdownSync", (event) => {
-    if (!syncPomodoroWithTimer) return;
+    if (!syncPomodoroWithTimer) {
+      console.warn('[Pomodoro] Ignorando resetCountdownSync: syncPomodoroWithTimer=false');
+      return;
+    }
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     console.log('[Pomodoro] resetCountdownSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;

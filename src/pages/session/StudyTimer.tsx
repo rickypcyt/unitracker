@@ -337,12 +337,20 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
       if (!fromSync) {
         const emitTs = Date.now();
+        console.warn('[StudyTimer] Emitting reset events from studyControls.reset()', {
+          baseTimestamp: emitTs,
+          willEmitResetTimerSync: true,
+          willEmitResetPomodoroSync: !!isPomodoroSync,
+          willEmitResetCountdownSync: !!isCountdownSync,
+        });
+        // Emitir un reset global para que todos los timers (Pomodoro y Countdown)
+        // se reseteen independientemente de los toggles de sincronización
+        window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: emitTs } }));
         if (isPomodoroSync) {
           window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
         }
-        if (isCountdownSync) {
-          window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
-        }
+        // Asegurar que Countdown reciba la orden explícita de reset SIEMPRE
+        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
       }
     },
     resume: () => {
@@ -563,12 +571,16 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
       // Emit synchronized resets for linked timers
       const emitTs = Date.now();
+      console.warn('[StudyTimer] Emitting reset events from finishSession()', {
+        baseTimestamp: emitTs,
+        willEmitResetPomodoroSync: !!isPomodoroSync,
+        willEmitResetCountdownSync: !!isCountdownSync,
+      });
       if (isPomodoroSync) {
         window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
       }
-      if (isCountdownSync) {
-        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
-      }
+      // Asegurar que Countdown reciba la orden explícita de reset SIEMPRE
+      window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
     } catch (error) {
       console.error('Error finishing session:', error);
       toast.error('An error occurred while finishing the session.');
@@ -647,12 +659,16 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
       // If timers are synced, reset both Pomodoro and Countdown
       const emitTs = Date.now();
+      console.warn('[StudyTimer] Emitting reset events from exitSession()', {
+        baseTimestamp: emitTs,
+        willEmitResetPomodoroSync: !!isPomodoroSync,
+        willEmitResetCountdownSync: !!isCountdownSync,
+      });
       if (isPomodoroSync) {
         window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
       }
-      if (isCountdownSync) {
-        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
-      }
+      // Asegurar que Countdown reciba la orden explícita de reset SIEMPRE
+      window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
     } catch (error) {
       console.error('Error exiting session:', error);
       toast.error('An error occurred while exiting the session.');

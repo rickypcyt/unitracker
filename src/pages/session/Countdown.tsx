@@ -6,24 +6,17 @@ import { setCountdownState, setSyncCountdownWithTimer } from '@/store/slices/uiS
 import toast from 'react-hot-toast';
 import useEventListener from '@/hooks/useEventListener';
 
-const fields = ['hours', 'minutes', 'seconds'];
-const fieldMax = { hours: 23, minutes: 59, seconds: 59 };
+type Field = 'hours' | 'minutes' | 'seconds';
+const fields: Field[] = ['hours', 'minutes', 'seconds'];
+const fieldMax: Record<Field, number> = { hours: 23, minutes: 59, seconds: 59 };
 
-const pad = (n, field) => {
+const pad = (n: number, field: Field) => {
   const max = fieldMax[field];
   const val = Math.min(Math.max(n, 0), max);
   return val.toString().padStart(2, '0');
 };
 
-const getInitialTime = () => {
-  try {
-    const saved = localStorage.getItem('countdownLastTime');
-    if (saved) return JSON.parse(saved);
-  } catch {
-    // ignore parse error and fall back to default
-  }
-  return { hours: 2, minutes: 0, seconds: 0 };
-};
+// Eliminado getInitialTime: ya no se usa. El baseline persiste vía writeBaseline/readBaseline.
 const Countdown = ({ isSynced, isRunning }) => {
   const dispatch = useDispatch();
   const readBaseline = () => {
@@ -42,9 +35,8 @@ const Countdown = ({ isSynced, isRunning }) => {
     try { localStorage.setItem('countdownBaseline', JSON.stringify(t)); } catch {}
   };
   const initialBaseline = readBaseline();
-  const [time, setTime] = useState(initialBaseline);
   const [initialTime, setInitialTime] = useState(initialBaseline);
-  const [focusedField, setFocusedField] = useState(null);
+  const [focusedField, setFocusedField] = useState<Field | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCountdownRunning, setIsCountdownRunning] = useState(false);
   const [endTimestamp, setEndTimestamp] = useState<number | null>(null); // Igual que Pomodoro: fin esperado
@@ -73,10 +65,10 @@ const Countdown = ({ isSynced, isRunning }) => {
     });
   };
 
-  const inputRefs = useRef({
-    hours: React.createRef(),
-    minutes: React.createRef(),
-    seconds: React.createRef()
+  const inputRefs = useRef<Record<Field, React.RefObject<HTMLInputElement | null>>>({
+    hours: React.createRef<HTMLInputElement>(),
+    minutes: React.createRef<HTMLInputElement>(),
+    seconds: React.createRef<HTMLInputElement>()
   });
 
   const calculateSeconds = ({ hours, minutes, seconds }) =>
@@ -92,29 +84,18 @@ const Countdown = ({ isSynced, isRunning }) => {
   // Flag: ignorar updates externos hasta el próximo Play
   const ignoreExternalUntilPlayRef = useRef<boolean>(false);
 
-  const startCountdown = useCallback((baseTimestamp, fromSync) => {
+  const startCountdown = useCallback((baseTimestamp?: number, fromSync?: boolean) => {
     console.log('[Countdown] startCountdown()', {
       fromSync,
       baseTimestamp,
-      time,
       baseline: baselineTimeRef.current,
     });
-    // Corrige los valores ingresados por el usuario
-    const correctedTime = {
-      hours: Math.min(Math.max(time.hours, 0), fieldMax.hours),
-      minutes: Math.min(Math.max(time.minutes, 0), fieldMax.minutes),
-      seconds: Math.min(Math.max(time.seconds, 0), fieldMax.seconds),
-    };
-    // En arranque por sync usamos siempre el initialTime como base para respetar la cifra original
-    const sourceTime = fromSync ? baselineTimeRef.current : correctedTime;
-    setTime(sourceTime);
+    // Usamos siempre el baseline como fuente de verdad para arrancar
+    const sourceTime = baselineTimeRef.current;
     const total = calculateSeconds(sourceTime);
     if (total > 0) {
-      // Solo en arranque local actualizamos initialTime y baseline
-      if (!fromSync) {
-        setInitialTime(correctedTime);
-        baselineTimeRef.current = correctedTime;
-      }
+      // baseline ya es la fuente, aseguramos persistencia
+      if (!fromSync) writeBaseline(sourceTime);
       const base = baseTimestamp || Date.now();
       // End exacto: base + total segundos
       const endTs = base + total * 1000;
@@ -137,7 +118,7 @@ const Countdown = ({ isSynced, isRunning }) => {
         window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
       }
     }
-  }, [time, initialTime, dispatch, syncCountdownWithTimer]);
+  }, [initialTime, dispatch, syncCountdownWithTimer]);
 
   const handlePause = useCallback((fromSync) => {
     // Calcular con precisión el tiempo restante basado en endTimestamp para evitar delay
@@ -180,6 +161,33 @@ const Countdown = ({ isSynced, isRunning }) => {
     }
   }, [pausedSecondsLeft]);
 
+  // Lógica común cuando el countdown llega a cero (desde interval o visibilitychange)
+  const handleFinish = useCallback(() => {
+    if (!isCountdownRunning) return; // evitar dobles ejecuciones
+    setIsCountdownRunning(false);
+    try {
+      localStorage.setItem('countdownState', 'stopped');
+      localStorage.removeItem('countdownEndTs');
+      localStorage.removeItem('countdownPausedLeft');
+    } catch {}
+    if (alarmEnabled) {
+      try { new Audio('/sounds/countdownend.mp3').play(); } catch {}
+    }
+    toast.success('Countdown finished! Session complete.', {
+      position: 'top-center',
+      style: { backgroundColor: '#000', color: '#fff', border: '2px solid var(--border-primary)' }
+    });
+    if (Notification.permission === 'granted') {
+      try {
+        const notification = new Notification('Countdown finished!', {
+          body: 'Your session is complete.',
+          silent: false
+        });
+        setTimeout(() => notification.close(), 5000);
+      } catch {}
+    }
+  }, [isCountdownRunning, alarmEnabled]);
+
   const handleReset = useCallback((fromSync = false) => {
     console.log('[Countdown] handleReset()', {
       fromSync,
@@ -192,11 +200,11 @@ const Countdown = ({ isSynced, isRunning }) => {
     setEndTimestamp(null); // Resetear fin
     setPausedSecondsLeft(null);
     lastStudyElapsedRef.current = null;
-    // Tras reset, ignorar updates externos hasta el próximo Play
-    ignoreExternalUntilPlayRef.current = true;
+    // Tras reset: solo ignorar updates externos si el reset es LOCAL.
+    // Si viene sincronizado (fromSync === true), permitimos actualizaciones externas inmediatamente
+    ignoreExternalUntilPlayRef.current = !fromSync;
     dispatch(setCountdownState('stopped'));
     // Volver al tiempo ORIGINAL configurado de la sesión (baseline)
-    setTime(baselineTimeRef.current);
     // Alinear también el initialTime con el baseline para que la cifra base sea idéntica
     setInitialTime(baselineTimeRef.current);
     // Persistir por coherencia: baseline permanece, no lo sobreescribimos con display
@@ -205,10 +213,14 @@ const Countdown = ({ isSynced, isRunning }) => {
       localStorage.removeItem('countdownEndTs');
       localStorage.removeItem('countdownPausedLeft');
     } catch {}
-    if (!fromSync && syncCountdownWithTimer) {
+    if (!fromSync) {
       const now = Date.now();
+      // Igual que Pomodoro: emitir siempre el reset global
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
-      window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
+      // Y además, si está sincronizado con StudyTimer, notificar a Pomodoro específicamente
+      if (syncCountdownWithTimer) {
+        window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
+      }
     }
   }, [dispatch, syncCountdownWithTimer]);
 
@@ -224,38 +236,11 @@ const Countdown = ({ isSynced, isRunning }) => {
       }
       if (newSecondsLeft <= 0) {
         clearInterval(interval);
-        setIsCountdownRunning(false);
-        if (alarmEnabled) {
-          try {
-            new Audio('/sounds/countdownend.mp3').play();
-          } catch {
-            // ignore audio play error
-          }
-        }
-        toast.success('Countdown finished! Session complete.', {
-          position: 'top-center',
-          style: {
-            backgroundColor: '#000',
-            color: '#fff',
-            border: '2px solid var(--border-primary)'
-          }
-        });
-        if (Notification.permission === 'granted') {
-          try {
-            const notification = new Notification('Countdown finished!', {
-              body: 'Your session is complete.',
-              silent: false,
-              vibrate: [200, 100, 200]
-            });
-            setTimeout(() => notification.close(), 5000);
-          } catch {
-            // ignore notification errors
-          }
-        }
+        handleFinish();
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isCountdownRunning, endTimestamp, alarmEnabled]);
+  }, [isCountdownRunning, endTimestamp, handleFinish]);
 
   // Si la sincronización está activa, reflejar directamente el estado Redux del StudyTimer
   useEffect(() => {
@@ -283,25 +268,7 @@ const Countdown = ({ isSynced, isRunning }) => {
     }
   }, [syncCountdownWithTimer, isStudyRunningRedux, isCountdownRunning, pausedSecondsLeft, handlePause, handleResume, startCountdown]);
 
-  useEffect(() => {
-    if (isCountdownRunning) {
-      setTime({
-        hours: Math.floor(secondsLeft / 3600),
-        minutes: Math.floor((secondsLeft % 3600) / 60),
-        seconds: secondsLeft % 60,
-      });
-    } else if (pausedSecondsLeft !== null) {
-      // Si está en pausa, mantener la cifra pausada en pantalla
-      setTime({
-        hours: Math.floor(pausedSecondsLeft / 3600),
-        minutes: Math.floor((pausedSecondsLeft % 3600) / 60),
-        seconds: pausedSecondsLeft % 60,
-      });
-    } else {
-      // Idle (no corriendo y sin pausa): mostrar el tiempo configurado/inicial
-      setTime(initialTime);
-    }
-  }, [secondsLeft, isCountdownRunning, pausedSecondsLeft, initialTime]);
+  // Eliminado: sincronización manual del estado 'time'. Ahora se deriva en render.
 
   // Sincroniza al volver a enfocar la ventana
   useEffect(() => {
@@ -311,15 +278,15 @@ const Countdown = ({ isSynced, isRunning }) => {
         const diffMs = endTimestamp - Date.now();
         const newSecondsLeft = Math.max(0, Math.ceil(diffMs / 1000));
         setSecondsLeft(newSecondsLeft);
-        // Si el tiempo se acabó mientras estaba fuera, detener
+        // Si el tiempo se acabó mientras estaba fuera, ejecutar finalización (alarma/toast)
         if (newSecondsLeft === 0) {
-          setIsCountdownRunning(false);
+          handleFinish();
         }
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [isCountdownRunning, endTimestamp]);
+  }, [isCountdownRunning, endTimestamp, handleFinish]);
 
   // Ajusta el tiempo total del countdown (en segundos)
   const handleTimeAdjustment = (adjustment) => {
@@ -342,15 +309,16 @@ const Countdown = ({ isSynced, isRunning }) => {
         dispatch(setCountdownState('stopped'));
       }
     } else {
-      // Si NO está corriendo, ajusta el tiempo editable y actualiza baseline
-      setTime(updatedInitial);
-      setInitialTime(updatedInitial);
-      baselineTimeRef.current = updatedInitial;
-      console.log('[Countdown] handleTimeAdjustment() baseline updated', {
-        adjustment,
-        updatedInitial,
-      });
-    }
+    // Si NO está corriendo, actualiza baseline
+    setInitialTime(updatedInitial);
+    baselineTimeRef.current = updatedInitial;
+    // Persistir baseline para que los resets (incluido desde StudyTimer) vuelvan a este valor
+    writeBaseline(updatedInitial);
+    console.log('[Countdown] handleTimeAdjustment() baseline updated', {
+      adjustment,
+      updatedInitial,
+    });
+  }
   };
 
   // Sincronización con StudyTimer
@@ -404,23 +372,33 @@ const Countdown = ({ isSynced, isRunning }) => {
   }, [isSynced, syncCountdownWithTimer, isCountdownRunning, lastSyncTimestamp, handlePause]);
 
   useEventListener('resetTimerSync', (event) => {
+    if (!syncCountdownWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     console.log('[Countdown] resetTimerSync event', { baseTimestamp });
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
-  }, [handleReset]);
+  }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
   // Escuchar eventos de reset de StudyTimer y Pomodoro cuando están sincronizados
   useEventListener('resetPomodoroSync', (event) => {
+    if (!syncCountdownWithTimer) return;
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
     console.log('[Countdown] resetPomodoroSync event', { baseTimestamp });
+    if (lastSyncTimestamp === baseTimestamp) return;
+    setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
-  }, [handleReset]);
+  }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
+  // resetCountdownSync es una orden específica para Countdown: respetarla SIEMPRE
+  // (ya viene emitida desde componentes que deciden la intención de resetear Countdown)
   useEventListener('resetCountdownSync', (event) => {
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
-    console.log('[Countdown] resetCountdownSync event', { baseTimestamp });
+    console.log('[Countdown] resetCountdownSync event (forced apply, ignoring dedup)', { baseTimestamp });
+    // Para asegurar el reset, ignoramos la deduplicación por timestamp en este evento específico
+    setLastSyncTimestamp(baseTimestamp);
     handleReset(true);
-  }, [handleReset]);
+  }, [lastSyncTimestamp, handleReset]);
 
   // Montaje: verificar que el componente está activo y los logs aparecen
   useEffect(() => {
@@ -464,10 +442,6 @@ const Countdown = ({ isSynced, isRunning }) => {
           setIsCountdownRunning(true);
           setEndTimestamp(endTs);
           setSecondsLeft(remaining);
-          const h = Math.floor(remaining / 3600);
-          const m = Math.floor((remaining % 3600) / 60);
-          const s = remaining % 60;
-          setTime(setSafeTime({ hours: h, minutes: m, seconds: s }));
           console.log('[Countdown] restored running', { endTs, remaining });
         } else {
           // Si ya terminó, detener y limpiar
@@ -476,7 +450,7 @@ const Countdown = ({ isSynced, isRunning }) => {
           setIsCountdownRunning(false);
           setEndTimestamp(null);
           setSecondsLeft(0);
-          setTime(baselineTimeRef.current);
+          // Mostrar derivado desde baseline
           console.log('[Countdown] restored expired -> stopped');
         }
       } else if (state === 'paused' && pausedStr) {
@@ -485,10 +459,6 @@ const Countdown = ({ isSynced, isRunning }) => {
         setEndTimestamp(null);
         setSecondsLeft(remaining);
         setPausedSecondsLeft(remaining);
-        const h = Math.floor(remaining / 3600);
-        const m = Math.floor((remaining % 3600) / 60);
-        const s = remaining % 60;
-        setTime(setSafeTime({ hours: h, minutes: m, seconds: s }));
         console.log('[Countdown] restored paused', { remaining });
       }
     } catch {}
@@ -514,27 +484,27 @@ const Countdown = ({ isSynced, isRunning }) => {
 
   // (Eliminado) Manejo duplicado de sincronización global con handlers indefinidos.
 
-  const handleInputChange = useCallback((field, value) => {
+  const handleInputChange = useCallback((field: Field, value: string) => {
+    // Evitar trabajo si está corriendo: los inputs ya están disabled, pero protegemos el handler
+    if (isCountdownRunning) return;
     const clean = value.replace(/\D/g, ''); // Solo números
     let val = parseInt(clean, 10);
     if (isNaN(val)) val = 0;
-    setTime(prev => {
-      const updated = { ...prev, [field]: val };
-      localStorage.setItem('countdownLastTime', JSON.stringify(updated));
-      setInitialTime(updated);
-      // Solo cuando no está corriendo, el valor editado redefine el baseline original
-      if (!isCountdownRunning) baselineTimeRef.current = updated;
-      return updated;
-    });
-  }, []);
+    const current = baselineTimeRef.current;
+    const updated = { ...current, [field]: Math.min(Math.max(val, 0), fieldMax[field]) };
+    baselineTimeRef.current = updated;
+    setInitialTime(updated);
+    localStorage.setItem('countdownLastTime', JSON.stringify(updated));
+    writeBaseline(updated);
+  }, [isCountdownRunning]);
 
-  const navigateField = useCallback((direction, currentIdx) => {
+  const navigateField = useCallback((direction: number, currentIdx: number) => {
     const nextIdx = (currentIdx + direction + fields.length) % fields.length;
     const nextField = fields[nextIdx];
     inputRefs.current[nextField]?.current?.focus();
   }, []);
 
-  const handleInputKeyDown = useCallback((e, field) => {
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, field: Field) => {
     const idx = fields.indexOf(field);
     const step = e.shiftKey ? 10 : 1;
 
@@ -544,7 +514,7 @@ const Countdown = ({ isSynced, isRunning }) => {
         navigateField(e.shiftKey ? -1 : 1, idx);
         break;
       case 'Enter':
-        if (!isCountdownRunning) startCountdown();
+        if (!isCountdownRunning) startCountdown(undefined, false);
         break;
       case 'ArrowRight':
         e.preventDefault();
@@ -556,71 +526,58 @@ const Countdown = ({ isSynced, isRunning }) => {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setTime(prev => {
-          const nextVal = (prev[field] + step) % (fieldMax[field] + 1);
-          const next = { ...prev, [field]: nextVal };
-          // aplicar también a initial/baseline cuando no corre
-          applyTimeUpdate(next);
-          return next;
-        });
+        if (isCountdownRunning) break;
+        {
+          const base = baselineTimeRef.current;
+          const nextVal = (base[field] + step) % (fieldMax[field] + 1);
+          const next = { ...base, [field]: nextVal };
+          baselineTimeRef.current = next;
+          setInitialTime(next);
+          writeBaseline(next);
+        }
         break;
       case 'ArrowDown':
         e.preventDefault();
-        setTime(prev => {
-          const nextVal = (prev[field] - step + (fieldMax[field] + 1)) % (fieldMax[field] + 1);
-          const next = { ...prev, [field]: nextVal };
-          applyTimeUpdate(next);
-          return next;
-        });
+        if (isCountdownRunning) break;
+        {
+          const base = baselineTimeRef.current;
+          const nextVal = (base[field] - step + (fieldMax[field] + 1)) % (fieldMax[field] + 1);
+          const next = { ...base, [field]: nextVal };
+          baselineTimeRef.current = next;
+          setInitialTime(next);
+          writeBaseline(next);
+        }
         break;
       default:
         break;
     }
   }, [navigateField, startCountdown, isRunningGlobal]);
 
-  const handleFocus = (field, e) => {
+  const handleFocus = (field: Field, e: React.FocusEvent<HTMLInputElement>) => {
     setFocusedField(field);
-    setTime(prev => setSafeTime({ ...prev, [field]: 0 }));
     setTimeout(() => {
       e.target.setSelectionRange(e.target.value.length, e.target.value.length);
     }, 0);
   };
 
-  const handleBlur = (field, e) => {
+  const handleBlur = (field: Field, e: React.FocusEvent<HTMLInputElement>) => {
     let val = parseInt(e.target.value.replace(/\D/g, ''), 10);
     if (isNaN(val)) val = 0;
     if (val > fieldMax[field]) val = fieldMax[field];
-    setTime(prev => {
-      const next = { ...prev, [field]: val };
-      const safe = setSafeTime(next);
-      // Alinear initial/baseline al finalizar la edición si no corre
-      setInitialTime(safe);
-      if (!isCountdownRunning) baselineTimeRef.current = safe;
-      return safe;
-    });
-    setFocusedField(null);
-  };
-
-  const setSafeTime = (t) => {
-    const safe = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
-    const safeTime = {
-      hours: safe(t.hours),
-      minutes: safe(t.minutes),
-      seconds: safe(t.seconds)
-    };
-    return safeTime;
-  };
-
-  // Aplica una actualización de tiempo y alinea initial/baseline cuando no está corriendo
-  const applyTimeUpdate = useCallback((next) => {
-    const safe = setSafeTime(next);
-    setTime(safe);
+    const base = baselineTimeRef.current;
+    const safe = { ...base, [field]: val };
     setInitialTime(safe);
     if (!isCountdownRunning) {
       baselineTimeRef.current = safe;
       writeBaseline(safe);
     }
-  }, [isCountdownRunning]);
+    setFocusedField(null);
+  };
+
+  // Eliminado setSafeTime: los inputs actualizan baseline directamente.
+
+  // Aplica una actualización de tiempo y alinea initial/baseline cuando no está corriendo
+  // Eliminado applyTimeUpdate: no se usa sin estado 'time'.
 
   const handlePlayPause = () => {
     if (syncCountdownWithTimer) {
@@ -676,7 +633,7 @@ const Countdown = ({ isSynced, isRunning }) => {
 
       <div className="flex items-center justify-center mb-6">
         {fields.map((field, idx) => {
-          // Si está corriendo, calcula el valor desde secondsLeft
+          // Derivar el valor mostrado desde la fuente de verdad
           let value;
           if (isCountdownRunning) {
             const h = Math.floor(secondsLeft / 3600);
@@ -686,7 +643,20 @@ const Countdown = ({ isSynced, isRunning }) => {
             if (field === 'minutes') value = pad(m, 'minutes');
             if (field === 'seconds') value = pad(s, 'seconds');
           } else {
-            value = pad(time[field], field);
+            let h = 0, m = 0, s = 0;
+            if (pausedSecondsLeft !== null) {
+              h = Math.floor(pausedSecondsLeft / 3600);
+              m = Math.floor((pausedSecondsLeft % 3600) / 60);
+              s = pausedSecondsLeft % 60;
+            } else {
+              const base = baselineTimeRef.current;
+              h = base.hours;
+              m = base.minutes;
+              s = base.seconds;
+            }
+            if (field === 'hours') value = pad(h, 'hours');
+            if (field === 'minutes') value = pad(m, 'minutes');
+            if (field === 'seconds') value = pad(s, 'seconds');
           }
           return (
             <React.Fragment key={field}>
@@ -765,7 +735,7 @@ const Countdown = ({ isSynced, isRunning }) => {
           ) : (
             <button
               onClick={() => handlePlayPause()}
-              disabled={calculateSeconds(time) === 0}
+              disabled={calculateSeconds(baselineTimeRef.current) === 0}
               className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
               aria-label="Start countdown"
             >
