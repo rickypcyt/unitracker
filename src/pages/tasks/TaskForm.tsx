@@ -176,6 +176,22 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const [aiParsedTasks, setAiParsedTasks] = useState(null); // array|null
   const [showAIPreview, setShowAIPreview] = useState(false);
 
+  // Ensure the Manual tab is active when editing an existing task
+  useEffect(() => {
+    if (initialTask) {
+      setActiveTab('manual');
+    }
+  }, [initialTask]);
+
+  // Autofocus AI textarea when the AI tab becomes active
+  useEffect(() => {
+    if (activeTab === 'ai' && aiTextareaRef.current) {
+      try {
+        aiTextareaRef.current.focus();
+      } catch {}
+    }
+  }, [activeTab]);
+
   // Helper to call DeepSeek API
   async function handleAIPromptSubmit(e) {
     e.preventDefault();
@@ -382,6 +398,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             initialTitle={formData.title}
             initialBody={formData.description}
             onChange={({ body }) => handleChange('description', body)}
+            showTitleInput={false}
             className=""
           />
           {errors.description && (
