@@ -192,9 +192,13 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
   const [aiParsedTasks, setAiParsedTasks] = useState(null); // array|null
   const [showAIPreview, setShowAIPreview] = useState(false);
   // Modelo AI seleccionado por el usuario (persistido)
-  const [selectedModel, setSelectedModel] = useState<string>(() => localStorage.getItem('aiSelectedModel') || 'auto');
+  const DEFAULT_MODEL = 'openai/gpt-oss-20b:free';
+  const [selectedModel, setSelectedModel] = useState<string>(() => {
+    const saved = localStorage.getItem('aiSelectedModel');
+    // Si había un valor legacy 'auto', usar el modelo por defecto
+    return saved && saved !== 'auto' ? saved : DEFAULT_MODEL;
+  });
   const MODEL_OPTIONS: { value: string; label: string }[] = [
-    { value: 'auto', label: 'Auto Model' },
     { value: 'openai/gpt-oss-20b:free', label: 'OpenAI: gpt-oss-20b (free)' },
     { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat v3 (free)' },
     { value: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B IT (free)' },
@@ -266,8 +270,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       ];
       let modelCandidates: string[];
       const envList = modelEnv ? [String(modelEnv)] : [];
-      if (selectedModel && selectedModel !== 'auto') {
-        // Always include fallbacks after the selected one
+      if (selectedModel) {
+        // Siempre incluir fallbacks después del modelo seleccionado
         modelCandidates = [selectedModel, ...envList, ...baseModels];
       } else {
         modelCandidates = [...envList, ...baseModels];
@@ -632,17 +636,35 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     }
   }, [showAIPreview, activeTab, aiLoading, aiError]);
 
+  // Compute modal title once to reuse in headers
+  const modalTitle = initialTask ? 'Edit Task' : (initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task');
+
   return (
     <BaseModal
       isOpen={true}
       onClose={onClose}
-      title={initialTask ? 'Edit Task' : (initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task')}
+      title={modalTitle}
       maxWidth="max-w-lg"
-      showCloseButton={activeTab !== 'ai'}
+      showCloseButton={false}
     >
+      {/* Header for Manual mode with title and close (above AI | Manual selector) */}
+      {activeTab === 'manual' && (
+        <div className="w-full max-w-md mx-auto flex items-center justify-between pt-5 sm:pt-0">
+          <label className="text-base font-bold text-[var(--text-primary)]">Add Task Manual</label>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            title="Close"
+            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
       {/* Simple text selector for Manual | AI (directly under title, only for Manual tab) */}
       {activeTab !== 'ai' && (
-        <div className="w-full max-w-lg mx-auto flex justify-center sm:justify-start items-center gap-3 mt-2 sm:mt-3 pt-2 sm:pt-4 mb-3 sm:mb-6 select-none">
+        <div className="w-full max-w-lg mx-auto flex justify-center items-center gap-3 mt-2 sm:mt-3 pt-5 sm:pt-4 mb-3 sm:mb-6 select-none">
           <span
             className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
             onClick={() => setActiveTab('ai')}
@@ -826,7 +848,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       ) : (
         <form className="flex flex-col h-full flex-1 items-stretch justify-start space-y-4" onSubmit={handleAIPromptSubmit}>
           {/* Header row with title and close (top-right) */}
-          <div className="w-full max-w-md flex items-center justify-between">
+          <div className="w-full max-w-md flex items-center justify-between pt-5 sm:pt-0">
             <label htmlFor="aiPrompt" className="text-base font-bold text-[var(--text-primary)]">
               Write a prompt for making a new task:
             </label>
@@ -841,7 +863,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             </button>
           </div>
           {/* AI | Manual toggle under the AI header */}
-          <div className="w-full max-w-md flex justify-center sm:justify-start items-center gap-3 mt-1 sm:mt-2 select-none">
+          <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
             <span
               className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
               onClick={() => setActiveTab('ai')}
