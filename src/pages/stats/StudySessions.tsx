@@ -267,8 +267,8 @@ const StudySessions = () => {
                                                             <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle text-center">{month}</span>
                                                         </div>
                                                         <div className="mb-1 text-center">
-                                                            <span className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] leading-none align-middle">{stats.totalSessions}</span>
-                                                            <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] ml-2 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
+                                                            <span className="text-base font-semibold text-[var(--text-primary)] leading-none align-middle">{stats.totalSessions}</span>
+                                                            <span className="text-base font-semibold text-[var(--text-primary)] ml-2 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
                                                         </div>
                                                         <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base sm:text-lg text-center leading-none">
                                                             <Clock size={18} />

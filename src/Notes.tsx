@@ -175,7 +175,7 @@ const Notes: React.FC = () => {
   const notesToShow = isDemo ? demoNotes : notes;
 
   return (
-    <div className="w-full mx-auto pt-6 sm:pt-10 md:pt-14 relative">
+    <div className="w-full mx-auto pt-6 sm:pt-10 md:pt-14 relative px-3 sm:px-4 md:px-6 lg:px-8">
       <button
         onClick={() => {
           if (isDemo) showLoginPrompt();

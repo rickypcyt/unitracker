@@ -102,21 +102,19 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="sticky top-0 z-10 bg-[var(--bg-primary)] flex justify-between items-center mb-4 relative -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 sm:pt-5">
-            <div className="flex-1 flex justify-center items-center absolute left-0 right-0 w-full pointer-events-none">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] pointer-events-auto w-full text-center truncate">
-                {title}
-              </h2>
-            </div>
+          <div className="sticky top-0 z-10 bg-[var(--bg-primary)] flex items-center justify-between gap-3 mb-4 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 sm:pt-5">
+            <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] truncate">
+              {title}
+            </h2>
             {showCloseButton && (
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
                 aria-label="Close"
                 title="Close"
-                className="ml-auto p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                className="shrink-0 -mr-1 p-2 sm:p-2.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]"
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             )}
           </div>

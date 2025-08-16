@@ -15,11 +15,14 @@ interface AccentColor {
   class: string;
 }
 
+// Keep Theme type local to avoid import issues; must match useTheme's Theme
+type Theme = 'light' | 'dark';
+
 interface SettingsProps {
   isOpen: boolean;
   onClose: () => void;
-  currentTheme: string;
-  handleThemeChange: (theme: string) => void;
+  currentTheme: Theme;
+  handleThemeChange: (theme: Theme) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, handleThemeChange }) => {

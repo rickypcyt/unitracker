@@ -239,11 +239,11 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
       title="Start New Session"
       maxWidth="max-w-4xl"
     >
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-2 mb-4">
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
             <div className="flex-1">
-              <label htmlFor="sessionTitle" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center md:text-left">
+              <label htmlFor="sessionTitle" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
                 Title
               </label>
               <FormInput
@@ -256,7 +256,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
               />
             </div>
             <div className="flex-1">
-              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center md:text-left">
+              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
                 Assignment (optional)
               </label>
               <AutocompleteInput
@@ -268,7 +268,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
               />
             </div>
           </div>
-          <label htmlFor="sessionDescription" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
+          <label htmlFor="sessionDescription" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
             Description (Optional)
           </label>
           <FormTextarea

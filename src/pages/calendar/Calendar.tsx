@@ -338,9 +338,9 @@ const Calendar = () => {
   };
 
   return (
-    <div className={`maincard relative mx-auto transition-all duration-300 ${
+    <div className={`maincard relative mx-auto w-full transition-all duration-300 ${
       calendarSize === 'sm' ? 'max-w-md' : calendarSize === 'md' ? 'max-w-2xl' : 'max-w-4xl'
-    }`}>
+    } md:max-w-2xl lg:max-w-4xl`}>
       {/* Top bar: Month selector centered, options right */}
       <div className="flex justify-center items-center mb-4 relative">
         <div className="flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)] transition-colors duration-200 group bg-transparent">

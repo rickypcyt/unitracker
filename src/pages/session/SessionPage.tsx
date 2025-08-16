@@ -46,7 +46,7 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full pt-6 sm:pt-10 md:pt-14 px-2 md:px-8">
+    <div className="w-full pt-6 sm:pt-10 md:pt-14 px-2 md:px-10">
       <div className="flex flex-col gap-2 md:gap-4 w-full max-w-6xl mx-auto items-stretch justify-center">
         {/* Header removido: SyncToggle y botón de Settings */}
         

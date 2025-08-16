@@ -65,11 +65,11 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
   return (
     <div className="py-1">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-stretch">
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className="relative flex flex-col w-full max-w-[280px] sm:max-w-[300px] md:max-w-[320px] bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80 max-h-80 sm:max-h-96"
+            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80 max-h-80 sm:max-h-96"
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"

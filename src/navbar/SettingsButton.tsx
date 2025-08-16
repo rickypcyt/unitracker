@@ -2,6 +2,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 import { Info, LogIn, LogOut, Settings, User, UserPlus } from 'lucide-react';
 import { useState } from 'react';
+import useTheme from '@/hooks/useTheme';
 
 import AboutModal from '@/modals/AboutModal';
 import AddFriendModal from '@/modals/AddFriendModal';
@@ -28,6 +29,7 @@ const SettingsButton = ({
   const [showAbout, setShowAbout] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const { currentTheme, handleThemeChange } = useTheme();
 
   return (
     <>
@@ -142,7 +144,12 @@ const SettingsButton = ({
         friends={friends}
         onRemoveFriend={undefined}
       />
-      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        currentTheme={currentTheme}
+        handleThemeChange={handleThemeChange}
+      />
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
     </>
   );

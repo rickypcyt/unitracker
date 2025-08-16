@@ -18,10 +18,10 @@ const CalendarPage = memo(() => {
   return (
     <div className="w-full px-2 pt-6 sm:pt-12 md:pt-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
+        <div className="w-full md:max-w-2xl lg:max-w-4xl mx-auto">
           <Calendar />
         </div>
-        <div>
+        <div className="w-full md:max-w-2xl lg:max-w-4xl mx-auto">
           <UpcomingTasks />
         </div>
       </div>
