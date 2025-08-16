@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList } from 'recharts';
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -146,11 +146,26 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     title === 'Last Week' ||
     (Array.isArray(xAxisTicks) && xAxisTicks.length === 7)
   );
+  const isMonthChart = title === 'This Month';
+  const isYearChart = title === 'This Year';
   const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-lg bg-[var(--bg-secondary)] z-10`;
 
+  // Para 'This Year': escalar y mostrar etiquetas enteras según el mayor valor
+  const yearDivisor = title === 'This Year' && dataMaxMinutes > 0
+    ? Math.max(1, Math.ceil(dataMaxMinutes / 10))
+    : 1;
+  const chartData = Array.isArray(data)
+    ? (title === 'This Year'
+        ? data.map(d => ({
+            ...d,
+            displayValue: Math.round((typeof d?.minutes === 'number' ? d.minutes : 0) / yearDivisor),
+          }))
+        : data)
+    : [];
+
   // Configurar YAxis dependiendo si hay datos (minutos) o no
-  const maxMinutes = Array.isArray(data) && data.length
-    ? Math.max(...data.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)))
+  const maxMinutes = Array.isArray(chartData) && chartData.length
+    ? Math.max(...chartData.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)))
     : 0;
   const noMinutesData = !maxMinutes; // true si todos son 0 o no hay datos
   const weekNoData = isWeekChart && noMinutesData;
@@ -159,9 +174,13 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   const yDomain: [number, number] = weekNoData
     ? [0, 360]
     : (noMinutesData ? [0, 180] : [0, dynamicMax]);
-  const yTicks: number[] | undefined = weekNoData
-    ? [0, 60, 120, 180, 240, 300, 360]
-    : (noMinutesData ? [0, 60, 120, 180] : undefined);
+  // Ticks unificados: para semana/mes/año usar siempre múltiplos de 60 hasta yDomain
+  const yAxisTicksFinal: (number)[] = (() => {
+    if (weekNoData) return [0, 60, 120, 180, 240, 300, 360];
+    const upper = (yDomain[1] ?? 0);
+    const steps = Math.max(1, Math.floor(upper / 60));
+    return Array.from({ length: steps + 1 }, (_, i) => i * 60);
+  })();
 
   return (
     <>
@@ -171,12 +190,12 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
       <div className="w-full overflow-hidden">
         <div className={chartBoxClass}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={data} 
-              margin={{ 
-                top: 30, 
-                right: isSmall ? 8 : 16, 
-                bottom: 30, 
+            <BarChart
+              data={chartData}
+              margin={{
+                top: isSmall ? 8 : 12,
+                right: isSmall ? 8 : 12,
+                bottom: isSmall ? 8 : 12,
                 left: isSmall ? 24 : 36
               }} 
               barCategoryGap={
@@ -228,18 +247,12 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 tickLine={false}
                 width={isSmall ? 34 : 44}
                 domain={
-                  // En gráficos de semana, siempre usar el dominio dinámico para mostrar el máximo real (redondeado a hora)
-                  isWeekChart ? (yDomain as [number, number]) : (isSmall ? [0, smallYAxisMax] as [number, number] : yDomain)
+                  // Para semana/mes/año usar dominio dinámico
+                  (isWeekChart || isMonthChart || isYearChart)
+                    ? (yDomain as [number, number])
+                    : (isSmall ? [0, smallYAxisMax] as [number, number] : yDomain)
                 }
-                ticks={
-                  (isWeekChart && noMinutesData)
-                    ? [0, 60, 120, 180, 240, 300, 360]
-                    : (isWeekChart
-                        ? Array.from({ length: Math.floor((yDomain[1] ?? 0) / 60) + 1 }, (_, i) => i * 60)
-                        : (isSmall
-                            ? Array.from({ length: Math.floor(smallYAxisMax / 60) + 1 }, (_, i) => i * 60)
-                            : yTicks))
-                }
+                ticks={yAxisTicksFinal}
                 allowDecimals={false}
                 tickMargin={8}
               />
@@ -253,9 +266,12 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 animationDuration={0}
                 ref={chartRef}
               >
-                {data.map((entry, index) => (
+                {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
                 ))}
+                {title === 'This Year' && (
+                  <LabelList dataKey="displayValue" position="top" fill="var(--text-primary)" fontSize={12} />
+                )}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
