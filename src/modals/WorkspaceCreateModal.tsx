@@ -1,10 +1,9 @@
 import { BookOpen, Briefcase, Coffee, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import BaseModal from './BaseModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { useModalClose } from '@/hooks/useModalClose';
 
 const iconOptions = [
   { name: 'Briefcase', icon: Briefcase },
@@ -30,14 +29,20 @@ const iconOptions = [
   { name: 'Workflow', icon: Workflow },
 ];
 
-const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  onWorkspaceCreated: (data: any) => void;
+};
+
+const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) => {
   const [workspaceName, setWorkspaceName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { user } = useAuth() as any;
   const [selectedIcon, setSelectedIcon] = useState('Briefcase');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!workspaceName.trim()) {
       setError('Workspace name is required');
@@ -53,7 +58,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
         .insert([
           {
             name: workspaceName.trim(),
-            user_id: user.id,
+            user_id: user?.id,
             icon: selectedIcon
           }
         ])
@@ -78,9 +83,6 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
     onClose();
   };
 
-  const modalRef = useRef();
-  useModalClose(modalRef, handleClose);
-
   if (!isOpen) return null;
 
   return (
@@ -89,9 +91,8 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }) => {
       onClose={handleClose}
       title="Create New Workspace"
       maxWidth="max-w-md"
-      showHeader={false}
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 pt-2 sm:pt-4">
         <div className="flex items-center gap-3 mb-6">
           {(() => {
             const IconComp = iconOptions.find(opt => opt.name === selectedIcon)?.icon || Briefcase;

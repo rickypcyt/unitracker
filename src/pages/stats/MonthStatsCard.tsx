@@ -28,8 +28,8 @@ const MonthStatsCard = ({ data, accentColor, shownMonthDate, setMonthOffset, mon
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto scroll-smooth w-full">
-        <div className="min-w-[600px]">
+      <div className="w-full overflow-hidden">
+        <div className="w-full">
           <StatsChart
             data={data}
             title="This Month"

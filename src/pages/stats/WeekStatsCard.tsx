@@ -37,8 +37,8 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
             <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
           </button>
         </div>
-        <div className="overflow-x-auto scroll-smooth w-full">
-          <div className="min-w-[600px]">
+        <div className="w-full overflow-hidden">
+          <div className="w-full">
             <StatsChart
               data={weekData}
               title={`Week ${shownWeekNumber}`}

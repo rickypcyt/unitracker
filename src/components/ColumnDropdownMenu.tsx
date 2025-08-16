@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { MoreVertical, Move } from 'lucide-react';
+import { MoreVertical, Move, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 const ColumnDropdownMenu = ({
@@ -8,6 +8,7 @@ const ColumnDropdownMenu = ({
   tasks,
   onMoveToWorkspace,
   columnMenu,
+  onDeleteAssignment,
 }) => {
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
 
@@ -58,13 +59,15 @@ const ColumnDropdownMenu = ({
           </DropdownMenu.Item>
           
           <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
-          
           <DropdownMenu.Item
-            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] cursor-default"
-            disabled
+            onClick={() => onDeleteAssignment?.(assignment)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-md cursor-pointer outline-none transition-colors focus:bg-red-500/10 focus:text-red-500"
           >
-            <span className="text-sm font-medium">{tasks.length} tasks</span>
+            <Trash2 size={16} className="text-red-500" />
+            Delete assignment (and all tasks)
           </DropdownMenu.Item>
+          
+          
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

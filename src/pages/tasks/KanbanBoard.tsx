@@ -53,6 +53,8 @@ export const KanbanBoard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+  const [showDeleteAssignmentModal, setShowDeleteAssignmentModal] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null as string | null);
   const [columnOrder] = useState(() => {
     const savedOrder = localStorage.getItem('kanbanColumnOrder');
     return savedOrder ? JSON.parse(savedOrder) : [];
@@ -363,6 +365,23 @@ export const KanbanBoard = () => {
     setShowWorkspaceSelectionModal(true);
   };
 
+  const handleDeleteAssignment = (assignment) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
+    setAssignmentToDelete(assignment);
+    setShowDeleteAssignmentModal(true);
+  };
+
+  const confirmDeleteAssignment = () => {
+    if (!assignmentToDelete) return;
+    const tasksToDelete = tasks.filter((t) => t.assignment === assignmentToDelete);
+    tasksToDelete.forEach((t) => originalHandleDeleteTask(t.id));
+    setShowDeleteAssignmentModal(false);
+    setAssignmentToDelete(null);
+  };
+
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
   if (noTasks) {
@@ -407,6 +426,7 @@ export const KanbanBoard = () => {
               columnMenu={columnMenu?.assignmentId === assignment ? columnMenu : null}
               onCloseColumnMenu={handleCloseColumnMenu}
               onMoveToWorkspace={handleMoveToWorkspace}
+              onDeleteAssignment={handleDeleteAssignment}
             />
           </div>
         ))}
@@ -558,6 +578,20 @@ export const KanbanBoard = () => {
           }}
           message={`Are you sure you want to delete the task "${taskToDelete.title}"? This action cannot be undone.`}
           confirmButtonText="Delete Task"
+        />
+      )}
+
+      {/* Delete Assignment Confirmation Modal */}
+      {showDeleteAssignmentModal && assignmentToDelete && (
+        <DeleteCompletedModal
+          isOpen={showDeleteAssignmentModal}
+          onClose={() => {
+            setShowDeleteAssignmentModal(false);
+            setAssignmentToDelete(null);
+          }}
+          onConfirm={confirmDeleteAssignment}
+          message={`Are you sure you want to delete the assignment "${assignmentToDelete}"? All tasks associated with this assignment will be deleted.`}
+          confirmButtonText="Delete Assignment"
         />
       )}
     </div>

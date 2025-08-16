@@ -332,7 +332,7 @@ const Navbar = () => {
                   title={label}
                 >
                   <Icon className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
-                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline">{label}</span>
+                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">{label}</span>
                 </button>
               ))}
             </div>

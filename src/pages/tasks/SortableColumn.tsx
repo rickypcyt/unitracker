@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp, ListOrdered, Plus } from 'lucide-react';
+// @ts-nocheck
+import { ChevronDown, ChevronUp, ListOrdered, Plus, Trash2 } from 'lucide-react';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 
@@ -21,6 +22,7 @@ export const SortableColumn = ({
   columnMenu,
   onCloseColumnMenu,
   onMoveToWorkspace,
+  onDeleteAssignment,
 }) => {
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -61,13 +63,13 @@ export const SortableColumn = ({
           >
             <ListOrdered size={22} />
           </button>
-          
           {/* Radix UI Dropdown Menu */}
           <ColumnDropdownMenu
             assignment={assignment}
             tasks={tasks}
             onMoveToWorkspace={onMoveToWorkspace}
             columnMenu={columnMenu}
+            onDeleteAssignment={onDeleteAssignment}
           />
         </div>
       </div>

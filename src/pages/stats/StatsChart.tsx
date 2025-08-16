@@ -1,17 +1,17 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-
-function formatMinutesToHHMM(minutes) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}:${m.toString().padStart(2, '0')}`;
-}
 
 function formatMinutesToHMText(minutes) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${m}m`;
+}
+
+// Compact label for Y axis: integer hours like "2h"
+function formatMinutesToHoursLabel(minutes: number) {
+  const h = Math.floor(minutes / 60);
+  return `${h}h`;
 }
 
 const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
@@ -95,9 +95,34 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
 const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks }) => {
   const chartRef = useRef(null);
   const tasks = useSelector((state) => state.tasks.tasks || []);
+  const [isSmall, setIsSmall] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 640px)');
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => setIsSmall('matches' in e ? e.matches : (e as MediaQueryList).matches);
+    // Init
+    setIsSmall(mql.matches);
+    // Listen
+    const handler = (e: MediaQueryListEvent) => onChange(e);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', handler);
+      return () => mql.removeEventListener('change', handler);
+    } else {
+      // Safari
+      // @ts-ignore
+      mql.addListener(handler);
+      return () => {
+        // @ts-ignore
+        mql.removeListener(handler);
+      };
+    }
+  }, []);
   // Detectar el índice del día actual
   const today = new Date();
   let todayIndex = -1;
+  const minutesArray = Array.isArray(data) ? data.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)) : [];
+  const dataMaxMinutes = minutesArray.length ? Math.max(...minutesArray) : 0;
+  const smallYAxisMax = dataMaxMinutes <= 60 ? 60 : 120;
   if (title === 'This Month') {
     todayIndex = data.findIndex(d => {
       const dDate = new Date(d.date);
@@ -121,38 +146,47 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     title === 'Last Week' ||
     (Array.isArray(xAxisTicks) && xAxisTicks.length === 7)
   );
-  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} min-w-[700px] rounded-lg bg-[var(--bg-secondary)] z-10`;
+  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-lg bg-[var(--bg-secondary)] z-10`;
 
   // Configurar YAxis dependiendo si hay datos (minutos) o no
   const maxMinutes = Array.isArray(data) && data.length
     ? Math.max(...data.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)))
     : 0;
   const noMinutesData = !maxMinutes; // true si todos son 0 o no hay datos
-  const yDomain = noMinutesData ? [0, 180] : [0, 'auto'];
-  const yTicks = noMinutesData ? [0, 60, 120, 180] : undefined;
+  const weekNoData = isWeekChart && noMinutesData;
+  // Para datos presentes, definir un máximo dinámico redondeado a horas completas
+  const dynamicMax = Math.max(60, Math.ceil(maxMinutes / 60) * 60);
+  const yDomain: [number, number] = weekNoData
+    ? [0, 360]
+    : (noMinutesData ? [0, 180] : [0, dynamicMax]);
+  const yTicks: number[] | undefined = weekNoData
+    ? [0, 60, 120, 180, 240, 300, 360]
+    : (noMinutesData ? [0, 60, 120, 180] : undefined);
 
   return (
     <>
       <div className="w-full flex flex-col items-center mt-2 mb-2">
         {customTitle ? customTitle : <span className="text-lg font-semibold">{title}</span>}
       </div>
-      <div className="overflow-x-auto w-full">
+      <div className="w-full overflow-hidden">
         <div className={chartBoxClass}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
               data={data} 
               margin={{ 
                 top: 30, 
-                right: 16, 
+                right: isSmall ? 8 : 16, 
                 bottom: 30, 
-                left: 16
+                left: isSmall ? 24 : 36
               }} 
               barCategoryGap={
-                title === 'This Month' ? 8 :
+                title === 'This Month' ? (isSmall ? 6 : 8) :
                 (title === 'This Week' || title === 'Last Week') ? 16 :
                 (title === 'This Year' ? 18 : 20)
               }
             >
+              {/** Build ticks for Month on small screens: every 5 days */}
+              {(() => null)()}
               <XAxis
                 dataKey={
                   isWeekChart
@@ -164,10 +198,20 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 stroke="var(--text-secondary)"
                 tickLine={false}
                 axisLine={false}
-                interval={0}
+                interval={isWeekChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd')}
                 minTickGap={0}
-                tickMargin={title === 'This Month' ? 12 : title === 'This Year' ? 18 : 16}
-                ticks={isWeekChart ? xAxisTicks : undefined}
+                tickMargin={title === 'This Month' ? (isSmall ? 8 : 12) : title === 'This Year' ? 18 : 16}
+                ticks={
+                  isWeekChart ? xAxisTicks :
+                  (title === 'This Month' && isSmall
+                    ? (Array.isArray(data) ? data.map(d => d.realDay).filter(v => {
+                        const n = parseInt(v, 10);
+                        return !isNaN(n) && (n === 1 || n % 5 === 0);
+                      }) : undefined)
+                    : (title === 'This Year' && isSmall
+                        ? (Array.isArray(data) ? data.map(d => d.dayName).filter((_, i) => i % 2 === 0) : undefined)
+                        : undefined))
+                }
                 tickFormatter={(value, index) => {
                   // Para gráficos de semana, usar las etiquetas de días de la semana
                   if (isWeekChart && xAxisTicks && xAxisTicks[index]) {
@@ -179,12 +223,23 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               <YAxis
                 stroke="var(--text-secondary)"
                 tick={{ fill: "var(--text-secondary)", fontSize: "0.7rem", dx: 4 }}
-                tickFormatter={(v) => formatMinutesToHHMM(v)}
+                tickFormatter={(v) => formatMinutesToHoursLabel(v as number)}
                 axisLine={false}
                 tickLine={false}
-                width={40}
-                domain={yDomain}
-                ticks={yTicks}
+                width={isSmall ? 34 : 44}
+                domain={
+                  // En gráficos de semana, siempre usar el dominio dinámico para mostrar el máximo real (redondeado a hora)
+                  isWeekChart ? (yDomain as [number, number]) : (isSmall ? [0, smallYAxisMax] as [number, number] : yDomain)
+                }
+                ticks={
+                  (isWeekChart && noMinutesData)
+                    ? [0, 60, 120, 180, 240, 300, 360]
+                    : (isWeekChart
+                        ? Array.from({ length: Math.floor((yDomain[1] ?? 0) / 60) + 1 }, (_, i) => i * 60)
+                        : (isSmall
+                            ? Array.from({ length: Math.floor(smallYAxisMax / 60) + 1 }, (_, i) => i * 60)
+                            : yTicks))
+                }
                 allowDecimals={false}
                 tickMargin={8}
               />
@@ -194,7 +249,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 dataKey="minutes"
                 fill={accentColor}
                 radius={[6, 6, 0, 0]}
-                barSize={title === 'This Month' ? 10 : title === 'This Year' ? 18 : 18}
+                barSize={title === 'This Month' ? (isSmall ? 8 : 10) : title === 'This Year' ? 18 : 18}
                 animationDuration={0}
                 ref={chartRef}
               >

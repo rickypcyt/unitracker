@@ -72,7 +72,7 @@ const TasksPage = memo(() => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 min-h-[calc(100vh-4rem)]">
+      <div className="flex items-center justify-center pt-16 sm:pt-20 pb-12 min-h-[calc(100vh-4rem)]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
           <p className="text-[var(--text-secondary)]">Loading tasks...</p>
@@ -82,7 +82,7 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-3 pt-6 relative min-h-[calc(100vh-4rem)] z-0">
+    <div className="w-full px-3 pt-4 sm:pt-10 relative min-h-[calc(100vh-4rem)] z-0">
       <KanbanBoard />
       {/* Floating Action Button */}
       <button

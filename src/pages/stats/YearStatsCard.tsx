@@ -6,8 +6,8 @@ const YearStatsCard = ({ data, accentColor }) => (
       <div className="flex items-center justify-center w-full mb-1 mt-1">
         <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">This Year</span>
       </div>
-      <div className="overflow-x-auto scroll-smooth w-full">
-        <div className="min-w-[600px]">
+      <div className="w-full overflow-hidden">
+        <div className="w-full">
           <StatsChart
             data={data}
             title="This Year"
@@ -20,4 +20,4 @@ const YearStatsCard = ({ data, accentColor }) => (
   </div>
 );
 
-export default YearStatsCard; 
+export default YearStatsCard;

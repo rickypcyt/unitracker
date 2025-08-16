@@ -1,27 +1,26 @@
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
 import type { FC, MutableRefObject } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
 import { clearUser, setUser } from '@/store/slices/authSlice';
+import { useEffect, useRef, useState } from 'react';
 
 import type { AppDispatch } from '@/store/store';
 import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
 import { NoiseProvider } from '@/utils/NoiseContext';
 import Notes from './Notes';
-
 import SessionPage from '@/pages/session/SessionPage';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';
 import { Toaster } from 'react-hot-toast';
 import TourManager from './components/TourManager';
+import type { User } from '@supabase/supabase-js';
 import UserModal from '@/modals/UserModal';
 import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
 import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
 import { supabase } from '@/utils/supabaseClient';
 import { useDispatch } from 'react-redux';
 import useTheme from '@/hooks/useTheme';
-import type { User } from '@supabase/supabase-js';
 
 const PageContent: FC = () => {
   const { activePage } = useNavigation();
@@ -29,7 +28,7 @@ const PageContent: FC = () => {
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
       <Navbar />
-      <div className="pt-12">
+      <div className="pt-16">
         {activePage === 'session' && <SessionPage />}
         {activePage === 'tasks' && <TasksPage />}
         {activePage === 'calendar' && <CalendarPage />}

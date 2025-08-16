@@ -9,11 +9,13 @@ import { deleteLap } from '@/store/LapActions';
 import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
+import useDemoMode from '@/utils/useDemoMode';
 
 const StudySessions = () => {
     const { laps } = useSelector((state) => state.laps);
     const dispatch = useDispatch();
     const { isLoggedIn } = useAuth();
+    const { isDemo } = useDemoMode();
     const [selectedMonth, setSelectedMonth] = useState(null);
     const [selectedSession, setSelectedSession] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -55,7 +57,42 @@ const StudySessions = () => {
         setSessionToDeleteId(null);
     };
 
-    const groupedLaps = groupSessionsByMonth();
+    // Demo data: build months up to current month with sample sessions
+    const buildDemoGroupedLaps = () => {
+        const months = [
+            'January','February','March','April','May','June','July','August','September','October','November','December'
+        ];
+        const now = new Date();
+        const year = now.getFullYear();
+        const currentMonthIdx = now.getMonth();
+        const out: Record<string, any[]> = {};
+        let sessionCounter = 1;
+        for (let m = 0; m <= currentMonthIdx; m++) {
+            const monthName = months[m];
+            const key = `${monthName} ${year}`;
+            const sessionsThisMonth = 6 + ((m * 3) % 5); // 6..10 aprox
+            out[key] = [];
+            for (let i = 0; i < sessionsThisMonth; i++) {
+                const day = 1 + ((i * 3) % 26);
+                const date = new Date(year, m, day, 12, 0, 0);
+                const durMin = 30 + ((i * 15 + m * 10) % 90); // 30..120
+                const h = Math.floor(durMin / 60).toString().padStart(2, '0');
+                const mm = (durMin % 60).toString().padStart(2, '0');
+                out[key].push({
+                    id: `demo-${year}-${m + 1}-${i + 1}`,
+                    created_at: date.toISOString(),
+                    duration: `${h}:${mm}`,
+                    session_number: sessionCounter++,
+                    name: `Demo Study Session ${i + 1}`,
+                    tasks_completed: (i % 3) + 1,
+                    type: 'study',
+                });
+            }
+        }
+        return out;
+    };
+
+    const groupedLaps = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth();
 
     // Calcular estadísticas por mes
     const getMonthStats = (lapsOfMonth) => {
@@ -103,7 +140,7 @@ const StudySessions = () => {
         };
     }, [contextMenu]);
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isDemo) {
         return (
             <div className="maincard p-3">
                 <div className="flex justify-center items-center">
@@ -118,7 +155,7 @@ const StudySessions = () => {
             </div>
         );
     }
-    if (laps.length === 0) {
+    if (!isDemo && laps.length === 0) {
         return (
             <div className="maincard p-3">
                 <div className="flex justify-center items-center">
@@ -151,11 +188,11 @@ const StudySessions = () => {
                     </div>
 
                     <div className="max-w-6xl mx-auto px-2">
-                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
+                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
                             {groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
-                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full max-w-sm"
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full"
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
@@ -214,7 +251,7 @@ const StudySessions = () => {
                             <div key={year} className="mb-1">
                                 <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="max-w-6xl mx-auto px-2">
-                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
+                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
                                         {monthsByYear[year]
                                             .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                                             .map(({ month, monthYear, lapsOfMonth }) => {
@@ -222,7 +259,7 @@ const StudySessions = () => {
                                                 return (
                                                     <div
                                                         key={monthYear}
-                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-2 md:p-3 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full max-w-sm min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
+                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
                                                         onClick={() => setSelectedMonth(monthYear)}
                                                     >
                                                         <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">

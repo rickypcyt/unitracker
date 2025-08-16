@@ -16,7 +16,7 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
   return (
-    <div className="w-full px-2 pt-7">
+    <div className="w-full px-2 pt-6 sm:pt-12 md:pt-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <Calendar />

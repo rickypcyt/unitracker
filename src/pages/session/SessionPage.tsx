@@ -46,14 +46,14 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full pt-10 px-2 md:px-8">
-      <div className="flex flex-col gap-4 md:gap-8 w-full max-w-6xl mx-auto items-stretch justify-center">
+    <div className="w-full pt-6 sm:pt-10 md:pt-14 px-2 md:px-8">
+      <div className="flex flex-col gap-2 md:gap-4 w-full max-w-6xl mx-auto items-stretch justify-center">
         {/* Header removido: SyncToggle y botón de Settings */}
         
         {/* Controles globales (solo visibles cuando está sincronizado) */}
         <GlobalTimerControls />
         
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-8 w-full">
+        <div className="flex flex-col lg:flex-row gap-2 md:gap-4 w-full">
           {/* Pomodoro */}
           <div className="maincard w-full lg:w-1/3 flex-1 mx-auto">
             <Pomodoro isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
