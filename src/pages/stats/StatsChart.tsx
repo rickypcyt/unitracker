@@ -269,9 +269,6 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
                 ))}
-                {title === 'This Year' && (
-                  <LabelList dataKey="displayValue" position="top" fill="var(--text-primary)" fontSize={12} />
-                )}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
