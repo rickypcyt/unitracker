@@ -1,5 +1,5 @@
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { useCallback, useEffect, useRef } from 'react';
-import type { ReactNode, MouseEvent as ReactMouseEvent } from 'react';
 
 import { X } from 'lucide-react';
 
@@ -92,18 +92,18 @@ const BaseModal = ({
 
   return (
     <div
-      className={`BaseModal fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-stretch sm:items-center justify-center ${zIndex} backdrop-blur-md`}
+      className={`BaseModal fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-md w-full px-2 overflow-hidden`}
       onClick={handleOverlayClick}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className={`bg-[var(--bg-primary)] border-0 sm:border-2 border-[var(--border-primary)] rounded-none sm:rounded-xl p-4 sm:p-6 w-full ${maxWidth} mx-0 sm:mx-4 ${className} shadow-xl max-h-none sm:max-h-[85vh] h-[100dvh] sm:h-auto overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col`}
+        className={`bg-[var(--bg-primary)] border-0 sm:border-2 border-[var(--border-primary)] rounded-none sm:rounded-xl p-3 sm:p-5 w-full ${maxWidth} mx-0 sm:mx-4 ${className} shadow-xl max-h-[85vh] h-auto overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="sticky top-0 z-10 bg-[var(--bg-primary)] flex items-center justify-between gap-3 mb-4 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-2 sm:pt-5">
-            <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] truncate">
+          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-6 pb-0">
+            <h2 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] truncate">
               {title}
             </h2>
             {showCloseButton && (

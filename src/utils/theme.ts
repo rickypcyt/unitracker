@@ -12,20 +12,18 @@ export const ACCENT_COLORS: AccentColor[] = [
   { name: "Purple", value: "#BF5AF2", class: "bg-[#BF5AF2]" },
   { name: "Orange", value: "#FF9F0A", class: "bg-[#FF9F0A]" },
   { name: "Pink", value: "#FF375F", class: "bg-[#FF375F]" },
-  // Cool Colors
-  { name: "Teal", value: "#64D2FF", class: "bg-[#64D2FF]" },
-  { name: "Indigo", value: "#5E5CE6", class: "bg-[#5E5CE6]" },
+  // Row 2 — Mid tones aligned to columns: [Blue, Green, Red, Purple, Orange, Pink]
   { name: "Deep Blue", value: "#0040DD", class: "bg-[#0040DD]" },
-  // Warm Colors
-  { name: "Yellow", value: "#FFD60A", class: "bg-[#FFD60A]" },
-  { name: "Amber", value: "#FFB020", class: "bg-[#FFB020]" },
-  { name: "Coral", value: "#FF7D6B", class: "bg-[#FF7D6B]" },
-  // Soft Colors
-  { name: "Mint", value: "#66D4CF", class: "bg-[#66D4CF]" },
-  { name: "Lavender", value: "#E4B4F4", class: "bg-[#E4B4F4]" },
-  { name: "Peach", value: "#FFB38A", class: "bg-[#FFB38A]" },
-  // Deep Colors
-  { name: "Deep Purple", value: "#8A2BE2", class: "bg-[#8A2BE2]" },
   { name: "Deep Green", value: "#2E8B57", class: "bg-[#2E8B57]" },
   { name: "Rose", value: "#FF6B6B", class: "bg-[#FF6B6B]" },
+  { name: "Deep Purple", value: "#8A2BE2", class: "bg-[#8A2BE2]" },
+  { name: "Amber", value: "#FFB020", class: "bg-[#FFB020]" },
+  { name: "Coral", value: "#FF7D6B", class: "bg-[#FF7D6B]" },
+  // Row 3 — Lighter/pastel tones aligned to columns
+  { name: "Teal", value: "#64D2FF", class: "bg-[#64D2FF]" },
+  { name: "Mint", value: "#66D4CF", class: "bg-[#66D4CF]" },
+  { name: "Peach", value: "#FFB38A", class: "bg-[#FFB38A]" },
+  { name: "Lavender", value: "#E4B4F4", class: "bg-[#E4B4F4]" },
+  { name: "Yellow", value: "#FFD60A", class: "bg-[#FFD60A]" },
+  { name: "Pastel Pink", value: "#FFC0CB", class: "bg-[#FFC0CB]" },
 ]; 

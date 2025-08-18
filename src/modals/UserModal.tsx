@@ -5,13 +5,21 @@ import { Pencil } from 'lucide-react';
 import UsernameInput from '@/components/UsernameInput';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
+import { processAvatarFile, isSupportedType } from '@/utils/avatarImage';
 
 const UserModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [processed, setProcessed] = useState<{
+    blob: Blob;
+    width: number;
+    height: number;
+    type: 'image/png' | 'image/jpeg' | 'image/webp';
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
   const [username, setUsername] = useState('');
   const [usernameValid, setUsernameValid] = useState(false);
   const [usernameLoading, setUsernameLoading] = useState(false);
@@ -56,31 +64,58 @@ const UserModal = ({ isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [editingUsername]);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-      setSuccess(false);
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    setUploadError('');
+    setSuccess(false);
+    setProcessed(null);
+    if (!file) return;
+
+    // Validación rápida de tipo/size de entrada (antes de procesar)
+    if (!isSupportedType(file.type)) {
+      setUploadError('Formato no soportado. Usa PNG, JPEG o WebP.');
+      return;
+    }
+    if (file.size > 10_000_000) { // hard cap de entrada 10 MB
+      setUploadError('El archivo es demasiado grande. Máximo 10 MB.');
+      return;
+    }
+
+    try {
+      const { blob, previewUrl, width, height, type } = await processAvatarFile(file, {
+        minSize: 256,
+        maxSize: 512,
+        maxBytes: 1_000_000,
+        preferFormat: 'auto',
+        quality: 0.82,
+      });
+      setPreview(previewUrl);
+      setProcessed({ blob, width, height, type });
+    } catch (err: any) {
+      setUploadError(err?.message || 'Error procesando la imagen.');
     }
   };
 
-  // Modular function to upload avatar
-  const uploadAvatar = async (file, user) => {
+  // Modular function to upload avatar (expects processed blob)
+  const uploadAvatar = async (file: Blob, user) => {
     if (!user) {
       console.error('No authenticated user');
       return { success: false };
     }
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `avatar.${fileExt}`; // fixed name, but keeps extension
+    // Determine extension by mime
+    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/jpeg' ? 'jpg' : 'webp';
+    // Versioned immutable filename for cache-busting
+    const version = Date.now();
+    const fileName = `avatar_v${version}.${ext}`;
     const filePath = `${user.id}/${fileName}`;
-    console.warn('Uploading avatar:', { filePath, fileType: file.type, file });
+    console.warn('Uploading avatar:', { filePath, fileType: file.type, size: file.size });
 
     const { error } = await supabase.storage
       .from('avatars')
       .upload(filePath, file, {
-        upsert: true, // overwrite if exists
+        upsert: false, // keep immutable versions
         contentType: file.type,
+        cacheControl: '31536000', // 1 year, safe with versioned filenames
       });
 
     if (error) {
@@ -98,7 +133,7 @@ const UserModal = ({ isOpen, onClose }) => {
       return { success: false };
     }
 
-    // Save to profiles
+    // Save to profiles (point to latest version)
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ avatar_url: publicUrlData.publicUrl })
@@ -113,35 +148,33 @@ const UserModal = ({ isOpen, onClose }) => {
   };
 
   const handleUpload = async () => {
-    const file = fileInputRef.current?.files?.[0];
+    const proc = processed;
     // Debug: Initial state
     console.warn('DEBUG: Initial state', {
       user,
-      file,
-      fileInputRef,
+      processed: proc,
       userId: user?.id,
-      fileInputCurrent: fileInputRef.current,
-      files: fileInputRef.current?.files,
     });
-    if (!file) {
-      console.error('No file selected:', fileInputRef.current?.files);
-      return;
-    }
-    if (!user?.id) {
-      console.error('No user ID:', user);
+    if (!proc) {
+      console.error('No file selected');
       return;
     }
     setUploading(true);
-    setSuccess(false);
+    setUploadError('');
     try {
-      const result = await uploadAvatar(file, user);
+      const result = await uploadAvatar(proc.blob, user);
       if (result.success) {
-        setAvatarUrl(result.publicUrl || null);
-        setPreview(null);
         setSuccess(true);
+        // Mantener preview, pero limpiar input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setProcessed(null);
+        // Forzar recarga de perfil: vuelve a leer avatar_url
+        // (opcional: setAvatarUrl(result.publicUrl))
+        setAvatarUrl(result.publicUrl);
       }
-    } catch (err) {
-      console.error('Unexpected error:', err);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setUploadError('Failed to upload avatar. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -251,7 +284,7 @@ const UserModal = ({ isOpen, onClose }) => {
         {/* Avatar file input and buttons */}
         <input
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/webp"
           ref={fileInputRef}
           className="hidden"
           onChange={handleFileChange}
@@ -267,6 +300,9 @@ const UserModal = ({ isOpen, onClose }) => {
         )}
         {success && (
           <div className="mt-2 text-green-600 font-medium">Avatar updated!</div>
+        )}
+        {uploadError && (
+          <div className="mt-2 text-red-600 text-sm">{uploadError}</div>
         )}
         {/* If no username, blocking message */}
         {!username && (

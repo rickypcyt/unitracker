@@ -1,5 +1,5 @@
 import type { AppDispatch, RootState } from '@/store/store';
-import { LogIn, LogOut, Settings as SettingsIcon, Trash2, X } from 'lucide-react';
+import { LogIn, LogOut, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@supabase/supabase-js';
 import useTheme from '@/hooks/useTheme';
+import BaseModal from '@/modals/BaseModal';
 
 interface SettingsProps {
   isOpen: boolean;
@@ -59,29 +60,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[99999]"
-        onClick={onClose}
-      >
-        <div 
-          className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] w-full max-w-md mx-4 p-6"
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">Settings</h2>
-            <button
-              onClick={onClose}
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="space-y-6">
+      <BaseModal isOpen={isOpen} onClose={onClose} title="Settings" maxWidth="max-w-md" className="!p-0">
+        <div className="space-y-6 p-6">
             {/* Theme Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">Theme</h3>
@@ -144,9 +126,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
             </div>
-          </div>
         </div>
-      </div>
+      </BaseModal>
 
       {showManageAssignments && (
         <ManageAssignmentsModal
