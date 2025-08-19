@@ -15,10 +15,11 @@ type Props = {
   isOpen: boolean;
   tasks?: AITask[];
   onAccept: (task: AITask) => void;
+  onAcceptAll?: (tasks: AITask[]) => void;
   onCancel: () => void;
 };
 
-const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onCancel }: Props) => {
+const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }: Props) => {
   // Keep a local copy so we can delete items without mutating parent
   const [items, setItems] = useState<AITask[]>(tasks ?? []);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -98,6 +99,16 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onCancel }: Props) => {
             </button>
             {/* Right: Accept */}
             <div className="flex items-center gap-2">
+              {/* Accept all */}
+              <button
+                onClick={() => items.length > 0 && onAcceptAll?.(items)}
+                title="Accept all"
+                className="p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-[var(--text-primary)]"
+                disabled={items.length === 0}
+              >
+                <Check size={18} />
+                <span className="hidden md:inline ml-2">Accept all</span>
+              </button>
               <button
                 onClick={() => items[selectedIdx] && onAccept(items[selectedIdx])}
                 title="Accept selected"

@@ -951,6 +951,26 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           // Cerrar el modal principal después de aceptar
           onClose();
         }}
+        onAcceptAll={async (tasks: any[]) => {
+          const t0 = performance.now?.() ?? Date.now();
+          const mapped = tasks.map((task) => {
+            const normalizedDate = task.date && task.date !== 'null' ? normalizeDate(task.date) : null;
+            return {
+              title: task.task || '',
+              description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),
+              assignment: task.subject || '',
+              deadline: normalizedDate || null,
+              difficulty: task.difficulty || 'medium',
+            };
+          });
+          if (AI_DEBUG) console.log('[AI][accept-all][count]', mapped.length, mapped);
+          // Despacha en paralelo pero sin romper la UI
+          await Promise.all(mapped.map((t) => anyDispatch(addTask(t))));
+          const t1 = performance.now?.() ?? Date.now();
+          if (AI_DEBUG) console.log('[AI][accept-all][duration-ms]', Math.round((t1 - t0) as number));
+          setShowAIPreview(false);
+          onClose();
+        }}
         onCancel={() => {
           setShowAIPreview(false);
         }}
