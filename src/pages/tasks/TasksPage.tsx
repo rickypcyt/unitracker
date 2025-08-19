@@ -82,7 +82,7 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-3 pt-4 sm:pt-10 relative min-h-[calc(100vh-4rem)] z-0">
+    <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0">
       <KanbanBoard />
       {/* Floating Action Button */}
       <button

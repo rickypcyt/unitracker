@@ -1,5 +1,5 @@
 import BaseModal from './BaseModal';
-import NotesForm from '../NotesForm';
+import NotesForm from '../pages/notes/NotesForm';
 import React from 'react';
 
 interface Note {

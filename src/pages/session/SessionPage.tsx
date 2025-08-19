@@ -1,6 +1,6 @@
-import { memo, useEffect, useState } from 'react';
 import { } from '@/store/slices/uiSlice';
-import { useSelector } from 'react-redux';
+
+import { memo, useEffect, useState } from 'react';
 
 import Countdown from './Countdown';
 import GlobalTimerControls from '@/components/GlobalTimerControls';
@@ -8,7 +8,7 @@ import NoiseGenerator from '@/pages/session/NoiseGenerator';
 import Pomodoro from '@/pages/session/Pomodoro';
 import StudyTimer from '@/pages/session/StudyTimer';
 import TimerSettings from '@/components/TimerSettings';
- 
+import { useSelector } from 'react-redux';
 
 const SessionPage = memo(() => {
   const isSynced = useSelector(state => state.ui.isSynced);
@@ -46,7 +46,7 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full pt-6 sm:pt-10 md:pt-14 px-2 md:px-10">
+    <div className="w-full pt-4 px-2 md:px-10">
       <div className="flex flex-col gap-2 md:gap-4 w-full max-w-6xl mx-auto items-stretch justify-center">
         {/* Header removido: SyncToggle y botón de Settings */}
         

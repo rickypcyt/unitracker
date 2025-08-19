@@ -1,8 +1,8 @@
 import { FileText, Save, X } from 'lucide-react';
-import { FormActions, FormButton, FormInput } from './modals/FormElements';
-import React, { useEffect, useState, useMemo } from 'react';
+import { FormActions, FormButton, FormInput } from '../../modals/FormElements';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import MarkdownWysiwyg from './MarkdownWysiwyg';
+import MarkdownWysiwyg from '../../MarkdownWysiwyg';
 
 interface Note {
   id?: string;

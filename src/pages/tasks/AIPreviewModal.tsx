@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, Pencil, Trash2, X } from 'lucide-react';
 
 import BaseModal from '@/modals/BaseModal';
 
@@ -23,11 +23,42 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
   // Keep a local copy so we can delete items without mutating parent
   const [items, setItems] = useState<AITask[]>(tasks ?? []);
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
 
   useEffect(() => {
     setItems(tasks ?? []);
     setSelectedIdx(0);
+    setEditIdx(null);
   }, [tasks]);
+
+  const beginEdit = (idx: number) => {
+    setEditIdx(idx);
+    setEditTitle(items[idx]?.task ?? '');
+    setEditDesc(items[idx]?.description ?? '');
+  };
+
+  const cancelEdit = () => {
+    setEditIdx(null);
+  };
+
+  const saveEdit = () => {
+    if (editIdx === null) return;
+    setItems(prev => prev.map((it, i) => i === editIdx ? { ...it, task: editTitle, description: editDesc } : it));
+    setEditIdx(null);
+  };
+
+  const deleteItem = (idx: number) => {
+    setItems(prev => prev.filter((_, i) => i !== idx));
+    if (selectedIdx >= idx && selectedIdx > 0) {
+      setSelectedIdx(selectedIdx - 1);
+    }
+    if (editIdx !== null) {
+      if (idx === editIdx) setEditIdx(null);
+      else if (idx < editIdx) setEditIdx(editIdx - 1);
+    }
+  };
 
   return (
     <BaseModal
@@ -55,16 +86,68 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                 {/* Header: inline index badge + title */}
                 <div className="flex items-center gap-2 mb-1">
                   <div className="shrink-0 select-none w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-xs sm:text-sm">#{idx + 1}</div>
-                  <div className="font-bold text-base sm:text-lg text-[var(--text-primary)] truncate">
-                    {task.task || 'Untitled task'}
+                  {editIdx === idx ? (
+                    <input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
+                      placeholder="Task title"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <div className="font-bold text-base sm:text-lg text-[var(--text-primary)] truncate">
+                      {task.task || 'Untitled task'}
+                    </div>
+                  )}
+                  {/* Item actions: edit (gray) and delete (red) */}
+                  <div className="ml-auto flex items-center gap-1">
+                    <button
+                      type="button"
+                      title="Edit"
+                      onClick={(e) => { e.stopPropagation(); editIdx === idx ? cancelEdit() : beginEdit(idx); }}
+                      className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete"
+                      onClick={(e) => { e.stopPropagation(); deleteItem(idx); }}
+                      className="p-1 rounded-md text-red-500 hover:text-red-400"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
                 {/* Body content (indented to align after # badge) */}
                 <div className="pl-9 sm:pl-10">
-                  {task.description && (
-                    <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
-                      <span className="font-semibold">Description:</span> {task.description}
+                  {editIdx === idx ? (
+                    <div className="mb-2">
+                      <textarea
+                        value={editDesc}
+                        onChange={(e) => setEditDesc(e.target.value)}
+                        className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
+                        placeholder="Description"
+                        rows={3}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="mt-2 flex items-center gap-2">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-xs sm:text-sm rounded-md bg-[var(--accent-primary)] text-white">
+                          Save
+                        </button>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-xs sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)]">
+                          Cancel
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {task.description && (
+                        <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                          <span className="font-semibold">Description:</span> {task.description}
+                        </div>
+                      )}
+                    </>
                   )}
                   <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
                     <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
@@ -79,7 +162,6 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                   )}
                 </div>
 
-                {/* Per-item actions removed: only overall Cancel/Accept are available in footer */}
                 <div className="mt-2 md:mt-3" />
               </div>
             </div>

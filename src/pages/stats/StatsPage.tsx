@@ -46,7 +46,7 @@ const StatsPage = memo(() => {
   }, [user, dispatch]);
 
   return (
-    <div className="w-full px-2 pt-6 sm:pt-10 md:pt-14 overflow-hidden">
+    <div className="w-full px-2 pt-4 overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div>
           <StatsChartsPanel />

@@ -8,7 +8,7 @@ import type { AppDispatch } from '@/store/store';
 import CalendarPage from '@/pages/calendar/CalendarPage';
 import Navbar from '@/navbar/Navbar';
 import { NoiseProvider } from '@/utils/NoiseContext';
-import Notes from './Notes';
+import Notes from './pages/notes/Notes';
 import SessionPage from '@/pages/session/SessionPage';
 import StatsPage from '@/pages/stats/StatsPage';
 import TasksPage from '@/pages/tasks/TasksPage';

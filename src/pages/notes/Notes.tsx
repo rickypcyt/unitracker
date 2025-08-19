@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import LoginPromptModal from './modals/LoginPromptModal';
-import NotesCreateModal from './modals/NotesCreateModal';
+import LoginPromptModal from '../../modals/LoginPromptModal';
+import NoteList from './NoteList';
+import NotesCreateModal from '../../modals/NotesCreateModal';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import NoteList from './NoteList';
 
 interface Note {
   id?: string;
@@ -175,7 +175,7 @@ const Notes: React.FC = () => {
   const notesToShow = isDemo ? demoNotes : notes;
 
   return (
-    <div className="w-full mx-auto pt-6 sm:pt-10 md:pt-14 relative px-3 sm:px-4 md:px-6 lg:px-8">
+    <div className="w-full mx-auto pt-4 relative px-3 sm:px-4 md:px-6 lg:px-8">
       <button
         onClick={() => {
           if (isDemo) showLoginPrompt();

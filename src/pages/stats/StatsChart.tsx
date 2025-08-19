@@ -92,7 +92,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
   );
 };
 
-const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks }) => {
+const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }) => {
   const chartRef = useRef(null);
   const tasks = useSelector((state) => state.tasks.tasks || []);
   const [isSmall, setIsSmall] = useState(false);
@@ -182,6 +182,21 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     return Array.from({ length: steps + 1 }, (_, i) => i * 60);
   })();
 
+  // Compute X axis ticks optionally. Only pass the prop if defined to satisfy TS exactOptionalPropertyTypes
+  const xTicks = (
+    isWeekChart ? xAxisTicks :
+    (title === 'This Month' && isSmall
+      ? (Array.isArray(data)
+          ? data.map(d => d.realDay).filter(v => {
+              const n = parseInt(v, 10);
+              return !isNaN(n) && (n === 1 || n % 5 === 0);
+            })
+          : undefined)
+      : (title === 'This Year' && isSmall
+          ? (Array.isArray(data) ? data.map(d => d.dayName).filter((_, i) => i % 2 === 0) : undefined)
+          : undefined))
+  );
+
   return (
     <>
       <div className="w-full flex flex-col items-center mt-2 mb-2">
@@ -220,17 +235,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 interval={isWeekChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd')}
                 minTickGap={0}
                 tickMargin={title === 'This Month' ? (isSmall ? 8 : 12) : title === 'This Year' ? 18 : 16}
-                ticks={
-                  isWeekChart ? xAxisTicks :
-                  (title === 'This Month' && isSmall
-                    ? (Array.isArray(data) ? data.map(d => d.realDay).filter(v => {
-                        const n = parseInt(v, 10);
-                        return !isNaN(n) && (n === 1 || n % 5 === 0);
-                      }) : undefined)
-                    : (title === 'This Year' && isSmall
-                        ? (Array.isArray(data) ? data.map(d => d.dayName).filter((_, i) => i % 2 === 0) : undefined)
-                        : undefined))
-                }
+                {...(Array.isArray(xTicks) && xTicks.length > 0 ? { ticks: xTicks as (string | number)[] } : {})}
                 tickFormatter={(value, index) => {
                   // Para gráficos de semana, usar las etiquetas de días de la semana
                   if (isWeekChart && xAxisTicks && xAxisTicks[index]) {

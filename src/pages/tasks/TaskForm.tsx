@@ -1,7 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, CheckCircle2, Circle, X } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { addTaskSuccess, updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -645,26 +645,12 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       onClose={onClose}
       title={modalTitle}
       maxWidth="max-w-lg"
-      showCloseButton={false}
+      showCloseButton={true}
     >
-      {/* Header for Manual mode with title and close (above AI | Manual selector) */}
-      {activeTab === 'manual' && (
-        <div className="w-full max-w-md mx-auto flex items-center justify-between pt-5 sm:pt-0">
-          <label className="text-base font-bold text-[var(--text-primary)]">Add Task Manual</label>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            title="Close"
-            className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-      )}
+      
       {/* Simple text selector for Manual | AI (directly under title, only for Manual tab) */}
       {activeTab !== 'ai' && (
-        <div className="w-full max-w-lg mx-auto flex justify-center items-center gap-3 mt-2 sm:mt-3 pt-5 sm:pt-4 mb-3 sm:mb-6 select-none">
+        <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
           <span
             className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
             onClick={() => setActiveTab('ai')}
@@ -847,21 +833,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         </form>
       ) : (
         <form className="flex flex-col h-full flex-1 items-stretch justify-start space-y-4" onSubmit={handleAIPromptSubmit}>
-          {/* Header row with title and close (top-right) */}
-          <div className="w-full max-w-md flex items-center justify-between pt-5 sm:pt-0">
-            <label htmlFor="aiPrompt" className="text-base font-bold text-[var(--text-primary)]">
-              Write a prompt for making a new task:
-            </label>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              title="Close"
-              className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            >
-              <X size={18} />
-            </button>
-          </div>
           {/* AI | Manual toggle under the AI header */}
           <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
             <span
@@ -895,16 +866,13 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           <div className="w-full max-w-md text-sm text-[var(--text-secondary)] text-center sm:text-left -mt-1">
             Example: "Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)."
           </div>
-          <div className="w-full max-w-md text-xs text-[var(--text-secondary)] text-center sm:text-left mt-1">
-            Tip: you can write dates like "today", "tomorrow", "next Wednesday", or explicit dates such as "2025-09-30" or "30/09/2025"; they will be normalized to YYYY-MM-DD.
-          </div>
           {/* Footer-like controls: sticky at bottom on mobile, normal on desktop */}
           <div className="w-full max-w-md mt-auto pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)] flex items-center justify-start gap-2 mb-2 sticky bottom-0 sm:static">
             <select
               id="aiModel"
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+              className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-sm md:text-base lg:text-lg md:px-4 md:py-2.5 lg:px-5 lg:py-3 md:w-64 lg:w-72 antialiased font-sans"
               disabled={aiLoading}
             >
               {MODEL_OPTIONS.map(opt => (

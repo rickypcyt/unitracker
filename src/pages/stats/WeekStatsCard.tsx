@@ -1,10 +1,21 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import StatsChart from './StatsChart';
+import ChartCard from './ChartCard';
+import type { Dispatch, ReactElement, SetStateAction } from 'react';
 
 const weekDayInitials = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset }) => {
+type WeekDatum = { minutes: number; hoursLabel: string; date: string; dayName: string };
+interface WeekStatsCardProps {
+  data: WeekDatum[];
+  accentColor: string;
+  shownWeekNumber: number;
+  weekOffset: number;
+  setWeekOffset: Dispatch<SetStateAction<number>>;
+}
+
+const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset }: WeekStatsCardProps): ReactElement => {
   // Asegura que siempre haya 7 elementos, uno por cada día de la semana
   const weekData = weekDayInitials.map((label, idx) => {
     const d = data && data[idx] ? data[idx] : { minutes: 0, hoursLabel: '0:00', date: '', dayName: label };
@@ -15,9 +26,10 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
   });
 
   return (
-    <div className="w-full">
-      <div className="maincard p-0.5 mb-1">
-        <div className="flex items-center justify-center gap-2 w-full mb-1 mt-1">
+    <ChartCard
+      paddingClass="p-2"
+      header={
+        <>
           <button
             onClick={() => setWeekOffset((prev) => prev + 1)}
             className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
@@ -36,21 +48,18 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
           >
             <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
           </button>
-        </div>
-        <div className="w-full overflow-hidden">
-          <div className="w-full">
-            <StatsChart
-              data={weekData}
-              title={`Week ${shownWeekNumber}`}
-              accentColor={accentColor}
-              small
-              customTitle={<></>}
-              xAxisTicks={weekDayInitials}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <StatsChart
+        data={weekData}
+        title={`Week ${shownWeekNumber}`}
+        accentColor={accentColor}
+        small
+        customTitle={<></>}
+        xAxisTicks={weekDayInitials}
+      />
+    </ChartCard>
   );
 };
 
