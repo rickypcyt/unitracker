@@ -100,51 +100,51 @@ const WorkspaceDropdown = ({
       <div className="hidden lg:block">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)]">
+            <button className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased">
               {(() => {
                 const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
-                return <IconComp size={18} />;
+                return <IconComp className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />;
               })()}
-              <span className="font-medium truncate max-w-[100px]">{activeWorkspace?.name || 'Area'}</span>
-              <ChevronDown size={16} />
+              <span className="font-medium truncate max-w-[140px] text-[13px] sm:text-sm md:text-base">{activeWorkspace?.name || 'Area'}</span>
+              <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="min-w-[200px] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95" sideOffset={5} align="end" collisionPadding={10}>
+            <DropdownMenu.Content className="min-w-[180px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95 antialiased text-[12px] sm:text-sm md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
                   onClick={() => handleSelectWorkspace(ws)}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer outline-none transition-colors text-[12px] sm:text-sm md:text-sm lg:text-base ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   {(() => {
                     const IconComp = iconOptions[ws.icon] || Briefcase;
-                    return <IconComp size={14} />;
+                    return <IconComp className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />;
                   })()}
-                  <span className="flex-1">{ws.name} <span className="text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
-                  {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
+                  <span className="flex-1 break-words">{ws.name} <span className="text-[11px] sm:text-[12px] md:text-xs lg:text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
+                  {activeWorkspace?.id === ws.id && <Check className="text-[var(--accent-primary)] w-3.5 h-3.5 md:w-4 md:h-4" />}
                 </DropdownMenu.Item>
               ))}
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
               <DropdownMenu.Item
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[13px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Plus size={14} />
+                <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 New area
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowManageModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[13px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Edit size={14} />
+                <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Edit areas
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[13px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Share size={14} />
+                <Share className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Share area
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
@@ -156,52 +156,51 @@ const WorkspaceDropdown = ({
       <div className="lg:hidden flex-shrink-0">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg">
+            <button className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg antialiased">
               {(() => {
                 const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
-                return <IconComp size={24} />;
+                return <IconComp className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6" />;
               })()}
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="min-w-[200px] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95" sideOffset={5} align="end" collisionPadding={10}>
+            <DropdownMenu.Content className="min-w-[160px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95 antialiased text-[11px] sm:text-[12px] md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map(ws => (
                 <DropdownMenu.Item
                   key={ws.id}
                   onClick={() => handleSelectWorkspace(ws)}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none transition-colors ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer outline-none transition-colors text-[11px] sm:text-[12px] md:text-sm lg:text-base ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'}`}
                 >
                   {(() => {
                     const IconComp = iconOptions[ws.icon] || Briefcase;
-                    return <IconComp size={14} />;
+                    return <IconComp className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />;
                   })()}
-                  <span className="flex-1">{ws.name} <span className="text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
-                  {activeWorkspace?.id === ws.id && <Check size={14} className="text-[var(--accent-primary)]" />}
+                  <span className="flex-1 break-words">{ws.name} <span className="text-[10px] sm:text-[11px] md:text-xs lg:text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
+                  {activeWorkspace?.id === ws.id && <Check className="text-[var(--accent-primary)] w-3.5 h-3.5 md:w-4 md:h-4" />}
                 </DropdownMenu.Item>
               ))}
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
               <DropdownMenu.Item
                 onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[11px] sm:text-[12px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Plus size={14} />
+                <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 New area
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowManageModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[11px] sm:text-[12px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Edit size={14} />
+                <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Edit areas
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[11px] sm:text-[12px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
-                <Share size={14} />
+                <Share className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Share area
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
