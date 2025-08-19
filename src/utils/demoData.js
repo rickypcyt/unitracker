@@ -13,8 +13,8 @@ const yesterdayStr = format(addDays(today, -1));
 const tomorrowStr = format(addDays(today, 1));
 
 export const demoWorkspaces = [
-  { id: 'demo-ws-1', name: 'Demo Workspace 1' },
-  { id: 'demo-ws-2', name: 'Demo Workspace 2' },
+  { id: 'demo-ws-1', name: 'Demo Area 1' },
+  { id: 'demo-ws-2', name: 'Demo Area 2' },
 ];
 
 export const demoAssignments = [

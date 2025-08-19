@@ -78,7 +78,7 @@ const WorkspaceDropdown = ({
       setEditingWorkspaceId(null);
       setEditingWorkspaceName('');
     } catch (error) {
-      setEditingError('Error updating workspace');
+      setEditingError('Error updating area');
       console.error('Error updating workspace:', error);
     }
     
@@ -93,7 +93,7 @@ const WorkspaceDropdown = ({
             const Icon = ICON_OPTIONS.find(opt => opt.name === (activeWorkspace?.icon || 'Briefcase'))?.icon || Briefcase;
             return <Icon size={18} />;
           })()}
-          <span className="font-medium truncate max-w-[120px]">{activeWorkspace?.name || 'Workspace'}</span>
+          <span className="font-medium truncate max-w-[120px]">{activeWorkspace?.name || 'Area'}</span>
           <ChevronDown size={16} />
         </button>
       </DropdownMenu.Trigger>
@@ -179,7 +179,7 @@ const WorkspaceDropdown = ({
                         handleEditWorkspaceClick(ws); 
                       }}
                       className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
-                      title="Edit workspace name"
+                      title="Edit area name"
                     >
                       <Pencil size={16} />
                     </button>
@@ -200,7 +200,7 @@ const WorkspaceDropdown = ({
                 <input
                   type="text"
                   className="px-2 py-1 rounded bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] text-sm flex-1"
-                  placeholder="New workspace"
+                  placeholder="New area"
                   value={newWorkspaceName}
                   onChange={e => setNewWorkspaceName(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') handleCreateWorkspace(); }}
@@ -218,7 +218,7 @@ const WorkspaceDropdown = ({
                 onClick={() => setShowNewWorkspaceInput(true)}
                 className="flex text-sm items-center gap-1 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 cursor-pointer outline-none"
               >
-                <Plus size={16} /> New workspace
+                <Plus size={16} /> New area
               </DropdownMenu.Item>
             )}
           </div>

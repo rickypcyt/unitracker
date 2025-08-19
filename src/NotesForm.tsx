@@ -7,7 +7,7 @@ import MarkdownWysiwyg from './MarkdownWysiwyg';
 interface Note {
   id?: string;
   title: string;
-  assignment: string;
+  assignment: string | null;
   description: string;
   date: string;
   user_id?: string;
@@ -31,14 +31,14 @@ const NotesForm: React.FC<NotesFormProps> = ({
   // Ensure initialValues is always defined with default values
   const safeInitialValues = useMemo(() => ({
     title: '',
-    assignment: 'Unassigned',
+    assignment: '',
     description: '',
     date: getToday(),
     ...initialValues
   }), [initialValues]);
 
   const [form, setForm] = useState<{ assignment: string }>({
-    assignment: safeInitialValues.assignment,
+    assignment: (safeInitialValues.assignment ?? '') as string,
   });
 
   const [wysiwyg, setWysiwyg] = useState<{ title: string; body: string }>({
@@ -49,7 +49,7 @@ const NotesForm: React.FC<NotesFormProps> = ({
   // Update form when initialValues change
   useEffect(() => {
     setForm({
-      assignment: safeInitialValues.assignment,
+      assignment: (safeInitialValues.assignment ?? '') as string,
     });
     setWysiwyg({
       title: safeInitialValues.title,
@@ -71,9 +71,10 @@ const NotesForm: React.FC<NotesFormProps> = ({
     if (!title) return;
     
     const today = getToday();
+    const trimmedAssign = form.assignment.trim();
     const noteData: Omit<Note, 'id'> = {
       title,
-      assignment: form.assignment.trim() || 'Unassigned',
+      assignment: trimmedAssign ? trimmedAssign : null,
       description: wysiwyg.body || '',
       date: today,
     };

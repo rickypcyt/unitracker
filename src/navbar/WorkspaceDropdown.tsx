@@ -105,7 +105,7 @@ const WorkspaceDropdown = ({
                 const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
                 return <IconComp size={18} />;
               })()}
-              <span className="font-medium truncate max-w-[100px]">{activeWorkspace?.name || 'Workspace'}</span>
+              <span className="font-medium truncate max-w-[100px]">{activeWorkspace?.name || 'Area'}</span>
               <ChevronDown size={16} />
             </button>
           </DropdownMenu.Trigger>
@@ -131,21 +131,21 @@ const WorkspaceDropdown = ({
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Plus size={14} />
-                New workspace
+                New area
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowManageModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Edit size={14} />
-                Edit workspaces
+                Edit areas
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Share size={14} />
-                Share workspace
+                Share area
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>
@@ -185,21 +185,21 @@ const WorkspaceDropdown = ({
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Plus size={14} />
-                New workspace
+                New area
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowManageModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Edit size={14} />
-                Edit workspaces
+                Edit areas
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Share size={14} />
-                Share workspace
+                Share area
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>

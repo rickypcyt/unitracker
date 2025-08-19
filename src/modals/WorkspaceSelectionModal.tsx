@@ -43,7 +43,7 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Choose Workspace"
+      title="Choose Area"
       maxWidth="max-w-md"
     >
       <div className="space-y-4">

@@ -10,6 +10,7 @@ import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import StartSessionModal from "@/modals/StartSessionModal";
+import SessionSummaryModal from "@/modals/SessionSummaryModal";
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
@@ -23,6 +24,10 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [summaryDuration, setSummaryDuration] = useState<string>('00:00:00');
+  const [summaryTasksCount, setSummaryTasksCount] = useState<number>(0);
+  const [summaryPomodoros, setSummaryPomodoros] = useState<number>(0);
   const [currentSessionId, setCurrentSessionId] = useState(() => {
     // Try to get active session from localStorage
     const savedSessionId = localStorage.getItem("activeSessionId");
@@ -546,14 +551,11 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           return;
         }
 
-        toast.success(`Congrats! During this session you completed ${completedTasks.length} tasks and studied for ${hours} hours and ${minutes} minutes.`, {
-          position: 'top-center',
-          style: {
-            backgroundColor: '#000',
-            color: '#fff',
-            border: '2px solid var(--border-primary)',
-          },
-        });
+        // Populate and open Session Summary Modal
+        setSummaryDuration(formattedDuration);
+        setSummaryTasksCount(completedTasks.length);
+        setSummaryPomodoros(pomodorosThisSession);
+        setIsSummaryOpen(true);
         window.dispatchEvent(new CustomEvent('refreshStats'));
       }
 
@@ -937,6 +939,15 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <SessionSummaryModal
+        isOpen={isSummaryOpen}
+        onClose={() => setIsSummaryOpen(false)}
+        title={studyState.sessionTitle}
+        durationFormatted={summaryDuration}
+        completedTasksCount={summaryTasksCount}
+        pomodorosCompleted={summaryPomodoros}
       />
     </div>
   );

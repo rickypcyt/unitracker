@@ -102,7 +102,7 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-6 pb-0">
+          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-4">
             <h2 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] truncate">
               {title}
             </h2>

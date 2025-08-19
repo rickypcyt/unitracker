@@ -45,7 +45,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!workspaceName.trim()) {
-      setError('Workspace name is required');
+      setError('Area name is required');
       return;
     }
 
@@ -71,7 +71,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
       onClose();
     } catch (error) {
       console.error('Error creating workspace:', error);
-      setError('Failed to create workspace');
+      setError('Failed to create area');
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create New Workspace"
+      title="Create New Area"
       maxWidth="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-2 sm:pt-4">
@@ -98,11 +98,11 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             const IconComp = iconOptions.find(opt => opt.name === selectedIcon)?.icon || Briefcase;
             return <IconComp size={24} className="text-[var(--accent-primary)]" />;
           })()}
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Create New Workspace</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Create New Area</h2>
         </div>
         <div>
             <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Workspace Name
+              Area Name
             </label>
             <input
               type="text"
@@ -110,7 +110,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              placeholder="Enter workspace name..."
+              placeholder="Enter area name..."
               autoFocus
             />
         </div>
@@ -155,7 +155,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
               disabled={loading || !workspaceName.trim()}
               className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Creating...' : 'Create Workspace'}
+              {loading ? 'Creating...' : 'Create Area'}
             </button>
           </div>
         </form>

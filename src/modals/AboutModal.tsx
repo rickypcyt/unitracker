@@ -29,13 +29,13 @@ const AboutModal = ({ isOpen, onClose }) => {
             I'm always open to feedback, suggestions, or just a friendly chat about the app. Whether you've found a bug, have a feature request, or want to share your experience, I'd love to hear from you!
           </p>
             <a 
-            href="mailto:rickypcyt@gmail.com" 
+            href="mailto:info@unitracker.me" 
             className="flex items-center gap-2 text-[var(--accent-primary)] text-base font-medium hover:underline"
             >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5H4.5a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-.876 1.797l-7.5 5.625a2.25 2.25 0 01-2.748 0l-7.5-5.625A2.25 2.25 0 012.25 6.993V6.75" />
             </svg>
-              rickypcyt@gmail.com
+              info@unitracker.me
             </a>
         </div>
         

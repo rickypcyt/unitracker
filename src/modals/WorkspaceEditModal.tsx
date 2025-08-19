@@ -31,7 +31,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!workspaceName.trim()) {
-      setError('Workspace name is required');
+      setError('Area name is required');
       return;
     }
     setLoading(true);
@@ -50,7 +50,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
       onWorkspaceUpdated(data);
       onClose();
     } catch {
-      setError('Failed to update workspace');
+      setError('Failed to update area');
     } finally {
       setLoading(false);
     }
@@ -72,19 +72,19 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Edit Workspace"
+      title="Edit Area"
       maxWidth="max-w-md"
       showHeader={false}
     >
       <div ref={modalRef}>
         <div className="flex items-center gap-3 mb-6">
           <Edit size={24} className="text-[var(--accent-primary)]" />
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Workspace</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Area</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Workspace Name
+              Area Name
             </label>
             <input
               type="text"
@@ -92,13 +92,13 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              placeholder="Enter workspace name..."
+              placeholder="Enter area name..."
               autoFocus
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Workspace Icon
+              Area Icon
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {iconOptions.map((option) => {
@@ -137,7 +137,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
               disabled={loading || !workspaceName.trim()}
               className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Updating...' : 'Update Workspace'}
+              {loading ? 'Updating...' : 'Update Area'}
             </button>
           </div>
         </form>

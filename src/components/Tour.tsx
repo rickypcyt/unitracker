@@ -21,8 +21,8 @@ const Tour = ({ steps, run, onClose, continuous = true }) => {
     {
       target: '.workspace-dropdown',
       placement: 'bottom',
-      title: 'Switch Workspace',
-      content: 'You can change your workspace using the dropdown, or quickly switch up and down with Ctrl + Arrow Up/Down!',
+      title: 'Switch Area',
+      content: 'You can change your area using the dropdown, or quickly switch up and down with Ctrl + Arrow Up/Down!',
       disableBeacon: true,
     },
     // ...add more steps here

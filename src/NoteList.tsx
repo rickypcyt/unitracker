@@ -5,7 +5,7 @@ import { Calendar, Pencil, Trash2 } from 'lucide-react';
 interface Note {
   id?: string;
   title: string;
-  assignment: string;
+  assignment: string | null;
   description: string;
   date: string;
   user_id?: string;
@@ -80,11 +80,9 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
               <h3 className="font-semibold text-lg text-[var(--text-primary)] truncate mb-1">
                 {note.title}
               </h3>
-              {note.assignment && (
-                <span className="inline-block py-0.5 rounded-full text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
-                  {note.assignment}
-                </span>
-              )}
+              <span className="inline-block py-0.5 rounded-full text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
+                {note.assignment ?? 'None'}
+              </span>
             </div>
 
             {/* Card Content */}

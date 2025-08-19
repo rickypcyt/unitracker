@@ -11,7 +11,7 @@ import NoteList from './NoteList';
 interface Note {
   id?: string;
   title: string;
-  assignment: string;
+  assignment: string | null;
   description: string;
   date: string;
   user_id?: string;
@@ -92,7 +92,7 @@ const Notes: React.FC = () => {
           .from('notes')
           .insert([{ 
             title: noteData.title || '',
-            assignment: noteData.assignment || 'Unassigned',
+            assignment: noteData.assignment ?? null,
             description: noteData.description || '',
             date: safeDate,
             user_id: user.id 
@@ -108,7 +108,7 @@ const Notes: React.FC = () => {
         const newNote: Note = {
           id: Date.now().toString(),
           title: noteData.title || '',
-          assignment: noteData.assignment || 'Unassigned',
+          assignment: noteData.assignment ?? null,
           description: noteData.description || '',
           date: safeDate
         };
@@ -197,7 +197,7 @@ const Notes: React.FC = () => {
         loading={loading}
         initialValues={{
           title: editNote?.title ?? '',
-          assignment: editNote?.assignment ?? 'Unassigned',
+          assignment: editNote?.assignment ?? '',
           description: editNote?.description ?? '',
           date: editNote?.date ?? new Date().toISOString().split('T')[0]
         } as Partial<Note>}

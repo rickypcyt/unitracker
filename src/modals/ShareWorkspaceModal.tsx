@@ -29,30 +29,30 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
 
   const handleShare = () => {
     if (!selectedWorkspace || !selectedFriend) {
-      setError('Please select a workspace and a friend.');
+      setError('Please select an area and a friend.');
       return;
     }
     setError('');
     if (onShare) {
       onShare(selectedWorkspace, selectedFriend, currentUserId, {
         onSuccess: () => {
-          setSuccess('Workspace shared!');
+          setSuccess('Area shared!');
           setSelectedWorkspace('');
           setSelectedFriend('');
         },
-        onError: (msg) => setError(msg || 'Error sharing workspace'),
+        onError: (msg) => setError(msg || 'Error sharing area'),
       });
     }
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Share Workspace" maxWidth="max-w-md">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Share Area" maxWidth="max-w-md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">Workspace</label>
+          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">Area</label>
           <Select.Root value={selectedWorkspace} onValueChange={setSelectedWorkspace}>
             <Select.Trigger className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] flex items-center justify-between">
-              <Select.Value placeholder="Select workspace" />
+              <Select.Value placeholder="Select area" />
               <Select.Icon>
                 <ChevronDownIcon className="w-5 h-5 text-[var(--text-secondary)]" />
               </Select.Icon>
