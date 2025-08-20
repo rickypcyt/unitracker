@@ -65,7 +65,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
   return (
     <div className="py-1">
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 justify-items-stretch">
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
