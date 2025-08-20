@@ -103,43 +103,138 @@ export const useTaskStorage = (): TaskStorageHook => {
         };
     }, [dispatch]);
 
-    // Subscribe to real-time changes
+    // Subscribe to real-time changes (only when tab is visible to reduce resource usage)
     useEffect(() => {
         if (!user) return;
 
-        let lastProcessedEvent: string | null = null;
+        let channel: ReturnType<typeof supabase.channel> | null = null;
 
-        const subscription = supabase
-            .channel("tasks_changes")
-            .on(
-                "postgres_changes",
-                {
-                    event: "*",
-                    schema: "public",
-                    table: "tasks",
-                    filter: `user_id=eq.${user.id}`,
-                },
-                (payload: RealtimePostgresChangesPayload<Task>) => {
-                    // Evitar procesar el mismo evento múltiples veces
-                    const eventId = (payload.new as Task | undefined)?.id ?? (payload.old as Task | undefined)?.id ?? 'unknown';
-                    const eventKey = `${payload.eventType}-${eventId}-${Date.now()}`;
-                    if (lastProcessedEvent === eventKey) return;
-                    lastProcessedEvent = eventKey;
-
-                    // Solo actualizar si el cambio no fue causado por nosotros
-                    if (payload.eventType === 'INSERT' && payload.new && payload.new.user_id === user.id) {
+        const handlePayload = (payload: RealtimePostgresChangesPayload<Task>) => {
+                    // Actualizar inmediatamente en función del tipo de evento
+                    if (payload.eventType === 'INSERT' && payload.new && (payload.new as any).user_id === user.id) {
                         dispatch(addTaskSuccess(payload.new));
-                    } else if (payload.eventType === 'UPDATE' && payload.new && payload.new.user_id === user.id) {
-                        dispatch(updateTaskSuccess(payload.new));
-                    } else if (payload.eventType === 'DELETE' && payload.old && payload.old.user_id === user.id) {
-                        dispatch(deleteTaskSuccess(payload.old.id as string));
+                        return;
                     }
-                }
-            )
-            .subscribe();
 
+                    if (payload.eventType === 'UPDATE' && payload.new && (payload.new as any).user_id === user.id) {
+                        dispatch(updateTaskSuccess(payload.new));
+                        return;
+                    }
+
+                    if (payload.eventType === 'DELETE') {
+                        const oldRecord = payload.old as Partial<Task> | null;
+                        const deletedId = oldRecord && (oldRecord as any).id;
+
+                        // Si Supabase tiene REPLICA IDENTITY FULL activado, old tendrá el id
+                        if (deletedId) {
+                            dispatch(deleteTaskSuccess(deletedId as string));
+                            return;
+                        }
+
+                        // Fallback: si no recibimos old (no hay REPLICA IDENTITY FULL), rehacer fetch para mantener el estado consistente
+                        (async () => {
+                            try {
+                                const { data, error } = await supabase
+                                    .from('tasks')
+                                    .select('*')
+                                    .eq('user_id', user.id);
+                                if (!error && data) {
+                                    dispatch(setTasks(data));
+                                }
+                            } catch (e) {
+                                // no-op
+                            }
+                        })();
+                    }
+        };
+
+        const subscribe = () => {
+            if (channel) return;
+            channel = supabase
+                .channel("tasks_changes")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "*",
+                        schema: "public",
+                        table: "tasks",
+                        filter: `user_id=eq.${user.id}`,
+                    },
+                    handlePayload
+                )
+                .subscribe();
+        };
+
+        const unsubscribe = () => {
+            if (channel) {
+                channel.unsubscribe();
+                channel = null;
+            }
+        };
+
+        // Subscribe only when visible; handle offline/online to save resources
+        if (typeof document !== 'undefined') {
+            if (document.visibilityState === 'visible') {
+                subscribe();
+                // Quick resync to ensure we didn't miss events while hidden
+                (async () => {
+                    try {
+                        const { data, error } = await supabase
+                            .from('tasks')
+                            .select('*')
+                            .eq('user_id', user.id);
+                        if (!error && data) {
+                            dispatch(setTasks(data));
+                        }
+                    } catch {}
+                })();
+            }
+
+            const onVisibilityChange = () => {
+                if (document.visibilityState === 'visible') {
+                    subscribe();
+                    // Resync on regain of visibility to catch any missed changes
+                    (async () => {
+                        try {
+                            const { data, error } = await supabase
+                                .from('tasks')
+                                .select('*')
+                                .eq('user_id', user.id);
+                            if (!error && data) {
+                                dispatch(setTasks(data));
+                            }
+                        } catch {}
+                    })();
+                } else {
+                    unsubscribe();
+                }
+            };
+
+            const onOnline = () => {
+                if (document.visibilityState === 'visible') {
+                    subscribe();
+                }
+            };
+
+            const onOffline = () => {
+                unsubscribe();
+            };
+
+            document.addEventListener('visibilitychange', onVisibilityChange);
+            window.addEventListener('online', onOnline);
+            window.addEventListener('offline', onOffline);
+
+            return () => {
+                document.removeEventListener('visibilitychange', onVisibilityChange);
+                window.removeEventListener('online', onOnline);
+                window.removeEventListener('offline', onOffline);
+                unsubscribe();
+            };
+        }
+
+        // Fallback cleanup (SSR safety)
         return () => {
-            subscription.unsubscribe();
+            unsubscribe();
         };
     }, [user, dispatch]);
 

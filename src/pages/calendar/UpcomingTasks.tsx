@@ -19,7 +19,6 @@ const UpcomingTasks = () => {
   const [expandedGroups, setExpandedGroups] = useState({
     today: false,
     thisWeek: false,
-    pastTasks: false,
   });
   const dispatch = useDispatch();
   const [contextMenu, setContextMenu] = useState(null);
@@ -44,15 +43,7 @@ const UpcomingTasks = () => {
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
 
-  // Filtrar tareas pasadas (no completadas y deadline < hoy, solo si deadline existe)
-  const pastTasks = tasks
-    .filter(task => {
-      if (!task.deadline || task.deadline === '' || task.deadline === null) return false;
-      const taskDate = new Date(task.deadline);
-      taskDate.setHours(0, 0, 0, 0);
-      return taskDate < today && !task.completed;
-    })
-    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+  // Past tasks moved to separate component
 
   // Filter and sort upcoming tasks
   const upcomingTasks = tasks
@@ -101,7 +92,7 @@ const UpcomingTasks = () => {
   useEffect(() => {
     setExpandedGroups(prev => {
       const newState = { ...prev };
-      ['noDeadline', 'today', 'thisWeek', 'pastTasks'].forEach(key => {
+      ['noDeadline', 'today', 'thisWeek'].forEach(key => {
         if (!(key in newState)) {
           newState[key] = false;
         }
@@ -145,19 +136,7 @@ const UpcomingTasks = () => {
   };
   const handleCloseContextMenu = () => setContextMenu(null);
 
-  if (upcomingTasks.length === 0) {
-    return (
-      <div className="maincard">
-        <div className="flex justify-center items-center">
-          <div className="section-title">
-            <Calendar size={22} className="icon" />
-            <span>Upcoming Tasks</span>
-          </div>
-        </div>
-        <p className="text-[var(--text-secondary)]">No upcoming tasks</p>
-      </div>
-    );
-  }
+  const hasUpcoming = upcomingTasks.length > 0;
 
   const TaskGroup = ({ title, tasks, groupKey }) => {
     if (tasks.length === 0) return null;
@@ -217,19 +196,25 @@ const UpcomingTasks = () => {
       <div className="space-y-3">
         {/* No Deadline Tasks */}
         <TaskGroup title="No Deadline" tasks={noDeadlineTasks} groupKey="noDeadline" />
-        {/* Past Tasks */}
-        <TaskGroup title="Past Tasks" tasks={pastTasks} groupKey="pastTasks" />
         {/* Upcoming Tasks */}
-        <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
-        <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />
-        {sortedMonths.map(({ month, year, tasks }) => (
-          <TaskGroup
-            key={`${year}-${month}`}
-            title={new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
-            tasks={tasks}
-            groupKey={`${year}-${month}`}
-          />
-        ))}
+        {hasUpcoming ? (
+          <>
+            <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
+            <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />
+            {sortedMonths.map(({ month, year, tasks }) => (
+              <TaskGroup
+                key={`${year}-${month}`}
+                title={new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                tasks={tasks}
+                groupKey={`${year}-${month}`}
+              />
+            ))}
+          </>
+        ) : (
+          <p className="text-[var(--text-secondary)]">No upcoming tasks</p>
+        )}
+
+        {/* Past Tasks moved to separate component/card */}
       </div>
 
       {/* Task Form Modal */}

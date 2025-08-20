@@ -2,6 +2,7 @@ import { memo, useEffect } from 'react';
 
 import Calendar from '@/pages/calendar/Calendar';
 import UpcomingTasks from '@/pages/calendar/UpcomingTasks';
+import PastTasks from '@/pages/calendar/PastTasks';
 import { useLocation } from 'react-router-dom';
 
 const CalendarPage = memo(() => {
@@ -23,6 +24,7 @@ const CalendarPage = memo(() => {
         </div>
         <div className="w-full md:max-w-2xl lg:max-w-4xl mx-auto">
           <UpcomingTasks />
+          <PastTasks />
         </div>
       </div>
     </div>
