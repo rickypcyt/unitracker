@@ -1,28 +1,40 @@
-import React, { useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 
-import LoginPromptModal from '@/modals/LoginPromptModal';
+import OnboardingTour from './OnboardingTour';
 import WelcomeModal from '@/modals/WelcomeModal';
-import { useAuth } from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
 
-const TourManager = ({ children }) => {
-  const { isLoggedIn } = useAuth();
-  const { showWelcomeModal, handleCloseWelcome } = useTheme();
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+interface TourManagerProps {
+  children: ReactNode;
+}
 
-  // Cuando se cierra el WelcomeModal, mostrar login si no está logueado
-  const handleCloseWelcomeAndMaybeLogin = () => {
+const TourManager = ({ children }: TourManagerProps) => {
+  const { showWelcomeModal, handleCloseWelcome } = useTheme();
+  const [startTour, setStartTour] = useState(false);
+
+  // Handle closing welcome modal and starting tour
+  const handleCloseWelcomeAndMaybeLogin = useCallback(() => {
     handleCloseWelcome();
-    if (!isLoggedIn) setShowLoginPrompt(true);
-  };
+    // Start tour directly instead of showing login prompt
+    setStartTour(true);
+  }, [handleCloseWelcome]);
+
+  // Handle starting the tour
+  const handleStartTour = useCallback(() => {
+    handleCloseWelcome();
+    setStartTour(true);
+  }, [handleCloseWelcome]);
 
   return (
     <>
       {children}
       {showWelcomeModal && (
-        <WelcomeModal onClose={handleCloseWelcomeAndMaybeLogin} />
+        <WelcomeModal 
+          onClose={handleCloseWelcomeAndMaybeLogin} 
+          onStartTour={handleStartTour} 
+        />
       )}
-      <LoginPromptModal isOpen={showLoginPrompt} onClose={() => setShowLoginPrompt(false)} />
+      <OnboardingTour isOpen={startTour} onClose={() => setStartTour(false)} />
     </>
   );
 };

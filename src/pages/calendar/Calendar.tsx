@@ -338,7 +338,7 @@ const Calendar = () => {
   };
 
   return (
-    <div className={`maincard relative mx-auto w-full transition-all duration-300 ${
+    <div className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view ${
       calendarSize === 'sm' ? 'max-w-md' : calendarSize === 'md' ? 'max-w-2xl' : 'max-w-4xl'
     } md:max-w-2xl lg:max-w-4xl`}>
       {/* Top bar: Month selector centered, options right */}

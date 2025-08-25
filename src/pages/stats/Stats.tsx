@@ -256,7 +256,7 @@ const Statistics = (): ReactElement => {
   // Si es demo, usar demoStats
   if (isDemo) {
     return (
-      <div className="maincard">
+      <div className="maincard stats-panel">
         <div className="grid gap-4 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
           {statCards.map((card, i) => (
             <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px]">
@@ -272,7 +272,7 @@ const Statistics = (): ReactElement => {
   }
 
   return (
-    <div className="maincard mb-2 p-3 md:p-3">
+    <div className="maincard mb-2 p-3 md:p-3 stats-panel">
       <div className="max-w-6xl mx-auto px-2">
         <div
           className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"

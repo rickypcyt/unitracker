@@ -31,6 +31,53 @@ interface TaskStorageHook {
     isAuthenticated: boolean;
 }
 
+// ---- Lightweight validation and utilities for local task handling ----
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+    typeof v === 'object' && v !== null && !Array.isArray(v);
+
+// Normalize arbitrary input into a Task with safe defaults. Returns null if invalid.
+const normalizeLocalTask = (raw: any): Task | null => {
+    if (!isPlainObject(raw) || typeof raw.title !== 'string') return null;
+
+    const nowIso = new Date().toISOString();
+    const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id : generateLocalId();
+
+    return {
+        id,
+        title: String(raw.title).slice(0, 500),
+        description: typeof raw.description === 'string' ? String(raw.description).slice(0, 5000) : undefined,
+        deadline: typeof raw.deadline === 'string' ? raw.deadline : undefined,
+        difficulty: typeof raw.difficulty === 'string' ? raw.difficulty : undefined,
+        assignment: typeof raw.assignment === 'string' ? raw.assignment : undefined,
+        priority: typeof raw.priority === 'number' ? raw.priority : undefined,
+        tags: Array.isArray(raw.tags) ? raw.tags.filter((t: any) => typeof t === 'string').slice(0, 50) : undefined,
+        created_at: typeof raw.created_at === 'string' ? raw.created_at : nowIso,
+        completed: typeof raw.completed === 'boolean' ? raw.completed : false,
+        completed_at: typeof raw.completed_at === 'string' || raw.completed_at === null ? raw.completed_at : null,
+        activetask: typeof raw.activetask === 'boolean' ? raw.activetask : false,
+    } as Task;
+};
+
+const validateTaskArray = (value: unknown): Task[] => {
+    if (!Array.isArray(value)) return [] as Task[];
+    const normalized: Task[] = [];
+    for (const item of value) {
+        const t = normalizeLocalTask(item);
+        if (t) normalized.push(t);
+    }
+    return normalized;
+};
+
+const generateLocalId = (): string => {
+    try {
+        if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
+            return (crypto as any).randomUUID();
+        }
+    } catch {}
+    // Fallback with time + random
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 /**
  * Custom hook for unified task management (local and remote)
  * @returns {TaskStorageHook} Task management functions and state
@@ -41,7 +88,20 @@ export const useTaskStorage = (): TaskStorageHook => {
     const [user, setUser] = useState<User | null>(null);
     const [localTasks, setLocalTasks] = useState<Task[]>(() => {
         const savedTasks = localStorage.getItem("localTasks");
-        return savedTasks ? JSON.parse(savedTasks) : [];
+        if (!savedTasks) return [];
+        try {
+            const parsed = JSON.parse(savedTasks);
+            const valid = validateTaskArray(parsed);
+            // If parsing succeeds but yields invalid content, clear corrupted storage
+            if (!valid.length && parsed && Array.isArray(parsed) && parsed.length) {
+                localStorage.removeItem("localTasks");
+            }
+            return valid;
+        } catch {
+            // Corrupted JSON, clear to avoid crashes
+            localStorage.removeItem("localTasks");
+            return [];
+        }
     });
 
     // Save local tasks to localStorage whenever they change
@@ -91,8 +151,16 @@ export const useTaskStorage = (): TaskStorageHook => {
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === "localTasks") {
-                const newTasks = e.newValue ? JSON.parse(e.newValue) : [];
-                setLocalTasks(newTasks);
+                if (!e.newValue) {
+                    setLocalTasks([]);
+                    return;
+                }
+                try {
+                    const parsed = JSON.parse(e.newValue);
+                    setLocalTasks(validateTaskArray(parsed));
+                } catch {
+                    // Ignore corrupted updates
+                }
             }
         };
 
@@ -243,7 +311,7 @@ export const useTaskStorage = (): TaskStorageHook => {
             // Handle local storage
             const localTask: Task = {
                 ...newTask,
-                id: Date.now().toString(),
+                id: generateLocalId(),
                 created_at: new Date().toISOString(),
                 completed: false,
                 completed_at: null,
@@ -276,28 +344,67 @@ export const useTaskStorage = (): TaskStorageHook => {
         if (!user || !localTasks.length) return null;
 
         try {
-            const tasksToSync = localTasks.map(task => ({
-                ...task,
-                user_id: user.id,
-                id: undefined // Let Supabase generate new IDs
-            }));
+            // Fetch existing tasks to avoid duplicates by simple signature (title|deadline|assignment)
+            const { data: existing, error: fetchError } = await supabase
+                .from('tasks')
+                .select('id,title,deadline,assignment')
+                .eq('user_id', user.id);
+            if (fetchError) throw fetchError;
+
+            const existingSignatures = new Set(
+                (existing || []).map((t: any) => `${t.title ?? ''}|${t.deadline ?? ''}|${t.assignment ?? ''}`)
+            );
+
+            // Build local signatures and de-duplicate within local as well
+            const seenLocal = new Set<string>();
+            const candidates = localTasks.filter((t) => {
+                const sig = `${(t as any).title ?? ''}|${(t as any).deadline ?? ''}|${(t as any).assignment ?? ''}`;
+                if (existingSignatures.has(sig)) return false;
+                if (seenLocal.has(sig)) return false;
+                seenLocal.add(sig);
+                return true;
+            });
+
+            if (!candidates.length) {
+                // Nothing new to sync; clear local cache safely
+                localStorage.removeItem('localTasks');
+                setLocalTasks([]);
+                return [];
+            }
+
+            // Prepare payload: assign user_id and omit id to let Supabase generate
+            const tasksToSync = candidates.map((task) => {
+                const { id: _omit, ...rest } = task as any;
+                return { ...rest, user_id: user.id };
+            });
 
             const { data, error } = await supabase
-                .from("tasks")
+                .from('tasks')
                 .insert(tasksToSync)
                 .select();
 
             if (error) throw error;
 
             // Clear local tasks after successful sync
-            localStorage.removeItem("localTasks");
+            localStorage.removeItem('localTasks');
             setLocalTasks([]);
-            dispatch(setTasks(data)); 
+            if (data) {
+                // Merge: fetch fresh list to be safe and consistent
+                try {
+                    const { data: refreshed } = await supabase
+                        .from('tasks')
+                        .select('*')
+                        .eq('user_id', user.id);
+                    if (refreshed) dispatch(setTasks(refreshed));
+                } catch {}
+            }
 
-            return data;
-        } catch (error) {
-            console.error("Error syncing local tasks:", error);
-            toast.error("Failed to sync local tasks");
+            return data ?? [];
+        } catch (error: any) {
+            console.error('Error syncing local tasks:', error);
+            // Handle common duplicate errors gracefully without crashing UX
+            const msg = (error && (error.message || error.msg)) || 'Failed to sync local tasks';
+            toast.error(msg);
             return null;
         }
     };

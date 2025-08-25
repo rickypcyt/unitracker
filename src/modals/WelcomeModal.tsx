@@ -6,7 +6,7 @@ interface WelcomeModalProps {
   onStartTour?: () => void;
 }
 
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
+const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
   
 
   const modalRef = useRef<HTMLDivElement>(null);
@@ -66,10 +66,13 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-2 w-full">
           <button
-            className="w-full sm:w-auto px-5 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base bg-transparent cursor-pointer"
-            onClick={onClose}
+            className="w-full sm:w-auto px-5 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base bg-transparent cursor-pointer hover:bg-[var(--accent-primary)] hover:text-white transition-colors duration-200"
+            onClick={() => {
+              onClose();
+              onStartTour?.();
+            }}
           >
-            Start using UniTracker
+            Start the Tour
           </button>
         </div>
       </div>
