@@ -46,7 +46,7 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full pt-4 px-2 md:px-10">
+    <div className="w-full pt-4 px-2 md:px-10 session-page">
       <div className="flex flex-col gap-2 md:gap-4 w-full max-w-6xl mx-auto items-stretch justify-center">
         {/* Header removido: SyncToggle y botón de Settings */}
         
@@ -68,7 +68,7 @@ const SessionPage = memo(() => {
           </div>
         </div>
         {/* Noise Generator abajo ocupando todo el ancho */}
-        <div className="maincard w-full mx-auto">
+        <div className="maincard w-full mx-auto noise-generator">
           <NoiseGenerator />
         </div>
       </div>

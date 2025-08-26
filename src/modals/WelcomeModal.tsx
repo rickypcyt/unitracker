@@ -3,12 +3,9 @@ import React, { useEffect, useRef } from "react";
 
 interface WelcomeModalProps {
   onClose: () => void;
-  onStartTour?: () => void;
 }
 
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => {
-  
-
+const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Close on click outside or Escape
@@ -28,6 +25,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => 
       document.removeEventListener('keydown', handleEsc);
     };
   }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
       <div
@@ -66,13 +64,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onStartTour }) => 
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-1 sm:mt-2 w-full mb-2 sm:mb-3">
           <button
-            className="w-full sm:w-auto px-5 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base bg-transparent cursor-pointer transition-colors duration-200"
-            onClick={() => {
-              onClose();
-              onStartTour?.();
-            }}
+            className="w-full sm:w-auto px-8 py-3 rounded-lg bg-[var(--accent-primary)] text-white font-bold text-sm sm:text-base cursor-pointer transition-all duration-200 hover:bg-[var(--accent-primary-hover)] shadow-lg hover:shadow-xl transform hover:scale-105"
+            onClick={onClose}
           >
-            Start the Tour
+            Get Started
           </button>
         </div>
       </div>
