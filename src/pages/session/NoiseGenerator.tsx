@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import ReactSlider from "react-slider";
 import { useNoise } from '@/utils/NoiseContext';
+import SectionTitle from '@/components/SectionTitle';
 
 // Componente de control para cada sonido
 function SoundControl({ label, icon: Icon, volume, setVolume, isPlaying, start, stop, className, max }) {
@@ -118,7 +119,11 @@ function NoiseSettingsModal({ isOpen, onClose, sounds, setVolume, maxVolumes, se
         >
           ×
         </button>
-        <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">Noise Generator Settings</h2>
+        <SectionTitle 
+          title="Noise Generator Settings" 
+          tooltip="Customize your white noise environment for optimal focus. Mix different sounds like rain, waves, and ambient noise to create your perfect study atmosphere."
+          size="lg"
+        />
         <div className="space-y-6">
           {sounds.map((sound, idx) => {
             let presets = [];
@@ -235,7 +240,11 @@ export default function NoiseGenerator() {
     <div className="w-full">
       <div className="section-title justify-center mb-4 relative">
         <AudioLines size={22} className="icon" />
-        <span>Noise Generator</span>
+        <SectionTitle 
+          title="Noise Generator" 
+          tooltip="Create your perfect study environment with customizable white noise. Mix different sounds like rain, ocean waves, and ambient noise to help you focus and block distractions."
+          size="md"
+        />
         <button
           className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           onClick={() => setIsSettingsOpen(true)}

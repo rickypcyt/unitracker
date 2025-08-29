@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
 import usePomodorosToday from '@/hooks/usePomodorosToday';
+import SectionTitle from '@/components/SectionTitle';
 // import useTheme from "@/hooks/useTheme";
 
 // Initial modes
@@ -801,7 +802,11 @@ const Pomodoro = () => {
             <RefreshCwOff size={20} className="icon" style={{ color: 'var(--accent-primary)' }} />
           )}
         </button>
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Pomodoro</span>
+        <SectionTitle 
+          title="Pomodoro" 
+          tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks. This helps maintain concentration and prevent burnout."
+          size="md"
+        />
         {/* Botón de configuración de sesión */}
         <button
           onClick={() => setIsSettingsModalOpen(true)}

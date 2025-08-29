@@ -1,9 +1,14 @@
-import { Check, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
-import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
+import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff } from "lucide-react";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+
 import { setStudyRunning, setStudyTimerState, setSyncPomodoroWithTimer, setSyncCountdownWithTimer } from "@/store/slices/uiSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
+import { useAuth } from '@/hooks/useAuth';
+import useEventListener from "@/hooks/useEventListener";
+import { useLapRealtimeSubscription } from "@/hooks/useLapRealtimeSubscription";
+import usePomodorosToday from '@/hooks/usePomodorosToday';
+import SectionTitle from '@/components/SectionTitle';
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import EditSessionModal from "@/modals/EditSessionModal";
@@ -13,8 +18,6 @@ import StartSessionModal from "@/modals/StartSessionModal";
 import SessionSummaryModal from "@/modals/SessionSummaryModal";
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from "react-hot-toast";
-import { useAuth } from '@/hooks/useAuth';
-import useEventListener from "@/hooks/useEventListener";
 // import useTheme from "@/hooks/useTheme";
 
 const StudyTimer = ({ onSyncChange, isSynced }) => {
@@ -696,7 +699,11 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Study Timer</span>
+        <SectionTitle 
+          title="Study Timer" 
+          tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management."
+          size="md"
+        />
         {/* Botón de configuración de sesión */}
         {currentSessionId ? (
           <button

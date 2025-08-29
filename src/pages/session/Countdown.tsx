@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCountdownState, setSyncCountdownWithTimer } from '@/store/slices/uiSlice';
 import toast from 'react-hot-toast';
 import useEventListener from '@/hooks/useEventListener';
+import SectionTitle from '@/components/SectionTitle';
 
 type Field = 'hours' | 'minutes' | 'seconds';
 const fields: Field[] = ['hours', 'minutes', 'seconds'];
@@ -615,7 +616,11 @@ const Countdown = ({ isSynced, isRunning }) => {
             <RefreshCwOff size={20} className="icon" style={{ color: 'var(--accent-primary)' }} />
           )}
         </button>
-        <span className="font-bold text-lg sm:text-xl text-[var(--text-primary)] ml-1">Countdown</span>
+        <SectionTitle 
+          title="Countdown" 
+          tooltip="A countdown timer that counts down from a set time. Perfect for timed exams, presentations, or any activity with a specific duration limit."
+          size="md"
+        />
         {/* Botón de alarma */}
         <button
           onClick={toggleAlarm}
