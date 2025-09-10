@@ -20,6 +20,9 @@ import { supabase } from '@/utils/supabaseClient';
 import { toast } from "react-hot-toast";
 // import useTheme from "@/hooks/useTheme";
 
+import { X } from "lucide-react";
+import { Check } from "lucide-react";
+
 const StudyTimer = ({ onSyncChange, isSynced }) => {
   const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
