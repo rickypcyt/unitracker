@@ -278,10 +278,13 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           setIsLoginPromptOpen(true);
           return;
         }
-        if (!currentSessionId) {
-          setIsStartModalOpen(true);
-          return;
-        }
+        // Avoid race condition: when sessionId was just set by StartSessionModal,
+    // the local state may not reflect it yet. Fallback to localStorage.
+    const activeId = currentSessionId || localStorage.getItem('activeSessionId');
+    if (!activeId) {
+      setIsStartModalOpen(true);
+      return;
+    }
         const now = (typeof baseTimestamp === 'number' && Number.isFinite(baseTimestamp)) ? baseTimestamp : Date.now();
         setStudyState(prev => ({
           ...prev,
@@ -614,7 +617,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   }) => {
     try {
       if (!sessionId) return;
-      // Persist and set the newly created session
+      // Persist and set the newly created/reused session
       setCurrentSessionId(sessionId);
       localStorage.setItem("activeSessionId", sessionId);
       setStudyState(prev => ({
@@ -632,6 +635,9 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         dispatch(setSyncCountdownWithTimer(!!syncCountdown));
       }
 
+      // Close the Start Session modal immediately to avoid any flicker/race
+      setIsStartModalOpen(false);
+
       // Start the timer after state updates are queued
       setTimeout(() => {
         studyControls.start(Date.now(), false);
@@ -641,6 +647,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       toast.error('Could not start the session.');
     }
   };
+
 
   const handleConfirmDelete = async () => {
     try {

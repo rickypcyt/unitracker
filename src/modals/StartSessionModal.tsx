@@ -120,6 +120,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleStart = async () => {
     if (!sessionTitle.trim()) {
       setTitleError(true);
@@ -129,6 +131,8 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
     setTitleError(false);
 
     try {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
@@ -166,6 +170,16 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       if (existingSession) {
         console.warn('Session with this title already exists today:', existingSession);
+        // Reuse existing session: start timer with it and close modal
+        onStart({
+          sessionId: existingSession.id,
+          tasks: selectedTasks,
+          title: sessionTitle.trim(),
+          syncPomo,
+          syncCountdown
+        });
+        onClose();
+        setIsSubmitting(false);
         return;
       }
 
@@ -225,10 +239,12 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
 
       // Close the modal after successful session start
       onClose();
+      setIsSubmitting(false);
 
     } catch (error) {
       console.error('Error starting session:', error);
       // Optionally show a toast or error message
+      setIsSubmitting(false);
     }
   };
 
@@ -324,9 +340,10 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           <button
             type="button"
             onClick={handleStart}
-            className="px-6 py-2 rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
+            disabled={isSubmitting}
+            className={`px-6 py-2 rounded-md border-2 font-semibold transition-colors ${isSubmitting ? 'opacity-60 cursor-not-allowed border-[var(--border-primary)] text-[var(--text-secondary)]' : 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10'}`}
           >
-            Start Session
+            {isSubmitting ? 'Starting…' : 'Start Session'}
           </button>
         </FormActions>
       </div>
