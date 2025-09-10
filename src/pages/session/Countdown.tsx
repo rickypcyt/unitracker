@@ -401,6 +401,16 @@ const Countdown = ({ isSynced, isRunning }) => {
     handleReset(true);
   }, [lastSyncTimestamp, handleReset]);
 
+  // Escuchar reset global emitido por SessionPage cuando se pulsa el botón "Reset All"
+  useEventListener('globalResetSync', (event) => {
+    if (!isSynced) return; // Solo aplicar cuando la sincronización global está activa
+    const ts = event?.detail?.timestamp || Date.now();
+    console.log('[Countdown] globalResetSync event', { timestamp: ts });
+    if (lastSyncTimestamp === ts) return; // evitar duplicados
+    setLastSyncTimestamp(ts);
+    handleReset(true);
+  }, [isSynced, lastSyncTimestamp, handleReset]);
+
   // Montaje: verificar que el componente está activo y los logs aparecen
   useEffect(() => {
     console.log('[Countdown] mounted');

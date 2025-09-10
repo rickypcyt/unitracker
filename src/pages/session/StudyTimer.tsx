@@ -17,6 +17,7 @@ import LoginPromptModal from "@/modals/LoginPromptModal";
 import StartSessionModal from "@/modals/StartSessionModal";
 import SessionSummaryModal from "@/modals/SessionSummaryModal";
 import { supabase } from '@/utils/supabaseClient';
+import { setCurrentSession, resetTimerState } from '@/store/slices/LapSlice';
 import { toast } from "react-hot-toast";
 // import useTheme from "@/hooks/useTheme";
 
@@ -105,7 +106,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         .from('study_laps')
         .select('name, description')
         .eq('id', currentSessionId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching current session details:', error);
@@ -190,7 +191,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           .from('study_laps')
           .select('name')
           .eq('id', currentSessionId)
-          .single();
+          .maybeSingle();
         if (!error && session) {
           setStudyState(prev => ({
             ...prev,
