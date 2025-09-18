@@ -676,15 +676,16 @@ const Pomodoro = () => {
     return () => clearTimeout(midnightTimeout);
   }, []);
 
-  // Timer logic
+  // Timer logic (independent when not synced)
   useEffect(() => {
-    let interval;
-    if (isStudyRunningRedux && pomoState.timeLeft > 0) {
+    let interval: number | undefined;
+    const isRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
+    if (isRunning && pomoState.timeLeft > 0) {
       // Restart interval whenever isRunning or timeLeft changes
       const startTime = Date.now();
       const startCountingDownFrom = pomoState.timeLeft;
 
-      interval = setInterval(() => {
+      interval = window.setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         const newTimeLeft = Math.max(0, startCountingDownFrom - elapsed);
 
@@ -706,8 +707,10 @@ const Pomodoro = () => {
         }));
       }, 1000);
     }
-    return () => clearInterval(interval);
-  }, [isStudyRunningRedux, pomoState.timeLeft, handlePomodoroComplete]);
+    return () => {
+      if (interval) window.clearInterval(interval);
+    };
+  }, [syncPomodoroWithTimer, isStudyRunningRedux, pomoState.isRunning, pomoState.timeLeft, handlePomodoroComplete]);
 
   // Fetch al montar y al terminar sesión
   useEffect(() => {
@@ -818,7 +821,7 @@ const Pomodoro = () => {
       </div>
 
       {/* Timer display con tooltip */}
-      <div className="relative group text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
+      <div className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current pomodoro time">
         <span>{formatPomoTime(pomoState.timeLeft)}</span>
         <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
           <div className="font-semibold mb-1">
@@ -878,7 +881,7 @@ const Pomodoro = () => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Reset timer"
             >
-              <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
+              <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
             {!isPomodoroRunning ? (
               <button
@@ -886,7 +889,7 @@ const Pomodoro = () => {
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Start timer"
               >
-                <Play size={24} style={{ color: "var(--accent-primary)" }} />
+                <Play size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
             ) : (
               <button
@@ -894,7 +897,7 @@ const Pomodoro = () => {
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Pause timer"
               >
-                <Pause size={24} style={{ color: "var(--accent-primary)" }} />
+                <Pause size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
             )}
           </>

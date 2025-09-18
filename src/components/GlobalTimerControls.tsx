@@ -20,6 +20,13 @@ const GlobalTimerControls = () => {
   };
 
   const handleReset = () => {
+    // Emitir inmediatamente el reset específico de Countdown para máxima robustez
+    // Esto garantiza que Countdown aplique el reset incluso si el flujo global se retrasa.
+    try {
+      const now = Date.now();
+      window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
+    } catch {}
+    // Mantener el flujo normal de reset global vía Redux
     dispatch(triggerReset());
   };
 

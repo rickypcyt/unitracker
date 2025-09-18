@@ -93,7 +93,10 @@ const Countdown = ({ isSynced, isRunning }) => {
     });
     // Usamos siempre el baseline como fuente de verdad para arrancar
     const sourceTime = baselineTimeRef.current;
-    const total = calculateSeconds(sourceTime);
+    // Si hay un tiempo pausado pendiente, al iniciar debemos continuar desde ahí
+    const total = (pausedSecondsLeft !== null)
+      ? pausedSecondsLeft
+      : calculateSeconds(sourceTime);
     if (total > 0) {
       // baseline ya es la fuente, aseguramos persistencia
       if (!fromSync) writeBaseline(sourceTime);
@@ -119,7 +122,7 @@ const Countdown = ({ isSynced, isRunning }) => {
         window.dispatchEvent(new CustomEvent("playCountdownSync", { detail: { baseTimestamp: now } }));
       }
     }
-  }, [initialTime, dispatch, syncCountdownWithTimer]);
+  }, [initialTime, dispatch, syncCountdownWithTimer, pausedSecondsLeft]);
 
   const handlePause = useCallback((fromSync) => {
     // Calcular con precisión el tiempo restante basado en endTimestamp para evitar delay
@@ -150,6 +153,8 @@ const Countdown = ({ isSynced, isRunning }) => {
       const endTs = now + pausedSecondsLeft * 1000;
       setEndTimestamp(endTs);
       setIsCountdownRunning(true);
+      // Asegurar que el UI muestre inmediatamente el tiempo restante correcto
+      setSecondsLeft(pausedSecondsLeft);
       setPausedSecondsLeft(null);
       // Reanudado manualmente: permitimos externos nuevamente
       ignoreExternalUntilPlayRef.current = false;
@@ -198,32 +203,53 @@ const Countdown = ({ isSynced, isRunning }) => {
     });
     setIsCountdownRunning(false);
     setSecondsLeft(0);
-    setEndTimestamp(null); // Resetear fin
+    setEndTimestamp(null);
     setPausedSecondsLeft(null);
     lastStudyElapsedRef.current = null;
     // Tras reset: solo ignorar updates externos si el reset es LOCAL.
     // Si viene sincronizado (fromSync === true), permitimos actualizaciones externas inmediatamente
     ignoreExternalUntilPlayRef.current = !fromSync;
+
+    // 👉 Si el reset viene de StudyTimer y el countdown está en sync,
+    // reiniciamos al baseline y lo arrancamos.
+    if (fromSync && syncCountdownWithTimer) {
+      const full = calculateSeconds(baselineTimeRef.current);
+      if (full > 0) {
+        const now = Date.now();
+        const endTs = now + full * 1000;
+        setEndTimestamp(endTs);
+        setSecondsLeft(full);
+        setIsCountdownRunning(true);
+        dispatch(setCountdownState('running'));
+        localStorage.setItem('countdownState', 'running');
+        localStorage.setItem('countdownEndTs', String(endTs));
+      } else {
+        // si baseline = 0, lo dejamos parado
+        dispatch(setCountdownState('stopped'));
+        localStorage.setItem('countdownState', 'stopped');
+        localStorage.removeItem('countdownEndTs');
+      }
+      return; // 👈 evitamos seguir a la lógica de reset local
+    }
+
+    // 👉 Reset manual (no sync): dejamos countdown detenido en 0
     dispatch(setCountdownState('stopped'));
+    localStorage.setItem('countdownState', 'stopped');
+    localStorage.removeItem('countdownEndTs');
+    localStorage.removeItem('countdownPausedLeft');
+
     // Volver al tiempo ORIGINAL configurado de la sesión (baseline)
     // Alinear también el initialTime con el baseline para que la cifra base sea idéntica
     setInitialTime(baselineTimeRef.current);
-    // Persistir por coherencia: baseline permanece, no lo sobreescribimos con display
-    try {
-      localStorage.setItem('countdownState', 'stopped');
-      localStorage.removeItem('countdownEndTs');
-      localStorage.removeItem('countdownPausedLeft');
-    } catch {}
+
     if (!fromSync) {
       const now = Date.now();
-      // Igual que Pomodoro: emitir siempre el reset global
-      window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
-      // Y además, si está sincronizado con StudyTimer, notificar a Pomodoro específicamente
+      window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: now } }));
       if (syncCountdownWithTimer) {
-        window.dispatchEvent(new CustomEvent("resetPomodoroSync", { detail: { baseTimestamp: now } }));
+        window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: now } }));
       }
     }
-  }, [dispatch, syncCountdownWithTimer]);
+  }, [dispatch, syncCountdownWithTimer, calculateSeconds]);
 
   useEffect(() => {
     if (!isCountdownRunning || !endTimestamp) return;
@@ -329,9 +355,14 @@ const Countdown = ({ isSynced, isRunning }) => {
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     if (!isCountdownRunning) {
-      startCountdown(baseTimestamp, true);
+      // Si había un tiempo pausado, reanudar desde ahí en lugar de resetear al baseline
+      if (pausedSecondsLeft !== null) {
+        handleResume();
+      } else {
+        startCountdown(baseTimestamp, true);
+      }
     }
-  }, [isSynced, syncCountdownWithTimer, lastSyncTimestamp, isCountdownRunning, startCountdown]);
+  }, [isSynced, syncCountdownWithTimer, lastSyncTimestamp, isCountdownRunning, startCountdown, pausedSecondsLeft, handleResume]);
 
   useEventListener('playPomodoroSync', (event) => {
     if (!(isSynced || syncCountdownWithTimer)) return;
@@ -339,9 +370,14 @@ const Countdown = ({ isSynced, isRunning }) => {
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
     if (!isCountdownRunning) {
-      startCountdown(baseTimestamp, true);
+      // Si había un tiempo pausado, reanudar desde ahí en lugar de resetear al baseline
+      if (pausedSecondsLeft !== null) {
+        handleResume();
+      } else {
+        startCountdown(baseTimestamp, true);
+      }
     }
-  }, [isSynced, syncCountdownWithTimer, lastSyncTimestamp, isCountdownRunning, startCountdown]);
+  }, [isSynced, syncCountdownWithTimer, lastSyncTimestamp, isCountdownRunning, startCountdown, pausedSecondsLeft, handleResume]);
 
   useEventListener('pauseCountdownSync', (event) => {
     if (!(isSynced || syncCountdownWithTimer)) return;
@@ -391,15 +427,42 @@ const Countdown = ({ isSynced, isRunning }) => {
     handleReset(true);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
-  // resetCountdownSync es una orden específica para Countdown: respetarla SIEMPRE
-  // (ya viene emitida desde componentes que deciden la intención de resetear Countdown)
+  // resetCountdownSync: reiniciar SOLO cuando hay sync con StudyTimer y con deduplicación
   useEventListener('resetCountdownSync', (event) => {
+    if (!syncCountdownWithTimer) return; // modo independiente: ignorar
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
-    console.log('[Countdown] resetCountdownSync event (forced apply, ignoring dedup)', { baseTimestamp });
-    // Para asegurar el reset, ignoramos la deduplicación por timestamp en este evento específico
+    console.log('[Countdown] resetCountdownSync event', { baseTimestamp });
+    if (lastSyncTimestamp === baseTimestamp) return; // deduplicación
     setLastSyncTimestamp(baseTimestamp);
-    handleReset(true);
-  }, [lastSyncTimestamp, handleReset]);
+
+    // Reiniciar desde la duración completa (baseline) y ARRANCAR automáticamente
+    const full = calculateSeconds(baselineTimeRef.current);
+    setPausedSecondsLeft(null);
+    if (full > 0) {
+      const endTs = baseTimestamp + full * 1000;
+      setEndTimestamp(endTs);
+      setSecondsLeft(full);
+      setIsCountdownRunning(true);
+      setInitialTime(baselineTimeRef.current);
+      dispatch(setCountdownState('running'));
+      try {
+        localStorage.setItem('countdownState', 'running');
+        localStorage.setItem('countdownEndTs', String(endTs));
+        localStorage.removeItem('countdownPausedLeft');
+      } catch {}
+    } else {
+      // Si baseline es 0, detener
+      setIsCountdownRunning(false);
+      setEndTimestamp(null);
+      setSecondsLeft(0);
+      dispatch(setCountdownState('stopped'));
+      try {
+        localStorage.setItem('countdownState', 'stopped');
+        localStorage.removeItem('countdownEndTs');
+        localStorage.removeItem('countdownPausedLeft');
+      } catch {}
+    }
+  }, [syncCountdownWithTimer, lastSyncTimestamp, calculateSeconds, dispatch]);
 
   // Escuchar reset global emitido por SessionPage cuando se pulsa el botón "Reset All"
   useEventListener('globalResetSync', (event) => {
@@ -686,12 +749,12 @@ const Countdown = ({ isSynced, isRunning }) => {
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-16 text-center text-4xl sm:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-14 md:w-16 text-center text-3xl md:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
                 disabled={isCountdownRunning} // Opcional: deshabilita edición durante cuenta regresiva
               />
-              {field !== 'seconds' && <span className="text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
+              {field !== 'seconds' && <span className="text-3xl md:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
           );
         })}
@@ -736,7 +799,7 @@ const Countdown = ({ isSynced, isRunning }) => {
             className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
             aria-label="Reset timer"
           >
-            <RotateCcw size={24} className="text-[var(--accent-primary)]" />
+            <RotateCcw size={20} className="text-[var(--accent-primary)]" />
           </button>
 
           {isCountdownRunning ? (
@@ -745,7 +808,7 @@ const Countdown = ({ isSynced, isRunning }) => {
               className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
               aria-label="Pause countdown"
             >
-              <Pause size={24} className="text-[var(--accent-primary)]" />
+              <Pause size={20} className="text-[var(--accent-primary)]" />
             </button>
           ) : (
             <button
@@ -754,7 +817,7 @@ const Countdown = ({ isSynced, isRunning }) => {
               className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
               aria-label="Start countdown"
             >
-              <Play size={24} className="text-[var(--accent-primary)]" />
+              <Play size={20} className="text-[var(--accent-primary)]" />
             </button>
           )}
         </div>

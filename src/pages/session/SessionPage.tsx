@@ -42,6 +42,10 @@ const SessionPage = memo(() => {
           timestamp: now 
         } 
       }));
+      // Refuerzo: emitir explícitamente el reset específico de Countdown
+      // para garantizar que el componente Countdown se resetea siempre
+      // independientemente de flags internos de sincronización.
+      window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
     }
   }, [isSynced, resetKey]);
 
@@ -53,17 +57,17 @@ const SessionPage = memo(() => {
         {/* Controles globales (solo visibles cuando está sincronizado) */}
         <GlobalTimerControls />
         
-        <div className="flex flex-col lg:flex-row gap-2 md:gap-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full">
           {/* Pomodoro */}
-          <div className="maincard w-full lg:w-1/3 flex-1 mx-auto">
+          <div className="maincard w-full mx-auto">
             <Pomodoro isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
           {/* Study Timer */}
-          <div className="maincard w-full lg:w-1/3 flex-1 mx-auto">
+          <div className="maincard w-full mx-auto">
             <StudyTimer isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
           {/* Countdown */}
-          <div className="maincard w-full lg:w-1/3 flex-1 mx-auto">
+          <div className="maincard w-full mx-auto">
             <Countdown isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
         </div>

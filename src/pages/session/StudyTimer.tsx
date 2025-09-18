@@ -1,28 +1,28 @@
-import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff } from "lucide-react";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from "lucide-react";
+import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
+import { resetTimerState, setCurrentSession } from '@/store/slices/LapSlice';
+import { setStudyRunning, setStudyTimerState, setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from "@/store/slices/uiSlice";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setStudyRunning, setStudyTimerState, setSyncPomodoroWithTimer, setSyncCountdownWithTimer } from "@/store/slices/uiSlice";
-import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
-import { useAuth } from '@/hooks/useAuth';
-import useEventListener from "@/hooks/useEventListener";
-import { useLapRealtimeSubscription } from "@/hooks/useLapRealtimeSubscription";
-import usePomodorosToday from '@/hooks/usePomodorosToday';
-import SectionTitle from '@/components/SectionTitle';
-
+import { Check } from "lucide-react";
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
-import StartSessionModal from "@/modals/StartSessionModal";
+import SectionTitle from '@/components/SectionTitle';
 import SessionSummaryModal from "@/modals/SessionSummaryModal";
+import StartSessionModal from "@/modals/StartSessionModal";
+import { X } from "lucide-react";
 import { supabase } from '@/utils/supabaseClient';
-import { setCurrentSession, resetTimerState } from '@/store/slices/LapSlice';
 import { toast } from "react-hot-toast";
+import { useAuth } from '@/hooks/useAuth';
+import useEventListener from "@/hooks/useEventListener";
+import { useLapRealtimeSubscription } from "@/hooks/useLapRealtimeSubscription";
+import usePomodorosToday from '@/hooks/usePomodorosToday';
+
 // import useTheme from "@/hooks/useTheme";
 
-import { X } from "lucide-react";
-import { Check } from "lucide-react";
 
 const StudyTimer = ({ onSyncChange, isSynced }) => {
   const { isLoggedIn } = useAuth();
@@ -358,14 +358,15 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           willEmitResetPomodoroSync: !!isPomodoroSync,
           willEmitResetCountdownSync: !!isCountdownSync,
         });
-        // Emitir un reset global para que todos los timers (Pomodoro y Countdown)
-        // se reseteen independientemente de los toggles de sincronización
+        // Emitir reset global (telemetría / otros efectos)
         window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: emitTs } }));
         if (isPomodoroSync) {
           window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
         }
-        // Asegurar que Countdown reciba la orden explícita de reset SIEMPRE
-        window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
+        // Resetear Countdown SOLO si está sincronizado
+        if (isCountdownSync) {
+          window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
+        }
       }
     },
     resume: () => {
@@ -711,7 +712,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
         <SectionTitle 
-          title="Study Timer" 
+          title="Timer" 
           tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management."
           size="md"
         />
@@ -730,7 +731,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       </div>
 
       {/* Timer display con tooltip para Session Title */}
-      <div className="relative group text-4xl sm:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
+      <div className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
         <span>{formatStudyTime(Number.isFinite(studyState.time) ? Math.max(0, studyState.time) : 0, false)}</span>
         {currentSessionId && (
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
@@ -875,7 +876,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Reset timer"
             >
-              <RotateCcw size={24} style={{ color: "var(--accent-primary)" }} />
+              <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
             {!isStudyRunningRedux ? (
               <button
@@ -883,7 +884,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Start timer"
               >
-                <Play size={24} style={{ color: "var(--accent-primary)" }} />
+                <Play size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
             ) : (
               <button
@@ -891,7 +892,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Pause timer"
               >
-                <Pause size={24} style={{ color: "var(--accent-primary)" }} />
+                <Pause size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
             )}
           </>
@@ -903,7 +904,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] transition-colors"
               aria-label="Exit session"
             >
-              <X size={24} style={{ color: "var(--accent-primary)" }} />
+              <X size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
             <button
               onClick={() => {
@@ -915,7 +916,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Finish session"
             >
-              <Check size={24} style={{ color: "var(--accent-primary)" }} />
+              <Check size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
           </>
         )}
