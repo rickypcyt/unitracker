@@ -1,11 +1,11 @@
-import { Bell, BellOff, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff } from 'lucide-react';
+import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { setCountdownState, setSyncCountdownWithTimer } from '@/store/slices/uiSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setCountdownState, setSyncCountdownWithTimer } from '@/store/slices/uiSlice';
+import SectionTitle from '@/components/SectionTitle';
 import toast from 'react-hot-toast';
 import useEventListener from '@/hooks/useEventListener';
-import SectionTitle from '@/components/SectionTitle';
 
 type Field = 'hours' | 'minutes' | 'seconds';
 const fields: Field[] = ['hours', 'minutes', 'seconds'];
@@ -194,7 +194,7 @@ const Countdown = ({ isSynced, isRunning }) => {
     }
   }, [isCountdownRunning, alarmEnabled]);
 
-  const handleReset = useCallback((fromSync = false) => {
+  const handleReset = useCallback((fromSync = false, baseTs?: number) => {
     console.log('[Countdown] handleReset()', {
       fromSync,
       lastSyncTimestamp,
@@ -215,8 +215,8 @@ const Countdown = ({ isSynced, isRunning }) => {
     if (fromSync && syncCountdownWithTimer) {
       const full = calculateSeconds(baselineTimeRef.current);
       if (full > 0) {
-        const now = Date.now();
-        const endTs = now + full * 1000;
+        const anchor = (typeof baseTs === 'number' && Number.isFinite(baseTs)) ? baseTs : Date.now();
+        const endTs = anchor + full * 1000;
         setEndTimestamp(endTs);
         setSecondsLeft(full);
         setIsCountdownRunning(true);
@@ -242,12 +242,11 @@ const Countdown = ({ isSynced, isRunning }) => {
     // Alinear también el initialTime con el baseline para que la cifra base sea idéntica
     setInitialTime(baselineTimeRef.current);
 
-    if (!fromSync) {
+    // Emitir eventos SOLO si estamos sincronizados; si no, el reset es puramente local
+    if (!fromSync && syncCountdownWithTimer) {
       const now = Date.now();
       window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: now } }));
-      if (syncCountdownWithTimer) {
-        window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: now } }));
-      }
+      window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: now } }));
     }
   }, [dispatch, syncCountdownWithTimer, calculateSeconds]);
 
@@ -414,7 +413,7 @@ const Countdown = ({ isSynced, isRunning }) => {
     console.log('[Countdown] resetTimerSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
-    handleReset(true);
+    handleReset(true, baseTimestamp);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
   // Escuchar eventos de reset de StudyTimer y Pomodoro cuando están sincronizados
@@ -424,7 +423,7 @@ const Countdown = ({ isSynced, isRunning }) => {
     console.log('[Countdown] resetPomodoroSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
-    handleReset(true);
+    handleReset(true, baseTimestamp);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
   // resetCountdownSync: reiniciar SOLO cuando hay sync con StudyTimer y con deduplicación

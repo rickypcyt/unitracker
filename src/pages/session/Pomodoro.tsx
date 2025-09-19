@@ -294,6 +294,7 @@ const Pomodoro = () => {
     localStorage.removeItem('pomodoroState');
     localStorage.removeItem('pomodoroIsRunning');
     localStorage.removeItem('pomodorosThisSession');
+    // Emitir eventos SOLO cuando el reset es local para evitar bucles infinitos
     if (!fromSync) {
       console.log('[Pomodoro] Emitting reset events from local reset', {
         baseTimestamp: now,
@@ -302,12 +303,10 @@ const Pomodoro = () => {
       });
       // Emitir un reset global para forzar reseteo de todos los timers (StudyTimer y Countdown)
       window.dispatchEvent(new CustomEvent("resetTimerSync", { detail: { baseTimestamp: now } }));
-    }
-    // Además, cuando Pomodoro está sincronizado, emitir SIEMPRE el reset específico de Countdown
-    // incluso si este reset vino "desde sync" (globalResetSync u otro origen)
-    if (syncPomodoroWithTimer) {
-      console.log('[Pomodoro] Emitting resetCountdownSync (always when synced)', { baseTimestamp: now, fromSync });
-      window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
+      if (syncPomodoroWithTimer) {
+        console.log('[Pomodoro] Emitting resetCountdownSync (local only)', { baseTimestamp: now });
+        window.dispatchEvent(new CustomEvent("resetCountdownSync", { detail: { baseTimestamp: now } }));
+      }
     }
   }, [pomoState.modeIndex, modes, syncPomodoroWithTimer, dispatch]);
 

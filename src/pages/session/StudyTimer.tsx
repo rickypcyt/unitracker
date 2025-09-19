@@ -365,6 +365,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         }
         // Resetear Countdown SOLO si está sincronizado
         if (isCountdownSync) {
+          console.log('[StudyTimer] Emitting resetCountdownSync', { baseTimestamp: emitTs });
           window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
         }
       }
@@ -593,6 +594,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
       }
       // Asegurar que Countdown reciba la orden explícita de reset SIEMPRE
+      console.log('[StudyTimer] Emitting resetCountdownSync (handleFinishSession)', { baseTimestamp: emitTs });
       window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
     } catch (error) {
       console.error('Error finishing session:', error);
