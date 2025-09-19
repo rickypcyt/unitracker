@@ -143,9 +143,12 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           time: elapsed
         }));
 
-        // Emit time update event for Pomodoro sync
+        // Emit time update event for Pomodoro and Countdown sync
         window.dispatchEvent(new CustomEvent("studyTimerTimeUpdate", { 
-          detail: { time: elapsed } 
+          detail: { 
+            time: elapsed,
+            isRunning: studyState.isRunning 
+          } 
         }));
       }
     };
@@ -352,33 +355,32 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       window.dispatchEvent(new CustomEvent('studyTimerStateChanged', { detail: { isRunning: false } }));
       if (!fromSync) {
         const emitTs = Date.now();
-        console.warn('[StudyTimer] Emitting reset events from studyControls.reset()', {
+        console.warn('[StudyTimer] 🔄 RESET - Checking sync states:', {
           baseTimestamp: emitTs,
-          willEmitResetTimerSync: true,
-          willEmitResetPomodoroSync: !!isPomodoroSync,
+          syncCountdownWithTimer,
+          isCountdownSync,
           willEmitResetCountdownSync: !!isCountdownSync,
         });
         // Emitir reset global (telemetría / otros efectos)
         window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: emitTs } }));
         if (isPomodoroSync) {
+          console.log('[StudyTimer] ✅ Emitting resetPomodoroSync', { baseTimestamp: emitTs });
           window.dispatchEvent(new CustomEvent('resetPomodoroSync', { detail: { baseTimestamp: emitTs } }));
         }
         // Resetear Countdown SOLO si está sincronizado
         if (isCountdownSync) {
-          console.log('[StudyTimer] Emitting resetCountdownSync', { baseTimestamp: emitTs });
+          console.log('[StudyTimer] ✅ EMITTING resetCountdownSync', { 
+            baseTimestamp: emitTs,
+            isCountdownSync,
+            syncCountdownWithTimer 
+          });
           window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: emitTs } }));
-        }
-      }
-    },
-    resume: () => {
-      if (!isStudyRunningRedux && studyState.sessionStatus === 'active' && !isHandlingEvent) {
-        const now = Date.now();
-        dispatch(setStudyRunning(true));
-        dispatch(setStudyTimerState('running'));
-        setStudyState(prev => ({ ...prev, lastStart: now }));
-        const syncFlag = localStorage.getItem('isSyncedWithStudyTimer') === 'true';
-        if (syncFlag) {
-          window.dispatchEvent(new CustomEvent('playTimerSync', { detail: { baseTimestamp: now } }));
+        } else {
+          console.log('[StudyTimer] ❌ NOT emitting resetCountdownSync', { 
+            isCountdownSync,
+            syncCountdownWithTimer,
+            reason: 'isCountdownSync is false'
+          });
         }
       }
     }
@@ -702,10 +704,20 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   // Al activar sync en mitad de sesión, emitir evento para alinear Pomodoro/Countdown con el tiempo actual
   useEffect(() => {
     if (isPomodoroSync) {
-      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { detail: { time: studyState.time } }));
+      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { 
+        detail: { 
+          time: studyState.time,
+          isRunning: studyState.isRunning 
+        } 
+      }));
     }
     if (isCountdownSync) {
-      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { detail: { time: studyState.time } }));
+      window.dispatchEvent(new CustomEvent('studyTimerTimeUpdate', { 
+        detail: { 
+          time: studyState.time,
+          isRunning: studyState.isRunning 
+        } 
+      }));
     }
   }, [isPomodoroSync, isCountdownSync, studyState.time]);
 

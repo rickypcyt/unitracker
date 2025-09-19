@@ -211,24 +211,17 @@ const Countdown = ({ isSynced, isRunning }) => {
     ignoreExternalUntilPlayRef.current = !fromSync;
 
     // 👉 Si el reset viene de StudyTimer y el countdown está en sync,
-    // reiniciamos al baseline y lo arrancamos.
+    // reiniciamos al baseline pero SIN arrancarlo automáticamente.
     if (fromSync && syncCountdownWithTimer) {
       const full = calculateSeconds(baselineTimeRef.current);
-      if (full > 0) {
-        const anchor = (typeof baseTs === 'number' && Number.isFinite(baseTs)) ? baseTs : Date.now();
-        const endTs = anchor + full * 1000;
-        setEndTimestamp(endTs);
-        setSecondsLeft(full);
-        setIsCountdownRunning(true);
-        dispatch(setCountdownState('running'));
-        localStorage.setItem('countdownState', 'running');
-        localStorage.setItem('countdownEndTs', String(endTs));
-      } else {
-        // si baseline = 0, lo dejamos parado
-        dispatch(setCountdownState('stopped'));
-        localStorage.setItem('countdownState', 'stopped');
-        localStorage.removeItem('countdownEndTs');
-      }
+      setSecondsLeft(full); // Reset to full baseline duration
+      setIsCountdownRunning(false); // Keep it stopped, don't auto-start
+      setEndTimestamp(null); // Clear end timestamp since we're not running
+      setInitialTime(baselineTimeRef.current); // Update display to show baseline
+      dispatch(setCountdownState('stopped')); // Set to stopped state
+      localStorage.setItem('countdownState', 'stopped');
+      localStorage.removeItem('countdownEndTs');
+      localStorage.removeItem('countdownPausedLeft');
       return; // 👈 evitamos seguir a la lógica de reset local
     }
 
@@ -251,6 +244,9 @@ const Countdown = ({ isSynced, isRunning }) => {
   }, [dispatch, syncCountdownWithTimer, calculateSeconds]);
 
   useEffect(() => {
+    // Don't run internal timer when synced with StudyTimer - let studyTimerTimeUpdate handle it
+    if (syncCountdownWithTimer) return;
+    
     if (!isCountdownRunning || !endTimestamp) return;
     const interval = setInterval(() => {
       const now = Date.now();
@@ -266,7 +262,7 @@ const Countdown = ({ isSynced, isRunning }) => {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isCountdownRunning, endTimestamp, handleFinish]);
+  }, [isCountdownRunning, endTimestamp, handleFinish, syncCountdownWithTimer]);
 
   // Si la sincronización está activa, reflejar directamente el estado Redux del StudyTimer
   useEffect(() => {
@@ -426,41 +422,101 @@ const Countdown = ({ isSynced, isRunning }) => {
     handleReset(true, baseTimestamp);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
-  // resetCountdownSync: reiniciar SOLO cuando hay sync con StudyTimer y con deduplicación
-  useEventListener('resetCountdownSync', (event) => {
-    if (!syncCountdownWithTimer) return; // modo independiente: ignorar
-    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
-    console.log('[Countdown] resetCountdownSync event', { baseTimestamp });
-    if (lastSyncTimestamp === baseTimestamp) return; // deduplicación
-    setLastSyncTimestamp(baseTimestamp);
+  // Listen to studyTimerTimeUpdate for continuous sync (like Pomodoro does)
+  useEventListener('studyTimerTimeUpdate', (event) => {
+    if (!syncCountdownWithTimer) return;
 
-    // Reiniciar desde la duración completa (baseline) y ARRANCAR automáticamente
-    const full = calculateSeconds(baselineTimeRef.current);
-    setPausedSecondsLeft(null);
-    if (full > 0) {
-      const endTs = baseTimestamp + full * 1000;
-      setEndTimestamp(endTs);
-      setSecondsLeft(full);
-      setIsCountdownRunning(true);
-      setInitialTime(baselineTimeRef.current);
-      dispatch(setCountdownState('running'));
-      try {
-        localStorage.setItem('countdownState', 'running');
-        localStorage.setItem('countdownEndTs', String(endTs));
-        localStorage.removeItem('countdownPausedLeft');
-      } catch {}
-    } else {
-      // Si baseline es 0, detener
+    const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
+    const baselineSeconds = calculateSeconds(baselineTimeRef.current); // Total countdown duration
+    
+    console.log('[Countdown] 📊 studyTimerTimeUpdate sync', { 
+      studyTime, 
+      baselineSeconds,
+      willUpdate: studyTime >= 0 && baselineSeconds > 0
+    });
+
+    // If StudyTimer resets to 0, reset countdown to baseline
+    if (studyTime === 0 && baselineSeconds > 0) {
+      console.log('[Countdown] ✅ StudyTimer reset detected - resetting countdown to baseline');
+      setSecondsLeft(baselineSeconds);
       setIsCountdownRunning(false);
       setEndTimestamp(null);
-      setSecondsLeft(0);
+      setPausedSecondsLeft(null);
       dispatch(setCountdownState('stopped'));
       try {
         localStorage.setItem('countdownState', 'stopped');
         localStorage.removeItem('countdownEndTs');
         localStorage.removeItem('countdownPausedLeft');
       } catch {}
+      return;
     }
+
+    // Calculate remaining countdown time based on StudyTimer elapsed time
+    const remainingTime = Math.max(0, baselineSeconds - studyTime);
+    
+    // Update countdown display to show remaining time
+    setSecondsLeft(remainingTime);
+    
+    // Sync running state with StudyTimer
+    const studyIsRunning = event.detail.isRunning;
+    if (studyIsRunning !== isCountdownRunning) {
+      setIsCountdownRunning(studyIsRunning);
+      dispatch(setCountdownState(studyIsRunning ? 'running' : 'stopped'));
+      
+      if (studyIsRunning) {
+        // Calculate end timestamp when starting
+        const now = Date.now();
+        const endTs = now + remainingTime * 1000;
+        setEndTimestamp(endTs);
+        try {
+          localStorage.setItem('countdownState', 'running');
+          localStorage.setItem('countdownEndTs', String(endTs));
+        } catch {}
+      } else {
+        // Clear end timestamp when stopping
+        setEndTimestamp(null);
+        try {
+          localStorage.setItem('countdownState', 'stopped');
+          localStorage.removeItem('countdownEndTs');
+        } catch {}
+      }
+    }
+  }, [syncCountdownWithTimer, calculateSeconds, isCountdownRunning, dispatch]);
+
+  // resetCountdownSync: reiniciar SOLO cuando hay sync con StudyTimer y con deduplicación
+  useEventListener('resetCountdownSync', (event) => {
+    console.log('[Countdown] 🔄 RECEIVED resetCountdownSync event', { 
+      event,
+      syncCountdownWithTimer,
+      baseTimestamp: event?.detail?.baseTimestamp,
+      willProcess: !!syncCountdownWithTimer
+    });
+    if (!syncCountdownWithTimer) {
+      console.log('[Countdown] ❌ IGNORING resetCountdownSync - not synced with timer');
+      return; // modo independiente: ignorar
+    }
+    const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
+    console.log('[Countdown] ✅ PROCESSING resetCountdownSync event', { baseTimestamp, lastSyncTimestamp });
+    if (lastSyncTimestamp === baseTimestamp) {
+      console.log('[Countdown] ❌ IGNORING resetCountdownSync - duplicate timestamp');
+      return; // deduplicación
+    }
+    setLastSyncTimestamp(baseTimestamp);
+
+    // Reiniciar desde la duración completa (baseline) pero SIN arrancar automáticamente
+    const full = calculateSeconds(baselineTimeRef.current);
+    setPausedSecondsLeft(null);
+    setIsCountdownRunning(false); // Reset to stopped state, don't auto-start
+    setEndTimestamp(null); // Clear end timestamp since we're not running
+    setSecondsLeft(full); // Reset to full duration
+    setInitialTime(baselineTimeRef.current);
+    dispatch(setCountdownState('stopped')); // Set to stopped state
+    try {
+      localStorage.setItem('countdownState', 'stopped');
+      localStorage.removeItem('countdownEndTs');
+      localStorage.removeItem('countdownPausedLeft');
+    } catch {}
+    setLocalResetKey(prev => prev + 1);
   }, [syncCountdownWithTimer, lastSyncTimestamp, calculateSeconds, dispatch]);
 
   // Escuchar reset global emitido por SessionPage cuando se pulsa el botón "Reset All"
