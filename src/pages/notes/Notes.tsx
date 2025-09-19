@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import DeleteNoteModal from '../../modals/DeleteNoteModal';
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteList from './NoteList';
 import NotesCreateModal from '../../modals/NotesCreateModal';
@@ -153,23 +154,29 @@ const Notes: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const confirmDeleteNote = async (id: string): Promise<void> => {
+  // Handler para eliminar nota
+  const confirmDeleteNote = async (): Promise<void> => {
+    if (!noteToDelete?.id) return;
+    
     setLoading(true);
     setError(null);
-    if (user) {
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', id);
-      if (error) {
-        setError(error.message);
-      } else {
-        setNotes(notes.filter(n => n.id !== id));
+    try {
+      if (user) {
+        const { error } = await supabase
+          .from('notes')
+          .delete()
+          .eq('id', noteToDelete.id);
+        if (error) {
+          throw error;
+        }
       }
-    } else {
-      setNotes(notes.filter(n => n.id !== id));
+      setNotes(notes.filter(n => n.id !== noteToDelete.id));
+      setNoteToDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error deleting note');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const notesToShow = isDemo ? demoNotes : notes;
@@ -212,41 +219,16 @@ const Notes: React.FC = () => {
         loading={loading}
         error={error}
         onEdit={handleEditNote}
-        onDelete={(note) => note.id && confirmDeleteNote(note.id)}
+        onDelete={(note) => setNoteToDelete(note)}
         editingId={null}
         editForm={null}
       />
-      {noteToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h3 className="text-lg font-medium mb-4">Delete Note</h3>
-            <p className="mb-6">
-              Are you sure you want to delete the note "{noteToDelete.title || 'Untitled'}"? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setNoteToDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (noteToDelete.id) {
-                    confirmDeleteNote(noteToDelete.id);
-                    setNoteToDelete(null);
-                  }
-                }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? 'Deleting...' : 'Delete Note'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteNoteModal
+        isOpen={!!noteToDelete}
+        onClose={() => setNoteToDelete(null)}
+        onConfirm={confirmDeleteNote}
+        noteTitle={noteToDelete?.title}
+      />
     </div>
   );
 };

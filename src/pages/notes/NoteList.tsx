@@ -88,7 +88,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
             {/* Card Content */}
             <div className="mb-1.5 flex-1 overflow-hidden relative">
               <div
-                className="text-white text-sm sm:text-base prose prose-sm prose-invert prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-li:my-0 prose-headings:mt-0 prose-headings:mb-1 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-24 sm:max-h-28 md:max-h-32 lg:max-h-40 xl:max-h-48"
+                className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base prose dark:prose-invert prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-li:my-0 prose-headings:mt-0 prose-headings:mb-1 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-24 sm:max-h-28 md:max-h-32 lg:max-h-40 xl:max-h-48"
                 style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
                 dangerouslySetInnerHTML={{ __html: note.description }}
               />
