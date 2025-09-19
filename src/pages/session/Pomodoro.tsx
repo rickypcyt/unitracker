@@ -473,19 +473,9 @@ const Pomodoro = () => {
     }
   }, [syncPomodoroWithTimer, handleReset]);
 
-  useEventListener("studyTimerPause", () => {
-    console.log('[Pomodoro] studyTimerPause event', { isRunning: pomoState.isRunning });
-    if (syncPomodoroWithTimer && pomoState.isRunning) {
-      handleStop();
-    }
-  }, [syncPomodoroWithTimer, pomoState.isRunning, handleStop]);
-
-  useEventListener("studyTimerStart", () => {
-    console.log('[Pomodoro] studyTimerStart event', { isRunning: pomoState.isRunning });
-    if (syncPomodoroWithTimer && !pomoState.isRunning) {
-      handleStart();
-    }
-  }, [syncPomodoroWithTimer, pomoState.isRunning, handleStart]);
+  // Removed orphaned event listeners for studyTimerPause and studyTimerStart
+  // These events are never dispatched and were causing sync issues
+  // The proper sync logic is handled through playPomodoroSync/pausePomodoroSync events
 
   useEventListener("studyTimerSyncStateChanged", (event) => {
     const { isSyncedWithStudyTimer: newSyncState } = event.detail;
