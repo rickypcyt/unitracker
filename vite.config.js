@@ -3,18 +3,25 @@ import { defineConfig } from 'vite'
 import path from "path";
 import react from '@vitejs/plugin-react-swc'
 
-export default defineConfig({
-  plugins: [
-    react(),
-    compression({
-      algorithm: 'gzip',
-      exclude: [/\.(br)$/, /\.(gz)$/],
-    }),
-    compression({
-      algorithm: 'brotliCompress',
-      exclude: [/\.(br)$/, /\.(gz)$/],
-    }),
-  ],
+export default defineConfig(({ command, mode }) => {
+  // Disable compression for mobile builds to avoid duplicate resource issues in Android
+  const isMobileBuild = process.env.CAPACITOR_PLATFORM || process.argv.includes('cap');
+  
+  return {
+    plugins: [
+      react(),
+      // Only enable compression for web builds, not mobile builds
+      ...(!isMobileBuild ? [
+        compression({
+          algorithm: 'gzip',
+          exclude: [/\.(br)$/, /\.(gz)$/],
+        }),
+        compression({
+          algorithm: 'brotliCompress',
+          exclude: [/\.(br)$/, /\.(gz)$/],
+        }),
+      ] : []),
+    ],
   optimizeDeps: {
     include: [
       '@chakra-ui/react',
@@ -75,4 +82,5 @@ export default defineConfig({
     port: 3000,
     host: true
   }
+};
 });
