@@ -14,9 +14,15 @@
     "lint:strict": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 0",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "prepare": "husky install",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "cap:init": "cap init \"UniTracker\" com.example.unitracker --web-dir=dist --npm-client npm",
+    "cap:sync": "cap sync",
+    "ios:add": "cap add ios",
+    "ios:sync": "cap sync ios",
+    "ios:run": "cap run ios"
   },
   "dependencies": {
+    "@capacitor/core": "^6.1.4",
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.24.2",
     "@dnd-kit/core": "^6.3.1",
@@ -88,6 +94,8 @@
     "web-vitals": "^3.5.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.1.4",
+    "@capacitor/ios": "^6.1.4",
     "@eslint/js": "^9.32.0",
     "@sentry/react": "^7.120.4",
     "@sentry/tracing": "^7.120.4",
