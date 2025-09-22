@@ -69,7 +69,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80 max-h-80 sm:max-h-96"
+            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80"
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"
@@ -87,13 +87,22 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
             {/* Card Content */}
             <div className="mb-1.5 flex-1 overflow-hidden relative">
-              <div
-                className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base prose dark:prose-invert prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-li:my-0 prose-headings:mt-0 prose-headings:mb-1 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-24 sm:max-h-28 md:max-h-32 lg:max-h-40 xl:max-h-48"
-                style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
-                dangerouslySetInnerHTML={{ __html: note.description }}
-              />
+              {note.description && note.description.includes('<') ? (
+                <div
+                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words prose dark:prose-invert space-y-1 prose-p:my-1 prose-p:whitespace-pre-wrap prose-ul:my-1 prose-ol:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:my-0 prose-li:whitespace-pre-wrap prose-headings:mt-1 prose-headings:mb-2 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-40 sm:max-h-48 md:max-h-56 lg:max-h-64 xl:max-h-72 pl-4"
+                  style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
+                  dangerouslySetInnerHTML={{ __html: note.description }}
+                />
+              ) : (
+                <div
+                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words whitespace-pre-line max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-40 sm:max-h-48 md:max-h-56 lg:max-h-64 xl:max-h-72"
+                  style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
+                >
+                  {note.description}
+                </div>
+              )}
               {/* Fade bottom to indicate more content */}
-              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent" />
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 md:h-8 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent" />
             </div>
 
             {/* Card Footer */}

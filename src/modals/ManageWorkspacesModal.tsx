@@ -190,12 +190,12 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                     <div className="relative">
                       <button
                         onClick={() => setExpandedIconSelector(expandedIconSelector === workspace.id ? null : workspace.id)}
-                        className="p-2 rounded-lg border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-colors"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
                         title="Choose icon"
                       >
                         {(() => {
                           const IconComp = iconOptions.find(opt => opt.name === editIcon)?.icon || Briefcase;
-                          return <IconComp size={20} className="text-[var(--text-secondary)]" />;
+                          return <IconComp size={22} className="text-[var(--text-secondary)]" />;
                         })()}
                       </button>
                     </div>
@@ -228,18 +228,18 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       <button
                         onClick={() => handleSave(workspace)}
                         disabled={loading}
-                        className="p-2 text-green-500 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
                         title="Save changes"
                       >
-                        <Save size={16} />
+                        <Save size={18} className="text-green-500" />
                       </button>
                       <button
                         onClick={handleCancel}
                         disabled={loading}
-                        className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-lg transition-colors"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
                         title="Cancel"
                       >
-                        <X size={16} />
+                        <X size={18} className="text-[var(--text-secondary)]" />
                       </button>
                     </>
                   ) : (
@@ -266,7 +266,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
               {isEditing && expandedIconSelector === workspace.id && (
                 <div className="mt-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3">
                   <div className="text-sm font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
-                  <div className="grid grid-cols-12 gap-2">
+                  <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-8 gap-2 sm:gap-3">
                     {iconOptions.map((option) => {
                       const IconComp = option.icon;
                       return (
@@ -276,14 +276,14 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                             setEditIcon(option.name);
                             setExpandedIconSelector(null);
                           }}
-                          className={`p-2 rounded-lg border transition-all ${
+                          className={`p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square ${
                             editIcon === option.name
                               ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                               : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]'
                           }`}
                         >
                           <IconComp 
-                            size={18} 
+                            size={22} 
                             className={editIcon === option.name ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} 
                           />
                         </button>

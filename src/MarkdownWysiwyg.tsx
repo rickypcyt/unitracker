@@ -48,7 +48,17 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
           onChange={handleTitleChange}
         />
       )}
-      <div className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] focus-within:border-[var(--accent-primary)] transition-colors mb-3">
+      <div
+        className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] focus-within:border-[var(--accent-primary)] transition-colors mb-3 cursor-text"
+        onClick={() => {
+          // Focus the editor when clicking anywhere inside the container
+          editor?.chain().focus().run();
+        }}
+        onTouchStart={() => {
+          // Ensure focus on touch devices as well
+          editor?.chain().focus().run();
+        }}
+      >
         <EditorContent
           editor={editor}
           className="min-h-[200px] max-h-[400px] overflow-y-auto px-3 py-2 text-[var(--text-primary)] focus:outline-none mb-2"
