@@ -147,7 +147,6 @@ const WorkspaceDropdown = ({
                 <Share className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 Share area
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>

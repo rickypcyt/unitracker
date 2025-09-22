@@ -33,17 +33,22 @@ const BaseModal = ({
   showHeader = true,
 }: BaseModalProps) => {
   const lastActiveElement = useRef<HTMLElement | null>(null);
+  // Mantener onClose y hasUnsavedChanges estables para evitar re-ejecuciones innecesarias del efecto
+  const onCloseRef = useRef(onClose);
+  const hasUnsavedChangesRef = useRef(hasUnsavedChanges);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => { hasUnsavedChangesRef.current = hasUnsavedChanges; }, [hasUnsavedChanges]);
 
-  // Define handleClose before useEffect to avoid TDZ in dependency array
+  // Define handleClose estable leyendo de refs
   const handleClose = useCallback(() => {
-    if (hasUnsavedChanges) {
+    if (hasUnsavedChangesRef.current) {
       if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
-        onClose();
+        onCloseRef.current();
       }
     } else {
-      onClose();
+      onCloseRef.current();
     }
-  }, [hasUnsavedChanges, onClose]);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -57,13 +62,18 @@ const BaseModal = ({
       // No robar el foco en móviles: si existe un elemento con autoFocus, deja que el navegador lo maneje.
       // En desktop, solo enfocamos si no hay ningún elemento con autoFocus dentro del modal.
       setTimeout(() => {
-        const hasAutoFocus = document.querySelector('.BaseModal [autofocus]') as HTMLElement | null;
         const isTouch = 'ontouchstart' in window || (navigator as any).maxTouchPoints > 0;
-        if (hasAutoFocus || isTouch) return;
-        const firstFocusable = document.querySelector(
+        if (isTouch) return;
+        const dialog = document.querySelector('.BaseModal [role="dialog"]') as HTMLElement | null;
+        const active = document.activeElement as HTMLElement | null;
+        // Si ya hay un elemento enfocado dentro del modal (por ejemplo, un input con autoFocus de React), no cambiar el foco
+        if (dialog && active && dialog.contains(active)) return;
+        // Soportar tanto [autofocus] (HTML) como [data-autofocus="true"] (convención manual)
+        const autoTarget = document.querySelector('.BaseModal [autofocus], .BaseModal [data-autofocus="true"]') as HTMLElement | null;
+        const firstFocusable = (autoTarget || document.querySelector(
           '.BaseModal input, .BaseModal textarea, .BaseModal select, .BaseModal button, .BaseModal [tabindex="0"]'
-        ) as HTMLElement | null;
-        if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
+        )) as HTMLElement | null;
+        if (firstFocusable && typeof (firstFocusable as any).focus === 'function') firstFocusable.focus();
       }, 0);
       document.addEventListener('keydown', handleEscape);
       document.body.classList.add('overflow-hidden');
@@ -80,7 +90,7 @@ const BaseModal = ({
       document.removeEventListener('keydown', handleEscape);
       document.body.classList.remove('overflow-hidden');
     };
-  }, [isOpen, closeOnEsc, handleClose]);
+  }, [isOpen, closeOnEsc]);
 
   const handleOverlayClick = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && closeOnOverlayClick) {
@@ -102,7 +112,7 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-4">
+          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-4 pt-0">
             <h2 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] truncate">
               {title}
             </h2>

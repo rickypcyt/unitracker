@@ -7,6 +7,25 @@ import { supabase } from '@/utils/supabaseClient';
 import { useModalClose } from '@/hooks/useModalClose';
 import { useSelector } from 'react-redux';
 
+type Workspace = {
+  id: string | number;
+  name: string;
+  icon?: string | null;
+};
+
+type Task = {
+  workspace_id: string | number;
+  completed?: boolean;
+};
+
+type ManageWorkspacesModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  workspaces: Workspace[];
+  onWorkspaceUpdated: (workspace: Workspace) => void;
+  onWorkspaceDeleted: (workspaceId: Workspace['id']) => void;
+};
+
 const iconOptions = [
   { name: 'Briefcase', icon: Briefcase },
   { name: 'FolderOpen', icon: FolderOpen },
@@ -31,30 +50,30 @@ const iconOptions = [
   { name: 'Workflow', icon: Workflow },
 ];
 
-const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated, onWorkspaceDeleted }) => {
-  const [editingId, setEditingId] = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editIcon, setEditIcon] = useState('Briefcase');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [expandedIconSelector, setExpandedIconSelector] = useState(null);
-  const tasks = useSelector(state => state.tasks.tasks);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [workspaceToDelete, setWorkspaceToDelete] = useState(null);
+const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated, onWorkspaceDeleted }: ManageWorkspacesModalProps) => {
+  const [editingId, setEditingId] = useState<Workspace['id'] | null>(null);
+  const [editName, setEditName] = useState<string>('');
+  const [editIcon, setEditIcon] = useState<string>('Briefcase');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [expandedIconSelector, setExpandedIconSelector] = useState<Workspace['id'] | null>(null);
+  const tasks = useSelector((state: any) => (state?.tasks?.tasks ?? [])) as Task[];
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null);
 
   // Función para contar tareas por workspace
-  const getTaskCountByWorkspace = (workspaceId) => {
-    return tasks.filter(task => task.workspace_id === workspaceId && !task.completed).length;
+  const getTaskCountByWorkspace = (workspaceId: Workspace['id']) => {
+    return tasks.filter((task: Task) => task.workspace_id === workspaceId && !task.completed).length;
   };
 
-  const handleEdit = (workspace) => {
+  const handleEdit = (workspace: Workspace) => {
     setEditingId(workspace.id);
     setEditName(workspace.name);
     setEditIcon(workspace.icon || 'Briefcase');
     setError('');
   };
 
-  const handleSave = async (workspace) => {
+  const handleSave = async (workspace: Workspace) => {
     if (!editName.trim()) {
       setError('Area name is required');
       return;
@@ -88,7 +107,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     }
   };
 
-  const handleDelete = (workspace) => {
+  const handleDelete = (workspace: Workspace) => {
     setWorkspaceToDelete(workspace);
     setShowDeleteModal(true);
   };
@@ -126,7 +145,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     setError('');
   };
 
-  const handleKeyPress = (e, workspace) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, workspace: Workspace) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSave(workspace);
@@ -141,7 +160,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     onClose();
   };
 
-  const modalRef = useRef();
+  const modalRef = useRef<HTMLDivElement | null>(null);
   useModalClose(modalRef, handleClose);
 
   if (!isOpen) return null;
@@ -165,23 +184,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
           return (
             <div key={workspace.id}>
               <div className="flex items-center gap-3 p-3 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
-                <div className="flex-1">
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => handleKeyPress(e, workspace)}
-                      className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                      placeholder="Area name"
-                      autoFocus
-                    />
-                  ) : (
-                    <span className="text-[var(--text-primary)] font-medium">
-                      {workspace.name} ({getTaskCountByWorkspace(workspace.id)})
-                    </span>
-                  )}
-                </div>
+                {/* Icon to the left */}
                 <div className="flex-shrink-0">
                   {isEditing ? (
                     <div className="relative">
@@ -200,6 +203,25 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                     <IconComponent size={20} className="text-[var(--text-secondary)]" />
                   )}
                 </div>
+                {/* Name/Input in the middle */}
+                <div className="flex-1">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onKeyDown={(e) => handleKeyPress(e, workspace)}
+                      className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                      placeholder="Area name"
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="text-[var(--text-primary)] font-medium">
+                      {workspace.name} ({getTaskCountByWorkspace(workspace.id)})
+                    </span>
+                  )}
+                </div>
+                {/* Actions to the right */}
                 <div className="flex items-center gap-2">
                   {isEditing ? (
                     <>

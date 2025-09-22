@@ -598,7 +598,7 @@ h1 {
 }
 
 .control-button {
-  @apply btn-base btn-rounded-full btn-padding-2 btn-bg-secondary btn-text-white btn-hover-bg-secondary-opacity-30 btn-flex-center;
+  @apply btn-base btn-rounded-full btn-padding-2 btn-bg-secondary  btn-hover-bg-secondary-opacity-30 btn-flex-center;
 }
 
 .control-button:disabled {
