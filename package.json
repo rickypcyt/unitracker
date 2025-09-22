@@ -22,7 +22,8 @@
     "ios:run": "cap run ios"
   },
   "dependencies": {
-    "@capacitor/core": "^6.1.4",
+    "@capacitor/android": "^7",
+    "@capacitor/core": "^7",
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.24.2",
     "@dnd-kit/core": "^6.3.1",
@@ -94,8 +95,8 @@
     "web-vitals": "^3.5.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.4",
-    "@capacitor/ios": "^6.1.4",
+    "@capacitor/cli": "^7",
+    "@capacitor/ios": "^7",
     "@eslint/js": "^9.32.0",
     "@sentry/react": "^7.120.4",
     "@sentry/tracing": "^7.120.4",
