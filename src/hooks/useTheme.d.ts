@@ -1,15 +1,18 @@
 import type { MouseEvent } from 'react';
+
 declare type Theme = 'light' | 'dark';
+declare type ThemePreference = 'light' | 'dark' | 'auto';
 
 declare const useTheme: () => {
   currentTheme: Theme;
-  handleThemeChange: (theme: Theme) => void;
+  themePreference: ThemePreference;
+  handleThemeChange: (preference: ThemePreference) => void;
+  toggleTheme: () => void;
   accentPalette: string;
   setAccentPalette: (color: string) => void;
   showWelcomeModal: boolean;
   handleCloseWelcome: () => void;
   handleOverlayClick: (e: MouseEvent) => void;
-  // Add other methods if they exist in the hook
 };
 
 export default useTheme;

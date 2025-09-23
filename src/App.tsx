@@ -88,7 +88,7 @@ const UserModalGate: FC = () => {
 };
 
 const App: FC = () => {
-  const { currentTheme, handleThemeChange } = useTheme();
+  const { currentTheme, toggleTheme } = useTheme();
   const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
@@ -112,14 +112,14 @@ const App: FC = () => {
 
     // La lógica de handleKeyDown se ha movido fuera del componente
     const keydownListener = (e: KeyboardEvent): void => {
-      handleKeyDown(e, currentTheme, handleThemeChange);
+      handleKeyDown(e, toggleTheme);
     };
     window.addEventListener('keydown', keydownListener);
 
     return () => {
       window.removeEventListener('keydown', keydownListener);
     };
-  }, [currentTheme, handleThemeChange]);
+  }, [currentTheme, toggleTheme]);
 
   useEffect(() => {
     dispatch(hydrateTasksFromLocalStorage());
@@ -178,12 +178,11 @@ const navPages = ['tasks', 'calendar', 'session', 'notes', 'stats'];
 
 const handleKeyDown = (
   e: KeyboardEvent,
-  currentTheme: string,
-  handleThemeChange: (theme: 'light' | 'dark') => void
+  toggleTheme: () => void
 ): void => {
   if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
     e.preventDefault();
-    handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark');
+    toggleTheme();
   }
 };
 
