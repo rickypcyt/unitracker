@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "concurrently \"bun vite\"",
     "build": "vite build",
+    "build:fast": "vite build --mode development",
     "build:mobile": "DISABLE_COMPRESSION=true vite build",
+    "build:mobile:fast": "DISABLE_COMPRESSION=true vite build --mode development",
     "build-only": "vite build",
     "vite": "vite",
     "type-check": "tsc --noEmit",

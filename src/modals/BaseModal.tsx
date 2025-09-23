@@ -108,7 +108,7 @@ const BaseModal = ({
       <div
         role="dialog"
         aria-modal="true"
-        className={`bg-[var(--bg-primary)] border-0 sm:border-2 border-[var(--border-primary)] rounded-none sm:rounded-xl p-3 sm:p-5 w-full ${maxWidth} mx-0 sm:mx-4 ${className} shadow-xl max-h-[85vh] h-auto overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col`}
+        className={`bg-[var(--bg-primary)] border border-[var(--border-primary)] sm:border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 w-full ${maxWidth} mx-0 sm:mx-4 ${className} shadow-xl max-h-[85vh] h-auto overflow-y-auto pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (

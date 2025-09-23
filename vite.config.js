@@ -41,28 +41,33 @@ export default defineConfig(({ command, mode }) => {
     ],
     esbuildOptions: {
       target: 'es2020'
-    }
+    },
+    force: false // Solo forzar cuando sea necesario
   },
+  // Cache configuration
+  cacheDir: 'node_modules/.vite',
   build: {
     target: 'es2020',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
+        manualChunks: {
+          // Separar vendor chunks para mejor caching
+          'react-vendor': ['react', 'react-dom'],
+          'ui-vendor': ['@chakra-ui/react', 'framer-motion'],
+          'utils-vendor': ['@reduxjs/toolkit', 'react-redux'],
+          'supabase-vendor': ['@supabase/supabase-js', '@supabase/postgrest-js']
+        },
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    sourcemap: true,
+    sourcemap: mode === 'development',
     cssMinify: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    minify: 'esbuild', // esbuild es más rápido que terser
+    reportCompressedSize: false, // Desactivar para builds más rápidos
+    chunkSizeWarningLimit: 1000
   },
   resolve: {
     alias: {
