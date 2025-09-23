@@ -147,8 +147,6 @@ const SettingsButton = ({
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
-        currentTheme={currentTheme}
-        handleThemeChange={handleThemeChange}
       />
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
     </>

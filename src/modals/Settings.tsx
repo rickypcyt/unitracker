@@ -1,11 +1,10 @@
-import { ListTodo, Moon, Palette, Sun } from "lucide-react";
+import { ListTodo, Moon, Palette, Sun, Monitor } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
 import BaseModal from './BaseModal';
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from '@/modals/ManageCompletedTasksModal';
-import Switch from "react-switch";
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -15,18 +14,15 @@ interface AccentColor {
   class: string;
 }
 
-// Keep Theme type local to avoid import issues; must match useTheme's Theme
-type Theme = 'light' | 'dark';
+// Types are now handled by the useTheme hook
 
 interface SettingsProps {
   isOpen: boolean;
   onClose: () => void;
-  currentTheme: Theme;
-  handleThemeChange: (theme: Theme) => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, handleThemeChange }) => {
-  const { accentPalette, setAccentPalette } = useTheme();
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
+  const { accentPalette, setAccentPalette, themePreference, handleThemeChange, currentTheme } = useTheme();
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
@@ -51,31 +47,77 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, currentTheme, hand
           {/* Theme Section */}
           <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
             <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              {currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
+              {themePreference === 'auto' ? <Monitor size={22} /> : currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
               Theme
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between bg-[var(--bg-secondary)] p-3 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Sun size={16} className="text-[var(--text-primary)]" />
-                  <span className="text-[var(--text-primary)]">Light</span>
+              <div className="bg-[var(--bg-primary)] p-4 rounded-lg">
+                {/* Three-position theme selector */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sun size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Light</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Monitor size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">System</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Moon size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Dark</span>
+                  </div>
                 </div>
-                <Switch
-                  onChange={() => handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark')}
-                  checked={currentTheme === 'dark'}
-                  checkedIcon={false}
-                  uncheckedIcon={false}
-                  height={24}
-                  width={48}
-                  handleDiameter={20}
-                  offColor="#D1D5DB"
-                  onColor={accentPalette}
-                  activeBoxShadow={`0 0 2px 3px ${accentPalette}`}
-                  className="react-switch"
-                />
-                <div className="flex items-center gap-2">
-                  <Moon size={16} className="text-[var(--text-primary)]" />
-                  <span className="text-[var(--text-primary)]">Dark</span>
+                
+                {/* Custom three-position slider */}
+                <div className="relative">
+                  <div className="w-full h-8 bg-[var(--bg-secondary)] rounded-full relative overflow-hidden">
+                    {/* Slider track background */}
+                    <div 
+                      className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
+                      style={{
+                        backgroundColor: accentPalette,
+                        width: 'calc(33.333% - 4px)',
+                        left: themePreference === 'light' ? '2px' : 
+                              themePreference === 'auto' ? 'calc(33.333% + 1px)' : 
+                              'calc(66.666% + 0px)',
+                      }}
+                    />
+                    
+                    {/* Three clickable areas */}
+                    <button
+                      onClick={() => handleThemeChange('light')}
+                      className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="Light theme"
+                    >
+                      <Sun size={16} className={`${themePreference === 'light' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                    </button>
+                    
+                    <button
+                      onClick={() => handleThemeChange('auto')}
+                      className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="System theme"
+                    >
+                      <Monitor size={16} className={`${themePreference === 'auto' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                    </button>
+                    
+                    <button
+                      onClick={() => handleThemeChange('dark')}
+                      className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="Dark theme"
+                    >
+                      <Moon size={16} className={`${themePreference === 'dark' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Current theme indicator */}
+                <div className="mt-3 text-center">
+                  <span className="text-xs text-[var(--text-secondary)]">
+                    {themePreference === 'auto' 
+                      ? `Following system (${currentTheme})` 
+                      : `${themePreference.charAt(0).toUpperCase() + themePreference.slice(1)} theme`
+                    }
+                  </span>
                 </div>
               </div>
             </div>
