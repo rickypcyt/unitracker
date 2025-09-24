@@ -505,7 +505,7 @@ export const KanbanBoard = () => {
           assignmentId={sortMenu.assignmentId}
           onSelectSort={handleSelectSort}
           onClose={handleCloseSortMenu}
-          currentSortType={assignmentSortConfig[sortMenu.assignmentId]?.type || 'alphabetical'}
+          currentSortType={assignmentSortConfig[sortMenu.assignmentId]?.type || 'deadline'}
           currentSortDirection={assignmentSortConfig[sortMenu.assignmentId]?.direction || 'asc'}
         />
       )}

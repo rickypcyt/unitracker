@@ -1,7 +1,10 @@
+import 'react-datepicker/dist/react-datepicker.css';
+
+import { Calendar, Check, Pencil, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Check, Pencil, Trash2, X } from 'lucide-react';
 
 import BaseModal from '@/modals/BaseModal';
+import DatePicker from 'react-datepicker';
 
 type AITask = {
   task?: string;
@@ -26,6 +29,9 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
+  const [editSubject, setEditSubject] = useState('');
+  const [editDate, setEditDate] = useState<Date | null>(null);
+  const [editDifficulty, setEditDifficulty] = useState<string>('medium');
 
   useEffect(() => {
     setItems(tasks ?? []);
@@ -34,9 +40,24 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
   }, [tasks]);
 
   const beginEdit = (idx: number) => {
+    const task = items[idx];
     setEditIdx(idx);
-    setEditTitle(items[idx]?.task ?? '');
-    setEditDesc(items[idx]?.description ?? '');
+    setEditTitle(task?.task ?? '');
+    setEditDesc(task?.description ?? '');
+    setEditSubject(task?.subject ?? '');
+    setEditDifficulty(task?.difficulty ?? 'medium');
+    
+    // Parse date string to Date object
+    if (task?.date && task.date !== 'null') {
+      try {
+        const date = new Date(task.date);
+        setEditDate(isNaN(date.getTime()) ? null : date);
+      } catch {
+        setEditDate(null);
+      }
+    } else {
+      setEditDate(null);
+    }
   };
 
   const cancelEdit = () => {
@@ -45,7 +66,18 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
 
   const saveEdit = () => {
     if (editIdx === null) return;
-    setItems(prev => prev.map((it, i) => i === editIdx ? { ...it, task: editTitle, description: editDesc } : it));
+    
+    // Format date back to string
+    const dateString = editDate ? editDate.toISOString().split('T')[0] : null;
+    
+    setItems(prev => prev.map((it, i) => i === editIdx ? {
+      ...it,
+      task: editTitle,
+      description: editDesc,
+      subject: editSubject,
+      date: dateString || null,
+      difficulty: editDifficulty
+    } : it));
     setEditIdx(null);
   };
 
@@ -67,6 +99,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
       title={'AI Task Preview'}
       maxWidth="max-w-lg"
       className="overflow-hidden flex flex-col"
+      overlayClassName="!bg-white/60 dark:!bg-black/70"
     >
       <div className="flex-1 flex flex-col min-h-0">
         {/* Scrollable content. Add top padding on mobile so it doesn't sit under navbar/timer */}
@@ -122,21 +155,57 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                 {/* Body content (indented to align after # badge) */}
                 <div className="pl-9 sm:pl-10">
                   {editIdx === idx ? (
-                    <div className="mb-2">
-                      <textarea
-                        value={editDesc}
-                        onChange={(e) => setEditDesc(e.target.value)}
-                        className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
-                        placeholder="Description"
-                        rows={3}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="mt-2 flex items-center gap-2">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-xs sm:text-sm rounded-md bg-[var(--accent-primary)] text-white">
-                          Save
-                        </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-xs sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)]">
+                    <div onClick={(e) => e.stopPropagation()} className="space-y-1">
+                      <div className="flex items-center gap-2 text-sm sm:text-base">
+                        <span className="font-semibold text-[var(--text-secondary)] w-28">Description:</span>
+                        <input
+                          value={editDesc}
+                          onChange={(e) => setEditDesc(e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                          placeholder="Description"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 text-sm sm:text-base">
+                        <span className="font-semibold text-[var(--text-secondary)] w-28">Assignment:</span>
+                        <input
+                          value={editSubject}
+                          onChange={(e) => setEditSubject(e.target.value)}
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                          placeholder="Assignment/Subject"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 text-sm sm:text-base">
+                        <span className="font-semibold text-[var(--text-secondary)] w-28">Date:</span>
+                        <div className="relative flex-1 min-w-0">
+                          <DatePicker
+                            selected={editDate}
+                            onChange={(date) => setEditDate(date)}
+                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8"
+                            placeholderText="YYYY-MM-DD"
+                            dateFormat="yyyy-MM-dd"
+                            minDate={new Date()}
+                          />
+                          <Calendar size={16} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm sm:text-base">
+                        <span className="font-semibold text-[var(--text-secondary)] w-28">Difficulty:</span>
+                        <select
+                          value={editDifficulty}
+                          onChange={(e) => setEditDifficulty(e.target.value)}
+                          className="px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                        >
+                          <option value="easy">easy</option>
+                          <option value="medium">medium</option>
+                          <option value="hard">hard</option>
+                        </select>
+                      </div>
+                      <div className="mt-2 flex items-center gap-2 justify-end">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-3 py-1.5 text-xs sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
                           Cancel
+                        </button>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-3 py-1.5 text-xs sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium">
+                          Save
                         </button>
                       </div>
                     </div>
@@ -149,16 +218,20 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                       )}
                     </>
                   )}
-                  <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
-                    <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
-                  </div>
-                  <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
-                    <span className="font-semibold">Date:</span> {task.date || <span className="italic">None</span>}
-                  </div>
-                  {task.difficulty && (
-                    <div className="text-sm sm:text-base text-[var(--text-secondary)]">
-                      <span className="font-semibold">Difficulty:</span> {task.difficulty}
-                    </div>
+                  {editIdx !== idx && (
+                    <>
+                      <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                        <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
+                      </div>
+                      <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                        <span className="font-semibold">Date:</span> {task.date || <span className="italic">None</span>}
+                      </div>
+                      {task.difficulty && (
+                        <div className="text-sm sm:text-base text-[var(--text-secondary)]">
+                          <span className="font-semibold">Difficulty:</span> {task.difficulty}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -181,19 +254,11 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
             </button>
             {/* Right: Accept */}
             <div className="flex items-center gap-2">
-              {/* Accept all */}
+
+
               <button
                 onClick={() => items.length > 0 && onAcceptAll?.(items)}
                 title="Accept all"
-                className="p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-[var(--text-primary)]"
-                disabled={items.length === 0}
-              >
-                <Check size={18} />
-                <span className="hidden md:inline ml-2">Accept all</span>
-              </button>
-              <button
-                onClick={() => items[selectedIdx] && onAccept(items[selectedIdx])}
-                title="Accept selected"
                 className="p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-green-500"
                 disabled={items.length === 0}
               >

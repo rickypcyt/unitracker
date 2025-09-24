@@ -9,6 +9,7 @@ type BaseModalProps = {
   title?: string;
   children: ReactNode;
   className?: string;
+  overlayClassName?: string;
   hasUnsavedChanges?: boolean;
   showCloseButton?: boolean;
   maxWidth?: string;
@@ -24,6 +25,7 @@ const BaseModal = ({
   title,
   children,
   className = '',
+  overlayClassName,
   hasUnsavedChanges = false,
   showCloseButton = true,
   maxWidth = 'max-w-md',
@@ -102,7 +104,8 @@ const BaseModal = ({
 
   return (
     <div
-      className={`BaseModal fixed inset-0 w-screen h-screen bg-black bg-opacity-70 flex items-center justify-center ${zIndex} backdrop-blur-md w-full px-2 overflow-hidden`}
+      data-overlay="BaseModal-v2"
+      className={`BaseModal fixed inset-0 w-screen h-screen ${overlayClassName ?? 'bg-white/60 dark:bg-black/70'} flex items-center justify-center ${zIndex} backdrop-blur-md w-full px-2 overflow-hidden`}
       onClick={handleOverlayClick}
     >
       <div

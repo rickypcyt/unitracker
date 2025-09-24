@@ -157,7 +157,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-[99999] backdrop-blur-xl">
+    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex justify-center items-center z-[99999] backdrop-blur-xl">
       <div 
         className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-4xl mx-4 shadow-xl border border-[var(--border-primary)]"
         onClick={(e) => e.stopPropagation()}

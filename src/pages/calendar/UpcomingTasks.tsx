@@ -17,8 +17,9 @@ const UpcomingTasks = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({
-    today: false,
-    thisWeek: false,
+    today: true,
+    thisWeek: true,
+    noDeadline: true,
   });
   const dispatch = useDispatch();
   const [contextMenu, setContextMenu] = useState(null);
@@ -92,9 +93,11 @@ const UpcomingTasks = () => {
   useEffect(() => {
     setExpandedGroups(prev => {
       const newState = { ...prev };
-      ['noDeadline', 'today', 'thisWeek'].forEach(key => {
+      ['today', 'thisWeek', 'noDeadline'].forEach(key => {
         if (!(key in newState)) {
-          newState[key] = false;
+          newState[key] = true;
+        } else {
+          newState[key] = true; // Set all to true by default
         }
       });
       return newState;
@@ -194,9 +197,7 @@ const UpcomingTasks = () => {
         </div>
       </div>
       <div className="space-y-3">
-        {/* No Deadline Tasks */}
-        <TaskGroup title="No Deadline" tasks={noDeadlineTasks} groupKey="noDeadline" />
-        {/* Upcoming Tasks */}
+        {/* Time-based Tasks First */}
         {hasUpcoming ? (
           <>
             <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
@@ -213,6 +214,9 @@ const UpcomingTasks = () => {
         ) : (
           <p className="text-[var(--text-secondary)]">No upcoming tasks</p>
         )}
+
+        {/* No Deadline Tasks at the bottom */}
+        <TaskGroup title="No Deadline" tasks={noDeadlineTasks} groupKey="noDeadline" />
 
         {/* Past Tasks moved to separate component/card */}
       </div>

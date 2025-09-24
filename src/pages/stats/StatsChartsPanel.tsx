@@ -178,56 +178,72 @@ const StatsChartsPanel = () => {
       date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
     }));
     return (
-      <div className="w-full flex flex-col gap-1">
-        <WeekStatsCard
-          data={thisWeekData}
-          accentColor={accentColor}
-          shownWeekNumber={shownWeekNumber}
-          weekOffset={weekOffset}
-          setWeekOffset={setWeekOffset}
-          isDemo={true}
-        />
-        <MonthStatsCard
-          data={shownMonthData}
-          accentColor={accentColor}
-          shownMonthDate={shownMonthDate}
-          setMonthOffset={setMonthOffset}
-          monthOffset={monthOffset}
-          isDemo={true}
-        />
-        <YearStatsCard
-          data={thisYearData}
-          accentColor={accentColor}
-          isDemo={true}
-        />
+      <div className="w-full flex flex-col gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+          <div className="h-full">
+            <WeekStatsCard
+              data={thisWeekData}
+              accentColor={accentColor}
+              shownWeekNumber={shownWeekNumber}
+              weekOffset={weekOffset}
+              setWeekOffset={setWeekOffset}
+              isDemo={true}
+            />
+          </div>
+          <div className="h-full">
+            <MonthStatsCard
+              data={shownMonthData}
+              accentColor={accentColor}
+              shownMonthDate={shownMonthDate}
+              setMonthOffset={setMonthOffset}
+              monthOffset={monthOffset}
+              isDemo={true}
+            />
+          </div>
+        </div>
+        <div className="w-full">
+          <YearStatsCard
+            data={thisYearData}
+            accentColor={accentColor}
+            isDemo={true}
+          />
+        </div>
       </div>
     );
   }
 
   // Logueado
   return (
-    <div className="w-full flex flex-col gap-1">
-      <WeekStatsCard
-        data={shownWeekData}
-        accentColor={accentColor}
-        shownWeekNumber={shownWeekNumber}
-        weekOffset={weekOffset}
-        setWeekOffset={setWeekOffset}
-        isDemo={false}
-      />
-      <MonthStatsCard
-        data={shownMonthData}
-        accentColor={accentColor}
-        shownMonthDate={shownMonthDate}
-        setMonthOffset={setMonthOffset}
-        monthOffset={monthOffset}
-        isDemo={false}
-      />
-      <YearStatsCard
-        data={thisYearData}
-        accentColor={accentColor}
-        isDemo={false}
-      />
+    <div className="w-full flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+        <div className="h-full">
+          <WeekStatsCard
+            data={shownWeekData}
+            accentColor={accentColor}
+            shownWeekNumber={shownWeekNumber}
+            weekOffset={weekOffset}
+            setWeekOffset={setWeekOffset}
+            isDemo={false}
+          />
+        </div>
+        <div className="h-full">
+          <MonthStatsCard
+            data={shownMonthData}
+            accentColor={accentColor}
+            shownMonthDate={shownMonthDate}
+            setMonthOffset={setMonthOffset}
+            monthOffset={monthOffset}
+            isDemo={false}
+          />
+        </div>
+      </div>
+      <div className="w-full">
+        <YearStatsCard
+          data={thisYearData}
+          accentColor={accentColor}
+          isDemo={false}
+        />
+      </div>
     </div>
   );
 };

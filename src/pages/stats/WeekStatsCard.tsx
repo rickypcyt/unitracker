@@ -26,40 +26,44 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
   });
 
   return (
-    <ChartCard
-      paddingClass="p-2"
-      header={
-        <>
-          <button
-            onClick={() => setWeekOffset((prev) => prev + 1)}
-            className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-            aria-label="Previous week"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
-            {`Week ${shownWeekNumber}`}
-          </span>
-          <button
-            onClick={() => setWeekOffset((prev) => prev - 1)}
-            className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
-            aria-label="Next week"
-            disabled={weekOffset === 0}
-          >
-            <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
-          </button>
-        </>
-      }
-    >
-      <StatsChart
-        data={weekData}
-        title={`Week ${shownWeekNumber}`}
-        accentColor={accentColor}
-        small
-        customTitle={<></>}
-        xAxisTicks={weekDayInitials}
-      />
-    </ChartCard>
+    <div className="h-full flex flex-col">
+      <ChartCard
+        paddingClass="p-2"
+        className="h-full"
+        header={
+          <>
+            <button
+              onClick={() => setWeekOffset((prev) => prev + 1)}
+              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              aria-label="Previous week"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
+              {`Week ${shownWeekNumber}`}
+            </span>
+            <button
+              onClick={() => setWeekOffset((prev) => prev - 1)}
+              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              aria-label="Next week"
+              disabled={weekOffset === 0}
+            >
+              <ChevronRight size={20} className={weekOffset === 0 ? 'opacity-40 cursor-not-allowed' : ''} />
+            </button>
+          </>
+        }
+      >
+        <div className="flex-1">
+          <StatsChart
+            data={weekData}
+            title={`Week ${shownWeekNumber}`}
+            accentColor={accentColor}
+            customTitle={<></>}
+            xAxisTicks={weekDayInitials}
+          />
+        </div>
+      </ChartCard>
+    </div>
   );
 };
 

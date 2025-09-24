@@ -9,15 +9,15 @@ interface ChartCardProps {
 
 const ChartCard = ({ header, children, paddingClass = 'p-2', className = '' }: ChartCardProps) => {
   return (
-    <div className="w-full">
-      <div className={`maincard ${paddingClass} mb-1 ${className}`}>
+    <div className="w-full h-full flex flex-col">
+      <div className={`maincard ${paddingClass} mb-1 flex-1 flex flex-col ${className}`}>
         {header && (
-          <div className="flex items-center justify-center gap-2 w-full mb-2 mt-1">
+          <div className="flex items-center justify-center gap-2 w-full mb-2 mt-1 flex-shrink-0">
             {header}
           </div>
         )}
-        <div className="w-full overflow-hidden">
-          <div className="w-full">
+        <div className="w-full overflow-hidden flex-1">
+          <div className="w-full h-full">
             {children}
           </div>
         </div>

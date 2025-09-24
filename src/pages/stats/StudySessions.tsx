@@ -1,29 +1,61 @@
-import { ArrowLeft, BookOpen, Calendar, Clock, Info, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
-import { formatDateShort } from '@/utils/dateUtils';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { deleteLap } from '@/store/LapActions';
+import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 
-const StudySessions = () => {
-    const { laps } = useSelector((state) => state.laps);
-    const dispatch = useDispatch();
+type AppDispatch = any; // Replace with your actual AppDispatch type
+interface RootState {
+  laps: {
+    laps: Lap[];
+  };
+}
+
+interface Lap {
+  id: string;
+  created_at: string;
+  duration: string;
+  session_number: number;
+  name: string;
+  tasks_completed: number;
+  type: string;
+  subject_id: string;
+  subject_name: string;
+  subject_color: string;
+  user_id: string;
+  start_time: string;
+  end_time: string;
+  notes: string;
+  created_at_ts: number;
+  updated_at: string;
+}
+
+interface ContextMenu {
+  x: number;
+  y: number;
+  lap: Lap;
+}
+
+const StudySessions: React.FC = () => {
+    const { laps } = useSelector((state: RootState) => state.laps);
+    const dispatch = useDispatch<AppDispatch>();
     const { isLoggedIn } = useAuth();
     const { isDemo } = useDemoMode();
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const [selectedSession, setSelectedSession] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+    const [selectedSession, setSelectedSession] = useState<Lap | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [sessionToDeleteId, setSessionToDeleteId] = useState(null);
-    const [contextMenu, setContextMenu] = useState(null);
-
-    const groupSessionsByMonth = () => {
-        return laps.reduce((groups, lap) => {
+    const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
+    const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+    
+    const groupSessionsByMonth = (lapsList: Lap[]): GroupedLaps => {
+        return lapsList.reduce<Record<string, Lap[]>>((groups, lap) => {
             const monthYear = getMonthYear(lap.created_at);
             if (!groups[monthYear]) {
                 groups[monthYear] = [];
@@ -33,7 +65,7 @@ const StudySessions = () => {
         }, {});
     };
 
-    const handleDeleteClick = (sessionId) => {
+    const handleDeleteClick = (sessionId: string) => {
         setSessionToDeleteId(sessionId);
         setIsDeleteModalOpen(true);
     };
@@ -41,11 +73,11 @@ const StudySessions = () => {
     const handleConfirmDelete = async () => {
         if (sessionToDeleteId) {
             try {
-                await dispatch(deleteLap(sessionToDeleteId));
+                await dispatch(deleteLap(sessionToDeleteId) as any);
                 toast.success("Session deleted successfully");
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Error deleting session:", error);
-                toast.error(error.message || "Failed to delete session");
+                toast.error(error?.message || "Failed to delete session");
             }
         }
         setIsDeleteModalOpen(false);
@@ -58,14 +90,15 @@ const StudySessions = () => {
     };
 
     // Demo data: build months up to current month with sample sessions
-    const buildDemoGroupedLaps = () => {
+    const buildDemoGroupedLaps = (): GroupedLaps => {
         const months = [
-            'January','February','March','April','May','June','July','August','September','October','November','December'
+            'January','February','March','April','May','June',
+            'July','August','September','October','November','December'
         ];
         const now = new Date();
         const year = now.getFullYear();
         const currentMonthIdx = now.getMonth();
-        const out: Record<string, any[]> = {};
+        const out: Record<string, Lap[]> = {};
         let sessionCounter = 1;
         for (let m = 0; m <= currentMonthIdx; m++) {
             const monthName = months[m];
@@ -86,20 +119,47 @@ const StudySessions = () => {
                     name: `Demo Study Session ${i + 1}`,
                     tasks_completed: (i % 3) + 1,
                     type: 'study',
-                });
+                    subject_id: '',
+                    subject_name: '',
+                    subject_color: '',
+                    user_id: '',
+                    start_time: date.toISOString(),
+                    end_time: new Date(date.getTime() + durMin * 60000).toISOString(),
+                    notes: '',
+                    created_at_ts: date.getTime(),
+                    updated_at: date.toISOString(),
+                } as Lap);
             }
         }
         return out;
     };
 
-    const groupedLaps = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth();
 
-    // Calcular estadísticas por mes
-    const getMonthStats = (lapsOfMonth) => {
+
+    // Group laps by month with proper type
+    const groupedLaps: GroupedLaps = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
+
+    // Define types for grouped laps
+    interface GroupedLaps {
+        [key: string]: Lap[];
+    }
+
+    // Calculate statistics for a month
+    interface MonthStats {
+        totalSessions: number;
+        totalMinutes: number;
+        avgDuration: number;
+    }
+
+    const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
+        const getTotalMinutes = (duration: string): number => {
+            const [h, m] = duration.split(':');
+            return (parseInt(h || '0', 10) * 60) + parseInt(m || '0', 10);
+        };
+
         const totalSessions = lapsOfMonth.length;
-        const totalMinutes = lapsOfMonth.reduce((acc, lap) => {
-            const [h, m] = lap.duration.split(':');
-            return acc + (parseInt(h) * 60 + parseInt(m));
+        const totalMinutes = lapsOfMonth.reduce((acc: number, lap: Lap) => {
+            return acc + getTotalMinutes(lap.duration);
         }, 0);
         const avgDuration = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
 
@@ -110,14 +170,14 @@ const StudySessions = () => {
         };
     };
 
-    const formatMinutesToHHMM = (minutes) => {
+    const formatMinutesToHHMM = (minutes: number): string => {
         const h = Math.floor(minutes / 60);
         const m = minutes % 60;
         return `${h}:${m.toString().padStart(2, '0')}`;
     };
 
-    // Handler para click derecho en sesión
-    const handleSessionContextMenu = (e, lap) => {
+    // Right-click handler for session
+    const handleSessionContextMenu = (e: React.MouseEvent, lap: Lap): void => {
         e.preventDefault();
         e.stopPropagation();
         setContextMenu({
@@ -127,14 +187,19 @@ const StudySessions = () => {
         });
     };
 
-    // Cerrar menú contextual
-    React.useEffect(() => {
+    // Close context menu
+    useEffect(() => {
         if (!contextMenu) return;
-        const handleClick = () => setContextMenu(null);
-        const handleEsc = (e) => { if (e.key === 'Escape') setContextMenu(null); };
+        
+        const handleClick = (): void => setContextMenu(null);
+        const handleEsc = (e: KeyboardEvent): void => { 
+            if (e.key === 'Escape') setContextMenu(null); 
+        };
+        
         document.addEventListener('mousedown', handleClick);
         document.addEventListener('keydown', handleEsc);
-        return () => {
+        
+        return (): void => {
             document.removeEventListener('mousedown', handleClick);
             document.removeEventListener('keydown', handleEsc);
         };
@@ -187,43 +252,50 @@ const StudySessions = () => {
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">{selectedMonth}</h3>
                     </div>
 
-                    <div className="max-w-6xl mx-auto px-2">
-                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
-                            {groupedLaps[selectedMonth]?.map((lap) => (
+                    <div className="w-full px-2 overflow-x-auto">
+                        <div className="flex gap-3 pb-2">
+                            {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
-                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer relative w-full"
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-40 h-40 flex-shrink-0 flex flex-col"
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
-                                    {/* Duración arriba del título */}
-                                    <div className="flex items-center gap-1 mb-1">
-                                        <Clock size={18} className="text-[var(--text-secondary)]" />
-                                        <span className="text-sm text-[var(--text-primary)] font-medium">{lap.duration}</span>
+                                    {/* Session number and title */}
+                                    <div className="flex items-start justify-between mb-2">
+                                        <span className="text-lg font-bold text-[var(--accent-primary)]">#{lap.session_number}</span>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteClick(lap.id);
+                                            }}
+                                            className="text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
-                                    {/* Primera línea: #, título */}
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-lg text-[var(--accent-primary)] font-mono font-bold">#{lap.session_number}</span>
-                                        <span className="text-base font-semibold text-[var(--text-primary)] truncate flex-1" title={lap.name}>{lap.name}</span>
-                                    </div>
-                                    {/* Footer: izquierda (fecha y tasks) en columna; derecha trash alineado con la última línea */}
-                                    <div className="flex items-end justify-between mt-1">
-                                        <div className="flex flex-col text-sm">
-                                            <span className="text-[var(--text-secondary)] leading-tight">{formatDateShort(lap.created_at)}</span>
-                                            <span className="text-[var(--text-secondary)] leading-tight">Tasks Done: {lap.tasks_completed ?? 0}</span>
+
+                                    {/* Session name */}
+                                    <h4 className="text-sm font-medium text-[var(--text-primary)] line-clamp-2 mb-2">
+                                        {lap.name || `Session ${lap.session_number}`}
+                                    </h4>
+
+                                    {/* Session details */}
+                                    <div className="mt-auto space-y-1">
+                                        <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                            <Calendar size={12} />
+                                            <span>{formatDateShort(lap.created_at)}</span>
                                         </div>
-                                        <div className="ml-3">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteClick(lap.id);
-                                                }}
-                                                className="text-red-500 hover:text-red-600 transition-colors duration-200"
-                                                aria-label={`Delete session ${lap.name}`}
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
+                                        <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                            <Clock size={12} />
+                                            <span>{lap.duration}</span>
                                         </div>
+                                        {lap.tasks_completed > 0 && (
+                                            <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                                <CheckCircle2 size={12} />
+                                                <span>{lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -234,13 +306,32 @@ const StudySessions = () => {
                 // Vista de tarjetas de meses
                 <React.Fragment>
                     {(() => {
-                        // Agrupar los meses por año
-                        const monthsByYear = {};
-                        Object.entries(groupedLaps).forEach(([monthYear, lapsOfMonth]) => {
-                            const [month, year] = monthYear.split(' ');
-                            if (!monthsByYear[year]) monthsByYear[year] = [];
-                            monthsByYear[year].push({ month, monthYear, lapsOfMonth });
-                        });
+                        // Group months by year
+                        interface YearGroup {
+                            [year: string]: Array<{
+                                month: string;
+                                monthYear: string;
+                                lapsOfMonth: Lap[];
+                            }>;
+                        }
+                        
+                        const monthsByYear: YearGroup = {};
+                        // Sort and group months by year
+                        Object.entries(groupedLaps)
+                            .sort((a: [string, Lap[]], b: [string, Lap[]]) => {
+                                const [aMonth, aYear] = a[0].split(' ');
+                                const [bMonth, bYear] = b[0].split(' ');
+                                const aDate = new Date(`${aMonth} 1, ${aYear}`);
+                                const bDate = new Date(`${bMonth} 1, ${bYear}`);
+                                return bDate.getTime() - aDate.getTime();
+                            })
+                            .forEach(([monthYear, lapsOfMonth]) => {
+                                const [month, year] = monthYear.split(' ');
+                                if (!monthsByYear[year]) {
+                                    monthsByYear[year] = [];
+                                }
+                                monthsByYear[year].push({ month, monthYear, lapsOfMonth });
+                            });
                         // Ordenar los años descendente y los meses por orden natural
                         const orderedYears = Object.keys(monthsByYear).sort((a, b) => b - a);
                         const monthOrder = [
@@ -251,7 +342,7 @@ const StudySessions = () => {
                             <div key={year} className="mb-1">
                                 <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="max-w-6xl mx-auto px-2">
-                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
+                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-8 justify-center items-center">
                                         {monthsByYear[year]
                                             .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                                             .map(({ month, monthYear, lapsOfMonth }) => {

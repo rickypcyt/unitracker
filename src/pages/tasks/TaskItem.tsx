@@ -11,6 +11,44 @@ const isPast = (dateStr) => {
     return date < now;
 };
 
+// Helper para determinar el color del deadline
+const getDeadlineColor = (dateStr) => {
+    if (!dateStr) return 'text-[var(--text-secondary)]'; // No deadline
+
+    const date = new Date(dateStr);
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+
+    // Get start of current week (Monday)
+    const startOfWeek = new Date(today);
+    const dayOfWeek = today.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, Monday = 1
+    startOfWeek.setDate(today.getDate() - diffToMonday);
+
+    // Get end of current week (Sunday)
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    // Get start of next week (Monday)
+    const startOfNextWeek = new Date(startOfWeek);
+    startOfNextWeek.setDate(startOfWeek.getDate() + 7);
+
+    if (date < today) {
+        // Overdue - Red
+        return 'text-red-500';
+    } else if (date >= startOfWeek && date <= endOfWeek) {
+        // This week (Monday-Sunday) - Green
+        return 'text-green-500';
+    } else if (date >= startOfNextWeek) {
+        // Next week or later - Blue
+        return 'text-blue-500';
+    } else {
+        // Between end of this week and start of next week (shouldn't happen but fallback)
+        return 'text-[var(--text-secondary)]';
+    }
+};
+
 export const TaskItem = ({
     task,
     onToggleCompletion,
@@ -80,7 +118,7 @@ export const TaskItem = ({
             return <span className="text-green-500 ml-1">(Today)</span>;
         }
         if (isTomorrow(deadline)) {
-            return <span className="text-blue-500 ml-1">(Tomorrow)</span>;
+            return <span className="text-green-500 ml-1">(Tomorrow)</span>;
         }
         return null;
     };
@@ -159,7 +197,7 @@ export const TaskItem = ({
                             <span>
                               {task.deadline && task.deadline !== '' ? (
                                 <>
-                                  <span className={isPast(task.deadline) ? 'text-red-500' : ''}>
+                                  <span className={getDeadlineColor(task.deadline)}>
                                     {formatDateShort(task.deadline)}
                                   </span>
                                   {renderDateLabel(task.deadline)}

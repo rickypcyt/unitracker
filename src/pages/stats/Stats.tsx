@@ -1,6 +1,5 @@
+import React, { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { ReactNode, ReactElement } from 'react';
 
 import { supabase } from '@/utils/supabaseClient';
 import useDemoMode from '@/utils/useDemoMode';
@@ -256,36 +255,51 @@ const Statistics = (): ReactElement => {
   // Si es demo, usar demoStats
   if (isDemo) {
     return (
-      <div className="maincard stats-panel">
-        <div className="grid gap-4 md:gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center">
-          {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px]">
-              <div className="mb-1">{card.icon}</div>
-              <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
-              <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(demoStats)}</div>
-              <div className="text-[var(--text-secondary)] text-base mb-1">{card.sub(demoStats)}</div>
-            </div>
-          ))}
+      <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 mx-4 rounded-lg sticky top-0 z-50">
+        <div className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2 w-full">
+            {statCards.slice(0, 4).map((card, i) => (
+              <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
+                <div className="flex-shrink-0">{card.icon}</div>
+                <div className="flex flex-col min-w-0">
+                  <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+                  <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
+                  <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2 w-full">
+            {statCards.slice(4).map((card, i) => (
+              <div key={i + 4} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
+                <div className="flex-shrink-0">{card.icon}</div>
+                <div className="flex flex-col min-w-0">
+                  <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+                  <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
+                  <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+        
       </div>
     );
   }
 
   return (
-    <div className="maincard mb-2 p-3 md:p-3 stats-panel">
-      <div className="max-w-6xl mx-auto px-2">
-        <div
-          className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-4 justify-center items-center"
-        >
-          {statCards.map((card, i) => (
-            <div key={i} className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px]">
-              <div className="mb-1">{card.icon}</div>
-              <div className="text-[var(--text-secondary)] text-sm md:text-sm font-medium mb-1">{card.label}</div>
-              <div className="text-xl font-bold text-[var(--text-primary)] mb-1">{card.value(statData)}</div>
-              <div className="text-[var(--text-secondary)] text-base mb-1">{card.sub(statData)}</div>
+    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-0 z-50">
+      <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 w-full items-center justify-items-center">
+        {statCards.map((card, i) => (
+          <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">
+            <div className="flex-shrink-0">{card.icon}</div>
+            <div className="flex flex-col min-w-0">
+              <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+              <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(statData)}</div>
+              <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(statData)}</div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

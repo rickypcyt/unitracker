@@ -47,13 +47,13 @@ const StatsPage = memo(() => {
 
   return (
     <div className="w-full px-2 pt-4 overflow-hidden">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div>
-          <StatsChartsPanel />
-        </div>
-        <div>
+      <div className="space-y-3">
+        {/* Stats Banner at the top */}
+        <Statistics />
 
-          <Statistics />
+        {/* Charts and other content below */}
+        <div className="space-y-3">
+          <StatsChartsPanel />
           <StudySessions />
         </div>
       </div>

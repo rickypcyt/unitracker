@@ -1,6 +1,6 @@
 import type { AppDispatch, RootState } from '@/store/store';
 import React, { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, BookOpen, Users } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
@@ -57,38 +57,87 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Manage Assignments"
-        maxWidth="max-w-2xl"
+        maxWidth="max-w-4xl"
         className="!p-0"
       >
-        <div className="space-y-4 p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 max-h-[70vh] overflow-y-auto">
           {assignments.length === 0 ? (
-            <p className="text-[var(--text-secondary)] text-center py-4">
-              No assignments found
-            </p>
+            <div className="text-center py-8">
+              <BookOpen size={48} className="mx-auto text-[var(--text-secondary)] mb-4" />
+              <p className="text-[var(--text-secondary)] text-lg">No assignments found</p>
+              <p className="text-[var(--text-secondary)] mt-2">Create tasks with assignments to see them here</p>
+            </div>
           ) : (
-            <div className="space-y-2">
-              {assignments.map((assignment, idx) => (
-                <div
-                  key={assignment}
-                  className={`flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg ${idx !== assignments.length - 1 ? 'border-b border-[var(--border-primary)]' : ''}`}
-                >
-                  <div>
-                    <h3 className="font-medium text-[var(--text-primary)]">
-                      {assignment}
-                    </h3>
-                    <p className="text-base text-[var(--text-secondary)]">
-                      {tasks.filter((task: Task) => task.assignment === assignment).length} tasks
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteAssignment(assignment)}
-                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete assignment and all its tasks"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assignments.map((assignment) => {
+                const assignmentTasks = tasks.filter((task: Task) => task.assignment === assignment);
+                const completedTasks = assignmentTasks.filter((task: Task) => task.completed);
+                const pendingTasks = assignmentTasks.filter((task: Task) => !task.completed);
+
+                return (
+                  <div
+                    key={assignment}
+                    className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors duration-200 min-h-[120px]"
                   >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-[var(--text-primary)] text-lg mb-1">
+                          {assignment}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
+                          <div className="flex items-center gap-1">
+                            <Users size={14} />
+                            <span>{assignmentTasks.length} total</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>{pendingTasks.length} pending</span>
+                          </div>
+                          {completedTasks.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full"></div>
+                              <span>{completedTasks.length} done</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment)}
+                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
+                        title="Delete assignment and all its tasks"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+
+                    {/* Progress bar */}
+                    {assignmentTasks.length > 0 && (
+                      <div className="w-full bg-[var(--bg-primary)] rounded-full h-2 mb-2">
+                        <div
+                          className="bg-[var(--accent-primary)] h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(completedTasks.length / assignmentTasks.length) * 100}%` }}
+                        ></div>
+                      </div>
+                    )}
+
+                    {/* Task preview */}
+                    {assignmentTasks.length > 0 && (
+                      <div className="text-xs text-[var(--text-secondary)]">
+                        {pendingTasks.length > 0 && (
+                          <div className="mb-1">
+                            <span className="text-green-500 font-medium">Next:</span> {pendingTasks[0].title}
+                          </div>
+                        )}
+                        {assignmentTasks.length > 3 && (
+                          <div className="text-[var(--text-secondary)]">
+                            +{assignmentTasks.length - 3} more tasks
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
