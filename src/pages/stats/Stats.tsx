@@ -1,5 +1,5 @@
-import React, { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
+import React, { ReactElement, ReactNode, useEffect, useState } from 'react';
 
 import { supabase } from '@/utils/supabaseClient';
 import useDemoMode from '@/utils/useDemoMode';
@@ -288,7 +288,7 @@ const Statistics = (): ReactElement => {
   }
 
   return (
-    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-0 z-50">
+    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky  mt-4">
       <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 w-full items-center justify-items-center">
         {statCards.map((card, i) => (
           <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">

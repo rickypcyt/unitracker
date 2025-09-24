@@ -65,11 +65,11 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
 
   return (
     <div className="py-1">
-      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 justify-items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5 lg:gap-6 justify-items-stretch">
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group min-h-48 sm:min-h-56 md:min-h-64 lg:min-h-72 xl:min-h-80"
+            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-1.5 sm:p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square"
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"
@@ -89,13 +89,13 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
             <div className="mb-1.5 flex-1 overflow-hidden relative">
               {note.description && note.description.includes('<') ? (
                 <div
-                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words prose dark:prose-invert space-y-1 prose-p:my-1 prose-p:whitespace-pre-wrap prose-ul:my-1 prose-ol:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:my-0 prose-li:whitespace-pre-wrap prose-headings:mt-1 prose-headings:mb-2 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-40 sm:max-h-48 md:max-h-56 lg:max-h-64 xl:max-h-72 pl-4"
+                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words prose dark:prose-invert space-y-1 prose-p:my-1 prose-p:whitespace-pre-wrap prose-ul:my-1 prose-ol:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:my-0 prose-li:whitespace-pre-wrap prose-headings:mt-1 prose-headings:mb-2 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full pl-4"
                   style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
                   dangerouslySetInnerHTML={{ __html: note.description }}
                 />
               ) : (
                 <div
-                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words whitespace-pre-line max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none max-h-40 sm:max-h-48 md:max-h-56 lg:max-h-64 xl:max-h-72"
+                  className="text-[var(--text-primary)] dark:text-white text-sm sm:text-base leading-relaxed break-words whitespace-pre-line max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full"
                   style={{ border: 'none', borderRadius: 0, background: 'transparent', boxShadow: 'none', padding: 0 }}
                 >
                   {note.description}

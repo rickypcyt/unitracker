@@ -29,7 +29,7 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
     <div className="h-full flex flex-col">
       <ChartCard
         paddingClass="p-2"
-        className="h-full"
+        className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-4 z-50 backdrop-blur-sm"
         header={
           <>
             <button

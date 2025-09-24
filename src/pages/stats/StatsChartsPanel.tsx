@@ -178,7 +178,7 @@ const StatsChartsPanel = () => {
       date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
     }));
     return (
-      <div className="w-full flex flex-col gap-4">
+      <div className="w-full flex flex-col gap-2">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           <div className="h-full">
             <WeekStatsCard
@@ -214,7 +214,7 @@ const StatsChartsPanel = () => {
 
   // Logueado
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-2">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
         <div className="h-full">
           <WeekStatsCard

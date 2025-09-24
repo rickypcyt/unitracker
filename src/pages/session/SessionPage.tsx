@@ -50,29 +50,30 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full pt-4 px-2 md:px-10 session-page">
-      <div className="flex flex-col gap-2 md:gap-4 w-full max-w-6xl mx-auto items-stretch justify-center">
-        {/* Header removido: SyncToggle y botón de Settings */}
-        
+    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-10 session-page">
+      <div className="flex flex-col gap-4 md:gap-5 w-full max-w-6xl mx-auto">
         {/* Controles globales (solo visibles cuando está sincronizado) */}
-        <GlobalTimerControls />
+        <div className="px-1">
+          <GlobalTimerControls />
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full">
           {/* Pomodoro */}
-          <div className="maincard w-full mx-auto">
+          <div className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] rounded-lg py-3 px-4 sm:px-5 w-full">
             <Pomodoro isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
           {/* Study Timer */}
-          <div className="maincard w-full mx-auto">
+          <div className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] rounded-lg py-3 px-4 sm:px-5 w-full">
             <StudyTimer isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
           {/* Countdown */}
-          <div className="maincard w-full mx-auto">
+          <div className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] rounded-lg py-3 px-4 sm:px-5 w-full">
             <Countdown isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
           </div>
         </div>
+        
         {/* Noise Generator abajo ocupando todo el ancho */}
-        <div className="maincard w-full mx-auto noise-generator">
+        <div className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] rounded-lg py-3 px-4 sm:px-5 w-full">
           <NoiseGenerator />
         </div>
       </div>

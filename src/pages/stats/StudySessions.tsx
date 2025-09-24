@@ -237,7 +237,7 @@ const StudySessions: React.FC = () => {
     }
 
     return (
-        <div className="maincard">
+        <div className="w-full h-full bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col ">
 
             {selectedMonth ? (
                 // Vista detallada del mes seleccionado
@@ -252,12 +252,12 @@ const StudySessions: React.FC = () => {
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">{selectedMonth}</h3>
                     </div>
 
-                    <div className="w-full px-2 overflow-x-auto">
-                        <div className="flex gap-3 pb-2">
+                    <div className="w-full h-full overflow-auto px-2">
+                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center w-full">
                             {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
-                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-40 h-40 flex-shrink-0 flex flex-col"
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full h-40 flex flex-col"
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
@@ -342,7 +342,7 @@ const StudySessions: React.FC = () => {
                             <div key={year} className="mb-1">
                                 <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
                                 <div className="max-w-6xl mx-auto px-2">
-                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-8 justify-center items-center">
+                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center w-full">
                                         {monthsByYear[year]
                                             .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                                             .map(({ month, monthYear, lapsOfMonth }) => {
