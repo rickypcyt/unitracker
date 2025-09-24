@@ -1,15 +1,14 @@
 import { memo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import Calendar from '@/pages/calendar/Calendar';
-import UpcomingTasks from '@/pages/calendar/UpcomingTasks';
-import PastTasks from '@/pages/calendar/PastTasks';
-import { useLocation } from 'react-router-dom';
+import AllTasks from '@/pages/calendar/AllTasks';
 
 const CalendarPage = memo(() => {
   const location = useLocation();
   const isVisible = location.pathname === '/calendar';
 
-  // Actualizar el calendario cuando la página se hace visible
+  // Update calendar when the page becomes visible
   useEffect(() => {
     if (isVisible) {
       window.dispatchEvent(new CustomEvent('refreshCalendar'));
@@ -17,14 +16,13 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
   return (
-    <div className="w-full px-2 pt-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="w-full md:max-w-2xl lg:max-w-4xl mx-auto">
+    <div className="w-full px-2 pt-4 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="w-full">
           <Calendar />
         </div>
-        <div className="w-full md:max-w-2xl lg:max-w-4xl mx-auto">
-          <UpcomingTasks />
-          <PastTasks />
+        <div className="w-full">
+          <AllTasks />
         </div>
       </div>
     </div>
@@ -33,4 +31,4 @@ const CalendarPage = memo(() => {
 
 CalendarPage.displayName = 'CalendarPage';
 
-export default CalendarPage; 
+export default CalendarPage;

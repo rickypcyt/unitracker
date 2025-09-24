@@ -398,7 +398,7 @@ const Calendar = () => {
 
       {/* Wrap calendar headers and days in a new container with padding */}
       <div className="w-full mt-6 relative">
-        <div className="block border-none p-0 m-0 rounded-lg">
+        <div className="block  border-[var(--border-primary)] p-4 m-0 rounded-lg bg-[var(--bg-primary)]/90">
           {/* Weekday headers */}
           <div className="weekday-grid mb-2">
             {weekdays.map((day, index) => (

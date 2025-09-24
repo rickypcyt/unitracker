@@ -196,11 +196,11 @@
    ========================= */
 @layer components {
   .maincard {
-    border-radius: 1rem;
+    border-radius: 0.5rem;
   padding: 1.25rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     background-color: var(--bg-secondary);
-    border: 2px solid var(--border-primary);
+    border: 1px solid var(--border-primary);
     margin-bottom: 1rem;
     width: 100%;
   }
