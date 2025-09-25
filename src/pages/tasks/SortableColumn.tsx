@@ -4,7 +4,9 @@ import { ChevronDown, ChevronUp, ListOrdered, Plus, Trash2 } from 'lucide-react'
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 
 import { TaskItem } from '@/pages/tasks/TaskItem';
+import { SortableTaskItem } from '@/pages/tasks/SortableTaskItem';
 import { ColumnMenu } from '@/modals/ColumnMenu';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 export const SortableColumn = ({
   id,
@@ -18,7 +20,7 @@ export const SortableColumn = ({
   onEditTask,
   onTaskContextMenu,
   onSortClick,
-
+  onMoveTask,
   columnMenu,
   onCloseColumnMenu,
   onMoveToWorkspace,
@@ -81,18 +83,23 @@ export const SortableColumn = ({
             `space-y-2 overflow-y-auto flex-1 min-h-0 custom-scrollbar pr-1`
           }
         >
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={onTaskToggle}
-              onDelete={onTaskDelete}
-              onEditTask={onEditTask}
-              onContextMenu={(e) => onTaskContextMenu(e, task)}
-              assignmentId={id}
-              active={!!task.activetask}
-            />
-          ))}
+          <SortableContext 
+            items={tasks.map(task => task.id)} 
+            strategy={verticalListSortingStrategy}
+          >
+            {tasks.map((task) => (
+              <SortableTaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={onTaskToggle}
+                onDelete={onTaskDelete}
+                onEditTask={onEditTask}
+                onContextMenu={(e) => onTaskContextMenu(e, task)}
+                onDoubleClick={() => onEditTask(task)}
+                assignment={assignment}
+              />
+            ))}
+          </SortableContext>
         </div>
       )}
 

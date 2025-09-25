@@ -1,7 +1,6 @@
 import { CheckCircle2, Circle, Clock, Trash2, GripVertical } from 'lucide-react';
 import { formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useDrag, useDrop } from 'react-dnd';
 import { useState } from 'react';
 
 interface TaskItemProps {
@@ -23,6 +22,8 @@ interface TaskItemProps {
   assignmentLeftOfDate?: boolean;
   active?: boolean;
   isDragging?: boolean;
+  assignmentId?: string;
+  onMoveTask?: (taskId: string, newAssignmentId: string) => void;
 }
 
 // Helper to check if a date is in the past
@@ -83,22 +84,32 @@ export const TaskItem = ({
   assignmentLeftOfDate = false,
   active = false,
   isDragging = false,
+  assignmentId,
+  onMoveTask,
 }: TaskItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: task.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
+  // Define the drag source
+  const [{ isDragging: dragIsDragging }, drag] = useDrag({
+    type: 'TASK',
+    item: { id: task.id, assignmentId: assignmentId || '', task },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  });
+
+  // Define the drop target
+  const [{ isOver }, drop] = useDrop({
+    accept: 'TASK',
+    drop: (item: { id: string; assignmentId: string; task: any }) => {
+      if (item.id !== task.id && item.assignmentId !== assignmentId && onMoveTask) {
+        onMoveTask(item.id, assignmentId);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  });
 
   const getPriorityColor = (priority: string | undefined): string => {
     switch (priority?.toLowerCase()) {
@@ -166,13 +177,14 @@ export const TaskItem = ({
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
+      ref={(node) => {
+        drag(drop(node));
+      }}
       className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-3 
         bg-[var(--bg-secondary)] 
         ${active ? `${getDifficultyColor(task.difficulty, 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
-        ${isDragging ? 'opacity-50' : ''}
+        ${isDragging || dragIsDragging ? 'opacity-50' : ''}
+        ${isOver ? 'border-blue-500 bg-blue-900/20' : ''}
       `}
       onContextMenu={(e) => onContextMenu(e, task)}
       onMouseEnter={() => setIsHovered(true)}
@@ -182,7 +194,6 @@ export const TaskItem = ({
       <div 
         className="flex items-center justify-center p-1 -ml-1 -my-1 mr-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded hover:bg-[var(--bg-secondary)] transition-colors cursor-grab active:cursor-grabbing"
         style={{ opacity: isHovered ? 1 : 0 }}
-        {...listeners}
         onClick={(e) => e.stopPropagation()}
       >
         <GripVertical size={16} />

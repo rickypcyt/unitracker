@@ -1,6 +1,8 @@
-import { ClipboardCheck, Trash2 } from 'lucide-react';
+import { ClipboardCheck, GripVertical, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
@@ -60,11 +62,12 @@ export const KanbanBoard = () => {
     return savedOrder ? JSON.parse(savedOrder) : [];
   });
 
-  const [taskOrder, setTaskOrder] = useState(() => {
+  const [taskOrder, setTaskOrder] = useState<Record<string, string[]>>(() => {
     const savedTaskOrder = localStorage.getItem('kanbanTaskOrder');
     return savedTaskOrder ? JSON.parse(savedTaskOrder) : {};
   });
 
+  const [activeId, setActiveId] = useState(null);
   const [sortMenu, setSortMenu] = useState(null);
   const [columnMenu, setColumnMenu] = useState(null);
   const [assignmentSortConfig, setAssignmentSortConfig] = useState(() => {
@@ -76,6 +79,56 @@ export const KanbanBoard = () => {
   const [showWorkspaceSelectionModal, setShowWorkspaceSelectionModal] = useState(false);
 
   const dispatch = useDispatch();
+
+  // Set up sensors for DnD
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end event
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+
+    // Find the assignment that contains the dragged task
+    const assignmentId = Object.keys(incompletedByAssignment).find(assignmentId => 
+      incompletedByAssignment[assignmentId].some(task => task.id === active.id)
+    );
+
+    if (!assignmentId) return;
+
+    const assignmentTasks = [...incompletedByAssignment[assignmentId]];
+    const oldIndex = assignmentTasks.findIndex(task => task.id === active.id);
+    const newIndex = assignmentTasks.findIndex(task => task.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Update the task order in the state
+    const newTasks = arrayMove(assignmentTasks, oldIndex, newIndex);
+    
+    // Update the task order in the assignment
+    const updatedAssignment = {
+      ...incompletedByAssignment,
+      [assignmentId]: newTasks
+    };
+
+    // Update the task order in local storage
+    const newTaskOrder = {
+      ...taskOrder,
+      [assignmentId]: newTasks.map(task => task.id)
+    };
+    
+    localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
+    setTaskOrder(newTaskOrder);
+  };
 
   const handleSortClick = (assignmentId, position) => {
     // Calcular el ancho estimado del menú (aproximadamente 220px)
@@ -406,6 +459,15 @@ export const KanbanBoard = () => {
   }
 
   return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={({ active }) => {
+        setActiveId(active.id);
+      }}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveId(null)}
+    >
     <div className="flex flex-col h-full kanban-board">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-2 h-full">
         {sortedIncompletedAssignments.map((assignment) => (
@@ -595,5 +657,6 @@ export const KanbanBoard = () => {
         />
       )}
     </div>
+    </DndContext>
   );
 }; 
