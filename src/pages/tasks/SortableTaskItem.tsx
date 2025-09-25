@@ -10,6 +10,14 @@ export const SortableTaskItem = ({
   onContextMenu,
   isEditing,
   assignment,
+}: {
+  task: any;
+  onToggleCompletion: (task: any) => void;
+  onDelete: (taskId: string) => void;
+  onDoubleClick: () => void;
+  onContextMenu: (e: React.MouseEvent, task: any) => void;
+  isEditing?: boolean;
+  assignment: string;
 }) => {
   const {
     attributes,
@@ -18,30 +26,43 @@ export const SortableTaskItem = ({
     transform,
     transition,
     isDragging,
+    isOver,
+    over,
   } = useSortable({
     id: task.id,
     data: {
-      assignment,
+      type: 'task',
+      taskId: task.id,
+      assignment: assignment,
     },
   });
+  
+  // Check if this task is being dragged over
+  const isBeingDraggedOver = isOver && over?.id !== task.id;
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    position: 'relative',
-    zIndex: isDragging ? 1 : 0,
+    position: 'relative' as const,
+    zIndex: isDragging ? 9999 : 0,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`task-item-draggable relative ${isBeingDraggedOver ? 'ring-2 ring-[var(--accent-primary)] ring-inset rounded-md' : ''}`}
+      data-dnd-kit-dragged={isDragging}
+    >
       <TaskItem
         task={task}
         onToggleCompletion={onToggleCompletion}
         onDelete={onDelete}
-        onDoubleClick={onDoubleClick}
+        onEditTask={onDoubleClick}
         onContextMenu={onContextMenu}
-        isEditing={isEditing}
         active={!!task.activetask}
       />
     </div>

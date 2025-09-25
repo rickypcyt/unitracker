@@ -738,8 +738,42 @@ h1 {
 }
 
 /* =========================
-   7. Cards de Estadísticas
+   Drag and Drop Styles
    ========================= */
+
+/* Ensure dragged items appear above all other elements */
+[data-dnd-kit-dragged="true"] {
+  z-index: 9999 !important;
+}
+
+/* High z-index for drag overlay */
+[data-dnd-kit-drag-overlay] {
+  z-index: 9999 !important;
+}
+
+/* Ensure sortable contexts don't clip dragged items */
+[data-dnd-kit-sortable-context] {
+  position: relative;
+  z-index: 1;
+}
+
+/* Kanban board specific styles */
+.kanban-board {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure task items can be dragged outside their containers */
+.task-item-draggable {
+  position: relative;
+  z-index: 1;
+}
+
+/* Task drop zone indicator - change main card border */
+.task-drop-zone-active {
+  border-color: var(--accent-primary) !important;
+  border-radius: 0.5rem !important;
+}
 .stats-card {
   @apply rounded-lg border border-border bg-bg-secondary;
   padding: 1rem 1.25rem;

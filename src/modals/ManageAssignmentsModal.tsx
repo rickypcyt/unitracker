@@ -1,12 +1,12 @@
 import type { AppDispatch, RootState } from '@/store/store';
 import React, { useEffect, useState } from 'react';
-import { Trash2, BookOpen, Users } from 'lucide-react';
+import { Trash2, BookOpen, Users, Edit2, Check, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import type { Task } from '@/pages/tasks/taskStorage';
-import { deleteTask } from '@/store/TaskActions';
+import { deleteTask, updateTask } from '@/store/TaskActions';
 
 interface ManageAssignmentsModalProps {
   isOpen: boolean;
@@ -22,6 +22,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
   const [assignments, setAssignments] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
+  const [editingAssignment, setEditingAssignment] = useState<{name: string, originalName: string} | null>(null);
 
   useEffect(() => {
     // Get unique assignments from tasks
@@ -47,6 +48,33 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
 
     setShowDeleteModal(false);
     setAssignmentToDelete(null);
+  };
+
+  const handleUpdateAssignment = (oldName: string, newName: string) => {
+    if (!newName.trim() || oldName === newName) {
+      setEditingAssignment(null);
+      return;
+    }
+
+    // Update all tasks with the old assignment name
+    tasks.forEach((task: Task) => {
+      if (task.assignment === oldName) {
+        dispatch(updateTask({
+          ...task,
+          assignment: newName
+        }));
+      }
+    });
+
+    setEditingAssignment(null);
+  };
+
+  const startEditing = (assignment: string) => {
+    setEditingAssignment({ name: assignment, originalName: assignment });
+  };
+
+  const cancelEditing = () => {
+    setEditingAssignment(null);
   };
 
   if (!isOpen) return null;
@@ -81,9 +109,53 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[var(--text-primary)] text-lg mb-1">
-                          {assignment}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          {editingAssignment?.originalName === assignment ? (
+                            <div className="flex-1 flex items-center gap-2">
+                              <input
+                                type="text"
+                                className="flex-1 bg-transparent border-b border-[var(--accent-primary)] text-[var(--text-primary)] focus:outline-none"
+                                value={editingAssignment.name}
+                                onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
+                                  } else if (e.key === 'Escape') {
+                                    cancelEditing();
+                                  }
+                                }}
+                                autoFocus
+                              />
+                              <button 
+                                onClick={() => handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name)}
+                                className="text-green-500 hover:text-green-400 p-1"
+                                title="Save changes"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button 
+                                onClick={cancelEditing}
+                                className="text-red-500 hover:text-red-400 p-1"
+                                title="Cancel"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <h3 className="font-semibold text-[var(--text-primary)] text-lg">
+                              {assignment}
+                            </h3>
+                          )}
+                          {editingAssignment?.originalName !== assignment && (
+                            <button
+                              onClick={() => startEditing(assignment)}
+                              className="p-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+                              title="Edit assignment name"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                          )}
+                        </div>
                         <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
                           <div className="flex items-center gap-1">
                             <Users size={14} />

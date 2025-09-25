@@ -170,31 +170,31 @@ function usePomodorosAllTime(userId: string | undefined): number {
 
 const statCards: StatCard[] = [
   {
-    label: 'Today (h)',
+    label: 'Today',
     icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
     value: s => formatMinutesToHHMM(s.todayMinutes),
     sub: s => `${s.doneToday} tasks`,
   },
   {
-    label: 'This Week (h)',
+    label: 'This Week',
     icon: <TrendingUp size={22} className="text-[var(--accent-primary)]" />, 
     value: s => formatMinutesToHHMM(s.weekMinutes),
     sub: s => `${s.doneWeek} tasks`,
   },
   {
-    label: 'This Month (h)',
+    label: 'This Month',
     icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
     value: s => formatMinutesToHHMM(s.monthMinutes),
     sub: s => `${s.doneMonth} tasks`,
   },
   {
-    label: 'This Year (h)',
+    label: 'This Year',
     icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
     value: s => formatMinutesToHHMM(s.yearMinutes),
     sub: s => `${s.doneYear} tasks`,
   },
   {
-    label: 'Longest Streak',
+    label: 'Max Streak',
     icon: <Flame size={22} className="text-orange-500" />, 
     value: s => s.longestStreak,
     sub: () => 'days',
@@ -288,7 +288,7 @@ const Statistics = (): ReactElement => {
   }
 
   return (
-    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky  mt-4">
+    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-2 rounded-lg sticky  mt-4">
       <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 w-full items-center justify-items-center">
         {statCards.map((card, i) => (
           <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">

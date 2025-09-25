@@ -1,8 +1,8 @@
 import { ClipboardCheck, GripVertical, Trash2 } from 'lucide-react';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, rectIntersection, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
@@ -13,7 +13,6 @@ import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { fetchTasks } from '@/store/TaskActions';
-
 import { supabase } from '@/utils/supabaseClient';
 import { updateTaskSuccess } from '@/store/slices/TaskSlice';
 import { useAuth } from '@/hooks/useAuth';
@@ -91,44 +90,6 @@ export const KanbanBoard = () => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  // Handle drag end event
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    
-    if (!over || active.id === over.id) return;
-
-    // Find the assignment that contains the dragged task
-    const assignmentId = Object.keys(incompletedByAssignment).find(assignmentId => 
-      incompletedByAssignment[assignmentId].some(task => task.id === active.id)
-    );
-
-    if (!assignmentId) return;
-
-    const assignmentTasks = [...incompletedByAssignment[assignmentId]];
-    const oldIndex = assignmentTasks.findIndex(task => task.id === active.id);
-    const newIndex = assignmentTasks.findIndex(task => task.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    // Update the task order in the state
-    const newTasks = arrayMove(assignmentTasks, oldIndex, newIndex);
-    
-    // Update the task order in the assignment
-    const updatedAssignment = {
-      ...incompletedByAssignment,
-      [assignmentId]: newTasks
-    };
-
-    // Update the task order in local storage
-    const newTaskOrder = {
-      ...taskOrder,
-      [assignmentId]: newTasks.map(task => task.id)
-    };
-    
-    localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
-    setTaskOrder(newTaskOrder);
-  };
 
   const handleSortClick = (assignmentId, position) => {
     // Calcular el ancho estimado del menú (aproximadamente 220px)
@@ -315,6 +276,160 @@ export const KanbanBoard = () => {
     return grouped;
   }, [incompletedTasks, assignmentSortConfig, sortTasksByPosition, groupTasksByAssignment]);
 
+  // Handle drag end event
+  const handleDragEnd = useCallback(async (event: any) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    console.log('Drag ended:', { activeId: active.id, overId: over.id, overData: over.data });
+
+    // Check if we're dropping on a column or a task
+    let targetAssignmentId: string;
+    
+    if ((over.data as any)?.type === 'column') {
+      // Dropping directly on a column
+      targetAssignmentId = over.id as string;
+      console.log('Dropping on column:', targetAssignmentId);
+    } else if ((over.data as any)?.type === 'task') {
+      // Dropping on a task - find which column contains this task
+      targetAssignmentId = (over.data as any)?.assignment;
+      console.log('Dropping on task, moving to column:', targetAssignmentId);
+      
+      // If assignment is still undefined, find it from the incompletedByAssignment
+      if (!targetAssignmentId) {
+        for (const [assignmentName, assignmentTasks] of Object.entries(incompletedByAssignment)) {
+          const foundTask = assignmentTasks.find((task: any) => task.id === over.id);
+          if (foundTask) {
+            targetAssignmentId = assignmentName;
+            console.log('Found task in assignment:', targetAssignmentId);
+            break;
+          }
+        }
+      }
+    } else {
+      // Fallback - assume overId is the assignment name
+      targetAssignmentId = over.id as string;
+      console.log('Fallback - using overId as assignment:', targetAssignmentId);
+    }
+
+    // Find the assignment that contains the dragged task
+    const sourceAssignmentId = Object.keys(incompletedByAssignment).find((assignmentId: string) =>
+      incompletedByAssignment[assignmentId].some((task: any) => task.id === active.id)
+    );
+
+    if (!sourceAssignmentId) {
+      console.log('No source assignment found for task:', active.id);
+      return;
+    }
+
+    console.log('Moving from:', sourceAssignmentId, 'to:', targetAssignmentId);
+
+    if (targetAssignmentId !== sourceAssignmentId) {
+      // This is a cross-assignment move
+      const taskToMove = incompletedByAssignment[sourceAssignmentId].find((task: any) => task.id === active.id);
+      if (!taskToMove) {
+        console.log('Task not found in source assignment');
+        return;
+      }
+
+      console.log('Moving task:', taskToMove.title, 'from', sourceAssignmentId, 'to', targetAssignmentId);
+
+      // Update the task's assignment in the database
+      try {
+        console.log('Attempting to update task in database...');
+        console.log('Task ID:', taskToMove.id);
+        console.log('Current assignment:', taskToMove.assignment);
+        console.log('New assignment:', targetAssignmentId);
+
+        const { data, error } = await supabase
+          .from('tasks')
+          .update({ assignment: targetAssignmentId })
+          .eq('id', taskToMove.id)
+          .select();
+
+        console.log('Supabase response:', { data, error });
+
+        if (error) {
+          console.error('Error moving task to different assignment:', error);
+          console.error('Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            taskId: taskToMove.id,
+            oldAssignment: sourceAssignmentId,
+            newAssignment: targetAssignmentId
+          });
+          return;
+        }
+
+        // Update local state optimistically - Force immediate UI update
+        const updatedTask = { ...taskToMove, assignment: targetAssignmentId };
+
+        // Update Redux state
+        dispatch(updateTaskSuccess(updatedTask));
+
+        // Force immediate re-render by updating task order state
+        setTaskOrder(prev => {
+          const newOrder = { ...prev };
+
+          // Remove from source assignment
+          if (newOrder[sourceAssignmentId]) {
+            newOrder[sourceAssignmentId] = newOrder[sourceAssignmentId]
+              .filter((id: string) => id !== taskToMove.id);
+          }
+
+          // Add to target assignment
+          if (!newOrder[targetAssignmentId]) {
+            newOrder[targetAssignmentId] = [];
+          }
+          newOrder[targetAssignmentId].push(taskToMove.id);
+
+          return newOrder;
+        });
+
+        // Also update localStorage
+        const newTaskOrder = { ...taskOrder };
+        if (newTaskOrder[sourceAssignmentId]) {
+          newTaskOrder[sourceAssignmentId] = newTaskOrder[sourceAssignmentId]
+            .filter((id: string) => id !== taskToMove.id);
+        }
+        if (!newTaskOrder[targetAssignmentId]) {
+          newTaskOrder[targetAssignmentId] = [];
+        }
+        if (newTaskOrder[targetAssignmentId]) {
+          newTaskOrder[targetAssignmentId].push(taskToMove.id);
+        }
+        localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
+
+        console.log('Task moved successfully - UI updated immediately');
+
+      } catch (error) {
+        console.error('Error moving task:', error);
+      }
+    } else {
+      // This is a same-assignment reorder
+      const assignmentTasks = [...incompletedByAssignment[sourceAssignmentId]];
+      const oldIndex = assignmentTasks.findIndex((task: any) => task.id === active.id);
+      const newIndex = assignmentTasks.findIndex((task: any) => task.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      // Update the task order in the state
+      const newTasks = arrayMove(assignmentTasks, oldIndex, newIndex);
+
+      // Update the task order in localStorage
+      const newTaskOrder = {
+        ...taskOrder,
+        [sourceAssignmentId]: newTasks.map((task: any) => task.id)
+      };
+
+      localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
+      setTaskOrder(newTaskOrder);
+    }
+  }, [incompletedByAssignment, taskOrder, dispatch]);
+
   const sortedIncompletedAssignments = useMemo(() => {
     // Group tasks and apply per-assignment task sort if configured
     const grouped = groupTasksByAssignment(incompletedTasks);
@@ -418,22 +533,40 @@ export const KanbanBoard = () => {
     setShowWorkspaceSelectionModal(true);
   };
 
-  const handleDeleteAssignment = (assignment) => {
+  const handleDeleteAssignment = useCallback((assignment) => {
     if (isDemo) {
       showLoginPrompt();
       return;
     }
-    setAssignmentToDelete(assignment);
-    setShowDeleteAssignmentModal(true);
-  };
 
-  const confirmDeleteAssignment = () => {
-    if (!assignmentToDelete) return;
-    const tasksToDelete = tasks.filter((t) => t.assignment === assignmentToDelete);
-    tasksToDelete.forEach((t) => originalHandleDeleteTask(t.id));
-    setShowDeleteAssignmentModal(false);
-    setAssignmentToDelete(null);
-  };
+    // Find all tasks with this assignment
+    const tasksToDelete = filteredTasks.filter(task => task.assignment === assignment);
+    
+    if (tasksToDelete.length > 0) {
+      // Delete each task with this assignment
+      tasksToDelete.forEach(task => {
+        originalHandleDeleteTask(task.id);
+      });
+    }
+  }, [filteredTasks, originalHandleDeleteTask, isDemo, showLoginPrompt]);
+
+  const handleUpdateAssignment = useCallback((oldName, newName) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
+
+    // Find all tasks with the old assignment name
+    const tasksToUpdate = filteredTasks.filter(task => task.assignment === oldName);
+    
+    // Update each task with the new assignment name
+    tasksToUpdate.forEach(task => {
+      handleUpdateTask({
+        ...task,
+        assignment: newName
+      });
+    });
+  }, [filteredTasks, handleUpdateTask, isDemo, showLoginPrompt]);
 
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
@@ -461,15 +594,21 @@ export const KanbanBoard = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={rectIntersection}
       onDragStart={({ active }) => {
         setActiveId(active.id);
+      }}
+      onDragOver={(event) => {
+        const { over } = event;
+        if (over && (over.data as any)?.type === 'column') {
+          console.log('Dragging over column:', over.id);
+        }
       }}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
     <div className="flex flex-col h-full kanban-board">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-2 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full mt-2 h-full">
         {sortedIncompletedAssignments.map((assignment) => (
           <div key={assignment} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
             <SortableColumn
@@ -489,10 +628,38 @@ export const KanbanBoard = () => {
               onCloseColumnMenu={handleCloseColumnMenu}
               onMoveToWorkspace={handleMoveToWorkspace}
               onDeleteAssignment={handleDeleteAssignment}
+              onUpdateAssignment={handleUpdateAssignment}
             />
           </div>
         ))}
       </div>
+
+      {/* Drag Overlay para mostrar el elemento arrastrado */}
+      <DragOverlay>
+        {activeId ? (
+          <div className="rotate-3 opacity-90">
+            {(() => {
+              // Encontrar la tarea activa en todas las assignments
+              for (const assignment of sortedIncompletedAssignments) {
+                const task = incompletedByAssignment[assignment]?.find((t: any) => t.id === activeId);
+                if (task) {
+                  return (
+                    <TaskItem
+                      task={task}
+                      onToggleCompletion={() => {}}
+                      onDelete={() => {}}
+                      onEditTask={() => {}}
+                      onContextMenu={() => {}}
+                      active={!!task.activetask}
+                    />
+                  );
+                }
+              }
+              return null;
+            })()}
+          </div>
+        ) : null}
+      </DragOverlay>
 
       {/* Completed Tasks Section */}
       {showCompleted && completedTasks.length > 0 && (
@@ -591,7 +758,7 @@ export const KanbanBoard = () => {
           onSelectWorkspace={async (workspace) => {
             try {
               // Obtener todas las tareas del assignment actual
-              const tasksInAssignment = incompletedByAssignment[selectedAssignment] || [];
+              const tasksInAssignment = selectedAssignment ? (incompletedByAssignment[selectedAssignment] || []) : [];
 
               // Actualización optimista: actualiza el estado de Redux localmente
               tasksInAssignment.forEach(task => {
