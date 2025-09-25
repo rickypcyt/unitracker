@@ -34,6 +34,11 @@ export const SortableTaskItem = ({
       type: 'task',
       taskId: task.id,
       assignment: assignment,
+      taskData: {
+        id: task.id,
+        assignment: assignment,
+        title: task.title,
+      },
     },
   });
   
@@ -46,6 +51,7 @@ export const SortableTaskItem = ({
     opacity: isDragging ? 0.5 : 1,
     position: 'relative' as const,
     zIndex: isDragging ? 9999 : 0,
+    cursor: 'grab',
   };
 
   return (
@@ -54,7 +60,7 @@ export const SortableTaskItem = ({
       style={style}
       {...attributes}
       {...listeners}
-      className={`task-item-draggable relative ${isBeingDraggedOver ? 'ring-2 ring-[var(--accent-primary)] ring-inset rounded-md' : ''}`}
+      className={`task-item-draggable relative ${isBeingDraggedOver ? 'ring-2 ring-[var(--accent-primary)] ring-inset rounded-md z-10' : ''}`}
       data-dnd-kit-dragged={isDragging}
     >
       <TaskItem
@@ -66,5 +72,6 @@ export const SortableTaskItem = ({
         active={!!task.activetask}
       />
     </div>
+    
   );
 }; 

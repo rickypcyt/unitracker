@@ -1,5 +1,5 @@
 import { ClipboardCheck, GripVertical, Trash2 } from 'lucide-react';
-import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, rectIntersection, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -280,58 +280,71 @@ export const KanbanBoard = () => {
   const handleDragEnd = useCallback(async (event: any) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
-
-    console.log('Drag ended:', { activeId: active.id, overId: over.id, overData: over.data });
-
-    // Check if we're dropping on a column or a task
-    let targetAssignmentId: string;
-    
-    if ((over.data as any)?.type === 'column') {
-      // Dropping directly on a column
-      targetAssignmentId = over.id as string;
-      console.log('Dropping on column:', targetAssignmentId);
-    } else if ((over.data as any)?.type === 'task') {
-      // Dropping on a task - find which column contains this task
-      targetAssignmentId = (over.data as any)?.assignment;
-      console.log('Dropping on task, moving to column:', targetAssignmentId);
-      
-      // If assignment is still undefined, find it from the incompletedByAssignment
-      if (!targetAssignmentId) {
-        for (const [assignmentName, assignmentTasks] of Object.entries(incompletedByAssignment)) {
-          const foundTask = assignmentTasks.find((task: any) => task.id === over.id);
-          if (foundTask) {
-            targetAssignmentId = assignmentName;
-            console.log('Found task in assignment:', targetAssignmentId);
-            break;
-          }
-        }
-      }
-    } else {
-      // Fallback - assume overId is the assignment name
-      targetAssignmentId = over.id as string;
-      console.log('Fallback - using overId as assignment:', targetAssignmentId);
-    }
-
-    // Find the assignment that contains the dragged task
-    const sourceAssignmentId = Object.keys(incompletedByAssignment).find((assignmentId: string) =>
-      incompletedByAssignment[assignmentId].some((task: any) => task.id === active.id)
-    );
-
-    if (!sourceAssignmentId) {
-      console.log('No source assignment found for task:', active.id);
+    if (!over) {
+      setActiveId(null);
       return;
     }
 
-    console.log('Moving from:', sourceAssignmentId, 'to:', targetAssignmentId);
+    console.log('Drag ended:', { activeId: active.id, overId: over.id, overData: over.data });
 
-    if (targetAssignmentId !== sourceAssignmentId) {
-      // This is a cross-assignment move
-      const taskToMove = incompletedByAssignment[sourceAssignmentId].find((task: any) => task.id === active.id);
-      if (!taskToMove) {
-        console.log('Task not found in source assignment');
-        return;
+    // Find the source assignment (where the task is coming from)
+    const sourceAssignmentId = Object.keys(incompletedByAssignment).find((assignmentId: string) =>
+      (incompletedByAssignment[assignmentId] as any[]).some((task: any) => task.id === active.id)
+    ) || 'No assignment';
+
+    // Get the task being moved
+    const taskToMove = sourceAssignmentId && 
+      (incompletedByAssignment[sourceAssignmentId] || []).find((task: any) => task.id === active.id);
+    
+    if (!taskToMove) {
+      console.log('Task not found in any assignment');
+      return;
+    }
+
+    // Determine target assignment
+    let targetAssignmentId: string = 'No assignment';
+    
+    // Debug log to help identify the issue
+    console.log('Over data:', over.data);
+    console.log('Over ID:', over.id);
+    
+    // Check if we're dropping on a task first
+    if ((over.data as any)?.type === 'task') {
+      // First try to get assignment from the task data in the drag event
+      const taskData = (over.data as any)?.current?.taskData || (over.data as any)?.current;
+      if (taskData?.assignment) {
+        targetAssignmentId = taskData.assignment;
+        console.log('Dropping on task, assignment from taskData:', targetAssignmentId);
+      } 
+      // Fallback to finding the task in the filtered tasks
+      else {
+        const targetTask = filteredTasks.find((t: any) => t.id === over.id);
+        if (targetTask?.assignment) {
+          targetAssignmentId = targetTask.assignment;
+          console.log('Dropping on task, assignment from filtered tasks:', targetAssignmentId);
+        }
       }
+      
+      if (targetAssignmentId === 'No assignment') {
+        console.warn('Could not determine target assignment from task data:', over.data);
+      }
+    } 
+    // If not dropping on a task, check if we're dropping on a column
+    else if (over.id.toString().startsWith('column-') || (over.data as any)?.type === 'column') {
+      // Extract the assignment ID from the column ID
+      const columnId = over.id.toString();
+      targetAssignmentId = columnId.replace(/^column-/, '');
+      console.log('Dropping on column, assignment ID:', targetAssignmentId);
+    }
+    // If we couldn't determine the target, use the source assignment
+    if (targetAssignmentId === 'No assignment' && sourceAssignmentId) {
+      targetAssignmentId = sourceAssignmentId;
+    }
+
+    console.log('Moving task:', taskToMove.title, 'from', sourceAssignmentId, 'to', targetAssignmentId);
+
+    // Only proceed if we're actually moving to a different assignment
+    if (targetAssignmentId !== sourceAssignmentId) {
 
       console.log('Moving task:', taskToMove.title, 'from', sourceAssignmentId, 'to', targetAssignmentId);
 
@@ -364,18 +377,32 @@ export const KanbanBoard = () => {
           return;
         }
 
-        // Update local state optimistically - Force immediate UI update
-        const updatedTask = { ...taskToMove, assignment: targetAssignmentId };
+        // Create the updated task with the new assignment
+        const updatedTask = { 
+          ...taskToMove, 
+          assignment: targetAssignmentId,
+          // Ensure we have all required fields to avoid type errors
+          created_at: taskToMove.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          workspace_id: taskToMove.workspace_id || null,
+          completed: taskToMove.completed || false,
+          completed_at: taskToMove.completed_at || null,
+          priority: taskToMove.priority || 'medium',
+          deadline: taskToMove.deadline || null,
+          description: taskToMove.description || '',
+          subtasks: taskToMove.subtasks || [],
+          tags: taskToMove.tags || []
+        };
 
-        // Update Redux state
+        // Update Redux state with the updated task
         dispatch(updateTaskSuccess(updatedTask));
 
-        // Force immediate re-render by updating task order state
+        // Update task order state
         setTaskOrder(prev => {
           const newOrder = { ...prev };
 
           // Remove from source assignment
-          if (newOrder[sourceAssignmentId]) {
+          if (sourceAssignmentId && newOrder[sourceAssignmentId]) {
             newOrder[sourceAssignmentId] = newOrder[sourceAssignmentId]
               .filter((id: string) => id !== taskToMove.id);
           }
@@ -384,24 +411,23 @@ export const KanbanBoard = () => {
           if (!newOrder[targetAssignmentId]) {
             newOrder[targetAssignmentId] = [];
           }
-          newOrder[targetAssignmentId].push(taskToMove.id);
+          
+          // Add to the end of the target column
+          if (!newOrder[targetAssignmentId]?.includes(taskToMove.id)) {
+            newOrder[targetAssignmentId] = [...(newOrder[targetAssignmentId] || []), taskToMove.id];
+          }
 
+          // Update localStorage
+          localStorage.setItem('kanbanTaskOrder', JSON.stringify(newOrder));
+          
           return newOrder;
         });
 
-        // Also update localStorage
-        const newTaskOrder = { ...taskOrder };
-        if (newTaskOrder[sourceAssignmentId]) {
-          newTaskOrder[sourceAssignmentId] = newTaskOrder[sourceAssignmentId]
-            .filter((id: string) => id !== taskToMove.id);
-        }
-        if (!newTaskOrder[targetAssignmentId]) {
-          newTaskOrder[targetAssignmentId] = [];
-        }
-        if (newTaskOrder[targetAssignmentId]) {
-          newTaskOrder[targetAssignmentId].push(taskToMove.id);
-        }
-        localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
+        // Force a re-fetch of tasks to ensure UI is in sync
+        // Wrap in a setTimeout to avoid potential race conditions
+        setTimeout(() => {
+          dispatch(fetchTasks() as any);
+        }, 0);
 
         console.log('Task moved successfully - UI updated immediately');
 
@@ -594,15 +620,9 @@ export const KanbanBoard = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={rectIntersection}
+      collisionDetection={closestCenter}
       onDragStart={({ active }) => {
         setActiveId(active.id);
-      }}
-      onDragOver={(event) => {
-        const { over } = event;
-        if (over && (over.data as any)?.type === 'column') {
-          console.log('Dragging over column:', over.id);
-        }
       }}
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}

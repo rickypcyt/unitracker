@@ -179,12 +179,7 @@ export const TaskItem = ({
                 </div>
                 {/* Prioridad, assignment, fecha y tacho abajo */}
                 <div className={`flex items-center gap-2 w-full${task.description ? ' ' : ''}`}>
-                    {task.priority && (
-                        <div className={`flex items-center gap-1 text-md ${getPriorityColor(task.priority)}`}> 
-                            <Clock size={11} />
-                            <span className="capitalize">{task.priority}</span>
-                        </div>
-                    )}
+
                     {!assignmentLeftOfDate && showAssignment && task.assignment && (
                         <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
                             {task.assignment}

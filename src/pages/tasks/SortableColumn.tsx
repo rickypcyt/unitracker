@@ -7,6 +7,7 @@ import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
 import { SortableTaskItem } from '@/pages/tasks/SortableTaskItem';
 import { TaskItem } from '@/pages/tasks/TaskItem';
+import { useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 
 export const SortableColumn = ({
@@ -46,21 +47,33 @@ export const SortableColumn = ({
       setIsEditing(false);
     }
   };
-  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
-    id: assignment,
+  // Set up the droppable area for the column
+  const { setNodeRef, isOver } = useDroppable({
+    id: `column-${assignment}`, // This ID must match what we check in handleDragEnd
     data: {
       type: 'column',
       assignment: assignment,
-      tasks: tasks.map(task => task.id),
+      // Add more context to help with debugging
+      columnId: assignment,
+      isColumn: true
     },
-    // Enhanced drop zone configuration for better UX
-    disabled: false,
-    // Make the entire column area droppable including over task items
   });
+
+  // Handle drops in the empty space of the column
+  const handleDropInEmptySpace = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  // Handle drag over for the empty space
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
     <div
-      ref={setDroppableRef}
+      ref={setNodeRef}
       className={`flex flex-col h-full min-h-0 transition-all duration-200 relative ${
         isOver ? 'task-drop-zone-active' : ''
       }`}
@@ -69,6 +82,8 @@ export const SortableColumn = ({
         padding: '0rem',
         height: '100%', // Take full available height
       }}
+      data-column-id={assignment} // Add data attribute for easier debugging
+      data-testid={`column-${assignment}`}
     >
       <div className="flex items-center justify-between w-full mb-3">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -160,13 +175,37 @@ export const SortableColumn = ({
       
       {!collapsed && (
         <div
-          className={
-            `space-y-2 overflow-y-auto flex-1 min-h-0 custom-scrollbar pr-1 transition-all duration-200 ${
-              isOver ? 'bg-accent-primary/20' : ''
-            }`
-          }
-          data-dnd-kit-sortable-context
-        >
+        ref={setNodeRef}
+        onDrop={handleDropInEmptySpace}
+        onDragOver={handleDragOver}
+        className={`relative space-y-1.5 overflow-y-auto flex-1 min-h-0 custom-scrollbar transition-all duration-200 ${
+          isOver ? 'bg-accent-primary/5' : ''
+        }`}
+        style={{
+          minHeight: '100px',
+          padding: '0.5rem',
+          position: 'relative',
+          zIndex: 1,
+        }}
+        data-dnd-kit-sortable-context
+      >
+        {/* Empty state drop zone */}
+        {tasks.length === 0 && (
+          <div 
+            className={`absolute inset-0 flex items-center justify-center pointer-events-none ${
+              isOver ? 'opacity-100' : 'opacity-0'
+            } transition-opacity duration-200`}
+          >
+            <div className="text-center p-4 rounded-lg bg-accent-primary/10 border-2 border-dashed border-accent-primary/50 w-full mx-4">
+              <p className="text-accent-primary font-medium">Drop task here</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Drop indicator that appears when dragging over the column */}
+        {isOver && tasks.length > 0 && (
+          <div className="absolute inset-0 border-2 border-dashed border-[var(--accent-primary)] rounded-lg pointer-events-none z-10" />
+        )}  
           <SortableContext 
             items={tasks.map(task => task.id)} 
             strategy={verticalListSortingStrategy}
