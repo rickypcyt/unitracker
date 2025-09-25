@@ -882,7 +882,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         </button>
       </div>
 
-      <div className="timer-controls flex justify-center items-center gap-3">
+      <div className="timer-controls flex justify-center items-center gap-1">
         {!isSynced && (
           <>
             <button
