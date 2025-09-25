@@ -50,31 +50,33 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-16 session-page mt-4">
+    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-16 xl:px-28 session-page">
       <div className="w-full px-2 overflow-hidden">
         {/* Controles globales (solo visibles cuando está sincronizado) */}
-        <div className="px-1">
+        <div className="px-1 mb-4">
           <GlobalTimerControls />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full">
-          {/* Pomodoro */}
-          <div className="maincard py-3 px-4 sm:px-5 w-full">
-            <Pomodoro isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          {/* Columna derecha con los timers en vertical - primero en sm */}
+          <div className="w-full md:w-1/2 md:order-2 space-y-4 order-1">
+            <div className="maincard py-3 px-4 sm:px-5 w-full">
+              <StudyTimer isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
+            </div>
+            <div className="maincard py-3 px-4 sm:px-5 w-full">
+              <Countdown isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
+            </div>
+            <div className="maincard py-3 px-4 sm:px-5 w-full">
+              <Pomodoro isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
+            </div>
           </div>
-          {/* Study Timer */}
-          <div className="maincard py-3 px-4 sm:px-5 w-full">
-            <StudyTimer isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
+          
+          {/* Columna izquierda con el Noise Generator - segundo en sm */}
+          <div className="w-full md:w-1/2 md:order-1 order-2">
+            <div className="maincard py-3 px-4 sm:px-5 h-full">
+              <NoiseGenerator />
+            </div>
           </div>
-          {/* Countdown */}
-          <div className="maincard py-3 px-4 sm:px-5 w-full">
-            <Countdown isSynced={isSynced} isRunning={isRunning} resetKey={resetKey} />
-          </div>
-        </div>
-        
-        {/* Noise Generator abajo ocupando todo el ancho */}
-        <div className="maincard py-3 px-4 sm:px-5 w-full">
-          <NoiseGenerator />
         </div>
       </div>
 

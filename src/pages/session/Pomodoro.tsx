@@ -1,4 +1,4 @@
-import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff } from "lucide-react";
+import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff, Bell, BellOff } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -128,7 +128,19 @@ const Pomodoro = () => {
   });
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  // Removed unused alarm toggle state and function
+
+  const toggleAlarm = useCallback(() => {
+    setAlarmEnabled(prev => {
+      localStorage.setItem('pomodoroAlarmEnabled', String(!prev));
+      return !prev;
+    });
+  }, []);
+
+  // Alarm state for notifications
+  const [alarmEnabled, setAlarmEnabled] = useState(() => {
+    const saved = localStorage.getItem('pomodoroAlarmEnabled');
+    return saved === null ? true : saved === 'true';
+  });
 
   // Detectar si hay sesión activa
   const activeSessionId = localStorage.getItem('activeSessionId');
@@ -159,9 +171,11 @@ const Pomodoro = () => {
 
     const sound = sounds[isWork ? "work" : (pomoState.currentMode === "longBreak" ? "longBreak" : "break")];
 
-    // Play sound
-    sound.currentTime = 0;
-    sound.play().catch(console.error);
+    // Play sound only if alarm is enabled
+    if (alarmEnabled) {
+      sound.currentTime = 0;
+      sound.play().catch(console.error);
+    }
 
     // Update state
     setPomoState(prev => {
@@ -514,10 +528,12 @@ const Pomodoro = () => {
         isRunning: prev.isRunning // Solo mantener corriendo si ya estaba corriendo
       }));
 
-      // Play sound and show notification
-      const sound = sounds[shouldBeWorkMode ? "break" : "work"];
-      sound.currentTime = 0;
-      sound.play().catch(console.error);
+      // Play sound and show notification only if alarm is enabled
+      if (alarmEnabled) {
+        const sound = sounds[shouldBeWorkMode ? "break" : "work"];
+        sound.currentTime = 0;
+        sound.play().catch(console.error);
+      }
 
       // Show notifications
       if (shouldBeWorkMode) {
@@ -679,9 +695,8 @@ const Pomodoro = () => {
         const newTimeLeft = Math.max(0, startCountingDownFrom - elapsed);
 
         if (newTimeLeft <= 0) {
-          const alarmPref = localStorage.getItem('pomodoroAlarmEnabled');
-          const shouldAlarm = alarmPref === null ? true : alarmPref === 'true';
-          if (shouldAlarm) {
+          // Play alarm sound only if enabled
+          if (alarmEnabled) {
             try {
               new Audio('/sounds/pomo-end.mp3').play();
             } catch { /* ignore audio play error */ }
@@ -799,6 +814,19 @@ const Pomodoro = () => {
           tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks. This helps maintain concentration and prevent burnout."
           size="md"
         />
+        {/* Botón de alarma */}
+        <button
+          onClick={toggleAlarm}
+          className="absolute right-8 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'}
+          aria-label="Toggle alarm sound"
+        >
+          {alarmEnabled ? (
+            <Bell size={20} className="text-[var(--text-secondary)]" />
+          ) : (
+            <BellOff size={20} className="text-[var(--text-secondary)]" />
+          )}
+        </button>
         {/* Botón de configuración de sesión */}
         <button
           onClick={() => setIsSettingsModalOpen(true)}
