@@ -1,8 +1,8 @@
 import { memo, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 
-import Calendar from '@/pages/calendar/Calendar';
 import AllTasks from '@/pages/calendar/AllTasks';
+import Calendar from '@/pages/calendar/Calendar';
+import { useLocation } from 'react-router-dom';
 
 const CalendarPage = memo(() => {
   const location = useLocation();
@@ -16,12 +16,12 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
   return (
-    <div className="w-full px-2 pt-4 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-5 w-full max-w-6xl mx-auto mt-4">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="w-full">
           <Calendar />
         </div>
-        <div className="w-full">
+        <div className=" relative mx-auto w-full transition-all duration-300 calendar-view max-w-4xl md:max-w-2xl lg:max-w-4xl">
           <AllTasks />
         </div>
       </div>

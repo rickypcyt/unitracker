@@ -50,8 +50,8 @@ const SessionPage = memo(() => {
   }, [isSynced, resetKey]);
 
   return (
-    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-10 session-page">
-      <div className="flex flex-col gap-4 md:gap-5 w-full max-w-6xl mx-auto">
+    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-16 session-page mt-4">
+      <div className="w-full px-2 overflow-hidden">
         {/* Controles globales (solo visibles cuando está sincronizado) */}
         <div className="px-1">
           <GlobalTimerControls />

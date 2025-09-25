@@ -628,7 +628,7 @@ export const KanbanBoard = () => {
       onDragCancel={() => setActiveId(null)}
     >
     <div className="flex flex-col h-full kanban-board">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full mt-2 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full h-full">
         {sortedIncompletedAssignments.map((assignment) => (
           <div key={assignment} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
             <SortableColumn

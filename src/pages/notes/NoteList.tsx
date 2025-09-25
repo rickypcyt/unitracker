@@ -1,6 +1,7 @@
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
+
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 interface Note {
   id?: string;
@@ -64,8 +65,8 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
   }
 
   return (
-    <div className="py-1">
-      <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5 lg:gap-6 justify-items-stretch">
+    <div className="">
+      <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 md:gap-5 lg:gap-6 justify-items-stretch">
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
