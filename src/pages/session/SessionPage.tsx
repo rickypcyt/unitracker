@@ -1,4 +1,4 @@
-import { } from '@/store/slices/uiSlice';
+import SessionStatsAndTasks from '@/components/SessionStatsAndTasks';
 
 import { memo, useEffect, useState } from 'react';
 
@@ -72,8 +72,9 @@ const SessionPage = memo(() => {
           </div>
           
           {/* Columna izquierda con el Noise Generator - segundo en sm */}
-          <div className="w-full md:w-1/2 md:order-1 order-2">
-            <div className="maincard py-3 px-4 sm:px-5 h-full">
+          <div className="w-full md:w-1/2 md:order-1 order-2 space-y-4">
+            <SessionStatsAndTasks />
+            <div className="maincard py-3 px-4 sm:px-5">
               <NoiseGenerator />
             </div>
           </div>

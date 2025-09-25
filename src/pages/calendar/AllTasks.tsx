@@ -177,7 +177,7 @@ const AllTasks = () => {
   };
 
   return (
-    <div className="maincard w-full px-2 pt-4 sm:px-4 md:px-6 lg:px-8">
+    <div className="maincard relative mx-auto w-full transition-all duration-300 calendar-view max-w-4xl md:max-w-2xl lg:max-w-4xl">
       <div className="w-full text-center mb-4">
   <h2 className="text-xl font-semibold text-[var(--text-primary)]">
     Pending Tasks
