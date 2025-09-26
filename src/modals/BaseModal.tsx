@@ -1,7 +1,7 @@
-import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { useCallback, useEffect, useRef } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
 type BaseModalProps = {
   isOpen: boolean;
@@ -24,12 +24,12 @@ const BaseModal = ({
   onClose,
   title,
   children,
-  className = '',
+  className = "",
   overlayClassName,
   hasUnsavedChanges = false,
   showCloseButton = true,
-  maxWidth = 'max-w-md',
-  zIndex = 'z-[10001]',
+  maxWidth = "max-w-md",
+  zIndex = "z-[10001]",
   closeOnEsc = true,
   closeOnOverlayClick = true,
   showHeader = true,
@@ -38,13 +38,21 @@ const BaseModal = ({
   // Mantener onClose y hasUnsavedChanges estables para evitar re-ejecuciones innecesarias del efecto
   const onCloseRef = useRef(onClose);
   const hasUnsavedChangesRef = useRef(hasUnsavedChanges);
-  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
-  useEffect(() => { hasUnsavedChangesRef.current = hasUnsavedChanges; }, [hasUnsavedChanges]);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    hasUnsavedChangesRef.current = hasUnsavedChanges;
+  }, [hasUnsavedChanges]);
 
   // Define handleClose estable leyendo de refs
   const handleClose = useCallback(() => {
     if (hasUnsavedChangesRef.current) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+      if (
+        window.confirm(
+          "You have unsaved changes. Are you sure you want to close?"
+        )
+      ) {
         onCloseRef.current();
       }
     } else {
@@ -54,7 +62,7 @@ const BaseModal = ({
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && closeOnEsc) {
+      if (e.key === "Escape" && closeOnEsc) {
         handleClose();
       }
     };
@@ -64,33 +72,43 @@ const BaseModal = ({
       // No robar el foco en móviles: si existe un elemento con autoFocus, deja que el navegador lo maneje.
       // En desktop, solo enfocamos si no hay ningún elemento con autoFocus dentro del modal.
       setTimeout(() => {
-        const isTouch = 'ontouchstart' in window || (navigator as any).maxTouchPoints > 0;
+        const isTouch =
+          "ontouchstart" in window || (navigator as any).maxTouchPoints > 0;
         if (isTouch) return;
-        const dialog = document.querySelector('.BaseModal [role="dialog"]') as HTMLElement | null;
+        const dialog = document.querySelector(
+          '.BaseModal [role="dialog"]'
+        ) as HTMLElement | null;
         const active = document.activeElement as HTMLElement | null;
         // Si ya hay un elemento enfocado dentro del modal (por ejemplo, un input con autoFocus de React), no cambiar el foco
         if (dialog && active && dialog.contains(active)) return;
         // Soportar tanto [autofocus] (HTML) como [data-autofocus="true"] (convención manual)
-        const autoTarget = document.querySelector('.BaseModal [autofocus], .BaseModal [data-autofocus="true"]') as HTMLElement | null;
-        const firstFocusable = (autoTarget || document.querySelector(
-          '.BaseModal input, .BaseModal textarea, .BaseModal select, .BaseModal button, .BaseModal [tabindex="0"]'
-        )) as HTMLElement | null;
-        if (firstFocusable && typeof (firstFocusable as any).focus === 'function') firstFocusable.focus();
+        const autoTarget = document.querySelector(
+          '.BaseModal [autofocus], .BaseModal [data-autofocus="true"]'
+        ) as HTMLElement | null;
+        const firstFocusable = (autoTarget ||
+          document.querySelector(
+            '.BaseModal input, .BaseModal textarea, .BaseModal select, .BaseModal button, .BaseModal [tabindex="0"]'
+          )) as HTMLElement | null;
+        if (
+          firstFocusable &&
+          typeof (firstFocusable as any).focus === "function"
+        )
+          firstFocusable.focus();
       }, 0);
-      document.addEventListener('keydown', handleEscape);
-      document.body.classList.add('overflow-hidden');
+      document.addEventListener("keydown", handleEscape);
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
       // Devuelve el foco al trigger
       const el = lastActiveElement.current as HTMLElement | null;
-      if (el && typeof el.focus === 'function') {
+      if (el && typeof el.focus === "function") {
         el.focus();
       }
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.classList.remove('overflow-hidden');
+      document.removeEventListener("keydown", handleEscape);
+      document.body.classList.remove("overflow-hidden");
     };
   }, [isOpen, closeOnEsc]);
 
@@ -105,7 +123,9 @@ const BaseModal = ({
   return (
     <div
       data-overlay="BaseModal-v2"
-      className={`BaseModal fixed inset-0 w-screen h-screen ${overlayClassName ?? 'bg-white/60 dark:bg-black/70'} flex items-center justify-center ${zIndex} backdrop-blur-md w-full px-2 overflow-hidden`}
+      className={`BaseModal fixed inset-0 w-screen h-screen ${
+        overlayClassName ?? "bg-white/60 dark:bg-black/70"
+      } flex items-center justify-center ${zIndex} backdrop-blur-md w-full px-2 overflow-hidden`}
       onClick={handleOverlayClick}
     >
       <div
@@ -115,10 +135,13 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="bg-[var(--bg-primary)] flex items-center justify-between gap-3 p-4 pt-0 mt-2">
-            <h2 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] truncate">
+          <div className="relative bg-[var(--bg-primary)] flex items-center justify-end p-4 pt-0 mt-2 pb-0">
+            {/* Título centrado */}
+            <h2 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[var(--text-primary)] truncate">
               {title}
             </h2>
+
+            {/* Botón X a la derecha */}
             {showCloseButton && (
               <button
                 type="button"
@@ -132,6 +155,7 @@ const BaseModal = ({
             )}
           </div>
         )}
+
         {children}
       </div>
     </div>

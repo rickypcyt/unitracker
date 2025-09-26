@@ -193,6 +193,13 @@ const statCards: StatCard[] = [
     value: s => formatMinutesToHHMM(s.yearMinutes),
     sub: s => `${s.doneYear} tasks`,
   },
+  
+  {
+    label: 'Per Day',
+    icon: <Timer size={22} className="text-gray-400" />, 
+    value: s => formatMinutesToHHMM(Math.round(s.avgPerDay)),
+    sub: () => 'average',
+  },
   {
     label: 'Max Streak',
     icon: <Flame size={22} className="text-orange-500" />, 
@@ -200,21 +207,15 @@ const statCards: StatCard[] = [
     sub: () => 'days',
   },
   {
-    label: 'Per Day',
-    icon: <Timer size={22} className="text-[var(--accent-primary)]" />, 
-    value: s => formatMinutesToHHMM(Math.round(s.avgPerDay)),
-    sub: () => 'average',
+    label: 'Pomodoro',
+    icon: <CheckCircle2 size={22} className="text-red-500" />, 
+    value: s => s.pomodoros ?? 0,
+    sub: () => 'total',
   },
   {
     label: 'Tasks Done',
     icon: <ListChecks size={22} className="text-green-500" />, 
     value: s => s.totalTasks,
-    sub: () => 'total',
-  },
-  {
-    label: 'Pomodoro',
-    icon: <CheckCircle2 size={22} className="text-red-500" />, 
-    value: s => s.pomodoros ?? 0,
     sub: () => 'total',
   },
 ];

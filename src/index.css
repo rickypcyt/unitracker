@@ -834,12 +834,32 @@ h1 {
   }
 }
 
-.go2072408551 {
-  margin-top: 3.5rem !important; /* mt-10 */
-  z-index: 999999 !important;
+/* Chart responsive improvements */
+@media (max-width: 640px) {
+  .recharts-wrapper {
+    font-size: 12px !important;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 11px !important;
+  }
+  
+  .recharts-bar-rectangle {
+    rx: 3 !important;
+  }
 }
-@media (max-width: 639px) {
-  .go2072408551 {
-    margin-top: 4.5rem !important; /* mt-6 */
+
+/* Improve chart container spacing */
+.recharts-responsive-container {
+  min-height: 200px;
+}
+
+@media (max-width: 480px) {
+  .recharts-responsive-container {
+    min-height: 180px;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 10px !important;
   }
 }

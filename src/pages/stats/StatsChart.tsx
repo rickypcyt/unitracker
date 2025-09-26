@@ -209,14 +209,14 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               data={chartData}
               margin={{
                 top: isSmall ? 8 : 12,
-                right: isSmall ? 8 : 12,
+                right: isSmall ? 4 : 8,
                 bottom: isSmall ? 8 : 12,
-                left: isSmall ? 24 : 36
+                left: isSmall ? 12 : 24
               }} 
               barCategoryGap={
-                title === 'This Month' ? (isSmall ? 6 : 8) :
-                (title === 'This Week' || title === 'Last Week') ? 16 :
-                (title === 'This Year' ? 18 : 20)
+                title === 'This Month' ? (isSmall ? 12 : 8) :
+                (title === 'This Week' || title === 'Last Week') ? 20 :
+                (title === 'This Year' ? 24 : 20)
               }
             >
               {/** Build ticks for Month on small screens: every 5 days */}
@@ -233,8 +233,9 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 tickLine={false}
                 axisLine={false}
                 interval={isWeekChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd')}
-                minTickGap={0}
-                tickMargin={title === 'This Month' ? (isSmall ? 8 : 12) : title === 'This Year' ? 18 : 16}
+                minTickGap={isSmall ? 5 : 0}
+                tickMargin={title === 'This Month' ? (isSmall ? 4 : 8) : title === 'This Year' ? 12 : 8}
+                fontSize={isSmall ? '11px' : '12px'}
                 {...(Array.isArray(xTicks) && xTicks.length > 0 ? { ticks: xTicks as (string | number)[] } : {})}
                 tickFormatter={(value, index) => {
                   // Para gráficos de semana, usar las etiquetas de días de la semana
@@ -246,11 +247,11 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               />
               <YAxis
                 stroke="var(--text-secondary)"
-                tick={{ fill: "var(--text-secondary)", fontSize: "0.7rem", dx: 4 }}
+                tick={{ fill: "var(--text-secondary)", fontSize: isSmall ? "0.65rem" : "0.7rem", dx: 4 }}
                 tickFormatter={(v) => formatMinutesToHoursLabel(v as number)}
                 axisLine={false}
                 tickLine={false}
-                width={isSmall ? 34 : 44}
+                width={isSmall ? 28 : 44}
                 domain={
                   // Para semana/mes/año usar dominio dinámico
                   (isWeekChart || isMonthChart || isYearChart)
@@ -259,7 +260,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 }
                 ticks={yAxisTicksFinal}
                 allowDecimals={false}
-                tickMargin={8}
+                tickMargin={isSmall ? 4 : 8}
               />
               <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
               <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />

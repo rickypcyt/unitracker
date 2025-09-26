@@ -45,8 +45,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       >
         <div className=" p-2">
           {/* Theme Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-            <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               {themePreference === 'auto' ? <Monitor size={22} /> : currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
               Theme
             </h3>
@@ -70,7 +70,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 
                 {/* Custom three-position slider */}
                 <div className="relative">
-                  <div className="w-full h-8 bg-[var(--bg-secondary)] rounded-full relative overflow-hidden">
+                  <div className="w-full h-8 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
                     {/* Slider track background */}
                     <div 
                       className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
@@ -124,8 +124,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Accent Color Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-            <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <Palette size={22} />
               Accent Color
             </h3>
@@ -149,8 +149,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Assignments Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-            <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <ListTodo size={22} />
               Assignments
             </h3>
