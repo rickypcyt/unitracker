@@ -724,7 +724,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+      <div className="section-title justify-center relative w-full px-4 py-3">
         <SectionTitle 
           title="Timer" 
           tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management."

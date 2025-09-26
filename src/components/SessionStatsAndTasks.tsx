@@ -66,22 +66,9 @@ const SessionStatsAndTasks = () => {
 
   // Focus level calculation removed as it's not being used
 
-  // Get active tasks (explicitly marked as active or with deadline for today)
+  // Get active tasks (tasks with activetask flag set to true and not completed)
   const activeTasks = tasks
-    .filter((task: Task) => {
-      // Check if task is explicitly marked as active
-      const isActive = task.status === 'active' || task.isActive === true;
-      
-      // If no deadline and not explicitly active, don't show
-      if (!task.deadline) return isActive;
-      
-      // Check if deadline is today
-      const taskDate = new Date(task.deadline).toDateString();
-      const todayDate = new Date().toDateString();
-      const isDueToday = taskDate === todayDate;
-      
-      return isActive || isDueToday;
-    })
+    .filter((task: Task) => task.activetask === true && task.completed !== true)
     .slice(0, 5); // Limit to 5 tasks for the widget
 
   // Animation variants

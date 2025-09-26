@@ -1,15 +1,16 @@
-import { MoreVertical, Pause, Play, RotateCcw, RefreshCw, RefreshCwOff, Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from "lucide-react";
+import { setPomodoroState, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
 import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
+import SectionTitle from '@/components/SectionTitle';
 import { formatPomoTime } from "@/hooks/useTimers";
-import { setPomodoroState, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import toast from "react-hot-toast";
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from "@/hooks/useEventListener";
 import usePomodorosToday from '@/hooks/usePomodorosToday';
-import SectionTitle from '@/components/SectionTitle';
+
 // import useTheme from "@/hooks/useTheme";
 
 // Initial modes
@@ -795,7 +796,7 @@ const Pomodoro = () => {
   return (
     <div className="flex flex-col items-center h-full">
       {/* Header: Icon, Title, Settings Button */}
-      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+      <div className="section-title justify-center relative w-full px-4 py-3">
         <button
           type="button"
           onClick={() => dispatch(setSyncPomodoroWithTimer(!syncPomodoroWithTimer))}

@@ -730,7 +730,7 @@ const Countdown = ({ isSynced, isRunning }) => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="section-title justify-center mb-4 relative w-full px-4 py-3">
+      <div className="section-title justify-center relative w-full px-4 py-3">
         <button
           type="button"
           onClick={() => dispatch(setSyncCountdownWithTimer(!syncCountdownWithTimer))}
