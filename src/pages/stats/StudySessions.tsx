@@ -338,40 +338,7 @@ const StudySessions: React.FC = () => {
                             'January', 'February', 'March', 'April', 'May', 'June',
                             'July', 'August', 'September', 'October', 'November', 'December'
                         ];
-                        return orderedYears.map(year => (
-                            <div key={year} className="mb-1">
-                                <div className="border-b border-[var(--border-primary)] mb-4 pb-1 pl-1 text-lg font-bold text-[var(--text-primary)]">{year}:</div>
-                                <div className="max-w-6xl mx-auto px-2">
-                                    <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center w-full">
-                                        {monthsByYear[year]
-                                            .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
-                                            .map(({ month, monthYear, lapsOfMonth }) => {
-                                                const stats = getMonthStats(lapsOfMonth);
-                                                return (
-                                                    <div
-                                                        key={monthYear}
-                                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 md:p-4 border-2 border-[var(--border-primary)] flex flex-col items-center text-center w-full min-h-[90px] cursor-pointer hover:border-[#444] dark:hover:border-[#444] transition-all duration-200"
-                                                        onClick={() => setSelectedMonth(monthYear)}
-                                                    >
-                                                        <div className="flex flex-col items-center gap-2 mb-1 align-middle text-center">
-                                                            <Calendar size={20} className="text-[var(--accent-primary)]" />
-                                                            <span className="text-base font-bold text-[var(--text-primary)] truncate align-middle text-center">{month}</span>
-                                                        </div>
-                                                        <div className="mb-1 text-center">
-                                                            <span className="text-base font-semibold text-[var(--text-primary)] leading-none align-middle">{stats.totalSessions}</span>
-                                                            <span className="text-base font-semibold text-[var(--text-primary)] ml-2 align-middle">session{stats.totalSessions !== 1 ? 's' : ''}</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-center gap-1 text-[var(--text-secondary)] text-base sm:text-lg text-center leading-none">
-                                                            <Clock size={18} />
-                                                            <span className="font-semibold text-[var(--text-primary)]">{formatMinutesToHHMM(stats.totalMinutes)}</span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                    </div>
-                                </div>
-                            </div>
-                        ));
+
                     })()}
                 </React.Fragment>
             )}

@@ -170,7 +170,7 @@ const SessionStatsAndTasks = () => {
       {/* Active Tasks Section */}
       <motion.div 
         variants={item}
-        className="relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] hover:shadow-md transition-all duration-300 pt-0"
+        className="relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] pt-0 pb-0"
       >
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
@@ -233,9 +233,9 @@ const SessionStatsAndTasks = () => {
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-6 px-4 text-center"
+            className="flex flex-col items-center justify-center py-3 px-2 text-center"
           >
-            <div className="p-3 mb-2 rounded-full bg-[var(--accent-primary)]/10">
+            <div className="p-1 mb-1 rounded-full bg-[var(--accent-primary)]/10">
               <Clock size={20} className="text-[var(--accent-primary)]" />
             </div>
             <h4 className="text-sm font-medium text-[var(--text-primary)] mb-1">No active tasks</h4>

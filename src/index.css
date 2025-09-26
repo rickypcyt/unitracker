@@ -5,8 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 /* #1793d1 archlinux color */
 
 /* =========================
@@ -44,12 +42,12 @@
     --bg-primary: #ffffff;
     --border-primary: #e5e5e5;
     --text-primary: #000000;
-    --accent-primary: #1E90FF; /* Electric neon blue */
+    --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
 
     --bg-secondary: #ffffff;
     --text-secondary: #666666;
-    --accent-deep: #187BCD; /* Darker electric blue */
+    --accent-deep: #187bcd; /* Darker electric blue */
     --muted-strong: #444444cc;
 
     --radius: 0.5rem;
@@ -86,18 +84,20 @@
     --bg-primary: #000000;
     --border-primary: #252525d5;
     --text-primary: #ffffff;
-    --accent-primary: #1E90FF; /* Electric neon blue */
+    --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
 
     --bg-secondary: #000000;
     --text-secondary: #b5b5b5;
-    --accent-deep: #187BCD; /* Darker electric blue */
+    --accent-deep: #187bcd; /* Darker electric blue */
     --muted-strong: #e0e0e0cc;
   }
 
   /* Fuente base */
   html {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Helvetica, Arial, Oxygen, Ubuntu, Cantarell, "Open Sans",
+      "Helvetica Neue", sans-serif;
     min-height: 100vh;
     @apply text-base;
     -webkit-font-smoothing: antialiased;
@@ -197,8 +197,7 @@
 @layer components {
   .maincard {
     border-radius: 0.5rem;
-  padding: 1.25rem;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     margin-bottom: 1rem;
@@ -344,7 +343,8 @@
   }
 
   /* Add styles for the trash icon, assuming it's also a flex item */
-  .flex.items-start .trash-icon-container { /* Assuming a class for the trash icon's parent */
+  .flex.items-start .trash-icon-container {
+    /* Assuming a class for the trash icon's parent */
     flex-shrink: 0; /* Prevent trash icon from shrinking */
     margin-left: auto; /* Push trash icon to the right */
     align-self: flex-start; /* Align trash icon to the top */
@@ -416,15 +416,15 @@
   }
 
   .task-item-active[data-difficulty="easy"] {
-    border-color: #00FF41; /* Matrix green */
+    border-color: #00ff41; /* Matrix green */
   }
 
   .task-item-active[data-difficulty="medium"] {
-    border-color: #1E90FF; /* Electric neon blue */
+    border-color: #1e90ff; /* Electric neon blue */
   }
 
   .task-item-active[data-difficulty="hard"] {
-    border-color: #FF003C; /* Neon red */
+    border-color: #ff003c; /* Neon red */
   }
 
   .task-item-flex {
@@ -583,7 +583,7 @@ h1 {
   .layout-item {
     border: 1px solid CanvasText;
   }
-  
+
   .loading-spinner {
     forced-color-adjust: none;
   }
@@ -726,8 +726,8 @@ h1 {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 * {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Remove Tiptap/ProseMirror focus border */
@@ -806,7 +806,8 @@ h1 {
   @apply text-[var(--accent-primary)];
 }
 
-.react-hot-toast-container, .react-hot-toast {
+.react-hot-toast-container,
+.react-hot-toast {
   z-index: 999999 !important;
   position: fixed !important;
   top: 0;
@@ -839,11 +840,11 @@ h1 {
   .recharts-wrapper {
     font-size: 12px !important;
   }
-  
+
   .recharts-cartesian-axis-tick-value {
     font-size: 11px !important;
   }
-  
+
   .recharts-bar-rectangle {
     rx: 3 !important;
   }
@@ -858,7 +859,7 @@ h1 {
   .recharts-responsive-container {
     min-height: 180px;
   }
-  
+
   .recharts-cartesian-axis-tick-value {
     font-size: 10px !important;
   }

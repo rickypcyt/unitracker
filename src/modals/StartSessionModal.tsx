@@ -1,13 +1,13 @@
 import { Check, Square } from 'lucide-react';
 import { FormActions, FormInput, FormTextarea } from '@/modals/FormElements';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
 import { supabase } from '@/utils/supabaseClient';
+import { useSelector } from 'react-redux';
 
 const StartSessionModal = ({ isOpen, onClose, onStart }) => {
   const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
@@ -333,7 +333,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             Cancel
           </button>
@@ -341,7 +341,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
             type="button"
             onClick={handleStart}
             disabled={isSubmitting}
-            className={`px-6 py-2 rounded-md border-2 font-semibold transition-colors ${isSubmitting ? 'opacity-60 cursor-not-allowed border-[var(--border-primary)] text-[var(--text-secondary)]' : 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10'}`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]`}
           >
             {isSubmitting ? 'Starting…' : 'Start Session'}
           </button>

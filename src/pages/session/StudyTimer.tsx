@@ -722,7 +722,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   }, [isPomodoroSync, isCountdownSync, studyState.time]);
 
   return (
-    <div className="flex flex-col items-center h-full">
+    <div className="flex flex-col items-center h-min">
       {/* Header: Icon, Title, Settings Button */}
       <div className="section-title justify-center relative w-full px-4 py-3">
         <SectionTitle 
@@ -745,7 +745,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       </div>
 
       {/* Timer display con tooltip para Session Title */}
-      <div className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-6 text-center" role="timer" aria-label="Current session time">
+      <div className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-4  text-center" role="timer" aria-label="Current session time">
         <span>{formatStudyTime(Number.isFinite(studyState.time) ? Math.max(0, studyState.time) : 0, false)}</span>
         {currentSessionId && (
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
@@ -771,7 +771,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         )}
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 md:mb-6 lg:mb-6">
         <button
           onClick={() => {
             const adjustment = -600;
@@ -882,7 +882,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         </button>
       </div>
 
-      <div className="timer-controls flex justify-center items-center gap-1">
+      <div className="timer-controls flex justify-center items-center gap-1 lg:mb-0">
         {!isSynced && (
           <>
             <button

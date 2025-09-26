@@ -816,7 +816,7 @@ const Countdown = ({ isSynced, isRunning }) => {
       </div>
 
       {/* Time adjustment buttons */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-4 md:mb-4 lg:mb-4">
         <button
           onClick={() => handleTimeAdjustment(-1800)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -848,7 +848,7 @@ const Countdown = ({ isSynced, isRunning }) => {
       </div>
 
       {!(isSynced || syncCountdownWithTimer) && (
-        <div className="flex justify-center items-center gap-3 mb-2">
+        <div className="flex justify-center items-center gap-3 xl:mb-0">
           <button
             onClick={() => handleReset()}
             className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"

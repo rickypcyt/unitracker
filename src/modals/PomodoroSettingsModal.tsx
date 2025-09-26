@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import BaseModal from '@/modals/BaseModal';
 import { FormInput } from '@/modals/FormElements';
 
-const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onModeChange, onSaveCustomMode, workSessionsBeforeLongBreak, onWorkSessionsChange }) => {
+const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onModeChange, onSaveCustomMode, workSessionsBeforeLongBreak, onWorkSessionsChange, longBreakDuration, onLongBreakDurationChange }) => {
   const [selectedModeIndex, setSelectedModeIndex] = useState(currentModeIndex);
   const [customWorkTime, setCustomWorkTime] = useState('');
   const [customBreakTime, setCustomBreakTime] = useState('');
   const [customLongBreakTime, setCustomLongBreakTime] = useState('');
   const [isCustomModeSelected, setIsCustomModeSelected] = useState(false);
   const [workSessions, setWorkSessions] = useState(workSessionsBeforeLongBreak);
+  const [longBreakDur, setLongBreakDur] = useState(longBreakDuration);
 
   // Assume Custom mode is always the last one
   const customModeIndex = modes.length - 1;
@@ -18,6 +19,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
     if (isOpen) {
       setSelectedModeIndex(currentModeIndex);
       setWorkSessions(workSessionsBeforeLongBreak);
+      setLongBreakDur(longBreakDuration);
       // Check if current mode is custom (last mode)
       const isCustom = currentModeIndex === customModeIndex;
       setIsCustomModeSelected(isCustom);
@@ -34,7 +36,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         setCustomLongBreakTime('');
       }
     }
-  }, [isOpen, currentModeIndex, modes, customModeIndex, workSessionsBeforeLongBreak]);
+  }, [isOpen, currentModeIndex, modes, customModeIndex, workSessionsBeforeLongBreak, longBreakDuration]);
 
   const handleModeSelect = (index) => {
     setSelectedModeIndex(index);
@@ -66,6 +68,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         });
         onModeChange(customModeIndex); // Ensure we switch to custom mode after saving
         onWorkSessionsChange(workSessions);
+        onLongBreakDurationChange(longBreakDur);
         onClose();
       } else {
         // Handle invalid input
@@ -74,6 +77,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
     } else {
       onModeChange(selectedModeIndex);
       onWorkSessionsChange(workSessions);
+      onLongBreakDurationChange(longBreakDur);
       onClose();
     }
   };
@@ -93,8 +97,8 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 onClick={() => handleModeSelect(index)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   selectedModeIndex === index && !isCustomModeSelected
-                    ? 'bg-[var(--accent-primary)] text-white'
-                    : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
+                    ? 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]'
+                    : 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
                 }`}
               >
                 {mode.label}
@@ -115,7 +119,6 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
 
         {isCustomModeSelected && modes[customModeIndex] && (
           <div>
-            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Mode (minutes)</h3>
             <div className="grid grid-cols-3 gap-4">
               <FormInput
                 id="customWork"
@@ -150,7 +153,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
 
         <div>
           <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Work Sessions</h3>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <FormInput
               id="workSessions"
               label="Work Sessions until Long Break"
@@ -160,6 +163,17 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
               value={workSessions}
               onChange={(value) => setWorkSessions(parseInt(value))}
               placeholder="Enter number of work sessions"
+            />
+            <FormInput
+              id="longBreakDuration"
+              label="Long Break Duration (minutes)"
+              type="number"
+              min="1"
+              max="120"
+              value={longBreakDur}
+              onChange={(value: string) => setLongBreakDur(parseInt(value))}
+              error=""
+              placeholder="Enter long break duration"
             />
           </div>
         </div>
@@ -173,7 +187,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/80 transition-colors"
+            className="px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             {isCustomModeSelected ? 'Save Custom Mode' : 'Select Mode'}
           </button>

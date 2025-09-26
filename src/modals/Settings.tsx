@@ -45,13 +45,13 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       >
         <div className=" p-2">
           {/* Theme Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
             <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               {themePreference === 'auto' ? <Monitor size={22} /> : currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
               Theme
             </h3>
             <div className="space-y-3">
-              <div className="bg-[var(--bg-primary)] p-4 rounded-lg">
+              <div className="bg-[var(--bg-primary)] p-4 rounded-lg pb-2 pt-2">
                 {/* Three-position theme selector */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -110,21 +110,13 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
                 
-                {/* Current theme indicator */}
-                <div className="mt-3 text-center">
-                  <span className="text-sm text-[var(--text-secondary)]">
-                    {themePreference === 'auto' 
-                      ? `Following system (${currentTheme})` 
-                      : `${themePreference.charAt(0).toUpperCase() + themePreference.slice(1)} theme`
-                    }
-                  </span>
-                </div>
+
               </div>
             </div>
           </div>
 
           {/* Accent Color Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
             <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <Palette size={22} />
               Accent Color
@@ -149,7 +141,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Assignments Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
             <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               <ListTodo size={22} />
               Assignments
