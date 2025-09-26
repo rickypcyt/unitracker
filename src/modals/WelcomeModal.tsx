@@ -38,28 +38,28 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             <span className="text-[var(--accent-primary)] font-bold text-xl sm:text-2xl md:text-2xl">Tracker</span>
           </h1>
           <p className="text-sm sm:text-base md:text-base text-[var(--text-secondary)] font-medium mb-1 text-center">Your all-in-one study companion</p>
-          <p className="text-xs sm:text-sm md:text-sm text-[var(--text-secondary)] max-w-sm sm:max-w-xl text-center">Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.</p>
+          <p className="text-sm sm:text-sm md:text-sm text-[var(--text-secondary)] max-w-sm sm:max-w-xl text-center">Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.</p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-2 sm:mb-3">
           <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
             <Clock className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent-primary)] mb-1" />
-            <span className="font-bold text-xs sm:text-base mb-1 text-[var(--text-primary)] text-center">AI Task Creation</span>
-            <span className="text-[var(--text-secondary)] text-center text-xs sm:text-sm">Quickly create tasks with AI assistance.</span>
+            <span className="font-bold text-sm sm:text-base mb-1 text-[var(--text-primary)] text-center">AI Task Creation</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-sm">Quickly create tasks with AI assistance.</span>
           </div>
           <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
             <BarChart2 className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent-primary)] mb-1" />
-            <span className="font-bold text-xs sm:text-base mb-1 text-[var(--text-primary)] text-center">Weekly & Monthly Stats</span>
-            <span className="text-[var(--text-secondary)] text-center text-xs sm:text-sm">Track your progress and productivity.</span>
+            <span className="font-bold text-sm sm:text-base mb-1 text-[var(--text-primary)] text-center">Weekly & Monthly Stats</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-sm">Track your progress and productivity.</span>
           </div>
           <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
             <Calendar className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent-primary)] mb-1" />
-            <span className="font-bold text-xs sm:text-base mb-1 text-[var(--text-primary)] text-center">Calendar Planning</span>
-            <span className="text-[var(--text-secondary)] text-center text-xs sm:text-sm">Plan sessions and deadlines visually.</span>
+            <span className="font-bold text-sm sm:text-base mb-1 text-[var(--text-primary)] text-center">Calendar Planning</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-sm">Plan sessions and deadlines visually.</span>
           </div>
           <div className="flex flex-col items-center bg-[var(--bg-secondary)] rounded-xl p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
             <CheckCircle2 className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent-primary)] mb-1" />
-            <span className="font-bold text-xs sm:text-base mb-1 text-[var(--text-primary)] text-center">Advanced Task System</span>
-            <span className="text-[var(--text-secondary)] text-center text-xs sm:text-sm">Organize with kanban board system.</span>
+            <span className="font-bold text-sm sm:text-base mb-1 text-[var(--text-primary)] text-center">Advanced Task System</span>
+            <span className="text-[var(--text-secondary)] text-center text-sm sm:text-sm">Organize with kanban board system.</span>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-1 sm:mt-2 w-full mb-2 sm:mb-3">

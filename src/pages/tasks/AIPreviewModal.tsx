@@ -118,7 +118,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
               <div className="flex-1">
                 {/* Header: inline index badge + title */}
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="shrink-0 select-none w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-xs sm:text-sm">#{idx + 1}</div>
+                  <div className="shrink-0 select-none w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
                   {editIdx === idx ? (
                     <input
                       value={editTitle}
@@ -201,10 +201,10 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                         </select>
                       </div>
                       <div className="mt-2 flex items-center gap-2 justify-end">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-3 py-1.5 text-xs sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-3 py-1.5 text-sm sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
                           Cancel
                         </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-3 py-1.5 text-xs sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-3 py-1.5 text-sm sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium">
                           Save
                         </button>
                       </div>

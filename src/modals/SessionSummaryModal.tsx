@@ -1,5 +1,5 @@
-import React from 'react';
 import BaseModal from './BaseModal';
+import React from 'react';
 
 type SessionSummaryModalProps = {
   isOpen: boolean;
@@ -33,15 +33,15 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-            <div className="text-xs text-[var(--text-secondary)]">Duration</div>
+            <div className="text-sm text-[var(--text-secondary)]">Duration</div>
             <div className="text-lg font-mono">{durationFormatted}</div>
           </div>
           <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-            <div className="text-xs text-[var(--text-secondary)]">Tasks Completed</div>
+            <div className="text-sm text-[var(--text-secondary)]">Tasks Completed</div>
             <div className="text-lg font-semibold">{completedTasksCount}</div>
           </div>
           <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)] col-span-2">
-            <div className="text-xs text-[var(--text-secondary)]">Pomodoros</div>
+            <div className="text-sm text-[var(--text-secondary)]">Pomodoros</div>
             <div className="text-lg font-semibold">{pomodorosCompleted ?? 0}</div>
           </div>
         </div>

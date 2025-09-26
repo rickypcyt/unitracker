@@ -117,21 +117,21 @@ const SessionStatsAndTasks = () => {
       </motion.div>
 
       {/* Stats Row */}
-      <motion.div 
+      <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4"
       >
         {/* Total Study Time */}
         <motion.div 
           variants={item}
-          className="relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-4 rounded-xl border border-[var(--border-primary)] hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-3 sm:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
-          <div className="text-3xl font-bold text-blue-500 mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-blue-500 mb-1">
             {Math.floor(totalStudyTime)}m
           </div>
-          <div className="text-sm font-medium text-[var(--text-secondary)]">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)]">
             Study Time
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
@@ -140,12 +140,12 @@ const SessionStatsAndTasks = () => {
         {/* Pomodoros Completed */}
         <motion.div 
           variants={item}
-          className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-pink-500/5 p-4 rounded-xl border border-[var(--border-primary)] hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-pink-500/5 p-3 sm:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
-          <div className="text-3xl font-bold text-purple-500 mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-purple-500 mb-1">
             {todaysPomodoros}
           </div>
-          <div className="text-sm font-medium text-[var(--text-secondary)]">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)]">
             Pomodoros
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
@@ -154,12 +154,12 @@ const SessionStatsAndTasks = () => {
         {/* Tasks Completed Today */}
         <motion.div 
           variants={item}
-          className="relative overflow-hidden bg-gradient-to-br from-green-500/5 to-emerald-500/5 p-4 rounded-xl border border-[var(--border-primary)] hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden bg-gradient-to-br from-green-500/5 to-emerald-500/5 p-3 sm:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
-          <div className="text-3xl font-bold text-green-500 mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-green-500 mb-1">
             {completedTasksToday}
           </div>
-          <div className="text-sm font-medium text-[var(--text-secondary)]">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)]">
             Tasks Done
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
@@ -168,12 +168,12 @@ const SessionStatsAndTasks = () => {
         {/* Upcoming Deadlines */}
         <motion.div 
           variants={item}
-          className="relative overflow-hidden bg-gradient-to-br from-amber-500/5 to-orange-500/5 p-4 rounded-xl border border-[var(--border-primary)] hover:shadow-md transition-all duration-300"
+          className="relative overflow-hidden bg-gradient-to-br from-amber-500/5 to-orange-500/5 p-3 sm:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
-          <div className="text-3xl font-bold text-amber-500 mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-amber-500 mb-1">
             {upcomingDeadlines}
           </div>
-          <div className="text-sm font-medium text-[var(--text-secondary)]">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)]">
             Due Soon
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500"></div>
@@ -183,7 +183,7 @@ const SessionStatsAndTasks = () => {
       {/* Active Tasks Section */}
       <motion.div 
         variants={item}
-        className="relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] hover:shadow-md transition-all duration-300 mt-4"
+        className="relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] hover:shadow-md transition-all duration-300 pt-0"
       >
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
@@ -191,7 +191,7 @@ const SessionStatsAndTasks = () => {
               <Play size={14} className="text-[var(--accent-primary)]" />
             </div>
             <span>Active Tasks</span>
-            <span className="ml-auto text-xs font-normal bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-2 py-0.5 rounded-full">
+            <span className="ml-auto text-sm font-normal bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-2 py-0.5 rounded-full">
               {activeTasks.length} active
             </span>
           </h4>
@@ -232,7 +232,7 @@ const SessionStatsAndTasks = () => {
                     {task.title}
                   </div>
                   {task.assignment && (
-                    <div className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    <div className="text-sm text-[var(--text-secondary)] mt-0.5">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
                         {task.assignment}
                       </span>
@@ -252,7 +252,7 @@ const SessionStatsAndTasks = () => {
               <Clock size={20} className="text-[var(--accent-primary)]" />
             </div>
             <h4 className="text-sm font-medium text-[var(--text-primary)] mb-1">No active tasks</h4>
-            <p className="text-xs text-[var(--text-secondary)] max-w-xs">
+            <p className="text-sm text-[var(--text-secondary)] max-w-xs">
               You haven't activated any tasks for today yet
             </p>
           </motion.div>

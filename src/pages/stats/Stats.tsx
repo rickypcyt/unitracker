@@ -262,9 +262,9 @@ const Statistics = (): ReactElement => {
               <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
                 <div className="flex-shrink-0">{card.icon}</div>
                 <div className="flex flex-col min-w-0">
-                  <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+                  <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
                   <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
-                  <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
+                  <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
                 </div>
               </div>
             ))}
@@ -274,9 +274,9 @@ const Statistics = (): ReactElement => {
               <div key={i + 4} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
                 <div className="flex-shrink-0">{card.icon}</div>
                 <div className="flex flex-col min-w-0">
-                  <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+                  <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
                   <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
-                  <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
+                  <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
                 </div>
               </div>
             ))}
@@ -294,9 +294,9 @@ const Statistics = (): ReactElement => {
           <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">
             <div className="flex-shrink-0">{card.icon}</div>
             <div className="flex flex-col min-w-0">
-              <div className="text-xs text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+              <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
               <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(statData)}</div>
-              <div className="text-xs text-[var(--text-secondary)] truncate">{card.sub(statData)}</div>
+              <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(statData)}</div>
             </div>
           </div>
         ))}

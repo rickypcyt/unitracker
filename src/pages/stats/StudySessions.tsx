@@ -282,16 +282,16 @@ const StudySessions: React.FC = () => {
 
                                     {/* Session details */}
                                     <div className="mt-auto space-y-1">
-                                        <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                        <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
                                             <Calendar size={12} />
                                             <span>{formatDateShort(lap.created_at)}</span>
                                         </div>
-                                        <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                        <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
                                             <Clock size={12} />
                                             <span>{lap.duration}</span>
                                         </div>
                                         {lap.tasks_completed > 0 && (
-                                            <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                            <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
                                                 <CheckCircle2 size={12} />
                                                 <span>{lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
                                             </div>

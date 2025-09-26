@@ -1,4 +1,4 @@
-import { ListTodo, Moon, Palette, Sun, Monitor } from "lucide-react";
+import { ListTodo, Monitor, Moon, Palette, Sun } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
@@ -112,7 +112,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 
                 {/* Current theme indicator */}
                 <div className="mt-3 text-center">
-                  <span className="text-xs text-[var(--text-secondary)]">
+                  <span className="text-sm text-[var(--text-secondary)]">
                     {themePreference === 'auto' 
                       ? `Following system (${currentTheme})` 
                       : `${themePreference.charAt(0).toUpperCase() + themePreference.slice(1)} theme`

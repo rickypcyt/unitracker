@@ -1,6 +1,7 @@
-import { CheckCircle2, Circle, Clock, Trash2, GripVertical } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, GripVertical, Trash2 } from 'lucide-react';
 import { formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
 import { useDrag, useDrop } from 'react-dnd';
+
 import { useState } from 'react';
 
 interface TaskItemProps {
@@ -168,7 +169,7 @@ export const TaskItem = ({
     else if (isDueTomorrow) dateText = 'Tomorrow';
     
     return (
-      <div className={`flex items-center text-xs ${isPastDue ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>
+      <div className={`flex items-center text-sm ${isPastDue ? 'text-red-500' : 'text-[var(--text-secondary)]'}`}>
         <Clock size={12} className="mr-1" />
         {dateText}
       </div>
@@ -223,7 +224,7 @@ export const TaskItem = ({
           
           <div className="flex items-center gap-2">
             {task.priority && (
-              <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityColor(task.priority)} bg-opacity-20`}>
+              <span className={`text-sm px-2 py-0.5 rounded-full ${getPriorityColor(task.priority)} bg-opacity-20`}>
                 {task.priority}
               </span>
             )}
@@ -239,7 +240,7 @@ export const TaskItem = ({
         </div>
 
         {(task.due_date || task.assignment) && (
-          <div className="flex items-center gap-2 mt-1 text-xs text-[var(--text-secondary)]">
+          <div className="flex items-center gap-2 mt-1 text-sm text-[var(--text-secondary)]">
             {task.due_date && renderDateLabel(task.due_date)}
             {task.assignment && (
               <span className="px-2 py-0.5 rounded-full bg-[var(--bg-primary)]">

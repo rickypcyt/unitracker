@@ -1,12 +1,12 @@
 import type { AppDispatch, RootState } from '@/store/store';
+import { BookOpen, Check, Edit2, Trash2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Trash2, BookOpen, Users, Edit2, Check, X } from 'lucide-react';
+import { deleteTask, updateTask } from '@/store/TaskActions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import type { Task } from '@/pages/tasks/taskStorage';
-import { deleteTask, updateTask } from '@/store/TaskActions';
 
 interface ManageAssignmentsModalProps {
   isOpen: boolean;
@@ -194,7 +194,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
 
                     {/* Task preview */}
                     {assignmentTasks.length > 0 && (
-                      <div className="text-xs text-[var(--text-secondary)]">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         {pendingTasks.length > 0 && (
                           <div className="mb-1">
                             <span className="text-green-500 font-medium">Next:</span> {pendingTasks[0].title}

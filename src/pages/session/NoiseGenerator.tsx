@@ -2,33 +2,63 @@ import { AudioLines, Cloud, CloudRain, MoreVertical, Pause, Play, SquareArrowOut
 import React, { useEffect, useRef, useState } from "react";
 
 import ReactSlider from "react-slider";
-import { useNoise } from '@/utils/NoiseContext';
 import SectionTitle from '@/components/SectionTitle';
+import { motion } from "framer-motion";
+import { useNoise } from '@/utils/NoiseContext';
 
 // Componente de control para cada sonido
 function SoundControl({ label, icon: Icon, volume, setVolume, isPlaying, start, stop, className, max }) {
   return (
-    <div className={`bar ${className || ''}`}>
-      <label className="noisegentitle flex items-center gap-2 mb-1">
-        <Icon size={22} className="text-[var(--text-primary)]" />
-        <span className="card-text font-medium text-[var(--text-primary)] text-base sm:text-md">{label}</span>
-      </label>
-      <div className="slider flex items-center gap-3 mb-2">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] hover:shadow-md transition-all duration-300 ${className || ''}`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <label className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
+          <div className="p-1 bg-[var(--accent-primary)]/10 rounded-md">
+            <Icon size={18} className="text-[var(--accent-primary)]" />
+          </div>
+          <span>{label}</span>
+        </label>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-normal bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-2 py-0.5 rounded-full">
+            {Math.round((volume / max) * 100)}%
+          </span>
+          <div className="w-8 flex justify-center">
+            {!isPlaying ? (
+              <button
+                type="button"
+                onClick={start}
+                className="text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+              >
+                <Play size={20} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={stop}
+                className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
+              >
+                <Pause size={20} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="slider-container">
         <ReactSlider
-          className="flex-1 h-2"
+          className="h-2 w-full"
           thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors -translate-y-1 border-2 border-[var(--accent-primary)]"
-          trackClassName="h-2 rounded-full bg-[var(--border-primary)] border-2 border-[var(--border-primary)]"
+          trackClassName="h-2 rounded-full bg-[var(--border-primary)]"
           renderTrack={(props, state) => {
             const { key, ...rest } = props;
             return (
               <div
                 key={key}
                 {...rest}
-                className={`h-2 rounded-full border-2 border-[var(--border-primary)] ${
-                  state.index === 0
-                    ? 'bg-[var(--accent-primary)]'
-                    : 'bg-[var(--border-primary)]'
-                }`}
+                className={`h-2 rounded-full ${state.index === 0 ? 'bg-[var(--accent-primary)]' : 'bg-[var(--border-primary)]'}`}
               />
             );
           }}
@@ -42,28 +72,8 @@ function SoundControl({ label, icon: Icon, volume, setVolume, isPlaying, start, 
             return <div key={key} {...rest} />;
           }}
         />
-        <span className="w-10 text-sm text-[var(--text-secondary)] text-right select-none">{Math.round((volume / max) * 100)}%</span>
-        <div className="w-8 flex justify-center">
-          {!isPlaying ? (
-            <button
-              type="button"
-              onClick={start}
-              className="text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
-            >
-              <Play size={22} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={stop}
-              className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
-            >
-              <Pause size={22} />
-            </button>
-          )}
-        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -209,6 +219,7 @@ function NoiseSettingsModal({ isOpen, onClose, sounds, setVolume, maxVolumes, se
 export default function NoiseGenerator() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { sounds, startSound, stopSound, setVolume, isInitialized, initializeAudio } = useNoise();
+  
   // Default max volumes: 2 for brown, 4 for rain, 4 for ocean
   const [maxVolumes, setMaxVolumes] = useState(() => {
     const saved = localStorage.getItem('noiseMaxVolumes');
@@ -226,7 +237,6 @@ export default function NoiseGenerator() {
     localStorage.setItem('noiseMaxVolumes', JSON.stringify(maxVolumes));
   }, [maxVolumes]);
   
-
   const handleStart = async (index) => {
     if (!isInitialized) {
       await initializeAudio();
@@ -234,50 +244,84 @@ export default function NoiseGenerator() {
     startSound(index);
   };
 
-  
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  };
 
   return (
-    <div className="w-full">
-      <div className="section-title justify-center mb-4 relative">
-        <AudioLines size={22} className="icon" />
-        <SectionTitle 
-          title="Noise Generator" 
-          tooltip="Create your perfect study environment with customizable white noise. Mix different sounds like rain, ocean waves, and ambient noise to help you focus and block distractions."
-          size="md"
-        />
+    <div className="w-full space-y-5">
+      {/* Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between pb-2 border-b border-[var(--border-primary)]"
+      >
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+          <div className="p-1.5 bg-[var(--accent-primary)]/10 rounded-lg">
+            <AudioLines size={20} className="text-[var(--accent-primary)]" />
+          </div>
+          <span>Noise Generator</span>
+        </h3>
         <button
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           onClick={() => setIsSettingsOpen(true)}
           aria-label="Noise generator settings"
         >
-          <MoreVertical size={20} />
+          <MoreVertical size={18} />
         </button>
-      </div>
-      <div className="space-y-6 w-full">
+      </motion.div>
+
+      {/* Sound Controls */}
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="space-y-4"
+      >
         {sounds.map((sound, idx) => (
-          <SoundControl
-            key={sound.key}
-            label={sound.label}
-            icon={sound.icon === "Cloud" ? Cloud : sound.icon === "CloudRain" ? CloudRain : Waves}
-            volume={sound.volume}
-            setVolume={(volume) => setVolume(idx, volume)}
-            isPlaying={sound.isPlaying}
-            start={() => handleStart(idx)}
-            stop={() => stopSound(idx)}
-            className={sound.key === 'ocean' ? 'mb-2' : ''}
-            max={maxVolumes[idx]}
-          />
+          <motion.div key={sound.key} variants={item}>
+            <SoundControl
+              label={sound.label}
+              icon={sound.icon === "Cloud" ? Cloud : sound.icon === "CloudRain" ? CloudRain : Waves}
+              volume={sound.volume}
+              setVolume={(volume) => setVolume(idx, volume)}
+              isPlaying={sound.isPlaying}
+              start={() => handleStart(idx)}
+              stop={() => stopSound(idx)}
+              className={sound.key === 'ocean' ? 'mb-2' : ''}
+              max={maxVolumes[idx]}
+            />
+          </motion.div>
         ))}
-      </div>
-      <div className="w-full flex justify-center mt-6">
+      </motion.div>
+
+      {/* External Link */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="w-full flex justify-center"
+      >
         <button
-          className="text-[var(--accent-primary)] font-semibold hover:opacity-80 transition"
+          className="text-[var(--accent-primary)] font-semibold hover:opacity-80 transition flex items-center gap-2"
           onClick={() => window.open('https://music4study.vercel.app/', '_blank', 'noopener,noreferrer')}
           type="button"
         >
-          More Sounds <SquareArrowOutUpRight className="inline ml-2" size={18} />
+          More Sounds <SquareArrowOutUpRight size={16} />
         </button>
-      </div>
+      </motion.div>
+
       <NoiseSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
