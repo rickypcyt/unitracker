@@ -1,5 +1,5 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
@@ -12,6 +12,11 @@ import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 
 type AppDispatch = any; // Replace with your actual AppDispatch type
+
+interface GroupedLabs {
+  [key: string]: Lap[];
+}
+
 interface RootState {
   laps: {
     laps: Lap[];
@@ -48,13 +53,14 @@ const StudySessions: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const { isLoggedIn } = useAuth();
     const { isDemo } = useDemoMode();
+    
     const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
     const [selectedSession, setSelectedSession] = useState<Lap | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [sessionToDeleteId, setSessionToDeleteId] = useState<string | null>(null);
     const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
     
-    const groupSessionsByMonth = (lapsList: Lap[]): GroupedLaps => {
+    const groupSessionsByMonth = (lapsList: Lap[]): GroupedLabs => {
         return lapsList.reduce<Record<string, Lap[]>>((groups, lap) => {
             const monthYear = getMonthYear(lap.created_at);
             if (!groups[monthYear]) {
@@ -65,32 +71,33 @@ const StudySessions: React.FC = () => {
         }, {});
     };
 
-    const handleDeleteClick = (sessionId: string) => {
-        setSessionToDeleteId(sessionId);
+    const handleDeleteClick = useCallback((sessionId: string) => {
+        setSessionToDelete(sessionId);
         setIsDeleteModalOpen(true);
-    };
+    }, []);
 
-    const handleConfirmDelete = async () => {
-        if (sessionToDeleteId) {
+    const handleConfirmDelete = useCallback(async () => {
+        if (sessionToDelete) {
             try {
-                await dispatch(deleteLap(sessionToDeleteId) as any);
-                toast.success("Session deleted successfully");
-            } catch (error: any) {
-                console.error("Error deleting session:", error);
-                toast.error(error?.message || "Failed to delete session");
+                await dispatch(deleteLap(sessionToDelete));
+                toast.success('Session deleted successfully');
+            } catch (error) {
+                toast.error('Failed to delete session');
+                console.error('Error deleting session:', error);
+            } finally {
+                setIsDeleteModalOpen(false);
+                setSessionToDelete(null);
             }
         }
-        setIsDeleteModalOpen(false);
-        setSessionToDeleteId(null);
-    };
+    }, [dispatch, sessionToDelete]);
 
-    const handleCloseDeleteModal = () => {
+    const handleCloseDeleteModal = useCallback(() => {
         setIsDeleteModalOpen(false);
-        setSessionToDeleteId(null);
-    };
+        setSessionToDelete(null);
+    }, []);
 
     // Demo data: build months up to current month with sample sessions
-    const buildDemoGroupedLaps = (): GroupedLaps => {
+    const buildDemoGroupedLaps = (): GroupedLabs => {
         const months = [
             'January','February','March','April','May','June',
             'July','August','September','October','November','December'
@@ -137,12 +144,7 @@ const StudySessions: React.FC = () => {
 
 
     // Group laps by month with proper type
-    const groupedLaps: GroupedLaps = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
-
-    // Define types for grouped laps
-    interface GroupedLaps {
-        [key: string]: Lap[];
-    }
+    const groupedLaps: GroupedLabs = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
 
     // Calculate statistics for a month
     interface MonthStats {
@@ -177,23 +179,27 @@ const StudySessions: React.FC = () => {
     };
 
     // Right-click handler for session
-    const handleSessionContextMenu = (e: React.MouseEvent, lap: Lap): void => {
+    const handleSessionContextMenu = useCallback((e: React.MouseEvent, lap: Lap): void => {
         e.preventDefault();
-        e.stopPropagation();
         setContextMenu({
-            x: e.clientX,
-            y: e.clientY,
+            x: e.clientX - 2,
+            y: e.clientY - 4,
             lap,
         });
-    };
+    }, []);
 
     // Close context menu
     useEffect(() => {
         if (!contextMenu) return;
         
-        const handleClick = (): void => setContextMenu(null);
-        const handleEsc = (e: KeyboardEvent): void => { 
-            if (e.key === 'Escape') setContextMenu(null); 
+        const handleClick = (): void => {
+            setContextMenu(null);
+        };
+        
+        const handleEsc = (e: KeyboardEvent): void => {
+            if (e.key === 'Escape') {
+                setContextMenu(null);
+            }
         };
         
         document.addEventListener('mousedown', handleClick);
@@ -237,10 +243,9 @@ const StudySessions: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col ">
-
+        <div className="w-full h-full bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col">
             {selectedMonth ? (
-                // Vista detallada del mes seleccionado
+                // Month detail view
                 <div className="space-y-4">
                     <div className="flex items-center justify-center mb-4 relative">
                         <button
@@ -261,7 +266,6 @@ const StudySessions: React.FC = () => {
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
-                                    {/* Session number and title */}
                                     <div className="flex items-start justify-between mb-2">
                                         <span className="text-lg font-bold text-[var(--accent-primary)]">#{lap.session_number}</span>
                                         <button
@@ -275,12 +279,10 @@ const StudySessions: React.FC = () => {
                                         </button>
                                     </div>
 
-                                    {/* Session name */}
-                                    <h4 className="text-sm font-medium text-[var(--text-primary)] line-clamp-2 mb-2">
+                                    <h4 className="text-base font-medium text-[var(--text-primary)] line-clamp-2 mb-2">
                                         {lap.name || `Session ${lap.session_number}`}
                                     </h4>
 
-                                    {/* Session details */}
                                     <div className="mt-auto space-y-1">
                                         <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
                                             <Calendar size={12} />
@@ -303,24 +305,21 @@ const StudySessions: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                // Vista de tarjetas de meses
-                <React.Fragment>
+                // Months overview
+                <div className="space-y-6">
                     {(() => {
                         // Group months by year
-                        interface YearGroup {
-                            [year: string]: Array<{
-                                month: string;
-                                monthYear: string;
-                                lapsOfMonth: Lap[];
-                            }>;
-                        }
-                        
-                        const monthsByYear: YearGroup = {};
+                        const monthsByYear: Record<string, Array<{
+                            month: string;
+                            monthYear: string;
+                            lapsOfMonth: Lap[];
+                        }>> = {};
+
                         // Sort and group months by year
                         Object.entries(groupedLaps)
-                            .sort((a: [string, Lap[]], b: [string, Lap[]]) => {
-                                const [aMonth, aYear] = a[0].split(' ');
-                                const [bMonth, bYear] = b[0].split(' ');
+                            .sort(([aMonthYear], [bMonthYear]) => {
+                                const [aMonth, aYear] = aMonthYear.split(' ');
+                                const [bMonth, bYear] = bMonthYear.split(' ');
                                 const aDate = new Date(`${aMonth} 1, ${aYear}`);
                                 const bDate = new Date(`${bMonth} 1, ${bYear}`);
                                 return bDate.getTime() - aDate.getTime();
@@ -332,15 +331,47 @@ const StudySessions: React.FC = () => {
                                 }
                                 monthsByYear[year].push({ month, monthYear, lapsOfMonth });
                             });
-                        // Ordenar los años descendente y los meses por orden natural
-                        const orderedYears = Object.keys(monthsByYear).sort((a, b) => b - a);
+
                         const monthOrder = [
                             'January', 'February', 'March', 'April', 'May', 'June',
                             'July', 'August', 'September', 'October', 'November', 'December'
                         ];
 
+                        return Object.entries(monthsByYear)
+                            .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
+                            .map(([year, months]) => (
+                                <div key={year} className="mb-6">
+                                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">{year}</h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        {months
+                                            .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month))
+                                            .map(({ month, monthYear, lapsOfMonth }) => {
+                                                const stats = getMonthStats(lapsOfMonth);
+                                                return (
+                                                    <div
+                                                        key={monthYear}
+                                                        className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer"
+                                                        onClick={() => setSelectedMonth(monthYear)}
+                                                    >
+                                                        <div className="flex items-center justify-between mb-3">
+                                                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">{month}</h3>
+                                                            <span className="text-base text-[var(--text-secondary)] ">{lapsOfMonth.length} sessions</span>
+                                                        </div>
+                                                        <div className="space-y-2 text-sm">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-[var(--text-secondary)] text-base">Total Time:</span>
+                                                                <span className="text-[var(--accent-primary)] font-mono text-base">{formatMinutesToHHMM(stats.totalMinutes)}</span>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            ));
                     })()}
-                </React.Fragment>
+                </div>
             )}
 
             {selectedSession && (
@@ -356,13 +387,12 @@ const StudySessions: React.FC = () => {
                 onConfirm={handleConfirmDelete}
             />
 
-            {/* Context Menu para sesión */}
             {contextMenu && (
                 <div
                     className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]"
-                    style={{ 
+                    style={{
                         position: 'fixed',
-                        left: contextMenu.x, 
+                        left: contextMenu.x,
                         top: contextMenu.y,
                         zIndex: 9999,
                         backgroundColor: 'var(--bg-primary)',
