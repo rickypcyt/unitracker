@@ -39,8 +39,8 @@ const AboutModal = ({ isOpen, onClose }) => {
             </a>
         </div>
         
-        <div className="border-t border-[var(--border-primary)] pt-4 text-center text-[var(--text-secondary)]">
-            Thank you for using Uni Tracker! Your support and feedback help make this app better every day.
+        <div className="border-t border-[var(--border-primary)] pt-4 text-center text-[var(--text-secondary)] pb-2">
+            Thank you for using Uni Tracker! Your support and feedback help make this app better!
         </div>
       </div>
     </BaseModal>

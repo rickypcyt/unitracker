@@ -200,7 +200,7 @@ const statCards: StatCard[] = [
     sub: () => 'days',
   },
   {
-    label: 'Avg. per Day',
+    label: 'Per Day',
     icon: <Timer size={22} className="text-[var(--accent-primary)]" />, 
     value: s => formatMinutesToHHMM(Math.round(s.avgPerDay)),
     sub: () => 'average',
@@ -212,7 +212,7 @@ const statCards: StatCard[] = [
     sub: () => 'total',
   },
   {
-    label: 'Pomodoros',
+    label: 'Pomodoro',
     icon: <CheckCircle2 size={22} className="text-red-500" />, 
     value: s => s.pomodoros ?? 0,
     sub: () => 'total',
