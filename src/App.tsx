@@ -1,146 +1,186 @@
-import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import type { FC, MutableRefObject } from 'react';
-import { NavigationProvider, useNavigation } from '@/navbar/NavigationContext';
-import { clearUser, setUser } from '@/store/slices/authSlice';
-import { useEffect, useRef, useState } from 'react';
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
+import { clearUser, setUser } from "@/store/slices/authSlice";
+import { useEffect, useRef, useState, FC, MutableRefObject } from "react";
+import { useDispatch } from "react-redux";
 
-import type { AppDispatch } from '@/store/store';
-import CalendarPage from '@/pages/calendar/CalendarPage';
-import Navbar from '@/navbar/Navbar';
-import { NoiseProvider } from '@/utils/NoiseContext';
-import Notes from './pages/notes/Notes';
-import SessionPage from '@/pages/session/SessionPage';
-import StatsPage from '@/pages/stats/StatsPage';
-import TasksPage from '@/pages/tasks/TasksPage';
-import { Toaster } from 'react-hot-toast';
-import TourManager from './components/TourManager';
-import type { User } from '@supabase/supabase-js';
-import UserModal from '@/modals/UserModal';
-import { fetchWorkspaces } from '@/store/slices/workspaceSlice';
-import { hydrateTasksFromLocalStorage } from '@/store/slices/TaskSlice';
-import { supabase } from '@/utils/supabaseClient';
-import { useDispatch } from 'react-redux';
-import useTheme from '@/hooks/useTheme';
+import type { AppDispatch } from "@/store/store";
+import { User } from "@supabase/supabase-js";
 
+import CalendarPage from "@/pages/calendar/CalendarPage";
+import Navbar from "@/navbar/Navbar";
+import Notes from "@/pages/notes/Notes";
+import SessionPage from "@/pages/session/SessionPage";
+import StatsPage from "@/pages/stats/StatsPage";
+import TasksPage from "@/pages/tasks/TasksPage";
+import UserModal from "@/modals/UserModal";
+import { Toaster } from "react-hot-toast";
+import TourManager from "./components/TourManager";
+
+import { supabase } from "@/utils/supabaseClient";
+import { fetchWorkspaces } from "@/store/slices/workspaceSlice";
+import { hydrateTasksFromLocalStorage } from "@/store/slices/TaskSlice";
+import { NoiseProvider } from "@/utils/NoiseContext";
+import useTheme from "@/hooks/useTheme";
+
+// -------------------------
+// Pages mapping
+// -------------------------
+const pagesMap: Record<string, FC> = {
+  session: SessionPage,
+  tasks: TasksPage,
+  calendar: CalendarPage,
+  stats: StatsPage,
+  notes: Notes,
+};
+
+// -------------------------
+// PageContent component
+// -------------------------
 const PageContent: FC = () => {
   const { activePage } = useNavigation();
+  const ActiveComponent = pagesMap[activePage] || SessionPage;
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
       <Navbar />
       <div className="pt-16">
-        {activePage === 'session' && <SessionPage />}
-        {activePage === 'tasks' && <TasksPage />}
-        {activePage === 'calendar' && <CalendarPage />}
-        {activePage === 'stats' && <StatsPage />}
-        {activePage === 'notes' && <Notes />}
+        <ActiveComponent />
       </div>
     </div>
   );
 };
 
+// -------------------------
+// Supabase auth sync
+// -------------------------
 function useSupabaseAuthSync(): void {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
-    // Al cargar, setea el usuario si hay sesión
+    // Inicializa usuario si hay sesión
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) dispatch(setUser(user));
       else dispatch(clearUser());
     });
 
-    // Suscríbete a cambios de sesión
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) dispatch(setUser(session.user));
-      else dispatch(clearUser());
-    });
+    // Escucha cambios de sesión
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session?.user) dispatch(setUser(session.user));
+        else dispatch(clearUser());
+      }
+    );
 
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+    return () => listener?.subscription.unsubscribe();
   }, [dispatch]);
 }
 
-// Componente que muestra el UserModal si el usuario está logueado y no tiene username
+// -------------------------
+// User modal gate
+// -------------------------
 const UserModalGate: FC = () => {
-  const { user, isLoggedIn } = useAuth() as { user: User | null; isLoggedIn: boolean };
+  const { user, isLoggedIn } = useAuth() as {
+    user: User | null;
+    isLoggedIn: boolean;
+  };
   const [showUserModal, setShowUserModal] = useState(false);
+
   useEffect(() => {
+    if (!isLoggedIn || !user?.id) {
+      setShowUserModal(false);
+      return;
+    }
+
     const checkUsername = async (): Promise<void> => {
-      if (isLoggedIn && user?.id) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
-        if (!error && (!data || !data.username)) {
-          setShowUserModal(true);
-        } else {
-          setShowUserModal(false);
-        }
-      } else {
-        setShowUserModal(false);
-      }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+
+      setShowUserModal(!error && (!data || !data.username));
     };
+
     checkUsername();
   }, [isLoggedIn, user]);
-  return <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />;
+
+  return (
+    <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />
+  );
 };
 
+// -------------------------
+// Main App component
+// -------------------------
 const App: FC = () => {
   const { currentTheme, toggleTheme } = useTheme();
   const dispatch: AppDispatch = useDispatch();
 
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  useSupabaseAuthSync();
+
+  // -------------------------
+  // Notifications & keyboard
+  // -------------------------
   useEffect(() => {
-    const checkNotificationPermission = async (): Promise<void> => {
-      if (typeof window !== 'undefined' && 'Notification' in window) {
-        const permission = Notification.permission;
-        if (permission === 'default') {
-          const hasRequestedBefore = localStorage.getItem('notificationPermissionRequested');
-          if (!hasRequestedBefore) {
-            try {
-              await Notification.requestPermission();
-              localStorage.setItem('notificationPermissionRequested', 'true');
-            } catch (error) {
-              console.error('Error requesting notification permission:', error);
-            }
+    const requestNotificationPermission = async (): Promise<void> => {
+      if (typeof window === "undefined" || !("Notification" in window)) return;
+
+      if (Notification.permission === "default") {
+        if (!localStorage.getItem("notificationPermissionRequested")) {
+          try {
+            await Notification.requestPermission();
+            localStorage.setItem("notificationPermissionRequested", "true");
+          } catch (error) {
+            console.error("Notification permission request failed:", error);
           }
         }
       }
     };
-    checkNotificationPermission();
 
-    // La lógica de handleKeyDown se ha movido fuera del componente
-    const keydownListener = (e: KeyboardEvent): void => {
-      handleKeyDown(e, toggleTheme);
+    requestNotificationPermission();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && /^m$/i.test(e.key)) {
+        e.preventDefault();
+        toggleTheme();
+      }
     };
-    window.addEventListener('keydown', keydownListener);
 
-    return () => {
-      window.removeEventListener('keydown', keydownListener);
-    };
-  }, [currentTheme, toggleTheme]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleTheme]);
 
+  // -------------------------
+  // Hydrate tasks & workspaces
+  // -------------------------
   useEffect(() => {
     dispatch(hydrateTasksFromLocalStorage());
     dispatch(fetchWorkspaces());
   }, [dispatch]);
 
-  useSupabaseAuthSync();
-
-  // Swipe navigation para mobile
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  // -------------------------
+  // Swipe navigation
+  // -------------------------
   useEffect(() => {
-    const touchStartListener = (e: TouchEvent): void => handleTouchStart(e, touchStartX);
-    const touchEndListener = (e: TouchEvent): void => handleTouchEnd(e, touchStartX, touchEndX);
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.changedTouches[0]?.screenX || 0;
+    };
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX.current = e.changedTouches[0]?.screenX || 0;
+      const diff = touchEndX.current - touchStartX.current;
+      if (Math.abs(diff) > 60) swipeNavigate(diff);
+    };
 
-    window.addEventListener('touchstart', touchStartListener, { passive: true });
-    window.addEventListener('touchend', touchEndListener, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
-      window.removeEventListener('touchstart', touchStartListener);
-      window.removeEventListener('touchend', touchEndListener);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -151,11 +191,11 @@ const App: FC = () => {
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#333',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '8px',
-            border: '2px solid var(--border-primary)',
+            background: "#333",
+            color: "#fff",
+            padding: "16px",
+            borderRadius: "8px",
+            border: "2px solid var(--border-primary)",
           },
         }}
       />
@@ -171,48 +211,27 @@ const App: FC = () => {
       </NoiseProvider>
     </>
   );
-}
+};
 
+// -------------------------
 // Helpers
-const navPages = ['tasks', 'calendar', 'session', 'notes', 'stats'];
+// -------------------------
+const navPages = ["tasks", "calendar", "session", "notes", "stats"];
 
-const handleKeyDown = (
-  e: KeyboardEvent,
-  toggleTheme: () => void
-): void => {
-  if (e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
-    e.preventDefault();
-    toggleTheme();
+const swipeNavigate = (diff: number): void => {
+  const currentPage =
+    window.localStorage.getItem("lastVisitedPage") || "session";
+  const currentIdx = navPages.indexOf(currentPage);
+
+  if (diff < 0 && currentIdx < navPages.length - 1) {
+    const nextPage = navPages[currentIdx + 1];
+    window.localStorage.setItem("lastVisitedPage", nextPage);
+    window.dispatchEvent(new Event("navigationchange"));
+  } else if (diff > 0 && currentIdx > 0) {
+    const prevPage = navPages[currentIdx - 1];
+    window.localStorage.setItem("lastVisitedPage", prevPage);
+    window.dispatchEvent(new Event("navigationchange"));
   }
 };
 
-const handleTouchStart = (e: TouchEvent, touchStartX: MutableRefObject<number>): void => {
-  touchStartX.current = e.changedTouches[0]?.screenX || 0;
-};
-
-const handleTouchEnd = (
-  e: TouchEvent,
-  touchStartX: MutableRefObject<number>,
-  touchEndX: MutableRefObject<number>
-): void => {
-  touchEndX.current = e.changedTouches[0]?.screenX || 0;
-  const diff = touchEndX.current - touchStartX.current;
-  if (Math.abs(diff) > 60) {
-    const currentIdx = navPages.indexOf(window.localStorage.getItem('lastVisitedPage') || 'session');
-    if (diff < 0 && currentIdx < navPages.length - 1) {
-      const nextPage = navPages[currentIdx + 1];
-      if (nextPage) {
-        window.localStorage.setItem('lastVisitedPage', nextPage);
-        window.dispatchEvent(new Event('navigationchange'));
-      }
-    } else if (diff > 0 && currentIdx > 0) {
-      const prevPage = navPages[currentIdx - 1];
-      if (prevPage) {
-        window.localStorage.setItem('lastVisitedPage', prevPage);
-        window.dispatchEvent(new Event('navigationchange'));
-      }
-    }
-  }
-};
-
-export default App; 
+export default App;

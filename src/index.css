@@ -12,9 +12,7 @@
    ========================= */
 
 /* Estilos globales para elementos span */
-span {
-  @apply text-base;
-}
+
 @layer base {
   :root {
     /* Light mode variables */
