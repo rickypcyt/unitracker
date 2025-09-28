@@ -55,7 +55,6 @@ const StatsPage = memo(() => {
         <div className="space-y-3">
         <Statistics />
           <StatsChartsPanel />
-          <StudySessions />
         </div>
       </div>
     </div>

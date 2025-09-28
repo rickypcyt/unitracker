@@ -258,46 +258,50 @@ const StudySessions: React.FC = () => {
                     </div>
 
                     <div className="w-full h-full overflow-auto px-2">
-                        <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center w-full">
+                        <div className="space-y-3 w-full">
                             {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
                                 <div
                                     key={lap.id}
-                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full h-40 flex flex-col"
+                                    className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full flex flex-col"
                                     onDoubleClick={() => setSelectedSession(lap)}
                                     onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                 >
-                                    <div className="flex items-start justify-between mb-2">
-                                        <span className="text-lg font-bold text-[var(--accent-primary)]">#{lap.session_number}</span>
+                                    <div className="flex justify-between items-start w-full">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold text-[var(--accent-primary)]">#{lap.session_number}</span>
+                                                <h4 className="text-base font-medium text-[var(--text-primary)]">
+                                                    {lap.name || `Session ${lap.session_number}`}
+                                                </h4>
+                                            </div>
+                                            
+                                            <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                                                <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                    <Calendar size={14} />
+                                                    <span>{formatDateShort(lap.created_at)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                    <Clock size={14} />
+                                                    <span>{lap.duration}</span>
+                                                </div>
+                                                {lap.tasks_completed > 0 && (
+                                                    <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                        <CheckCircle2 size={14} />
+                                                        <span>{lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDeleteClick(lap.id);
                                             }}
-                                            className="text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                                            className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1"
                                         >
                                             <Trash2 size={16} />
                                         </button>
-                                    </div>
-
-                                    <h4 className="text-base font-medium text-[var(--text-primary)] line-clamp-2 mb-2">
-                                        {lap.name || `Session ${lap.session_number}`}
-                                    </h4>
-
-                                    <div className="mt-auto space-y-1">
-                                        <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
-                                            <Calendar size={12} />
-                                            <span>{formatDateShort(lap.created_at)}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
-                                            <Clock size={12} />
-                                            <span>{lap.duration}</span>
-                                        </div>
-                                        {lap.tasks_completed > 0 && (
-                                            <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
-                                                <CheckCircle2 size={12} />
-                                                <span>{lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             ))}

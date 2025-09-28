@@ -61,41 +61,39 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   const [studyState, setStudyState] = useState(() => {
     const savedState = localStorage.getItem("studyTimerState");
-    const safe = v => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
-    if (savedState) {
-      let parsed;
-      try {
-        parsed = JSON.parse(savedState);
-      } catch {
-        parsed = {};
-      }
-      const safeState = {
-        time: safe(Number(parsed.time)),
-        isRunning: typeof parsed.isRunning === 'boolean' ? parsed.isRunning : false,
-        lastStart: safe(Number(parsed.lastStart)),
-        timeAtStart: safe(Number(parsed.timeAtStart)),
-        sessionStatus: typeof parsed.sessionStatus === 'string' ? parsed.sessionStatus : 'inactive',
-      };
-      if (Object.values(safeState).some(v => typeof v === 'number' && !Number.isFinite(v))) {
-        localStorage.removeItem('studyTimerState');
-        localStorage.removeItem('activeSessionId');
-        return {
-          time: 0,
-          isRunning: false,
-          lastStart: null,
-          timeAtStart: 0,
-          sessionStatus: 'inactive',
-        };
-      }
-      return safeState;
-    }
-    return {
+    const safe = (v: any) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+    
+    const defaultState = {
       time: 0,
       isRunning: false,
-      lastStart: null,
+      lastStart: null as number | null,
       timeAtStart: 0,
-      sessionStatus: 'inactive',
+      sessionStatus: 'inactive' as 'inactive' | 'active' | 'paused',
+      sessionTitle: '',
+      sessionDescription: '',
+      lastPausedAt: null as number | null
     };
+
+    if (!savedState) return defaultState;
+    
+    try {
+      const parsed = JSON.parse(savedState);
+      return {
+        ...defaultState,
+        time: safe(Number(parsed.time)),
+        isRunning: typeof parsed.isRunning === 'boolean' ? parsed.isRunning : false,
+        lastStart: parsed.lastStart ? safe(Number(parsed.lastStart)) : null,
+        timeAtStart: safe(Number(parsed.timeAtStart)),
+        sessionStatus: ['inactive', 'active', 'paused'].includes(parsed.sessionStatus) 
+          ? parsed.sessionStatus 
+          : 'inactive',
+        sessionTitle: typeof parsed.sessionTitle === 'string' ? parsed.sessionTitle : '',
+        sessionDescription: typeof parsed.sessionDescription === 'string' ? parsed.sessionDescription : ''
+      };
+    } catch {
+      console.error('Error parsing saved state, using defaults');
+      return defaultState;
+    }
   });
 
   // Function to fetch and update current session details
@@ -114,12 +112,28 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       }
 
       if (session) {
-        setStudyState(prev => ({ ...prev, sessionTitle: session.name, sessionDescription: session.description }));
+        const updates = {
+          sessionTitle: session.name || 'Untitled Session',
+          sessionDescription: session.description || ''
+        };
+        setStudyState(prev => ({
+          ...prev,
+          ...updates
+        }));
+        // Update localStorage to persist the title
+        const savedState = localStorage.getItem("studyTimerState");
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+          localStorage.setItem("studyTimerState", JSON.stringify({
+            ...parsed,
+            ...updates
+          }));
+        }
       }
     } catch (error) {
       console.error('Error in fetchCurrentSessionDetails:', error);
     }
-  }, [currentSessionId, setStudyState]);
+  }, [currentSessionId]);
 
   // Effect to fetch details when modal closes or session ID changes
   useEffect(() => {
@@ -164,19 +178,21 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     };
   }, [isStudyRunningRedux, studyState.lastStart, studyState.timeAtStart]);
 
+  // Save state to localStorage whenever it changes
   useEffect(() => {
-    // Solo guardar propiedades primitivas para evitar referencias circulares
     const stateToSave = {
-      time: typeof studyState.time === 'number' ? studyState.time : 0,
-      isRunning: typeof studyState.isRunning === 'boolean' ? studyState.isRunning : false,
-      lastStart: typeof studyState.lastStart === 'number' ? studyState.lastStart : null,
-      timeAtStart: typeof studyState.timeAtStart === 'number' ? studyState.timeAtStart : 0,
-      sessionStatus: typeof studyState.sessionStatus === 'string' ? studyState.sessionStatus : 'inactive',
+      time: studyState.time,
+      isRunning: studyState.isRunning,
+      lastStart: studyState.lastStart,
+      timeAtStart: studyState.timeAtStart,
+      sessionStatus: studyState.sessionStatus,
+      sessionTitle: studyState.sessionTitle || '',
+      sessionDescription: studyState.sessionDescription || ''
     };
+    
     try {
       localStorage.setItem("studyTimerState", JSON.stringify(stateToSave));
     } catch (e) {
-      // Si hay error de referencia circular, ignorar y loguear
       console.error('Error saving studyTimerState:', e);
     }
     if (currentSessionId) {

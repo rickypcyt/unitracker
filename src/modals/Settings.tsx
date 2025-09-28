@@ -1,10 +1,21 @@
-import { ListTodo, Monitor, Moon, Palette, Sun } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  ListTodo,
+  Monitor,
+  Moon,
+  Palette,
+  Settings as SettingsIcon,
+  Sun,
+  Trash2,
+} from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
-import BaseModal from './BaseModal';
+import BaseModal from "./BaseModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
-import ManageCompletedTasksModal from '@/modals/ManageCompletedTasksModal';
+import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
+import ManageSessionsModal from "@/modals/ManageSessionsModal";
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -22,9 +33,16 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const { accentPalette, setAccentPalette, themePreference, handleThemeChange, currentTheme } = useTheme();
+  const {
+    accentPalette,
+    setAccentPalette,
+    themePreference,
+    handleThemeChange,
+    currentTheme,
+  } = useTheme();
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
+  const [showStudySessions, setShowStudySessions] = useState(false);
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);
@@ -47,7 +65,13 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           {/* Theme Section */}
           <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
             <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              {themePreference === 'auto' ? <Monitor size={22} /> : currentTheme === 'dark' ? <Moon size={22} /> : <Sun size={22} />}
+              {themePreference === "auto" ? (
+                <Monitor size={22} />
+              ) : currentTheme === "dark" ? (
+                <Moon size={22} />
+              ) : (
+                <Sun size={22} />
+              )}
               Theme
             </h3>
             <div className="space-y-3">
@@ -56,61 +80,89 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Sun size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">Light</span>
+                    <span className="text-sm text-[var(--text-primary)]">
+                      Light
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Monitor size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">System</span>
+                    <span className="text-sm text-[var(--text-primary)]">
+                      System
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Moon size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">Dark</span>
+                    <span className="text-sm text-[var(--text-primary)]">
+                      Dark
+                    </span>
                   </div>
                 </div>
-                
+
                 {/* Custom three-position slider */}
                 <div className="relative">
                   <div className="w-full h-8 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
                     {/* Slider track background */}
-                    <div 
+                    <div
                       className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
                       style={{
                         backgroundColor: accentPalette,
-                        width: 'calc(33.333% - 4px)',
-                        left: themePreference === 'light' ? '2px' : 
-                              themePreference === 'auto' ? 'calc(33.333% + 1px)' : 
-                              'calc(66.666% + 0px)',
+                        width: "calc(33.333% - 4px)",
+                        left:
+                          themePreference === "light"
+                            ? "2px"
+                            : themePreference === "auto"
+                            ? "calc(33.333% + 1px)"
+                            : "calc(66.666% + 0px)",
                       }}
                     />
-                    
+
                     {/* Three clickable areas */}
                     <button
-                      onClick={() => handleThemeChange('light')}
+                      onClick={() => handleThemeChange("light")}
                       className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
                       aria-label="Light theme"
                     >
-                      <Sun size={16} className={`${themePreference === 'light' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                      <Sun
+                        size={16}
+                        className={`${
+                          themePreference === "light"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
                     </button>
-                    
+
                     <button
-                      onClick={() => handleThemeChange('auto')}
+                      onClick={() => handleThemeChange("auto")}
                       className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
                       aria-label="System theme"
                     >
-                      <Monitor size={16} className={`${themePreference === 'auto' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                      <Monitor
+                        size={16}
+                        className={`${
+                          themePreference === "auto"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
                     </button>
-                    
+
                     <button
-                      onClick={() => handleThemeChange('dark')}
+                      onClick={() => handleThemeChange("dark")}
                       className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
                       aria-label="Dark theme"
                     >
-                      <Moon size={16} className={`${themePreference === 'dark' ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
+                      <Moon
+                        size={16}
+                        className={`${
+                          themePreference === "dark"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
                     </button>
                   </div>
                 </div>
-                
-
               </div>
             </div>
           </div>
@@ -128,8 +180,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   onClick={() => handleAccentColorChange(color.value)}
                   className={`relative aspect-square rounded-lg transition-all ${
                     accentPalette === color.value
-                      ? 'ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]'
-                      : 'hover:opacity-80'
+                      ? "ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]"
+                      : "hover:opacity-80"
                   } ${color.class}`}
                   aria-label={`Select ${color.name} accent color`}
                   title={color.name}
@@ -141,11 +193,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Assignments Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
-            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              <ListTodo size={22} />
-              Assignments
-            </h3>
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-3 pb-3">
             <button
               onClick={() => setShowAssignments(true)}
               className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
@@ -153,8 +201,14 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               Manage Assignments
             </button>
             <button
+              onClick={() => setShowStudySessions(true)}
+              className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors mt-2 "
+            >
+              Manage Sessions
+            </button>
+            <button
               onClick={() => setShowCompletedTasks(true)}
-              className="w-full mt-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors mt-2"
             >
               Manage Completed Tasks
             </button>
@@ -169,6 +223,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <ManageCompletedTasksModal
         isOpen={showCompletedTasks}
         onClose={() => setShowCompletedTasks(false)}
+      />
+      <ManageSessionsModal
+        isOpen={showStudySessions}
+        onClose={() => setShowStudySessions(false)}
       />
     </>
   );

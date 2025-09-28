@@ -1,15 +1,16 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
+import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
-import { deleteLap } from '@/store/LapActions';
+import { deleteLap, fetchLaps } from '@/store/LapActions';
 import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import BaseModal from './BaseModal';
 
 type AppDispatch = any; // Replace with your actual AppDispatch type
 
@@ -20,6 +21,8 @@ interface GroupedLabs {
 interface RootState {
   laps: {
     laps: Lap[];
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | null;
   };
 }
 
@@ -54,10 +57,17 @@ interface ManageSessionsModalProps {
 }
 
 const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClose }) => {
-  const { laps } = useSelector((state: RootState) => state.laps);
+  const { laps, status } = useSelector((state: RootState) => state.laps);
   const dispatch = useDispatch<AppDispatch>();
   const { isLoggedIn } = useAuth();
   const { isDemo } = useDemoMode();
+
+  // Fetch sessions when the modal opens
+  useEffect(() => {
+    if (isOpen && isLoggedIn) {
+      dispatch(fetchLaps());
+    }
+  }, [isOpen, isLoggedIn, dispatch]);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<Lap | null>(null);
@@ -224,11 +234,24 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
     );
   }
 
-  if (!isDemo && laps.length === 0) {
+  // If not in demo mode and no sessions, show empty state
+  if (!isDemo && status === 'succeeded' && laps.length === 0) {
     return (
       <BaseModal isOpen={isOpen} onClose={onClose} title="Manage Sessions" maxWidth="max-w-6xl">
-        <div className="p-6 text-center text-[var(--text-secondary)]">
-          Create your first Study Sessions first!
+        <div className="p-8 text-center">
+          <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
+            <BookOpen size={24} className="text-[var(--accent-primary)]" />
+          </div>
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No study sessions yet</h3>
+          <p className="text-[var(--text-secondary)] mb-6">
+            Start a new study session to see your progress here.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
+          >
+            Start Studying
+          </button>
         </div>
       </BaseModal>
     );
@@ -243,59 +266,70 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
         maxWidth="max-w-6xl"
         className="!p-0"
       >
-        <div className="w-full h-full bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col max-h-[80vh]">
+        <div className="w-full h-full bg-[var(--bg-primary)] py-6 px-6 pt-0 flex flex-col max-h-[80vh] overflow-hidden">
           {selectedMonth ? (
             // Month detail view
-            <div className="space-y-4">
-              <div className="flex items-center justify-center mb-4 relative">
+            <div className="space-y-4 flex flex-col h-full">
+              <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={() => setSelectedMonth(null)}
-                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2 absolute left-0"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
                 >
-                  <ArrowLeft size={20}/>Back to Months
+                  <ArrowLeft size={20} className="-ml-1" /> Back to All Sessions
                 </button>
-                <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">{selectedMonth}</h3>
+                <h3 className="text-xl font-semibold text-[var(--text-primary)]">{selectedMonth}</h3>
+                <div className="w-8"></div> {/* Spacer for alignment */}
               </div>
 
-              <div className="w-full h-full overflow-auto px-2">
-                <div className="grid gap-x-4 gap-y-3 md:gap-x-3 md:gap-y-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 justify-center items-center w-full">
+              <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
                   {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
                     <div
                       key={lap.id}
-                      className="stat-card bg-[var(--bg-secondary)] rounded-lg p-3 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full h-40 flex flex-col"
-                      onDoubleClick={() => setSelectedSession(lap)}
+                      className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer flex flex-col h-full"
+                      onClick={() => setSelectedSession(lap)}
                       onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="text-lg font-bold text-[var(--accent-primary)]">#{lap.session_number}</span>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)/10] flex items-center justify-center">
+                            <BookOpen size={16} className="text-[var(--accent-primary)]" />
+                          </div>
+                          <span className="text-sm font-medium text-[var(--accent-primary)] bg-[var(--accent-primary)/10] px-2 py-0.5 rounded-full">
+                            Session #{lap.session_number}
+                          </span>
+                        </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteClick(lap.id);
                           }}
-                          className="text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                          className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1 -m-1"
                         >
                           <Trash2 size={16} />
                         </button>
                       </div>
 
-                      <h4 className="text-base font-medium text-[var(--text-primary)] line-clamp-2 mb-2">
-                        {lap.name || `Session ${lap.session_number}`}
+                      <h4 className="text-base font-semibold text-[var(--text-primary)] mb-3 line-clamp-2">
+                        {lap.name || `Study Session ${lap.session_number}`}
                       </h4>
 
-                      <div className="mt-auto space-y-1">
-                        <div className="flex items-center gap-1 text-base text-[var(--text-secondary)]">
-                          <Calendar size={12} />
-                          <span>{formatDateShort(lap.created_at)}</span>
+                      <div className="mt-auto space-y-2.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                            <Calendar size={14} className="text-[var(--text-secondary)] opacity-70" />
+                            <span>{formatDateShort(lap.created_at)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                            <Clock size={14} className="text-[var(--text-secondary)] opacity-70" />
+                            <span className="font-medium">{lap.duration}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-base text-[var(--text-secondary)]">
-                          <Clock size={12} />
-                          <span>{lap.duration}</span>
-                        </div>
+                        
                         {lap.tasks_completed > 0 && (
-                          <div className="flex items-center gap-1 text-base text-[var(--text-secondary)]">
-                            <CheckCircle2 size={12} />
-                            <span>{lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
+                          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] py-1.5 px-3 rounded-lg">
+                            <CheckCircle2 size={14} className="text-green-500" />
+                            <span>Completed {lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
                           </div>
                         )}
                       </div>
@@ -306,7 +340,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
             </div>
           ) : (
             // Months overview
-            <div className="space-y-6">
+            <div className="space-y-8 overflow-y-auto max-h-[calc(80vh-2rem)] pr-2 -mr-2">
               {(() => {
                 // Group months by year
                 const monthsByYear: Record<string, Array<{
@@ -340,29 +374,55 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                 return Object.entries(monthsByYear)
                   .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
                   .map(([year, months]) => (
-                    <div key={year} className="mb-6">
-                      <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">{year}</h2>
+                    <div key={year} className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                        <h2 className="text-lg font-semibold text-[var(--text-secondary)] whitespace-nowrap px-2">{year}</h2>
+                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                      </div>
+                      
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {months
                           .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month))
                           .map(({ month, monthYear, lapsOfMonth }) => {
                             const stats = getMonthStats(lapsOfMonth);
+                            const totalHours = Math.floor(stats.totalMinutes / 60);
+                            const totalMins = stats.totalMinutes % 60;
+                            
                             return (
                               <div
                                 key={monthYear}
-                                className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer"
+                                className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer group"
                                 onClick={() => setSelectedMonth(monthYear)}
                               >
                                 <div className="flex items-center justify-between mb-3">
                                   <h3 className="text-lg font-semibold text-[var(--text-primary)]">{month}</h3>
-                                  <span className="text-base text-[var(--text-secondary)] ">{lapsOfMonth.length} sessions</span>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-[var(--text-secondary)] text-base">Total Time:</span>
-                                    <span className="text-[var(--accent-primary)] font-mono text-base">{formatMinutesToHHMM(stats.totalMinutes)}</span>
+                                  <div className="flex items-center gap-1.5 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-xs font-medium px-2 py-1 rounded-full">
+                                    <BookOpen size={12} />
+                                    <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
                                   </div>
-
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-[var(--text-secondary)]">Total Time</span>
+                                    <div className="flex items-center gap-1">
+                                      <Clock size={14} className="text-[var(--accent-primary)]" />
+                                      <span className="font-mono font-medium">
+                                        {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="h-px bg-[var(--border-primary)] my-2"></div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-[var(--text-secondary)]">Avg. Session</span>
+                                    <span className="font-medium">{stats.avgDuration}m</span>
+                                  </div>
+                                </div>
+                                <div className="mt-3 pt-3 border-t border-[var(--border-primary)]">
+                                  <div className="text-xs text-[var(--text-secondary)] flex items-center justify-between">
+                                    <span>View all sessions</span>
+                                    <ArrowLeft size={14} className="transform rotate-180 group-hover:translate-x-0.5 transition-transform" />
+                                  </div>
                                 </div>
                               </div>
                             );
