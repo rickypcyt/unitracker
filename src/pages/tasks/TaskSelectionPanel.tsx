@@ -175,7 +175,7 @@ const TaskSelectionPanel = ({
               ? borderColor + " border-2"
               : "bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
           }`}
-          onClick={() => onTaskSelect(task.id)}
+          onClick={() => onTaskSelect ? onTaskSelect(task.id) : null}
         >
           <div className="flex items-center justify-between">
             <div>

@@ -436,7 +436,6 @@ const StartSessionModal = ({
         isOpen={showUnfinishedSessions}
         onClose={() => setShowUnfinishedSessions(false)}
         onSessionResumed={handleSessionResumed}
-        onFinishAllSessions={handleFinishAllSessions}
       />
     );
   }
@@ -447,6 +446,7 @@ const StartSessionModal = ({
       onClose={onClose}
       title="Start Study Session"
       className="w-full max-w-4xl px-4 sm:px-6"
+      fullWidthOnMd={true}
     >
       <div className="space-y-6 w-full">
         <div className="space-y-4">
@@ -462,11 +462,9 @@ const StartSessionModal = ({
               </div>
               <FormInput
                 id="session-title"
-                
+                label=""
                 value={sessionTitle}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSessionTitle(e.target.value)
-                }
+                onChange={setSessionTitle}
                 error={titleError ? "Please enter a session title" : ""}
                 required
                 placeholder="Enter session title"
@@ -545,6 +543,15 @@ const StartSessionModal = ({
           tasks={tasks}
           selectedTasks={selectedTasks}
           onMoveTask={handleMoveTask}
+          onTaskSelect={(taskId) => {
+            setSelectedTasks(prev => {
+              if (prev.includes(taskId)) {
+                return prev.filter(id => id !== taskId);
+              } else {
+                return [...prev, taskId];
+              }
+            });
+          }}
           showTaskForm={showTaskForm}
           onShowTaskForm={() => setShowTaskForm(true)}
           onHideTaskForm={() => setShowTaskForm(false)}
