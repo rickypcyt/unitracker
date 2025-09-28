@@ -259,7 +259,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
         <div className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
             <div className="flex-1">
-              <label htmlFor="sessionTitle" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+              <label htmlFor="sessionTitle" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Title
               </label>
               <FormInput
@@ -272,7 +272,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
               />
             </div>
             <div className="flex-1">
-              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+              <label htmlFor="assignment" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Assignment (optional)
               </label>
               <AutocompleteInput
@@ -284,7 +284,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
               />
             </div>
           </div>
-          <label htmlFor="sessionDescription" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+          <label htmlFor="sessionDescription" className="block text-base font-bold text-[var(--text-primary)] mb-2 text-center">
             Description (Optional)
           </label>
           <FormTextarea
@@ -295,7 +295,7 @@ const StartSessionModal = ({ isOpen, onClose, onStart }) => {
           />
         </div>
         {/* Controles de sincronización */}
-        <div className="flex flex-col gap-1 mt-2">
+        <div className="flex flex-col gap-1 mt-2 pb-2">
           <button
             type="button"
             onClick={() => setSyncPomo((v) => !v)}

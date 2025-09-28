@@ -650,7 +650,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       
       {/* Simple text selector for Manual | AI (directly under title, only for Manual tab) */}
       {activeTab !== 'ai' && (
-        <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
+        <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none mb-4">
           <span
             className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
             onClick={() => setActiveTab('ai')}
@@ -672,7 +672,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
           <div className={`grid ${initialAssignment ? 'grid-cols-1' : 'grid-cols-2'} gap-3 sm:gap-4`}>
             {!initialAssignment && (
               <div>
-                <label htmlFor="assignment" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+                <label htmlFor="assignment" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                   Assignment
                 </label>
                 <AutocompleteInput
@@ -687,7 +687,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
               </div>
             )}
             <div>
-              <label htmlFor="title" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+              <label htmlFor="title" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Title
               </label>
               <FormInput
@@ -701,7 +701,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             </div>
           </div>
 
-          <label htmlFor="description" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+          <label htmlFor="description" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
             Description
           </label>
           <MarkdownWysiwyg
@@ -717,7 +717,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4 ">
             <div>
-              <label className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+              <label className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Difficulty
               </label>
               <div className="flex items-center justify-center gap-4 sm:gap-8">
@@ -756,7 +756,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             </div>
 
             <div>
-              <label htmlFor="deadline" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-left">
+              <label htmlFor="deadline" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
                 Deadline
               </label>
               <div className="relative flex items-center">
@@ -867,7 +867,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
             Example: "Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)."
           </div>
           {/* Footer-like controls: sticky at bottom on mobile, normal on desktop */}
-          <div className="w-full max-w-md mt-auto pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)] flex items-center justify-start gap-2 mb-2 sticky bottom-0 sm:static">
+          <div className="w-full max-w-md mt-auto pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)] flex items-center justify-between gap-2 mb-2 sticky bottom-0 sm:static">
             <select
               id="aiModel"
               value={selectedModel}

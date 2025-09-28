@@ -134,9 +134,29 @@ const SOUND_CONFIGS = [
   }
 ];
 
-const NoiseContext = createContext();
+interface NoiseContextType {
+  sounds: Array<{
+    key: string;
+    label: string;
+    icon: string;
+    volume: number;
+    isPlaying: boolean;
+    soundRef: any;
+    min?: number;
+    max?: number;
+    defaultVolume?: number;
+    volumeMultiplier?: number;
+  }>;
+  startSound: (key: string) => void;
+  stopSound: (key: string) => void;
+  setVolume: (key: string, volume: number) => void;
+  isInitialized: boolean;
+  initializeAudio: () => void;
+}
 
-export function NoiseProvider({ children }) {
+const NoiseContext = createContext<NoiseContextType | undefined>(undefined);
+
+export function NoiseProvider({ children }: { children: React.ReactNode }) {
   const masterGainRef = useRef(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [sounds, setSounds] = useState(

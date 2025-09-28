@@ -1,11 +1,12 @@
 import type { AppDispatch, RootState } from '@/store/store';
-import { LogIn, LogOut, Settings as SettingsIcon, Trash2 } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { ACCENT_COLORS } from '@/utils/theme';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import ManageAssignmentsModal from '@/modals/ManageAssignmentsModal';
+import StudySessions from '@/pages/stats/StudySessions';
 import { deleteTask } from '@/store/actions/TaskActions';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +25,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   // Note: currentTheme and handleThemeChange are not used in this component
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
+  const [showStudySessions, setShowStudySessions] = useState(false);
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
   const { isLoggedIn, loginWithGoogle, logout } = useAuth() as {
     isLoggedIn: boolean;
@@ -126,6 +128,20 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
             </div>
+
+            {/* Study Sessions Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Study Sessions</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowStudySessions(true)}
+                  className="w-full px-4 py-2 text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] rounded-lg transition-colors flex items-center justify-between"
+                >
+                  <span>Manage Sessions</span>
+                  <BookOpen size={20} />
+                </button>
+              </div>
+            </div>
         </div>
       </BaseModal>
 
@@ -143,6 +159,20 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           message="Are you sure you want to delete all completed tasks? This action cannot be undone."
           confirmButtonText="Delete Completed Tasks"
         />
+      )}
+
+      {showStudySessions && (
+        <BaseModal 
+          isOpen={showStudySessions} 
+          onClose={() => setShowStudySessions(false)}
+          title="Study Sessions"
+          maxWidth="max-w-4xl"
+          className="!p-0"
+        >
+          <div className="p-6">
+            <StudySessions />
+          </div>
+        </BaseModal>
       )}
     </>
   );

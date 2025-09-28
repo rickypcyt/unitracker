@@ -552,7 +552,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           pomodoros_completed: pomodorosThisSession,
         };
         if (localStartedAt) {
-          updateData.started_at_local = new Date(Number(localStartedAt)).toISOString();
+          updateData.started_at = new Date(Number(localStartedAt)).toISOString();
         }
         const { error } = await supabase
           .from('study_laps')

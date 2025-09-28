@@ -135,7 +135,7 @@ const BaseModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (
-          <div className="relative bg-[var(--bg-primary)] flex items-center justify-end p-4 pt-0 mt-2 pb-0">
+          <div className="relative bg-[var(--bg-primary)] flex items-center justify-end p-4 pt-4 mt-2 pb-0 lg:mt-0 mb-4">
             {/* Título centrado */}
             <h2 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[var(--text-primary)] truncate">
               {title}

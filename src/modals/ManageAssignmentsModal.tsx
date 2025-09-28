@@ -88,7 +88,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
         maxWidth="max-w-4xl"
         className="!p-0"
       >
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 max-h-[66vh] overflow-y-auto pt-0">
           {assignments.length === 0 ? (
             <div className="text-center py-8">
               <BookOpen size={48} className="mx-auto text-[var(--text-secondary)] mb-4" />
