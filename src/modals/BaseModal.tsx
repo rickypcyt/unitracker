@@ -166,7 +166,7 @@ const BaseModal = ({
 
   const headerClasses = `
     relative bg-[var(--bg-primary)] flex items-center 
-    justify-end p-4 pt-4 mt-2 pb-0 lg:mt-0 mb-4 lg:pt-0
+    justify-end p-4 pt-4 mt-2 pb-0 lg:mt-0 mb-4 lg:pt-0 md:pt-0 
   `.trim();
 
   const titleClasses = `

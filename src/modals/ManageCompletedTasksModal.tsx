@@ -5,14 +5,14 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
+import TaskDetailsModal from '@/modals/TaskDetailsModal';
 import type { Task } from '@/pages/tasks/taskStorage';
-import { deleteTask } from '@/store/TaskActions';
+import { deleteTask, updateTask } from '@/store/TaskActions';
 import moment from 'moment';
 
 interface ManageCompletedTasksModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEditTask?: (task: Task) => void;
 }
 
 const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
@@ -24,6 +24,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [openMonths, setOpenMonths] = useState<string[]>([]);
 
   // Agrupar tareas completadas por mes
@@ -51,7 +52,16 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   };
 
   const handleEditTask = (task: Task) => {
-    if (onEditTask) onEditTask(task);
+    setTaskToEdit(task);
+  };
+
+  const handleSaveTask = async (updatedTask: Task) => {
+    try {
+      await dispatch(updateTask(updatedTask) as any);
+      setTaskToEdit(null);
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
   };
 
   const toggleMonth = (month: string) => {
@@ -63,6 +73,24 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  // Handle task completion toggle
+  const handleToggleCompletion = async (task: Task) => {
+    try {
+      await dispatch(updateTask({ ...task, completed: !task.completed }) as any);
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    }
+  };
+
+  // Handle setting active task
+  const handleSetActiveTask = async (task: Task) => {
+    try {
+      await dispatch(updateTask({ ...task, activetask: !task.activetask }) as any);
+    } catch (error) {
+      console.error('Error setting active task:', error);
+    }
+  };
 
   return (
     <>
@@ -162,6 +190,17 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
           onConfirm={confirmDeleteTask}
           message={`Are you sure you want to delete the task "${taskToDelete.title}"? This action cannot be undone.`}
           confirmButtonText="Delete Task"
+        />
+      )}
+
+      {taskToEdit && (
+        <TaskDetailsModal
+          isOpen={!!taskToEdit}
+          onClose={() => setTaskToEdit(null)}
+          task={taskToEdit}
+          onSave={handleSaveTask}
+          onToggleCompletion={handleToggleCompletion}
+          onSetActiveTask={handleSetActiveTask}
         />
       )}
     </>

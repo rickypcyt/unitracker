@@ -1,15 +1,6 @@
-import {
-  BookOpen,
-  Clock,
-  ListTodo,
-  Monitor,
-  Moon,
-  Palette,
-  Settings as SettingsIcon,
-  Sun,
-  Trash2,
-} from "lucide-react";
+import { Monitor, Moon, Palette, Sun } from "lucide-react";
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 import { ACCENT_COLORS } from "@/utils/theme";
 import BaseModal from "./BaseModal";
@@ -17,6 +8,7 @@ import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
 import useTheme from "@/hooks/useTheme";
+import type { Task } from '@/pages/tasks/taskStorage';
 
 // Define the AccentColor type locally since it's not exported from theme.ts
 interface AccentColor {
@@ -43,6 +35,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
+  const navigate = useNavigate();
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);

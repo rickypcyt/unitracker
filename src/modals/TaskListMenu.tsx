@@ -40,21 +40,24 @@ export const TaskListMenu = ({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-[var(--bg-primary)] p-2 rounded-lg shadow-lg border border-[var(--border-primary)]"
+      className="fixed z-50 min-w-[220px] rounded-lg bg-[var(--bg-primary)] p-2 shadow-xl"
       style={{
         position: 'fixed',
         left: contextMenu.x,
         top: contextMenu.y,
-        zIndex: 9999,
-        backgroundColor: 'var(--bg-primary)',
-        border: '2px solid var(--border-primary)',
-        borderRadius: '0.75rem',
-        padding: '0.75rem 0.5rem',
-        boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(30,144,255,0.10)',
-        minWidth: '220px',
-        color: 'var(--text-primary)',
+        border: '2px solid var(--accent-primary)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
       }}
     >
+      {/* Arrow pointing down */}
+      <div 
+        className="absolute -top-2 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 bg-[var(--bg-primary)]"
+        style={{
+          borderTop: '2px solid var(--accent-primary)',
+          borderLeft: '2px solid var(--accent-primary)',
+          zIndex: 1,
+        }}
+      />
       <div className="space-y-1">
         {contextMenu.task.activetask ? (
           <button
