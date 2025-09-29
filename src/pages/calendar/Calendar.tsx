@@ -404,29 +404,31 @@ const Calendar = () => {
                       : "hover:text-[var(--text-secondary)]"
                   }`}
                 >
-                  <div className="flex flex-col items-center w-full aspect-square p-1 sm:p-2">
-                    <div className="text-sm sm:text-base">
-                      {dayObj.date.getDate()}
+                  <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-2">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <div className="text-sm sm:text-base">
+                        {dayObj.date.getDate()}
+                      </div>
+                      {dayObj.currentMonth && (
+                        <div className={`text-xs ${
+                          isSameDay(dayObj.date, new Date()) || isAfter(dayObj.date, new Date())
+                            ? 'text-[var(--accent-green)]'
+                            : 'text-[var(--text-secondary)]'
+                        }`}>
+                          {getStudiedHoursForDate(dayObj.date)}h
+                        </div>
+                      )}
+                      {tasksWithDeadline.length > 0 && (
+                        <div className="flex justify-center gap-0.5 pt-1">
+                          {tasksWithDeadline.map((task) => (
+                            <div
+                              key={task.id}
+                              className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    {dayObj.currentMonth && (
-                      <div className={`text-xs ${
-                        isSameDay(dayObj.date, new Date()) || isAfter(dayObj.date, new Date())
-                          ? 'text-[var(--accent-green)]'
-                          : 'text-[var(--text-secondary)]'
-                      }`}>
-                        {getStudiedHoursForDate(dayObj.date)}h
-                      </div>
-                    )}
-                    {tasksWithDeadline.length > 0 && (
-                      <div className="flex justify-center gap-0.5 mt-1">
-                        {tasksWithDeadline.map((task) => (
-                          <div
-                            key={task.id}
-                            className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               );
