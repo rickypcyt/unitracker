@@ -2,7 +2,8 @@ import { Check, Circle, Clock, Play } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { motion } from 'framer-motion';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleTaskStatus } from '@/store/TaskActions';
 
 const SessionStatsAndTasks = () => {
   // Define types for our data
@@ -27,8 +28,19 @@ const SessionStatsAndTasks = () => {
   // Get laps/pomodoros from store
   const laps = useSelector((state: any) => (state.laps?.laps || []) as Lap[]);
 
+  const dispatch = useDispatch();
+  
   // Get tasks from store and memoize the calculation
   const tasks = useSelector((state: any) => (state.tasks?.tasks || []) as Task[]);
+  
+  // Handle task completion toggle
+  const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
+    try {
+      await dispatch(toggleTaskStatus(taskId, !currentStatus) as any);
+    } catch (error) {
+      console.error('Error toggling task status:', error);
+    }
+  };
   
   // Memoize all derived state to prevent unnecessary recalculations
   const { 
@@ -257,8 +269,9 @@ const SessionStatsAndTasks = () => {
               >
                 <button
                   className="flex-shrink-0 mt-0.5 transition-all duration-200 hover:scale-110"
-                  onClick={() => {
-                    console.log('Toggle task completion:', task.id);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleTask(task.id, task.completed);
                   }}
                 >
                   <div className="relative">
