@@ -56,28 +56,6 @@ export const TaskListMenu = ({
       }}
     >
       <div className="space-y-1">
-        <button
-          onClick={() => {
-            const t = contextMenu.task;
-            const text = `Title: ${t.title || ''}\nDescription: ${t.description || ''}\nAssignment: ${t.assignment || ''}\nDate: ${t.deadline || t.due_date || ''}`;
-            navigator.clipboard.writeText(text);
-            onClose();
-          }}
-          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
-        >
-          <Clipboard size={16} />
-          Copy Task
-        </button>
-        <button
-          onClick={() => {
-            onEditTask(contextMenu.task);
-            onClose();
-          }}
-          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
-        >
-          <Info size={16} />
-          Edit Task
-        </button>
         {contextMenu.task.activetask ? (
           <button
             onClick={() => {
@@ -107,6 +85,28 @@ export const TaskListMenu = ({
             Set as Active Task
           </button>
         )}
+        <button
+          onClick={() => {
+            onEditTask(contextMenu.task);
+            onClose();
+          }}
+          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+        >
+          <Info size={16} />
+          Edit Task
+        </button>
+        <button
+          onClick={() => {
+            const t = contextMenu.task;
+            const text = `Title: ${t.title || ''}\nDescription: ${t.description || ''}\nAssignment: ${t.assignment || ''}\nDate: ${t.deadline || t.due_date || ''}`;
+            navigator.clipboard.writeText(text);
+            onClose();
+          }}
+          className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+        >
+          <Clipboard size={16} />
+          Copy Task
+        </button>
         <button
           onClick={() => {
             onDeleteTask(contextMenu.task.id);

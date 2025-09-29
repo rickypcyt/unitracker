@@ -8,12 +8,12 @@ import {
   SquareArrowOutUpRight,
   Waves,
 } from "lucide-react";
-import React, { useEffect, useState, useCallback } from "react";
-import ReactSlider from "react-slider";
-import { motion } from "framer-motion";
+import React, { useCallback, useEffect, useState } from "react";
 
-import SectionTitle from "@/components/SectionTitle";
 import BaseModal from "@/modals/BaseModal";
+import ReactSlider from "react-slider";
+import SectionTitle from "@/components/SectionTitle";
+import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
 
 // -------------------------
@@ -333,12 +333,12 @@ export default function NoiseGenerator() {
   };
 
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full h-full flex flex-col">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between pb-2 border-b border-[var(--border-primary)]"
+        className="flex items-center justify-between pb-3 border-b border-[var(--border-primary)]"
       >
         <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <div className="p-1.5 bg-[var(--accent-primary)]/10 rounded-lg">
@@ -360,7 +360,7 @@ export default function NoiseGenerator() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="space-y-4"
+        className="flex-1 flex flex-col justify-center space-y-4 py-2"
       >
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>
@@ -385,29 +385,7 @@ export default function NoiseGenerator() {
         ))}
       </motion.div>
 
-      {/* External link */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="w-full flex justify-center"
-      >
-        <button
-          className="text-[var(--accent-primary)] font-semibold hover:opacity-80 transition flex items-center gap-2"
-          onClick={() =>
-            window.open(
-              "https://music4study.vercel.app/",
-              "_blank",
-              "noopener,noreferrer"
-            )
-          }
-          type="button"
-        >
-          More Sounds <SquareArrowOutUpRight size={16} />
-        </button>
-      </motion.div>
-
-      {/* Settings modal */}
+{/* Settings modal */}
       <NoiseSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

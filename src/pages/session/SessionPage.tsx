@@ -1,5 +1,4 @@
 import { memo, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 
 import Countdown from "./Countdown";
 import GlobalTimerControls from "@/components/GlobalTimerControls";
@@ -8,6 +7,7 @@ import Pomodoro from "@/pages/session/Pomodoro";
 import SessionStatsAndTasks from "@/components/SessionStatsAndTasks";
 import StudyTimer from "@/pages/session/StudyTimer";
 import TimerSettings from "@/components/TimerSettings";
+import { useSelector } from "react-redux";
 
 const SessionPage = memo(() => {
   const isSynced = useSelector((state) => state.ui.isSynced);
@@ -50,48 +50,55 @@ const SessionPage = memo(() => {
   }, [isSynced, isRunning, resetKey]);
 
   return (
-    <div className="w-full px-3 sm:px-4 md:px-3 lg:px-16 xl:px-16 session-page">
+    <div className="w-full px-3 sm:px-4 md:px-3 lg:px-8 xl:px-16 session-page">
       <div className="w-full px-2 overflow-hidden pb-4">
-        {/* Controles globales (solo visibles cuando está sincronizado) */}
+        {/* Controles globales */}
         <div className="px-1 mb-4">
           <GlobalTimerControls />
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 w-full">
-          {/* Columna derecha: timers */}
-          <div className="w-full md:w-1/2 md:order-2 space-y-4 order-1">
-            <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
-              <StudyTimer
-                isSynced={isSynced}
-                isRunning={isRunning}
-                resetKey={resetKey}
-              />
-            </div>
-
-            <div className="flex flex-col gap-4 w-full">
-              <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none mb-0">
-                <Pomodoro
-                  isSynced={isSynced}
-                  isRunning={isRunning}
-                  resetKey={resetKey}
-                />
-              </div>
-              <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none mb-0">
-                <Countdown
-                  isSynced={isSynced}
-                  isRunning={isRunning}
-                  resetKey={resetKey}
-                />
-              </div>
-            </div>
+        {/* Fila superior: Tres timers en columnas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4">
+          {/* Study Timer */}
+          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <StudyTimer
+              isSynced={isSynced}
+              isRunning={isRunning}
+              resetKey={resetKey}
+            />
           </div>
 
-          {/* Columna izquierda: stats y noise */}
-          <div className="w-full md:w-1/2 md:order-1 order-2 space-y-4">
-            <SessionStatsAndTasks />
-            <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
-              <NoiseGenerator />
+          {/* Pomodoro */}
+          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <Pomodoro
+              isSynced={isSynced}
+              isRunning={isRunning}
+              resetKey={resetKey}
+            />
+          </div>
+
+          {/* Countdown */}
+          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <Countdown
+              isSynced={isSynced}
+              isRunning={isRunning}
+              resetKey={resetKey}
+            />
+          </div>
+        </div>
+
+        {/* Fila inferior: Stats y Noise Generator */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          {/* Stats */}
+          <div className="maincard p-3 sm:p-4 md:p-5 w-full min-h-[400px] md:min-h-[450px] lg:min-h-[500px] space-y-4 md:space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-sm">
+            <div className="h-full">
+              <SessionStatsAndTasks />
             </div>
+          </div>
+          
+          {/* Noise Generator */}
+          <div className="maincard p-3 sm:p-4 md:p-5 w-full min-h-[400px] md:min-h-[450px] lg:min-h-[500px] space-y-4 md:space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-sm">
+            <NoiseGenerator />
           </div>
         </div>
       </div>
