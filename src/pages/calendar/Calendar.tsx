@@ -1,13 +1,14 @@
 import { CheckCircle2, Clock, MoreVertical } from "lucide-react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { formatDate } from "@/utils/dateUtils";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { isSameDay, isAfter } from 'date-fns';
 
 import BaseModal from "@/modals/BaseModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { fetchLaps } from "@/store/LapActions";
+import { formatDate } from "@/utils/dateUtils";
 import { useAuth } from "@/hooks/useAuth";
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { useTaskManager } from "@/hooks/useTaskManager";
@@ -180,18 +181,32 @@ const Calendar = () => {
   );
 
   const hasTasksWithDeadline = useCallback(
-    (date) =>
-      tasks.some(
-        (task) => task.deadline && isSameDay(new Date(task.deadline), date)
-      ),
+    (date) => {
+      const targetDate = new Date(date);
+      targetDate.setHours(0, 0, 0, 0);
+      
+      return tasks.some(task => {
+        if (!task.deadline) return false;
+        const taskDate = new Date(task.deadline);
+        taskDate.setHours(0, 0, 0, 0);
+        return isSameDay(taskDate, targetDate);
+      });
+    },
     [tasks]
   );
 
   const getTasksWithDeadline = useCallback(
-    (date) =>
-      tasks.filter(
-        (task) => task.deadline && isSameDay(new Date(task.deadline), date)
-      ),
+    (date) => {
+      const targetDate = new Date(date);
+      targetDate.setHours(0, 0, 0, 0);
+      
+      return tasks.filter(task => {
+        if (!task.deadline) return false;
+        const taskDate = new Date(task.deadline);
+        taskDate.setHours(0, 0, 0, 0);
+        return isSameDay(taskDate, targetDate);
+      });
+    },
     [tasks]
   );
 
@@ -341,14 +356,14 @@ const Calendar = () => {
       )}
 
       {/* Calendar Grid */}
-      <div className="w-full mt-6 relative">
-        <div className="block border-[var(--border-primary)] p-4 rounded-lg bg-[var(--bg-primary)]/90">
+      <div className="w-full mt-2 sm:mt-4 relative">
+        <div className="block border-[var(--border-primary)] p-0 sm:p-1 md:p-2 rounded-lg bg-[var(--bg-primary)]/90">
           {/* Weekdays */}
-          <div className="weekday-grid mb-2 grid grid-cols-7">
+          <div className="grid grid-cols-7 gap-0.5 mb-1 sm:mb-2">
             {weekdays.map((day, index) => (
               <div
                 key={index}
-                className="text-[var(--text-primary)] text-base font-semibold flex items-center justify-center"
+                className="text-[var(--text-primary)] text-sm sm:text-base font-medium flex items-center justify-center h-8"
               >
                 {day}
               </div>
@@ -356,7 +371,7 @@ const Calendar = () => {
           </div>
 
           {/* Days */}
-          <div className="grid grid-cols-7 text-center aspect-[4/3]">
+          <div className="grid grid-cols-7 gap-0.5 text-center">
             {calendarDays.map((dayObj, index) => {
               const tasksWithDeadline =
                 dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -377,9 +392,11 @@ const Calendar = () => {
                     })
                   }
                   onMouseLeave={() => setTooltipContent(null)}
-                  className={`select-none cursor-pointer text-lg w-1/7 relative group ${
+                  className={`select-none cursor-pointer text-base w-auto flex-1 relative group ${
                     dayObj.currentMonth
-                      ? "text-[var(--text-primary)] font-bold"
+                      ? dayObj.isToday
+                        ? "text-[var(--accent-primary)] font-bold"
+                        : "text-[var(--text-primary)] font-medium"
                       : "text-[var(--text-secondary)]"
                   } ${
                     dayObj.isToday
@@ -387,22 +404,28 @@ const Calendar = () => {
                       : "hover:text-[var(--text-secondary)]"
                   }`}
                 >
-                  <div className="flex flex-col items-center justify-center w-full h-full relative">
+                  <div className="flex flex-col items-center w-full aspect-square p-1 sm:p-2">
+                    <div className="text-sm sm:text-base">
+                      {dayObj.date.getDate()}
+                    </div>
+                    {dayObj.currentMonth && (
+                      <div className={`text-xs ${
+                        isSameDay(dayObj.date, new Date()) || isAfter(dayObj.date, new Date())
+                          ? 'text-[var(--accent-green)]'
+                          : 'text-[var(--text-secondary)]'
+                      }`}>
+                        {getStudiedHoursForDate(dayObj.date)}h
+                      </div>
+                    )}
                     {tasksWithDeadline.length > 0 && (
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
+                      <div className="flex justify-center gap-0.5 mt-1">
                         {tasksWithDeadline.map((task) => (
                           <div
                             key={task.id}
-                            className="w-1 h-1 rounded-full bg-[var(--accent-primary)]"
+                            className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
                           />
                         ))}
                       </div>
-                    )}
-                    <span>{dayObj.date.getDate()}</span>
-                    {dayObj.currentMonth && (
-                      <span className="text-[10px] text-[var(--text-secondary)] mt-0.5">
-                        {getStudiedHoursForDate(dayObj.date)}h
-                      </span>
                     )}
                   </div>
                 </div>

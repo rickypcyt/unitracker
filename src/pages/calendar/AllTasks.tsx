@@ -177,47 +177,49 @@ const AllTasks = () => {
   };
 
   return (
-    <div className="maincard relative mx-auto w-full transition-all duration-300 calendar-view max-w-4xl md:max-w-2xl lg:max-w-4xl">
-      <div className="w-full text-center mb-4">
-  <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-    Pending Tasks
-  </h2>
-</div>
+    <div className="w-full h-full">
+      <div className="maincard relative mx-auto w-full transition-all duration-300 calendar-view max-w-4xl">
+        <div className="w-full text-center mb-4">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            Pending Tasks
+          </h2>
+        </div>
 
-      <div className="space-y-4">
-        {/* Past Due Section */}
-        {pastTasks.length > 0 && (
+        <div className="space-y-4">
+          {/* Past Due Section */}
+          {pastTasks.length > 0 && (
+            <TaskGroup 
+              title="Past Due" 
+              tasks={pastTasks} 
+              groupKey="past"
+              icon={<Calendar size={18} className="text-red-500" />}
+            />
+          )}
+
+          {/* Today's Tasks */}
           <TaskGroup 
-            title="Past Due" 
-            tasks={pastTasks} 
-            groupKey="past"
-            icon={<Calendar size={18} className="text-red-500" />}
+            title="Today" 
+            tasks={todayTasks} 
+            groupKey="today"
           />
-        )}
 
-        {/* Today's Tasks */}
-        <TaskGroup 
-          title="Today" 
-          tasks={todayTasks} 
-          groupKey="today"
-        />
-
-        {/* This Week */}
-        <TaskGroup 
-          title="This Week" 
-          tasks={thisWeekTasks} 
-          groupKey="thisWeek"
-        />
-
-        {/* No Deadline */}
-        {noDeadlineTasks.filter(task => !task.completed).length > 0 && (
+          {/* This Week */}
           <TaskGroup 
-            title="No Deadline" 
-            tasks={noDeadlineTasks.filter(task => !task.completed)} 
-            groupKey="noDeadline"
-            icon={<Calendar size={18} className="text-gray-500" />}
+            title="This Week" 
+            tasks={thisWeekTasks} 
+            groupKey="thisWeek"
           />
-        )}
+
+          {/* No Deadline */}
+          {noDeadlineTasks.filter(task => !task.completed).length > 0 && (
+            <TaskGroup 
+              title="No Deadline" 
+              tasks={noDeadlineTasks.filter(task => !task.completed)} 
+              groupKey="noDeadline"
+              icon={<Calendar size={18} className="text-gray-500" />}
+            />
+          )}
+        </div>
       </div>
 
       {/* Task Form Modal */}
