@@ -1,11 +1,11 @@
 import {
+  Check,
   MoreVertical,
   Pause,
   Play,
   RefreshCw,
   RefreshCwOff,
   RotateCcw,
-  Check,
   X,
 } from "lucide-react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
@@ -20,6 +20,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
+import ExitSessionChoiceModal from "@/modals/ExitSessionChoiceModal";
 import EditSessionModal from "@/modals/EditSessionModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
@@ -226,6 +227,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   const [studyState, updateStudyState, setStudyState] = useStudyState();
   const [currentSessionId, updateSessionId] = useSessionId();
   const [modalStates, updateModal] = useModalStates();
+  const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
   const { isPomodoroSync, isCountdownSync } = useSyncStates();
   const { isNewTimestamp } = useTimestamp();
 
@@ -233,6 +235,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     duration: "00:00:00",
     tasksCount: 0,
     pomodoros: 0,
+    title: "",
   });
   const [isHandlingEvent] = useState(false);
   const [, setSessionsTodayCount] = useState(0);
@@ -343,7 +346,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   // Controles del timer
   const studyControls = useMemo(
     () => ({
-      start: async (baseTimestamp, fromSync = false) => {
+      start: async (baseTimestamp, fromSync = false, seedTime?: number) => {
         if (isStudyRunningRedux || isHandlingEvent) return;
 
         if (!isLoggedIn) {
@@ -363,7 +366,9 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           typeof baseTimestamp === "number" && Number.isFinite(baseTimestamp)
             ? baseTimestamp
             : Date.now();
-        const currentTime = Number.isFinite(studyState.time)
+        const currentTime = Number.isFinite(seedTime as number)
+          ? (seedTime as number)
+          : Number.isFinite(studyState.time)
           ? studyState.time
           : 0;
 
@@ -409,11 +414,25 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           lastPausedAt: Date.now(),
         });
 
-        window.dispatchEvent(
-          new CustomEvent(SYNC_EVENTS.STUDY_TIMER_STATE_CHANGED, {
-            detail: { isRunning: false },
-          })
-        );
+        // Persist duration to DB on every pause
+        (async () => {
+          try {
+            if (currentSessionId) {
+              const formatted = formatDuration(studyState.time);
+              if (formatted && formatted !== "00:00:00") {
+                const { error } = await supabase
+                  .from("study_laps")
+                  .update({ duration: formatted })
+                  .eq("id", currentSessionId);
+                if (error) {
+                  console.error("Error updating duration on pause:", error);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Unexpected error updating duration on pause:", e);
+          }
+        })();
 
         if (!fromSync) {
           const emitTs = Date.now();
@@ -641,10 +660,27 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           return;
         }
 
+        // Ensure title is accurate: refetch session name right before opening summary
+        let latestTitle: string | undefined;
+        try {
+          const { data: latest, error: latestErr } = await supabase
+            .from("study_laps")
+            .select("name")
+            .eq("id", currentSessionId)
+            .maybeSingle();
+          if (!latestErr && latest?.name) {
+            latestTitle = latest.name;
+            updateStudyState({ sessionTitle: latestTitle });
+          }
+        } catch (e) {
+          console.warn("Could not refresh session name for summary:", e);
+        }
+
         setSummaryData({
           duration: formattedDuration,
           tasksCount: completedTasks.length,
           pomodoros: pomodorosThisSession,
+          title: latestTitle || studyState.sessionTitle || "Untitled Session",
         });
 
         updateModal("isSummaryOpen", true);
@@ -700,20 +736,78 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Función para manejar salida de sesión
   const handleExitSession = useCallback(() => {
+    setExitChoiceOpen(true);
+  }, []);
+
+  const handleJustExit = useCallback(() => {
+    // Do not delete; just stop tracking current session locally
+    studyControls.reset();
+    updateSessionId(null);
+    dispatch(setCurrentSession(null));
+    updateStudyState({ sessionTitle: undefined, sessionDescription: undefined });
+    setExitChoiceOpen(false);
+  }, [studyControls, updateSessionId, dispatch, updateStudyState]);
+
+  const handleExitAndDelete = useCallback(() => {
+    setExitChoiceOpen(false);
     updateModal("isDeleteModalOpen", true);
   }, [updateModal]);
 
   // Función para manejar inicio de sesión
   const handleStartSession = useCallback(
-    ({ sessionId, title, syncPomo, syncCountdown }) => {
+    async ({ sessionId, title, syncPomo, syncCountdown }) => {
       try {
         if (!sessionId) return;
 
         updateSessionId(sessionId);
+
+        // Fetch started_at, ended_at and duration to seed timer time appropriately
+        let initialSeconds = 0;
+        try {
+          const { data: lap, error } = await supabase
+            .from("study_laps")
+            .select("started_at, ended_at, duration")
+            .eq("id", sessionId)
+            .maybeSingle();
+          if (error) throw error;
+
+          const parseHms = (hms?: string | null): number => {
+            if (!hms) return 0;
+            const parts = hms.split(":");
+            if (parts.length !== 3) return 0;
+            const [hh, mm, ss] = parts.map((p) => parseInt(p, 10));
+            if ([hh, mm, ss].some((v) => Number.isNaN(v))) return 0;
+            return hh * 3600 + mm * 60 + ss;
+          };
+
+          const durationSeconds = parseHms(lap?.duration);
+          const isUnfinished = !lap?.ended_at;
+
+          if (isUnfinished) {
+            // Unfinished session: trust the accumulated duration from DB
+            initialSeconds = durationSeconds;
+          } else {
+            // Finished session: prefer stored duration, fallback to timestamps
+            if (durationSeconds > 0) {
+              initialSeconds = durationSeconds;
+            } else if (lap?.started_at && lap?.ended_at) {
+              initialSeconds = Math.max(
+                0,
+                Math.floor(
+                  (new Date(lap.ended_at).getTime() - new Date(lap.started_at).getTime()) / 1000
+                )
+              );
+            }
+          }
+        } catch (fe) {
+          console.warn("Could not seed timer from DB, falling back to 0:", fe);
+        }
+
         updateStudyState({
           sessionTitle: title || studyState.sessionTitle,
           sessionDescription: studyState.sessionDescription,
           sessionStatus: "active",
+          time: initialSeconds,
         });
 
         if (typeof syncPomo === "boolean") {
@@ -725,9 +819,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
         updateModal("isStartModalOpen", false);
 
-        setTimeout(() => {
-          studyControls.start(Date.now(), false);
-        }, 0);
+        // Do not auto-start; wait for the user to press Start so the seeded time remains intact
       } catch (e) {
         console.error("Error in handleStartSession:", e);
         toast.error("Could not start the session.");
@@ -1071,14 +1163,16 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               onClick={studyControls.reset}
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Reset timer"
+              title="Reset timer"
             >
               <RotateCcw size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
             {!isStudyRunningRedux ? (
               <button
-                onClick={studyControls.start}
+                onClick={() => studyControls.start(Date.now(), false)}
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                aria-label="Start timer"
+                aria-label={currentSessionId ? "Resume timer" : "Start session"}
+                title={currentSessionId ? "Resume timer" : "Start session"}
               >
                 <Play size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
@@ -1087,6 +1181,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
                 onClick={studyControls.pause}
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Pause timer"
+                title="Pause timer"
               >
                 <Pause size={20} style={{ color: "var(--accent-primary)" }} />
               </button>
@@ -1099,6 +1194,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               onClick={handleExitSession}
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] transition-colors"
               aria-label="Exit session"
+              title="Exit session"
             >
               <X size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
@@ -1111,6 +1207,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               }}
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Finish session"
+              title="Finish session"
             >
               <Check size={20} style={{ color: "var(--accent-primary)" }} />
             </button>
@@ -1155,10 +1252,17 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         onConfirm={handleConfirmDelete}
       />
 
+      <ExitSessionChoiceModal
+        isOpen={isExitChoiceOpen}
+        onClose={() => setExitChoiceOpen(false)}
+        onJustExit={handleJustExit}
+        onExitAndDelete={handleExitAndDelete}
+      />
+
       <SessionSummaryModal
         isOpen={modalStates.isSummaryOpen}
         onClose={() => updateModal("isSummaryOpen", false)}
-        title={studyState.sessionTitle}
+        title={summaryData.title || studyState.sessionTitle}
         durationFormatted={summaryData.duration}
         completedTasksCount={summaryData.tasksCount}
         pomodorosCompleted={summaryData.pomodoros}

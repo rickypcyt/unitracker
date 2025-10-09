@@ -3,6 +3,8 @@ import { useMemo, useState, useRef, useEffect } from 'react';
 
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from '@/store/store';
+import { updateLap, deleteLap } from '@/store/LapActions';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { toggleTaskStatus, updateTask, deleteTask } from '@/store/TaskActions';
 
@@ -24,20 +26,24 @@ const SessionStatsAndTasks = () => {
     deadline?: string;
     status?: string;
     isActive?: boolean;
+    activetask?: boolean;
     assignment?: string;
   }
 
   interface Lap {
     id: string;
     created_at: string;
-    end_time: string;
-    duration?: number;
+    started_at?: string;
+    ended_at?: string | null;
+    duration?: number; // seconds stored when completed
+    name?: string;
+    session_number?: number;
   }
 
   // Get laps/pomodoros from store
   const laps = useSelector((state: any) => (state.laps?.laps || []) as Lap[]);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   
   // Get tasks from store and memoize the calculation
   const tasks = useSelector((state: any) => (state.tasks?.tasks || []) as Task[]);
@@ -105,47 +111,91 @@ const SessionStatsAndTasks = () => {
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   };
 
+  // Parse HH:MM:SS to seconds
+  const parseHmsToSeconds = (hms?: string | number | null): number => {
+    if (typeof hms === 'number') return hms;
+    if (!hms || typeof hms !== 'string') return 0;
+    const parts = hms.split(':');
+    if (parts.length !== 3) return 0;
+    const [hhRaw, mmRaw, ssRaw] = parts;
+    const hh = Number.parseInt(hhRaw, 10) || 0;
+    const mm = Number.parseInt(mmRaw, 10) || 0;
+    const ss = Number.parseInt(ssRaw, 10) || 0;
+    return hh * 3600 + mm * 60 + ss;
+  };
+
   // Memoize all derived state to prevent unnecessary recalculations
+  const TODAY_CACHE_KEY = 'today_stats_cache_v1';
+
+  const [stableMetrics, setStableMetrics] = useState({
+    todaysPomodoros: 0,
+    totalStudyTimeFormatted: '0m',
+    completedTasksCount: 0,
+    upcomingDeadlinesCount: 0,
+    activeTasks: [] as Task[],
+  });
+
+  // Initialize from cache on mount to avoid 0 flicker after hard refresh
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(TODAY_CACHE_KEY);
+      if (!raw) return;
+      const cached = JSON.parse(raw);
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const todayKey = startOfDay.toISOString().slice(0,10);
+      if (cached?.date === todayKey && cached?.metrics) {
+        setStableMetrics(cached.metrics);
+      }
+    } catch {}
+  }, []);
+
   const { 
     todaysPomodoros, 
     totalStudyTimeFormatted,
     completedTasksCount, 
     upcomingDeadlinesCount, 
-    activeTasks,
-    today
+    activeTasks
   } = useMemo(() => {
-    const today = new Date().toDateString();
-    
-    // Calculate today's pomodoros completed and total study time
+    // Local day boundaries
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(startOfDay.getDate() + 1);
+
+    const withinToday = (d?: string | null) => {
+      if (!d) return false;
+      const t = new Date(d).getTime();
+      return !isNaN(t) && t >= startOfDay.getTime() && t < endOfDay.getTime();
+    };
+
+    // Calculate today's pomodoros and total study time based on created_at (fallback started_at)
     let totalStudyTime = 0;
-    const todaysLaps = laps.filter((lap: Lap) => {
-      const lapDate = new Date(lap.created_at || '').toDateString();
-      if (lapDate === today && lap.end_time) {
-        // Calculate duration in seconds if not already set
-        if (lap.duration) {
-          totalStudyTime += lap.duration;
-        } else if (lap.created_at && lap.end_time) {
-          const start = new Date(lap.created_at).getTime();
-          const end = new Date(lap.end_time).getTime();
-          if (!isNaN(start) && !isNaN(end) && end > start) {
-            const duration = Math.floor((end - start) / 1000);
-            totalStudyTime += duration;
+    const todaysLaps = (laps as Lap[]).filter((lap) => {
+      const created = lap.created_at || lap.started_at || null;
+      return withinToday(created);
+    });
+
+    todaysLaps.forEach((lap) => {
+      const dur = parseHmsToSeconds(lap.duration as any);
+      if (dur > 0) {
+        totalStudyTime += dur;
+      } else {
+        const startMs = new Date(lap.started_at || lap.created_at || '').getTime();
+        if (!isNaN(startMs)) {
+          const endMs = lap.ended_at ? new Date(lap.ended_at as string).getTime() : Date.now();
+          if (!isNaN(endMs) && endMs > startMs) {
+            totalStudyTime += Math.floor((endMs - startMs) / 1000);
           }
         }
-        return true;
       }
-      return false;
     });
-    
+
     const todaysPomodoros = todaysLaps.length;
     const totalStudyTimeFormatted = formatStudyTime(totalStudyTime);
 
     // Get completed tasks today
-    const completedTasksCount = tasks.filter((task: Task) => {
-      if (!task.completed_at) return false;
-      const completedDate = new Date(task.completed_at).toDateString();
-      return completedDate === today;
-    }).length;
+    const completedTasksCount = tasks.filter((task: Task) => withinToday(task.completed_at || null)).length;
 
     // Get upcoming deadlines (next 3 days)
     const upcomingDeadlinesCount = tasks.filter((task: Task) => {
@@ -169,10 +219,89 @@ const SessionStatsAndTasks = () => {
       totalStudyTimeFormatted,
       completedTasksCount,
       upcomingDeadlinesCount,
-      activeTasks,
-      today // Return today value
+      activeTasks
     };
   }, [tasks, laps]); // Only recalculate when tasks or laps change
+
+  // Preserve last valid metrics to avoid overwriting with zero-only data when partially loaded
+  useEffect(() => {
+    const lapsLen = laps?.length ?? 0;
+    const tasksLen = tasks?.length ?? 0;
+    const arraysEmpty = lapsLen === 0 && tasksLen === 0;
+    if (arraysEmpty) return; // keep previous stable metrics
+
+    const isZeroOnly = (todaysPomodoros === 0) && (totalStudyTimeFormatted === '0m');
+    const prevIsZeroOnly = (stableMetrics.todaysPomodoros === 0) && (stableMetrics.totalStudyTimeFormatted === '0m');
+    // If current calc is zero-only but previous had non-zero values, do not overwrite
+    if (isZeroOnly && !prevIsZeroOnly) return;
+
+    setStableMetrics({
+      todaysPomodoros,
+      totalStudyTimeFormatted,
+      completedTasksCount,
+      upcomingDeadlinesCount,
+      activeTasks,
+    });
+  }, [laps, tasks, todaysPomodoros, totalStudyTimeFormatted, completedTasksCount, upcomingDeadlinesCount, activeTasks]);
+
+  // Cache today's metrics locally whenever we compute valid non-zero data for the day
+  useEffect(() => {
+    const lapsLen = laps?.length ?? 0;
+    const tasksLen = tasks?.length ?? 0;
+    const arraysEmpty = lapsLen === 0 && tasksLen === 0;
+    if (arraysEmpty) return;
+    const isZeroOnly = (todaysPomodoros === 0) && (totalStudyTimeFormatted === '0m');
+    // Only cache zero-only if there was no previous cache (first load of the day)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const todayKey = startOfDay.toISOString().slice(0,10);
+    const raw = localStorage.getItem(TODAY_CACHE_KEY);
+    const cached = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
+    const hasPrevCacheForToday = cached?.date === todayKey && cached?.metrics;
+    if (isZeroOnly && hasPrevCacheForToday) return;
+    try {
+      const payload = {
+        date: todayKey,
+        metrics: {
+          todaysPomodoros,
+          totalStudyTimeFormatted,
+          completedTasksCount,
+          upcomingDeadlinesCount,
+          activeTasks,
+        },
+      };
+      localStorage.setItem(TODAY_CACHE_KEY, JSON.stringify(payload));
+    } catch {}
+  }, [laps, tasks, todaysPomodoros, totalStudyTimeFormatted, completedTasksCount, upcomingDeadlinesCount, activeTasks]);
+
+  // Unfinished sessions (no ended_at)
+  const unfinishedLaps: Lap[] = useMemo(() => {
+    return (laps || []).filter((lap: Lap) => !lap.ended_at);
+  }, [laps]);
+
+  const handleFinishLap = async (lap: Lap) => {
+    try {
+      const nowIso = new Date().toISOString();
+      const startIso = lap.started_at || lap.created_at;
+      const durationSec = Math.max(
+        0,
+        Math.floor((new Date(nowIso).getTime() - new Date(startIso).getTime()) / 1000)
+      );
+      await dispatch(updateLap(lap.id, { ended_at: nowIso, duration: durationSec, status: 'completed' }));
+    } catch (e) {
+      console.error('Error finishing session:', e);
+    }
+  };
+
+  const handleDeleteLap = async (lapId: string) => {
+    try {
+      if (window.confirm('Delete this unfinished session?')) {
+        await dispatch(deleteLap(lapId));
+      }
+    } catch (e) {
+      console.error('Error deleting session:', e);
+    }
+  };
 
   // Animation variants
   const container = {
@@ -189,6 +318,16 @@ const SessionStatsAndTasks = () => {
     hidden: { opacity: 0, y: 10 },
     show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
   };
+
+  // UI-safe values to prevent flicker during transient fetch states
+  const displayStudyTime =
+    (totalStudyTimeFormatted && totalStudyTimeFormatted !== '0m')
+      ? totalStudyTimeFormatted
+      : stableMetrics.totalStudyTimeFormatted;
+  const displayPomodoros =
+    (typeof todaysPomodoros === 'number' && todaysPomodoros > 0)
+      ? todaysPomodoros
+      : stableMetrics.todaysPomodoros;
 
   return (
     <div className="w-full space-y-4 md:space-y-5 relative">
@@ -231,7 +370,7 @@ const SessionStatsAndTasks = () => {
           className="relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 mb-0.5 sm:mb-1">
-            {totalStudyTimeFormatted}
+            {displayStudyTime}
           </div>
           <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Study Time
@@ -245,7 +384,7 @@ const SessionStatsAndTasks = () => {
           className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-pink-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-500 mb-0.5 sm:mb-1">
-            {todaysPomodoros}
+            {displayPomodoros}
           </div>
           <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Pomodoros
@@ -414,8 +553,60 @@ const SessionStatsAndTasks = () => {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Unfinished Sessions Section */}
+      {unfinishedLaps.length > 0 && (
+        <motion.div 
+          variants={item}
+          className="relative overflow-hidden bg-gradient-to-br from-red-500/5 to-rose-500/5 p-4 rounded-xl border-[var(--border-primary)]"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
+              <div className="p-1 bg-rose-500/10 rounded-md">
+                <Clock size={14} className="text-rose-500" />
+              </div>
+              <span>Unfinished Sessions</span>
+              <span className="ml-2 text-sm font-normal bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full">
+                {unfinishedLaps.length}
+              </span>
+            </h4>
+          </div>
+
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {unfinishedLaps.map((lap: Lap) => {
+              const startIso = lap.started_at || lap.created_at;
+              const elapsedSec = Math.max(0, Math.floor((Date.now() - new Date(startIso).getTime()) / 1000));
+              const title = lap.name || (lap.session_number ? `Session #${lap.session_number}` : 'Session');
+              return (
+                <div key={lap.id} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</div>
+                    <div className="text-xs text-[var(--text-secondary)]">Elapsed: {formatStudyTime(elapsedSec)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleFinishLap(lap)}
+                      className="px-2 py-1 rounded-md bg-green-600 text-white text-xs hover:opacity-90"
+                      title="Finish session"
+                    >
+                      Finish
+                    </button>
+                    <button
+                      onClick={() => handleDeleteLap(lap.id)}
+                      className="px-2 py-1 rounded-md bg-red-600 text-white text-xs hover:opacity-90"
+                      title="Delete session"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
-};
+}
 
 export default SessionStatsAndTasks;

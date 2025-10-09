@@ -1,17 +1,18 @@
-import { X, Play, Square, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { X, Play, Check, Trash2 } from 'lucide-react';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/store/store';
 import { updateLap } from '@/store/LapActions';
-import { formatStudyTime } from '@/hooks/useTimers';
 import { motion } from 'framer-motion';
 
 interface UnfinishedSession {
   id: string;
   name: string;
+  created_at: string;
   started_at: string;
-  duration: number;
+  duration: string | null; // stored as HH:MM:SS in DB
   session_number: number;
 }
 
@@ -30,7 +31,14 @@ const UnfinishedSessionsModal = ({
 }: UnfinishedSessionsModalProps) => {
   const [sessions, setSessions] = useState<UnfinishedSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Safely parse date string, return null if invalid
+  const safeParseDate = (value?: string | null): Date | null => {
+    if (!value) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -42,10 +50,10 @@ const UnfinishedSessionsModal = ({
 
         const { data, error } = await supabase
           .from('study_laps')
-          .select('id, name, started_at, duration, session_number')
-          .is('end_time', null)
+          .select('id, name, created_at, started_at, duration, session_number')
+          .is('ended_at', null)
           .eq('user_id', user.id)
-          .order('started_at', { ascending: false });
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
         
@@ -82,12 +90,19 @@ const UnfinishedSessionsModal = ({
       
       if (!session) return;
 
-      const duration = Math.floor((new Date().getTime() - new Date(session.started_at).getTime()) / 1000);
+      const seconds = Math.floor((new Date().getTime() - new Date(session.started_at).getTime()) / 1000);
+      const toHMS = (totalSeconds: number) => {
+        const s = Math.max(0, Math.floor(totalSeconds));
+        const h = Math.floor(s / 3600).toString().padStart(2, '0');
+        const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+        const sec = (s % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${sec}`;
+      };
+      const duration = toHMS(seconds);
       
       await dispatch(updateLap(sessionId, { 
-        end_time: now,
-        duration,
-        status: 'completed' 
+        ended_at: now,
+        duration
       }));
       
       setSessions(sessions.filter(s => s.id !== sessionId));
@@ -141,34 +156,42 @@ const UnfinishedSessionsModal = ({
                       <h3 className="font-medium text-[var(--text-primary)]">
                         {session.name || `Session #${session.session_number}`}
                       </h3>
-                      <p className="text-sm text-[var(--text-secondary)] mt-1">
-                        Started {formatDistanceToNow(new Date(session.started_at), { addSuffix: true })}
-                      </p>
+                      {(() => {
+                        const created = safeParseDate(session.created_at) || safeParseDate(session.started_at);
+                        return (
+                          <p className="text-sm text-[var(--text-secondary)] mt-1">
+                            Started {created ? formatDistanceToNowStrict(created, { addSuffix: true }) : 'Unknown'}
+                          </p>
+                        );
+                      })()}
                       <p className="text-sm text-[var(--text-secondary)]">
-                        <span className="text-sm text-[var(--text-secondary)]">{formatStudyTime(session.duration)}</span>: {formatStudyTime(session.duration || 0)}
+                        Duration: {session.duration || '00:00:00'}
                       </p>
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex items-center space-x-1 self-end">
                       <button
                         onClick={() => handleResumeSession(session.id)}
-                        className="p-2 rounded-lg bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+                        className="p-2 rounded-md text-green-600 hover:text-green-500 transition-colors"
                         title="Resume session"
+                        aria-label="Resume session"
                       >
-                        <Play size={16} />
+                        <Play size={18} />
                       </button>
                       <button
                         onClick={() => handleFinishSession(session.id)}
-                        className="p-2 rounded-lg bg-green-600 text-white hover:opacity-90 transition-opacity"
+                        className="p-2 rounded-md text-gray-500 hover:text-gray-400 transition-colors"
                         title="Finish session"
+                        aria-label="Finish session"
                       >
-                        <Square size={16} />
+                        <Check size={18} />
                       </button>
                       <button
                         onClick={() => handleDeleteSession(session.id)}
-                        className="p-2 rounded-lg bg-red-600 text-white hover:opacity-90 transition-opacity"
+                        className="p-2 rounded-md text-red-600 hover:text-red-500 transition-colors"
                         title="Delete session"
+                        aria-label="Delete session"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
@@ -178,7 +201,7 @@ const UnfinishedSessionsModal = ({
           )}
         </div>
         
-        <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2">
+        <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2 sticky bottom-0 bg-[var(--bg-primary)] z-10">
           {onFinishAllSessions && (
             <button
               onClick={onFinishAllSessions}
@@ -196,7 +219,7 @@ const UnfinishedSessionsModal = ({
             </button>
             <button
               onClick={() => onSessionResumed('')}
-              className="px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+              className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               Start New Session
             </button>

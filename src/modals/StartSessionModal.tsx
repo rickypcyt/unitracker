@@ -135,7 +135,7 @@ const StartSessionModal = ({
       const { data, error } = await supabase
         .from("study_laps")
         .select("id")
-        .is("end_time", null)
+        .is("ended_at", null)
         .eq("user_id", user.id)
         .limit(1);
 
@@ -152,14 +152,37 @@ const StartSessionModal = ({
   }, [isOpen]);
 
   const handleSessionResumed = useCallback(
-    (sessionId: string) => {
+    async (sessionId: string) => {
       if (sessionId) {
-        onStart({
-          sessionId,
-          title: sessionTitle || "Untitled Session",
-          syncPomo,
-          syncCountdown,
-        });
+        try {
+          // Fetch real session title to avoid showing "Untitled" on resume
+          const { data: session, error } = await supabase
+            .from("study_laps")
+            .select("name, description")
+            .eq("id", sessionId)
+            .maybeSingle();
+
+          const resolvedTitle = (session?.name || sessionTitle || "Untitled Session").trim();
+
+          if (error) {
+            console.error("Error fetching session name on resume:", error);
+          }
+
+          onStart({
+            sessionId,
+            title: resolvedTitle,
+            syncPomo,
+            syncCountdown,
+          });
+        } catch (e) {
+          console.error("Resume session failed, falling back:", e);
+          onStart({
+            sessionId,
+            title: sessionTitle || "Untitled Session",
+            syncPomo,
+            syncCountdown,
+          });
+        }
       } else {
         setShowUnfinishedSessions(false);
       }
@@ -178,8 +201,8 @@ const StartSessionModal = ({
 
       const { data: sessions, error: fetchError } = await supabase
         .from("study_laps")
-        .select("id, started_at")
-        .is("end_time", null)
+        .select("id, started_at, duration")
+        .is("ended_at", null)
         .eq("user_id", user.id);
 
       if (fetchError) throw fetchError;
@@ -190,18 +213,36 @@ const StartSessionModal = ({
         return;
       }
 
+      const toHMS = (totalSeconds: number) => {
+        const s = Math.max(0, Math.floor(totalSeconds));
+        const h = Math.floor(s / 3600)
+          .toString()
+          .padStart(2, "0");
+        const m = Math.floor((s % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const sec = (s % 60).toString().padStart(2, "0");
+        return `${h}:${m}:${sec}`;
+      };
+
+      const parseHMS = (hms?: string | null): number => {
+        if (!hms) return 0;
+        const parts = hms.split(":");
+        if (parts.length !== 3) return 0;
+        const [h, m, s] = parts.map((p) => parseInt(p, 10));
+        return (Number.isFinite(h) ? h : 0) * 3600 + (Number.isFinite(m) ? m : 0) * 60 + (Number.isFinite(s) ? s : 0);
+      };
+
       const updates = sessions.map((session) => {
-        const duration = Math.floor(
-          (new Date(now).getTime() - new Date(session.started_at).getTime()) /
-            1000
-        );
-        return dispatch(
-          updateLap(session.id, {
-            end_time: now,
-            duration,
-            status: "completed",
-          })
-        );
+        const existingSec = parseHMS(session.duration as any);
+        const payload: any = { ended_at: now };
+        if (!existingSec || existingSec <= 0) {
+          const seconds = Math.floor(
+            (new Date(now).getTime() - new Date(session.started_at).getTime()) / 1000
+          );
+          payload.duration = toHMS(seconds);
+        }
+        return dispatch(updateLap(session.id, payload));
       });
 
       await Promise.all(updates);
@@ -434,8 +475,12 @@ const StartSessionModal = ({
     return (
       <UnfinishedSessionsModal
         isOpen={showUnfinishedSessions}
-        onClose={() => setShowUnfinishedSessions(false)}
+        onClose={() => {
+          setShowUnfinishedSessions(false);
+          onClose();
+        }}
         onSessionResumed={handleSessionResumed}
+        onFinishAllSessions={handleFinishAllSessions}
       />
     );
   }
@@ -510,6 +555,7 @@ const StartSessionModal = ({
             />
           </div>
 
+
           {/* Sync controls */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <button
@@ -560,6 +606,8 @@ const StartSessionModal = ({
           assignment={assignment}
           onAssignmentChange={setAssignment as Dispatch<SetStateAction<string>>}
           lastAddedTaskId={lastAddedTaskId}
+          maxHeight="150px"
+          hideAssignmentAndDescriptionAvailable={true}
         />
 
         <FormActions>
