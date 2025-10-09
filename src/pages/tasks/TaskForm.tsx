@@ -3,7 +3,8 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
-import { addTaskSuccess, updateTaskSuccess } from '@/store/slices/TaskSlice';
+import { difficultyOptions, getDifficultyColor } from '@/hooks/tasks/useTaskDifficulty';
+import { formatDateForInput, getSelectedDateFromDMY, normalizeNaturalOrYMDDate, parseDateForDB } from '@/hooks/tasks/useTaskDateUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useRef, useState } from 'react';
 
@@ -13,35 +14,30 @@ import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { addTask } from '@/store/TaskActions';
-import { supabase } from '@/utils/supabaseClient';
 import { useFormState } from '@/hooks/useFormState';
+import { useTaskAI } from '@/hooks/tasks/useTaskAI';
 import { useTaskManager } from '@/hooks/useTaskManager';
+import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 
-const formatDateForInput = (date) => {
-  if (!date) return '';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
+// moved to hooks/tasks/useTaskDateUtils
+
+type TaskFormProps = {
+  initialAssignment?: string | null;
+  initialTask?: any | null;
+  initialDeadline?: string | Date | null;
+  onClose: () => void;
+  onTaskCreated?: (id: string) => void;
 };
 
-const parseDateForDB = (dateString) => {
-  if (!dateString) return null;
-  const [day, month, year] = dateString.split('/');
-  const date = new Date(`${year}-${month}-${day}`);
-  if (isNaN(date.getTime())) return null;
-  return `${year}-${month}-${day}`;
-};
-
-const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }) => {
+const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }: TaskFormProps) => {
   const { user, tasks } = useTaskManager();
+  const { saveTask } = useTaskSubmit();
 
-  const activeWorkspace = useSelector(state => state.workspace.activeWorkspace); // <-- Add this line
+  const activeWorkspace = useSelector((state: any) => state.workspace.activeWorkspace); // <-- Add this line
   const dispatch = useDispatch();
   // Allow dispatching thunks without TS friction in this component scope
   const anyDispatch = dispatch as any;
-  const datePickerRef = useRef(null);
-  const AI_DEBUG = import.meta.env['VITE_AI_DEBUG'] === 'true';
+  const datePickerRef = useRef<any>(null);
 
   const initialFormState = {
     title: initialTask?.title || '',
@@ -75,7 +71,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     errors,
     handleChange,
     validateForm
-  } = useFormState(initialFormState, validationRules);
+  } = useFormState(initialFormState as any, validationRules as any) as any;
 
   useEffect(() => {
     if (initialAssignment) {
@@ -83,7 +79,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     }
   }, [initialAssignment, handleChange]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -91,51 +87,23 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       return;
     }
     try {
-      const taskData = {
-        ...formData,
-        deadline: formData.deadline ? parseDateForDB(formData.deadline) : null,
-        user_id: user.id,
-        completed: initialTask?.completed || false,
-        activetask: initialTask?.activetask || false,
-        ...(initialTask ? {} : { workspace_id: activeWorkspace?.id || null }) // <-- Only set for new tasks
-      };
-
-      console.warn('Saving task data:', taskData);
-
-      if (initialTask) {
-        // Update existing task
-        const { data, error } = await supabase
-          .from('tasks')
-          .update(taskData)
-          .eq('id', initialTask.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        dispatch(updateTaskSuccess(data));
-      } else {
-        // Create new task
-        const { data, error } = await supabase
-          .from('tasks')
-          .insert([taskData])
-          .select()
-          .single();
-
-        if (error) throw error;
-        dispatch(addTaskSuccess(data));
-        if (onTaskCreated) {
-          onTaskCreated(data.id);
-        }
-        window.dispatchEvent(new CustomEvent('refreshTaskList'));
-      }
-
+      if (!user) return;
+      const saved = await saveTask({
+        formData,
+        userId: user.id,
+        initialTask,
+        activeWorkspaceId: activeWorkspace?.id ?? null,
+        parseDateForDB,
+      });
+      if (!initialTask && saved?.id && onTaskCreated) onTaskCreated(saved.id);
+      if (!initialTask) window.dispatchEvent(new CustomEvent('refreshTaskList'));
       onClose();
     } catch (error) {
       console.error('Error saving task:', error);
     }
   };
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
         return 'text-[#00FF41]'; 
@@ -153,60 +121,32 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     { value: 'medium', label: 'Medium' },
     { value: 'hard', label: 'Hard' }
   ];
-  // Control de cancelación y hover para el botón mientras genera
-  const [aiAbortController, setAiAbortController] = useState<AbortController | null>(null);
-  // Flag para saber si el usuario canceló y cortar también el post-procesado
-  const aiCancelledRef = useRef(false);
-  const [aiCancelHover, setAiCancelHover] = useState(false);
+  // moved to hook useTaskAI
 
-  const handleCancelAI = () => {
-    aiCancelledRef.current = true;
-    if (aiAbortController) {
-      aiAbortController.abort();
-    }
-    setAiLoading(false);
-    setAiAbortController(null);
-  };
+  const getSelectedDate = () => getSelectedDateFromDMY(formData.deadline);
 
-  const getSelectedDate = () => {
-    if (!formData.deadline) return null;
-    const parts = formData.deadline.split('/');
-    if (parts.length === 3) {
-      const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-      if (!isNaN(date.getTime())) {
-         return date;
-      }
-    }
-    return null;
-  };
-
-  const uniqueAssignments = [...new Set(tasks.map((task) => task.assignment || 'No Assignment'))]
+  const uniqueAssignments = [...new Set(tasks.map((task: any) => task.assignment || 'No Assignment'))]
     .filter((assignment) => assignment && assignment !== 'No Assignment')
     .sort();
 
-  const [activeTab, setActiveTab] = useState('ai'); // 'manual' or 'ai'
-  const [aiPrompt, setAiPrompt] = useState(() => localStorage.getItem('aiPromptDraft') || '');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState('');
-  const aiTextareaRef = useRef(null);
-  const [aiParsedTasks, setAiParsedTasks] = useState(null); // array|null
-  const [showAIPreview, setShowAIPreview] = useState(false);
-  // Modelo AI seleccionado por el usuario (persistido)
-  const DEFAULT_MODEL = 'openai/gpt-oss-20b:free';
-  const [selectedModel, setSelectedModel] = useState<string>(() => {
-    const saved = localStorage.getItem('aiSelectedModel');
-    // Si había un valor legacy 'auto', usar el modelo por defecto
-    return saved && saved !== 'auto' ? saved : DEFAULT_MODEL;
-  });
-  const MODEL_OPTIONS: { value: string; label: string }[] = [
-    { value: 'openai/gpt-oss-20b:free', label: 'OpenAI: gpt-oss-20b (free)' },
-    { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat v3 (free)' },
-    { value: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B IT (free)' },
-  ];
+  const {
+    AI_DEBUG,
+    activeTab, setActiveTab,
+    aiPrompt, setAiPrompt,
+    selectedModel, setSelectedModel,
+    aiLoading, setAiLoading,
+    aiError, setAiError,
+    showAIPreview, setShowAIPreview,
+    aiParsedTasks, setAiParsedTasks,
+    aiTextareaRef,
+    aiCancelHover, setAiCancelHover,
+    aiAbortController, setAiAbortController,
+    aiCancelledRef,
+    handleCancelAI,
+    MODEL_OPTIONS,
+  } = useTaskAI();
 
-  useEffect(() => {
-    localStorage.setItem('aiSelectedModel', selectedModel);
-  }, [selectedModel]);
+  // persisted in hook
 
   // Ensure the Manual tab is active when editing an existing task
   useEffect(() => {
@@ -215,14 +155,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     }
   }, [initialTask]);
 
-  // Autofocus AI textarea when the AI tab becomes active
-  useEffect(() => {
-    if (activeTab === 'ai' && aiTextareaRef.current) {
-      try {
-        aiTextareaRef.current.focus();
-      } catch {}
-    }
-  }, [activeTab]);
+  // focus handled in hook
 
   // Helper to call DeepSeek API
   async function handleAIPromptSubmit(e) {
@@ -549,85 +482,12 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     }
   }
 
-  // Permite cancelar con tecla Escape mientras está generando
-  useEffect(() => {
-    if (!aiLoading) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCancelAI();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [aiLoading]);
+  // handled in hook
 
-  // Valida formato YYYY-MM-DD
-  function isValidDate(dateStr: string): boolean {
-    return /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
-  }
-
-  // Convierte fechas relativas comunes a YYYY-MM-DD y valida formato
-  function normalizeDate(dateStr: string): string {
-    if (!dateStr) return '';
-    const lower = dateStr.toLowerCase().trim();
-
-    // Hoy
-    if (lower === 'hoy' || lower === 'today') {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    // Mañana
-    if (lower === 'mañana' || lower === 'tomorrow') {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const year = tomorrow.getFullYear();
-      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const day = String(tomorrow.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    // Pasado mañana
-    if (lower === 'pasado mañana' || lower === 'day after tomorrow') {
-      const dat = new Date();
-      dat.setDate(dat.getDate() + 2);
-      const year = dat.getFullYear();
-      const month = String(dat.getMonth() + 1).padStart(2, '0');
-      const day = String(dat.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    // Próxima semana
-    if (
-      lower === 'próxima semana' ||
-      lower === 'la próxima semana' ||
-      lower === 'next week' ||
-      lower === 'the next week'
-    ) {
-      const dat = new Date();
-      dat.setDate(dat.getDate() + 7);
-      const year = dat.getFullYear();
-      const month = String(dat.getMonth() + 1).padStart(2, '0');
-      const day = String(dat.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    // Si ya es una fecha válida, la devuelve igual
-    if (isValidDate(dateStr)) return dateStr;
-
-    // Si no es válida, devuelve vacío
-    return '';
-  }
+  // moved to useTaskDateUtils.normalizeNaturalOrYMDDate
 
   // Convierte YYYY-MM-DD a DD/MM/YYYY
-  function ymdToDmy(dateStr) {
-    if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return '';
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-  }
+  // moved to useTaskDateUtils.ymdToDmy
 
   // Limpia el draft al cerrar el modal completamente
   useEffect(() => {
@@ -903,7 +763,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         onAccept={async (task: any) => {
           const t0 = performance.now?.() ?? Date.now();
           // Mapea los datos de la tarea AI a los campos de la base de datos
-          const normalizedDate = task.date && task.date !== 'null' ? normalizeDate(task.date) : null;
+          const normalizedDate = task.date && task.date !== 'null' ? normalizeNaturalOrYMDDate(task.date) : null;
           const newTask = {
             title: task.task || '',
             description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),
@@ -922,7 +782,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         onAcceptAll={async (tasks: any[]) => {
           const t0 = performance.now?.() ?? Date.now();
           const mapped = tasks.map((task) => {
-            const normalizedDate = task.date && task.date !== 'null' ? normalizeDate(task.date) : null;
+            const normalizedDate = task.date && task.date !== 'null' ? normalizeNaturalOrYMDDate(task.date) : null;
             return {
               title: task.task || '',
               description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),

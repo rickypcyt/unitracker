@@ -8,6 +8,8 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
+// moved to hooks/study-timer/useStudySync
+import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
 import {
@@ -20,8 +22,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
-import ExitSessionChoiceModal from "@/modals/ExitSessionChoiceModal";
 import EditSessionModal from "@/modals/EditSessionModal";
+import ExitSessionChoiceModal from "@/modals/ExitSessionChoiceModal";
 import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import SectionTitle from "@/components/SectionTitle";
@@ -32,6 +34,10 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import useEventListener from "@/hooks/useEventListener";
 import { useLapRealtimeSubscription } from "@/hooks/useLapRealtimeSubscription";
+// moved to hooks/study-timer/useSessionId
+import { useSessionId } from "@/hooks/study-timer/useSessionId";
+// moved to hooks/study-timer/useStudyTimerState
+import { useStudyTimerState } from "@/hooks/study-timer/useStudyTimerState";
 
 // Constantes
 const STORAGE_KEYS = {
@@ -51,26 +57,6 @@ const TIME_ADJUSTMENTS = {
   PLUS_TEN: 600,
 };
 
-const SYNC_EVENTS = {
-  PLAY_TIMER: "playTimerSync",
-  PAUSE_TIMER: "pauseTimerSync",
-  RESET_TIMER: "resetTimerSync",
-  PLAY_POMODORO: "playPomodoroSync",
-  PAUSE_POMODORO: "pausePomodoroSync",
-  RESET_POMODORO: "resetPomodoroSync",
-  PLAY_COUNTDOWN: "playCountdownSync",
-  PAUSE_COUNTDOWN: "pauseCountdownSync",
-  RESET_COUNTDOWN: "resetCountdownSync",
-  STUDY_TIMER_TIME_UPDATE: "studyTimerTimeUpdate",
-  STUDY_TIMER_STATE_CHANGED: "studyTimerStateChanged",
-  STUDY_TIMER_SYNC_STATE_CHANGED: "studyTimerSyncStateChanged",
-  ADJUST_POMODORO_TIME: "adjustPomodoroTime",
-  ADJUST_COUNTDOWN_TIME: "adjustCountdownTime",
-  GLOBAL_TIMER_SYNC: "globalTimerSync",
-  GLOBAL_RESET_SYNC: "globalResetSync",
-  REFRESH_STATS: "refreshStats",
-  FINISH_SESSION: "finishSession",
-};
 
 // Utilidades
 const safeNumber = (value, defaultValue = 0) =>
@@ -147,46 +133,7 @@ const useTimestamp = () => {
   return { isNewTimestamp, setLastSyncTimestamp };
 };
 
-const useStudyState = () => {
-  const defaultState = {
-    time: 0,
-    isRunning: false,
-    lastStart: null,
-    timeAtStart: 0,
-    sessionStatus: "inactive",
-    sessionTitle: "",
-    sessionDescription: "",
-    lastPausedAt: null,
-  };
 
-  const [studyState, setStudyState] = useState(() => {
-    const savedState = getFromLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE);
-    return parseStoredState(savedState, defaultState);
-  });
-
-  const updateStudyState = useCallback((updates) => {
-    setStudyState((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  return [studyState, updateStudyState, setStudyState];
-};
-
-const useSessionId = () => {
-  const [currentSessionId, setCurrentSessionId] = useState(() =>
-    getFromLocalStorage(STORAGE_KEYS.ACTIVE_SESSION_ID)
-  );
-
-  const updateSessionId = useCallback((id) => {
-    setCurrentSessionId(id);
-    if (id) {
-      saveToLocalStorage(STORAGE_KEYS.ACTIVE_SESSION_ID, id);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.ACTIVE_SESSION_ID);
-    }
-  }, []);
-
-  return [currentSessionId, updateSessionId];
-};
 
 const useModalStates = () => {
   const [modalStates, setModalStates] = useState({
@@ -224,7 +171,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   const dispatch = useDispatch();
   const isStudyRunningRedux = useSelector((state) => state.ui.isStudyRunning);
 
-  const [studyState, updateStudyState, setStudyState] = useStudyState();
+  const [studyState, updateStudyState, setStudyState] = useStudyTimerState();
   const [currentSessionId, updateSessionId] = useSessionId();
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
@@ -244,20 +191,8 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   );
   const [localResetKey, setLocalResetKey] = useState(0);
 
-  // Función para emitir eventos de sincronización
-  const emitSyncEvent = useCallback((eventName, baseTimestamp = Date.now()) => {
-    window.dispatchEvent(
-      new CustomEvent(eventName, { detail: { baseTimestamp } })
-    );
-  }, []);
-
-  // Función para emitir múltiples eventos de sincronización
-  const emitMultipleSyncEvents = useCallback(
-    (events, baseTimestamp = Date.now()) => {
-      events.forEach((eventName) => emitSyncEvent(eventName, baseTimestamp));
-    },
-    [emitSyncEvent]
-  );
+  // Emitters
+  const { emitSyncEvent, emitMultipleSyncEvents } = useEmitSyncEvents();
 
   // Función para actualizar el tiempo del timer
   const updateTimerTime = useCallback(
