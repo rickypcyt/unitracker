@@ -50,12 +50,6 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
       setCustomBreakTime((currentMode.break / 60).toString());
       setCustomLongBreakTime((currentMode.longBreak / 60).toString());
     }
-    
-    // Apply the selected mode and close the modal
-    onModeChange(index);
-    onWorkSessionsChange(workSessions);
-    onLongBreakDurationChange(longBreakDur);
-    onClose();
   };
 
   const handleSave = () => {
@@ -103,8 +97,8 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 onClick={() => handleModeSelect(index)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   selectedModeIndex === index && !isCustomModeSelected
-                    ? 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]'
-                    : 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
+                    ? 'px-4 border-2 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]'
+                    : 'px-4 border-2 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
                 }`}
               >
                 {mode.label}
@@ -114,7 +108,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
               onClick={() => handleModeSelect(customModeIndex)}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 isCustomModeSelected
-                  ? 'bg-[var(--accent-primary)] text-white'
+                  ? 'px-4 py-2 rounded-lg transition-colors px-4 border-2 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]'
                   : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]'
               }`}
             >
@@ -193,7 +187,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
+            className="px-4 border-2 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             {isCustomModeSelected ? 'Save Custom Mode' : 'Select Mode'}
           </button>

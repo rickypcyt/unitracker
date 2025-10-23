@@ -1113,6 +1113,14 @@ const Pomodoro = () => {
           tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks. This helps maintain concentration and prevent burnout."
           size="md"
         />
+        {/* Botón de configuración de sesión */}
+        <button
+          onClick={() => setIsSettingsModalOpen(true)}
+          className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          aria-label="Configure pomodoro"
+        >
+          <MoreVertical size={20} />
+        </button>
         {/* Botón de alarma */}
         <button
           onClick={toggleAlarm}
@@ -1125,14 +1133,6 @@ const Pomodoro = () => {
           ) : (
             <BellOff size={20} className="text-[var(--text-secondary)]" />
           )}
-        </button>
-        {/* Botón de configuración de sesión */}
-        <button
-          onClick={() => setIsSettingsModalOpen(true)}
-          className="absolute right-8 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Configure pomodoro"
-        >
-          <MoreVertical size={20} />
         </button>
         
       </div>

@@ -1,11 +1,12 @@
-import { X, Play, Check, Trash2 } from 'lucide-react';
-import { formatDistanceToNowStrict } from 'date-fns';
+import { Check, Play, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/utils/supabaseClient';
-import { useDispatch } from 'react-redux';
+
 import type { AppDispatch } from '@/store/store';
-import { updateLap } from '@/store/LapActions';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { motion } from 'framer-motion';
+import { supabase } from '@/utils/supabaseClient';
+import { updateLap } from '@/store/LapActions';
+import { useDispatch } from 'react-redux';
 
 interface UnfinishedSession {
   id: string;
@@ -205,7 +206,7 @@ const UnfinishedSessionsModal = ({
           {onFinishAllSessions && (
             <button
               onClick={onFinishAllSessions}
-              className="px-4 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors"
+              className="px-4 border-2 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors"
             >
               Finish All Sessions
             </button>
@@ -213,13 +214,13 @@ const UnfinishedSessionsModal = ({
           <div className="flex space-x-3 ml-auto">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              className="px-4 border-2 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
             >
               Close
             </button>
             <button
               onClick={() => onSessionResumed('')}
-              className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+              className="px-4 border-2 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               Start New Session
             </button>

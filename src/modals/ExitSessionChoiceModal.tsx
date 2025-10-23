@@ -1,5 +1,5 @@
-import React from 'react';
 import BaseModal from './BaseModal';
+import React from 'react';
 
 type ExitSessionChoiceModalProps = {
   isOpen: boolean;
@@ -30,7 +30,7 @@ const ExitSessionChoiceModal: React.FC<ExitSessionChoiceModalProps> = ({
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end pt-2">
           <button
             onClick={onJustExit}
-            className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="px-4 border-2 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
             Just Exit
           </button>
@@ -42,7 +42,7 @@ const ExitSessionChoiceModal: React.FC<ExitSessionChoiceModalProps> = ({
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            className="px-4 border-2 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
           >
             Cancel
           </button>
