@@ -25,6 +25,7 @@ interface StartSessionModalProps {
     sessionId?: string;
     tasks?: string[];
     title: string;
+    description?: string;
     syncPomo?: boolean;
     syncCountdown?: boolean;
   }) => void;
@@ -377,6 +378,7 @@ const StartSessionModal = ({
           sessionId: existingSession.id,
           tasks: selectedTasks,
           title: sessionTitle.trim(),
+          description: sessionDescription.trim(),
           syncPomo,
           syncCountdown,
         });
@@ -434,6 +436,7 @@ const StartSessionModal = ({
         sessionId: session.id,
         tasks: selectedTasks,
         title: sessionTitle.trim(),
+        description: sessionDescription.trim(),
         syncPomo,
         syncCountdown,
       });
@@ -546,9 +549,7 @@ const StartSessionModal = ({
               id="session-description"
               label=""
               value={sessionDescription}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setSessionDescription(e.target.value)
-              }
+              onChange={setSessionDescription}
               error=""
               placeholder="Add a description (optional)"
               className="w-full"

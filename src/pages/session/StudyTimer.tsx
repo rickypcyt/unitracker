@@ -690,7 +690,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Función para manejar inicio de sesión
   const handleStartSession = useCallback(
-    async ({ sessionId, title, syncPomo, syncCountdown }) => {
+    async ({ sessionId, title, description, syncPomo, syncCountdown }) => {
       try {
         if (!sessionId) return;
 
@@ -740,7 +740,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
         updateStudyState({
           sessionTitle: title || studyState.sessionTitle,
-          sessionDescription: studyState.sessionDescription,
+          sessionDescription: description || studyState.sessionDescription,
           sessionStatus: "active",
           time: initialSeconds,
         });
