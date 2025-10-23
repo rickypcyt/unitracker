@@ -505,11 +505,18 @@ const Pomodoro = () => {
     ]
   );
 
-  const handleWorkSessionsChange = useCallback((newWorkSessions) => {
+  const handleWorkSessionsChange = useCallback((sessions: number) => {
     setPomoState((prev) => ({
       ...prev,
-      workSessionsBeforeLongBreak: newWorkSessions,
+      workSessionsBeforeLongBreak: sessions,
       workSessionsCompleted: 0,
+    }));
+  }, []);
+
+  const handleLongBreakDurationChange = useCallback((duration: number) => {
+    setPomoState((prev) => ({
+      ...prev,
+      longBreakDuration: duration,
     }));
   }, []);
 
@@ -1018,42 +1025,48 @@ const Pomodoro = () => {
       return;
     }
 
-    // Check if notification permission is already granted
-    if (Notification.permission === 'granted') {
-      // If it's okay, create a notification
-      new Notification(title, options);
-    } else if (Notification.permission !== 'denied') {
-      // Otherwise, ask the user for permission
-      Notification.requestPermission().then((permission) => {
-        // If the user accepts, create a notification
-        if (permission === 'granted') {
-          new Notification(title, options);
-        }
-      });
-    }
+    // Add the app icon and other options to notification
+    const notificationOptions = {
+      ...options,
+      icon: '/assets/apple-touch-icon-removebg-preview.png',
+      silent: false,
+      vibrate: [200, 100, 200],
+    };
 
     try {
-      const notification = new window.Notification(title, {
-        ...options,
-        silent: false,
-        vibrate: [200, 100, 200],
-      });
-
-      // Close notification after 5 seconds
-      setTimeout(() => {
-        notification.close();
-      }, 5000);
-
-      // Handle notification click
-      notification.onclick = () => {
-        if (typeof window !== "undefined") {
-          window.focus();
-        }
-        notification.close();
-      };
+      // Check if notification permission is already granted
+      if (Notification.permission === 'granted') {
+        // If it's okay, create a notification with our options
+        const notification = new Notification(title, notificationOptions);
+        setupNotificationHandlers(notification);
+      } else if (Notification.permission !== 'denied') {
+        // Otherwise, ask the user for permission
+        Notification.requestPermission().then((permission) => {
+          // If the user accepts, create a notification with our options
+          if (permission === 'granted') {
+            const notification = new Notification(title, notificationOptions);
+            setupNotificationHandlers(notification);
+          }
+        });
+      }
     } catch (error) {
       console.error("Error showing notification:", error);
     }
+  };
+
+  const setupNotificationHandlers = (notification: Notification) => {
+    // Close notification after 5 seconds
+    setTimeout(() => {
+      notification.close();
+    }, 5000);
+
+    // Handle notification click
+    notification.onclick = () => {
+      if (typeof window !== "undefined") {
+        window.focus();
+      }
+      notification.close();
+    };
   };
 
   const isPomodoroRunning = syncPomodoroWithTimer
@@ -1225,9 +1238,11 @@ const Pomodoro = () => {
         onSaveCustomMode={handleSaveCustomMode}
         workSessionsBeforeLongBreak={pomoState.workSessionsBeforeLongBreak}
         onWorkSessionsChange={handleWorkSessionsChange}
+        longBreakDuration={pomoState.longBreakDuration}
+        onLongBreakDurationChange={handleLongBreakDurationChange}
       />
     </div>
   );
-};
+}
 
 export default Pomodoro;

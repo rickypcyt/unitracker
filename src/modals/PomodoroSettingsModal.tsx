@@ -50,6 +50,12 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
       setCustomBreakTime((currentMode.break / 60).toString());
       setCustomLongBreakTime((currentMode.longBreak / 60).toString());
     }
+    
+    // Apply the selected mode and close the modal
+    onModeChange(index);
+    onWorkSessionsChange(workSessions);
+    onLongBreakDurationChange(longBreakDur);
+    onClose();
   };
 
   const handleSave = () => {
@@ -67,19 +73,19 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
           longBreak: longBreakTimeSeconds 
         });
         onModeChange(customModeIndex); // Ensure we switch to custom mode after saving
-        onWorkSessionsChange(workSessions);
-        onLongBreakDurationChange(longBreakDur);
-        onClose();
       } else {
         // Handle invalid input
         alert('Please enter valid positive numbers for all time values.');
+        return; // Don't close the modal if there's invalid input
       }
     } else {
       onModeChange(selectedModeIndex);
-      onWorkSessionsChange(workSessions);
-      onLongBreakDurationChange(longBreakDur);
-      onClose();
     }
+    
+    // Apply work sessions and long break duration, then close the modal
+    onWorkSessionsChange(workSessions);
+    onLongBreakDurationChange(longBreakDur);
+    onClose();
   };
 
   // Get predefined modes (excluding custom)

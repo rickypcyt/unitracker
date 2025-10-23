@@ -183,14 +183,36 @@ const Countdown = ({ isSynced, isRunning }) => {
       position: 'top-center',
       style: { backgroundColor: '#000', color: '#fff', border: '2px solid var(--border-primary)' }
     });
-    if (Notification.permission === 'granted') {
-      try {
-        const notification = new Notification('Countdown finished!', {
-          body: 'Your session is complete.',
-          silent: false
+    // Request notification permission if not already determined
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        try {
+          const notification = new Notification('Countdown finished!', {
+            body: 'Your session is complete.',
+            icon: '/assets/apple-touch-icon-removebg-preview.png',
+            silent: false,
+            vibrate: [200, 100, 200]
+          });
+          // Close notification after 5 seconds
+          setTimeout(() => notification.close(), 5000);
+        } catch (error) {
+          console.error('Failed to show notification:', error);
+        }
+      } else if (Notification.permission !== 'denied') {
+        // Request permission if not already denied
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            const notification = new Notification('Countdown finished!', {
+              body: 'Your session is complete.',
+              icon: '/assets/apple-touch-icon.png',
+              silent: false,
+              vibrate: [200, 100, 200]
+            });
+            // Close notification after 5 seconds
+            setTimeout(() => notification.close(), 5000);
+          }
         });
-        setTimeout(() => notification.close(), 5000);
-      } catch {}
+      }
     }
   }, [isCountdownRunning, alarmEnabled]);
 
