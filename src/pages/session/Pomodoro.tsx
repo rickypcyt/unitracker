@@ -440,6 +440,8 @@ const Pomodoro = () => {
         handleModeChange(customModeIndex);
         return newModes;
       });
+      // Close the settings modal after saving
+      setIsSettingsModalOpen(false);
     },
     [handleModeChange]
   );
@@ -1009,14 +1011,25 @@ const Pomodoro = () => {
     handleReset,
   ]);
 
-  const showNotification = (title, options) => {
-    if (
-      typeof window === "undefined" ||
-      typeof Notification === "undefined" ||
-      !("Notification" in window) ||
-      Notification.permission !== "granted"
-    ) {
+  const showNotification = (title: string, options: NotificationOptions) => {
+    // Check if notifications are supported and permission is granted
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      console.warn('This browser does not support desktop notifications');
       return;
+    }
+
+    // Check if notification permission is already granted
+    if (Notification.permission === 'granted') {
+      // If it's okay, create a notification
+      new Notification(title, options);
+    } else if (Notification.permission !== 'denied') {
+      // Otherwise, ask the user for permission
+      Notification.requestPermission().then((permission) => {
+        // If the user accepts, create a notification
+        if (permission === 'granted') {
+          new Notification(title, options);
+        }
+      });
     }
 
     try {

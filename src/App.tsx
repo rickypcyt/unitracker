@@ -127,17 +127,38 @@ const App: FC = () => {
   // -------------------------
   useEffect(() => {
     const requestNotificationPermission = async (): Promise<void> => {
-      if (typeof window === "undefined" || !("Notification" in window)) return;
+      console.log('Checking notification support...');
+      if (typeof window === "undefined") {
+        console.log('Not in browser environment');
+        return;
+      }
+      
+      if (!("Notification" in window)) {
+        console.log('This browser does not support notifications');
+        return;
+      }
 
+      console.log('Current notification permission:', Notification.permission);
+      
       if (Notification.permission === "default") {
-        if (!localStorage.getItem("notificationPermissionRequested")) {
+        console.log('Notification permission not set, checking localStorage...');
+        const permissionRequested = localStorage.getItem("notificationPermissionRequested");
+        console.log('Previously requested:', permissionRequested);
+        
+        if (!permissionRequested) {
           try {
-            await Notification.requestPermission();
+            console.log('Requesting notification permission...');
+            const permission = await Notification.requestPermission();
+            console.log('User responded with permission:', permission);
             localStorage.setItem("notificationPermissionRequested", "true");
           } catch (error) {
             console.error("Notification permission request failed:", error);
           }
+        } else {
+          console.log('Notification permission was already requested before');
         }
+      } else {
+        console.log('Notification permission already set to:', Notification.permission);
       }
     };
 
