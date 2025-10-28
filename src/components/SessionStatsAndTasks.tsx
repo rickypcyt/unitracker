@@ -547,9 +547,7 @@ const SessionStatsAndTasks = () => {
               <Clock size={20} className="text-[var(--accent-primary)]" />
             </div>
             <h4 className="text-sm lg:text-base font-medium text-[var(--text-primary)] mb-1">No active tasks</h4>
-            <p className="text-sm lg:text-base text-[var(--text-secondary)] max-w-xs">
-              You haven't activated any tasks for today yet
-            </p>
+            
           </motion.div>
         )}
       </motion.div>
@@ -558,11 +556,11 @@ const SessionStatsAndTasks = () => {
       {unfinishedLaps.length > 0 && (
         <motion.div 
           variants={item}
-          className="relative overflow-hidden bg-gradient-to-br from-red-500/5 to-rose-500/5 p-4 rounded-xl border-[var(--border-primary)]"
+          className="relative overflow-hidden p-4 rounded-xl border-[var(--border-primary)]"
         >
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
-              <div className="p-1 bg-rose-500/10 rounded-md">
+              <div className="p-1 rounded-md">
                 <Clock size={14} className="text-rose-500" />
               </div>
               <span>Unfinished Sessions</span>
@@ -581,7 +579,7 @@ const SessionStatsAndTasks = () => {
                 <div key={lap.id} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</div>
-                    <div className="text-sm text-[var(--text-secondary)]">Elapsed: {formatStudyTime(elapsedSec)}</div>
+                    <div className="text-sm text-[var(--text-secondary)]">Created {formatStudyTime(elapsedSec)} ago</div>
                   </div>
                   <div className="flex gap-2">
                     <button

@@ -25,7 +25,7 @@ const DeleteNoteModal = ({ isOpen, onClose, onConfirm, noteTitle = '' }: DeleteN
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="cancel-button border-2"
           >
             Cancel
           </button>

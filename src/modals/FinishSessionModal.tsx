@@ -239,13 +239,13 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
         <div className="mt-6 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="cancel-button border-2"
           >
             Cancel
           </button>
           <button
             onClick={handleFinish}
-            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
+            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             Finish Session
           </button>

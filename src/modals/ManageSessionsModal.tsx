@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { deleteLap, fetchLaps } from '@/store/LapActions';
 import { useDispatch, useSelector } from 'react-redux';
@@ -226,9 +226,30 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
 
   if (!isLoggedIn && !isDemo) {
     return (
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Manage Sessions" maxWidth="max-w-6xl">
-        <div className="p-6 text-center text-[var(--text-secondary)]">
-          No sessions yet. Please log in first to start tracking your study sessions.
+      <BaseModal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title="" 
+        maxWidth="max-w-6xl" 
+        className="!p-0"
+        showHeader={false}
+      >
+        <div className="p-4">
+          <div className="relative flex items-center justify-center mb-6">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              Manage Sessions
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="p-6 text-center text-[var(--text-secondary)]">
+            No sessions yet. Please log in first to start tracking your study sessions.
+          </div>
         </div>
       </BaseModal>
     );
@@ -237,37 +258,71 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
   // If not in demo mode and no sessions, show empty state
   if (!isDemo && status === 'succeeded' && laps.length === 0) {
     return (
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Manage Sessions" maxWidth="max-w-6xl">
-        <div className="p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
-            <BookOpen size={24} className="text-[var(--accent-primary)]" />
+      <BaseModal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title="" 
+        maxWidth="max-w-6xl" 
+        className="!p-0"
+        showHeader={false}
+      >
+        <div className="p-4">
+          <div className="relative flex items-center justify-center mb-6">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              Manage Sessions
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
           </div>
-          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No study sessions yet</h3>
-          <p className="text-[var(--text-secondary)] mb-6">
-            Start a new study session to see your progress here.
-          </p>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
-          >
-            Start Studying
-          </button>
+          <div className="p-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
+              <BookOpen size={24} className="text-[var(--accent-primary)]" />
+            </div>
+            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No study sessions yet</h3>
+            <p className="text-[var(--text-secondary)] mb-6">
+              Start a new study session to see your progress here.
+            </p>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
+            >
+              Start Studying
+            </button>
+          </div>
         </div>
       </BaseModal>
     );
   }
 
   return (
-    <>
-      <BaseModal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Manage Sessions"
-        maxWidth="max-w-6xl"
-        className="!p-0"
-      >
-        <div className="w-full h-full bg-[var(--bg-primary)] py-6 px-6 pt-0 flex flex-col max-h-[80vh] overflow-hidden">
-          {selectedMonth ? (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title=""
+      maxWidth="max-w-6xl"
+      className="!p-0"
+      showHeader={false}
+    >
+      <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col max-h-[80vh] overflow-hidden">
+        <div className="p-4">
+          <div className="relative flex items-center justify-center mb-6">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              Manage Sessions
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          </div>
+            {selectedMonth ? (
             // Month detail view
             <div className="space-y-4 flex flex-col h-full">
               <div className="flex items-center justify-between mb-6">
@@ -485,8 +540,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
             </div>
           )}
         </div>
-      </BaseModal>
-    </>
+      </div>
+    </BaseModal>
   );
 };
 

@@ -11,23 +11,27 @@ export const FormInput = ({
   placeholder = '',
   ...props
 }) => (
-  <div className="mb-1">
-    {label && (
-      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
-        {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
-      </label>
-    )}
-    <input
-      id={id}
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
-        error ? 'border-red-500' : 'border-[var(--border-primary)]'
-      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
-      placeholder={placeholder}
-      {...props}
-    />
+  <div className="mb-4 flex flex-col h-full">
+    <div className="flex-1 flex flex-col">
+      {label && (
+        <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2 min-h-[20px]">
+          {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <div className="flex-1 flex flex-col">
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
+            error ? 'border-red-500' : 'border-[var(--border-primary)]'
+          } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
+          placeholder={placeholder}
+          {...props}
+        />
+      </div>
+    </div>
     {error && <p className="mt-1 text-base text-red-500">{error}</p>}
   </div>
 );
@@ -108,7 +112,7 @@ export const FormButton = ({
   className = '',
   ...props
 }) => {
-  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
+  const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
   const variantClasses = {
     primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
     secondary: 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]',

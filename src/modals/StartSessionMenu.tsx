@@ -23,7 +23,7 @@ const StartSessionMenu = ({
             onStartSession();
             onClose();
           }}
-          className="w-full px-4 py-2 text-left text-base border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-md flex items-center gap-2 transition-colors duration-200 hover:bg-[var(--accent-primary)]/10"
+          className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/10"
         >
           <Play size={16} />
           Start Session

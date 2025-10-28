@@ -1,7 +1,6 @@
 import BaseModal from './BaseModal';
 import React from "react";
 
-
 interface DeleteCompletedModalProps {
   onClose: () => void;
   onConfirm: () => void;
@@ -30,7 +29,7 @@ const DeleteCompletedModal: React.FC<DeleteCompletedModalProps> = ({
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="cancel-button border-2"
           >
             Cancel
           </button>

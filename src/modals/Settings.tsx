@@ -1,14 +1,14 @@
-import { Monitor, Moon, Palette, Sun } from "lucide-react";
+import { Monitor, Moon, Palette, Sun, X } from "lucide-react";
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
 
 import { ACCENT_COLORS } from "@/utils/theme";
 import BaseModal from "./BaseModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
-import useTheme from "@/hooks/useTheme";
 import type { Task } from '@/pages/tasks/taskStorage';
+import { useNavigate } from 'react-router-dom';
+import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
 interface AccentColor {
@@ -50,13 +50,27 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <BaseModal
         isOpen={isOpen}
         onClose={onClose}
-        title="Settings"
+        title=""
         maxWidth="max-w-md"
         className="!p-0"
+        showHeader={false}
       >
-        <div className=" p-2">
+        <div className="p-4">
+          <div className="relative flex items-center justify-center mb-6">
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+              Settings
+            </h2>
+            <button
+              onClick={onClose}
+              className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="space-y-4">
           {/* Theme Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
             <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
               {themePreference === "auto" ? (
                 <Monitor size={22} />
@@ -205,6 +219,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             >
               Manage Completed Tasks
             </button>
+          </div>
           </div>
         </div>
       </BaseModal>

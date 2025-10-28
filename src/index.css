@@ -200,6 +200,24 @@
    2. Componentes Personalizados
    ========================= */
 @layer components {
+  .cancel-button {
+    padding: 0.5rem 1rem;
+    border-width: 8px;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+  }
+  
+
   .maincard {
     border-radius: 0.5rem;
     padding: 1.25rem;

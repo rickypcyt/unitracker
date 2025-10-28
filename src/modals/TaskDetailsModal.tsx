@@ -1,6 +1,5 @@
 import { CheckCircle2, Circle, Play, Save, Trash2 } from "lucide-react";
 import { FormActions, FormButton, FormInput } from "@/modals/FormElements";
-import { useEffect } from "react";
 import { deleteTask, updateTask } from "@/store/TaskActions";
 
 import BaseModal from "@/modals/BaseModal";
@@ -8,6 +7,7 @@ import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 import { useFormState } from "@/hooks/useFormState";
 
 const TaskDetailsModal = ({

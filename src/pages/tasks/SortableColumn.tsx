@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { useState } from 'react';
 import { ChevronDown, ChevronUp, Edit2, ListOrdered, Plus, Save, Trash2, X } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
@@ -7,8 +5,10 @@ import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
 import { SortableTaskItem } from '@/pages/tasks/SortableTaskItem';
 import { TaskItem } from '@/pages/tasks/TaskItem';
-import { useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
+import { useRef } from 'react';
+// @ts-nocheck
+import { useState } from 'react';
 
 export const SortableColumn = ({
   id,

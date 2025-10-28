@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 
 import BaseModal from '@/modals/BaseModal';
 import { FormInput } from '@/modals/FormElements';
@@ -86,8 +87,21 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
   const predefinedModes = modes.slice(0, customModeIndex);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Pomodoro Settings">
-      <div className="space-y-6">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0">
+      <div className="p-6 max-h-[66vh] overflow-y-auto">
+        <div className="relative flex items-center justify-center mb-6">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
+            Pomodoro Settings
+          </h2>
+          <button
+            onClick={onClose}
+            className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <div className="space-y-6">
         <div>
           <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
           <div className="flex gap-2 flex-wrap">
@@ -156,13 +170,14 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
           <div className="grid grid-cols-2 gap-4">
             <FormInput
               id="workSessions"
-              label="Work Sessions until Long Break"
+              label="Sessions until Long Break"
               type="number"
               min="1"
               max="10"
               value={workSessions}
               onChange={(value) => setWorkSessions(parseInt(value))}
               placeholder="Enter number of work sessions"
+              error=""
             />
             <FormInput
               id="longBreakDuration"
@@ -181,7 +196,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="cancel-button border-2"
           >
             Cancel
           </button>
@@ -191,6 +206,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
           >
             {isCustomModeSelected ? 'Save Custom Mode' : 'Select Mode'}
           </button>
+        </div>
         </div>
       </div>
     </BaseModal>

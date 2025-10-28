@@ -50,7 +50,7 @@ const SessionPage = memo(() => {
   }, [isSynced, isRunning, resetKey]);
 
   return (
-    <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-20 session-page">
+    <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
       <div className="w-full px-2 overflow-hidden pb-4">
         {/* Controles globales */}
         <div className="px-1 mb-4">

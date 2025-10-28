@@ -92,7 +92,7 @@ const NotesForm: React.FC<NotesFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-0">
       <div className="space-y-2">
         <div className="overflow-hidden">
           <MarkdownWysiwyg
@@ -120,7 +120,6 @@ const NotesForm: React.FC<NotesFormProps> = ({
             onClick={onCancel}
             disabled={loading}
           >
-            <X size={18} className="mr-2" />
             Cancel
           </FormButton>
         )}
@@ -129,7 +128,6 @@ const NotesForm: React.FC<NotesFormProps> = ({
         variant="custom"
         className="border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
         disabled={loading}>
-          <Save size={18} className="mr-2" />
           {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Note"}
         </FormButton>
       </FormActions>
