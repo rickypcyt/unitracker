@@ -245,7 +245,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
           </button>
           <button
             onClick={handleFinish}
-            className="px-4 py-2 rounded-lg font-semibold transition-colors bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80"
+            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
           >
             Finish Session
           </button>

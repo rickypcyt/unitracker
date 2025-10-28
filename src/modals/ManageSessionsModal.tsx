@@ -1,11 +1,11 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { deleteLap, fetchLaps } from '@/store/LapActions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
-import { deleteLap, fetchLaps } from '@/store/LapActions';
 import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
@@ -383,7 +383,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {months
-                          .sort((a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month))
+                          .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
                           .map(({ month, monthYear, lapsOfMonth }) => {
                             const stats = getMonthStats(lapsOfMonth);
                             const totalHours = Math.floor(stats.totalMinutes / 60);
@@ -397,8 +397,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                               >
                                 <div className="flex items-center justify-between mb-3">
                                   <h3 className="text-lg font-semibold text-[var(--text-primary)]">{month}</h3>
-                                  <div className="flex items-center gap-1.5 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-xs font-medium px-2 py-1 rounded-full">
-                                    <BookOpen size={12} />
+                                  <div className="flex items-center gap-1.5 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-sm font-medium px-2 py-1 rounded-full">
+                                    <BookOpen size={15} />
                                     <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
                                   </div>
                                 </div>
@@ -419,7 +419,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                                   </div>
                                 </div>
                                 <div className="mt-3 pt-3 border-t border-[var(--border-primary)]">
-                                  <div className="text-xs text-[var(--text-secondary)] flex items-center justify-between">
+                                  <div className="text-sm text-[var(--text-secondary)] flex items-center justify-between">
                                     <span>View all sessions</span>
                                     <ArrowLeft size={14} className="transform rotate-180 group-hover:translate-x-0.5 transition-transform" />
                                   </div>

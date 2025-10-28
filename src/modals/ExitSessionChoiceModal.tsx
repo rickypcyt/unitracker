@@ -30,13 +30,13 @@ const ExitSessionChoiceModal: React.FC<ExitSessionChoiceModalProps> = ({
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end pt-2">
           <button
             onClick={onJustExit}
-            className="px-4 border-2 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="px-4 border-2 py-2 rounded-lg border border-[var(--accent-primary)] hover:bg-[var(--accent-primary-500-10)] text-[var(--accent-primary)]  transition-colors"
           >
             Just Exit
           </button>
           <button
             onClick={onExitAndDelete}
-            className="px-4 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
+            className="px-4 py-2 border-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
           >
             Exit and Delete
           </button>

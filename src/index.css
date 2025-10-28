@@ -48,6 +48,8 @@
     --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
 
+    --accent-primary-500-10: rgb(var(--accent-primary) / 0.1);
+
     --bg-secondary: #ffffff;
     --text-secondary: #666666;
     --accent-deep: #187bcd; /* Darker electric blue */

@@ -1,8 +1,8 @@
 import { CheckCircle2, Clock, MoreVertical } from "lucide-react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { isAfter, isSameDay } from 'date-fns';
 import { useDispatch, useSelector } from "react-redux";
-import { isSameDay, isAfter } from 'date-fns';
 
 import BaseModal from "@/modals/BaseModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
@@ -410,7 +410,7 @@ const Calendar = () => {
                         {dayObj.date.getDate()}
                       </div>
                       {dayObj.currentMonth && (
-                        <div className={`text-xs ${
+                        <div className={`text-sm ${
                           isSameDay(dayObj.date, new Date()) || isAfter(dayObj.date, new Date())
                             ? 'text-[var(--accent-green)]'
                             : 'text-[var(--text-secondary)]'

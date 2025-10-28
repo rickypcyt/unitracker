@@ -1,12 +1,12 @@
 import { Check, Circle, Clock, Play } from 'lucide-react';
-import { useMemo, useState, useRef, useEffect } from 'react';
-
-import { motion } from 'framer-motion';
+import { deleteLap, updateLap } from '@/store/LapActions';
+import { deleteTask, toggleTaskStatus, updateTask } from '@/store/TaskActions';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
 import type { AppDispatch } from '@/store/store';
-import { updateLap, deleteLap } from '@/store/LapActions';
 import { TaskListMenu } from '@/modals/TaskListMenu';
-import { toggleTaskStatus, updateTask, deleteTask } from '@/store/TaskActions';
+import { motion } from 'framer-motion';
 
 interface ContextMenu {
   x: number;
@@ -369,10 +369,10 @@ const SessionStatsAndTasks = () => {
           variants={item}
           className="relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center"
         >
-          <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 mb-0.5 sm:mb-1">
+          <div className="text-xl sm:text-2xl md:text-3xl lg:text-xl xl:text-3xl font-bold text-blue-500 mb-0.5 sm:mb-1">
             {displayStudyTime}
           </div>
-          <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Study Time
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
@@ -386,7 +386,7 @@ const SessionStatsAndTasks = () => {
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-500 mb-0.5 sm:mb-1">
             {displayPomodoros}
           </div>
-          <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Pomodoros
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
@@ -400,7 +400,7 @@ const SessionStatsAndTasks = () => {
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-500 mb-0.5 sm:mb-1">
             {completedTasksCount}
           </div>
-          <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Tasks Done
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
@@ -413,7 +413,7 @@ const SessionStatsAndTasks = () => {
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-500 mb-0.5 sm:mb-1">
             {upcomingDeadlinesCount}
           </div>
-          <div className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
             Due Soon
           </div>
           {upcomingDeadlinesCount > 0 && (
@@ -454,13 +454,13 @@ const SessionStatsAndTasks = () => {
                     
                     return (
                       <li key={index} className="text-sm text-[var(--text-primary)] flex items-start gap-2">
-                        <div className="flex-shrink-0 w-14 text-xs font-medium text-amber-500 mt-0.5">
+                        <div className="flex-shrink-0 w-14 text-sm font-medium text-amber-500 mt-0.5">
                           {diffTime === 0 ? 'Today' : diffTime === 1 ? 'Tomorrow' : `${diffTime}d`}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium truncate">{task.title}</div>
                           {task.assignment && (
-                            <div className="text-xs text-[var(--text-secondary)] truncate">{task.assignment}</div>
+                            <div className="text-sm text-[var(--text-secondary)] truncate">{task.assignment}</div>
                           )}
                         </div>
                       </li>
@@ -581,19 +581,19 @@ const SessionStatsAndTasks = () => {
                 <div key={lap.id} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</div>
-                    <div className="text-xs text-[var(--text-secondary)]">Elapsed: {formatStudyTime(elapsedSec)}</div>
+                    <div className="text-sm text-[var(--text-secondary)]">Elapsed: {formatStudyTime(elapsedSec)}</div>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleFinishLap(lap)}
-                      className="px-2 py-1 rounded-md bg-green-600 text-white text-xs hover:opacity-90"
+                      className="px-2 py-1 rounded-md bg-green-600 text-white text-sm hover:opacity-90"
                       title="Finish session"
                     >
                       Finish
                     </button>
                     <button
                       onClick={() => handleDeleteLap(lap.id)}
-                      className="px-2 py-1 rounded-md bg-red-600 text-white text-xs hover:opacity-90"
+                      className="px-2 py-1 rounded-md bg-red-600 text-white text-sm hover:opacity-90"
                       title="Delete session"
                     >
                       Delete
