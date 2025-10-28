@@ -20,6 +20,7 @@ import TourManager from "./components/TourManager";
 import { supabase } from "@/utils/supabaseClient";
 import { fetchWorkspaces } from "@/store/slices/workspaceSlice";
 import { hydrateTasksFromLocalStorage } from "@/store/slices/TaskSlice";
+import { hydrateLapsFromLocalStorage } from "@/store/slices/LapSlice";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import useTheme from "@/hooks/useTheme";
 
@@ -176,10 +177,11 @@ const App: FC = () => {
   }, [toggleTheme]);
 
   // -------------------------
-  // Hydrate tasks & workspaces
+  // Hydrate data from localStorage
   // -------------------------
   useEffect(() => {
     dispatch(hydrateTasksFromLocalStorage());
+    dispatch(hydrateLapsFromLocalStorage());
     dispatch(fetchWorkspaces());
   }, [dispatch]);
 

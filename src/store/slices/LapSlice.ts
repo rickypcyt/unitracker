@@ -41,22 +41,42 @@ const lapSlice = createSlice({
   name: 'laps',
   initialState,
   reducers: {
+    hydrateLapsFromLocalStorage: (state) => {
+      try {
+        const local = localStorage.getItem('lapsHydrated');
+        if (local) {
+          state.laps = JSON.parse(local);
+          state.isCached = true;
+          state.lastFetch = Date.now();
+        }
+      } catch {
+        // ignore
+      }
+    },
     fetchLapsSuccess(state, action: PayloadAction<Lap[]>) {
       state.laps = action.payload;
       state.isCached = true;
       state.lastFetch = Date.now();
+      // Save to localStorage
+      localStorage.setItem('lapsHydrated', JSON.stringify(action.payload));
     },
     addLapSuccess(state, action: PayloadAction<Lap>) {
       state.laps.push(action.payload);
+      // Update localStorage
+      localStorage.setItem('lapsHydrated', JSON.stringify(state.laps));
     },
     updateLapSuccess(state, action: PayloadAction<Lap>) {
       const index = state.laps.findIndex((l) => l.id === action.payload.id);
       if (index !== -1) {
         state.laps[index] = action.payload;
+        // Update localStorage
+        localStorage.setItem('lapsHydrated', JSON.stringify(state.laps));
       }
     },
     deleteLapSuccess(state, action: PayloadAction<string>) {
       state.laps = state.laps.filter((l) => l.id !== action.payload);
+      // Update localStorage
+      localStorage.setItem('lapsHydrated', JSON.stringify(state.laps));
     },
     setCurrentSession(state, action: PayloadAction<CurrentSession | null>) {
       state.currentSession = action.payload;
@@ -74,6 +94,7 @@ const lapSlice = createSlice({
 });
 
 export const {
+  hydrateLapsFromLocalStorage,
   fetchLapsSuccess,
   addLapSuccess,
   updateLapSuccess,
