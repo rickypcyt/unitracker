@@ -46,7 +46,7 @@ const StatsPage = memo(() => {
   }, [user, dispatch]);
 
   return (
-    <div className="w-full px-2 overflow-hidden">
+    <div className="w-full px-0 overflow-hidden">
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
         {/* Stats Banner at the top */}
         

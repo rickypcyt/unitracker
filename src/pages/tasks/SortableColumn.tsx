@@ -178,11 +178,13 @@ export const SortableColumn = ({
         ref={setNodeRef}
         onDrop={handleDropInEmptySpace}
         onDragOver={handleDragOver}
-        className={`relative space-y-1.5 overflow-y-auto flex-1 min-h-0 custom-scrollbar transition-all duration-200 ${
+        className={`relative space-y-1.5 flex-1 min-h-0 transition-all duration-200 hide-scrollbar ${
           isOver ? 'bg-accent-primary/5' : ''
         }`}
         style={{
           minHeight: '100px',
+          maxHeight: '800px',
+          overflowY: 'auto',
           padding: '0.5rem',
           position: 'relative',
           zIndex: 1,

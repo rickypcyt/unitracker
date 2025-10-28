@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, ListTodo, Timer } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, Github, ListTodo, Timer } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -351,6 +351,15 @@ const Navbar = () => {
               friends={friends}
               onOpenSettings={() => setShowSettings(true)}
             />
+            <a
+              href="https://github.com/rickypcyt/unitracker"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
+              title="View on GitHub"
+            >
+              <Github className="w-5 h-5" />
+            </a>
             <SettingsButton
               isLoggedIn={isLoggedIn}
               loginWithGoogle={loginWithGoogle}
