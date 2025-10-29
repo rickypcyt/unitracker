@@ -1,12 +1,13 @@
 import { Check, Circle, Clock, Play } from 'lucide-react';
-import { deleteLap, updateLap } from '@/store/LapActions';
-import { deleteTask, toggleTaskStatus, updateTask } from '@/store/TaskActions';
+import { deleteLap, updateLap, fetchLaps } from '@/store/LapActions';
+import { deleteTask, toggleTaskStatus, updateTask, fetchTasks } from '@/store/TaskActions';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { AppDispatch } from '@/store/store';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { motion } from 'framer-motion';
+import { SYNC_EVENTS } from '../utils/constants';
 
 interface ContextMenu {
   x: number;
@@ -47,6 +48,35 @@ const SessionStatsAndTasks = () => {
   
   // Get tasks from store and memoize the calculation
   const tasks = useSelector((state: any) => (state.tasks?.tasks || []) as Task[]);
+  
+  // Function to refresh data
+  const refreshData = useCallback(async () => {
+    try {
+      await Promise.all([
+        dispatch(fetchLaps() as any),
+        dispatch(fetchTasks() as any)
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  }, [dispatch]);
+  
+  // Listen for session completion events to refresh data
+  useEffect(() => {
+    const handleSessionCompleted = () => {
+      // Force a refresh of the data when a session is completed
+      refreshData();
+    };
+
+    // Listen for both the general finish event and the specific sessionCompleted event
+    window.addEventListener('sessionCompleted', handleSessionCompleted);
+    window.addEventListener(SYNC_EVENTS.FINISH_SESSION, handleSessionCompleted);
+    
+    return () => {
+      window.removeEventListener('sessionCompleted', handleSessionCompleted);
+      window.removeEventListener(SYNC_EVENTS.FINISH_SESSION, handleSessionCompleted);
+    };
+  }, [refreshData]);
   
   // Handle task completion toggle
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {

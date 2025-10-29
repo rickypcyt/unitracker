@@ -618,6 +618,16 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           title: latestTitle || studyState.sessionTitle || "Untitled Session",
         });
 
+        // Dispatch event to notify that a session was completed
+        window.dispatchEvent(new CustomEvent('sessionCompleted', {
+          detail: {
+            sessionId: currentSessionId,
+            duration: formattedDuration,
+            pomodoros: pomodorosThisSession,
+            tasksCompleted: completedTasks.length
+          }
+        }));
+
         updateModal("isSummaryOpen", true);
         window.dispatchEvent(new CustomEvent(SYNC_EVENTS.REFRESH_STATS));
       }
