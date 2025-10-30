@@ -187,16 +187,20 @@ const SessionStatsAndTasks = () => {
     upcomingDeadlinesCount, 
     activeTasks
   } = useMemo(() => {
-    // Local day boundaries
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(startOfDay.getDate() + 1);
+    // Obtener la fecha de hoy en la zona horaria local
+    const today = new Date();
+    const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const tomorrowLocal = new Date(todayLocal);
+    tomorrowLocal.setDate(todayLocal.getDate() + 1);
 
     const withinToday = (d?: string | null) => {
       if (!d) return false;
-      const t = new Date(d).getTime();
-      return !isNaN(t) && t >= startOfDay.getTime() && t < endOfDay.getTime();
+      
+      // Convertir la fecha de la base de datos a la zona horaria local
+      const date = new Date(d);
+      
+      // Verificar si la fecha está dentro del día local actual
+      return date >= todayLocal && date < tomorrowLocal;
     };
 
     // Calculate today's pomodoros and total study time based on created_at (fallback started_at)

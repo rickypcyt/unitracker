@@ -56,54 +56,96 @@ function formatMinutesToHHMM(minutes: number): string {
 }
 
 function useTaskStats(tasks: Task[]): { doneToday: number; doneWeek: number; doneMonth: number; doneYear: number } {
-  const today = new Date().toISOString().split('T')[0];
-  const thisMonth = new Date().toISOString().slice(0, 7);
-  const thisYear = new Date().getFullYear();
-
-  let doneToday = 0, doneWeek = 0, doneMonth = 0, doneYear = 0;
+  // Obtener fechas en la zona horaria local
   const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay() + 1);
-  weekStart.setHours(0, 0, 0, 0);
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowLocal = new Date(todayLocal);
+  tomorrowLocal.setDate(todayLocal.getDate() + 1);
+  
+  // Calcular inicio de la semana (lunes)
+  const weekStart = new Date(todayLocal);
+  weekStart.setDate(todayLocal.getDate() - todayLocal.getDay() + (todayLocal.getDay() === 0 ? -6 : 1));
+  
+  // Obtener año y mes actual
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  let doneToday = 0, doneWeek = 0, doneMonth = 0, doneYear = 0;
 
   tasks.forEach(task => {
-    if (task.completed) {
-      const completedDate = task.completed_at ? new Date(task.completed_at) : null;
-      if (!completedDate) return;
-      const completedStr = completedDate.toISOString().split('T')[0];
-      if (completedStr) {
-        if (completedStr === today) doneToday++;
-        if (completedDate >= weekStart) doneWeek++;
-        if (completedStr.startsWith(thisMonth)) doneMonth++;
+    if (task.completed && task.completed_at) {
+      const completedDate = new Date(task.completed_at);
+      
+      // Verificar si la tarea se completó hoy
+      if (completedDate >= todayLocal && completedDate < tomorrowLocal) {
+        doneToday++;
       }
-      if (completedDate.getFullYear() === thisYear) doneYear++;
+      
+      // Verificar si la tarea se completó esta semana
+      if (completedDate >= weekStart) {
+        doneWeek++;
+      }
+      
+      // Verificar si la tarea se completó este mes
+      if (completedDate.getFullYear() === currentYear && 
+          completedDate.getMonth() === currentMonth) {
+        doneMonth++;
+      }
+      
+      // Verificar si la tarea se completó este año
+      if (completedDate.getFullYear() === currentYear) {
+        doneYear++;
+      }
     }
   });
   return { doneToday, doneWeek, doneMonth, doneYear };
 }
 
 function useLapStats(laps: Lap[]): { todayMinutes: number; weekMinutes: number; monthMinutes: number; yearMinutes: number } {
-  const today = new Date().toISOString().split('T')[0];
-  const thisMonth = new Date().toISOString().slice(0, 7);
-  const thisYear = new Date().getFullYear();
-
-  let todayMinutes = 0, weekMinutes = 0, monthMinutes = 0, yearMinutes = 0;
+  // Obtener fechas en la zona horaria local
   const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay() + 1);
-  weekStart.setHours(0, 0, 0, 0);
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowLocal = new Date(todayLocal);
+  tomorrowLocal.setDate(todayLocal.getDate() + 1);
+  
+  // Calcular inicio de la semana (lunes)
+  const weekStart = new Date(todayLocal);
+  weekStart.setDate(todayLocal.getDate() - todayLocal.getDay() + (todayLocal.getDay() === 0 ? -6 : 1));
+  
+  // Obtener año y mes actual
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  
+  let todayMinutes = 0, weekMinutes = 0, monthMinutes = 0, yearMinutes = 0;
 
   laps.forEach(lap => {
+    if (!lap.created_at) return;
+    
     const lapDate = new Date(lap.created_at);
-    const dateStr = lapDate.toISOString().split('T')[0];
     const minutes = durationToMinutes(lap.duration);
-    if (dateStr) {
-        if (dateStr === today) todayMinutes += minutes;
-        if (lapDate >= weekStart) weekMinutes += minutes;
-        if (dateStr.startsWith(thisMonth)) monthMinutes += minutes;
+    
+    // Verificar si la sesión es de hoy
+    if (lapDate >= todayLocal && lapDate < tomorrowLocal) {
+      todayMinutes += minutes;
     }
-    if (lapDate.getFullYear() === thisYear) yearMinutes += minutes;
+    
+    // Verificar si la sesión es de esta semana
+    if (lapDate >= weekStart) {
+      weekMinutes += minutes;
+    }
+    
+    // Verificar si la sesión es de este mes
+    if (lapDate.getFullYear() === currentYear && 
+        lapDate.getMonth() === currentMonth) {
+      monthMinutes += minutes;
+    }
+    
+    // Verificar si la sesión es de este año
+    if (lapDate.getFullYear() === currentYear) {
+      yearMinutes += minutes;
+    }
   });
+  
   return { todayMinutes, weekMinutes, monthMinutes, yearMinutes };
 }
 
