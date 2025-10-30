@@ -121,7 +121,10 @@ function useLapStats(laps: Lap[]): { todayMinutes: number; weekMinutes: number; 
   laps.forEach(lap => {
     if (!lap.created_at) return;
     
-    const lapDate = new Date(lap.created_at);
+    // Usar started_at si está disponible, de lo contrario usar created_at
+    const lapDate = lap.started_at ? new Date(lap.started_at) : new Date(lap.created_at);
+    
+    // Obtener la duración del campo duration (ya en formato HH:MM:SS)
     const minutes = durationToMinutes(lap.duration);
     
     // Verificar si la sesión es de hoy

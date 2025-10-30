@@ -1,5 +1,4 @@
-import { useCallback, useState } from 'react';
-
+import { useCallback, useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 
 export default function usePomodorosToday(userId) {
@@ -23,5 +22,24 @@ export default function usePomodorosToday(userId) {
     setLoading(false);
   }, [userId]);
 
+  // Add effect to listen for pomodoro completion events
+  useEffect(() => {
+    // Initial fetch
+    fetchPomodoros();
+
+    // Listen for pomodoro completion events
+    const handlePomodoroComplete = () => {
+      fetchPomodoros();
+    };
+
+    // Add event listener
+    window.addEventListener('pomodoroCompleted', handlePomodoroComplete);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('pomodoroCompleted', handlePomodoroComplete);
+    };
+  }, [fetchPomodoros]);
+
   return { total, loading, fetchPomodoros };
-} 
+}

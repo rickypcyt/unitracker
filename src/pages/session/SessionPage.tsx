@@ -4,9 +4,9 @@ import Countdown from "./Countdown";
 import GlobalTimerControls from "@/components/GlobalTimerControls";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import Pomodoro from "@/pages/session/Pomodoro";
-import SessionStatsAndTasks from "@/components/SessionStatsAndTasks";
 import StudyTimer from "@/pages/session/StudyTimer";
 import TimerSettings from "@/components/TimerSettings";
+import TodaysSession from "@/components/TodaysSession";
 import { useSelector } from "react-redux";
 
 const SessionPage = memo(() => {
@@ -92,7 +92,7 @@ const SessionPage = memo(() => {
           {/* Stats */}
           <div className="maincard p-3 sm:p-4 md:p-5 w-full min-h-[400px] md:min-h-[450px] lg:min-h-[500px] space-y-4 md:space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-sm">
             <div className="h-full">
-              <SessionStatsAndTasks />
+              <TodaysSession />
             </div>
           </div>
           

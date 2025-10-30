@@ -1,13 +1,13 @@
 import { Check, Circle, Clock, Play } from 'lucide-react';
-import { deleteLap, updateLap, fetchLaps } from '@/store/LapActions';
-import { deleteTask, toggleTaskStatus, updateTask, fetchTasks } from '@/store/TaskActions';
-import { useDispatch, useSelector } from 'react-redux';
+import { deleteLap, fetchLaps, updateLap } from '@/store/LapActions';
+import { deleteTask, fetchTasks, toggleTaskStatus, updateTask } from '@/store/TaskActions';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import type { AppDispatch } from '@/store/store';
+import { SYNC_EVENTS } from '../utils/constants';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { motion } from 'framer-motion';
-import { SYNC_EVENTS } from '../utils/constants';
 
 interface ContextMenu {
   x: number;
@@ -15,7 +15,7 @@ interface ContextMenu {
   task: any;
 }
 
-const SessionStatsAndTasks = () => {
+const TodaysSession = () => {
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   // Define types for our data
@@ -133,24 +133,51 @@ const SessionStatsAndTasks = () => {
     console.log('Edit task:', task);
   };
   
-  // Format seconds to "Xh Ym" format
-  const formatStudyTime = (seconds: number): string => {
-    if (!seconds) return '0m';
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+  // Format duration from HH:MM:SS to a human-readable format
+  const formatDuration = (duration?: string | null): string => {
+    if (!duration) return '0m';
+    
+    // If it's already a number string (seconds), convert to minutes
+    if (/^\d+$/.test(duration)) {
+      const seconds = parseInt(duration, 10);
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }
+    
+    // Handle HH:MM:SS format
+    const parts = duration.split(':');
+    if (parts.length !== 3) return '0m';
+    
+    const hh = parseInt(parts[0], 10) || 0;
+    const mm = parseInt(parts[1], 10) || 0;
+    const ss = parseInt(parts[2], 10) || 0;
+    
+    if (isNaN(hh) || isNaN(mm) || isNaN(ss)) return '0m';
+    
+    const totalMinutes = hh * 60 + mm + Math.round(ss / 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
   };
-
-  // Parse HH:MM:SS to seconds
-  const parseHmsToSeconds = (hms?: string | number | null): number => {
-    if (typeof hms === 'number') return hms;
-    if (!hms || typeof hms !== 'string') return 0;
-    const parts = hms.split(':');
+  
+  // Convert HH:MM:SS to seconds
+  const durationToSeconds = (duration?: string | null): number => {
+    if (!duration) return 0;
+    
+    // If it's already a number string, return it as number
+    if (/^\d+$/.test(duration)) {
+      return parseInt(duration, 10);
+    }
+    
+    // Parse HH:MM:SS format
+    const parts = duration.split(':');
     if (parts.length !== 3) return 0;
-    const [hhRaw, mmRaw, ssRaw] = parts;
-    const hh = Number.parseInt(hhRaw, 10) || 0;
-    const mm = Number.parseInt(mmRaw, 10) || 0;
-    const ss = Number.parseInt(ssRaw, 10) || 0;
+    
+    const [hh, mm, ss] = parts.map(Number);
+    if (isNaN(hh) || isNaN(mm) || isNaN(ss)) return 0;
+    
     return hh * 3600 + mm * 60 + ss;
   };
 
@@ -210,23 +237,20 @@ const SessionStatsAndTasks = () => {
       return withinToday(created);
     });
 
+    // Calculate total study time and pomodoros from today's laps
+    let todaysPomodoros = 0;
     todaysLaps.forEach((lap) => {
-      const dur = parseHmsToSeconds(lap.duration as any);
-      if (dur > 0) {
-        totalStudyTime += dur;
-      } else {
-        const startMs = new Date(lap.started_at || lap.created_at || '').getTime();
-        if (!isNaN(startMs)) {
-          const endMs = lap.ended_at ? new Date(lap.ended_at as string).getTime() : Date.now();
-          if (!isNaN(endMs) && endMs > startMs) {
-            totalStudyTime += Math.floor((endMs - startMs) / 1000);
-          }
-        }
+      // Sum up study time from duration field
+      if (lap.duration) {
+        totalStudyTime += durationToSeconds(lap.duration);
+      }
+      // Sum up completed pomodoros
+      if (typeof lap.pomodoros_completed === 'number' && lap.pomodoros_completed > 0) {
+        todaysPomodoros += lap.pomodoros_completed;
       }
     });
-
-    const todaysPomodoros = todaysLaps.length;
-    const totalStudyTimeFormatted = formatStudyTime(totalStudyTime);
+    // Format the total study time in seconds to a human-readable format
+    const totalStudyTimeFormatted = formatDuration(totalStudyTime.toString());
 
     // Get completed tasks today
     const completedTasksCount = tasks.filter((task: Task) => withinToday(task.completed_at || null)).length;
@@ -337,6 +361,15 @@ const SessionStatsAndTasks = () => {
     }
   };
 
+  const handleResumeLap = (lap: Lap) => {
+    // Here you would implement the logic to resume the lap
+    // For example, you might want to navigate to the timer with this lap's data
+    console.log('Resuming lap:', lap.id);
+    // Add your resume logic here, for example:
+    // navigate(`/timer?resume=${lap.id}`);
+    alert('Resume functionality will be implemented here');
+  };
+
   // Animation variants
   const container = {
     hidden: { opacity: 0 },
@@ -381,12 +414,9 @@ const SessionStatsAndTasks = () => {
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between pb-2 border-b border-[var(--border-primary)]"
+        className="flex items-center justify-center pb-2 border-b border-[var(--border-primary)]"
       >
         <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <div className="p-1 sm:p-1.5 bg-[var(--accent-primary)]/10 rounded-lg">
-            <Clock size={16} className="sm:w-[18px] sm:h-[18px] w-4 h-4 text-[var(--accent-primary)]" />
-          </div>
           <span className="text-sm sm:text-base md:text-lg">Today's Session</span>
         </h3>
       </motion.div>
@@ -515,7 +545,7 @@ const SessionStatsAndTasks = () => {
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
             <div className="p-1 bg-[var(--accent-primary)]/10 rounded-md">
-              <Play size={14} className="text-[var(--accent-primary)]" />
+              <Play size={18} className="text-[var(--accent-primary)]" />
             </div>
             <span>Active Tasks</span>
             <span className="ml-auto text-sm font-normal bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-2 py-0.5 rounded-full">
@@ -577,9 +607,7 @@ const SessionStatsAndTasks = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center py-3 px-2 text-center"
           >
-            <div className="p-1 mb-1 rounded-full bg-[var(--accent-primary)]/10">
-              <Clock size={20} className="text-[var(--accent-primary)]" />
-            </div>
+
             <h4 className="text-sm lg:text-base font-medium text-[var(--text-primary)] mb-1">No active tasks</h4>
             
           </motion.div>
@@ -595,7 +623,7 @@ const SessionStatsAndTasks = () => {
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
               <div className="p-1 rounded-md">
-                <Clock size={14} className="text-rose-500" />
+                <Clock size={18} className="text-rose-500" />
               </div>
               <span>Unfinished Sessions</span>
               <span className="ml-2 text-sm font-normal bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full">
@@ -613,22 +641,29 @@ const SessionStatsAndTasks = () => {
                 <div key={lap.id} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</div>
-                    <div className="text-sm text-[var(--text-secondary)]">Created {formatStudyTime(elapsedSec)} ago</div>
+                    <div className="text-sm text-[var(--text-secondary)]">Created {formatDuration(Math.floor(elapsedSec).toString())} ago</div>
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => handleDeleteLap(lap.id)}
+                      className="px-2 py-1 rounded-md bg-rose-600 text-white text-sm hover:bg-rose-600 transition-colors"
+                      title="Delete session"
+                    >
+                      Delete
+                    </button>
+                    <button
                       onClick={() => handleFinishLap(lap)}
-                      className="px-2 py-1 rounded-md bg-green-600 text-white text-sm hover:opacity-90"
+                      className="px-2 py-1 rounded-md bg-green-600 text-white text-sm hover:bg-green-600 transition-colors"
                       title="Finish session"
                     >
                       Finish
                     </button>
                     <button
-                      onClick={() => handleDeleteLap(lap.id)}
-                      className="px-2 py-1 rounded-md bg-red-600 text-white text-sm hover:opacity-90"
-                      title="Delete session"
+                      onClick={() => handleResumeLap(lap)}
+                      className="px-2 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-600 transition-colors"
+                      title="Resume session"
                     >
-                      Delete
+                      Resume
                     </button>
                   </div>
                 </div>
@@ -641,4 +676,4 @@ const SessionStatsAndTasks = () => {
   );
 }
 
-export default SessionStatsAndTasks;
+export default TodaysSession;

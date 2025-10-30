@@ -96,14 +96,28 @@ export function usePomoTimer(callback, duration, initialRemaining) {
   }, [isRunning, duration, initialRemaining, syncTimers, dispatch]);
 }
 
-// Funciones de utilidad mejoradas
-export const formatStudyTime = (totalSeconds, roundUp = false) => {
+// Format time in seconds to "Xh Ym" format
+export const formatStudyTime = (totalSeconds: number | string, roundUp = false): string => {
   try {
-    const s = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
-    const hours = Math.floor(s / 3600);
-    const minutes = Math.floor((s % 3600) / 60);
-    const seconds = Math.floor(s % 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // If input is a string in HH:MM:SS format, convert it to seconds first
+    let seconds = 0;
+    if (typeof totalSeconds === 'string') {
+      const parts = totalSeconds.split(':');
+      if (parts.length === 3) {
+        const [hh, mm, ss] = parts.map(Number);
+        seconds = hh * 3600 + mm * 60 + ss;
+      } else {
+        seconds = Number(totalSeconds) || 0;
+      }
+    } else {
+      seconds = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
+    }
+    
+    const hours = Math.floor(seconds / 3600);
+    const remainingSeconds = seconds % 3600;
+    const minutes = Math.floor(remainingSeconds / 60);
+    const secs = Math.floor(remainingSeconds % 60);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   } catch (error) {
     console.error('Error formatting study time:', error);
     return '00:00:00';

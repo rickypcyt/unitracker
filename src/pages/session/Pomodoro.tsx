@@ -12,16 +12,16 @@ import {
   setPomodoroState,
   setSyncPomodoroWithTimer,
 } from "@/store/slices/uiSlice";
-import { useCallback, useEffect, useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import usePomodorosToday from "@/hooks/usePomodorosToday";
+import { useEventListener } from "usehooks-ts";
 import SectionTitle from "@/components/SectionTitle";
 import { formatPomoTime } from "@/hooks/useTimers";
-import toast from "react-hot-toast";
-import { useAuth } from "@/hooks/useAuth";
-import useEventListener from "@/hooks/useEventListener";
-import usePomodorosToday from "@/hooks/usePomodorosToday";
+import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
+import { supabase } from "@/utils/supabaseClient";
 
 // import useTheme from "@/hooks/useTheme";
 
@@ -191,13 +191,45 @@ const Pomodoro = () => {
   const [localResetKey, setLocalResetKey] = useState(0);
 
   // All function declarations first
-  const handlePomodoroComplete = useCallback(() => {
+  const updatePomodoroInDatabase = useCallback(async (increment = 1) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const currentSessionId = localStorage.getItem(STORAGE_KEYS.ACTIVE_SESSION_ID);
+      if (!currentSessionId) return;
+
+      // Get current pomodoro count from database
+      const { data: session } = await supabase
+        .from('study_laps')
+        .select('pomodoros_completed')
+        .eq('id', currentSessionId)
+        .single();
+
+      if (session) {
+        const currentCount = session.pomodoros_completed || 0;
+        await supabase
+          .from('study_laps')
+          .update({ pomodoros_completed: currentCount + increment })
+          .eq('id', currentSessionId);
+      }
+    } catch (error) {
+      console.error('Error updating pomodoro count in database:', error);
+    }
+  }, []);
+
+  const handlePomodoroComplete = useCallback(async () => {
     const isWork = pomoState.currentMode === "work";
     const shouldTakeLongBreak =
       isWork &&
       (pomoState.workSessionsCompleted + 1) %
         pomoState.workSessionsBeforeLongBreak ===
         0;
+    
+    // Dispatch event when a pomodoro is completed
+    if (isWork) {
+      window.dispatchEvent(new CustomEvent('pomodoroCompleted'));
+    }
 
     const nextMode = isWork
       ? shouldTakeLongBreak
@@ -218,6 +250,11 @@ const Pomodoro = () => {
     if (alarmEnabled) {
       sound.currentTime = 0;
       sound.play().catch(console.error);
+    }
+
+    // Update database if it's a work session
+    if (isWork) {
+      await updatePomodoroInDatabase(1);
     }
 
     // Update state
@@ -311,6 +348,7 @@ const Pomodoro = () => {
     pomoState.workSessionsCompleted,
     pomoState.workSessionsBeforeLongBreak,
     modes,
+    updatePomodoroInDatabase,
   ]);
 
   const handleStart = useCallback(

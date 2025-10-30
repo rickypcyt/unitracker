@@ -340,18 +340,17 @@ export default function NoiseGenerator() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between pb-3 border-b border-[var(--border-primary)]"
       >
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <div className="p-1.5 bg-[var(--accent-primary)]/10 rounded-lg">
-            <AudioLines size={20} className="text-[var(--accent-primary)]" />
-          </div>
-          <span>Noise Generator</span>
-        </h3>
+        <div className="flex-1">
+          <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] text-center">
+            Noise Generator
+          </h3>
+        </div>
         <button
-          className="p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
           onClick={() => setIsSettingsOpen(true)}
           aria-label="Noise generator settings"
         >
-          <MoreVertical size={18} />
+          <MoreVertical size={20} />
         </button>
       </motion.div>
 
