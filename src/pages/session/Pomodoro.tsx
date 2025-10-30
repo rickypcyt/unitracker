@@ -489,13 +489,43 @@ const Pomodoro = () => {
       const now = Date.now();
       const currentMode = modes[pomoState.modeIndex];
       const maxTime = currentMode[pomoState.currentMode];
+      const isWorkMode = pomoState.currentMode === 'work';
 
-      let newTimeLeft;
+      // Calculate new time left
+      let newTimeLeft = Math.max(0, Math.min(pomoState.timeLeft + adjustment, maxTime));
+      
+      // Backup logic for completed Pomodoros when time is manually adjusted
+      if (isWorkMode && adjustment > 0) {
+        const workDuration = currentMode.work;
+        const breakDuration = currentMode.break;
+        const totalCycleTime = workDuration + breakDuration;
+        
+        // Calculate how many full work/break cycles fit into the adjusted time
+        const adjustedTotalTime = (pomoState.timeLeft + adjustment);
+        const completedCycles = Math.floor(adjustedTotalTime / totalCycleTime);
+        
+        if (completedCycles > 0) {
+          // Calculate remaining time after completed cycles
+          const remainingTime = adjustedTotalTime % totalCycleTime;
+          
+          // If remaining time is in break time, adjust to next work session
+          if (remainingTime > workDuration) {
+            newTimeLeft = 0; // Will trigger handlePomodoroComplete
+          } else {
+            newTimeLeft = remainingTime;
+          }
+          
+          // Update completed work sessions count
+          setPomoState(prev => ({
+            ...prev,
+            workSessionsCompleted: (prev.workSessionsCompleted + completedCycles) % prev.workSessionsBeforeLongBreak,
+            pomodoroToday: prev.pomodoroToday + completedCycles,
+            pomodorosThisSession: prev.pomodorosThisSession + completedCycles
+          }));
+        }
+      }
+
       if (pomoState.isRunning) {
-        newTimeLeft = Math.max(
-          0,
-          Math.min(pomoState.timeLeft + adjustment, maxTime)
-        );
         setPomoState((prev) => ({
           ...prev,
           timeLeft: newTimeLeft,
@@ -507,10 +537,6 @@ const Pomodoro = () => {
           handlePomodoroComplete();
         }
       } else {
-        newTimeLeft = Math.max(
-          0,
-          Math.min(pomoState.timeLeft + adjustment, maxTime)
-        );
         setPomoState((prev) => ({
           ...prev,
           timeLeft: newTimeLeft,
