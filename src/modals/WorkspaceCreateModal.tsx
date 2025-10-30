@@ -1,9 +1,9 @@
 import { BookOpen, Briefcase, Coffee, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import { useState } from 'react';
 
 import BaseModal from './BaseModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
+import { useState } from 'react';
 
 const iconOptions = [
   { name: 'Briefcase', icon: Briefcase },
@@ -71,7 +71,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
       onClose();
     } catch (error) {
       console.error('Error creating workspace:', error);
-      setError('Failed to create area');
+      setError('Failed to create workspace');
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              placeholder="Enter area name..."
+              placeholder="Enter workspace name..."
               autoFocus
             />
         </div>

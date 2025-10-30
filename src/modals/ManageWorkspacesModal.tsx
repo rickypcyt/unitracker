@@ -101,7 +101,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
       setEditIcon('Briefcase');
     } catch (error) {
       console.error('Error updating workspace:', error);
-      setError('Failed to update area');
+      setError('Failed to update workspace');
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
       setWorkspaceToDelete(null);
     } catch (error) {
       console.error('Error deleting workspace:', error);
-      setError('Failed to delete area');
+      setError('Failed to delete workspace');
     } finally {
       setLoading(false);
     }
@@ -247,7 +247,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       <button
                         onClick={() => handleEdit(workspace)}
                         className="p-2 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors"
-                        title="Edit area"
+                        title="Edit workspace"
                       >
                         <Edit size={16} />
                       </button>
@@ -255,7 +255,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                         onClick={() => handleDelete(workspace)}
                         disabled={loading}
                         className="p-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete area"
+                        title="Delete workspace"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -303,7 +303,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
             setWorkspaceToDelete(null);
           }}
           onConfirm={confirmDeleteWorkspace}
-          message={`Are you sure you want to delete the area "${workspaceToDelete.name}"? This action cannot be undone.`}
+          message={`Are you sure you want to delete the workspace "${workspaceToDelete.name}"? This action cannot be undone.`}
           confirmButtonText="Delete Area"
         />
       )}

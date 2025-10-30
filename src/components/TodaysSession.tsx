@@ -3,6 +3,7 @@ import { deleteLap, fetchLaps, updateLap } from '@/store/LapActions';
 import { deleteTask, fetchTasks, toggleTaskStatus, updateTask } from '@/store/TaskActions';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSessionId } from '@/hooks/study-timer/useSessionId';
 
 import type { AppDispatch } from '@/store/store';
 import { SYNC_EVENTS } from '../utils/constants';
@@ -361,6 +362,9 @@ const TodaysSession = () => {
     }
   };
 
+  // Get the current session ID
+  const [currentSessionId] = useSessionId();
+
   const handleResumeLap = (lap: Lap) => {
     // Here you would implement the logic to resume the lap
     // For example, you might want to navigate to the timer with this lap's data
@@ -658,13 +662,15 @@ const TodaysSession = () => {
                     >
                       Finish
                     </button>
-                    <button
-                      onClick={() => handleResumeLap(lap)}
-                      className="px-2 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-600 transition-colors"
-                      title="Resume session"
-                    >
-                      Resume
-                    </button>
+                    {currentSessionId !== lap.id && (
+                      <button
+                        onClick={() => handleResumeLap(lap)}
+                        className="px-2 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-600 transition-colors"
+                        title="Resume session"
+                      >
+                        Resume
+                      </button>
+                    )}
                   </div>
                 </div>
               );

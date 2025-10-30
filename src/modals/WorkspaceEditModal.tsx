@@ -50,7 +50,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
       onWorkspaceUpdated(data);
       onClose();
     } catch {
-      setError('Failed to update area');
+      setError('Failed to update workspace');
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               className="w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
-              placeholder="Enter area name..."
+              placeholder="Enter workspace name..."
               autoFocus
             />
           </div>

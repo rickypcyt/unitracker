@@ -29,7 +29,7 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
 
   const handleShare = () => {
     if (!selectedWorkspace || !selectedFriend) {
-      setError('Please select an area and a friend.');
+      setError('Please select an workspace and a friend.');
       return;
     }
     setError('');
@@ -40,7 +40,7 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
           setSelectedWorkspace('');
           setSelectedFriend('');
         },
-        onError: (msg) => setError(msg || 'Error sharing area'),
+        onError: (msg) => setError(msg || 'Error sharing workspace'),
       });
     }
   };
@@ -52,7 +52,7 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
           <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">Area</label>
           <Select.Root value={selectedWorkspace} onValueChange={setSelectedWorkspace}>
             <Select.Trigger className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] flex items-center justify-between">
-              <Select.Value placeholder="Select area" />
+              <Select.Value placeholder="Select workspace" />
               <Select.Icon>
                 <ChevronDownIcon className="w-5 h-5 text-[var(--text-secondary)]" />
               </Select.Icon>
