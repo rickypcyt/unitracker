@@ -56,8 +56,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
         if (!value) return true;
         const [day, month, year] = value.split('/');
         const date = new Date(`${year}-${month}-${day}`);
-        if (isNaN(date.getTime()) || date < new Date(new Date().setHours(0,0,0,0))) {
-          return 'Please enter a valid date in DD/MM/YYYY format that is not in the past';
+        if (isNaN(date.getTime())) {
+          return 'Please enter a valid date in DD/MM/YYYY format';
         }
         return true;
       }
@@ -627,7 +627,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                       } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-2px`}
                     />
                   }
-                  minDate={new Date()}
                   popperPlacement="bottom-start"
                   calendarClassName="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
                   dayClassName={(date) =>

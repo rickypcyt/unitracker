@@ -67,6 +67,24 @@ export function formatDateForInput(date: Date): string {
  * @param dateStr - The date string to format (can be null or undefined)
  * @returns A formatted date string like 'Mon, Jun 30' or empty string if no date provided
  */
+/**
+ * Gets a human-readable string of time remaining or overdue
+ * @param dateStr - The target date string
+ * @returns A string like "in 2 days" or "3 days ago"
+ */
+export function getTimeRemainingString(dateStr: string): string {
+    const now = new Date();
+    const target = new Date(dateStr);
+    const diffTime = target.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return 'tomorrow';
+    if (diffDays === -1) return 'yesterday';
+    if (diffDays > 0) return `in ${diffDays} days`;
+    return `${Math.abs(diffDays)} days ago`;
+}
+
 export function formatDateShort(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
     const date = new Date(dateStr);

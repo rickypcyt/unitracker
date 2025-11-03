@@ -1,5 +1,5 @@
 import { CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
-import { formatDateShort, isToday, isTomorrow } from '@/utils/dateUtils';
+import { formatDateShort, isToday, isTomorrow, getTimeRemainingString } from '@/utils/dateUtils';
 
 // Helper para saber si la fecha es pasada
 const isPast = (dateStr) => {
@@ -177,39 +177,41 @@ export const TaskItem = ({
                         </span>
                     )}
                 </div>
-                {/* Prioridad, assignment, fecha y tacho abajo */}
+                {/* Priority, assignment, date and delete button at the bottom */}
                 <div className={`flex items-center gap-2 w-full${task.description ? ' ' : ''}`}>
-
+                    {/* Date on the left */}
+                    <div className="text-base" style={{ color: 'var(--muted-strong)' }}>
+                        <span>
+                          {task.deadline && task.deadline !== '' ? (
+                            <>
+                              <span className={getDeadlineColor(task.deadline)}>
+                                {formatDateShort(task.deadline)} <span className="text-[var(--text-secondary)]">({getTimeRemainingString(task.deadline)})</span>
+                              </span>
+                              {renderDateLabel(task.deadline)}
+                            </>
+                          ) : 'No Deadline'}
+                        </span>
+                    </div>
+                    
+                    <div className="flex-1" />
+                    
+                    {/* Assignment on the right */}
                     {!assignmentLeftOfDate && showAssignment && task.assignment && (
-                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize text-right">
+                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize">
                             {task.assignment}
                         </div>
                     )}
-                    <div className="flex-1" />
-                    {/* Fecha y tacho alineados a la derecha */}
-                    <div className="flex items-center gap-2">
-                        <div className="text-base" style={{ color: 'var(--muted-strong)' }}>
-                            <span>
-                              {task.deadline && task.deadline !== '' ? (
-                                <>
-                                  <span className={getDeadlineColor(task.deadline)}>
-                                    {formatDateShort(task.deadline)}
-                                  </span>
-                                  {renderDateLabel(task.deadline)}
-                                </>
-                              ) : 'No Deadline'}
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleDeleteClick}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            onTouchStart={(e) => e.stopPropagation()}
-                            className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full"
-                            aria-label="Delete task"
-                        >
-                            <Trash2 size={22} className="text-red-500" />
-                        </button>
-                    </div>
+                    
+                    {/* Delete button */}
+                    <button
+                        onClick={handleDeleteClick}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full"
+                        aria-label="Delete task"
+                    >
+                        <Trash2 size={22} className="text-red-500" />
+                    </button>
                 </div>
             </div>
         </div>
