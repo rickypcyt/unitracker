@@ -6,9 +6,9 @@ export const ColumnMenu = ({
   assignment,
   onAddTask,
   onSortClick,
-  onToggleCollapse,
+  onTogglePin,
   onClose,
-  collapsed,
+  pinned,
   tasks
 }) => {
   const optionStyle = {
@@ -29,8 +29,8 @@ export const ColumnMenu = ({
     onClose();
   };
 
-  const handleToggleCollapse = () => {
-    onToggleCollapse();
+  const handleTogglePin = () => {
+    onTogglePin();
     onClose();
   };
 
@@ -60,9 +60,9 @@ export const ColumnMenu = ({
         <li
           style={optionStyle}
           className="hover:bg-[var(--bg-primary)] transition-colors duration-75"
-          onClick={handleToggleCollapse}
+          onClick={handleTogglePin}
         >
-          {collapsed ? 'Expand Column' : 'Collapse Column'}
+          {pinned ? 'Unpin Column' : 'Pin Column'}
         </li>
         <li
           style={optionStyle}

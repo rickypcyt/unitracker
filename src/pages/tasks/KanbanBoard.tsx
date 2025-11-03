@@ -46,7 +46,16 @@ export const KanbanBoard = () => {
     : tasks;
 
   const [contextMenu, setContextMenu] = useState(null);
-  const [collapsedColumns, setCollapsedColumns] = useState({});
+  const [pinnedColumns, setPinnedColumns] = useState(() => {
+    const saved = localStorage.getItem('kanbanPinnedColumns');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  // Get pinned columns for current workspace
+  const currentWorkspacePins = useMemo(() => {
+    if (!activeWorkspace) return {};
+    return pinnedColumns[activeWorkspace.id] || {};
+  }, [pinnedColumns, activeWorkspace]);
   const [showCompleted] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
@@ -467,30 +476,54 @@ export const KanbanBoard = () => {
       }
     });
 
-    // Build list of assignments that actually have tasks
-    const assignments = Object.keys(grouped).filter(
+    // Build list of assignments that have tasks OR are pinned
+    const assignmentsWithTasks = Object.keys(grouped).filter(
       (assignment) => grouped[assignment] && grouped[assignment].length > 0
     );
+    
+    // Get pinned assignments for current workspace that might not have tasks
+    const pinnedAssignments = activeWorkspace 
+      ? Object.keys(currentWorkspacePins).filter(
+          (assignment) => currentWorkspacePins[assignment] === true
+        )
+      : [];
+    
+    // Combine both: assignments with tasks + pinned assignments (deduplicate)
+    const allAssignments = [...new Set([...assignmentsWithTasks, ...pinnedAssignments])];
 
     // Respect saved column order if present, but include any new assignments at the end
     if (columnOrder.length > 0) {
       const orderedAssignments = [...columnOrder];
-      assignments.forEach(assignment => {
+      allAssignments.forEach(assignment => {
         if (!orderedAssignments.includes(assignment)) {
           orderedAssignments.push(assignment);
         }
       });
-      return orderedAssignments.filter(a => assignments.includes(a));
+      return orderedAssignments.filter(a => allAssignments.includes(a));
     }
 
-    return assignments;
-  }, [incompletedTasks, assignmentSortConfig, columnOrder, groupTasksByAssignment, sortTasksByPosition]);
+    return allAssignments;
+  }, [incompletedTasks, assignmentSortConfig, columnOrder, groupTasksByAssignment, sortTasksByPosition, pinnedColumns]);
 
-  const toggleColumn = (assignment) => {
-    setCollapsedColumns(prev => ({
-      ...prev,
-      [assignment]: !prev[assignment]
-    }));
+  const togglePin = (assignment) => {
+    if (!activeWorkspace) return;
+    
+    setPinnedColumns(prev => {
+      const workspacePins = { ...(prev[activeWorkspace.id] || {}) };
+      const newWorkspacePins = {
+        ...workspacePins,
+        [assignment]: !workspacePins[assignment]
+      };
+      
+      const newState = {
+        ...prev,
+        [activeWorkspace.id]: newWorkspacePins
+      };
+      
+      // Persist to localStorage
+      localStorage.setItem('kanbanPinnedColumns', JSON.stringify(newState));
+      return newState;
+    });
   };
 
   const handleTaskContextMenu = (e, task) => {
@@ -635,8 +668,8 @@ export const KanbanBoard = () => {
               id={assignment}
               assignment={assignment}
               tasks={incompletedByAssignment[assignment] || []}
-              collapsed={collapsedColumns[assignment]}
-              onToggleCollapse={() => toggleColumn(assignment)}
+              pinned={activeWorkspace ? currentWorkspacePins[assignment] === true : false}
+              onTogglePin={() => togglePin(assignment)}
               onAddTask={() => handleAddTask(assignment)}
               onTaskToggle={handleToggleCompletion}
               onTaskDelete={handleConfirmDeleteTask}

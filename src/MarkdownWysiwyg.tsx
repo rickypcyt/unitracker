@@ -11,6 +11,7 @@ interface MarkdownWysiwygProps {
   onChange?: (data: { title: string; body: string }) => void;
   showTitleInput?: boolean;
   className?: string;
+  placeholder?: string;
 }
 
 const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
@@ -19,6 +20,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
   onChange,
   showTitleInput = true,
   className = "",
+  placeholder = "Enter task description...",
 }) => {
   const [title, setTitle] = useState(initialTitle);
   const editor = useEditor({
@@ -41,7 +43,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
     <div className={`flex flex-col gap-4 ${className}`}>
       {showTitleInput && (
         <input
-          className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg font-semibold transition-colors"
+          className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg font-semibold transition-colors "
           type="text"
           placeholder="Note Title"
           value={title}
@@ -49,7 +51,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
         />
       )}
       <div
-        className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] focus-within:border-[var(--accent-primary)] transition-colors mb-3 cursor-text"
+        className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] focus-within:border-[var(--accent-primary)] transition-colors mb-3 cursor-text relative"
         onClick={() => {
           // Focus the editor when clicking anywhere inside the container
           editor?.chain().focus().run();
@@ -61,7 +63,10 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
       >
         <EditorContent
           editor={editor}
-          className="min-h-[200px] max-h-[400px] overflow-y-auto px-3 py-2 text-[var(--text-primary)] focus:outline-none mb-2"
+          className={`min-h-[200px] max-h-[400px] overflow-y-auto px-3 py-2 text-[var(--text-primary)] focus:outline-none mb-2 ${
+            editor?.getText().trim() === '' ? 'before:content-[attr(data-placeholder)] before:absolute before:text-[var(--text-secondary)] before:pointer-events-none before:top-2 before:left-3 before:opacity-70' : ''
+          }`}
+          data-placeholder={placeholder}
         />
       </div>
     </div>

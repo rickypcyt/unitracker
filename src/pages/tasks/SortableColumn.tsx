@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Edit2, ListOrdered, Plus, Save, Trash2, X } from 'lucide-react';
+import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
@@ -14,8 +14,8 @@ export const SortableColumn = ({
   id,
   assignment,
   tasks,
-  collapsed,
-  onToggleCollapse,
+  pinned,
+  onTogglePin,
   onAddTask,
   onTaskToggle,
   onTaskDelete,
@@ -71,10 +71,24 @@ export const SortableColumn = ({
     e.stopPropagation();
   };
 
+  const handleColumnDoubleClick = (e: React.MouseEvent) => {
+    // Prevent opening modal if double-clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('[role="button"]')
+    ) {
+      return;
+    }
+    onAddTask();
+  };
+
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col h-full min-h-0 transition-all duration-200 relative ${
+      onDoubleClick={handleColumnDoubleClick}
+      className={`flex flex-col h-full min-h-0 transition-all duration-200 relative cursor-pointer ${
         isOver ? 'task-drop-zone-active' : ''
       }`}
       style={{
@@ -88,13 +102,14 @@ export const SortableColumn = ({
       <div className="flex items-center justify-between w-full mb-3">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
-              onClick={onToggleCollapse}
+              onClick={onTogglePin}
               className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors flex-shrink-0"
+              title={pinned ? "Unpin column" : "Pin column"}
             >
-              {collapsed ? (
-                <ChevronDown size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
+              {pinned ? (
+                <Pin size={20} className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all duration-200 fill-[var(--accent-primary)]" />
               ) : (
-                <ChevronUp size={20} className="text-neutral-400 hover:text-neutral-200 transition-transform duration-200" />
+                <PinOff size={20} className="text-neutral-400 hover:text-neutral-200 transition-all duration-200" />
               )}
             </button>
             {isEditing ? (
@@ -135,31 +150,12 @@ export const SortableColumn = ({
             </span>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="p-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
-                title="Edit assignment name"
-              >
-                <Edit2 size={16} />
-              </button>
-            )}
             <button
               onClick={onAddTask}
               className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
               title="Add task"
             >
               <Plus size={22} />
-            </button>
-            <button
-              onClick={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                onSortClick(assignment, { x: rect.left, y: rect.bottom });
-              }}
-              className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
-              title="Sort tasks"
-            >
-              <ListOrdered size={22} />
             </button>
             {/* Radix UI Dropdown Menu */}
             <ColumnDropdownMenu
@@ -168,13 +164,14 @@ export const SortableColumn = ({
               onMoveToWorkspace={onMoveToWorkspace}
               columnMenu={columnMenu}
               onDeleteAssignment={onDeleteAssignment}
+              onEditAssignment={() => setIsEditing(true)}
+              onSortClick={onSortClick}
             />
           </div>
       </div>
 
       
-      {!collapsed && (
-        <div
+      <div
         ref={setNodeRef}
         onDrop={handleDropInEmptySpace}
         onDragOver={handleDragOver}
@@ -225,8 +222,7 @@ export const SortableColumn = ({
               />
             ))}
           </SortableContext>
-        </div>
-      )}
+      </div>
 
       {/* Column Menu - Mantenemos el menú original para compatibilidad */}
       {columnMenu && (
@@ -236,9 +232,9 @@ export const SortableColumn = ({
           assignment={assignment}
           onAddTask={onAddTask}
           onSortClick={onSortClick}
-          onToggleCollapse={onToggleCollapse}
+          onTogglePin={onTogglePin}
           onClose={onCloseColumnMenu}
-          collapsed={collapsed}
+          pinned={pinned}
           tasks={tasks}
         />
       )}

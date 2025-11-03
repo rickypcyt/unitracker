@@ -1,7 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, CheckCircle2, Circle } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { difficultyOptions, getDifficultyColor } from '@/hooks/tasks/useTaskDifficulty';
 import { formatDateForInput, getSelectedDateFromDMY, normalizeNaturalOrYMDDate, parseDateForDB } from '@/hooks/tasks/useTaskDateUtils';
@@ -125,8 +125,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
 
   const getSelectedDate = () => getSelectedDateFromDMY(formData.deadline);
 
-  const uniqueAssignments = [...new Set(tasks.map((task: any) => task.assignment || 'No Assignment'))]
-    .filter((assignment) => assignment && assignment !== 'No Assignment')
+  const uniqueAssignments = [...new Set(tasks.map((task: any) => task.assignment || 'No Subject'))]
+    .filter((assignment) => assignment && assignment !== 'No Subject')
     .sort();
 
   const {
@@ -196,10 +196,12 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       const currentDate = now.toISOString().slice(0, 10); // YYYY-MM-DD
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const modelEnv = import.meta.env['VITE_OPENROUTER_MODEL'];
+      // Fallback models in order of preference (best to worst)
       const baseModels = [
-        'openai/gpt-oss-20b:free',
         'deepseek/deepseek-chat-v3-0324:free',
-        'google/gemma-2-9b-it:free',
+        'qwen/qwen-2.5-7b-instruct:free',
+        'meta-llama/llama-3.2-3b-instruct:free',
+        'openai/gpt-oss-20b:free',
       ];
       let modelCandidates: string[];
       const envList = modelEnv ? [String(modelEnv)] : [];
@@ -528,28 +530,9 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       )}
       {/* Tab Content */}
       {activeTab === 'manual' ? (
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-          <div className={`grid ${initialAssignment ? 'grid-cols-1' : 'grid-cols-2'} gap-3 sm:gap-4`}>
-            {!initialAssignment && (
-              <div>
-                <label htmlFor="assignment" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
-                  Assignment
-                </label>
-                <AutocompleteInput
-                  id="assignment"
-                  value={formData.assignment}
-                  onChange={(value) => handleChange('assignment', value)}
-                  error={errors.assignment}
-                  required
-                  placeholder="Enter assignment name"
-                  suggestions={uniqueAssignments}
-                />
-              </div>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label htmlFor="title" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
-                Title
-              </label>
               <FormInput
                 id="title"
                 value={formData.title}
@@ -559,34 +542,44 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                 placeholder="Enter task title"
               />
             </div>
+            {!initialAssignment && (
+              <div>
+                <AutocompleteInput
+                  id="assignment"
+                  value={formData.assignment}
+                  onChange={(value) => handleChange('assignment', value)}
+                  error={errors.assignment}
+                  required
+                  placeholder="Enter subject name"
+                  suggestions={uniqueAssignments}
+                />
+              </div>
+            )}
           </div>
 
-          <label htmlFor="description" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
-            Description
-          </label>
+
           <MarkdownWysiwyg
             initialTitle={formData.title}
             initialBody={formData.description}
             onChange={({ body }) => handleChange('description', body)}
             showTitleInput={false}
-            className=""
+            className="pb-2"
+            placeholder="Describe your task in detail (supports markdown formatting)"
           />
           {errors.description && (
             <p className="mt-1 text-base text-red-500">{errors.description}</p>
           )}
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 ">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 pb-4 ">
             <div>
-              <label className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
-                Difficulty
-              </label>
+
               <div className="flex items-center justify-center gap-4 sm:gap-8">
                 {difficultyOptions.map((option) => (
                   <div key={option.value} className="flex flex-col items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleChange('difficulty', option.value)}
-                      className="p-1 rounded-full transition-all duration-200 hover:scale-110 focus:shadow-[0_0_0_2px_rgba(255,255,255,0.1)] focus:outline-none"
+                      className="p-1 rounded-full transition-all duration-200 hover:scale-110  "
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
@@ -615,10 +608,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
               )}
             </div>
 
-            <div>
-              <label htmlFor="deadline" className="block text-sm sm:text-base font-bold text-[var(--text-primary)] mb-2 text-center">
-                Deadline
-              </label>
+
               <div className="relative flex items-center">
                 <DatePicker
                   id="deadline"
@@ -672,7 +662,6 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                 <p className="mt-1 text-base text-red-500">{errors.deadline}</p>
               )}
             </div>
-          </div>
 
           <FormActions>
             <FormButton
@@ -694,7 +683,7 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       ) : (
         <form className="flex flex-col h-full flex-1 items-stretch justify-start space-y-4" onSubmit={handleAIPromptSubmit}>
           {/* AI | Manual toggle under the AI header */}
-          <div className="w-full max-w-md flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
+          <div className="w-full flex justify-center items-center gap-3 mt-1 sm:mt-2 pt-4 sm:pt-2 select-none">
             <span
               className={`cursor-pointer font-semibold transition-colors duration-150 ${activeTab === 'ai' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'}`}
               onClick={() => setActiveTab('ai')}
@@ -709,49 +698,47 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
               Manual
             </span>
           </div>
-          <textarea
-            id="aiPrompt"
-            ref={aiTextareaRef}
-            value={aiPrompt}
-            onChange={e => {
-              setAiPrompt(e.target.value);
-              localStorage.setItem('aiPromptDraft', e.target.value);
-            }}
-            className="w-full min-h-[120px] max-w-md px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-            placeholder="Describe the task you want AI to generate..."
-            disabled={aiLoading}
-          />
-          {aiError && <div className="text-red-500 text-sm text-center">{aiError}</div>}
-          {/* Helper texts centered on small screens, above footer */}
-          <div className="w-full max-w-md text-sm text-[var(--text-secondary)] text-center sm:text-left -mt-1">
-            Example: "Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)."
-          </div>
-          {/* Footer-like controls: sticky at bottom on mobile, normal on desktop */}
-          <div className="w-full max-w-md mt-auto pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)] flex items-center justify-between gap-2 mb-2 sticky bottom-0 sm:static">
-            <select
-              id="aiModel"
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-sm md:text-base lg:text-lg md:px-4 md:py-2.5 lg:px-5 lg:py-3 md:w-64 lg:w-72 antialiased font-sans"
+          <div className="w-full">
+            <textarea
+              id="aiPrompt"
+              ref={aiTextareaRef}
+              value={aiPrompt}
+              onChange={e => {
+                setAiPrompt(e.target.value);
+                localStorage.setItem('aiPromptDraft', e.target.value);
+              }}
+              className="w-full min-h-[120px] px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+              placeholder="Example: Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)."
               disabled={aiLoading}
-            >
-              {MODEL_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+            />
+          </div>
+          {aiError && <div className="text-red-500 text-sm text-center">{aiError}</div>}
+          {/* Model selector and send button row */}
+          <div className="w-full flex gap-2">
+            <div className="relative flex-1">
+              <select
+                id="aiModel"
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="w-full appearance-none pl-3 pr-10 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-sm md:text-base lg:text-lg md:pl-4 md:py-2.5 lg:pl-5 lg:py-3 antialiased font-sans"
+                disabled={aiLoading}
+              >
+                {MODEL_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-secondary)]">
+                <ChevronDown size={20} />
+              </div>
+            </div>
             <FormButton
-              type={aiLoading ? 'button' : 'submit'}
+              type="submit"
               variant="custom"
-              onMouseEnter={() => setAiCancelHover(true)}
-              onMouseLeave={() => setAiCancelHover(false)}
-              onClick={aiLoading ? handleCancelAI : undefined}
-              className={
-                aiLoading && aiCancelHover
-                  ? 'border border-[var(--icon-color,var(--accent-primary))] bg-transparent text-[var(--icon-color,var(--accent-primary))] shadow-none hover:bg-transparent focus:bg-transparent'
-                  : 'border border-[var(--icon-color,var(--accent-primary))] bg-transparent text-[var(--icon-color,var(--accent-primary))] shadow-none hover:bg-transparent hover:text-[var(--icon-color,var(--accent-primary))] focus:bg-transparent focus:text-[var(--icon-color,var(--accent-primary))]'
-              }
+              disabled={aiLoading}
+              title="Send"
+              className="min-w-[80px] border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-70"
             >
-              {aiLoading ? 'Cancel' : 'Send'}
+              {aiLoading ? 'Sending...' : 'Send'}
             </FormButton>
           </div>
         </form>

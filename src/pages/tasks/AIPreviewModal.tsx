@@ -1,7 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
 import { Calendar, Check, Pencil, Trash2, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
@@ -33,11 +33,17 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
   const [editDate, setEditDate] = useState<Date | null>(null);
   const [editDifficulty, setEditDifficulty] = useState<string>('medium');
 
+  // Only update items if tasks prop changes and is different from current items
   useEffect(() => {
-    setItems(tasks ?? []);
-    setSelectedIdx(0);
-    setEditIdx(null);
-  }, [tasks]);
+    if (JSON.stringify(tasks) !== JSON.stringify(items)) {
+      setItems(tasks ?? []);
+    }
+    // Reset selection and edit states when modal is opened/closed
+    if (!isOpen) {
+      setSelectedIdx(0);
+      setEditIdx(null);
+    }
+  }, [tasks, isOpen]);
 
   const beginEdit = (idx: number) => {
     const task = items[idx];
@@ -81,16 +87,27 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
     setEditIdx(null);
   };
 
-  const deleteItem = (idx: number) => {
-    setItems(prev => prev.filter((_, i) => i !== idx));
-    if (selectedIdx >= idx && selectedIdx > 0) {
-      setSelectedIdx(selectedIdx - 1);
-    }
-    if (editIdx !== null) {
-      if (idx === editIdx) setEditIdx(null);
-      else if (idx < editIdx) setEditIdx(editIdx - 1);
-    }
-  };
+  const deleteItem = useCallback((idx: number) => {
+    setItems(prev => {
+      const newItems = prev.filter((_, i) => i !== idx);
+      
+      // Update selected index if needed
+      if (selectedIdx >= idx && selectedIdx > 0) {
+        setSelectedIdx(prevIdx => prevIdx - 1);
+      }
+      
+      // Update edit index if needed
+      if (editIdx !== null) {
+        if (idx === editIdx) {
+          setEditIdx(null);
+        } else if (idx < editIdx) {
+          setEditIdx(prevIdx => prevIdx - 1);
+        }
+      }
+      
+      return newItems;
+    });
+  }, [selectedIdx, editIdx]);
 
   return (
     <BaseModal

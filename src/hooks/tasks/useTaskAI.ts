@@ -8,7 +8,7 @@ type AiParsedTask = {
   difficulty?: 'easy' | 'medium' | 'hard';
 };
 
-const DEFAULT_MODEL = 'openai/gpt-oss-20b:free';
+const DEFAULT_MODEL = 'deepseek/deepseek-chat-v3-0324:free';
 
 export function useTaskAI() {
   const AI_DEBUG = import.meta.env['VITE_AI_DEBUG'] === 'true';
@@ -51,10 +51,13 @@ export function useTaskAI() {
     return () => window.removeEventListener('keydown', onKey);
   }, [aiLoading, handleCancelAI]);
 
+  // Recommended models: DeepSeek is best for Spanish, fast and reliable
+  // Fallbacks in case DeepSeek is unavailable
   const MODEL_OPTIONS: { value: string; label: string }[] = [
-    { value: 'openai/gpt-oss-20b:free', label: 'OpenAI: gpt-oss-20b (free)' },
-    { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat v3 (free)' },
-    { value: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B IT (free)' },
+    { value: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek Chat v3 (Recommended)' },
+    { value: 'qwen/qwen-2.5-7b-instruct:free', label: 'Qwen 2.5 7B (Good for Spanish)' },
+    { value: 'meta-llama/llama-3.2-3b-instruct:free', label: 'Llama 3.2 3B (Alternative)' },
+    { value: 'openai/gpt-oss-20b:free', label: 'OpenAI: gpt-oss-20b (Fallback)' },
   ];
 
   return {

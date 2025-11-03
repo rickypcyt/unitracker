@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { MoreVertical, Move, Trash2 } from 'lucide-react';
+import { Edit2, ListOrdered, MoreVertical, Move, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 const ColumnDropdownMenu = ({
@@ -9,11 +9,28 @@ const ColumnDropdownMenu = ({
   onMoveToWorkspace,
   columnMenu,
   onDeleteAssignment,
+  onEditAssignment,
+  onSortClick,
 }) => {
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const handleEditClick = () => {
+    onEditAssignment?.();
+    setOpen(false);
+  };
+
+  const handleSortClick = (event) => {
+    // Trigger sort with the button position before closing
+    if (onSortClick) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      onSortClick(assignment, { x: rect.left, y: rect.bottom });
+    }
+    setOpen(false);
+  };
 
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
         <button
           onMouseEnter={() => setIsMenuButtonHovered(true)}
@@ -51,7 +68,28 @@ const ColumnDropdownMenu = ({
           collisionPadding={10}
         >
           <DropdownMenu.Item
-            onClick={() => onMoveToWorkspace(assignment)}
+            onClick={handleEditClick}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+          >
+            <Edit2 size={16} className="text-[var(--text-secondary)]" />
+            Edit assignment name
+          </DropdownMenu.Item>
+          
+          <DropdownMenu.Item
+            onClick={handleSortClick}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+          >
+            <ListOrdered size={16} className="text-[var(--text-secondary)]" />
+            Sort by
+          </DropdownMenu.Item>
+          
+          <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
+          
+          <DropdownMenu.Item
+            onClick={() => {
+              onMoveToWorkspace(assignment);
+              setOpen(false);
+            }}
             className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
           >
             <Move size={16} className="text-[var(--text-secondary)]" />
@@ -60,7 +98,10 @@ const ColumnDropdownMenu = ({
           
           <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
           <DropdownMenu.Item
-            onClick={() => onDeleteAssignment?.(assignment)}
+            onClick={() => {
+              onDeleteAssignment?.(assignment);
+              setOpen(false);
+            }}
             className="flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-md cursor-pointer outline-none transition-colors focus:bg-red-500/10 focus:text-red-500"
           >
             <Trash2 size={16} className="text-red-500" />
