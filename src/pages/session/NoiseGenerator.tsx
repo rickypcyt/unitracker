@@ -19,6 +19,27 @@ import { useNoise } from "@/utils/NoiseContext";
 // -------------------------
 // SoundControl component
 // -------------------------
+
+// Definir tipo para las props del icono
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string;
+  className?: string;
+}
+
+type IconComponent = React.ComponentType<IconProps>;
+
+interface SoundControlProps {
+  label: string;
+  icon: IconComponent;
+  volume: number;
+  setVolume: (vol: number) => void;
+  isPlaying: boolean;
+  start: () => void;
+  stop: () => void;
+  className?: string;
+  max: number;
+}
+
 function SoundControl({
   label,
   icon: Icon,
@@ -29,17 +50,7 @@ function SoundControl({
   stop,
   className,
   max,
-}: {
-  label: string;
-  icon: React.FC<any>;
-  volume: number;
-  setVolume: (vol: number) => void;
-  isPlaying: boolean;
-  start: () => void;
-  stop: () => void;
-  className?: string;
-  max: number;
-}) {
+}: SoundControlProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -131,9 +142,38 @@ function NoiseSettingsModal({
   maxVolumes: number[];
   setMaxVolumes: React.Dispatch<React.SetStateAction<number[]>>;
 }) {
-  const [selectedPresets, setSelectedPresets] = useState([0, 0, 0]);
+  const [selectedPresets, setSelectedPresets] = useState<[number, number, number]>([0, 0, 0]);
 
-  const presetsMap = {
+  // Tipos para los presets
+  type BrownPreset = {
+    label: string;
+    filterFreq: number;
+  };
+
+  type RainPreset = {
+    label: string;
+    highpass: number;
+    lowpass: number;
+    reverbWet: number;
+  };
+
+  type OceanPreset = {
+    label: string;
+    pinkHigh: number;
+    pinkLow: number;
+    reverbWet: number;
+    waveLfoFreq?: number;
+  };
+
+  type Preset = BrownPreset | RainPreset | OceanPreset;
+
+  type PresetsMap = {
+    brown: BrownPreset[];
+    rain: RainPreset[];
+    ocean: OceanPreset[];
+  };
+
+  const presetsMap: PresetsMap = {
     brown: [
       { label: "Default", filterFreq: 200 },
       { label: "Deep", filterFreq: 60 },
@@ -178,30 +218,48 @@ function NoiseSettingsModal({
     ],
   };
 
+  // Tipo para el soundRef basado en la clave del sonido
+  type SoundRef = {
+    filter?: { frequency: { value: number } };
+    highpass?: { frequency: { value: number } };
+    lowpass?: { frequency: { value: number } };
+    reverb?: { wet: { value: number } };
+    pinkHighpass?: { frequency: { value: number } };
+    pinkLowpass?: { frequency: { value: number } };
+    waveLFO?: { frequency: { value: number } };
+  };
+
   const applyPreset = useCallback(
-    (soundKey: string, soundRef: any, preset: any) => {
+    (soundKey: keyof PresetsMap, soundRef: SoundRef | null, preset: Preset) => {
       if (!soundRef) return;
-      switch (soundKey) {
-        case "brown":
-          if (soundRef.filter)
-            soundRef.filter.frequency.value = preset.filterFreq;
-          break;
-        case "rain":
-          if (soundRef.highpass)
-            soundRef.highpass.frequency.value = preset.highpass;
-          if (soundRef.lowpass)
-            soundRef.lowpass.frequency.value = preset.lowpass;
-          if (soundRef.reverb) soundRef.reverb.wet.value = preset.reverbWet;
-          break;
-        case "ocean":
-          if (soundRef.pinkHighpass)
-            soundRef.pinkHighpass.frequency.value = preset.pinkHigh;
-          if (soundRef.pinkLowpass)
-            soundRef.pinkLowpass.frequency.value = preset.pinkLow;
-          if (soundRef.reverb) soundRef.reverb.wet.value = preset.reverbWet;
-          if (soundRef.waveLFO && preset.waveLfoFreq)
-            soundRef.waveLFO.frequency.value = preset.waveLfoFreq;
-          break;
+      
+      if (soundKey === 'brown' && 'filterFreq' in preset) {
+        if (soundRef.filter) {
+          soundRef.filter.frequency.value = preset.filterFreq;
+        }
+      } else if (soundKey === 'rain' && 'highpass' in preset && 'lowpass' in preset) {
+        if (soundRef.highpass) {
+          soundRef.highpass.frequency.value = preset.highpass;
+        }
+        if (soundRef.lowpass) {
+          soundRef.lowpass.frequency.value = preset.lowpass;
+        }
+        if (soundRef.reverb && 'reverbWet' in preset) {
+          soundRef.reverb.wet.value = preset.reverbWet;
+        }
+      } else if (soundKey === 'ocean' && 'pinkHigh' in preset && 'pinkLow' in preset) {
+        if (soundRef.pinkHighpass) {
+          soundRef.pinkHighpass.frequency.value = preset.pinkHigh;
+        }
+        if (soundRef.pinkLowpass) {
+          soundRef.pinkLowpass.frequency.value = preset.pinkLow;
+        }
+        if (soundRef.reverb) {
+          soundRef.reverb.wet.value = preset.reverbWet;
+        }
+        if (soundRef.waveLFO && 'waveLfoFreq' in preset && preset.waveLfoFreq !== undefined) {
+          soundRef.waveLFO.frequency.value = preset.waveLfoFreq;
+        }
       }
     },
     []
@@ -257,8 +315,8 @@ function NoiseSettingsModal({
 
             {/* Presets */}
             <div className="flex gap-2 mt-1">
-              {(presetsMap as any)[sound.key].map(
-                (preset: any, pIdx: number) => (
+              {presetsMap[sound.key as keyof PresetsMap].map(
+                (preset: Preset, pIdx: number) => (
                   <button
                     key={preset.label}
                     className={`px-2 py-1 rounded border text-sm transition ${
@@ -267,7 +325,7 @@ function NoiseSettingsModal({
                         : "bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--accent-primary)] hover:text-white"
                     }`}
                     onClick={() => {
-                      applyPreset(sound.key, sound.soundRef, preset);
+                      applyPreset(sound.key as keyof PresetsMap, sound.soundRef, preset);
                       setSelectedPresets((sel) =>
                         sel.map((v, i) => (i === idx ? pIdx : v))
                       );

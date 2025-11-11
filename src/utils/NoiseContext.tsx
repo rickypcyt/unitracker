@@ -82,45 +82,76 @@ const SOUND_CONFIGS = [
     defaultVolume: 1,
     volumeMultiplier: 0.2,
     create: (volume: number) => {
-      const pinkNoise = new Tone.Noise("pink").start();
-      const pinkHighpass = new Tone.Filter(200, "highpass");
-      const pinkLowpass = new Tone.Filter(1200, "lowpass");
+      // Main ocean waves (low frequency rumble)
       const brownNoise = new Tone.Noise("brown").start();
-      const brownFilter = new Tone.Filter(150, "lowpass");
-      const waveLFO = new Tone.LFO(0.1, 0.3, 0.8).start();
-      const randomLFO = new Tone.LFO(0.05, 0.08, 0.12).start();
+      const brownFilter = new Tone.Filter(120, "lowpass");
+      brownFilter.frequency.value = 120;
+      brownFilter.Q.value = 0.5;
+      
+      // Ocean surface (mid frequencies)
+      const pinkNoise = new Tone.Noise("pink").start();
+      const pinkHighpass = new Tone.Filter(100, "highpass");
+      const pinkLowpass = new Tone.Filter(1000, "lowpass");
+      pinkHighpass.frequency.value = 100;
+      pinkLowpass.frequency.value = 1000;
+      pinkLowpass.Q.value = 0.7;
+      
+      // Wave LFO for natural volume fluctuations
+      const waveLFO = new Tone.LFO(0.08, 0.4, 0.8).start();
+      const randomLFO = new Tone.LFO(0.03, 0.05, 0.1).start();
       randomLFO.connect(waveLFO.frequency);
 
+      // Breaking waves (mid-high frequencies)
       const breakingNoise = new Tone.Noise("pink").start();
-      const breakingFilter = new Tone.Filter(500, "bandpass");
-      const breakingGain = new Tone.Gain(0.15);
+      const breakingFilter = new Tone.Filter({
+        type: "bandpass",
+        frequency: 600,
+        Q: 1.2,
+        gain: 0
+      });
+      const breakingGain = new Tone.Gain(0.1);
 
+      // Water splashes (high frequencies)
       const splashNoise = new Tone.Noise("white").start();
-      const splashFilter = new Tone.Filter(2000, "bandpass");
-      const splashGain = new Tone.Gain(0.1);
+      const splashFilter = new Tone.Filter({
+        type: "bandpass",
+        frequency: 2500,
+        Q: 0.8,
+        gain: 0
+      });
+      const splashGain = new Tone.Gain(0.05);
 
+      // Reverb for spatial depth
       const reverb = new Tone.Reverb({
-        decay: 4,
-        wet: 0.4,
-        preDelay: 0.2,
+        decay: 5,
+        wet: 0.3,
+        preDelay: 0.1,
       }).toDestination();
+      
+      // Main gain with volume control
       const gain = new Tone.Gain(volume * 0.2).connect(reverb);
       waveLFO.connect(gain.gain);
 
-      pinkNoise.connect(pinkHighpass);
-      pinkHighpass.connect(pinkLowpass);
-      pinkLowpass.connect(gain);
+      // Connect all noise sources with their respective filters and gains
+      brownNoise.connect(brownFilter).connect(gain);
+      
+      pinkNoise.chain(
+        pinkHighpass,
+        pinkLowpass,
+        gain
+      );
 
-      brownNoise.connect(brownFilter);
-      brownFilter.connect(gain);
+      breakingNoise.chain(
+        breakingFilter,
+        breakingGain,
+        gain
+      );
 
-      breakingNoise.connect(breakingFilter);
-      breakingFilter.connect(breakingGain);
-      breakingGain.connect(gain);
-
-      splashNoise.connect(splashFilter);
-      splashFilter.connect(splashGain);
-      splashGain.connect(gain);
+      splashNoise.chain(
+        splashFilter,
+        splashGain,
+        gain
+      );
 
       return {
         pinkNoise,
@@ -167,7 +198,7 @@ interface NoiseContextType {
   setVolume: (index: number, volume: number) => void;
   toggleAllSounds: () => void;
   isInitialized: boolean;
-  initializeAudio: () => Promise<void>;
+  initializeAudio: () => Promise<boolean>;
 }
 
 // -------------------------
@@ -197,13 +228,36 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
   // -------------------------
   // Inicializar audio
   // -------------------------
-  const initializeAudio = async () => {
-    if (isInitialized) return;
+  const initializeAudio = async (): Promise<boolean> => {
+    if (isInitialized || Tone.context.state === 'running') return true;
+    
     try {
+      // Intentar iniciar el contexto de audio
       await Tone.start();
+      
+      // Verificar si el contexto de audio está realmente funcionando
+      if (Tone.context.state === 'suspended' || Tone.context.state === 'interrupted') {
+        await Tone.context.resume();
+        // Esperar un momento para que el contexto se actualice
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // Type assertion to handle Web Audio API state that TypeScript doesn't know about
+        if ((Tone.context.state as string) !== 'running') {
+          throw new Error('Audio context could not be started');
+        }
+      }
+      
+      // Crear el nodo de ganancia maestro
+      if (!masterGainRef.current) {
+        masterGainRef.current = new Tone.Gain(1).toDestination();
+        masterGainRef.current.gain.value = 1;
+      }
+      
       setIsInitialized(true);
+      return true;
     } catch (error) {
       console.error("Error initializing Tone.js:", error);
+      // Mostrar un mensaje al usuario si es necesario
+      return false;
     }
   };
 
@@ -211,18 +265,43 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
   // Start / Stop / Volume
   // -------------------------
   const startSound = async (index: number) => {
-    await initializeAudio();
-
     const sound = sounds[index];
-    if (!masterGainRef.current)
-      masterGainRef.current = new Tone.Gain(1).toDestination();
+    if (!sound) return;
+    
+    // Inicializar audio si no está inicializado
+    const audioInitialized = await initializeAudio();
+    if (!audioInitialized) {
+      console.warn('Audio could not be initialized');
+      return;
+    }
 
-    if (!sound.soundRef && sound.create)
-      sound.soundRef = sound.create(sound.volume);
+    // Asegurarse de que el contexto de audio esté en ejecución
+    if (Tone.context.state === 'suspended' || Tone.context.state === 'interrupted') {
+      await Tone.context.resume();
+    }
+
+    // Crear el nodo de ganancia maestro si no existe
+    if (!masterGainRef.current) {
+      masterGainRef.current = new Tone.Gain(1).toDestination();
+      masterGainRef.current.gain.value = 1;
+    }
+
+    // Crear el sonido si no existe
+    if (!sound.soundRef && sound.create) {
+      try {
+        sound.soundRef = sound.create(sound.volume);
+      } catch (error) {
+        console.error('Error creating sound:', error);
+        return;
+      }
+    }
 
     setSounds((prev) => {
       const newSounds = [...prev];
-      newSounds[index] = { ...sound, isPlaying: true };
+      const currentSound = newSounds[index];
+      if (currentSound) {
+        newSounds[index] = { ...currentSound, isPlaying: true };
+      }
       return newSounds;
     });
 
@@ -231,29 +310,110 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
 
   const stopSound = (index: number) => {
     const sound = sounds[index];
+    if (!sound) return;
+    
     if (sound.soundRef) {
-      Object.values(sound.soundRef).forEach((node) => node.dispose?.());
+      Object.values(sound.soundRef).forEach((node: any) => {
+        if (node && typeof node.dispose === 'function') {
+          node.dispose();
+        }
+      });
       sound.soundRef = null;
     }
+    
     setSounds((prev) => {
       const newSounds = [...prev];
-      newSounds[index] = { ...sound, isPlaying: false };
+      const currentSound = newSounds[index];
+      if (currentSound) {
+        newSounds[index] = { ...currentSound, isPlaying: false };
+      }
       return newSounds;
     });
+    
     localStorage.setItem(sound.key + "IsPlaying", "false");
   };
 
-  const setVolume = (index: number, volume: number) => {
+  const setVolume = async (index: number, volume: number): Promise<void> => {
     const sound = sounds[index];
+    if (!sound) return;
+    
+    // Update volume state
     setSounds((prev) => {
       const newSounds = [...prev];
-      newSounds[index] = { ...sound, volume };
+      const currentSound = newSounds[index];
+      if (currentSound) {
+        newSounds[index] = { ...currentSound, volume };
+      }
       return newSounds;
     });
+    
     localStorage.setItem(sound.key + "Volume", volume.toString());
 
-    if (sound.soundRef?.gain)
-      sound.soundRef.gain.gain.value = volume * (sound.volumeMultiplier || 1);
+    // Make sure the sound is playing if it's not
+    if (!sound.isPlaying) {
+      await startSound(index);
+    }
+
+    // Update volume in the gain node
+    const soundRef = sound.soundRef as any;
+    if (!soundRef) return;
+
+    // For ocean sound, we need to update multiple gain nodes with proper balancing
+    if (sound.key === 'ocean' && soundRef) {
+      const isMuted = volume === 0;
+      const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * (sound.volumeMultiplier || 1);
+      
+      // Mute all components if volume is 0
+      if (isMuted) {
+        // Main gain
+        soundRef.gain?.gain.rampTo(0, 0.1);
+        
+        // Individual components - set to 0 immediately for instant mute
+        soundRef.breakingGain?.gain.cancelScheduledValues(0);
+        soundRef.breakingGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
+        soundRef.splashGain?.gain.cancelScheduledValues(0);
+        soundRef.splashGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
+        soundRef.brownFilter?.gain?.cancelScheduledValues(0);
+        soundRef.brownFilter?.gain?.setValueAtTime(0, Tone.context.currentTime);
+        
+        soundRef.pinkNoise?.volume?.cancelScheduledValues(0);
+        soundRef.pinkNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        
+        soundRef.brownNoise?.volume?.cancelScheduledValues(0);
+        soundRef.brownNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+      } else {
+        // Update volumes when not muted
+        // Main gain
+        soundRef.gain?.gain.rampTo(baseVolume, 0.1);
+        
+        // Individual components with proper balancing
+        if (soundRef.breakingGain) {
+          soundRef.breakingGain.gain.rampTo(0.2 * baseVolume * 0.8, 0.1);
+        }
+        
+        if (soundRef.splashGain) {
+          soundRef.splashGain.gain.rampTo(0.15 * baseVolume * 0.6, 0.1);
+        }
+        
+        if (soundRef.brownFilter?.gain) {
+          soundRef.brownFilter.gain.rampTo(0.5 * baseVolume * 0.7, 0.1);
+        }
+        
+        // Ensure noise sources are unmuted
+        soundRef.pinkNoise?.volume?.rampTo(0, 0.1);
+        soundRef.brownNoise?.volume?.rampTo(0, 0.1);
+      }
+    } 
+    // For other sounds, just update the main gain
+    else if (soundRef?.gain) {
+      const safeVolume = volume === 0 
+        ? 0.0001 * (sound.volumeMultiplier || 1)
+        : Math.max(volume, 0.0001) * (sound.volumeMultiplier || 1);
+      
+      soundRef.gain.gain.value = safeVolume;
+    }
   };
 
   const toggleAllSounds = async () => {
