@@ -1,5 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
+import { getLocalDateString } from '@/utils/dateUtils';
 
 export default function usePomodorosToday(userId) {
   const [total, setTotal] = useState(0);
@@ -8,7 +9,7 @@ export default function usePomodorosToday(userId) {
   const fetchPomodoros = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     const { data, error } = await supabase
       .from('study_laps')
       .select('pomodoros_completed, started_at')

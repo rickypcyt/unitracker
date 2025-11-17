@@ -1,7 +1,7 @@
 import { CheckCircle2, Clock, MoreVertical } from "lucide-react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { isAfter, isSameDay } from 'date-fns';
+import { isAfter, isSameDay, parseISO } from 'date-fns';
 import { useDispatch, useSelector } from "react-redux";
 
 import BaseModal from "@/modals/BaseModal";
@@ -130,10 +130,7 @@ const Calendar = () => {
   // ---------------------
   // Helpers
   // ---------------------
-  const isSameDay = (d1, d2) =>
-    d1.getDate() === d2.getDate() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getFullYear() === d2.getFullYear();
+  // Use date-fns isSameDay for consistent timezone handling
   const isToday = (date) => isSameDay(date, new Date());
   const isSelected = (date) => isSameDay(date, selectedDate);
 
@@ -161,20 +158,31 @@ const Calendar = () => {
 
   const getTasksForDate = useCallback(
     (date) =>
-      tasks.filter((task) => isSameDay(new Date(task.created_at), date)),
+      tasks.filter((task) => {
+        const taskDate = new Date(task.created_at);
+        return isSameDay(parseISO(taskDate.toISOString()), parseISO(date.toISOString()));
+      }),
     [tasks]
   );
 
   const getStudiedHoursForDate = useCallback(
     (date) => {
-      const dayStr = date.toISOString().split("T")[0];
+      const targetDate = new Date(date);
+      targetDate.setHours(0, 0, 0, 0);
+      
       const totalMinutes = laps.reduce((total, lap) => {
         if (!lap.duration || lap.duration === "00:00:00") return total;
-        const lapDateStr = new Date(lap.created_at).toISOString().split("T")[0];
-        if (lapDateStr !== dayStr) return total;
-        const [h, m] = lap.duration.split(":").map(Number);
-        return total + h * 60 + m;
+        
+        const lapDate = new Date(lap.created_at);
+        lapDate.setHours(0, 0, 0, 0);
+        
+        if (isSameDay(lapDate, targetDate)) {
+          const [h, m] = lap.duration.split(":").map(Number);
+          return total + h * 60 + m;
+        }
+        return total;
       }, 0);
+      
       return (totalMinutes / 60).toFixed(1);
     },
     [laps]
@@ -189,7 +197,7 @@ const Calendar = () => {
         if (!task.deadline) return false;
         const taskDate = new Date(task.deadline);
         taskDate.setHours(0, 0, 0, 0);
-        return isSameDay(taskDate, targetDate);
+        return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
       });
     },
     [tasks]
@@ -204,7 +212,7 @@ const Calendar = () => {
         if (!task.deadline) return false;
         const taskDate = new Date(task.deadline);
         taskDate.setHours(0, 0, 0, 0);
-        return isSameDay(taskDate, targetDate);
+        return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
       });
     },
     [tasks]

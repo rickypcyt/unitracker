@@ -12,16 +12,18 @@ import {
   setPomodoroState,
   setSyncPomodoroWithTimer,
 } from "@/store/slices/uiSlice";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
-import usePomodorosToday from "@/hooks/usePomodorosToday";
-import { useEventListener } from "usehooks-ts";
+
+import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
 import SectionTitle from "@/components/SectionTitle";
 import { formatPomoTime } from "@/hooks/useTimers";
-import PomodoroSettingsModal from "@/modals/PomodoroSettingsModal";
 import { supabase } from "@/utils/supabaseClient";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useEventListener } from "usehooks-ts";
+import usePomodorosToday from "@/hooks/usePomodorosToday";
+import { getLocalDateString } from "@/utils/dateUtils";
 
 // import useTheme from "@/hooks/useTheme";
 
@@ -64,7 +66,7 @@ const Pomodoro = () => {
   // Usar syncPomodoroWithTimer en vez de isSyncedWithStudyTimer en todos los listeners y lógica de sincronización
   // Restaurar pomoState de localStorage de forma segura
   const [pomoState, setPomoState] = useState(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     const savedState = localStorage.getItem("pomodoroState");
     const defaultModeIndex = 0;
     const defaultMode = "work";
@@ -176,7 +178,7 @@ const Pomodoro = () => {
   const { total: pomodorosToday, fetchPomodoros } = usePomodorosToday(user?.id);
 
   const [pomodorosTodayLocal, setPomodorosTodayLocal] = useState(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     return parseInt(
       localStorage.getItem(`pomodoroDailyCount_${today}`) || "0",
       10
@@ -229,6 +231,10 @@ const Pomodoro = () => {
     // Dispatch event when a pomodoro is completed
     if (isWork) {
       window.dispatchEvent(new CustomEvent('pomodoroCompleted'));
+      
+      // Asegurarse de que el contador de pomodoros en sesión se actualice correctamente
+      const currentPomodoros = parseInt(localStorage.getItem("pomodorosThisSession") || "0", 10);
+      localStorage.setItem("pomodorosThisSession", String(currentPomodoros + 1));
     }
 
     const nextMode = isWork
@@ -254,7 +260,16 @@ const Pomodoro = () => {
 
     // Update database if it's a work session
     if (isWork) {
-      await updatePomodoroInDatabase(1);
+      try {
+        await updatePomodoroInDatabase(1);
+        // Actualizar el contador local después de una actualización exitosa
+        setPomoState(prev => ({
+          ...prev,
+          pomodorosThisSession: (prev.pomodorosThisSession || 0) + 1
+        }));
+      } catch (error) {
+        console.error('Error al actualizar el contador de pomodoros:', error);
+      }
     }
 
     // Update state
@@ -266,7 +281,7 @@ const Pomodoro = () => {
         : prev.pomodoroToday;
       // Immediately update localStorage for daily count
       if (shouldIncrementPomodoro) {
-        const today = new Date().toISOString().slice(0, 10);
+        const today = getLocalDateString();
         const prevCount = parseInt(
           localStorage.getItem(`pomodoroDailyCount_${today}`) || "0",
           10
@@ -886,6 +901,8 @@ const Pomodoro = () => {
         ...prev,
         pomodorosThisSession: 0,
       }));
+      // Asegurarse de que el contador en localStorage también se reinicie
+      localStorage.setItem("pomodorosThisSession", "0");
     },
     []
   );
@@ -926,7 +943,7 @@ const Pomodoro = () => {
       localStorage.setItem("pomodoroState", JSON.stringify(stateToSave));
     }
     localStorage.setItem("pomodoroIsRunning", pomoState.isRunning.toString());
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     localStorage.setItem(
       `pomodoroDailyCount_${today}`,
       safe(pomoState.pomodoroToday, 0).toString()
@@ -942,7 +959,7 @@ const Pomodoro = () => {
 
   // On mount, update pomodorosTodayLocal in case the day changed
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getLocalDateString();
     setPomodorosTodayLocal(
       parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || "0", 10)
     );
@@ -951,7 +968,7 @@ const Pomodoro = () => {
   // Resetear el contador diario a medianoche
   useEffect(() => {
     const resetDailyCount = () => {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getLocalDateString();
       const lastReset = localStorage.getItem("lastPomodoroReset");
 
       if (lastReset !== today) {
