@@ -1,7 +1,25 @@
+import { useState } from 'react';
 import BaseModal from '@/modals/BaseModal';
 
-const DeleteSessionModal = ({ isOpen, onClose, onConfirm }) => {
+interface DeleteSessionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+}
+
+const DeleteSessionModal = ({ isOpen, onClose, onConfirm }: DeleteSessionModalProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   if (!isOpen) return null;
+
+  const handleConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      await onConfirm();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <BaseModal
@@ -23,10 +41,13 @@ const DeleteSessionModal = ({ isOpen, onClose, onConfirm }) => {
             Cancel
           </button>
           <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            onClick={handleConfirm}
+            disabled={isDeleting}
+            className={`px-4 py-2 text-white rounded-lg transition-colors ${
+              isDeleting ? 'bg-red-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
+            }`}
           >
-            Delete Session
+            {isDeleting ? 'Deleting...' : 'Delete Session'}
           </button>
         </div>
       </div>

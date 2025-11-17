@@ -1,15 +1,34 @@
 import type { PayloadAction} from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
-interface Lap {
+export interface Lap {
   id: string;
-  start_time: string;
-  end_time?: string;
-  duration?: number;
-  task_id?: string;
-  user_id?: string;
-  created_at?: string;
+  user_id: string;
+  name: string | null;
+  description: string | null;
+  duration: string;
+  session_number: number;
+  created_at: string;
+  started_at: string;
+  ended_at: string | null;
+  tasks_completed: number;
+  pomodoros_completed: number;
+  session_assignment: string | null;
   updated_at?: string;
+  
+  // Campos adicionales que pueden estar presentes
+  type?: string;
+  subject_id?: string;
+  subject_name?: string;
+  subject_color?: string;
+  
+  // Campos para compatibilidad con versiones anteriores
+  start_time?: string;
+  end_time?: string;
+  task_id?: string;
+  
+  // Cualquier otro campo adicional que pueda existir
+  [key: string]: any;
 }
 
 interface CurrentSession {

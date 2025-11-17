@@ -8,6 +8,7 @@ import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
+import { Lap } from '@/store/slices/LapSlice';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -24,25 +25,6 @@ interface RootState {
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
   };
-}
-
-interface Lap {
-  id: string;
-  created_at: string;
-  duration: string;
-  session_number: number;
-  name: string;
-  tasks_completed: number;
-  type: string;
-  subject_id: string;
-  subject_name: string;
-  subject_color: string;
-  user_id: string;
-  start_time: string;
-  end_time: string;
-  notes: string;
-  created_at_ts: number;
-  updated_at: string;
 }
 
 interface ContextMenu {
@@ -76,14 +58,64 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const groupSessionsByMonth = (lapsList: Lap[]): GroupedLabs => {
-    return lapsList.reduce<Record<string, Lap[]>>((groups, lap) => {
-      const monthYear = getMonthYear(lap.created_at);
+    // Función auxiliar para parsear fechas de manera segura
+    const safeParseDate = (dateStr: string): Date | null => {
+      if (!dateStr) return null;
+      
+      // Intentar con formato ISO primero
+      let date = new Date(dateStr);
+      if (!isNaN(date.getTime())) return date;
+      
+      // Intentar con formato SQL
+      if (dateStr.includes(' ')) {
+        date = new Date(dateStr.replace(' ', 'T') + 'Z');
+        if (!isNaN(date.getTime())) return date;
+      }
+      
+      return null;
+    };
+    
+    // Filtrar y ordenar sesiones
+    const validSessions = lapsList.filter(lap => {
+      const dateStr = lap.started_at || lap.created_at;
+      const date = safeParseDate(dateStr);
+      return date !== null;
+    });
+    
+    // Ordenar por fecha (más recientes primero)
+    const sortedLaps = [...validSessions].sort((a, b) => {
+      const dateA = safeParseDate(a.started_at || a.created_at)!;
+      const dateB = safeParseDate(b.started_at || b.created_at)!;
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // Agrupar por mes y año
+    const grouped = sortedLaps.reduce<Record<string, Lap[]>>((groups, lap) => {
+      const dateStr = lap.started_at || lap.created_at;
+      const monthYear = getMonthYear(dateStr);
+      
+      if (monthYear === 'Invalid Date') {
+        return groups;
+      }
+      
       if (!groups[monthYear]) {
         groups[monthYear] = [];
       }
       groups[monthYear].push(lap);
       return groups;
     }, {});
+
+    // Ordenar los meses (más recientes primero)
+    return Object.entries(grouped)
+      .sort(([aMonthYear], [bMonthYear]) => {
+        const aDate = new Date(aMonthYear);
+        const bDate = new Date(bMonthYear);
+        return bDate.getTime() - aDate.getTime();
+      })
+      .reduce((acc, [monthYear, sessions]) => {
+        acc[monthYear] = sessions;
+        return acc;
+      }, {} as Record<string, Lap[]>);
   };
 
   const handleDeleteClick = useCallback((sessionId: string) => {
@@ -93,8 +125,17 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
 
   const handleConfirmDelete = useCallback(async () => {
     if (sessionToDelete) {
+      console.log('[DEBUG] Confirmando eliminación de sesión, ID:', sessionToDelete);
       try {
-        await dispatch(deleteLap(sessionToDelete));
+        console.log('[DEBUG] Llamando a deleteLap...');
+        const result = await dispatch(deleteLap(sessionToDelete));
+        console.log('[DEBUG] Resultado de deleteLap:', result);
+        
+        // Force a refresh of the laps data
+        console.log('[DEBUG] Actualizando lista de sesiones...');
+        const refreshResult = await dispatch(fetchLaps());
+        console.log('[DEBUG] Resultado de fetchLaps:', refreshResult);
+        
         toast.success('Session deleted successfully');
       } catch (error) {
         toast.error('Failed to delete session');
@@ -158,6 +199,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
 
   // Group laps by month with proper type
   const groupedLaps: GroupedLabs = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
+
 
   // Calculate statistics for a month
   interface MonthStats {
@@ -394,7 +436,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
               </div>
             </div>
           ) : (
-            // Months overview
+            /* Months overview with scrollable content */
             <div className="space-y-8 overflow-y-auto max-h-[calc(80vh-2rem)] pr-2 -mr-2">
               {(() => {
                 // Group months by year
@@ -404,36 +446,56 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                   lapsOfMonth: Lap[];
                 }>> = {};
 
-                // Sort and group months by year
-                Object.entries(groupedLaps)
-                  .sort(([aMonthYear], [bMonthYear]) => {
-                    const [aMonth, aYear] = aMonthYear.split(' ');
-                    const [bMonth, bYear] = bMonthYear.split(' ');
-                    const aDate = new Date(`${aMonth} 1, ${aYear}`);
-                    const bDate = new Date(`${bMonth} 1, ${bYear}`);
-                    return bDate.getTime() - aDate.getTime();
-                  })
-                  .forEach(([monthYear, lapsOfMonth]) => {
+                // First, convert the groupedLaps entries to an array and sort them by date
+                const sortedEntries = Object.entries(groupedLaps).sort(([aMonthYear], [bMonthYear]) => {
+                  // Parse the month and year from the formatted string
+                  const parseDate = (monthYear: string) => {
                     const [month, year] = monthYear.split(' ');
-                    if (!monthsByYear[year]) {
-                      monthsByYear[year] = [];
-                    }
-                    monthsByYear[year].push({ month, monthYear, lapsOfMonth });
-                  });
+                    return new Date(Date.parse(`${month} 1, ${year}`));
+                  };
+                  
+                  try {
+                    const aDate = parseDate(aMonthYear);
+                    const bDate = parseDate(bMonthYear);
+                    return bDate.getTime() - aDate.getTime();
+                  } catch (error) {
+                    console.error('Error parsing dates for sorting:', { aMonthYear, bMonthYear, error });
+                    return 0;
+                  }
+                });
 
+                // Group the sorted entries by year
+                sortedEntries.forEach(([monthYear, lapsOfMonth]) => {
+                  const year = monthYear.split(' ')[1]; // Get the year part
+                  const month = monthYear.split(' ')[0]; // Get the month part
+                  
+                  if (!monthsByYear[year]) {
+                    monthsByYear[year] = [];
+                  }
+                  
+                  monthsByYear[year].push({ 
+                    month, 
+                    monthYear, 
+                    lapsOfMonth,
+                    // Add a timestamp for consistent sorting
+                    timestamp: new Date(Date.parse(`${month} 1, ${year}`)).getTime()
+                  });
+                });
+
+                // Define the order of months for display
                 const monthOrder = [
                   'January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December'
-                ];
+                ] as const;
 
                 return Object.entries(monthsByYear)
                   .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
                   .map(([year, months]) => (
                     <div key={year} className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
-                        <h2 className="text-lg font-semibold text-[var(--text-secondary)] whitespace-nowrap px-2">{year}</h2>
-                        <div className="h-px bg-[var(--border-primary)] flex-1"></div>
+                      <div className="text-center mb-2">
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)] bg-[var(--bg-secondary)] inline-block px-4 py-1 rounded-full">
+                          {year}
+                        </h2>
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -457,7 +519,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                                     <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
                                   </div>
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-3 max-h-96 overflow-y-auto pr-2 -mr-2">
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm text-[var(--text-secondary)]">Total Time</span>
                                     <div className="flex items-center gap-1">

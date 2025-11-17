@@ -137,7 +137,40 @@ export const formatPomoTime = (totalSeconds, roundUp = false) => {
   }
 };
 
-export const getMonthYear = (date, locale = "default") => {
-  const options = { month: "long", year: "numeric" };
-  return new Date(date).toLocaleDateString(locale, options);
+export const getMonthYear = (dateString: string, locale = "en-US"): string => {
+  try {
+    // Handle different date string formats
+    let date: Date;
+    
+    // Check if the date string includes timezone offset (e.g., '2025-11-17T10:26:15.554+00:00')
+    if (dateString.includes('+') || dateString.endsWith('Z')) {
+      date = new Date(dateString);
+    } 
+    // Handle SQL timestamp format: '2025-11-17 10:26:15.554+00'
+    else if (/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(dateString)) {
+      // Replace space with T to make it ISO-8601 compatible
+      date = new Date(dateString.replace(' ', 'T') + 'Z');
+    } 
+    // Fallback for other formats
+    else {
+      date = new Date(dateString);
+    }
+    
+    // Ensure we have a valid date
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date:', dateString);
+      return 'Invalid Date';
+    }
+    
+    const options: Intl.DateTimeFormatOptions = { 
+      month: 'long', 
+      year: 'numeric',
+      timeZone: 'UTC' // Ensure consistent timezone handling
+    };
+    
+    return date.toLocaleDateString(locale, options);
+  } catch (error) {
+    console.error('Error parsing date:', dateString, error);
+    return 'Invalid Date';
+  }
 };
