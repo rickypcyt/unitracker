@@ -1,6 +1,6 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { deleteLap, fetchLaps } from '@/store/LapActions';
+import { deleteLap, forceLapRefresh } from '@/store/LapActions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from './BaseModal';
@@ -64,7 +64,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
   // Fetch sessions when the modal opens
   useEffect(() => {
     if (isOpen && isLoggedIn) {
-      dispatch(fetchLaps());
+      dispatch(forceLapRefresh());
     }
   }, [isOpen, isLoggedIn, dispatch]);
 
@@ -75,45 +75,16 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
 
   const groupSessionsByMonth = (lapsList: Lap[]): GroupedLabs => {
-    // Función auxiliar para parsear fechas de manera segura
-    const safeParseDate = (dateStr: string): Date | null => {
-      if (!dateStr) return null;
-      
-      // Intentar con formato ISO primero
-      let date = new Date(dateStr);
-      if (!isNaN(date.getTime())) return date;
-      
-      // Intentar con formato SQL
-      if (dateStr.includes(' ')) {
-        date = new Date(dateStr.replace(' ', 'T') + 'Z');
-        if (!isNaN(date.getTime())) return date;
-      }
-      
-      return null;
-    };
-    
-    // Filtrar y ordenar sesiones
-    const validSessions = lapsList.filter(lap => {
-      const dateStr = lap.started_at || lap.created_at;
-      const date = safeParseDate(dateStr);
-      return date !== null;
-    });
-    
-    // Ordenar por fecha (más recientes primero)
-    const sortedLaps = [...validSessions].sort((a, b) => {
-      const dateA = safeParseDate(a.started_at || a.created_at)!;
-      const dateB = safeParseDate(b.started_at || b.created_at)!;
+    // Ordenar por fecha (más recientes primero) - usar created_at como en StudySessions
+    const sortedLaps = [...lapsList].sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
       return dateB.getTime() - dateA.getTime();
     });
 
-    // Agrupar por mes y año
+    // Agrupar por mes y año - misma lógica que StudySessions
     const grouped = sortedLaps.reduce<Record<string, Lap[]>>((groups, lap) => {
-      const dateStr = lap.started_at || lap.created_at;
-      const monthYear = getMonthYear(dateStr);
-      
-      if (monthYear === 'Invalid Date') {
-        return groups;
-      }
+      const monthYear = getMonthYear(lap.created_at);
       
       if (!groups[monthYear]) {
         groups[monthYear] = [];
@@ -150,8 +121,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
         
         // Force a refresh of the laps data
         console.log('[DEBUG] Actualizando lista de sesiones...');
-        const refreshResult = await dispatch(fetchLaps());
-        console.log('[DEBUG] Resultado de fetchLaps:', refreshResult);
+        const refreshResult = await dispatch(forceLapRefresh());
+        console.log('[DEBUG] Resultado de forceLapRefresh:', refreshResult);
         
         toast.success('Session deleted successfully');
       } catch (error) {
