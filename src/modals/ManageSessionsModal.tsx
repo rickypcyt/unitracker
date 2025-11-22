@@ -333,8 +333,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
       className="!p-0"
       showHeader={false}
     >
-      <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col max-h-[80vh] overflow-hidden">
-        <div className="p-4">
+      <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col">
+        <div className="p-4 flex-shrink-0">
           <div className="relative flex items-center justify-center mb-6">
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
               Manage Sessions
@@ -347,22 +347,23 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
               <X size={24} />
             </button>
           </div>
+          
+          <div className="flex-1 min-h-0">
             {selectedMonth ? (
             // Month detail view
-            <div className="space-y-4 flex flex-col h-full">
-              <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col h-full">
+              <div className="relative mb-6 p-4 flex-shrink-0">
                 <button
                   onClick={() => setSelectedMonth(null)}
-                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
                 >
                   <ArrowLeft size={20} className="-ml-1" /> Back to All Sessions
                 </button>
-                <h3 className="text-xl font-semibold text-[var(--text-primary)]">{selectedMonth}</h3>
-                <div className="w-8"></div> {/* Spacer for alignment */}
+                <h3 className="text-xl font-semibold text-[var(--text-primary)] text-center">{selectedMonth}</h3>
               </div>
 
-              <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+              <div className="flex-1 overflow-y-auto px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-6">
                   {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
                     <div
                       key={lap.id}
@@ -420,7 +421,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
             </div>
           ) : (
             /* Months overview with scrollable content */
-            <div className="space-y-8 overflow-y-auto max-h-[calc(80vh-2rem)] pr-2 -mr-2">
+            <div className="h-full overflow-y-auto px-6 py-4">
+              <div className="space-y-8">
               {(() => {
                 // Group months by year
                 const monthsByYear: Record<string, MonthData[]> = {};
@@ -473,8 +475,8 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                   .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
                   .map(([year, months]) => (
                     <div key={year} className="space-y-4">
-                      <div className="text-center mb-2">
-                        <h2 className="text-lg font-semibold text-[var(--text-primary)] bg-[var(--bg-secondary)] inline-block px-4 py-1 rounded-full">
+                      <div className="w-full flex justify-center mb-4">
+                        <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border border-[var(--border-primary)]">
                           {year}
                         </h2>
                       </div>
@@ -529,6 +531,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                     </div>
                   ));
               })()}
+              </div>
             </div>
           )}
 
@@ -582,6 +585,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </BaseModal>

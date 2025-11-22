@@ -3,8 +3,6 @@ import {
   MoreVertical,
   Pause,
   Play,
-  RefreshCw,
-  RefreshCwOff,
   RotateCcw,
   X,
 } from "lucide-react";
@@ -33,11 +31,10 @@ import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import useEventListener from "@/hooks/useEventListener";
-import { useLapRealtimeSubscription } from "@/hooks/useLapRealtimeSubscription";
 // moved to hooks/study-timer/useSessionId
 import { useSessionId } from "@/hooks/study-timer/useSessionId";
 // moved to hooks/study-timer/useStudyTimerState
-import { useStudyTimerState } from "@/hooks/study-timer/useStudyTimerState";
+import { useStudyTimerState, type StudyState } from "@/hooks/study-timer/useStudyTimerState";
 
 // Constantes
 const STORAGE_KEYS = {
@@ -47,7 +44,6 @@ const STORAGE_KEYS = {
   SYNCED_WITH_STUDY_TIMER: "isSyncedWithStudyTimer",
   LAST_SESSIONS_RESET: "lastSessionsReset",
   SESSIONS_TODAY_COUNT: "sessionsTodayCount",
-  POMODOROS_THIS_SESSION: "pomodorosThisSession",
 };
 
 const TIME_ADJUSTMENTS = {
@@ -59,40 +55,10 @@ const TIME_ADJUSTMENTS = {
 
 
 // Utilidades
-const safeNumber = (value, defaultValue = 0) =>
+const safeNumber = (value: any, defaultValue: number = 0): number =>
   typeof value === "number" && Number.isFinite(value) ? value : defaultValue;
 
-const parseStoredState = (savedState, defaultState) => {
-  if (!savedState) return defaultState;
-
-  try {
-    const parsed = JSON.parse(savedState);
-    return {
-      ...defaultState,
-      time: safeNumber(Number(parsed.time)),
-      isRunning:
-        typeof parsed.isRunning === "boolean" ? parsed.isRunning : false,
-      lastStart: parsed.lastStart ? safeNumber(Number(parsed.lastStart)) : null,
-      timeAtStart: safeNumber(Number(parsed.timeAtStart)),
-      sessionStatus: ["inactive", "active", "paused"].includes(
-        parsed.sessionStatus
-      )
-        ? parsed.sessionStatus
-        : "inactive",
-      sessionTitle:
-        typeof parsed.sessionTitle === "string" ? parsed.sessionTitle : "",
-      sessionDescription:
-        typeof parsed.sessionDescription === "string"
-          ? parsed.sessionDescription
-          : "",
-    };
-  } catch {
-    console.error("Error parsing saved state, using defaults");
-    return defaultState;
-  }
-};
-
-const saveToLocalStorage = (key, value) => {
+const saveToLocalStorage = (key: string, value: any): void => {
   try {
     localStorage.setItem(
       key,
@@ -103,7 +69,7 @@ const saveToLocalStorage = (key, value) => {
   }
 };
 
-const getFromLocalStorage = (key, defaultValue = null) => {
+const getFromLocalStorage = (key: string, defaultValue: any = null): any => {
   try {
     const value = localStorage.getItem(key);
     return value
@@ -119,10 +85,10 @@ const getFromLocalStorage = (key, defaultValue = null) => {
 
 // Custom hooks
 const useTimestamp = () => {
-  const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
+  const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
 
   const isNewTimestamp = useCallback(
-    (timestamp) => {
+    (timestamp: number): boolean => {
       if (lastSyncTimestamp === timestamp) return false;
       setLastSyncTimestamp(timestamp);
       return true;
@@ -145,19 +111,19 @@ const useModalStates = () => {
     isDeleteModalOpen: false,
   });
 
-  const updateModal = useCallback((modalName, isOpen) => {
+  const updateModal = useCallback((modalName: string, isOpen: boolean) => {
     setModalStates((prev) => ({ ...prev, [modalName]: isOpen }));
   }, []);
 
-  return [modalStates, updateModal];
+  return [modalStates, updateModal] as [typeof modalStates, typeof updateModal];
 };
 
 const useSyncStates = () => {
   const syncPomodoroWithTimer = useSelector(
-    (state) => state.ui.syncPomodoroWithTimer
+    (state: any) => state.ui.syncPomodoroWithTimer
   );
   const syncCountdownWithTimer = useSelector(
-    (state) => state.ui.syncCountdownWithTimer
+    (state: any) => state.ui.syncCountdownWithTimer
   );
 
   return {
@@ -166,12 +132,17 @@ const useSyncStates = () => {
   };
 };
 
-const StudyTimer = ({ onSyncChange, isSynced }) => {
+interface StudyTimerProps {
+  onSyncChange?: (isSynced: boolean) => void;
+  isSynced?: boolean;
+}
+
+const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const { isLoggedIn } = useAuth();
   const dispatch = useDispatch();
-  const isStudyRunningRedux = useSelector((state) => state.ui.isStudyRunning);
+  const isStudyRunningRedux = useSelector((state: any) => state.ui.isStudyRunning);
 
-  const [studyState, updateStudyState, setStudyState] = useStudyTimerState();
+  const [studyState, updateStudyState] = useStudyTimerState();
   const [currentSessionId, updateSessionId] = useSessionId();
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
@@ -186,7 +157,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   });
   const [isHandlingEvent] = useState(false);
   const [, setSessionsTodayCount] = useState(0);
-  const [isSyncedWithStudyTimer] = useState(() =>
+  const [isSyncedWithStudyTimer] = useState<boolean>(() =>
     getFromLocalStorage(STORAGE_KEYS.SYNCED_WITH_STUDY_TIMER, false)
   );
   const [localResetKey, setLocalResetKey] = useState(0);
@@ -196,7 +167,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Función para actualizar el tiempo del timer
   const updateTimerTime = useCallback(
-    (time, isRunning = studyState.isRunning) => {
+    (time: number, isRunning: boolean = studyState.isRunning) => {
       updateStudyState({ time });
       window.dispatchEvent(
         new CustomEvent(SYNC_EVENTS.STUDY_TIMER_TIME_UPDATE, {
@@ -209,11 +180,11 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Función para ajustar tiempo
   const adjustTime = useCallback(
-    (adjustment) => {
+    (adjustment: number) => {
       const now = Date.now();
       if (studyState.isRunning) {
         const elapsed =
-          studyState.timeAtStart + (now - studyState.lastStart) / 1000;
+          studyState.timeAtStart + (now - (studyState.lastStart || 0)) / 1000;
         updateStudyState({
           timeAtStart: Math.max(0, elapsed + adjustment),
           lastStart: now,
@@ -281,7 +252,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   // Controles del timer
   const studyControls = useMemo(
     () => ({
-      start: async (baseTimestamp, fromSync = false, seedTime?: number) => {
+      start: async (baseTimestamp: number, fromSync: boolean = false, seedTime?: number) => {
         if (isStudyRunningRedux || isHandlingEvent) return;
 
         if (!isLoggedIn) {
@@ -454,8 +425,8 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Event listeners con manejo optimizado de timestamps
   const createEventHandler = useCallback(
-    (action, condition = () => true) => {
-      return (event) => {
+    (action: (baseTimestamp: number) => void, condition: () => boolean = () => true) => {
+      return (event: CustomEvent) => {
         const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
         if (!isNewTimestamp(baseTimestamp) || !condition()) return;
         action(baseTimestamp);
@@ -508,7 +479,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   );
 
   // Función para formatear duración
-  const formatDuration = useCallback((totalSeconds) => {
+  const formatDuration = useCallback((totalSeconds: number): string => {
     const roundedSeconds = Math.round(totalSeconds);
     const hours = Math.floor(roundedSeconds / 3600);
     const minutes = Math.floor((roundedSeconds % 3600) / 60);
@@ -517,6 +488,19 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       2,
       "0"
     )}:${String(seconds).padStart(2, "0")}`;
+  }, []);
+
+  // Función para calcular pomodoros automáticamente basados en la duración
+  // Un pomodoro = 60 minutos (50 trabajo + 10 descanso)
+  // Solo aplica a sesiones de estudio, no a sesiones de pomodoro específicas
+  const calculatePomodorosFromDuration = useCallback((totalSeconds: number, sessionType: string = 'study'): number => {
+    if (sessionType === 'pomodoro') {
+      // Para sesiones de pomodoro específicas, no calcular automáticamente
+      // ya que usan su propio sistema de conteo manual
+      return 0;
+    }
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    return Math.floor(totalMinutes / 60); // Un pomodoro cada 60 minutos
   }, []);
 
   // Función para manejar finalización de sesión
@@ -566,12 +550,14 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       const formattedDuration = formatDuration(studyState.time);
 
       if (formattedDuration !== "00:00:00") {
-        const pomodorosThisSession = parseInt(
-          getFromLocalStorage(STORAGE_KEYS.POMODOROS_THIS_SESSION, "0"),
-          10
+        // Calcular pomodoros automáticamente basados en la duración total
+        // Solo para sesiones de estudio, no para sesiones de pomodoro
+        const pomodorosThisSession = calculatePomodorosFromDuration(
+          studyState.time, 
+          session.type || 'study'
         );
 
-        const updateData = {
+        const updateData: any = {
           duration: formattedDuration,
           tasks_completed: completedTasks.length,
           ended_at: endedAt,
@@ -605,7 +591,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
             .maybeSingle();
           if (!latestErr && latest?.name) {
             latestTitle = latest.name;
-            updateStudyState({ sessionTitle: latestTitle });
+            updateStudyState({ sessionTitle: latestTitle as string });
           }
         } catch (e) {
           console.warn("Could not refresh session name for summary:", e);
@@ -638,10 +624,9 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       studyControls.reset();
       updateSessionId(null);
       dispatch(setCurrentSession(null));
-      updateStudyState({
-        sessionTitle: undefined,
-        sessionDescription: undefined,
-      });
+      // Remove optional properties instead of setting to undefined
+      const { sessionTitle, sessionDescription, ...resetState } = studyState;
+      updateStudyState(resetState);
       localStorage.removeItem(STORAGE_KEYS.STUDY_TIMER_STARTED_AT);
 
       // Emit synchronized resets
@@ -669,6 +654,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     currentSessionId,
     studyState.time,
     formatDuration,
+    calculatePomodorosFromDuration,
     updateModal,
     studyControls,
     updateSessionId,
@@ -689,9 +675,11 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     studyControls.reset();
     updateSessionId(null);
     dispatch(setCurrentSession(null));
-    updateStudyState({ sessionTitle: undefined, sessionDescription: undefined });
+    // Remove optional properties instead of setting to undefined
+    const { sessionTitle, sessionDescription, ...resetState } = studyState;
+    updateStudyState(resetState);
     setExitChoiceOpen(false);
-  }, [studyControls, updateSessionId, dispatch, updateStudyState]);
+  }, [studyControls, updateSessionId, dispatch, updateStudyState, studyState]);
 
   const handleExitAndDelete = useCallback(() => {
     setExitChoiceOpen(false);
@@ -700,7 +688,13 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Función para manejar inicio de sesión
   const handleStartSession = useCallback(
-    async ({ sessionId, title, description, syncPomo, syncCountdown }) => {
+    async ({ sessionId, title, description, syncPomo, syncCountdown }: {
+      sessionId?: string;
+      title: string;
+      description?: string;
+      syncPomo?: boolean;
+      syncCountdown?: boolean;
+    }) => {
       try {
         if (!sessionId) return;
 
@@ -721,8 +715,8 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
             const parts = hms.split(":");
             if (parts.length !== 3) return 0;
             const [hh, mm, ss] = parts.map((p) => parseInt(p, 10));
-            if ([hh, mm, ss].some((v) => Number.isNaN(v))) return 0;
-            return hh * 3600 + mm * 60 + ss;
+            if ([hh, mm, ss].some((v) => Number.isNaN(v) || v === undefined)) return 0;
+            return (hh || 0) * 3600 + (mm || 0) * 60 + (ss || 0);
           };
 
           const durationSeconds = parseHms(lap?.duration);
@@ -748,12 +742,23 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
           console.warn("Could not seed timer from DB, falling back to 0:", fe);
         }
 
-        updateStudyState({
-          sessionTitle: title || studyState.sessionTitle,
-          sessionDescription: description || studyState.sessionDescription,
+        const stateUpdates: Partial<StudyState> = {
           sessionStatus: "active",
           time: initialSeconds,
-        });
+        };
+        
+        if (title) {
+          stateUpdates.sessionTitle = title;
+        } else if (studyState.sessionTitle) {
+          stateUpdates.sessionTitle = studyState.sessionTitle;
+        }
+        if (description) {
+          stateUpdates.sessionDescription = description;
+        } else if (studyState.sessionDescription) {
+          stateUpdates.sessionDescription = studyState.sessionDescription;
+        }
+        
+        updateStudyState(stateUpdates);
 
         if (typeof syncPomo === "boolean") {
           dispatch(setSyncPomodoroWithTimer(!!syncPomo));
@@ -801,10 +806,9 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       updateSessionId(null);
       dispatch(setCurrentSession(null));
       updateModal("isDeleteModalOpen", false);
-      updateStudyState({
-        sessionTitle: undefined,
-        sessionDescription: undefined,
-      });
+      // Remove optional properties instead of setting to undefined
+      const { sessionTitle, sessionDescription, ...resetState } = studyState;
+      updateStudyState(resetState);
 
       const emitTs = Date.now();
       console.warn("[StudyTimer] Emitting reset events from exitSession()", {
@@ -854,7 +858,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Crear botones de ajuste de tiempo
   const createAdjustButton = useCallback(
-    (adjustment, label) => (
+    (adjustment: number, label: string) => (
       <button
         key={label}
         onClick={() => adjustTime(adjustment)}
@@ -905,7 +909,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
     };
 
     saveToLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE, stateToSave);
-    onSyncChange?.(studyState.syncPomo);
+    onSyncChange?.(isPomodoroSync);
   }, [studyState, onSyncChange, currentSessionId, isStudyRunningRedux]);
 
   // Otros efectos necesarios
@@ -945,8 +949,8 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
   useEffect(() => {
     if (!isSynced) return;
 
-    const handleGlobalSync = (event) => {
-      const { isRunning: globalIsRunning } = event.detail;
+    const handleGlobalSync = (event: Event) => {
+      const { isRunning: globalIsRunning } = (event as CustomEvent).detail;
 
       if (globalIsRunning !== isStudyRunningRedux) {
         if (globalIsRunning) {
@@ -957,8 +961,8 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       }
     };
 
-    const handleGlobalReset = (event) => {
-      const { resetKey: globalResetKey } = event.detail;
+    const handleGlobalReset = (event: Event) => {
+      const { resetKey: globalResetKey } = (event as CustomEvent).detail;
       console.warn("[StudyTimer] Recibido globalResetSync:", {
         globalResetKey,
         localResetKey,
@@ -1031,7 +1035,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
 
   // Define studyTick function for useStudyTimer hook
   const studyTick = useCallback(
-    (elapsed) => {
+    (elapsed: number) => {
       updateStudyState({ time: elapsed });
     },
     [updateStudyState]
@@ -1105,7 +1109,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         {!isSynced && (
           <>
             <button
-              onClick={studyControls.reset}
+              onClick={() => studyControls.reset()}
               className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               aria-label="Reset timer"
               title="Reset timer"
@@ -1123,7 +1127,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
               </button>
             ) : (
               <button
-                onClick={studyControls.pause}
+                onClick={() => studyControls.pause()}
                 className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label="Pause timer"
                 title="Pause timer"
@@ -1171,20 +1175,24 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
         onStart={handleStartSession}
       />
 
-      <FinishSessionModal
-        isOpen={modalStates.isFinishModalOpen}
-        onClose={() => updateModal("isFinishModalOpen", false)}
-        onFinish={handleFinishSession}
-        sessionId={currentSessionId}
-        onSessionDetailsUpdated={fetchCurrentSessionDetails}
-      />
+      {currentSessionId && (
+        <FinishSessionModal
+          isOpen={modalStates.isFinishModalOpen}
+          onClose={() => updateModal("isFinishModalOpen", false)}
+          onFinish={handleFinishSession}
+          sessionId={currentSessionId}
+          onSessionDetailsUpdated={fetchCurrentSessionDetails}
+        />
+      )}
 
-      <EditSessionModal
-        isOpen={modalStates.isEditModalOpen}
-        onClose={() => updateModal("isEditModalOpen", false)}
-        sessionId={currentSessionId}
-        onSessionDetailsUpdated={fetchCurrentSessionDetails}
-      />
+      {currentSessionId && (
+        <EditSessionModal
+          isOpen={modalStates.isEditModalOpen}
+          onClose={() => updateModal("isEditModalOpen", false)}
+          sessionId={currentSessionId}
+          onSessionDetailsUpdated={fetchCurrentSessionDetails}
+        />
+      )}
 
       <LoginPromptModal
         isOpen={modalStates.isLoginPromptOpen}
@@ -1207,7 +1215,7 @@ const StudyTimer = ({ onSyncChange, isSynced }) => {
       <SessionSummaryModal
         isOpen={modalStates.isSummaryOpen}
         onClose={() => updateModal("isSummaryOpen", false)}
-        title={summaryData.title || studyState.sessionTitle}
+        title={summaryData.title || studyState.sessionTitle || "Untitled Session"}
         durationFormatted={summaryData.duration}
         completedTasksCount={summaryData.tasksCount}
         pomodorosCompleted={summaryData.pomodoros}
