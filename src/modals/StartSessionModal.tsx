@@ -1,17 +1,16 @@
 import { AppDispatch, RootState } from "@/store/store";
 import { Check, Square } from "lucide-react";
+import { FormActions, FormInput, FormTextarea } from "@/modals/FormElements";
 import {
-  Dispatch,
-  SetStateAction,
   useCallback,
   useEffect,
   useState,
 } from "react";
-import { FormActions, FormInput, FormTextarea } from "@/modals/FormElements";
 import { useDispatch, useSelector } from "react-redux";
 
 import AutocompleteInput from "@/modals/AutocompleteInput";
 import BaseModal from "@/modals/BaseModal";
+import { Task } from '@/pages/tasks/task';
 import TaskForm from "@/pages/tasks/TaskForm";
 import TaskSelectionPanel from "@/pages/tasks/TaskSelectionPanel";
 import UnfinishedSessionsModal from "./UnfinishedSessionsModal";
@@ -31,13 +30,6 @@ interface StartSessionModalProps {
   }) => void;
 }
 
-interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  assignment?: string;
-  activetask?: boolean;
-}
 
 const StartSessionModal = ({
   isOpen,
@@ -61,7 +53,6 @@ const StartSessionModal = ({
   const [assignments, setAssignments] = useState<string[]>([]);
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
-  const [hasUnfinishedSessions, setHasUnfinishedSessions] = useState(false);
   const [showUnfinishedSessions, setShowUnfinishedSessions] = useState(false);
   const [isCheckingSessions, setIsCheckingSessions] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -143,7 +134,6 @@ const StartSessionModal = ({
       if (error) throw error;
 
       const hasSessions = data ? data.length > 0 : false;
-      setHasUnfinishedSessions(hasSessions);
       setShowUnfinishedSessions(hasSessions);
     } catch (error) {
       console.error("Error checking for unfinished sessions:", error);
@@ -209,7 +199,6 @@ const StartSessionModal = ({
       if (fetchError) throw fetchError;
 
       if (!sessions || sessions.length === 0) {
-        setHasUnfinishedSessions(false);
         setShowUnfinishedSessions(false);
         return;
       }
@@ -247,7 +236,6 @@ const StartSessionModal = ({
       });
 
       await Promise.all(updates);
-      setHasUnfinishedSessions(false);
       setShowUnfinishedSessions(false);
     } catch (error) {
       console.error("Error finishing all sessions:", error);
@@ -261,7 +249,6 @@ const StartSessionModal = ({
       checkUnfinishedSessions();
     } else {
       setShowUnfinishedSessions(false);
-      setHasUnfinishedSessions(false);
       setIsCheckingSessions(false);
     }
   }, [isOpen, checkUnfinishedSessions, resetForm]);
@@ -284,33 +271,6 @@ const StartSessionModal = ({
     }
   }, [lastAddedTaskId, fetchSessionTasks]);
 
-  const handleTaskCreated = useCallback(
-    async (newTask: Task) => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not authenticated");
-
-        setTasks((prev) => [newTask, ...prev]);
-
-        if (newTask.activetask) {
-          setSelectedTasks((prev) => [...prev, newTask.id]);
-        }
-
-        if (newTask.assignment && !assignments.includes(newTask.assignment)) {
-          setAssignments(
-            (prev) => [...prev, newTask.assignment as string].sort() as string[]
-          );
-        }
-
-        setShowTaskForm(false);
-      } catch (error) {
-        console.error("Error handling new task:", error);
-      }
-    },
-    [assignments]
-  );
 
   const handleMoveTask = (task: Task, toActive: boolean) => {
     setSelectedTasks((prev) => {
@@ -391,7 +351,7 @@ const StartSessionModal = ({
         .from("study_laps")
         .insert([
           {
-            user_id: user.id,
+            user_id: user?.id!,
             started_at: new Date().toISOString(),
             tasks_completed: 0,
             name: sessionTitle.trim(),
@@ -532,7 +492,7 @@ const StartSessionModal = ({
                 value={assignment}
                 onChange={setAssignment}
                 placeholder="Enter assignment name"
-                suggestions={assignments}
+                suggestions={assignments as string[]}
               />
             </div>
           </div>
@@ -599,14 +559,7 @@ const StartSessionModal = ({
               }
             });
           }}
-          showTaskForm={showTaskForm}
-          onShowTaskForm={() => setShowTaskForm(true)}
-          onHideTaskForm={() => setShowTaskForm(false)}
-          onTaskCreated={handleTaskCreated}
-          assignments={assignments}
-          assignment={assignment}
-          onAssignmentChange={setAssignment as Dispatch<SetStateAction<string>>}
-          lastAddedTaskId={lastAddedTaskId}
+          onAddTask={() => setShowTaskForm(true)}
           maxHeight="150px"
           hideAssignmentAndDescriptionAvailable={true}
         />

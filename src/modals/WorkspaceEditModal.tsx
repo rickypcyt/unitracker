@@ -2,24 +2,38 @@ import { Briefcase, Edit, FolderOpen, Home, Settings, User, Users, Zap } from 'l
 import { useEffect, useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
+import React from 'react';
+import { Workspace } from '@/types/workspace';
 import { supabase } from '@/utils/supabaseClient';
 import { useModalClose } from '@/hooks/useModalClose';
 
-const iconOptions = [
-  { name: 'Briefcase', icon: Briefcase },
-  { name: 'FolderOpen', icon: FolderOpen },
-  { name: 'Home', icon: Home },
-  { name: 'Settings', icon: Settings },
-  { name: 'User', icon: User },
-  { name: 'Users', icon: Users },
-  { name: 'Zap', icon: Zap },
-];
+interface IconOption {
+  name: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}
 
-const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) => {
+interface WorkspaceEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  workspace: Workspace & { icon?: string };
+  onWorkspaceUpdated: (workspace: Workspace) => void;
+}
+
+const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) => {
   const [workspaceName, setWorkspaceName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('Briefcase');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const iconOptions: IconOption[] = [
+    { name: 'Briefcase', icon: Briefcase },
+    { name: 'FolderOpen', icon: FolderOpen },
+    { name: 'Home', icon: Home },
+    { name: 'Settings', icon: Settings },
+    { name: 'User', icon: User },
+    { name: 'Users', icon: Users },
+    { name: 'Zap', icon: Zap },
+  ];
 
   useEffect(() => {
     if (workspace) {
@@ -28,7 +42,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
     }
   }, [workspace]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!workspaceName.trim()) {
       setError('Area name is required');
@@ -63,7 +77,7 @@ const WorkspaceEditModal = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) 
     onClose();
   };
 
-  const modalRef = useRef();
+  const modalRef = useRef<HTMLDivElement>(null);
   useModalClose(modalRef, handleClose);
 
   if (!isOpen || !workspace) return null;

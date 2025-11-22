@@ -1,12 +1,24 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 
+import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
 
-const AuthContext = createContext(null);
+interface AuthContextType {
+  user: User | null;
+  isLoggedIn: boolean;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -52,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (error) throw error;
     } catch (error) {
-      console.error('Error logging in:', error.message);
+      console.error('Error logging in:', error instanceof Error ? error.message : 'Unknown error');
       toast.error('Error logging in with Google', {
         containerId: 'main-toast-container',
         position: 'top-center'
@@ -69,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         position: 'top-center'
       });
     } catch (error) {
-      console.error('Error logging out:', error.message);
+      console.error('Error logging out:', error instanceof Error ? error.message : 'Unknown error');
       toast.error('Error logging out', {
         containerId: 'main-toast-container',
         position: 'top-center'
@@ -78,14 +90,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Asegura que el perfil existe en la tabla profiles
-  async function ensureProfile(user) {
+  async function ensureProfile(user: User) {
     if (!user?.id || !user?.email) return;
     const { data, error } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', user.id)
       .single();
-    if (!data) {
+    if (!data && !error) {
       await supabase.from('profiles').insert({
         id: user.id,
         email: user.email,
@@ -93,7 +105,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const value = {
+  const value: AuthContextType = {
     user,
     isLoggedIn,
     loginWithGoogle,

@@ -1,20 +1,26 @@
 import { useEffect, useRef } from 'react';
 
 import { LogIn } from 'lucide-react';
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
-const LoginPromptModal = ({ isOpen, onClose }) => {
+interface LoginPromptModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) => {
   const { loginWithGoogle } = useAuth();
-  const modalRef = useRef(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleClick = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
+    const handleClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
       }
     };
-    const handleEsc = (e) => {
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('mousedown', handleClick);

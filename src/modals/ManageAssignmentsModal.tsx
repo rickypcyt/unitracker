@@ -209,7 +209,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                         <div className="text-sm text-[var(--text-secondary)]">
                           {pendingTasks.length > 0 && (
                             <div className="mb-1">
-                              <span className="text-green-500 font-medium">Next:</span> {pendingTasks[0].title}
+                              <span className="text-green-500 font-medium">Next:</span> {pendingTasks[0]?.title}
                             </div>
                           )}
                           {assignmentTasks.length > 3 && (

@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-
 import { supabase } from '@/utils/supabaseClient';
+import { useState } from 'react';
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
+
+interface UsernameInputProps {
+  initialValue?: string;
+  userId: string;
+  onUsernameChange?: (username: string, isValid: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
 
 export default function UsernameInput({
   initialValue = '',
@@ -10,13 +17,13 @@ export default function UsernameInput({
   onUsernameChange,
   disabled = false,
   className = '',
-}) {
+}: UsernameInputProps) {
   const [username, setUsername] = useState(initialValue);
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const validateFormat = (value) => {
+  const validateFormat = (value: string): string => {
     if (!value) return 'Username is required';
     if (!USERNAME_REGEX.test(value)) return 'Only letters, numbers, and _ are allowed';
     if (value.length < 3) return 'Minimum 3 characters';
@@ -24,7 +31,7 @@ export default function UsernameInput({
     return '';
   };
 
-  const checkUnique = async (value) => {
+  const checkUnique = async (value: string): Promise<boolean> => {
     setChecking(true);
     setError('');
     setSuccess(false);
@@ -48,7 +55,7 @@ export default function UsernameInput({
     return true;
   };
 
-  const handleChange = async (e) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUsername(value);
     setSuccess(false);

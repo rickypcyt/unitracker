@@ -98,6 +98,7 @@
     "terser": "^5.43.1",
     "tiptap-markdown": "^0.8.10",
     "tone": "^15.1.22",
+    "ts-prune": "^0.10.3",
     "usehooks-ts": "^3.1.1",
     "uuid": "^11.1.0",
     "vercel": "^41.7.8",

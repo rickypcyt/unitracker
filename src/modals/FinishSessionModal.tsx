@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from 'react';
 
+import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
 import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 
-const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDetailsUpdated }) => {
+interface FinishSessionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onFinish: (selectedTasks: string[]) => void;
+  sessionId: string;
+  onSessionDetailsUpdated?: () => void;
+}
+
+const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose, onFinish, sessionId, onSessionDetailsUpdated }) => {
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
-  const [tasks, setTasks] = useState([]);
-  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
-  const [titleError, setTitleError] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState(null);
-  const [activeTasks, setActiveTasks] = useState([]);
-  const [availableTasks, setAvailableTasks] = useState([]);
+  const [lastAddedTaskId, setLastAddedTaskId] = useState<string | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [activeTasks, setActiveTasks] = useState<Task[]>([]);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     if (isOpen && sessionId) {
@@ -105,7 +112,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
     }
   };
 
-  const handleMoveTask = (task, toActive) => {
+  const handleMoveTask = (task: Task, toActive: boolean) => {
     if (toActive) {
       setActiveTasks(prev => [...prev, task]);
       setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
@@ -116,7 +123,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
     }
   };
 
-  const handleTaskFormClose = (newTaskId) => {
+  const handleTaskFormClose = (newTaskId?: string) => {
     setShowTaskForm(false);
     if (newTaskId) {
       setLastAddedTaskId(newTaskId);
@@ -126,7 +133,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
   const handleFinish = async () => {
     try {
       const endTime = new Date();
-      const durationMinutes = Math.round((endTime - sessionStartTime) / (1000 * 60));
+      const durationMinutes = Math.round((endTime.getTime() - sessionStartTime!.getTime()) / (1000 * 60));
 
       // Update session with duration and number of completed tasks
       const { error: updateError } = await supabase
@@ -213,7 +220,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                rows="3"
+                  rows={3}
                 placeholder="Add notes about this session..."
               />
             </div>
@@ -256,7 +263,7 @@ const FinishSessionModal = ({ isOpen, onClose, onFinish, sessionId, onSessionDet
       {showTaskForm && (
         <TaskForm
           onClose={handleTaskFormClose}
-          onTaskCreated={(newTaskId) => {
+          onTaskCreated={(newTaskId: string) => {
             fetchSessionTasks();
             setSelectedTasks(prev => [...prev, newTaskId]);
           }}

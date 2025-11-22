@@ -1,10 +1,31 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 
 import BaseModal from '@/modals/BaseModal';
 import { FormInput } from '@/modals/FormElements';
+import React from 'react';
+import { X } from 'lucide-react';
 
-const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onModeChange, onSaveCustomMode, workSessionsBeforeLongBreak, onWorkSessionsChange, longBreakDuration, onLongBreakDurationChange }) => {
+interface PomodoroMode {
+  label: string;
+  work: number;
+  break: number;
+  longBreak: number;
+}
+
+interface PomodoroSettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentModeIndex: number;
+  modes: PomodoroMode[];
+  onModeChange: (index: number) => void;
+  onSaveCustomMode: (mode: PomodoroMode) => void;
+  workSessionsBeforeLongBreak: number;
+  onWorkSessionsChange: (value: number) => void;
+  longBreakDuration: number;
+  onLongBreakDurationChange: (value: number) => void;
+}
+
+const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, onClose, currentModeIndex, modes, onModeChange, onSaveCustomMode, workSessionsBeforeLongBreak, onWorkSessionsChange, longBreakDuration, onLongBreakDurationChange }) => {
   const [selectedModeIndex, setSelectedModeIndex] = useState(currentModeIndex);
   const [customWorkTime, setCustomWorkTime] = useState('');
   const [customBreakTime, setCustomBreakTime] = useState('');
@@ -27,9 +48,11 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
       if (isCustom) {
         // Load current custom mode times
         const currentMode = modes[currentModeIndex];
-        setCustomWorkTime((currentMode.work / 60).toString());
-        setCustomBreakTime((currentMode.break / 60).toString());
-        setCustomLongBreakTime((currentMode.longBreak / 60).toString());
+        if (currentMode) {
+          setCustomWorkTime((currentMode.work / 60).toString());
+          setCustomBreakTime((currentMode.break / 60).toString());
+          setCustomLongBreakTime((currentMode.longBreak / 60).toString());
+        }
       } else {
         // Reset custom times when not in custom mode
         setCustomWorkTime('');
@@ -39,7 +62,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
     }
   }, [isOpen, currentModeIndex, modes, customModeIndex, workSessionsBeforeLongBreak, longBreakDuration]);
 
-  const handleModeSelect = (index) => {
+  const handleModeSelect = (index: number) => {
     setSelectedModeIndex(index);
     const isCustom = index === customModeIndex;
     setIsCustomModeSelected(isCustom);
@@ -47,9 +70,11 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
     if (isCustom) {
       // Load current custom mode times when selecting custom mode
       const currentMode = modes[customModeIndex];
-      setCustomWorkTime((currentMode.work / 60).toString());
-      setCustomBreakTime((currentMode.break / 60).toString());
-      setCustomLongBreakTime((currentMode.longBreak / 60).toString());
+      if (currentMode) {
+        setCustomWorkTime((currentMode.work / 60).toString());
+        setCustomBreakTime((currentMode.break / 60).toString());
+        setCustomLongBreakTime((currentMode.longBreak / 60).toString());
+      }
     }
   };
 
@@ -105,7 +130,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
         <div>
           <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
           <div className="flex gap-2 flex-wrap">
-            {predefinedModes.map((mode, index) => (
+            {predefinedModes.map((mode: PomodoroMode, index: number) => (
               <button
                 key={mode.label}
                 onClick={() => handleModeSelect(index)}
@@ -140,8 +165,9 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 type="number"
                 min="1"
                 value={customWorkTime}
-                onChange={(value) => setCustomWorkTime(value)}
+                onChange={(value: string) => setCustomWorkTime(value)}
                 placeholder="Enter work time"
+                error=""
               />
               <FormInput
                 id="customBreak"
@@ -149,8 +175,9 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 type="number"
                 min="1"
                 value={customBreakTime}
-                onChange={(value) => setCustomBreakTime(value)}
+                onChange={(value: string) => setCustomBreakTime(value)}
                 placeholder="Enter break time"
+                error=""
               />
               <FormInput
                 id="customLongBreak"
@@ -158,8 +185,9 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
                 type="number"
                 min="1"
                 value={customLongBreakTime}
-                onChange={(value) => setCustomLongBreakTime(value)}
+                onChange={(value: string) => setCustomLongBreakTime(value)}
                 placeholder="Enter long break time"
+                error=""
               />
             </div>
           </div>
@@ -175,7 +203,7 @@ const PomodoroSettingsModal = ({ isOpen, onClose, currentModeIndex, modes, onMod
               min="1"
               max="10"
               value={workSessions}
-              onChange={(value) => setWorkSessions(parseInt(value))}
+              onChange={(value: string) => setWorkSessions(parseInt(value))}
               placeholder="Enter number of work sessions"
               error=""
             />

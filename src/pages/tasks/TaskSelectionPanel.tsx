@@ -9,12 +9,13 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import LoginPromptModal from "@/modals/LoginPromptModal";
+import { Task } from "./task";
 import { useAuth } from "@/hooks/useAuth";
 
 interface TaskSelectionPanelProps {
-  tasks?: any[];
+  tasks?: Task[];
   selectedTasks?: string[];
-  onMoveTask?: (task: any, isActive: boolean) => void;
+  onMoveTask?: (task: Task, isActive: boolean) => void;
   onAddTask?: () => void;
   mode?: 'select' | 'move' | 'edit';
   onTaskSelect?: (taskId: string) => void;
@@ -24,13 +25,13 @@ interface TaskSelectionPanelProps {
   availableTitle?: string;
   hideAssignmentAndDescriptionAvailable?: boolean;
   // Legacy props for backward compatibility
-  activeTasks?: any[];
-  availableTasks?: any[];
+  activeTasks?: Task[];
+  availableTasks?: Task[];
 }
 
 const TaskSelectionPanel = ({
-  tasks = [],
-  selectedTasks = [],
+  tasks = [] as Task[],
+  selectedTasks = [] as string[],
   onMoveTask = () => {},
   onAddTask = () => {},
   mode = "select",
@@ -41,11 +42,11 @@ const TaskSelectionPanel = ({
   availableTitle = "Available Tasks",
   hideAssignmentAndDescriptionAvailable = false,
   // Legacy props for backward compatibility
-  activeTasks: legacyActiveTasks = [],
-  availableTasks: legacyAvailableTasks = [],
-}) => {
+  activeTasks: legacyActiveTasks = [] as Task[],
+  availableTasks: legacyAvailableTasks = [] as Task[],
+}: TaskSelectionPanelProps) => {
   const { isLoggedIn } = useAuth();
-  const [expandedGroups, setExpandedGroups] = useState({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
 
   // Handle both new and legacy props
@@ -104,7 +105,7 @@ const TaskSelectionPanel = ({
     });
   }, [assignments]);
 
-  const toggleGroup = (assignment) => {
+  const toggleGroup = (assignment: string) => {
     setExpandedGroups((prev) => ({
       ...prev,
       [assignment]: !prev[assignment],
@@ -119,7 +120,7 @@ const TaskSelectionPanel = ({
     onAddTask();
   };
 
-  const renderTaskCard = (task, isActive, isAvailableCustom = false) => {
+  const renderTaskCard = (task: Task, isActive: boolean, isAvailableCustom = false) => {
     if (!task || typeof task !== "object" || !task.id) {
       return null;
     }
@@ -289,7 +290,7 @@ const TaskSelectionPanel = ({
   const renderAvailableTasks = () => {
     // Siempre agrupar por assignment
     // Group tasks by assignment
-    const tasksByAssignment = validAvailableTasks.reduce((acc, task) => {
+    const tasksByAssignment = validAvailableTasks.reduce((acc: Record<string, Task[]>, task) => {
       if (!task || typeof task !== "object" || !task.id) return acc;
       const assignment = task.assignment || "No Assignment";
       if (!acc[assignment]) {
@@ -297,7 +298,7 @@ const TaskSelectionPanel = ({
       }
       acc[assignment].push(task);
       return acc;
-    }, {});
+    }, {} as Record<string, Task[]>);
 
     // Sort assignments alphabetically
     const sortedAssignments = Object.keys(tasksByAssignment).sort();
@@ -334,7 +335,7 @@ const TaskSelectionPanel = ({
               </button>
               {expandedGroups[assignment] && (
                 <div className="p-2 space-y-2 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
-                  {tasksByAssignment[assignment].map((task) =>
+                  {tasksByAssignment[assignment]?.map((task: Task) =>
                     renderTaskCard(
                       task,
                       false,

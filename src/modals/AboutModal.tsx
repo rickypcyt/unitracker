@@ -1,6 +1,11 @@
 import BaseModal from './BaseModal';
 
-const AboutModal = ({ isOpen, onClose }) => {
+interface AboutModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
   return (
     <BaseModal
       isOpen={isOpen}

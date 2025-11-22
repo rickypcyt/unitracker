@@ -1,6 +1,21 @@
 import { ArrowUpDown } from "lucide-react";
+import React from 'react';
 
-export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }) => {
+interface SortMenuProps {
+  sortBy: string;
+  onSortChange: (value: string) => void;
+  showSortMenu: boolean;
+  setShowSortMenu: (show: boolean) => void;
+}
+
+interface SortOptionProps {
+  label: string;
+  value: string;
+  currentSort: string;
+  onClick: (value: string) => void;
+}
+
+export const SortMenu: React.FC<SortMenuProps> = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }) => {
   return (
     <div className="relative">
       <button
@@ -39,7 +54,7 @@ export const SortMenu = ({ sortBy, onSortChange, showSortMenu, setShowSortMenu }
   );
 };
 
-const SortOption = ({ label, value, currentSort, onClick }) => (
+const SortOption: React.FC<SortOptionProps> = ({ label, value, currentSort, onClick }) => (
   <button
     onClick={() => onClick(value)}
     className={`block px-4 py-2 w-full text-left text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors duration-200 ${

@@ -1,13 +1,13 @@
 import type { AppDispatch, RootState } from '@/store/store';
 import { Check, ChevronLeft, ChevronRight, Clock, Edit2, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { deleteTask, updateTask } from '@/store/TaskActions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
-import TaskDetailsModal from '@/modals/TaskDetailsModal';
 import type { Task } from '@/pages/tasks/taskStorage';
-import { deleteTask, updateTask } from '@/store/TaskActions';
+import TaskDetailsModal from '@/modals/TaskDetailsModal';
 import moment from 'moment';
 
 interface ManageCompletedTasksModalProps {
@@ -18,7 +18,6 @@ interface ManageCompletedTasksModalProps {
 const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   isOpen,
   onClose,
-  onEditTask,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const tasks = useSelector((state: RootState) => state.tasks.tasks);
@@ -193,9 +192,9 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
                                 </div>
                               </div>
                               
-                              {task.duration && (
+                              {(task as any).duration && (
                                 <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                                  <span>Duration: {task.duration} min</span>
+                                  <span>Duration: {(task as any).duration} min</span>
                                 </div>
                               )}
                               

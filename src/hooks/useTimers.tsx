@@ -2,14 +2,16 @@ import { setPomoRunning, setStudyRunning } from "@/store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 
+import type { RootState } from "@/store/store";
+
 // Hook corregido para StudyTimer
-export function useStudyTimer(callback, timeAtStart = 0, lastStart = null) {
-  const intervalRef = useRef();
-  const savedCallback = useRef();
-  const startTimeRef = useRef(null);
+export function useStudyTimer(callback: (elapsed: number) => void, timeAtStart: number = 0, lastStart: number | null = null) {
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const savedCallback = useRef<((elapsed: number) => void) | null>(null);
+  const startTimeRef = useRef<number | null>(null);
   const dispatch = useDispatch();
-  const isRunning = useSelector((state) => state.ui.isStudyRunning);
-  const syncTimers = useSelector((state) => state.ui.syncTimers);
+  const isRunning = useSelector((state: RootState) => state.ui.isStudyRunning);
+  const syncTimers = useSelector((state: RootState) => state.ui.syncTimers);
 
   // Guardar el callback actual
   useEffect(() => {
@@ -39,8 +41,8 @@ export function useStudyTimer(callback, timeAtStart = 0, lastStart = null) {
     // Actualizar cada 100ms para mantener la precisión
     intervalRef.current = setInterval(() => {
       const now = Date.now();
-      const elapsed = timeAtStart + ((now - startTimeRef.current) / 1000);
-      savedCallback.current(elapsed);
+      const elapsed = timeAtStart + ((now - startTimeRef.current!) / 1000);
+      savedCallback.current!(elapsed);
     }, 100);
 
     // Cleanup
@@ -61,13 +63,13 @@ export function useStudyTimer(callback, timeAtStart = 0, lastStart = null) {
   }, []);
 }
 
-export function usePomoTimer(callback, duration, initialRemaining) {
-  const rafRef = useRef();
-  const savedCallback = useRef();
-  const endTime = useRef();
+export function usePomoTimer(callback: (remaining: number) => void, duration: number, initialRemaining: number) {
+  const rafRef = useRef<number | null>(null);
+  const savedCallback = useRef<((remaining: number) => void) | null>(null);
+  const endTime = useRef<number>(0);
   const dispatch = useDispatch();
-  const isRunning = useSelector((state) => state.ui.isPomoRunning);
-  const syncTimers = useSelector((state) => state.ui.syncTimers);
+  const isRunning = useSelector((state: RootState) => state.ui.isPomoRunning);
+  const syncTimers = useSelector((state: RootState) => state.ui.syncTimers);
 
   useEffect(() => {
     savedCallback.current = callback;
@@ -76,7 +78,7 @@ export function usePomoTimer(callback, duration, initialRemaining) {
   // Update the useEffect in usePomoTimer
   useEffect(() => {
     if (!isRunning) {
-      cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(rafRef.current!);
       if (syncTimers) {
         dispatch(setStudyRunning(false)); // Pause Study Timer if sync is on and Pomo Timer is paused
       }
@@ -84,20 +86,20 @@ export function usePomoTimer(callback, duration, initialRemaining) {
     }
     const startTime = performance.now();
     endTime.current = startTime + initialRemaining * 1000;
-    const tick = (currentTime) => {
+    const tick = (currentTime: number) => {
       const remaining = Math.max(0, (endTime.current - currentTime) / 1000);
-      savedCallback.current(remaining);
+      savedCallback.current!(remaining);
       if (remaining > 0) {
         rafRef.current = requestAnimationFrame(tick);
       }
     };
     rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+    return () => cancelAnimationFrame(rafRef.current!);
   }, [isRunning, duration, initialRemaining, syncTimers, dispatch]);
 }
 
 // Format time in seconds to "Xh Ym" format
-export const formatStudyTime = (totalSeconds: number | string, roundUp = false): string => {
+export const formatStudyTime = (totalSeconds: number | string, roundUp: boolean = false): string => {
   try {
     // If input is a string in HH:MM:SS format, convert it to seconds first
     let seconds = 0;
@@ -105,7 +107,9 @@ export const formatStudyTime = (totalSeconds: number | string, roundUp = false):
       const parts = totalSeconds.split(':');
       if (parts.length === 3) {
         const [hh, mm, ss] = parts.map(Number);
-        seconds = hh * 3600 + mm * 60 + ss;
+        if (hh !== undefined && mm !== undefined && ss !== undefined) {
+          seconds = hh * 3600 + mm * 60 + ss;
+        }
       } else {
         seconds = Number(totalSeconds) || 0;
       }
@@ -124,7 +128,7 @@ export const formatStudyTime = (totalSeconds: number | string, roundUp = false):
   }
 };
 
-export const formatPomoTime = (totalSeconds, roundUp = false) => {
+export const formatPomoTime = (totalSeconds: number, roundUp: boolean = false) => {
   try {
     // Ensure totalSeconds is a valid number
     const s = Math.max(0, Math.floor(roundUp ? Math.ceil(totalSeconds) : totalSeconds));

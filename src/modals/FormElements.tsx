@@ -1,5 +1,20 @@
+import React from 'react';
 
-export const FormInput = ({
+interface FormInputProps {
+  id: string;
+  label?: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  type?: 'text' | 'number' | 'email' | 'password' | 'date';
+  error?: string;
+  className?: string;
+  required?: boolean;
+  placeholder?: string;
+  min?: string | number;
+  max?: string | number;
+}
+
+export const FormInput: React.FC<FormInputProps> = ({
   id,
   label,
   value,
@@ -9,13 +24,15 @@ export const FormInput = ({
   className = '',
   required = false,
   placeholder = '',
+  min,
+  max,
   ...props
 }) => (
   <div className="mb-4 flex flex-col h-full">
     <div className="flex-1 flex flex-col">
       {label && (
         <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2 min-h-[20px]">
-          {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
+          {label} {required && (!value || String(value).trim() === '') && <span className="text-red-500">*</span>}
         </label>
       )}
       <div className="flex-1 flex flex-col">
@@ -28,6 +45,8 @@ export const FormInput = ({
             error ? 'border-red-500' : 'border-[var(--border-primary)]'
           } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
           placeholder={placeholder}
+          min={min}
+          max={max}
           {...props}
         />
       </div>
@@ -36,7 +55,19 @@ export const FormInput = ({
   </div>
 );
 
-export const FormTextarea = ({
+interface FormTextareaProps {
+  id: string;
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  className?: string;
+  required?: boolean;
+  placeholder?: string;
+  rows?: number;
+}
+
+export const FormTextarea: React.FC<FormTextareaProps> = ({
   id,
   label,
   value,
@@ -69,7 +100,23 @@ export const FormTextarea = ({
   </div>
 );
 
-export const FormSelect = ({
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface FormSelectProps {
+  id: string;
+  label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: SelectOption[];
+  error?: string;
+  className?: string;
+  required?: boolean;
+}
+
+export const FormSelect: React.FC<FormSelectProps> = ({
   id,
   label,
   value,
@@ -95,7 +142,7 @@ export const FormSelect = ({
       } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] ${className}`}
       {...props}
     >
-      {options.map((option) => (
+      {options.map((option: SelectOption) => (
         <option key={option.value} value={option.value} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
           {option.label}
         </option>
@@ -105,11 +152,23 @@ export const FormSelect = ({
   </div>
 );
 
-export const FormButton = ({
+type ButtonType = 'button' | 'submit' | 'reset';
+type ButtonVariant = 'primary' | 'secondary' | 'danger';
+
+interface FormButtonProps {
+  type?: ButtonType;
+  variant?: ButtonVariant;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}
+
+export const FormButton: React.FC<FormButtonProps> = ({
   type = 'button',
   variant = 'primary',
   children,
   className = '',
+  onClick,
   ...props
 }) => {
   const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
@@ -122,7 +181,8 @@ export const FormButton = ({
   return (
     <button
       type={type}
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant as ButtonVariant]} ${className}`}
+      onClick={onClick}
       {...props}
     >
       {children}
@@ -130,7 +190,12 @@ export const FormButton = ({
   );
 };
 
-export const FormActions = ({ children, className = '' }) => (
+interface FormActionsProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormActions: React.FC<FormActionsProps> = ({ children, className = '' }) => (
   <div className={`flex justify-end gap-2 ${className}`}>
     {children}
   </div>

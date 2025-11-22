@@ -1,9 +1,24 @@
-import { useState } from 'react';
-
 import BaseModal from './BaseModal';
 import { Trash2 } from 'lucide-react';
+import { Workspace } from '@/types/workspace';
+import { useState } from 'react';
 
-const FriendDetailModal = ({ isOpen, onClose, friend, sharedWorkspaces }) => {
+// Friend interface with additional properties used in this component
+interface Friend {
+  id: string;
+  username?: string;
+  email?: string;
+  avatar_url?: string;
+}
+
+interface FriendDetailModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  friend: Friend;
+  sharedWorkspaces: Workspace[];
+}
+
+const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, friend, sharedWorkspaces }) => {
   if (!friend) return null;
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title={friend.username || friend.email || 'Friend'} maxWidth="max-w-sm">
@@ -19,7 +34,7 @@ const FriendDetailModal = ({ isOpen, onClose, friend, sharedWorkspaces }) => {
           <span className="font-semibold text-[var(--accent-primary)]">Shared Workspaces:</span>
           <ul className="list-disc ml-5 mt-2">
             {(sharedWorkspaces?.length > 0)
-              ? sharedWorkspaces.map(ws => (
+              ? sharedWorkspaces.map((ws: Workspace) => (
                   <li key={ws.id} className="text-[var(--text-primary)]">{ws.name}</li>
                 ))
               : <li className="text-[var(--text-secondary)]">No shared workspaces</li>}
@@ -30,8 +45,16 @@ const FriendDetailModal = ({ isOpen, onClose, friend, sharedWorkspaces }) => {
   );
 };
 
-const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWorkspaces = {} }) => {
-  const [selected, setSelected] = useState(null); // amigo seleccionado para modal
+interface FriendsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  friends?: Friend[];
+  onRemoveFriend?: (friend: Friend) => void;
+  sharedWorkspaces?: Record<string, Workspace[]>;
+}
+
+const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWorkspaces = {} }) => {
+  const [selected, setSelected] = useState<Friend | null>(null); // amigo seleccionado para modal
 
   return (
     <>
@@ -42,7 +65,7 @@ const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWor
             <div className="text-[var(--text-secondary)] text-center">You have no friends yet.</div>
           ) : (
             <ul className="space-y-2">
-              {friends.map((friend) => (
+              {friends.map((friend: Friend) => (
                 <li key={friend.id}>
                   <div
                     className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] shadow-sm cursor-pointer transition hover:bg-[var(--bg-primary)]"
@@ -56,7 +79,7 @@ const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWor
                         alt={friend.username || friend.email || friend.id}
                         className="w-10 h-10 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
                       />
-                      {sharedWorkspaces[friend.id]?.length > 0 && (
+                      {sharedWorkspaces[friend.id] && sharedWorkspaces[friend.id]!.length > 0 && (
                         <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[var(--accent-primary)] border-2 border-white"></span>
                       )}
                     </div>
@@ -84,8 +107,8 @@ const FriendsModal = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWor
       <FriendDetailModal
         isOpen={!!selected}
         onClose={() => setSelected(null)}
-        friend={selected}
-        sharedWorkspaces={selected ? sharedWorkspaces[selected.id] : []}
+        friend={selected!}
+        sharedWorkspaces={selected ? (sharedWorkspaces[selected.id] || []) : []}
       />
     </>
   );

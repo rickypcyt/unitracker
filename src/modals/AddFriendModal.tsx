@@ -1,23 +1,55 @@
 import { useEffect, useState } from 'react';
 
 import BaseModal from './BaseModal';
+import type { RootState } from '@/store/store';
 import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useSelector } from 'react-redux';
 
-const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, onRefreshRequests }) => {
+interface FriendRequest {
+  id: string;
+  from_user_id: string;
+  to_user_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  from_user?: {
+    id: string;
+    username?: string;
+  };
+  to_user?: {
+    id: string;
+    username?: string;
+  };
+}
+
+interface Friend {
+  id: string;
+  username?: string;
+}
+
+interface AddFriendModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSendRequest?: (username: string, options: { onSuccess: () => void; onError: (message?: string) => void }) => void;
+  receivedRequests?: FriendRequest[];
+  sentRequests?: FriendRequest[];
+  onAccept?: (request: FriendRequest) => void;
+  onReject?: (request: FriendRequest) => void;
+  onRefreshRequests?: () => Promise<void>;
+}
+
+const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, onRefreshRequests }: AddFriendModalProps) => {
   const [tab, setTab] = useState('send');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [requestSent, setRequestSent] = useState(false);
-  const [userExists, setUserExists] = useState(undefined); // undefined: not checked, true: exists, false: not found
+  const [userExists, setUserExists] = useState<boolean | undefined>(undefined); // undefined: not checked, true: exists, false: not found
   const [checkingUser, setCheckingUser] = useState(false);
-  const [deletingIds, setDeletingIds] = useState([]);
-  const [visibleSentRequests, setVisibleSentRequests] = useState(sentRequests);
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(sentRequests);
   const { user } = useAuth();
   // Get friends from Redux if available
-  const friends = useSelector(state => state?.friends?.friends || []);
+  const friends = useSelector((state: RootState) => (state as any).friends?.friends || []);
 
   // Check if user exists in DB when username changes
   useEffect(() => {
@@ -57,7 +89,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       return;
     }
     // Check if already a friend (case-insensitive)
-    const alreadyFriend = friends.some(f => (f.username || '').toLowerCase() === username.trim().toLowerCase());
+    const alreadyFriend = friends.some((f: Friend) => (f.username || '').toLowerCase() === username.trim().toLowerCase());
     if (alreadyFriend) {
       setError('This user is already your friend.');
       return;
@@ -70,12 +102,12 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
           setRequestSent(true);
           setTimeout(() => setRequestSent(false), 2000);
         },
-        onError: (msg) => setError(msg || 'Error sending request'),
+        onError: (msg?: string) => setError(msg || 'Error sending request'),
       });
     }
   };
 
-  const handleDeletePending = async (request) => {
+  const handleDeletePending = async (request: FriendRequest) => {
     console.warn('[DEBUG] handleDeletePending called for request:', request);
     setDeletingIds(prev => [...prev, request.id]);
     setVisibleSentRequests(prev => prev.filter(r => r.id !== request.id));
@@ -95,7 +127,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
         console.warn('[DEBUG] Request deleted successfully');
       }
     } catch (err) {
-      setError('Unexpected error: ' + (err?.message || err));
+      setError('Unexpected error: ' + (err instanceof Error ? err.message : String(err)));
       console.error('[DEBUG] Unexpected error in handleDeletePending:', err);
     } finally {
       setDeletingIds(prev => prev.filter(id => id !== request.id));
@@ -103,7 +135,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
     }
   };
 
-  const isSelfRequest = user && username.trim().length > 0 && username.trim().toLowerCase() === (user.username || '').toLowerCase();
+  const isSelfRequest = !!(user && username.trim().length > 0 && username.trim().toLowerCase() === ((user as any).username || '').toLowerCase());
 
   return (
     <BaseModal isOpen={isOpen} onClose={onClose} title="Add Friend" maxWidth="max-w-md">

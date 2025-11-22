@@ -1,15 +1,34 @@
+import { isSupportedType, processAvatarFile } from '@/utils/avatarImage';
 import { useEffect, useRef, useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
+import { ChangeEvent } from 'react';
 import { Pencil } from 'lucide-react';
 import UsernameInput from '@/components/UsernameInput';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { processAvatarFile, isSupportedType } from '@/utils/avatarImage';
 
-const UserModal = ({ isOpen, onClose }) => {
+interface UserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface User {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    email?: string;
+  };
+}
+
+interface UploadResult {
+  success: boolean;
+  publicUrl?: string;
+}
+
+const UserModal = ({ isOpen, onClose }: UserModalProps) => {
   const { user } = useAuth();
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processed, setProcessed] = useState<{
     blob: Blob;
@@ -26,8 +45,8 @@ const UserModal = ({ isOpen, onClose }) => {
   const [usernameSaveSuccess, setUsernameSaveSuccess] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [editingUsername, setEditingUsername] = useState(false);
-  const fileInputRef = useRef();
-  const usernameEditRef = useRef();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const usernameEditRef = useRef<HTMLDivElement>(null);
 
   // Fetch avatar and username from profiles table
   useEffect(() => {
@@ -55,8 +74,8 @@ const UserModal = ({ isOpen, onClose }) => {
   // Close username edit on outside click
   useEffect(() => {
     if (!editingUsername) return;
-    function handleClickOutside(e) {
-      if (usernameEditRef.current && !usernameEditRef.current.contains(e.target)) {
+    function handleClickOutside(e: globalThis.MouseEvent) {
+      if (usernameEditRef.current && !usernameEditRef.current.contains(e.target as Node)) {
         setEditingUsername(false);
       }
     }
@@ -64,7 +83,7 @@ const UserModal = ({ isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [editingUsername]);
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setUploadError('');
     setSuccess(false);
@@ -97,7 +116,7 @@ const UserModal = ({ isOpen, onClose }) => {
   };
 
   // Modular function to upload avatar (expects processed blob)
-  const uploadAvatar = async (file: Blob, user) => {
+  const uploadAvatar = async (file: Blob, user: User | null): Promise<UploadResult> => {
     if (!user) {
       console.error('No authenticated user');
       return { success: false };
@@ -124,12 +143,12 @@ const UserModal = ({ isOpen, onClose }) => {
     }
 
     // Get public URL
-    const { data: publicUrlData, error: publicUrlError } = supabase.storage
+    const { data: publicUrlData } = supabase.storage
       .from('avatars')
       .getPublicUrl(filePath);
 
-    if (publicUrlError) {
-      console.error('Error getting public URL:', publicUrlError);
+    if (!publicUrlData.publicUrl) {
+      console.error('No public URL returned');
       return { success: false };
     }
 
@@ -170,7 +189,9 @@ const UserModal = ({ isOpen, onClose }) => {
         setProcessed(null);
         // Forzar recarga de perfil: vuelve a leer avatar_url
         // (opcional: setAvatarUrl(result.publicUrl))
-        setAvatarUrl(result.publicUrl);
+        if (result.publicUrl) {
+          setAvatarUrl(result.publicUrl);
+        }
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -190,14 +211,14 @@ const UserModal = ({ isOpen, onClose }) => {
       const { error } = await supabase
         .from('profiles')
         .update({ username })
-        .eq('id', user.id);
+        .eq('id', user?.id!);
       if (error) {
         setUsernameError('Error saving username: ' + error.message);
         return;
       }
       setUsernameSaveSuccess(true);
     } catch (err) {
-      setUsernameError('Unexpected error: ' + (err?.message || err));
+      setUsernameError('Unexpected error: ' + (err as Error)?.message || String(err));
     } finally {
       setUsernameLoading(false);
     }
@@ -216,7 +237,7 @@ const UserModal = ({ isOpen, onClose }) => {
         <div
           className="relative group mb-2 cursor-pointer"
           style={{ width: '7rem', height: '7rem' }}
-          onClick={() => fileInputRef.current.click()}
+          onClick={() => fileInputRef.current?.click()}
         >
           {preview ? (
             <img src={preview} alt="Preview" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
@@ -224,7 +245,7 @@ const UserModal = ({ isOpen, onClose }) => {
             <img src={avatarUrl} alt="User avatar" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
           ) : (
             <div className="w-28 h-28 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-5xl text-[var(--accent-primary)]">
-              {user?.email?.[0]?.toUpperCase() || '?'}
+              {user?.email?.[0]?.toUpperCase() || user?.user_metadata?.['email']?.[0]?.toUpperCase() || '?'}
             </div>
           )}
           {/* Overlay on hover with pencil icon */}
@@ -233,7 +254,7 @@ const UserModal = ({ isOpen, onClose }) => {
           </div>
         </div>
         <div className="text-lg font-semibold text-[var(--text-primary)]">
-          {user?.email || user?.user_metadata?.email || user?.primary_email || 'No email found'}
+          {user?.email || user?.user_metadata?.['email'] || 'No email found'}
         </div>
         {/* Username input modular */}
         <div className="w-full">
@@ -241,7 +262,7 @@ const UserModal = ({ isOpen, onClose }) => {
             <div ref={usernameEditRef}>
               <UsernameInput
                 initialValue={username}
-                userId={user?.id}
+                userId={user?.id || ''}
                 onUsernameChange={(val, valid) => {
                   setUsername(val);
                   setUsernameValid(valid);

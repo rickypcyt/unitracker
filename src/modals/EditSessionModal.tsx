@@ -1,23 +1,31 @@
-import { ArrowLeft, ArrowRight, Check, Plus, Square, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
 import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 
+import type { RootState } from '@/store/store';
+import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
+import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 
-const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }) => {
+interface EditSessionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sessionId: string;
+  onSessionDetailsUpdated?: () => void;
+}
+
+const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }: EditSessionModalProps) => {
   const dispatch = useDispatch();
-  const syncPomodoroWithTimer = useSelector(state => state.ui.syncPomodoroWithTimer);
-  const syncCountdownWithTimer = useSelector(state => state.ui.syncCountdownWithTimer);
-  const [activeTasks, setActiveTasks] = useState([]);
-  const [availableTasks, setAvailableTasks] = useState([]);
+  const syncPomodoroWithTimer = useSelector((state: RootState) => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useSelector((state: RootState) => state.ui.syncCountdownWithTimer);
+  const [activeTasks, setActiveTasks] = useState<Task[]>([]);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [lastAddedTaskId, setLastAddedTaskId] = useState(null);
+  const [lastAddedTaskId, setLastAddedTaskId] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
-  const [titleError, setTitleError] = useState(false);
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
 
@@ -73,7 +81,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
     }
   };
 
-  const fetchSessionDetails = async (id) => {
+  const fetchSessionDetails = async (id: string) => {
     try {
       const { data: session, error } = await supabase
         .from('study_laps')
@@ -94,7 +102,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
     }
   };
 
-  const handleTaskMove = async (task, toActive) => {
+  const handleTaskMove = async (task: Task, toActive: boolean) => {
     try {
       // Update the task in the database
       const { error } = await supabase
@@ -120,7 +128,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
     }
   };
 
-  const handleTaskFormClose = (newTaskId) => {
+  const handleTaskFormClose = (newTaskId?: string) => {
     setShowTaskForm(false);
     if (newTaskId) {
       setLastAddedTaskId(newTaskId);
@@ -187,14 +195,9 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
                 id="sessionTitle"
                 value={sessionTitle}
                 onChange={(e) => setSessionTitle(e.target.value)}
-                className={`w-full px-3 py-2 bg-[var(--bg-secondary)] border ${
-                  titleError ? 'border-red-500' : 'border-[var(--border-primary)]'
-                } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors`}
+                className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
                 placeholder="Enter session title"
               />
-              {titleError && (
-                <p className="mt-1 text-base text-red-500">Please enter a session title</p>
-              )}
             </div>
 
             <div>
@@ -206,7 +209,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
                 value={sessionDescription}
                 onChange={(e) => setSessionDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
-                rows="3"
+                rows={3}
                 placeholder="Enter session description"
               />
             </div>
@@ -216,8 +219,8 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
 
 
         <TaskSelectionPanel
-          activeTasks={activeTasks}
-          availableTasks={availableTasks}
+          tasks={[...activeTasks, ...availableTasks]}
+          selectedTasks={activeTasks.map(task => task.id)}
           onMoveTask={handleTaskMove}
           onAddTask={() => setShowTaskForm(true)}
           mode="move"
@@ -245,7 +248,7 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
       {/* Task Form Modal */}
       {showTaskForm && (
         <TaskForm
-          onClose={handleTaskFormClose}
+          onClose={handleTaskFormClose as (newTaskId?: string) => void}
         />
       )}
     </div>

@@ -1,16 +1,27 @@
 import { CheckCircle2, Circle, Play, Save, Trash2 } from "lucide-react";
 import { FormActions, FormButton, FormInput } from "@/modals/FormElements";
+import React, { useEffect } from "react";
 import { deleteTask, updateTask } from "@/store/TaskActions";
 
+import type { AppDispatch } from '@/store/store';
 import BaseModal from "@/modals/BaseModal";
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
+import { Task } from '@/pages/tasks/task';
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
-import { useEffect } from "react";
 import { useFormState } from "@/hooks/useFormState";
 
-const TaskDetailsModal = ({
+interface TaskDetailsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task: Task;
+  onSave?: (task: Task) => Promise<void>;
+  onToggleCompletion?: (task: Task) => Promise<void>;
+  onSetActiveTask?: (task: Task) => Promise<void>;
+}
+
+const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isOpen,
   onClose,
   task,
@@ -18,12 +29,12 @@ const TaskDetailsModal = ({
   onToggleCompletion,
   onSetActiveTask,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const validationRules = {
     title: { required: true, minLength: 3, maxLength: 100 },
     description: { maxLength: 500 },
-    deadline: { required: true },
+    due_date: { required: true },
     difficulty: { required: true },
     assignment: { required: true }
   };
@@ -35,7 +46,29 @@ const TaskDetailsModal = ({
     handleChange,
     validateForm,
     setFormData
-  } = useFormState(task || {}, validationRules);
+  } = useFormState(task || {
+    id: '',
+    title: '',
+    completed: false,
+    completed_at: null,
+    description: '',
+    created_at: '',
+    updated_at: '',
+    due_date: '',
+    priority: 1,
+    tags: [],
+    user_id: '',
+    activetask: false,
+    difficulty: 'easy',
+    assignment: ''
+  }, validationRules) as unknown as {
+    formData: Task;
+    errors: Record<string, string>;
+    isDirty: boolean;
+    handleChange: (field: string, value: any) => void;
+    validateForm: () => boolean;
+    setFormData: (data: Task) => void;
+  };
 
   useEffect(() => {
     if (task) {
@@ -57,7 +90,7 @@ const TaskDetailsModal = ({
       onClose();
     } catch (error) {
       console.error("Error saving task:", error);
-      toast.error("Failed to save task: " + error.message);
+      toast.error("Failed to save task: " + (error as Error).message);
     }
   };
 
@@ -68,7 +101,7 @@ const TaskDetailsModal = ({
         onClose();
       } catch (error) {
         console.error("Error deleting task:", error);
-        toast.error("Failed to delete task: " + error.message);
+        toast.error("Failed to delete task: " + (error as Error).message);
       }
     }
   };
@@ -83,7 +116,7 @@ const TaskDetailsModal = ({
       onClose();
     } catch (error) {
       console.error("Error toggling task completion:", error);
-      toast.error("Failed to update task status: " + error.message);
+      toast.error("Failed to update task status: " + (error as Error).message);
     }
   };
 
@@ -97,7 +130,7 @@ const TaskDetailsModal = ({
       onClose();
     } catch (error) {
       console.error("Error setting active task:", error);
-      toast.error("Failed to update task status: " + error.message);
+      toast.error("Failed to update task status: " + (error as Error).message);
     }
   };
 
@@ -107,7 +140,7 @@ const TaskDetailsModal = ({
     { value: 'hard', label: 'Hard' }
   ];
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
         return 'text-[#00FF41]'; /* Matrix green */
@@ -141,18 +174,18 @@ const TaskDetailsModal = ({
           <FormInput
             id="assignment"
             label="Assignment"
-            value={formData.assignment}
+            value={formData['assignment'] || ''}
             onChange={(value) => handleChange('assignment', value)}
-            error={errors.assignment}
+            {...(errors['assignment'] && { error: errors['assignment'] })}
             required
           />
 
           <FormInput
             id="title"
             label="Title"
-            value={formData.title}
+            value={formData['title'] || ''}
             onChange={(value) => handleChange('title', value)}
-            error={errors.title}
+            {...(errors['title'] && { error: errors['title'] })}
             required
           />
         </div>
@@ -162,7 +195,7 @@ const TaskDetailsModal = ({
             Description
           </label>
           <MarkdownWysiwyg
-            initialBody={formData.description}
+            initialBody={formData.description || ''}
             onChange={({ body }) => handleChange('description', body)}
             className="min-h-[200px]"
           />
@@ -187,7 +220,7 @@ const TaskDetailsModal = ({
                       }
                     }}
                   >
-                    {formData.difficulty === option.value ? (
+                    {formData['difficulty'] === option.value ? (
                       <CheckCircle2
                         size={22}
                         className={getDifficultyColor(option.value)}
@@ -203,8 +236,8 @@ const TaskDetailsModal = ({
                 </div>
               ))}
             </div>
-            {errors.difficulty && (
-              <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
+            {errors['difficulty'] && (
+              <p className="mt-1 text-base text-red-500">{errors['difficulty']}</p>
             )}
           </div>
 
@@ -212,9 +245,9 @@ const TaskDetailsModal = ({
             id="deadline"
             label="Deadline"
             type="date"
-            value={formData.deadline}
-            onChange={(value) => handleChange('deadline', value)}
-            error={errors.deadline}
+            value={formData['due_date'] || ''}
+            onChange={(value) => handleChange('due_date', value)}
+            {...(errors['due_date'] && { error: errors['due_date'] })}
           />
         </div>
 

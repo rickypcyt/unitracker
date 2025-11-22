@@ -5,10 +5,10 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
+import { Lap } from '@/store/slices/LapSlice';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
-import { Lap } from '@/store/slices/LapSlice';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -19,12 +19,29 @@ interface GroupedLabs {
   [key: string]: Lap[];
 }
 
+interface MonthData {
+  month: string;
+  monthYear: string;
+  lapsOfMonth: Lap[];
+  timestamp: number;
+}
+
 interface RootState {
   laps: {
     laps: Lap[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    currentSession: any;
     error: string | null;
+    lastFetch: number | null;
+    isCached: boolean;
   };
+}
+
+interface MonthData {
+  month: string;
+  monthYear: string;
+  lapsOfMonth: Lap[];
+  timestamp: number;
 }
 
 interface ContextMenu {
@@ -191,7 +208,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
           notes: '',
           created_at_ts: date.getTime(),
           updated_at: date.toISOString(),
-        } as Lap);
+        } as unknown as Lap);
       }
     }
     return out;
@@ -227,12 +244,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
     };
   };
 
-  const formatMinutesToHHMM = (minutes: number): string => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}:${m.toString().padStart(2, '0')}`;
-  };
-
+  
   // Right-click handler for session
   const handleSessionContextMenu = useCallback((e: React.MouseEvent, lap: Lap): void => {
     e.preventDefault();
@@ -440,11 +452,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
             <div className="space-y-8 overflow-y-auto max-h-[calc(80vh-2rem)] pr-2 -mr-2">
               {(() => {
                 // Group months by year
-                const monthsByYear: Record<string, Array<{
-                  month: string;
-                  monthYear: string;
-                  lapsOfMonth: Lap[];
-                }>> = {};
+                const monthsByYear: Record<string, MonthData[]> = {};
 
                 // First, convert the groupedLaps entries to an array and sort them by date
                 const sortedEntries = Object.entries(groupedLaps).sort(([aMonthYear], [bMonthYear]) => {
@@ -466,8 +474,10 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
 
                 // Group the sorted entries by year
                 sortedEntries.forEach(([monthYear, lapsOfMonth]) => {
-                  const year = monthYear.split(' ')[1]; // Get the year part
-                  const month = monthYear.split(' ')[0]; // Get the month part
+                  const yearParts = monthYear.split(' ')[1];
+                  const monthParts = monthYear.split(' ')[0];
+                  const year = yearParts || '2024'; // Default fallback
+                  const month = monthParts || 'January'; // Default fallback
                   
                   if (!monthsByYear[year]) {
                     monthsByYear[year] = [];
@@ -500,7 +510,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {months
-                          .sort((a, b) => monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month))
+                          .sort((a, b) => monthOrder.indexOf(b.month as any) - monthOrder.indexOf(a.month as any))
                           .map(({ month, monthYear, lapsOfMonth }) => {
                             const stats = getMonthStats(lapsOfMonth);
                             const totalHours = Math.floor(stats.totalMinutes / 60);

@@ -1,15 +1,23 @@
 import { Edit2, Trash2 } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
-import { useState } from 'react';
-
-import BaseModal from '@/modals/BaseModal';
 import { deleteLap, updateLap } from '@/store/LapActions';
+
+import type { AppDispatch } from '@/store/store';
+import BaseModal from '@/modals/BaseModal';
+import { Lap } from '@/store/slices/LapSlice';
+import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
+import { useState } from 'react';
 
-const SessionDetailsModal = ({ session, onClose }) => {
-    const dispatch = useDispatch();
+interface SessionDetailsModalProps {
+  session: Lap;
+  onClose: () => void;
+}
+
+const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onClose }) => {
+    const dispatch = useDispatch<AppDispatch>();
     const [isEditing, setIsEditing] = useState(false);
     const [editedSession, setEditedSession] = useState(session);
 
@@ -46,8 +54,8 @@ const SessionDetailsModal = ({ session, onClose }) => {
         }
     };
 
-    const handleEditChange = (field, value) => {
-        setEditedSession(prev => ({
+    const handleEditChange = (field: keyof Lap, value: any) => {
+        setEditedSession((prev: Lap) => ({
             ...prev,
             [field]: value,
         }));
@@ -66,16 +74,18 @@ const SessionDetailsModal = ({ session, onClose }) => {
                         <FormInput
                             id="name"
                             label="Session Title"
-                            value={editedSession.name}
-                            onChange={(value) => handleEditChange('name', value)}
+                            value={editedSession.name || ''}
+                            onChange={(value: string) => handleEditChange('name', value)}
                             placeholder="Enter session title"
+                            error=""
                         />
                         <FormTextarea
                             id="description"
                             label="Description"
                             value={editedSession.description || ''}
-                            onChange={(value) => handleEditChange('description', value)}
+                            onChange={(value: string) => handleEditChange('description', value)}
                             placeholder="Enter session description"
+                            error=""
                         />
                     </div>
                 ) : (

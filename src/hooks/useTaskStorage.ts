@@ -1,11 +1,11 @@
 import type { AppDispatch, RootState } from "@/store/store";
-import { setTasks } from "@/store/actions/TaskActions";
 import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "@/store/slices/TaskSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
-import type { Task } from "@/types/taskStorage";
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type { Task } from "@/types/taskStorage";
+import { setTasks } from "@/store/actions/TaskActions";
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 
@@ -36,25 +36,25 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
     typeof v === 'object' && v !== null && !Array.isArray(v);
 
 // Normalize arbitrary input into a Task with safe defaults. Returns null if invalid.
-const normalizeLocalTask = (raw: any): Task | null => {
-    if (!isPlainObject(raw) || typeof raw.title !== 'string') return null;
+const normalizeLocalTask = (raw: Record<string, unknown>): Task | null => {
+    if (!isPlainObject(raw) || typeof (raw as any).title !== 'string') return null;
 
     const nowIso = new Date().toISOString();
-    const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id : generateLocalId();
+    const id = typeof (raw as any).id === 'string' && (raw as any).id.trim() ? (raw as any).id : generateLocalId();
 
     return {
         id,
-        title: String(raw.title).slice(0, 500),
-        description: typeof raw.description === 'string' ? String(raw.description).slice(0, 5000) : undefined,
-        deadline: typeof raw.deadline === 'string' ? raw.deadline : undefined,
-        difficulty: typeof raw.difficulty === 'string' ? raw.difficulty : undefined,
-        assignment: typeof raw.assignment === 'string' ? raw.assignment : undefined,
-        priority: typeof raw.priority === 'number' ? raw.priority : undefined,
-        tags: Array.isArray(raw.tags) ? raw.tags.filter((t: any) => typeof t === 'string').slice(0, 50) : undefined,
-        created_at: typeof raw.created_at === 'string' ? raw.created_at : nowIso,
-        completed: typeof raw.completed === 'boolean' ? raw.completed : false,
-        completed_at: typeof raw.completed_at === 'string' || raw.completed_at === null ? raw.completed_at : null,
-        activetask: typeof raw.activetask === 'boolean' ? raw.activetask : false,
+        title: String((raw as any).title).slice(0, 500),
+        description: typeof (raw as any).description === 'string' ? String((raw as any).description).slice(0, 5000) : undefined,
+        deadline: typeof (raw as any).deadline === 'string' ? (raw as any).deadline : undefined,
+        difficulty: typeof (raw as any).difficulty === 'string' ? (raw as any).difficulty : undefined,
+        assignment: typeof (raw as any).assignment === 'string' ? (raw as any).assignment : undefined,
+        priority: typeof (raw as any).priority === 'number' ? (raw as any).priority : undefined,
+        tags: Array.isArray((raw as any).tags) ? (raw as any).tags.filter((t: any) => typeof t === 'string').slice(0, 50) : undefined,
+        created_at: typeof (raw as any).created_at === 'string' ? (raw as any).created_at : nowIso,
+        completed: typeof (raw as any).completed === 'boolean' ? (raw as any).completed : false,
+        completed_at: typeof (raw as any).completed_at === 'string' || (raw as any).completed_at === null ? (raw as any).completed_at : null,
+        activetask: typeof (raw as any).activetask === 'boolean' ? (raw as any).activetask : false,
     } as Task;
 };
 

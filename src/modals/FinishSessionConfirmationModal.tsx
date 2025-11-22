@@ -1,6 +1,8 @@
-import { Check, X } from 'lucide-react';
-import { Task } from './StartSessionModal';
+import React, { useState } from 'react';
+
 import BaseModal from './BaseModal';
+import { Check } from 'lucide-react';
+import { Task } from '@/pages/tasks/task';
 
 interface FinishSessionConfirmationModalProps {
   isOpen: boolean;
@@ -9,7 +11,7 @@ interface FinishSessionConfirmationModalProps {
   activeTasks: Task[];
 }
 
-const FinishSessionConfirmationModal = ({
+const FinishSessionConfirmationModal: React.FC<FinishSessionConfirmationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,

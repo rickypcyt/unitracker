@@ -6,8 +6,6 @@ import BaseModal from "./BaseModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
-import type { Task } from '@/pages/tasks/taskStorage';
-import { useNavigate } from 'react-router-dom';
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -35,7 +33,6 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
-  const navigate = useNavigate();
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);

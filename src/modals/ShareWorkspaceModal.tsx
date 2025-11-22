@@ -1,11 +1,25 @@
 import * as Select from '@radix-ui/react-select';
 
 import { CheckIcon, ChevronDownIcon } from '@radix-ui/react-icons';
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
+import { Workspace } from '@/types/workspace';
 
-const SelectItem = React.forwardRef(({ children, className = '', ...props }, ref) => (
+interface Friend {
+  id: string;
+  username?: string;
+  email?: string;
+  avatar_url?: string;
+}
+
+interface SelectItemProps {
+  children: React.ReactNode;
+  className?: string;
+  value: string;
+}
+
+const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(({ children, className = '', ...props }, ref) => (
   <Select.Item
     ref={ref}
     className={
@@ -21,7 +35,19 @@ const SelectItem = React.forwardRef(({ children, className = '', ...props }, ref
   </Select.Item>
 ));
 
-const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], onShare, currentUserId }) => {
+interface ShareWorkspaceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  workspaces?: Workspace[];
+  friends?: Friend[];
+  onShare?: (workspaceId: string, friendId: string, currentUserId: string, options: {
+    onSuccess: () => void;
+    onError: (msg?: string) => void;
+  }) => void;
+  currentUserId: string;
+}
+
+const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClose, workspaces = [], friends = [], onShare, currentUserId }) => {
   const [selectedWorkspace, setSelectedWorkspace] = useState('');
   const [selectedFriend, setSelectedFriend] = useState('');
   const [success, setSuccess] = useState('');
@@ -40,7 +66,7 @@ const ShareWorkspaceModal = ({ isOpen, onClose, workspaces = [], friends = [], o
           setSelectedWorkspace('');
           setSelectedFriend('');
         },
-        onError: (msg) => setError(msg || 'Error sharing workspace'),
+        onError: (msg?: string) => setError(msg || 'Error sharing workspace'),
       });
     }
   };

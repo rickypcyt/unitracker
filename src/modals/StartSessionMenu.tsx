@@ -1,8 +1,18 @@
 import { Clock, Play, Timer } from 'lucide-react';
 
 import BaseMenu from '@/modals/BaseMenu';
+import React from 'react';
 
-const StartSessionMenu = ({
+interface StartSessionMenuProps {
+  x: number;
+  y: number;
+  onClose: () => void;
+  onStartSession: () => void;
+  onStartTimer: () => void;
+  onStartPomodoro: () => void;
+}
+
+const StartSessionMenu: React.FC<StartSessionMenuProps> = ({
   x,
   y,
   onClose,
