@@ -531,31 +531,29 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
       {/* Tab Content */}
       {activeTab === 'manual' ? (
         <form onSubmit={handleSubmit} className="space-y-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <FormInput
-                id="title"
-                value={formData.title}
-                onChange={(value) => handleChange('title', value)}
-                error={errors.title}
+          <div>
+            <FormInput
+              id="title"
+              value={formData.title}
+              onChange={(value) => handleChange('title', value)}
+              error={errors.title}
+              required
+              placeholder="Enter task title"
+            />
+          </div>
+          {!initialAssignment && (
+            <div className="mb-2">
+              <AutocompleteInput
+                id="assignment"
+                value={formData.assignment}
+                onChange={(value) => handleChange('assignment', value)}
+                error={errors.assignment}
                 required
-                placeholder="Enter task title"
+                placeholder="Enter subject name"
+                suggestions={uniqueAssignments}
               />
             </div>
-            {!initialAssignment && (
-              <div>
-                <AutocompleteInput
-                  id="assignment"
-                  value={formData.assignment}
-                  onChange={(value) => handleChange('assignment', value)}
-                  error={errors.assignment}
-                  required
-                  placeholder="Enter subject name"
-                  suggestions={uniqueAssignments}
-                />
-              </div>
-            )}
-          </div>
+          )}
 
 
           <MarkdownWysiwyg
