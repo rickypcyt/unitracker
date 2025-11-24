@@ -51,6 +51,7 @@ interface PomoState {
   lastManualAdjustment: number;
   pomodorosThisSession: number;
   longBreakDuration?: number;
+  manuallyPaused?: boolean; // Track if this was a manual pause
 }
 
 // ============================================================================
@@ -61,8 +62,9 @@ const safeNumber = (v: unknown, def: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? v : def;
 
 const formatPomoTime = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const roundedSeconds = Math.round(seconds);
+  const mins = Math.floor(roundedSeconds / 60);
+  const secs = roundedSeconds % 60;
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 
@@ -108,6 +110,7 @@ const loadPomoState = (): PomoState => {
       lastManualAdjustment: 0,
       pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10),
       longBreakDuration: safeNumber(parsed.longBreakDuration, 900),
+      manuallyPaused: parsed.manuallyPaused || false, // Load manual pause state
     };
     console.log('🔧 DEBUG: loadPomoState - final state:', state);
 
@@ -138,6 +141,7 @@ const savePomoState = (state: PomoState) => {
     workSessionsBeforeLongBreak: safeNumber(state.workSessionsBeforeLongBreak, 4),
     workSessionsCompleted: safeNumber(state.workSessionsCompleted, 0),
     pomodoroToday: safeNumber(state.pomodoroToday, 0),
+    manuallyPaused: state.manuallyPaused || false, // Save manual pause state
   };
 
   const hasInvalid = Object.values(toSave).some(
@@ -273,6 +277,18 @@ const Pomodoro: React.FC = () => {
     console.log('🔧 DEBUG: pomoState.currentMode:', pomoState.currentMode);
     console.log('🔧 DEBUG: pomoState.timeLeft:', pomoState.timeLeft);
     
+    // Don't update time if timer is running or manually paused - let the timer logic handle it
+    if (pomoState.isRunning || pomoState.manuallyPaused) {
+      console.log('🔧 DEBUG: Timer is running or manually paused, skipping mode change time update');
+      return;
+    }
+
+    // Don't update time if synced and timer is stopped (to respect sync time)
+    if (syncPomodoroWithTimer && !pomoState.isRunning) {
+      console.log('🔧 DEBUG: Timer is synced and stopped, respecting sync time, skipping mode change time update');
+      return;
+    }
+    
     // Check if we should be on custom mode (last mode in array)
     const customModeIndex = modes.length - 1;
     console.log('🔧 DEBUG: Checking if we should be on custom mode. Current index:', pomoState.modeIndex, 'custom index:', customModeIndex);
@@ -309,7 +325,7 @@ const Pomodoro: React.FC = () => {
         setPomoState(prev => ({ ...prev, timeLeft: currentModeTime }));
       }
     }
-  }, [modes, pomoState.modeIndex, pomoState.currentMode, pomoState.timeLeft]);
+  }, [modes, pomoState.modeIndex, pomoState.currentMode, pomoState.timeLeft, pomoState.isRunning, pomoState.manuallyPaused, syncPomodoroWithTimer]);
 
   // Remove session dependencies - Pomodoro is now independent
   // const activeSessionId = localStorage.getItem('activeSessionId');
@@ -438,6 +454,7 @@ const Pomodoro: React.FC = () => {
         lastStart: now, // Set last start timestamp
         timeLeft: prev.timeLeft > 0 ? prev.timeLeft : modeDuration,
         lastManualAdjustment: now,
+        manuallyPaused: false, // Clear manual pause flag when starting
       };
     });
 
@@ -456,12 +473,18 @@ const Pomodoro: React.FC = () => {
         ? prev.timeAtStart + ((Date.now() - prev.lastStart) / 1000)
         : prev.timeAtStart;
       
+      // Calculate the remaining time based on elapsed time
+      const currentModeDuration = currentModeConfig?.[prev.currentMode] || 1500;
+      const remainingTime = Math.max(0, currentModeDuration - elapsed);
+      
       return {
         ...prev,
         isRunning: false,
         timeAtStart: elapsed, // Accumulate elapsed time
+        timeLeft: remainingTime, // Update display to show current remaining time
         lastStart: null, // Clear last start
         lastManualAdjustment: Date.now(),
+        manuallyPaused: !fromSync, // Mark as manually paused if not from sync
       };
     });
 
@@ -470,7 +493,7 @@ const Pomodoro: React.FC = () => {
     if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent('pauseTimerSync', { detail: { baseTimestamp: Date.now() } }));
     }
-  }, [syncPomodoroWithTimer]);
+  }, [syncPomodoroWithTimer, currentModeConfig]);
 
   const handleReset = useCallback((fromSync?: boolean) => {
     const now = Date.now();
@@ -484,6 +507,7 @@ const Pomodoro: React.FC = () => {
       timeAtStart: 0, // Reset accumulated time
       lastStart: null, // Reset last start
       lastManualAdjustment: now,
+      manuallyPaused: false, // Clear manual pause flag on reset
     }));
 
     // Zustand action would go here - currently using local state
@@ -494,6 +518,7 @@ const Pomodoro: React.FC = () => {
 
     if (!fromSync) {
       window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: now } }));
+      // Always emit resetCountdownSync when Pomodoro is synced to ensure all timers reset together
       if (syncPomodoroWithTimer) {
         window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
       }
@@ -594,6 +619,7 @@ const Pomodoro: React.FC = () => {
         timeAtStart: newTimeAtStart,
         lastStart: prev.isRunning ? prev.lastStart : prev.lastStart,
         lastManualAdjustment: now,
+        manuallyPaused: false, // Clear manual pause flag when adjusting time
       };
     });
 
@@ -634,7 +660,7 @@ const Pomodoro: React.FC = () => {
   useEventListener('resetPomodoro', handleReset);
 
   useEventListener('pauseTimerSync', () => {
-    if (pomoState.isRunning && syncPomodoroWithTimer) handleStop();
+    if (pomoState.isRunning && syncPomodoroWithTimer) handleStop(true);
   });
 
   useEventListener('playTimerSync', createSyncHandler('start'));
@@ -677,17 +703,27 @@ const Pomodoro: React.FC = () => {
   useEventListener(SYNC_EVENTS.STUDY_TIMER_TIME_UPDATE, (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
     if (!syncPomodoroWithTimer) return;
 
+    // IMPORTANT: If manually paused, ignore ALL sync events to prevent interference
+    if (pomoState.manuallyPaused) {
+      console.log('[Pomodoro] 🚫 Ignoring sync event - timer is manually paused');
+      return;
+    }
+
     const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
     const currentModeDuration = currentModeConfig?.work || 1500; // Current mode duration in seconds
     
     console.log('[Pomodoro] 📊 studyTimerTimeUpdate sync', { 
       studyTime, 
       currentModeDuration,
+      pomoStateIsRunning: pomoState.isRunning,
+      studyIsRunning: event.detail.isRunning,
+      manuallyPaused: pomoState.manuallyPaused,
       willUpdate: studyTime >= 0 && currentModeDuration > 0
     });
 
     // If StudyTimer resets to 0, reset Pomodoro to current mode duration
-    if (studyTime === 0 && currentModeDuration > 0) {
+    // But only if Pomodoro is also supposed to reset (don't interfere with manual pause)
+    if (studyTime === 0 && currentModeDuration > 0 && !event.detail.isRunning && !pomoState.manuallyPaused) {
       console.log('[Pomodoro] ✅ StudyTimer reset detected - resetting to current mode duration');
       setPomoState(prev => ({
         ...prev,
@@ -697,6 +733,7 @@ const Pomodoro: React.FC = () => {
         timeAtStart: 0, // Reset accumulated time
         lastStart: null, // Reset last start
         lastManualAdjustment: Date.now(),
+        manuallyPaused: false, // Clear manual pause flag on reset
       }));
       return;
     }
@@ -704,12 +741,19 @@ const Pomodoro: React.FC = () => {
     // Calculate remaining Pomodoro time based on StudyTimer elapsed time
     const remainingTime = Math.max(0, currentModeDuration - studyTime);
     
-    // Update Pomodoro display to show remaining time
-    setPomoState(prev => ({ ...prev, timeLeft: remainingTime }));
+    // Only update if the time actually changed to prevent unnecessary re-renders
+    // AND if not manually paused (don't override manual pause)
+    // AND if the running states match (don't override manual pause)
+    if (Math.abs(remainingTime - pomoState.timeLeft) >= 0.1 && 
+        !pomoState.manuallyPaused && 
+        pomoState.isRunning === event.detail.isRunning) {
+      // Update Pomodoro display to show remaining time
+      setPomoState(prev => ({ ...prev, timeLeft: remainingTime }));
+    }
     
-    // Sync running state with StudyTimer
+    // Sync running state with StudyTimer, but don't interfere with manual pause
     const studyIsRunning = event.detail.isRunning;
-    if (studyIsRunning !== pomoState.isRunning) {
+    if (studyIsRunning !== pomoState.isRunning && !pomoState.manuallyPaused) {
       if (studyIsRunning) {
         handleStart(Date.now(), true);
       } else {
@@ -739,7 +783,10 @@ const Pomodoro: React.FC = () => {
         return;
       }
 
-      setPomoState((prev) => ({ ...prev, timeLeft: newTimeLeft }));
+      // Only update if the time actually changed to prevent unnecessary re-renders
+      if (Math.abs(newTimeLeft - pomoState.timeLeft) >= 0.1) {
+        setPomoState((prev) => ({ ...prev, timeLeft: newTimeLeft }));
+      }
     }, 100); // Update every 100ms for smooth display like StudyTimer
 
     return () => clearInterval(interval);

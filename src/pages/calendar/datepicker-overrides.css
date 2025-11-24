@@ -3,11 +3,12 @@
 /* Datepicker Overrides */
 .react-datepicker {
   font-family: inherit !important;
-  border: none !important;
+  border: 2px solid var(--accent-primary) !important;
   border-radius: 0.5rem !important;
   background-color: var(--bg-primary) !important;
   color: var(--text-primary) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  z-index: 99999 !important;
 }
 
 .react-datepicker__header {
@@ -119,10 +120,6 @@
   background-color: var(--bg-secondary) !important;
 }
 
-.react-datepicker__input-container input {
-  /* Your custom input styles are already handled in TaskForm.jsx */
-  /* Make sure no conflicting styles here */
-}
 
 .react-datepicker__triangle {
   border-bottom-color: var(--border-primary) !important;
@@ -134,4 +131,19 @@
 
 .react-datepicker__close-icon::after {
   background-color: var(--text-primary) !important;
+}
+
+/* Popper container styling */
+.react-datepicker-popper {
+  z-index: 99999 !important;
+}
+
+/* Ensure the calendar wrapper has proper background */
+.react-datepicker__wrapper {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Fix any transparent overlay issues */
+.react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle {
+  border-bottom-color: var(--accent-primary) !important;
 } 

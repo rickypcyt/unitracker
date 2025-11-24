@@ -83,57 +83,82 @@ const SOUND_CONFIGS = [
     defaultVolume: 1,
     volumeMultiplier: 0.2,
     create: (volume: number) => {
-      // Main ocean waves (low frequency rumble)
+      // Deep ocean rumble (very low frequencies)
+      const deepOcean = new Tone.Noise("brown").start();
+      const deepFilter = new Tone.Filter(80, "lowpass");
+      deepFilter.frequency.value = 80;
+      deepFilter.Q.value = 0.3;
+      const deepGain = new Tone.Gain(0.4);
+      
+      // Main ocean waves (low-mid frequencies)
       const brownNoise = new Tone.Noise("brown").start();
-      const brownFilter = new Tone.Filter(120, "lowpass");
-      brownFilter.frequency.value = 120;
-      brownFilter.Q.value = 0.5;
+      const brownFilter = new Tone.Filter(150, "lowpass");
+      brownFilter.frequency.value = 150;
+      brownFilter.Q.value = 0.6;
       
-      // Ocean surface (mid frequencies)
+      // Ocean surface water (mid frequencies)
       const pinkNoise = new Tone.Noise("pink").start();
-      const pinkHighpass = new Tone.Filter(100, "highpass");
-      const pinkLowpass = new Tone.Filter(1000, "lowpass");
-      pinkHighpass.frequency.value = 100;
-      pinkLowpass.frequency.value = 1000;
-      pinkLowpass.Q.value = 0.7;
+      const pinkHighpass = new Tone.Filter(80, "highpass");
+      const pinkLowpass = new Tone.Filter(1200, "lowpass");
+      pinkHighpass.frequency.value = 80;
+      pinkLowpass.frequency.value = 1200;
+      pinkLowpass.Q.value = 0.8;
       
-      // Wave LFO for natural volume fluctuations
-      const waveLFO = new Tone.LFO(0.08, 0.4, 0.8).start();
-      const randomLFO = new Tone.LFO(0.03, 0.05, 0.1).start();
-      randomLFO.connect(waveLFO.frequency);
+      // Complex wave patterns with multiple LFOs
+      const primaryWaveLFO = new Tone.LFO(0.06, 0.5, 0.9).start();
+      const secondaryWaveLFO = new Tone.LFO(0.12, 0.3, 0.7).start();
+      const randomModulation = new Tone.LFO(0.04, 0.02, 0.08).start();
+      randomModulation.connect(primaryWaveLFO.frequency);
+      randomModulation.connect(secondaryWaveLFO.frequency);
 
-      // Breaking waves (mid-high frequencies)
+      // Breaking waves (mid-high frequencies) with variation
       const breakingNoise = new Tone.Noise("pink").start();
       const breakingFilter = new Tone.Filter({
         type: "bandpass",
-        frequency: 600,
-        Q: 1.2,
+        frequency: 800,
+        Q: 1.5,
         gain: 0
       });
-      const breakingGain = new Tone.Gain(0.1);
+      const breakingGain = new Tone.Gain(0.15);
+      const breakingLFO = new Tone.LFO(0.15, 0.05, 0.2).start();
+      breakingLFO.connect(breakingGain.gain);
 
-      // Water splashes (high frequencies)
+      // Foam and bubbles (high frequencies)
+      const foamNoise = new Tone.Noise("white").start();
+      const foamFilter = new Tone.Filter({
+        type: "highpass",
+        frequency: 3000,
+        Q: 0.5,
+        gain: 0
+      });
+      const foamGain = new Tone.Gain(0.08);
+      const foamLFO = new Tone.LFO(0.25, 0.02, 0.1).start();
+      foamLFO.connect(foamGain.gain);
+
+      // Water splashes (very high frequencies)
       const splashNoise = new Tone.Noise("white").start();
       const splashFilter = new Tone.Filter({
         type: "bandpass",
-        frequency: 2500,
-        Q: 0.8,
+        frequency: 4000,
+        Q: 1.0,
         gain: 0
       });
-      const splashGain = new Tone.Gain(0.05);
+      const splashGain = new Tone.Gain(0.06);
 
-      // Reverb for spatial depth
+      // Enhanced spatial reverb
       const reverb = new Tone.Reverb({
-        decay: 5,
-        wet: 0.3,
-        preDelay: 0.1,
+        decay: 8,
+        wet: 0.4,
+        preDelay: 0.15,
       }).toDestination();
       
-      // Main gain with volume control
-      const gain = new Tone.Gain(volume * 0.2).connect(reverb);
-      waveLFO.connect(gain.gain);
+      // Main gain with improved volume control
+      const gain = new Tone.Gain(volume * 0.25).connect(reverb);
+      primaryWaveLFO.connect(gain.gain);
+      secondaryWaveLFO.connect(gain.gain);
 
-      // Connect all noise sources with their respective filters and gains
+      // Connect all noise sources with enhanced routing
+      deepOcean.chain(deepFilter, deepGain, gain);
       brownNoise.connect(brownFilter).connect(gain);
       
       pinkNoise.chain(
@@ -148,6 +173,12 @@ const SOUND_CONFIGS = [
         gain
       );
 
+      foamNoise.chain(
+        foamFilter,
+        foamGain,
+        gain
+      );
+
       splashNoise.chain(
         splashFilter,
         splashGain,
@@ -155,6 +186,9 @@ const SOUND_CONFIGS = [
       );
 
       return {
+        deepOcean,
+        deepFilter,
+        deepGain,
         pinkNoise,
         pinkHighpass,
         pinkLowpass,
@@ -163,12 +197,18 @@ const SOUND_CONFIGS = [
         breakingNoise,
         breakingFilter,
         breakingGain,
+        breakingLFO,
+        foamNoise,
+        foamFilter,
+        foamGain,
+        foamLFO,
         splashNoise,
         splashFilter,
         splashGain,
+        primaryWaveLFO,
+        secondaryWaveLFO,
+        randomModulation,
         gain,
-        waveLFO,
-        randomLFO,
         reverb,
       };
     },

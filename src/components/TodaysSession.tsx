@@ -1,4 +1,4 @@
-import { Check, Circle, Clock, Play } from 'lucide-react';
+import { Check, Circle, Play } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDeleteTaskSuccess, useFetchTasks, useLaps, useTasks, useToggleTaskStatus } from '@/store/appStore';
 
@@ -6,7 +6,6 @@ import { SYNC_EVENTS } from '@/utils/constants';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { motion } from 'framer-motion';
 import { updateTaskAction } from '@/store/TaskActions';
-import { useSessionId } from '@/hooks/study-timer/useSessionId';
 
 interface ContextMenu {
   x: number;
@@ -128,26 +127,7 @@ const TodaysSession = () => {
     }
   };
 
-  const handleDeleteLap = async (lapId: string) => {
-    try {
-      if (window.confirm('Are you sure you want to delete this session?')) {
-        // TODO: Implement lap deletion
-        console.log('Delete lap:', lapId);
-      }
-    } catch (error) {
-      console.error('Error deleting lap:', error);
-    }
-  };
-
-  const handleFinishLap = async (lap: Lap) => {
-    try {
-      // TODO: Implement lap finishing
-      console.log('Finish lap:', lap);
-    } catch (error) {
-      console.error('Error finishing lap:', error);
-    }
-  };
-
+  
   const handleEditTask = (task: Task) => {
     // You can implement edit functionality here or navigate to edit page
     console.log('Edit task:', task);
@@ -352,50 +332,9 @@ const TodaysSession = () => {
     } catch {}
   }, [laps, tasks, todaysPomodoros, totalStudyTimeFormatted]); // Remove derived values from dependencies
 
-  // Unfinished sessions (no ended_at)
-  const unfinishedLaps: Lap[] = useMemo(() => {
-    return (laps || []).filter((lap: Lap) => !lap.ended_at);
-  }, [laps]);
-
-  // Temporarily commented out due to missing lap functions
-  /*
-  const handleFinishLap = async (lap: Lap) => {
-    try {
-      const nowIso = new Date().toISOString();
-      const startIso = lap.started_at || lap.created_at;
-      const durationSec = Math.max(
-        0,
-        Math.floor((new Date(nowIso).getTime() - new Date(startIso).getTime()) / 1000)
-      );
-      await dispatch(updateLap(lap.id, { ended_at: nowIso, duration: durationSec, status: 'completed' }));
-    } catch (e) {
-      console.error('Error finishing session:', e);
-    }
-  };
-
-  const handleDeleteLap = async (lapId: string) => {
-    try {
-      if (window.confirm('Delete this unfinished session?')) {
-        await dispatch(deleteLap(lapId));
-      }
-    } catch (e) {
-      console.error('Error deleting session:', e);
-    }
-  };
-  */
-
-  // Get the current session ID
-  const [currentSessionId] = useSessionId();
-
-  const handleResumeLap = (lap: Lap) => {
-    // Here you would implement the logic to resume the lap
-    // For example, you might want to navigate to the timer with this lap's data
-    console.log('Resuming lap:', lap.id);
-    // Add your resume logic here, for example:
-    // navigate(`/timer?resume=${lap.id}`);
-    alert('Resume functionality will be implemented here');
-  };
-
+  
+  
+  
   // Animation variants
   const container = {
     hidden: { opacity: 0 },
@@ -640,67 +579,7 @@ const TodaysSession = () => {
         )}
       </motion.div>
 
-      {/* Unfinished Sessions Section */}
-      {unfinishedLaps.length > 0 && (
-        <motion.div 
-          variants={item}
-          className="relative overflow-hidden p-4 rounded-xl border-[var(--border-primary)]"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
-              <div className="p-1 rounded-md">
-                <Clock size={18} className="text-rose-500" />
-              </div>
-              <span>Unfinished Sessions</span>
-              <span className="ml-2 text-sm font-normal bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full">
-                {unfinishedLaps.length}
-              </span>
-            </h4>
           </div>
-
-          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-            {unfinishedLaps.map((lap: Lap) => {
-              const startIso = lap.started_at || lap.created_at;
-              const elapsedSec = Math.max(0, Math.floor((Date.now() - new Date(startIso).getTime()) / 1000));
-              const title = lap.name || (lap.session_number ? `Session #${lap.session_number}` : 'Session');
-              return (
-                <div key={lap.id} className="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</div>
-                    <div className="text-sm text-[var(--text-secondary)]">Created {formatDuration(Math.floor(elapsedSec).toString())} ago</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDeleteLap(lap.id)}
-                      className="px-2 py-1 rounded-md bg-rose-600 text-white text-sm hover:bg-rose-600 transition-colors"
-                      title="Delete session"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleFinishLap(lap)}
-                      className="px-2 py-1 rounded-md bg-green-600 text-white text-sm hover:bg-green-600 transition-colors"
-                      title="Finish session"
-                    >
-                      Finish
-                    </button>
-                    {currentSessionId !== lap.id && (
-                      <button
-                        onClick={() => handleResumeLap(lap)}
-                        className="px-2 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-600 transition-colors"
-                        title="Resume session"
-                      >
-                        Resume
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-    </div>
   );
 }
 

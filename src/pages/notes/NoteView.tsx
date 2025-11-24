@@ -123,7 +123,7 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
   // Date handler
   const handleDateSave = async (newDate: Date | null) => {
     if (!newDate) return;
-    const dateString = newDate.toISOString().split('T')[0];
+    const dateString = newDate.toISOString().split('T')[0] as string;
     const success = await saveNote({ date: dateString });
     if (success) setDate(dateString);
   };
@@ -228,69 +228,85 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="sticky top-0 border-b border-[var(--border-primary)] p-2 sm:p-4 bg-[var(--bg-primary)]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm sm:text-base flex-shrink-0"
-            >
-              <ArrowLeft size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Back to notes</span>
-              <span className="sm:hidden">←</span>
-            </button>
-            <div className="flex-1 min-w-0">
-              {isEditingTitle ? (
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleTitleSave();
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      handleTitleCancel();
-                    }
-                  }}
-                  onBlur={handleTitleSave}
-                  className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
-                  placeholder="Note Title"
-                  autoFocus
-                />
-              ) : (
-                <h1 
-                  className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate"
-                  onClick={handleTitleEdit}
-                  title="Click to edit title"
-                >
-                  {note.title}
-                </h1>
-              )}
-            </div>
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          {/* Title - Left */}
+          <div className="flex-shrink-0">
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleTitleSave();
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleTitleCancel();
+                  }
+                }}
+                onBlur={handleTitleSave}
+                className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
+                placeholder="Note Title"
+                autoFocus
+              />
+            ) : (
+              <h1 
+                className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate"
+                onClick={handleTitleEdit}
+                title="Click to edit title"
+              >
+                {note.title}
+              </h1>
+            )}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges || isSaving}
-              className="p-1.5 sm:p-2 rounded-lg text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isSaving ? 'Saving...' : 'Save'}
-            >
-              <Save size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
-              onClick={handleDelete}
-              className="p-1.5 sm:p-2 rounded-lg text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
-              title="Delete note"
-            >
-              <Trash2 size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+
+          {/* Assignment - Middle */}
+          <div className="flex-1 flex justify-center min-w-0">
+            {isEditingAssignment ? (
+              <input
+                value={assignment}
+                onChange={(e) => setAssignment(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAssignmentSave();
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleAssignmentCancel();
+                  }
+                }}
+                onBlur={handleAssignmentSave}
+                className="px-2 sm:px-3 py-1 bg-transparent border-2 border-[var(--accent-primary)] rounded-full text-[var(--accent-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-xs sm:text-sm font-medium transition-colors min-w-0 w-fit"
+                placeholder="Assignment"
+                autoFocus
+                style={{ width: `${Math.max(assignment.length * 0.6 + 4, 8)}ch` }}
+              />
+            ) : (
+              <>
+                {note.assignment ? (
+                  <span 
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors"
+                    onClick={handleAssignmentEdit}
+                    title="Click to edit assignment"
+                  >
+                    {note.assignment}
+                  </span>
+                ) : (
+                  <span 
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border-2 border-dashed border-[var(--accent-primary)]"
+                    onClick={handleAssignmentEdit}
+                    title="Click to add assignment"
+                  >
+                    + Add assignment
+                  </span>
+                )}
+              </>
+            )}
           </div>
-        </div>
-        
-        {/* Date and Assignment */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-[var(--text-secondary)] mt-2">
-          <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+
+          {/* Date - Right */}
+          <div className="flex-shrink-0">
             <DatePicker
               ref={datePickerRef}
               selected={new Date(date)}
@@ -298,14 +314,14 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
               dateFormat="dd/MM/yyyy"
               placeholderText="DD/MM/YYYY"
               popperPlacement="bottom-start"
-              calendarClassName="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
+              calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
               dayClassName={(date) =>
                 (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
               }
               showPopperArrow={false}
               customInput={
                 <div 
-                  className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                  className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded px-2 py-1 -mx-2 -my-1 transition-colors text-xs sm:text-sm text-[var(--text-secondary)]"
                   title="Click to edit date"
                 >
                   <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -319,46 +335,6 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
               }
             />
           </div>
-          {isEditingAssignment ? (
-            <input
-              value={assignment}
-              onChange={(e) => setAssignment(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAssignmentSave();
-                } else if (e.key === 'Escape') {
-                  e.preventDefault();
-                  handleAssignmentCancel();
-                }
-              }}
-              onBlur={handleAssignmentSave}
-              className="px-2 sm:px-3 py-1 bg-transparent border-2 border-[var(--accent-primary)] rounded-full text-[var(--accent-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-xs sm:text-sm font-medium transition-colors min-w-0 w-fit"
-              placeholder="Assignment"
-              autoFocus
-              style={{ width: `${Math.max(assignment.length * 0.6 + 4, 8)}ch` }}
-            />
-          ) : (
-            <>
-              {note.assignment ? (
-                <span 
-                  className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors"
-                  onClick={handleAssignmentEdit}
-                  title="Click to edit assignment"
-                >
-                  {note.assignment}
-                </span>
-              ) : (
-                <span 
-                  className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border-2 border-dashed border-[var(--accent-primary)]"
-                  onClick={handleAssignmentEdit}
-                  title="Click to add assignment"
-                >
-                  + Add assignment
-                </span>
-              )}
-            </>
-          )}
         </div>
       </div>
 
@@ -372,6 +348,37 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
             placeholder="Start writing your note..."
             className="min-h-full"
           />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="fixed bottom-0 left-0 right-0 w-full border-t border-[var(--border-primary)] px-2 py-1 sm:px-4 sm:py-2 bg-[var(--bg-primary)] h-12 sm:h-14 z-50">
+        <div className="flex items-center justify-between w-full h-full">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm sm:text-base flex-shrink-0"
+          >
+            <ArrowLeft size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Back to notes</span>
+            <span className="sm:hidden">←</span>
+          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={handleSave}
+              disabled={!hasUnsavedChanges || isSaving}
+              className="p-1 sm:p-1.5 rounded-lg text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title={isSaving ? 'Saving...' : 'Save'}
+            >
+              <Save size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1 sm:p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+              title="Delete note"
+            >
+              <Trash2 size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

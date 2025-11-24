@@ -96,7 +96,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onCreateNote }) => {
               dateFormat="dd/MM/yyyy"
               placeholderText="DD/MM/YYYY"
               popperPlacement="bottom-start"
-              calendarClassName="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
+              calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
               dayClassName={(date) =>
                 (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
               }

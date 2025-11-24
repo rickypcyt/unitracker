@@ -622,9 +622,9 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
                     />
                   }
                   popperPlacement="bottom-start"
-                  calendarClassName="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
+                  calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
                   dayClassName={(date) =>
-                    date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : undefined
+                    date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
                   }
                   showPopperArrow={false}
                 />

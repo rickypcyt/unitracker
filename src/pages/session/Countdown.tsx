@@ -438,7 +438,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     console.log('[Countdown] resetTimerSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
-    handleReset(true, baseTimestamp);
+    handleReset(true);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
   // Escuchar eventos de reset de StudyTimer y Pomodoro cuando están sincronizados
@@ -448,7 +448,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     console.log('[Countdown] resetPomodoroSync event', { baseTimestamp });
     if (lastSyncTimestamp === baseTimestamp) return;
     setLastSyncTimestamp(baseTimestamp);
-    handleReset(true, baseTimestamp);
+    handleReset(true);
   }, [syncCountdownWithTimer, lastSyncTimestamp, handleReset]);
 
   // Listen to studyTimerTimeUpdate for continuous sync (like Pomodoro does)
@@ -490,12 +490,11 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     const studyIsRunning = event.detail.isRunning;
     if (studyIsRunning !== isCountdownRunning) {
       setIsCountdownRunning(studyIsRunning);
-        setCountdownState({ status: studyIsRunning ? 'running' : 'stopped', endTimestamp: studyIsRunning ? endTs : null, pausedSecondsLeft: null, lastTime: baselineTimeRef.current });
+      setCountdownState({ status: studyIsRunning ? 'running' : 'stopped', endTimestamp: studyIsRunning ? Date.now() + remainingTime * 1000 : null, pausedSecondsLeft: null, lastTime: baselineTimeRef.current });
       
       if (studyIsRunning) {
         // Calculate end timestamp when starting
-        const now = Date.now();
-        const endTs = now + remainingTime * 1000;
+        const endTs = Date.now() + remainingTime * 1000;
         setEndTimestamp(endTs);
         try {
           localStorage.setItem('countdownState', 'running');
@@ -512,7 +511,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     }
   }, [syncCountdownWithTimer, calculateSeconds, isCountdownRunning]);
 
-  // resetCountdownSync: reiniciar SOLO cuando hay sync con StudyTimer y con deduplicación
+  // resetCountdownSync: reiniciar cuando hay sync con StudyTimer O cuando viene de Pomodoro sincronizado
   useEventListener('resetCountdownSync', (event: CustomEvent<{ baseTimestamp?: number }>) => {
     console.log('[Countdown] 🔄 RECEIVED resetCountdownSync event', { 
       event,
@@ -520,8 +519,12 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
       baseTimestamp: event?.detail?.baseTimestamp,
       willProcess: !!syncCountdownWithTimer
     });
-    if (!syncCountdownWithTimer) {
-      console.log('[Countdown] ❌ IGNORING resetCountdownSync - not synced with timer');
+    
+    // Always process if syncCountdownWithTimer is true
+    // OR if this is a global reset (check if study timer is also synced)
+    const isGlobalSync = useAppStore.getState().syncSettings.syncPomodoroWithTimer;
+    if (!syncCountdownWithTimer && !isGlobalSync) {
+      console.log('[Countdown] ❌ IGNORING resetCountdownSync - not synced with timer and not in global sync');
       return; // modo independiente: ignorar
     }
     const baseTimestamp = event?.detail?.baseTimestamp || Date.now();
