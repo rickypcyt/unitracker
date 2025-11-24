@@ -4,7 +4,7 @@ import MonthStatsCard from './MonthStatsCard';
 import WeekStatsCard from './WeekStatsCard';
 import YearStatsCard from './YearStatsCard';
 import useDemoMode from '@/utils/useDemoMode';
-import { useSelector } from 'react-redux';
+import { useLaps } from '@/store/appStore';
 
 const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthLabels = [
@@ -12,20 +12,20 @@ const monthLabels = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-function formatMinutesToHHMM(minutes) {
+function formatMinutesToHHMM(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
-function getMonday(date, offset = 0) {
+function getMonday(date: Date, offset = 0) {
   const d = new Date(date);
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1) - offset;
   return new Date(d.setDate(diff));
 }
 
-function getWeekDays(monday) {
+function getWeekDays(monday: Date) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
@@ -33,7 +33,7 @@ function getWeekDays(monday) {
   });
 }
 
-function getMonthDays(date) {
+function getMonthDays(date: Date) {
   const year = date.getFullYear();
   const month = date.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -45,7 +45,7 @@ function getMonthDays(date) {
 }
 
 const StatsChartsPanel = () => {
-  const { laps } = useSelector((state) => state.laps);
+  const { laps } = useLaps();
   const { isDemo } = useDemoMode();
   const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
 
@@ -70,14 +70,14 @@ const StatsChartsPanel = () => {
       const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
       acc[lapDate] = (acc[lapDate] || 0) + minutes;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
     // Siempre 7 elementos, uno por cada día de la semana
     return weekDayLabels.map((label, idx) => {
       const date = weekDays[idx];
       return {
-        date,
-        minutes: dailyMinutes[date] || 0,
-        hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
+        date: date || '',
+        minutes: (date && dailyMinutes[date]) || 0,
+        hoursLabel: formatMinutesToHHMM((date && dailyMinutes[date]) || 0),
         dayName: label,
       };
     });
@@ -103,11 +103,11 @@ const StatsChartsPanel = () => {
         acc[lapDate] = (acc[lapDate] || 0) + minutes;
       }
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
     return monthDays.map((date, idx) => ({
-      date,
-      minutes: dailyMinutes[date] || 0,
-      hoursLabel: formatMinutesToHHMM(dailyMinutes[date] || 0),
+      date: date || '',
+      minutes: (date && dailyMinutes[date]) || 0,
+      hoursLabel: formatMinutesToHHMM((date && dailyMinutes[date]) || 0),
       dayName: idx.toString(),
       realDay: (idx + 1).toString(),
     }));
@@ -123,13 +123,13 @@ const StatsChartsPanel = () => {
       if (lapDate.getFullYear() === year) {
         const month = lapDate.getMonth();
         const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-        monthlyMinutes[month] += minutes;
+        monthlyMinutes[month] = (monthlyMinutes[month] || 0) + minutes;
       }
     });
     return monthLabels.map((label, idx) => ({
       month: label,
-      minutes: monthlyMinutes[idx],
-      hoursLabel: formatMinutesToHHMM(monthlyMinutes[idx]),
+      minutes: monthlyMinutes[idx] || 0,
+      hoursLabel: formatMinutesToHHMM(monthlyMinutes[idx] || 0),
       dayName: label,
       date: `${year}-${String(idx+1).padStart(2,'0')}-01`,
     }));
@@ -151,9 +151,9 @@ const StatsChartsPanel = () => {
     const thisWeekData = weekDayLabels.map((label, idx) => {
       const date = weekDays[idx];
       return {
-        date,
-        minutes: demoWeek[idx],
-        hoursLabel: formatMinutesToHHMM(demoWeek[idx]),
+        date: date || '',
+        minutes: demoWeek[idx] || 0,
+        hoursLabel: formatMinutesToHHMM(demoWeek[idx] || 0),
         dayName: label,
       };
     });
@@ -163,17 +163,17 @@ const StatsChartsPanel = () => {
       const date = new Date(shownMonthDate);
       date.setDate(i + 1);
       return {
-        date: date.toISOString().split('T')[0],
-        minutes: demoMonth[i % demoMonth.length],
-        hoursLabel: formatMinutesToHHMM(demoMonth[i % demoMonth.length]),
+        date: date.toISOString().split('T')[0] || '',
+        minutes: demoMonth[i % demoMonth.length] || 0,
+        hoursLabel: formatMinutesToHHMM(demoMonth[i % demoMonth.length] || 0),
         dayName: i.toString(),
         realDay: (i + 1).toString(),
       };
     });
     const thisYearData = monthLabels.map((label, idx) => ({
       month: label,
-      minutes: demoYear[idx],
-      hoursLabel: formatMinutesToHHMM(demoYear[idx]),
+      minutes: demoYear[idx] || 0,
+      hoursLabel: formatMinutesToHHMM(demoYear[idx] || 0),
       dayName: label,
       date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
     }));
@@ -241,7 +241,6 @@ const StatsChartsPanel = () => {
         <YearStatsCard
           data={thisYearData}
           accentColor={accentColor}
-          isDemo={false}
         />
       </div>
     </div>

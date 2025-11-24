@@ -1,14 +1,18 @@
-import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "@/store/slices/TaskSlice";
 import { fetchTasks, forceTaskRefresh, toggleTaskStatus } from "@/store/TaskActions";
-import { useDispatch, useSelector } from "react-redux";
+import { useAddTaskSuccess, useAppStore, useDeleteTaskSuccess, useFetchTasks, useTasks, useToggleTaskStatus, useUpdateTaskSuccess } from '@/store/appStore';
 import { useEffect, useState } from "react";
 
 import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
 
-export const useTaskManager = () => {
-  const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.tasks);
+export const useTaskManager = (activeWorkspace) => {
+  const addTaskSuccess = useAddTaskSuccess();
+  const updateTaskSuccess = useUpdateTaskSuccess();
+  const deleteTaskSuccess = useDeleteTaskSuccess();
+  const toggleTaskStatusAction = useToggleTaskStatus();
+  const fetchTasksAction = useFetchTasks();
+  const { tasks } = useTasks();
+  console.log('useTaskManager - tasks from store:', tasks);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -29,12 +33,15 @@ export const useTaskManager = () => {
     };
   }, []);
 
-  // Fetch tasks when user changes
+  // Fetch tasks when user or workspace changes
   useEffect(() => {
     if (user) {
-      dispatch(fetchTasks());
+      console.log('useTaskManager - fetching tasks for workspace:', activeWorkspace?.id || 'all');
+      // Always fetch with workspace filter if activeWorkspace exists
+      // This ensures we only load the tasks we need
+      fetchTasksAction(activeWorkspace?.id);
     }
-  }, [user, dispatch]);
+  }, [user, activeWorkspace?.id]); // Include workspaceId to fetch workspace-specific tasks
 
   // Subscribe to real-time changes
   useEffect(() => {
@@ -50,22 +57,33 @@ export const useTaskManager = () => {
           filter: `user_id=eq.${user.id}`
         }, 
         (payload) => {
+          console.log('Real-time update received:', payload);
+          
+          // Only process real-time updates if the task belongs to the current workspace
+          // or if no workspace is active
+          const taskWorkspaceId = payload.new?.workspace_id || payload.old?.workspace_id;
+          if (activeWorkspace && taskWorkspaceId !== activeWorkspace.id) {
+            console.log('Ignoring real-time update for different workspace:', taskWorkspaceId);
+            return;
+          }
+          
           switch (payload.eventType) {
             case 'INSERT':
-              dispatch(addTaskSuccess(payload.new));
+              addTaskSuccess(payload.new);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             case 'UPDATE':
-              dispatch(updateTaskSuccess(payload.new));
+              updateTaskSuccess(payload.new);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             case 'DELETE':
-              dispatch(deleteTaskSuccess(payload.old.id));
+              deleteTaskSuccess(payload.old.id);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             default:
-              dispatch(fetchTasks());
-              window.dispatchEvent(new CustomEvent('refreshTaskList'));
+              // Don't fetch on default events to avoid unnecessary calls
+              // The real-time updates handle individual changes
+              break;
           }
         }
       )
@@ -74,7 +92,7 @@ export const useTaskManager = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, dispatch]);
+  }, [user, activeWorkspace?.id]); // Include activeWorkspace to filter real-time updates
 
   const handleToggleCompletion = async (taskId) => {
     if (!user) return;
@@ -84,7 +102,7 @@ export const useTaskManager = () => {
 
     try {
       // Actualizar el estado local inmediatamente
-      dispatch(toggleTaskStatus(taskId, !task.completed));
+      toggleTaskStatusAction(taskId, !task.completed);
 
       // Actualizar en la base de datos
       const { error } = await supabase
@@ -97,7 +115,7 @@ export const useTaskManager = () => {
 
       if (error) {
         // Si hay error, revertir el estado local
-        dispatch(toggleTaskStatus(taskId, task.completed));
+        toggleTaskStatus(taskId, task.completed);
         throw error;
       }
     } catch (error) {
@@ -110,7 +128,7 @@ export const useTaskManager = () => {
 
     try {
       // Actualizar el estado local inmediatamente
-      dispatch(deleteTaskSuccess(taskId));
+      deleteTaskSuccess(taskId);
 
       // Actualizar en la base de datos
       const { error } = await supabase
@@ -120,7 +138,7 @@ export const useTaskManager = () => {
 
       if (error) {
         // Si hay error, revertir el estado local
-        dispatch(fetchTasks());
+        fetchTasksAction(activeWorkspace?.id);
         if (error.message && error.message.includes('violates foreign key constraint')) {
           toast.error('Cannot delete this task because it is associated with an active session. Please deactivate the task first.');
         } else {
@@ -143,7 +161,7 @@ export const useTaskManager = () => {
 
     try {
       // Actualizar el estado local inmediatamente
-      dispatch(updateTaskSuccess(updatedTask));
+      updateTaskSuccess(updatedTask);
 
       // Actualizar en la base de datos
       const { error } = await supabase
@@ -161,7 +179,7 @@ export const useTaskManager = () => {
 
       if (error) {
         // Si hay error, revertir el estado local
-        dispatch(fetchTasks());
+        fetchTasksAction(activeWorkspace?.id);
         throw error;
       }
     } catch (error) {
@@ -171,7 +189,9 @@ export const useTaskManager = () => {
 
   return {
     user,
-    tasks,
+    tasks: activeWorkspace 
+      ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
+      : tasks,
     handleToggleCompletion,
     handleDeleteTask,
     handleUpdateTask,

@@ -1,8 +1,7 @@
-import type { AppDispatch, RootState } from '@/store/store';
 import { Check, ChevronLeft, ChevronRight, Clock, Edit2, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { deleteTask, updateTask } from '@/store/TaskActions';
-import { useDispatch, useSelector } from 'react-redux';
+import { deleteTask, updateTaskAction } from '@/store/TaskActions';
+import { useTaskCrudActions, useTasks } from '@/store/appStore';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -19,8 +18,8 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const { tasks } = useTasks();
+  const { deleteTask: deleteTaskAction, updateTask: updateTaskAction } = useTaskCrudActions();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -45,7 +44,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
 
   const confirmDeleteTask = () => {
     if (!taskToDelete) return;
-    dispatch(deleteTask(taskToDelete.id));
+    deleteTaskAction(taskToDelete.id);
     setShowDeleteModal(false);
     setTaskToDelete(null);
   };
@@ -56,7 +55,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
 
   const handleSaveTask = async (updatedTask: Task) => {
     try {
-      await dispatch(updateTask(updatedTask) as any);
+      await updateTaskAction(updatedTask.id, updatedTask);
       setTaskToEdit(null);
     } catch (error) {
       console.error('Error updating task:', error);
@@ -76,7 +75,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   // Handle task completion toggle
   const handleToggleCompletion = async (task: Task) => {
     try {
-      await dispatch(updateTask({ ...task, completed: !task.completed }) as any);
+      await updateTaskAction(task.id, { ...task, completed: !task.completed });
     } catch (error) {
       console.error('Error toggling task completion:', error);
     }
@@ -85,7 +84,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   // Handle setting active task
   const handleSetActiveTask = async (task: Task) => {
     try {
-      await dispatch(updateTask({ ...task, activetask: !task.activetask }) as any);
+      await updateTaskAction(task.id, { ...task, activetask: !task.activetask });
     } catch (error) {
       console.error('Error setting active task:', error);
     }

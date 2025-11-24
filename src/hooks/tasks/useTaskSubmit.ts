@@ -1,5 +1,4 @@
-import { addTaskSuccess, updateTaskSuccess } from '@/store/slices/TaskSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAddTaskSuccess, useAppStore, useUpdateTaskSuccess, useWorkspace } from '@/store/appStore';
 
 import { supabase } from '@/utils/supabaseClient';
 import { useCallback } from 'react';
@@ -13,8 +12,9 @@ type SaveArgs = {
 };
 
 export function useTaskSubmit() {
-  const dispatch = useDispatch();
-  const activeWorkspace = useSelector((state: any) => state.workspace.activeWorkspace);
+  const updateTaskSuccess = useUpdateTaskSuccess();
+  const addTaskSuccess = useAddTaskSuccess();
+  const { currentWorkspace: activeWorkspace } = useWorkspace();
 
   const saveTask = useCallback(async ({ formData, userId, initialTask, activeWorkspaceId, parseDateForDB }: SaveArgs) => {
     const taskData = {
@@ -34,7 +34,7 @@ export function useTaskSubmit() {
         .select()
         .single();
       if (error) throw error;
-      dispatch(updateTaskSuccess(data));
+      updateTaskSuccess(data);
       return data;
     } else {
       const { data, error } = await supabase
@@ -43,10 +43,10 @@ export function useTaskSubmit() {
         .select()
         .single();
       if (error) throw error;
-      dispatch(addTaskSuccess(data));
+      addTaskSuccess(data);
       return data;
     }
-  }, [dispatch, activeWorkspace]);
+  }, [updateTaskSuccess, addTaskSuccess, activeWorkspace]);
 
   return { saveTask };
 }

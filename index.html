@@ -125,13 +125,20 @@
     <script>
       try {
         const theme = localStorage.getItem("theme");
-        if (
+        const isDark = 
           theme === "dark" ||
-          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ) {
+          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        
+        if (isDark) {
           document.documentElement.classList.add("dark");
+          // Set dark background immediately to prevent white flash
+          document.body.style.backgroundColor = "#000000";
+          document.body.style.color = "#ffffff";
         } else {
           document.documentElement.classList.remove("dark");
+          // Set light background for light theme
+          document.body.style.backgroundColor = "#ffffff";
+          document.body.style.color = "#000000";
         }
       } catch (e) {}
     </script>
@@ -144,7 +151,7 @@
     <!-- End Cloudflare Web Analytics -->
   </head>
 
-  <body>
+  <body style="background-color: #000000; color: #ffffff;">
     <!-- El contenido generado por React se montará aquí -->
     <div id="root"></div>
 

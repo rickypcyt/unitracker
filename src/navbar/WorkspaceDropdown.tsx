@@ -51,7 +51,7 @@ interface WorkspaceDropdownProps {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
   onSelectWorkspace: (workspace: Workspace) => void;
-  onCreateWorkspace: () => void;
+  onCreateWorkspace: (workspace: Workspace) => void;
   onEditWorkspace: (workspace: Workspace) => void;
   onDeleteWorkspace: (workspaceId: string) => void;
   friends?: any[]; // Replace 'any' with the actual Friend type if available
@@ -74,7 +74,10 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
 
   const { user } = useAuth();
 
-  const getTaskCountByWorkspace = (ws: Workspace) => ws.taskCount || 0;
+  const getTaskCountByWorkspace = (ws: Workspace) => {
+    const count = ws.taskCount || 0;
+    return count;
+  };
 
   // Restaurar workspace seleccionado al montar (si Redux aún no lo tiene)
   useEffect(() => {
@@ -257,12 +260,12 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
                 const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
                 return <IconComp className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />;
               })()}
-              <span className="font-medium truncate max-w-[140px] text-[13px] sm:text-sm md:text-base">{activeWorkspace?.name || 'Area'}</span>
+              <span className="font-medium truncate max-w-[140px] text-[13px] sm:text-sm md:text-base">{activeWorkspace?.name || 'Select Workspace'}</span>
               <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="min-w-[180px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95 antialiased text-[12px] sm:text-sm md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
+            <DropdownMenu.Content className="min-w-[180px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased text-[12px] sm:text-sm md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map((ws, i) => (
                 <DropdownMenu.Item
                   key={ws.id}
@@ -337,7 +340,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="min-w-[160px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10000] animate-in fade-in0 zoom-in-95 antialiased text-[11px] sm:text-[12px] md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
+            <DropdownMenu.Content className="min-w-[160px] sm:min-w-[220px] max-w-[90vw] rounded-lg p-1 w-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased text-[11px] sm:text-[12px] md:text-sm lg:text-base" sideOffset={5} align="end" collisionPadding={10}>
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map((ws, i) => (
                 <DropdownMenu.Item
                   key={ws.id}

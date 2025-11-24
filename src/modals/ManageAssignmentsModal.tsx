@@ -1,8 +1,6 @@
-import type { AppDispatch, RootState } from '@/store/store';
 import { BookOpen, Check, Edit2, Trash2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { deleteTask, updateTask } from '@/store/TaskActions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppStore, useDeleteTaskSuccess, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -17,8 +15,9 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const deleteTaskSuccess = useDeleteTaskSuccess();
+  const updateTaskSuccess = useUpdateTaskSuccess();
+  const { tasks } = useTasks();
   const [assignments, setAssignments] = useState<string[]>([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
@@ -43,7 +42,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
     // Delete all tasks associated with this assignment
     const tasksToDelete = tasks.filter((task: Task) => task.assignment === assignmentToDelete);
     tasksToDelete.forEach((task: Task) => {
-      dispatch(deleteTask(task.id));
+      deleteTaskSuccess(task.id);
     });
 
     setShowDeleteModal(false);
@@ -59,10 +58,10 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
     // Update all tasks with the old assignment name
     tasks.forEach((task: Task) => {
       if (task.assignment === oldName) {
-        dispatch(updateTask({
+        updateTaskSuccess({
           ...task,
           assignment: newName
-        }));
+        });
       }
     });
 

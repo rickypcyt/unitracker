@@ -1,27 +1,25 @@
 import { BarChart3, BookOpen, Calendar, Github, ListTodo, Timer } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
-import { setActiveWorkspace, setWorkspaces } from '@/store/slices/workspaceSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useCallback, useEffect, useState } from 'react';
+import { useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
+import Settings from './Settings';
 import SettingsButton from './SettingsButton';
 import WorkspaceDropdown from './WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
+import { toast } from 'react-hot-toast';
+import useAppStore from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
-import { toast } from 'react-hot-toast';
-import Settings from './Settings';
 
 const Navbar = () => {
   const { isLoggedIn, loginWithGoogle, logout, user } = useAuth();
   const { activePage, navigateTo } = useNavigation();
-  const dispatch = useDispatch();
-  const workspaces = useSelector(state => state.workspace.workspaces);
-  const activeWorkspace = useSelector(state => state.workspace.activeWorkspace);
-  const tasks = useSelector(state => state.tasks.tasks);
-  const [receivedRequests, setReceivedRequests] = useState([]);
-  const [sentRequests, setSentRequests] = useState([]);
-  const [friends, setFriends] = useState([]);
-  const [sharedWorkspaces, setSharedWorkspaces] = useState({});
+  const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
+  const { tasks } = useTasks();
+  const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
+  const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
+  const [sentRequests, setSentRequests] = useState<any[]>([]);
+  const [friends, setFriends] = useState<any[]>([]);
   const [showSettings, setShowSettings] = useState(false);
 
   // Load workspaces from Supabase on mount
@@ -29,7 +27,7 @@ const Navbar = () => {
     const fetchWorkspaces = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        dispatch(setWorkspaces([]));
+        setWorkspaces([]);
         localStorage.removeItem('activeWorkspaceId');
         localStorage.removeItem('workspacesHydrated');
         return;
@@ -39,26 +37,87 @@ const Navbar = () => {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
+      
       if (!error && data) {
-        dispatch(setWorkspaces(data));
+        // If no workspaces exist, create a default "Área" workspace
+        if (data.length === 0) {
+          try {
+            const { data: newWorkspace, error: createError } = await supabase
+              .from('workspaces')
+              .insert([
+                {
+                  name: 'Área',
+                  user_id: user.id,
+                  icon: 'Home'
+                }
+              ])
+              .select()
+              .single();
+            
+            if (!createError && newWorkspace) {
+              const workspacesWithDefault = [newWorkspace];
+              setWorkspaces(workspacesWithDefault);
+              setCurrentWorkspace(newWorkspace);
+              localStorage.setItem('activeWorkspaceId', newWorkspace.id);
+              return;
+            }
+          } catch (error) {
+            console.error('Error creating default workspace:', error);
+          }
+        }
+        
+        setWorkspaces(data);
         const savedId = localStorage.getItem('activeWorkspaceId');
         if (savedId) {
-          const found = data.find(ws => ws.id === savedId);
-          if (found) dispatch(setActiveWorkspace(found));
+          const found = data.find((ws: any) => ws.id === savedId);
+          if (found) setCurrentWorkspace(found);
+        } else if (data.length > 0) {
+          // If no saved workspace but workspaces exist, set the first one as active
+          setCurrentWorkspace(data[0]);
+          localStorage.setItem('activeWorkspaceId', data[0].id);
         }
       }
     };
     fetchWorkspaces();
-  }, [dispatch]);
+  }, [setWorkspaces, setCurrentWorkspace]);
+
+  // Fetch tasks for all workspaces to get accurate counts
+  useEffect(() => {
+    const fetchAllTasks = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      try {
+        const { data: allTasks, error } = await supabase
+          .from('tasks')
+          .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id')
+          .eq('user_id', user.id)
+          .order('assignment');
+
+        if (!error && allTasks) {
+          // Update the global tasks state with all tasks
+          useAppStore.setState((state) => ({
+            tasks: { ...state.tasks, tasks: allTasks, error: null, isCached: true, lastFetch: Date.now() }
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching all tasks for workspace counts:', error);
+      }
+    };
+
+    if (workspaces.length > 0) {
+      fetchAllTasks();
+    }
+  }, [workspaces.length]); // Re-fetch when workspaces change
 
   // Clear workspaces if not logged in
   useEffect(() => {
     if (!isLoggedIn) {
-      dispatch(setWorkspaces([]));
+      setWorkspaces([]);
       localStorage.removeItem('activeWorkspaceId');
       localStorage.removeItem('workspacesHydrated');
     }
-  }, [isLoggedIn, dispatch]);
+  }, [isLoggedIn, setWorkspaces]);
 
   // Load friend requests from Supabase
   const fetchRequests = useCallback(async () => {
@@ -119,56 +178,43 @@ const Navbar = () => {
     fetchFriends();
   }, [fetchFriends]);
 
-  useEffect(() => {
-    // Calcular workspaces compartidos para cada amigo
-    if (!user || !friends.length || !workspaces.length) {
-      setSharedWorkspaces({});
-      return;
-    }
-    // Cada workspace tiene un user_id (owner) y puede tener más miembros si tienes esa lógica
-    // Si solo hay owner, solo compartes si el amigo es owner de algún workspace tuyo o viceversa
-    // Si tienes una tabla de miembros, deberías consultar ahí
-    // Aquí asumimos que solo el owner cuenta
-    const shared = {};
-    friends.forEach(friend => {
-      shared[friend.id] = workspaces.filter(ws => ws.user_id === friend.id || ws.user_id === user.id);
-    });
-    setSharedWorkspaces(shared);
-  }, [user, friends, workspaces]);
 
   // Calcula el número de tasks por workspace (solo incompletas)
-  const workspacesWithTaskCount = workspaces.map(ws => ({
-    ...ws,
-    taskCount: tasks.filter(task => task.workspace_id === ws.id && !task.completed).length
-  }));
+  const workspacesWithTaskCount = (Array.isArray(workspaces) ? workspaces : []).map(ws => {
+    const taskCount = tasks.filter(task => {
+      return task.workspace_id === ws.id && !task.completed;
+    }).length;
+    return {
+      ...ws,
+      taskCount
+    };
+  });
 
   // Workspace handlers
-  const handleSelectWorkspace = ws => {
-    dispatch(setActiveWorkspace(ws));
+  const handleSelectWorkspace = (ws: any) => {
+    setCurrentWorkspace(ws);
     localStorage.setItem('activeWorkspaceId', ws.id);
   };
-  const handleCreateWorkspace = newWorkspace => {
-    dispatch(setWorkspaces([...workspaces, newWorkspace]));
-    dispatch(setActiveWorkspace(newWorkspace));
-    localStorage.setItem('activeWorkspaceId', newWorkspace.id);
+  const handleCreateWorkspace = (newWorkspace: any) => {
+    setWorkspaces([...workspaces, newWorkspace]);
   };
-  const handleEditWorkspace = updatedWorkspace => {
-    dispatch(setWorkspaces(workspaces.map(ws => ws.id === updatedWorkspace.id ? updatedWorkspace : ws)));
+  const handleEditWorkspace = (updatedWorkspace: any) => {
+    setWorkspaces(workspaces.map((ws: any) => ws.id === updatedWorkspace.id ? updatedWorkspace : ws));
     if (activeWorkspace?.id === updatedWorkspace.id) {
-      dispatch(setActiveWorkspace(updatedWorkspace));
+      setCurrentWorkspace(updatedWorkspace);
     }
   };
-  const handleDeleteWorkspace = workspaceId => {
-    const updatedWorkspaces = workspaces.filter(ws => ws.id !== workspaceId);
-    dispatch(setWorkspaces(updatedWorkspaces));
+  const handleDeleteWorkspace = (workspaceId: any) => {
+    const updatedWorkspaces = workspaces.filter((ws: any) => ws.id !== workspaceId);
+    setWorkspaces(updatedWorkspaces);
     if (activeWorkspace?.id === workspaceId) {
       const newActiveWorkspace = updatedWorkspaces.length > 0 ? updatedWorkspaces[0] : null;
-      dispatch(setActiveWorkspace(newActiveWorkspace));
+      setCurrentWorkspace(newActiveWorkspace);
     }
   };
 
   // Send friend request logic
-  const handleSendRequest = async (username, { onSuccess, onError }) => {
+  const handleSendRequest = async (username: any, { onSuccess, onError }: { onSuccess: any; onError: any }) => {
     try {
       if (!user) {
         onError && onError('You must be logged in to send a friend request.');
@@ -204,10 +250,10 @@ const Navbar = () => {
       await fetchRequests();
       onSuccess && onSuccess();
     } catch (err) {
-      onError && onError('Unexpected error: ' + (err?.message || err));
+      onError && onError('Unexpected error: ' + (err as any)?.message || err);
     }
   };
-  const handleAccept = async (request) => {
+  const handleAccept = async (request: any) => {
     try {
       console.warn('[ACCEPT] Iniciando proceso para request:', request);
       // 1. Actualiza la solicitud a "accepted"
@@ -240,11 +286,11 @@ const Navbar = () => {
       console.warn('[ACCEPT] Solicitudes y amigos refrescados');
       toast.success('Friend request accepted!');
     } catch (error) {
-      toast.error('Unexpected error: ' + error.message);
+      toast.error('Unexpected error: ' + (error as any).message);
       console.error('[ACCEPT] Error inesperado:', error);
     }
   };
-  const handleReject = async (request) => {
+  const handleReject = async (request: any) => {
     try {
       console.warn('[REJECT] Iniciando proceso para request:', request);
       // 1. Actualiza la solicitud a "rejected"
@@ -262,33 +308,15 @@ const Navbar = () => {
       console.warn('[REJECT] Solicitudes refrescadas');
       toast.success('Friend request rejected!');
     } catch (error) {
-      toast.error('Unexpected error: ' + error.message);
+      toast.error('Unexpected error: ' + (error as any).message);
       console.error('[REJECT] Error inesperado:', error);
     }
   };
 
-  const handleRemoveFriend = async (friend) => {
-    try {
-      // Elimina la fila de friends donde estén ambos IDs (en cualquier orden)
-      const { error } = await supabase
-        .from('friends')
-        .delete()
-        .or(`and(user1.eq.${user.id},user2.eq.${friend.id}),and(user1.eq.${friend.id},user2.eq.${user.id})`);
-      if (error) {
-        toast.error('Error removing friend: ' + error.message);
-        return;
-      }
-      await fetchFriends();
-      toast.success('Friend removed!');
-    } catch (error) {
-      toast.error('Unexpected error: ' + error.message);
-      console.error('[REMOVE FRIEND] Error:', error);
-    }
-  };
-
+  
   // Navigation link class
-  const isActive = page => activePage === page;
-  const navLinkClass = page =>
+  const isActive = (page: any) => activePage === page;
+  const navLinkClass = (page: any) =>
     `px-4 py-2 rounded-md text-xl ${isActive(page) ? 'text-[var(--accent-primary)] ' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'}`;
 
   const navIcons = [
@@ -314,7 +342,7 @@ const Navbar = () => {
               {navIcons.map(({ page, icon: Icon, label }) => (
                 <button
                   key={page}
-                  onClick={() => navigateTo(page)}
+                  onClick={() => navigateTo(page as any)}
                   className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
                   title={label}
                   data-page={page}
@@ -328,7 +356,7 @@ const Navbar = () => {
               {navIcons.map(({ page, icon: Icon, label }) => (
                 <button
                   key={page}
-                  onClick={() => navigateTo(page)}
+                  onClick={() => navigateTo(page as any)}
                   className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
                   title={label}
                   data-page={page}
@@ -349,7 +377,6 @@ const Navbar = () => {
               onEditWorkspace={handleEditWorkspace}
               onDeleteWorkspace={handleDeleteWorkspace}
               friends={friends}
-              onOpenSettings={() => setShowSettings(true)}
             />
             <a
               href="https://github.com/rickypcyt/unitracker"
@@ -370,10 +397,7 @@ const Navbar = () => {
               onSendRequest={handleSendRequest}
               onAccept={handleAccept}
               onReject={handleReject}
-              user={user}
               friends={friends}
-              sharedWorkspaces={sharedWorkspaces}
-              onRemoveFriend={handleRemoveFriend}
             />
           </div>
         </div>

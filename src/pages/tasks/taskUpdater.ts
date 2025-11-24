@@ -1,9 +1,9 @@
 import type { AnyAction, Dispatch } from "redux";
-import type { Task} from "@/types/taskStorage";
+import { deleteTask, toggleTaskStatus, updateTaskAction } from "@/store/TaskActions";
 import { getLocalTasks, setLocalTasks } from "@/types/taskStorage";
-import { deleteTask, toggleTaskStatus, updateTask } from "@/store/actions/TaskActions";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Task } from "@/types/taskStorage";
 
 interface User {
     id: string;
@@ -80,10 +80,10 @@ export const updateTaskHandler = async ({ user, task, dispatch, supabase }: Task
         setLocalTasks(tasks);
     } else {
         try {
-            await dispatch(updateTask(task) as unknown as AnyAction);
+            await dispatch(updateTaskAction(task) as unknown as AnyAction);
             await supabase.from("tasks").update(task).eq("id", task.id);
         } catch (error) {
-            await dispatch(updateTask(task) as unknown as AnyAction);
+            await dispatch(updateTaskAction(task) as unknown as AnyAction);
             console.error("Error updating task:", error);
         }
     }

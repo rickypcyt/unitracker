@@ -1,8 +1,6 @@
-import { setSyncCountdownWithTimer, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
-import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { useUi, useUiActions } from '@/store/appStore';
 
-import type { RootState } from '@/store/store';
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
@@ -17,9 +15,8 @@ interface EditSessionModalProps {
 }
 
 const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated }: EditSessionModalProps) => {
-  const dispatch = useDispatch();
-  const syncPomodoroWithTimer = useSelector((state: RootState) => state.ui.syncPomodoroWithTimer);
-  const syncCountdownWithTimer = useSelector((state: RootState) => state.ui.syncCountdownWithTimer);
+  const { syncPomodoroWithTimer, syncCountdownWithTimer } = useUi();
+  const { setSyncPomodoroWithTimer, setSyncCountdownWithTimer } = useUiActions();
   const [activeTasks, setActiveTasks] = useState<Task[]>([]);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -148,8 +145,8 @@ const EditSessionModal = ({ isOpen, onClose, sessionId, onSessionDetailsUpdated 
       if (error) throw error;
 
       // Guardar sincronización en Redux y localStorage
-      dispatch(setSyncPomodoroWithTimer(syncPomo));
-      dispatch(setSyncCountdownWithTimer(syncCountdown));
+      setSyncPomodoroWithTimer(syncPomo);
+      setSyncCountdownWithTimer(syncCountdown);
 
       if (onSessionDetailsUpdated) {
         onSessionDetailsUpdated();

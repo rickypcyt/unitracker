@@ -7,12 +7,13 @@ import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
 import TimerSettings from "@/components/TimerSettings";
 import TodaysSession from "@/components/TodaysSession";
-import { useSelector } from "react-redux";
+import { useUi } from "@/store/appStore";
 
 const SessionPage = memo(() => {
-  const isSynced = useSelector((state) => state.ui.isSynced);
-  const isRunning = useSelector((state) => state.ui.isRunning);
-  const resetKey = useSelector((state) => state.ui.resetKey);
+  const ui = useUi();
+  const isSynced = ui.isSynced;
+  const isRunning = ui.isRunning;
+  const resetKey = ui.resetKey;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // --------------------------

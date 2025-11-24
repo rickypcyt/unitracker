@@ -8,11 +8,7 @@ import {
 } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
-import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
-import {
-  setStudyRunning,
-  setStudyTimerState,
-} from "@/store/slices/uiSlice";
+import { useUiActions } from "@/store/appStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useObjectStorage, useStorage } from "@/hooks/useStorage";

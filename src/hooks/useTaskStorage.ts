@@ -1,11 +1,8 @@
-import type { AppDispatch, RootState } from "@/store/store";
-import { addTaskSuccess, deleteTaskSuccess, updateTaskSuccess } from "@/store/slices/TaskSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useAddTaskSuccess, useAppStore, useDeleteTaskSuccess, useTaskCrudActions, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
 import { useEffect, useState } from "react";
 
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Task } from "@/types/taskStorage";
-import { setTasks } from "@/store/actions/TaskActions";
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
 
@@ -83,8 +80,11 @@ const generateLocalId = (): string => {
  * @returns {TaskStorageHook} Task management functions and state
  */
 export const useTaskStorage = (): TaskStorageHook => {
-    const dispatch = useDispatch<AppDispatch>();
-    const tasks = useSelector((state: RootState) => state.tasks.tasks);
+    const addTaskSuccess = useAddTaskSuccess();
+    const updateTaskSuccess = useUpdateTaskSuccess();
+    const deleteTaskSuccess = useDeleteTaskSuccess();
+    const { setTasks, addTask: addTaskToState, updateTask, deleteTask } = useTaskCrudActions();
+    const { tasks } = useTasks();
     const [user, setUser] = useState<User | null>(null);
     const [localTasks, setLocalTasks] = useState<Task[]>(() => {
         const savedTasks = localStorage.getItem("localTasks");
@@ -133,7 +133,7 @@ export const useTaskStorage = (): TaskStorageHook => {
 
                     if (error) throw error;
                     if (data) {
-                        dispatch(setTasks(data));
+                        setTasks(data);
                     }
                 } catch (error) {
                     console.error('Error initializing tasks:', error);
@@ -143,9 +143,9 @@ export const useTaskStorage = (): TaskStorageHook => {
             initializeTasks();
         } else {
             // If no user, use local tasks
-            dispatch(setTasks(localTasks));
+            setTasks(localTasks);
         }
-    }, [user, dispatch, localTasks, supabase]);
+    }, [setTasks, localTasks, supabase]);
 
     // Listen for storage changes
     useEffect(() => {
@@ -169,7 +169,7 @@ export const useTaskStorage = (): TaskStorageHook => {
         return () => {
             window.removeEventListener("storage", handleStorageChange);
         };
-    }, [dispatch]);
+    }, [setTasks]);
 
     // Subscribe to real-time changes (only when tab is visible to reduce resource usage)
     useEffect(() => {
@@ -180,12 +180,12 @@ export const useTaskStorage = (): TaskStorageHook => {
         const handlePayload = (payload: RealtimePostgresChangesPayload<Task>) => {
                     // Actualizar inmediatamente en función del tipo de evento
                     if (payload.eventType === 'INSERT' && payload.new && (payload.new as any).user_id === user.id) {
-                        dispatch(addTaskSuccess(payload.new));
+                        addTaskSuccess(payload.new);
                         return;
                     }
 
                     if (payload.eventType === 'UPDATE' && payload.new && (payload.new as any).user_id === user.id) {
-                        dispatch(updateTaskSuccess(payload.new));
+                        updateTaskSuccess(payload.new);
                         return;
                     }
 
@@ -195,7 +195,7 @@ export const useTaskStorage = (): TaskStorageHook => {
 
                         // Si Supabase tiene REPLICA IDENTITY FULL activado, old tendrá el id
                         if (deletedId) {
-                            dispatch(deleteTaskSuccess(deletedId as string));
+                            deleteTaskSuccess(deletedId as string);
                             return;
                         }
 
@@ -207,7 +207,7 @@ export const useTaskStorage = (): TaskStorageHook => {
                                     .select('*')
                                     .eq('user_id', user.id);
                                 if (!error && data) {
-                                    dispatch(setTasks(data));
+                                    setTasks(data);
                                 }
                             } catch (e) {
                                 // no-op
@@ -252,7 +252,7 @@ export const useTaskStorage = (): TaskStorageHook => {
                             .select('*')
                             .eq('user_id', user.id);
                         if (!error && data) {
-                            dispatch(setTasks(data));
+                            setTasks(data);
                         }
                     } catch {}
                 })();
@@ -269,7 +269,7 @@ export const useTaskStorage = (): TaskStorageHook => {
                                 .select('*')
                                 .eq('user_id', user.id);
                             if (!error && data) {
-                                dispatch(setTasks(data));
+                                setTasks(data);
                             }
                         } catch {}
                     })();
@@ -304,7 +304,7 @@ export const useTaskStorage = (): TaskStorageHook => {
         return () => {
             unsubscribe();
         };
-    }, [user, dispatch]);
+    }, [setTasks, user]);
 
     const addTask = async (newTask: NewTask): Promise<Task | null> => {
         if (!user) {
@@ -395,7 +395,7 @@ export const useTaskStorage = (): TaskStorageHook => {
                         .from('tasks')
                         .select('*')
                         .eq('user_id', user.id);
-                    if (refreshed) dispatch(setTasks(refreshed));
+                    if (refreshed) setTasks(refreshed);
                 } catch {}
             }
 

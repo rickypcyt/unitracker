@@ -1,4 +1,3 @@
-import { AppDispatch, RootState } from "@/store/store";
 import { Check, Square } from "lucide-react";
 import { FormActions, FormInput, FormTextarea } from "@/modals/FormElements";
 import {
@@ -6,7 +5,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import AutocompleteInput from "@/modals/AutocompleteInput";
 import BaseModal from "@/modals/BaseModal";
@@ -15,7 +13,7 @@ import TaskForm from "@/pages/tasks/TaskForm";
 import TaskSelectionPanel from "@/pages/tasks/TaskSelectionPanel";
 import UnfinishedSessionsModal from "./UnfinishedSessionsModal";
 import { supabase } from "@/utils/supabaseClient";
-import { updateLap } from "@/store/LapActions";
+import { useAppStore } from "@/store/appStore";
 
 interface StartSessionModalProps {
   isOpen: boolean;
@@ -36,12 +34,8 @@ const StartSessionModal = ({
   onClose,
   onStart,
 }: StartSessionModalProps) => {
-  const syncPomodoroWithTimer = useSelector(
-    (state: RootState) => state.ui.syncPomodoroWithTimer
-  );
-  const syncCountdownWithTimer = useSelector(
-    (state: RootState) => state.ui.syncCountdownWithTimer
-  );
+  const syncPomodoroWithTimer = useAppStore((state) => state.ui.syncPomodoroWithTimer);
+  const syncCountdownWithTimer = useAppStore((state) => state.ui.syncCountdownWithTimer);
   const [sessionTitle, setSessionTitle] = useState("");
   const [sessionDescription, setSessionDescription] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -56,8 +50,7 @@ const StartSessionModal = ({
   const [showUnfinishedSessions, setShowUnfinishedSessions] = useState(false);
   const [isCheckingSessions, setIsCheckingSessions] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-
+  
   const fetchSessionTasks = useCallback(async () => {
     try {
       const {
@@ -232,7 +225,11 @@ const StartSessionModal = ({
           );
           payload.duration = toHMS(seconds);
         }
-        return dispatch(updateLap(session.id, payload));
+        return supabase
+          .from("study_laps")
+          .update(payload)
+          .eq("id", session.id)
+          .eq("user_id", user.id);
       });
 
       await Promise.all(updates);
@@ -240,7 +237,7 @@ const StartSessionModal = ({
     } catch (error) {
       console.error("Error finishing all sessions:", error);
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {

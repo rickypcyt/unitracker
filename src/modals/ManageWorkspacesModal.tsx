@@ -5,7 +5,7 @@ import BaseModal from './BaseModal';
 import DeleteCompletedModal from './DeleteTasksPop';
 import { supabase } from '@/utils/supabaseClient';
 import { useModalClose } from '@/hooks/useModalClose';
-import { useSelector } from 'react-redux';
+import { useTasks } from '@/store/appStore';
 
 type Workspace = {
   id: string | number;
@@ -57,7 +57,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedIconSelector, setExpandedIconSelector] = useState<Workspace['id'] | null>(null);
-  const tasks = useSelector((state: any) => (state?.tasks?.tasks ?? [])) as Task[];
+  const { tasks } = useTasks();
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null);
 
@@ -75,7 +75,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
 
   const handleSave = async (workspace: Workspace) => {
     if (!editName.trim()) {
-      setError('Area name is required');
+      setError('Workspace name is required');
       return;
     }
 
@@ -212,7 +212,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, workspace)}
                       className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
-                      placeholder="Area name"
+                      placeholder="Workspace name"
                       autoFocus
                     />
                   ) : (
@@ -304,7 +304,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
           }}
           onConfirm={confirmDeleteWorkspace}
           message={`Are you sure you want to delete the workspace "${workspaceToDelete.name}"? This action cannot be undone.`}
-          confirmButtonText="Delete Area"
+          confirmButtonText="Delete Workspace"
         />
       )}
     </BaseModal>

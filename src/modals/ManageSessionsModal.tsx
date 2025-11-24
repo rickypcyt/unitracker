@@ -1,11 +1,10 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { deleteLap, forceLapRefresh } from '@/store/LapActions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useLapActions, useLaps } from '@/store/appStore';
 
 import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
-import { Lap } from '@/store/slices/LapSlice';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
@@ -13,28 +12,22 @@ import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 
-type AppDispatch = any; // Replace with your actual AppDispatch type
+// Lap interface defined locally until we create a types file
+interface Lap {
+  id: string;
+  created_at: string;
+  duration: string;
+  session_number: number;
+  name: string;
+  tasks_completed: number;
+  type: string;
+  subject_id: string;
+  subject_name: string;
+  subject_color: string;
+};
 
 interface GroupedLabs {
   [key: string]: Lap[];
-}
-
-interface MonthData {
-  month: string;
-  monthYear: string;
-  lapsOfMonth: Lap[];
-  timestamp: number;
-}
-
-interface RootState {
-  laps: {
-    laps: Lap[];
-    status: 'idle' | 'loading' | 'succeeded' | 'failed';
-    currentSession: any;
-    error: string | null;
-    lastFetch: number | null;
-    isCached: boolean;
-  };
 }
 
 interface MonthData {
@@ -56,17 +49,17 @@ interface ManageSessionsModalProps {
 }
 
 const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClose }) => {
-  const { laps, status } = useSelector((state: RootState) => state.laps);
-  const dispatch = useDispatch<AppDispatch>();
+  const { laps, loading: status, error } = useLaps();
+  const { setLapsLoading, setLapsError, setLaps } = useLapActions();
   const { isLoggedIn } = useAuth();
   const { isDemo } = useDemoMode();
 
   // Fetch sessions when the modal opens
   useEffect(() => {
     if (isOpen && isLoggedIn) {
-      dispatch(forceLapRefresh());
+      forceLapRefresh();
     }
-  }, [isOpen, isLoggedIn, dispatch]);
+  }, [isOpen, isLoggedIn]);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<Lap | null>(null);
@@ -116,12 +109,12 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
       console.log('[DEBUG] Confirmando eliminación de sesión, ID:', sessionToDelete);
       try {
         console.log('[DEBUG] Llamando a deleteLap...');
-        const result = await dispatch(deleteLap(sessionToDelete));
+        const result = await deleteLap(sessionToDelete);
         console.log('[DEBUG] Resultado de deleteLap:', result);
         
         // Force a refresh of the laps data
         console.log('[DEBUG] Actualizando lista de sesiones...');
-        const refreshResult = await dispatch(forceLapRefresh());
+        const refreshResult = await forceLapRefresh();
         console.log('[DEBUG] Resultado de forceLapRefresh:', refreshResult);
         
         toast.success('Session deleted successfully');
@@ -133,7 +126,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
         setSessionToDelete(null);
       }
     }
-  }, [dispatch, sessionToDelete]);
+  }, [sessionToDelete]);
 
   const handleCloseDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(false);
@@ -281,7 +274,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
   }
 
   // If not in demo mode and no sessions, show empty state
-  if (!isDemo && status === 'succeeded' && laps.length === 0) {
+  if (!isDemo && !status && laps.length === 0) {
     return (
       <BaseModal 
         isOpen={isOpen} 

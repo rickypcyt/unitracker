@@ -2,13 +2,12 @@ import { CheckCircle2, Clock, MoreVertical } from "lucide-react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { isAfter, isSameDay, parseISO } from 'date-fns';
-import { useDispatch, useSelector } from "react-redux";
 
 import BaseModal from "@/modals/BaseModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import TaskForm from "@/pages/tasks/TaskForm";
-import { fetchLaps } from "@/store/LapActions";
 import { formatDate } from "@/utils/dateUtils";
+import { useAppStore } from "@/store/appStore";
 import { useAuth } from "@/hooks/useAuth";
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { useTaskManager } from "@/hooks/useTaskManager";
@@ -64,7 +63,6 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
 };
 
 const Calendar = () => {
-  const dispatch = useDispatch();
   const { isLoggedIn } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -79,15 +77,12 @@ const Calendar = () => {
   const { selectedTask, editedTask, handleCloseTaskDetails } = useTaskDetails();
   const { handleUpdateTask } = useTaskManager();
 
-  const { tasks } = useSelector((state) => state.tasks);
-  const { laps } = useSelector((state) => state.laps);
+  const { tasks } = useAppStore((state) => state.tasks);
+  const laps = useAppStore((state) => state.laps.laps);
 
   // ---------------------
-  // Fetch laps
+  // Data is managed by Zustand store
   // ---------------------
-  useEffect(() => {
-    dispatch(fetchLaps());
-  }, [dispatch]);
 
   // ---------------------
   // Keyboard navigation

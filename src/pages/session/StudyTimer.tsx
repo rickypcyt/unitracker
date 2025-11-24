@@ -9,15 +9,8 @@ import {
 // moved to hooks/study-timer/useStudySync
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
-import { resetTimerState, setCurrentSession } from "@/store/slices/LapSlice";
-import {
-  setStudyRunning,
-  setStudyTimerState,
-  setSyncCountdownWithTimer,
-  setSyncPomodoroWithTimer,
-} from "@/store/slices/uiSlice";
+import { useAppStore } from "@/store/appStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
 import EditSessionModal from "@/modals/EditSessionModal";
@@ -119,12 +112,9 @@ const useModalStates = () => {
 };
 
 const useSyncStates = () => {
-  const syncPomodoroWithTimer = useSelector(
-    (state: any) => state.ui.syncPomodoroWithTimer
-  );
-  const syncCountdownWithTimer = useSelector(
-    (state: any) => state.ui.syncCountdownWithTimer
-  );
+  const { syncSettings } = useAppStore();
+  const syncPomodoroWithTimer = syncSettings.syncPomodoroWithTimer;
+  const syncCountdownWithTimer = syncSettings.syncCountdownWithTimer;
 
   return {
     isPomodoroSync: syncPomodoroWithTimer,
@@ -139,8 +129,19 @@ interface StudyTimerProps {
 
 const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const { isLoggedIn } = useAuth();
-  const dispatch = useDispatch();
-  const isStudyRunningRedux = useSelector((state: any) => state.ui.isStudyRunning);
+  const {
+    resetTimerState,
+    setCurrentSession,
+    setStudyRunning,
+    setStudyTimerState,
+    setSyncCountdownWithTimer,
+    setSyncPomodoroWithTimer,
+    syncSettings
+  } = useAppStore();
+  
+  const syncPomodoroWithTimer = syncSettings.syncPomodoroWithTimer;
+  const syncCountdownWithTimer = syncSettings.syncCountdownWithTimer;
+  const isStudyRunningRedux = syncSettings.isStudyRunning;
 
   const [studyState, updateStudyState] = useStudyTimerState();
   const [currentSessionId, updateSessionId] = useSessionId();
@@ -286,8 +287,8 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           sessionStatus: "active",
         });
 
-        dispatch(setStudyRunning(true));
-        dispatch(setStudyTimerState("running"));
+        setStudyRunning(true);
+        setStudyTimerState("running");
         saveToLocalStorage(STORAGE_KEYS.STUDY_TIMER_STARTED_AT, now.toString());
 
         window.dispatchEvent(
@@ -308,8 +309,8 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       pause: (fromSync = false) => {
         if (!isStudyRunningRedux) return;
 
-        dispatch(setStudyRunning(false));
-        dispatch(setStudyTimerState("paused"));
+        setStudyRunning(false);
+        setStudyTimerState("paused");
 
         updateStudyState({
           isRunning: false,
@@ -358,9 +359,9 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           sessionStatus: "inactive",
         });
 
-        dispatch(setStudyRunning(false));
-        dispatch(setStudyTimerState("stopped"));
-        dispatch(resetTimerState());
+        setStudyRunning(false);
+        setStudyTimerState("stopped");
+        resetTimerState();
 
         // Limpiar localStorage
         [
@@ -414,7 +415,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       currentSessionId,
       studyState,
       updateStudyState,
-      dispatch,
       isPomodoroSync,
       isCountdownSync,
       updateModal,
@@ -623,7 +623,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       // Reset session state
       studyControls.reset();
       updateSessionId(null);
-      dispatch(setCurrentSession(null));
+      setCurrentSession(null);
       // Remove optional properties instead of setting to undefined
       const { sessionTitle, sessionDescription, ...resetState } = studyState;
       updateStudyState(resetState);
@@ -658,7 +658,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     updateModal,
     studyControls,
     updateSessionId,
-    dispatch,
     updateStudyState,
     isPomodoroSync,
     isCountdownSync,
@@ -674,12 +673,12 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     // Do not delete; just stop tracking current session locally
     studyControls.reset();
     updateSessionId(null);
-    dispatch(setCurrentSession(null));
+    setCurrentSession(null);
     // Remove optional properties instead of setting to undefined
     const { sessionTitle, sessionDescription, ...resetState } = studyState;
     updateStudyState(resetState);
     setExitChoiceOpen(false);
-  }, [studyControls, updateSessionId, dispatch, updateStudyState, studyState]);
+  }, [studyControls, updateSessionId, updateStudyState, studyState]);
 
   const handleExitAndDelete = useCallback(() => {
     setExitChoiceOpen(false);
@@ -761,10 +760,10 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         updateStudyState(stateUpdates);
 
         if (typeof syncPomo === "boolean") {
-          dispatch(setSyncPomodoroWithTimer(!!syncPomo));
+          setSyncPomodoroWithTimer(!!syncPomo);
         }
         if (typeof syncCountdown === "boolean") {
-          dispatch(setSyncCountdownWithTimer(!!syncCountdown));
+          setSyncCountdownWithTimer(!!syncCountdown);
         }
 
         updateModal("isStartModalOpen", false);
@@ -780,7 +779,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       updateStudyState,
       studyState.sessionTitle,
       studyState.sessionDescription,
-      dispatch,
       updateModal,
       studyControls,
     ]
@@ -804,7 +802,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
       studyControls.reset();
       updateSessionId(null);
-      dispatch(setCurrentSession(null));
+      setCurrentSession(null);
       updateModal("isDeleteModalOpen", false);
       // Remove optional properties instead of setting to undefined
       const { sessionTitle, sessionDescription, ...resetState } = studyState;
@@ -829,7 +827,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     currentSessionId,
     studyControls,
     updateSessionId,
-    dispatch,
     updateModal,
     updateStudyState,
     isPomodoroSync,

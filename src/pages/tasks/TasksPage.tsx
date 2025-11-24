@@ -1,32 +1,33 @@
 import { memo, useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
 
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import { Plus } from 'lucide-react';
 import TaskForm from '@/pages/tasks/TaskForm';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
-import { fetchTasks } from '@/store/TaskActions';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const TasksPage = memo(() => {
   const { activePage } = useNavigation();
   const isVisible = activePage === 'tasks';
-  const dispatch = useDispatch();
   const [showTaskForm, setShowTaskForm] = useState(false);
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
-  const workspaces = useSelector(state => state.workspace.workspaces);
-  // const tasks = useSelector(state => state.tasks.tasks || []);
-  const loading = useSelector(state => state.tasks.loading);
+  
+  // Use Zustand selectors
+  const { workspaces } = useWorkspace();
+  const { currentWorkspace: activeWorkspace } = useWorkspace();
+  const { loading } = useTasks();
+  const fetchTasks = useFetchTasks();
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
-      dispatch(fetchTasks()); // Fetch tasks when the page is visible
+      fetchTasks(activeWorkspace?.id); // Fetch tasks for current workspace
     }
-  }, [isVisible, dispatch]);
+  }, [isVisible, activeWorkspace?.id, fetchTasks]);
 
   useEffect(() => {
     // Initial fetch when the page becomes visible
@@ -35,7 +36,7 @@ const TasksPage = memo(() => {
     // Listen for the custom refresh event
     const handleRefreshEvent = () => {
       console.warn('refreshTaskList event received'); // Log for debugging
-      dispatch(fetchTasks());
+      fetchTasks(activeWorkspace?.id);
     };
 
     window.addEventListener('refreshTaskList', handleRefreshEvent);
@@ -43,7 +44,7 @@ const TasksPage = memo(() => {
     return () => {
       window.removeEventListener('refreshTaskList', handleRefreshEvent);
     };
-  }, [handleRefresh, dispatch]);
+  }, [handleRefresh, activeWorkspace?.id]); // Add activeWorkspace?.id to dependencies
 
   const handleAddTask = () => {
     if (!isLoggedIn) {
@@ -97,7 +98,7 @@ const TasksPage = memo(() => {
         <TaskForm
           onClose={handleCloseTaskForm}
           onTaskCreated={() => {
-            dispatch(fetchTasks());
+            fetchTasks(activeWorkspace?.id);
             handleCloseTaskForm();
           }}
         />

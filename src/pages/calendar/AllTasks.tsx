@@ -1,13 +1,11 @@
-import type { AppDispatch, RootState } from "@/store";
 import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
 import { Task } from "@/types/taskStorage";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { TaskItem } from "@/pages/tasks/TaskItem";
 import { TaskListMenu } from "@/modals/TaskListMenu";
-import { fetchTasks } from "@/store/TaskActions";
+import { useAppStore } from "@/store/appStore";
 import useDemoMode from "@/utils/useDemoMode";
 import { useTaskManager } from "@/hooks/useTaskManager";
 
@@ -33,7 +31,7 @@ interface ContextMenuState {
 
 const AllTasks = () => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager();
-  const realTasks = useSelector((state: RootState) => state.tasks.tasks);
+  const realTasks = useAppStore((state) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -44,19 +42,11 @@ const AllTasks = () => {
     past: false, // Past tasks collapsed by default
     noDeadline: true,
   });
-  const dispatch = useDispatch<AppDispatch>();
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
   useEffect(() => {
-    const handleRefresh = () => {
-      dispatch(fetchTasks());
-    };
-
-    window.addEventListener("refreshTaskList", handleRefresh);
-    return () => {
-      window.removeEventListener("refreshTaskList", handleRefresh);
-    };
-  }, [dispatch]);
+    // Tasks are managed by Zustand store
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -257,7 +247,6 @@ const AllTasks = () => {
           initialTask={editingTask}
           onClose={handleCloseTaskForm}
           onTaskCreated={handleCloseTaskForm}
-          onTaskUpdated={handleCloseTaskForm}
         />
       )}
 

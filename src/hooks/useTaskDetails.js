@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 
-import { setCalendarVisibility } from "@/store/slices/uiSlice";
-import { useDispatch } from "react-redux";
+import { useUiActions } from '@/store/appStore';
 
 export const useTaskDetails = () => {
-  const dispatch = useDispatch();
   const [selectedTask, setSelectedTask] = useState(null);
   const [editedTask, setEditedTask] = useState(null);
   const [taskDetailsEdit, setTaskEditing] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const { setCalendarVisibility } = useUiActions();
 
   // Abre el modal de detalles y edita la tarea seleccionada
   const handleOpenTaskDetails = (task) => {
@@ -16,7 +15,7 @@ export const useTaskDetails = () => {
     setEditedTask(task);
     setTaskEditing(true);
     setSelectedTaskId(task.id);
-    dispatch(setCalendarVisibility(false)); // Oculta el calendario si está abierto
+    setCalendarVisibility(false); // Oculta el calendario si está abierto
   };
 
   // Cierra el modal de detalles
@@ -25,7 +24,7 @@ export const useTaskDetails = () => {
     setEditedTask(null);
     setTaskEditing(false);
     setSelectedTaskId(null);
-    dispatch(setCalendarVisibility(true)); // Muestra el calendario si estaba oculto
+    setCalendarVisibility(true); // Muestra el calendario si estaba oculto
   };
 
   // Actualiza los campos de la tarea editada

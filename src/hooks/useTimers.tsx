@@ -1,17 +1,17 @@
-import { setPomoRunning, setStudyRunning } from "@/store/slices/uiSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 
-import type { RootState } from "@/store/store";
+import { useAppStore } from "@/store/appStore";
 
 // Hook corregido para StudyTimer
 export function useStudyTimer(callback: (elapsed: number) => void, timeAtStart: number = 0, lastStart: number | null = null) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const savedCallback = useRef<((elapsed: number) => void) | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const dispatch = useDispatch();
-  const isRunning = useSelector((state: RootState) => state.ui.isStudyRunning);
-  const syncTimers = useSelector((state: RootState) => state.ui.syncTimers);
+  const { setPomoRunning } = useAppStore();
+  
+  // Get the correct properties from Zustand state
+  const isRunning = useAppStore((state) => state.ui.isStudyRunning);
+  const syncTimers = useAppStore((state) => state.ui.syncTimers);
 
   // Guardar el callback actual
   useEffect(() => {
@@ -26,7 +26,7 @@ export function useStudyTimer(callback: (elapsed: number) => void, timeAtStart: 
 
     if (!isRunning) {
       if (syncTimers) {
-        dispatch(setPomoRunning(false)); // Pause Pomo Timer if sync is on and Study Timer is paused
+        setPomoRunning(false); // Pause Pomo Timer if sync is on and Study Timer is paused
       }
       return;
     }
@@ -51,7 +51,7 @@ export function useStudyTimer(callback: (elapsed: number) => void, timeAtStart: 
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeAtStart, lastStart, syncTimers, dispatch]);
+  }, [isRunning, timeAtStart, lastStart, syncTimers, setPomoRunning]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -67,9 +67,9 @@ export function usePomoTimer(callback: (remaining: number) => void, duration: nu
   const rafRef = useRef<number | null>(null);
   const savedCallback = useRef<((remaining: number) => void) | null>(null);
   const endTime = useRef<number>(0);
-  const dispatch = useDispatch();
-  const isRunning = useSelector((state: RootState) => state.ui.isPomoRunning);
-  const syncTimers = useSelector((state: RootState) => state.ui.syncTimers);
+  const { setStudyRunning } = useAppStore();
+  const isRunning = useAppStore((state) => state.ui.isPomoRunning);
+  const syncTimers = useAppStore((state) => state.ui.syncTimers);
 
   useEffect(() => {
     savedCallback.current = callback;
@@ -80,7 +80,7 @@ export function usePomoTimer(callback: (remaining: number) => void, duration: nu
     if (!isRunning) {
       cancelAnimationFrame(rafRef.current!);
       if (syncTimers) {
-        dispatch(setStudyRunning(false)); // Pause Study Timer if sync is on and Pomo Timer is paused
+        setStudyRunning(false); // Pause Study Timer if sync is on and Pomo Timer is paused
       }
       return;
     }
@@ -95,7 +95,7 @@ export function usePomoTimer(callback: (remaining: number) => void, duration: nu
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current!);
-  }, [isRunning, duration, initialRemaining, syncTimers, dispatch]);
+  }, [isRunning, duration, initialRemaining, syncTimers, setStudyRunning]);
 }
 
 // Format time in seconds to "Xh Ym" format

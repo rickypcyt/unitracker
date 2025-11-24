@@ -1,11 +1,12 @@
 import * as Tone from "tone";
+
 import {
+  ReactNode,
   createContext,
   useContext,
   useEffect,
   useRef,
   useState,
-  ReactNode,
 } from "react";
 
 // -------------------------
@@ -229,21 +230,27 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
   // Inicializar audio
   // -------------------------
   const initializeAudio = async (): Promise<boolean> => {
-    if (isInitialized || Tone.context.state === 'running') return true;
+    if (isInitialized) return true;
     
     try {
-      // Intentar iniciar el contexto de audio
-      await Tone.start();
+      // Check if Tone.js context exists and create if needed
+      if (!Tone.context) {
+        await Tone.start();
+      }
       
-      // Verificar si el contexto de audio está realmente funcionando
-      if (Tone.context.state === 'suspended' || Tone.context.state === 'interrupted') {
-        await Tone.context.resume();
-        // Esperar un momento para que el contexto se actualice
-        await new Promise(resolve => setTimeout(resolve, 100));
-        // Type assertion to handle Web Audio API state that TypeScript doesn't know about
-        if ((Tone.context.state as string) !== 'running') {
-          throw new Error('Audio context could not be started');
-        }
+      // Handle different browser audio context states
+      const context = Tone.context;
+      if (context.state === 'suspended' || context.state === 'interrupted') {
+        // Try to resume the context
+        await context.resume();
+        // Wait for the context to actually start
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      // Final check - if still not running, we'll need user interaction
+      if (context.state !== 'running') {
+        console.warn('Audio context requires user interaction to start');
+        return false;
       }
       
       // Crear el nodo de ganancia maestro
@@ -255,8 +262,7 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
       setIsInitialized(true);
       return true;
     } catch (error) {
-      console.error("Error initializing Tone.js:", error);
-      // Mostrar un mensaje al usuario si es necesario
+      console.warn("Audio initialization requires user interaction:", error);
       return false;
     }
   };

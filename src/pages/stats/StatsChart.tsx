@@ -1,8 +1,9 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, LabelList } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 
-function formatMinutesToHMText(minutes) {
+import { useTasks } from '@/store/appStore';
+
+function formatMinutesToHMText(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return `${h}h ${m}m`;
@@ -14,15 +15,23 @@ function formatMinutesToHoursLabel(minutes: number) {
   return `${h}h`;
 }
 
-const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
+function getISOWeekNumber(date: Date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
+}
+
+const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   if (!active || !payload || !payload.length) return null;
   const entry = payload[0].payload;
-  let date = undefined;
-  let year, month;
-  let monthIdx;
+  let date: string | undefined = undefined;
+  let year: string, month: string;
+  let monthIdx: number;
   if (title === "This Month") {
     // Buscar el objeto cuyo dayName sea igual al del entry
-    const dayData = data.find(d => d.dayName === entry.dayName);
+    const dayData = data.find((d: any) => d.dayName === entry.dayName);
     date = dayData?.date;
     if (dayData && dayData.realDay) {
       entry.realDay = dayData.realDay;
@@ -37,33 +46,33 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
     // Para 'This Year', filtrar tasks por mes y año
     const yearStr = entry.date.split('-')[0];
     const monthStr = entry.date.split('-')[1];
-    year = parseInt(yearStr, 10);
+    year = yearStr;
     monthIdx = parseInt(monthStr, 10) - 1;
     // date = primer día del mes para formato
     date = entry.date;
   } else {
     // Para otros gráficos, mantener la lógica anterior
-    const dayData = data.find(d => d.dayName === entry.dayName || d.dayName === label);
+    const dayData = data.find((d: any) => d.dayName === entry.dayName || d.dayName === label);
     date = dayData?.date;
   }
   // Filtrar tareas por fecha o mes según el gráfico
-  let dayTasks = [];
-  if (title === "This Year" && typeof monthIdx === 'number' && typeof year === 'number') {
-    dayTasks = tasks.filter(t => {
+  let dayTasks: any[] = [];
+  if (title === "This Year" && typeof monthIdx === 'number' && year) {
+    dayTasks = tasks.filter((t: any) => {
       if (!t.completed_at) return false;
       const completedDate = new Date(t.completed_at);
-      return completedDate.getFullYear() === year && completedDate.getMonth() === monthIdx;
+      return completedDate.getFullYear() === parseInt(year, 10) && completedDate.getMonth() === monthIdx;
     });
   } else {
-    dayTasks = tasks.filter(t => {
+    dayTasks = tasks.filter((t: any) => {
       if (!t.completed_at) return false;
       const completedDate = new Date(t.completed_at).toISOString().split('T')[0];
       return completedDate === date;
     });
   }
-  const tags = Array.from(new Set(dayTasks.flatMap(t => t.tags || [])));
+  const tags = Array.from(new Set(dayTasks.flatMap((t: any) => t.tags || [])));
   // Formato de fecha para mostrar
-  let dayLabel;
+  let dayLabel: string;
   if (title === "This Month" && entry.realDay && year !== undefined && month !== undefined) {
     // Construir la fecha manualmente para evitar desfases de zona horaria
     const correctDate = new Date(year, month, parseInt(entry.realDay, 10));
@@ -78,7 +87,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
     const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric' });
   } else {
-    dayLabel = label;
+    dayLabel = label || '';
   }
   return (
     <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px] text-center">
@@ -86,15 +95,15 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }) => {
       <div className="text-[var(--text-primary)] text-center">Time: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
       <div className="text-[var(--text-primary)] text-center">Tasks: <b>{dayTasks.length}</b></div>
       {tags.length > 0 && (
-        <div className="text-[var(--text-primary)] text-center">Tags: <span className="italic">{tags.map(tag => `"${tag}"`).join(', ')}</span></div>
+        <div className="text-[var(--text-primary)] text-center">Tags: <span className="italic">{tags.map((tag: any) => `"${tag}"`).join(', ')}</span></div>
       )}
     </div>
   );
 };
 
-const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }) => {
-  const chartRef = useRef(null);
-  const tasks = useSelector((state) => state.tasks.tasks || []);
+const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }: any) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const { tasks } = useTasks();
   const [isSmall, setIsSmall] = useState(false);
 
   useEffect(() => {
@@ -120,21 +129,21 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   // Detectar el índice del día actual
   const today = new Date();
   let todayIndex = -1;
-  const minutesArray = Array.isArray(data) ? data.map(d => (typeof d?.minutes === 'number' ? d.minutes : 0)) : [];
+  const minutesArray = Array.isArray(data) ? data.map((d: any) => (typeof d?.minutes === 'number' ? d.minutes : 0)) : [];
   const dataMaxMinutes = minutesArray.length ? Math.max(...minutesArray) : 0;
   const smallYAxisMax = dataMaxMinutes <= 60 ? 60 : 120;
   if (title === 'This Month') {
-    todayIndex = data.findIndex(d => {
+    todayIndex = data.findIndex((d: any) => {
       const dDate = new Date(d.date);
       return dDate.getDate() === today.getDate() && dDate.getMonth() === today.getMonth() && dDate.getFullYear() === today.getFullYear();
     });
   } else if (title === 'This Week' || title === 'Last Week') {
-    todayIndex = data.findIndex(d => {
+    todayIndex = data.findIndex((d: any) => {
       const dDate = new Date(d.date);
       return dDate.toDateString() === today.toDateString();
     });
   } else if (title === 'This Year') {
-    todayIndex = data.findIndex(d => {
+    todayIndex = data.findIndex((d: any) => {
       const dDate = new Date(d.date);
       return dDate.getMonth() === today.getMonth() && dDate.getFullYear() === today.getFullYear();
     });
@@ -270,9 +279,8 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 radius={[6, 6, 0, 0]}
                 barSize={title === 'This Month' ? (isSmall ? 8 : 10) : title === 'This Year' ? 18 : 18}
                 animationDuration={0}
-                ref={chartRef}
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((entry: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
                 ))}
               </Bar>

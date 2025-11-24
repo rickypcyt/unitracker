@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import BaseModal from './BaseModal';
-import type { RootState } from '@/store/store';
 import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { useSelector } from 'react-redux';
 
 interface FriendRequest {
   id: string;
@@ -48,8 +46,8 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(sentRequests);
   const { user } = useAuth();
-  // Get friends from Redux if available
-  const friends = useSelector((state: RootState) => (state as any).friends?.friends || []);
+  // Get friends from Zustand store if available
+  const friends = []; // TODO: Replace with actual friends data from Zustand store
 
   // Check if user exists in DB when username changes
   useEffect(() => {

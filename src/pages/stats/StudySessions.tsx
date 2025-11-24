@@ -8,7 +8,6 @@ import {
     Trash2,
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
 import SessionDetailsModal from "@/modals/SessionDetailsModal";
@@ -18,18 +17,12 @@ import { getMonthYear } from "@/hooks/useTimers";
 import { toast } from "react-toastify";
 import { useAuth } from "@/hooks/useAuth";
 import useDemoMode from "@/utils/useDemoMode";
-
-type AppDispatch = any; // Replace with your actual AppDispatch type
+import { useLaps } from "@/store/appStore";
 
 interface GroupedLabs {
     [key: string]: Lap[];
 }
 
-interface RootState {
-    laps: {
-        laps: Lap[];
-    };
-}
 
 interface Lap {
     id: string;
@@ -57,8 +50,7 @@ interface ContextMenu {
 }
 
 const StudySessions: React.FC = () => {
-    const { laps } = useSelector((state: RootState) => state.laps);
-    const dispatch = useDispatch<AppDispatch>();
+    const { laps } = useLaps();
     const { isLoggedIn } = useAuth();
     const { isDemo } = useDemoMode();
 
@@ -87,7 +79,7 @@ const StudySessions: React.FC = () => {
     const handleConfirmDelete = useCallback(async () => {
         if (sessionToDelete) {
             try {
-                await dispatch(deleteLap(sessionToDelete));
+                await deleteLap(sessionToDelete);
                 toast.success("Session deleted successfully");
             } catch (error) {
                 toast.error("Failed to delete session");
@@ -97,7 +89,7 @@ const StudySessions: React.FC = () => {
                 setSessionToDelete(null);
             }
         }
-    }, [dispatch, sessionToDelete]);
+    }, [sessionToDelete]);
 
     const handleCloseDeleteModal = useCallback(() => {
         setIsDeleteModalOpen(false);
@@ -370,7 +362,7 @@ const StudySessions: React.FC = () => {
                                 if (!monthsByYear[year]) {
                                     monthsByYear[year] = [];
                                 }
-                                monthsByYear[year].push({ month, monthYear, lapsOfMonth });
+                                monthsByYear[year].push({ month: month || '', monthYear: monthYear || '', lapsOfMonth });
                             });
 
                         const monthOrder = [

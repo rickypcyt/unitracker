@@ -62,7 +62,7 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
     if (onShare) {
       onShare(selectedWorkspace, selectedFriend, currentUserId, {
         onSuccess: () => {
-          setSuccess('Area shared!');
+          setSuccess('Workspace shared!');
           setSelectedWorkspace('');
           setSelectedFriend('');
         },
@@ -72,10 +72,10 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Share Area" maxWidth="max-w-md">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Share Workspace" maxWidth="max-w-md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">Area</label>
+          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">Workspace</label>
           <Select.Root value={selectedWorkspace} onValueChange={setSelectedWorkspace}>
             <Select.Trigger className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] flex items-center justify-between">
               <Select.Value placeholder="Select workspace" />

@@ -1,27 +1,19 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { FC, useEffect, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
-import { clearUser, setUser } from "@/store/slices/authSlice";
-import { useEffect, useRef, useState, FC, MutableRefObject } from "react";
-import { useDispatch } from "react-redux";
-
-import type { AppDispatch } from "@/store/store";
-import { User } from "@supabase/supabase-js";
 
 import CalendarPage from "@/pages/calendar/CalendarPage";
 import Navbar from "@/navbar/Navbar";
+import { NoiseProvider } from "@/utils/NoiseContext";
 import Notes from "@/pages/notes/Notes";
 import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
-import UserModal from "@/modals/UserModal";
 import { Toaster } from "react-hot-toast";
 import TourManager from "./components/TourManager";
-
+import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
-import { fetchWorkspaces } from "@/store/slices/workspaceSlice";
-import { hydrateTasksFromLocalStorage } from "@/store/slices/TaskSlice";
-import { hydrateLapsFromLocalStorage } from "@/store/slices/LapSlice";
-import { NoiseProvider } from "@/utils/NoiseContext";
+import { useAuthActions } from "@/store/appStore";
 import useTheme from "@/hooks/useTheme";
 
 // -------------------------
@@ -56,25 +48,25 @@ const PageContent: FC = () => {
 // Supabase auth sync
 // -------------------------
 function useSupabaseAuthSync(): void {
-  const dispatch: AppDispatch = useDispatch();
+  const { setUser, clearUser } = useAuthActions();
 
   useEffect(() => {
     // Inicializa usuario si hay sesión
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) dispatch(setUser(user));
-      else dispatch(clearUser());
+      if (user) setUser(user);
+      else clearUser();
     });
 
     // Escucha cambios de sesión
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        if (session?.user) dispatch(setUser(session.user));
-        else dispatch(clearUser());
+        if (session?.user) setUser(session.user);
+        else clearUser();
       }
     );
 
     return () => listener?.subscription.unsubscribe();
-  }, [dispatch]);
+  }, [setUser, clearUser]);
 }
 
 // -------------------------
@@ -82,7 +74,7 @@ function useSupabaseAuthSync(): void {
 // -------------------------
 const UserModalGate: FC = () => {
   const { user, isLoggedIn } = useAuth() as {
-    user: User | null;
+    user: any;
     isLoggedIn: boolean;
   };
   const [showUserModal, setShowUserModal] = useState(false);
@@ -115,8 +107,7 @@ const UserModalGate: FC = () => {
 // Main App component
 // -------------------------
 const App: FC = () => {
-  const { currentTheme, toggleTheme } = useTheme();
-  const dispatch: AppDispatch = useDispatch();
+  const { toggleTheme } = useTheme();
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -175,15 +166,6 @@ const App: FC = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleTheme]);
-
-  // -------------------------
-  // Hydrate data from localStorage
-  // -------------------------
-  useEffect(() => {
-    dispatch(hydrateTasksFromLocalStorage());
-    dispatch(hydrateLapsFromLocalStorage());
-    dispatch(fetchWorkspaces());
-  }, [dispatch]);
 
   // -------------------------
   // Swipe navigation
@@ -248,11 +230,11 @@ const swipeNavigate = (diff: number): void => {
 
   if (diff < 0 && currentIdx < navPages.length - 1) {
     const nextPage = navPages[currentIdx + 1];
-    window.localStorage.setItem("lastVisitedPage", nextPage);
+    window.localStorage.setItem("lastVisitedPage", nextPage || "");
     window.dispatchEvent(new Event("navigationchange"));
   } else if (diff > 0 && currentIdx > 0) {
     const prevPage = navPages[currentIdx - 1];
-    window.localStorage.setItem("lastVisitedPage", prevPage);
+    window.localStorage.setItem("lastVisitedPage", prevPage || "");
     window.dispatchEvent(new Event("navigationchange"));
   }
 };

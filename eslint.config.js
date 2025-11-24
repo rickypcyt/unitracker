@@ -1,4 +1,5 @@
 import { FlatCompat } from '@eslint/eslintrc'
+import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss'
 import security from 'eslint-plugin-security'
 
 const compat = new FlatCompat({
@@ -10,6 +11,18 @@ export default [
   ...compat.config({
     extends: ['next', 'next/core-web-vitals', 'next/typescript'],
   }),
+  // Soporte para Tailwind CSS
+  {
+    files: ['**/*.css'],
+    plugins: {
+      '@tailwindcss': eslintPluginTailwindcss,
+    },
+    rules: {
+      ...eslintPluginTailwindcss.configs.recommended.rules,
+      '@tailwindcss/no-custom-classname': 'warn',
+      '@tailwindcss/enforces-shorthand': 'warn',
+    },
+  },
   // Capa adicional de seguridad para TS/JS/React
   {
     files: ['**/*.{js,jsx,ts,tsx}'],

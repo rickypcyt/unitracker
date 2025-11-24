@@ -1,15 +1,14 @@
 import { CheckCircle2, Circle, Play, Save, Trash2 } from "lucide-react";
 import { FormActions, FormButton, FormInput } from "@/modals/FormElements";
 import React, { useEffect } from "react";
-import { deleteTask, updateTask } from "@/store/TaskActions";
+import { deleteTask, updateTaskAction } from "@/store/TaskActions";
+import { useDeleteTaskSuccess, useUpdateTaskSuccess } from '@/store/appStore';
 
-import type { AppDispatch } from '@/store/store';
 import BaseModal from "@/modals/BaseModal";
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { Task } from '@/pages/tasks/task';
 import moment from "moment";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
 import { useFormState } from "@/hooks/useFormState";
 
 interface TaskDetailsModalProps {
@@ -29,7 +28,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   onToggleCompletion,
   onSetActiveTask,
 }) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const updateTaskSuccess = useUpdateTaskSuccess();
+  const deleteTaskSuccess = useDeleteTaskSuccess();
 
   const validationRules = {
     title: { required: true, minLength: 3, maxLength: 100 },
@@ -85,7 +85,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       if (onSave) {
         await onSave(formData);
       } else {
-        await dispatch(updateTask(formData));
+        updateTaskSuccess(formData);
       }
       onClose();
     } catch (error) {
@@ -97,7 +97,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       try {
-        await dispatch(deleteTask(task.id));
+        await deleteTaskSuccess(task.id);
         onClose();
       } catch (error) {
         console.error("Error deleting task:", error);
@@ -111,7 +111,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       if (onToggleCompletion) {
         await onToggleCompletion(task);
       } else {
-        await dispatch(updateTask({ ...task, completed: !task.completed }));
+        updateTaskSuccess({ ...task, completed: !task.completed });
       }
       onClose();
     } catch (error) {
@@ -125,7 +125,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       if (onSetActiveTask) {
         await onSetActiveTask({ ...task, activetask: !task.activetask });
       } else {
-        await dispatch(updateTask({ ...task, activetask: !task.activetask }));
+        updateTaskSuccess({ ...task, activetask: !task.activetask });
       }
       onClose();
     } catch (error) {

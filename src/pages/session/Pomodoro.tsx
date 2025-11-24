@@ -2,12 +2,10 @@ import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, Rota
 import { POMODORO_CONFIG, POMODORO_SOUNDS } from '../../constants/pomodoro';
 // Pomodoro.tsx - Refactored
 import React, { useCallback, useEffect, useState } from 'react';
-import { setPomodoroState, setSyncPomodoroWithTimer } from '@/store/slices/uiSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useUi, useUiActions } from '@/store/appStore';
 
 import type { PomodoroModeType } from '../../types/pomodoro';
 import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
-import type { RootState } from '@/store/store';
 import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
@@ -254,11 +252,8 @@ const useMidnightReset = (onReset: () => void) => {
 
 const Pomodoro: React.FC = () => {
   const { user }: { user: import('@supabase/supabase-js').User | null } = useAuth();
-  const dispatch = useDispatch();
-
-  // Redux state
-  const syncPomodoroWithTimer = useSelector((s: RootState) => s.ui.syncPomodoroWithTimer);
-  const isStudyRunningRedux = useSelector((s: RootState) => s.ui.isStudyRunning);
+  const { setSyncPomodoroWithTimer } = useUiActions();
+  const { syncPomodoroWithTimer, isStudyRunning } = useUi();
 
   // Local state
   const [modes, setModes] = useState(loadModes);
@@ -274,7 +269,7 @@ const Pomodoro: React.FC = () => {
   const { total: pomodorosToday, fetchPomodoros } = usePomodorosToday(user?.id || '');
 
   const activeSessionId = localStorage.getItem('activeSessionId');
-  const isPomodoroRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
+  const isPomodoroRunning = syncPomodoroWithTimer ? isStudyRunning : pomoState.isRunning;
   const currentModeConfig = modes[pomoState.modeIndex];
 
   // ============================================================================
@@ -395,13 +390,13 @@ const Pomodoro: React.FC = () => {
       lastManualAdjustment: now,
     }));
 
-    dispatch(setPomodoroState('running'));
+    // Zustand action would go here - currently using local state
 
     if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent('playPomodoroSync', { detail: { baseTimestamp: now } }));
       window.dispatchEvent(new CustomEvent('playCountdownSync', { detail: { baseTimestamp: now } }));
     }
-  }, [currentModeConfig, pomoState.currentMode, syncPomodoroWithTimer, dispatch]);
+  }, [currentModeConfig, pomoState.currentMode, syncPomodoroWithTimer]);
 
   const handleStop = useCallback((fromSync?: boolean) => {
     setPomoState((prev) => ({
@@ -411,12 +406,12 @@ const Pomodoro: React.FC = () => {
       lastManualAdjustment: Date.now(),
     }));
 
-    dispatch(setPomodoroState('paused'));
+    // Zustand action would go here - currently using local state
 
     if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent('pauseTimerSync', { detail: { baseTimestamp: Date.now() } }));
     }
-  }, [syncPomodoroWithTimer, dispatch]);
+  }, [syncPomodoroWithTimer]);
 
   const handleReset = useCallback((fromSync?: boolean) => {
     const now = Date.now();
@@ -432,7 +427,7 @@ const Pomodoro: React.FC = () => {
       lastManualAdjustment: now,
     }));
 
-    dispatch(setPomodoroState('stopped'));
+    // Zustand action would go here - currently using local state
 
     localStorage.removeItem('pomodoroState');
     localStorage.removeItem('pomodoroIsRunning');
@@ -444,7 +439,7 @@ const Pomodoro: React.FC = () => {
         window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
       }
     }
-  }, [currentModeConfig, syncPomodoroWithTimer, dispatch]);
+  }, [currentModeConfig, syncPomodoroWithTimer]);
 
   const handleModeChange = useCallback((index: number) => {
     const safeIndex = Math.min(index, modes.length - 1);
@@ -589,7 +584,7 @@ const Pomodoro: React.FC = () => {
 
   // Timer interval
   useEffect(() => {
-    const isRunning = syncPomodoroWithTimer ? isStudyRunningRedux : pomoState.isRunning;
+    const isRunning = syncPomodoroWithTimer ? isStudyRunning : pomoState.isRunning;
     if (!isRunning || pomoState.timeLeft <= 0) return;
 
     const startTime = Date.now();
@@ -611,7 +606,7 @@ const Pomodoro: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [syncPomodoroWithTimer, isStudyRunningRedux, pomoState.isRunning, pomoState.timeLeft, alarmEnabled, handlePomodoroComplete]);
+  }, [syncPomodoroWithTimer, isStudyRunning, pomoState.isRunning, pomoState.timeLeft, alarmEnabled, handlePomodoroComplete]);
 
   // Global sync handler
   useEffect(() => {
@@ -650,7 +645,7 @@ const Pomodoro: React.FC = () => {
       <div className="section-title justify-center relative w-full px-4 py-3">
         <button
           type="button"
-          onClick={() => dispatch(setSyncPomodoroWithTimer(!syncPomodoroWithTimer))}
+          onClick={() => setSyncPomodoroWithTimer(!syncPomodoroWithTimer)}
           className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"
           aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'}
           title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}

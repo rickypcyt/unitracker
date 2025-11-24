@@ -1,19 +1,20 @@
-import { addLapSuccess, deleteLapSuccess, invalidateCache, lapError, updateLapSuccess } from "@/store/slices/LapSlice";
-
 import { fetchLaps } from "@/store/LapActions";
 import { supabase } from "@/utils/supabaseClient";
-import { useDispatch } from "react-redux";
+import { useAppStore } from "@/store/appStore";
 import { useEffect } from "react";
 
 export const useLapRealtimeSubscription = () => {
-  const dispatch = useDispatch();
+  const addLap = useAppStore((state) => state.addLap);
+  const updateLap = useAppStore((state) => state.updateLap);
+  const deleteLap = useAppStore((state) => state.deleteLap);
+  const invalidateCache = useAppStore((state) => state.invalidateCache);
 
   useEffect(() => {
     let channel = null;
     let isMounted = true;
 
     const setupSubscription = async () => {
-      dispatch(fetchLaps());
+      fetchLaps();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !isMounted) return;
       channel = supabase
@@ -27,19 +28,19 @@ export const useLapRealtimeSubscription = () => {
           }, 
           (payload) => {
             // Invalidar caché antes de procesar el cambio
-            dispatch(invalidateCache());
+            invalidateCache();
             switch (payload.eventType) {
               case 'INSERT':
-                dispatch(addLapSuccess(payload.new));
+                addLap(payload.new);
                 break;
               case 'UPDATE':
-                dispatch(updateLapSuccess(payload.new));
+                updateLap(payload.new.id, payload.new);
                 break;
               case 'DELETE':
-                dispatch(deleteLapSuccess(payload.old.id));
+                deleteLap(payload.old.id);
                 break;
               default:
-                dispatch(fetchLaps());
+                fetchLaps();
                 break;
             }
             window.dispatchEvent(new CustomEvent('refreshStats'));
@@ -56,5 +57,5 @@ export const useLapRealtimeSubscription = () => {
         supabase.removeChannel(channel);
       }
     };
-  }, [dispatch]);
+  }, [addLap, updateLap, deleteLap, invalidateCache]);
 }; 

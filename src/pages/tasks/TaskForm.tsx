@@ -5,7 +5,6 @@ import { Calendar, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { difficultyOptions, getDifficultyColor } from '@/hooks/tasks/useTaskDifficulty';
 import { formatDateForInput, getSelectedDateFromDMY, normalizeNaturalOrYMDDate, parseDateForDB } from '@/hooks/tasks/useTaskDateUtils';
-import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useRef, useState } from 'react';
 
 import AIPreviewModal from './AIPreviewModal';
@@ -13,11 +12,11 @@ import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
-import { addTask } from '@/store/TaskActions';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskAI } from '@/hooks/tasks/useTaskAI';
 import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
+import { useWorkspace } from '@/store/appStore';
 
 // moved to hooks/tasks/useTaskDateUtils
 
@@ -32,11 +31,8 @@ type TaskFormProps = {
 const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadline = null, onClose, onTaskCreated }: TaskFormProps) => {
   const { user, tasks } = useTaskManager();
   const { saveTask } = useTaskSubmit();
-
-  const activeWorkspace = useSelector((state: any) => state.workspace.activeWorkspace); // <-- Add this line
-  const dispatch = useDispatch();
-  // Allow dispatching thunks without TS friction in this component scope
-  const anyDispatch = dispatch as any;
+  const workspace = useWorkspace();
+  const activeWorkspace = workspace.currentWorkspace;
   const datePickerRef = useRef<any>(null);
 
   const initialFormState = {

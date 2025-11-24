@@ -1,14 +1,12 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Play, Pause, RotateCcw } from 'lucide-react';
-import { setIsRunning, triggerReset } from '@/store/slices/uiSlice';
+import { Pause, Play, RotateCcw } from 'lucide-react';
+import { useAppStore, useUiActions } from '@/store/appStore';
 
 const GlobalTimerControls = () => {
-  const dispatch = useDispatch();
-  const isSynced = useSelector(state => state.ui.isSynced);
-  const studyTimerState = useSelector(state => state.ui.studyTimerState);
-  const pomodoroState = useSelector(state => state.ui.pomodoroState);
-  const countdownState = useSelector(state => state.ui.countdownState);
+  const isSynced = useAppStore((state) => state.ui.isSynced);
+  const studyTimerState = useAppStore((state) => state.ui.studyTimerState);
+  const pomodoroState = useAppStore((state) => state.ui.pomodoroState);
+  const countdownState = useAppStore((state) => state.ui.countdownState);
+  const { setStudyRunning, setPomoRunning, setTimerState } = useUiActions();
 
   if (!isSynced) return null;
 
@@ -16,18 +14,24 @@ const GlobalTimerControls = () => {
   const anyTimerRunning = studyTimerState === 'running' || pomodoroState === 'running' || countdownState === 'running';
 
   const handlePlayPause = () => {
-    dispatch(setIsRunning(!anyTimerRunning));
+    const newRunningState = !anyTimerRunning;
+    setStudyRunning(newRunningState);
+    setPomoRunning(newRunningState);
+    setTimerState('study', newRunningState ? 'running' : 'stopped');
+    setTimerState('pomodoro', newRunningState ? 'running' : 'stopped');
+    setTimerState('countdown', newRunningState ? 'running' : 'stopped');
   };
 
   const handleReset = () => {
     // Emitir inmediatamente el reset específico de Countdown para máxima robustez
-    // Esto garantiza que Countdown aplique el reset incluso si el flujo global se retrasa.
     try {
       const now = Date.now();
       window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
     } catch {}
-    // Mantener el flujo normal de reset global vía Redux
-    dispatch(triggerReset());
+    // Resetear todos los timers via Zustand
+    setTimerState('study', 'stopped');
+    setTimerState('pomodoro', 'stopped');
+    setTimerState('countdown', 'stopped');
   };
 
   return (
@@ -41,7 +45,7 @@ const GlobalTimerControls = () => {
             ? 'bg-yellow-500 text-white' 
             : 'bg-gray-300 text-gray-700'
         }`}>
-          Study: {studyTimerState}
+          Study: <span>{studyTimerState}</span>
         </div>
         <div className={`px-3 py-1 rounded-full ${
           pomodoroState === 'running' 
@@ -50,7 +54,7 @@ const GlobalTimerControls = () => {
             ? 'bg-yellow-500 text-white' 
             : 'bg-gray-300 text-gray-700'
         }`}>
-          Pomodoro: {pomodoroState}
+          Pomodoro: <span>{pomodoroState}</span>
         </div>
         <div className={`px-3 py-1 rounded-full ${
           countdownState === 'running' 
@@ -59,7 +63,7 @@ const GlobalTimerControls = () => {
             ? 'bg-yellow-500 text-white' 
             : 'bg-gray-300 text-gray-700'
         }`}>
-          Countdown: {countdownState}
+          Countdown: <span>{countdownState}</span>
         </div>
       </div>
 

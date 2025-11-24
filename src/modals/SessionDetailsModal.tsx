@@ -4,12 +4,25 @@ import { deleteLap, updateLap } from '@/store/LapActions';
 
 import type { AppDispatch } from '@/store/store';
 import BaseModal from '@/modals/BaseModal';
-import { Lap } from '@/store/slices/LapSlice';
 import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
+
+// Lap interface defined locally until we create a types file
+interface Lap {
+  id: string;
+  created_at: string;
+  duration: string;
+  session_number: number;
+  name: string;
+  tasks_completed: number;
+  type: string;
+  subject_id: string;
+  subject_name: string;
+  subject_color: string;
+};
 
 interface SessionDetailsModalProps {
   session: Lap;

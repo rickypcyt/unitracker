@@ -1,19 +1,18 @@
 import { memo, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAuth, useFetchTasks, useWorkspace } from '@/store/appStore';
 
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
-import StudySessions from '@/pages/stats/StudySessions';
 import { fetchLaps } from '@/store/LapActions';
-import { fetchTasks } from '@/store/TaskActions';
 import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
 import { useLocation } from 'react-router-dom';
 
 const StatsPage = memo(() => {
   const location = useLocation();
-  const dispatch = useDispatch();
   const isVisible = location.pathname === '/stats';
-  const user = useSelector((state) => state.auth.user);
+  const fetchTasks = useFetchTasks();
+  const { user } = useAuth();
+  const { currentWorkspace: activeWorkspace } = useWorkspace();
 
   // Use the real-time subscription hook
   useLapRealtimeSubscription();
@@ -21,17 +20,17 @@ const StatsPage = memo(() => {
   // Refresca tasks y laps solo cuando el usuario esté listo
   useEffect(() => {
     if (user && isVisible) {
-      dispatch(fetchLaps());
-      dispatch(fetchTasks());
+      fetchLaps();
+      fetchTasks(activeWorkspace?.id);
     }
-  }, [user, isVisible, dispatch]);
+  }, [user, isVisible]); // Remove fetchTasks from dependencies
 
   // Escuchar eventos de actualización
   useEffect(() => {
     if (!user) return;
     const handleRefresh = () => {
-      dispatch(fetchLaps());
-      dispatch(fetchTasks());
+      fetchLaps();
+      fetchTasks(activeWorkspace?.id);
     };
 
     window.addEventListener('refreshStats', handleRefresh);
@@ -43,7 +42,7 @@ const StatsPage = memo(() => {
       window.removeEventListener('studyTimerStateChanged', handleRefresh);
       window.removeEventListener('resetPomodoro', handleRefresh);
     };
-  }, [user, dispatch]);
+  }, [user]); // Remove fetchTasks from dependencies
 
   return (
     <div className="w-full px-0 overflow-hidden">

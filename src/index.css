@@ -123,6 +123,13 @@
     color-scheme: light;
   }
 
+  /* Prevent white flash on page load for dark theme */
+  html, body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.1s ease;
+  }
+
   body {
     min-height: 100vh;
     margin: 0;
@@ -469,9 +476,6 @@
   }
 
   /* Calendar Styles */
-  .calendar-container {
-    /* Add any calendar container specific styles here if needed */
-  }
 
   .calendar-grid {
     display: grid;
@@ -505,9 +509,6 @@
 h1 {
   @apply text-5xl font-bold mb-10;
   color: var(--text-primary);
-}
-
-.container {
 }
 
 /* =========================

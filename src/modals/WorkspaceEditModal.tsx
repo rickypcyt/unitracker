@@ -45,7 +45,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!workspaceName.trim()) {
-      setError('Area name is required');
+      setError('Workspace name is required');
       return;
     }
     setLoading(true);
@@ -86,19 +86,19 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Edit Area"
+      title="Edit Workspace"
       maxWidth="max-w-md"
       showHeader={false}
     >
       <div ref={modalRef}>
         <div className="flex items-center gap-3 mb-6">
           <Edit size={24} className="text-[var(--accent-primary)]" />
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Area</h2>
+          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Workspace</h2>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Area Name
+              Workspace Name
             </label>
             <input
               type="text"
@@ -112,7 +112,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Area Icon
+              Workspace Icon
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {iconOptions.map((option) => {
@@ -151,7 +151,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
               disabled={loading || !workspaceName.trim()}
               className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'Updating...' : 'Update Area'}
+              {loading ? 'Updating...' : 'Update Workspace'}
             </button>
           </div>
         </form>

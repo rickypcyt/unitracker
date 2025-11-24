@@ -1,22 +1,16 @@
-import {
-  addLapSuccess,
-  deleteLapSuccess,
-  fetchLapsSuccess,
-  invalidateCache,
-  lapError,
-  updateLapSuccess
-} from '@/store/slices/LapSlice';
-
 import { supabase } from '@/utils/supabaseClient';
+import { useAppStore } from '@/store/appStore';
 
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;
 
-export const fetchLaps = () => async (dispatch, getState) => {
+export const fetchLaps = async () => {
   console.log('[DEBUG] fetchLaps - Iniciando obtención de sesiones');
+  
+  const store = useAppStore.getState();
+  const { laps } = store;
+  
   try {
-    const { laps } = getState();
-    
     // Verificar caché
     if (laps.isCached && laps.lastFetch && (Date.now() - laps.lastFetch < CACHE_DURATION)) {
       console.log('[DEBUG] Usando datos en caché');
@@ -55,17 +49,20 @@ export const fetchLaps = () => async (dispatch, getState) => {
       console.log('[DEBUG] No se encontraron sesiones');
     }
 
-    dispatch(fetchLapsSuccess(data || []));
+    // Update Zustand store
+    useAppStore.getState().setLaps(data || []);
+    useAppStore.getState().setLapsCached(true, Date.now());
+    
     return data;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
     console.error('[DEBUG] Error en fetchLaps:', errorMsg, error);
-    dispatch(lapError(errorMsg));
+    useAppStore.getState().setLapsError(errorMsg);
     throw error;
   }
 };
 
-export const createLap = (lapData) => async (dispatch) => {
+export const createLap = async (lapData) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
@@ -76,13 +73,13 @@ export const createLap = (lapData) => async (dispatch) => {
       .select();
 
     if (error) throw error;
-    dispatch(addLapSuccess(data[0]));
+    useAppStore.getState().addLap(data[0]);
   } catch (error) {
-    dispatch(lapError(error.message));
+    useAppStore.getState().lapError(error.message);
   }
 };
 
-export const updateLap = (id, updates) => async (dispatch) => {
+export const updateLap = async (id, updates) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
@@ -95,13 +92,13 @@ export const updateLap = (id, updates) => async (dispatch) => {
       .select();
 
     if (error) throw error;
-    dispatch(updateLapSuccess(data[0]));
+    useAppStore.getState().updateLap(id, data[0]);
   } catch (error) {
-    dispatch(lapError(error.message));
+    useAppStore.getState().lapError(error.message);
   }
 };
 
-export const deleteLap = (id) => async (dispatch) => {
+export const deleteLap = async (id) => {
   console.log('[DEBUG] deleteLap - Iniciando eliminación de sesión, ID:', id);
   
   try {
@@ -171,18 +168,18 @@ export const deleteLap = (id) => async (dispatch) => {
     }
 
     console.log('[DEBUG] deleteLap - Sesión eliminada exitosamente');
-    dispatch(deleteLapSuccess(id));
+    useAppStore.getState().deleteLap(id);
     return { success: true, id };
     
   } catch (error) {
     console.error('[DEBUG] Error en deleteLap:', error);
-    dispatch(lapError(error.message));
+    useAppStore.getState().lapError(error.message);
     throw error;
   }
 };
 
 // Action to force a refresh of laps
-export const forceLapRefresh = () => async (dispatch) => {
-  dispatch(invalidateCache());
-  return dispatch(fetchLaps());
+export const forceLapRefresh = async () => {
+  useAppStore.getState().invalidateCache();
+  return fetchLaps();
 };

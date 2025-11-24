@@ -1,18 +1,16 @@
-import type { AppDispatch, RootState } from '@/store/store';
 import { BookOpen, LogIn, LogOut, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { ACCENT_COLORS } from '@/utils/theme';
+import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import ManageAssignmentsModal from '@/modals/ManageAssignmentsModal';
 import StudySessions from '@/pages/stats/StudySessions';
-import { deleteTask } from '@/store/actions/TaskActions';
-import { toast } from 'react-toastify';
-import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@supabase/supabase-js';
+import { toast } from 'react-toastify';
+import { useAppStore } from '@/store/appStore';
+import { useAuth } from '@/hooks/useAuth';
 import useTheme from '@/hooks/useTheme';
-import BaseModal from '@/modals/BaseModal';
 
 interface SettingsProps {
   isOpen: boolean;
@@ -20,24 +18,24 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const dispatch = useDispatch<AppDispatch>();
   const { accentPalette, setAccentPalette } = useTheme();
   // Note: currentTheme and handleThemeChange are not used in this component
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
-  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const tasks = useAppStore((state) => state.tasks.tasks);
   const { isLoggedIn, loginWithGoogle, logout } = useAuth() as {
     isLoggedIn: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     user: User | null;
   };
+  const deleteTask = useAppStore((state) => state.deleteTask);
 
   const handleDeleteCompletedTasks = () => {
     const completedTasks = tasks.filter(task => task.completed);
     completedTasks.forEach(task => {
-      dispatch(deleteTask(task.id));
+      deleteTask(task.id);
     });
     setShowDeleteCompletedModal(false);
   };

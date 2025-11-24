@@ -1,10 +1,10 @@
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
-import React, { ReactElement, ReactNode, useEffect, useState } from 'react';
+import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import { useAuth, useLaps, useTasks } from '@/store/appStore';
 
 import { supabase } from '@/utils/supabaseClient';
 import useDemoMode from '@/utils/useDemoMode';
 import usePomodorosToday from '@/hooks/usePomodorosToday';
-import { useSelector } from 'react-redux';
 
 // Tipos para las entidades
 interface Task {
@@ -121,8 +121,8 @@ function useLapStats(laps: Lap[]): { todayMinutes: number; weekMinutes: number; 
   laps.forEach(lap => {
     if (!lap.created_at) return;
     
-    // Usar started_at si está disponible, de lo contrario usar created_at
-    const lapDate = lap.started_at ? new Date(lap.started_at) : new Date(lap.created_at);
+    // Usar created_at como fecha principal
+    const lapDate = new Date(lap.created_at);
     
     // Obtener la duración del campo duration (ya en formato HH:MM:SS)
     const minutes = durationToMinutes(lap.duration);
@@ -265,16 +265,11 @@ const statCards: StatCard[] = [
   },
 ];
 
-interface RootState {
-  tasks: { tasks: Task[] };
-  laps: { laps: Lap[] };
-  auth: { user?: { id?: string } };
-}
 
 const Statistics = (): ReactElement => {
-  const { tasks } = useSelector((state: RootState) => state.tasks);
-  const { laps } = useSelector((state: RootState) => state.laps);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { tasks } = useTasks();
+  const { laps } = useLaps();
+  const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();
 
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);

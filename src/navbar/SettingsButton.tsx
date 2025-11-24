@@ -23,6 +23,18 @@ const SettingsButton = ({
   onAccept,
   onReject,
   friends = []
+}: {
+  isLoggedIn: boolean;
+  loginWithGoogle: () => void;
+  logout: () => void;
+  hasFriendRequests: boolean;
+  onOpenAbout?: () => void;
+  receivedRequests?: any[];
+  sentRequests?: any[];
+  onSendRequest?: (username: any, options: { onSuccess: any; onError: any }) => void;
+  onAccept?: (requestId: any) => void;
+  onReject?: (requestId: any) => void;
+  friends?: any[];
 }) => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);

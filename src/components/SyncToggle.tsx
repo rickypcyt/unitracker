@@ -1,15 +1,14 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useUi, useUiActions } from '@/store/appStore';
 
 import { Link } from 'lucide-react';
 import React from 'react';
-import { setIsSynced } from '@/store/slices/uiSlice';
 
 const SyncToggle = () => {
-  const dispatch = useDispatch();
-  const isSynced = useSelector(state => state.ui.isSynced);
+  const isSynced = useUi(state => state.isSynced);
+  const { setTimerState } = useUiActions();
 
   const handleToggle = () => {
-    dispatch(setIsSynced(!isSynced));
+    setTimerState('study', isSynced ? 'stopped' : 'running');
   };
 
   return (

@@ -1,19 +1,17 @@
 import "@/index.css";
 import "react-toastify/dist/ReactToastify.css";
 
-import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import { Provider } from "react-redux";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+
+import { Analytics } from "@vercel/analytics/react";
+import App from "@/App";
+import { BrowserRouter } from "react-router-dom";
+import ErrorBoundary from "@/utils/ErrorBoundary";
 import { HelmetProvider } from "react-helmet-async";
+import ReactDOM from "react-dom/client";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "react-hot-toast";
 import { createPortal } from "react-dom";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-
-import App from "@/App";
-import { store } from "@/store/store";
-import ErrorBoundary from "@/utils/ErrorBoundary";
 import { logger } from "@/utils/logger";
 
 // -------------------------
@@ -75,16 +73,14 @@ const root = ReactDOM.createRoot(document.getElementById("root")!);
 
 root.render(
   <ErrorBoundary>
-    <Provider store={store}>
-      <ChakraProvider value={defaultSystem}>
-        <HelmetProvider>
-          <BrowserRouter>
+    <ChakraProvider value={defaultSystem}>
+      <HelmetProvider>
+        <BrowserRouter>
             <App />
             <Analytics />
             <SpeedInsights />
           </BrowserRouter>
         </HelmetProvider>
       </ChakraProvider>
-    </Provider>
   </ErrorBoundary>
 );

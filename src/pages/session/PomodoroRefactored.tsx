@@ -9,7 +9,7 @@ import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
 import type { RootState } from '@/store/store';
 import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
-import { setPomodoroState } from '@/store/slices/uiSlice';
+import { setPomodoroState } from '@/store/appStore';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useEventListener from '@/hooks/useEventListener';
