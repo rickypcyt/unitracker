@@ -1,10 +1,12 @@
+import { ChevronFirst, ChevronLast } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import DeleteNoteModal from '../../modals/DeleteNoteModal';
 import LoginPromptModal from '../../modals/LoginPromptModal';
-import NoteList from './NoteList';
-import NotesCreateModal from '../../modals/NotesCreateModal';
-import { Plus } from 'lucide-react';
+import NoteView from './NoteView';
+import NotesSidepanel from './NotesSidepanel';
+import WelcomeView from './WelcomeView';
+import { demoNotes } from '@/utils/demoData';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -21,20 +23,18 @@ interface Note {
 
 const Notes: React.FC = () => {
   const { user } = useAuth();
+  const { isDemo } = useDemoMode();
   const {
-    isDemo,
-    demoNotes,
     loginPromptOpen,
-    showLoginPrompt,
     closeLoginPrompt,
   } = useDemoMode();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editNote, setEditNote] = useState<Partial<Note> | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
+  const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(undefined);
+  const [isSidepanelCollapsed, setIsSidepanelCollapsed] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
   useEffect(() => {
@@ -82,7 +82,7 @@ const Notes: React.FC = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const handleAddNote = async (noteData: Omit<Note, 'id'>): Promise<void> => {
+  const handleAddNoteWithId = async (noteData: Omit<Note, 'id'>): Promise<string | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -104,7 +104,9 @@ const Notes: React.FC = () => {
         if (insertError) throw insertError;
         if (data) {
           setNotes([data as Note, ...notes]);
+          return (data as Note).id || null;
         }
+        return null;
       } else {
         const newNote: Note = {
           id: Date.now().toString(),
@@ -114,44 +116,43 @@ const Notes: React.FC = () => {
           date: safeDate
         };
         setNotes([newNote, ...notes]);
+        return newNote.id || null;
       }
-      setEditNote(null);
-      setShowCreateModal(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  // Handler para iniciar edición
+  const handleAddNote = async (noteData: Omit<Note, 'id'>): Promise<void> => {
+    await handleAddNoteWithId(noteData);
+  };
+
+  // Handler para actualizar nota
   const handleUpdateNote = async (note: Omit<Note, 'id'>): Promise<void> => {
-    if (!editNote?.id) return;
+    const noteId = selectedNote?.id;
+    if (!noteId) return;
+    
     setLoading(true);
     setError(null);
     if (user) {
       const { data, error: updateError } = await supabase
         .from('notes')
         .update(note)
-        .eq('id', editNote.id)
+        .eq('id', noteId)
         .select()
         .single();
       if (updateError) {
         setError(updateError.message);
       } else if (data) {
-        setNotes(notes.map(n => n.id === editNote.id ? data as Note : n));
+        setNotes(notes.map(n => n.id === noteId ? data as Note : n));
       }
     } else {
-      setNotes(notes.map(n => n.id === editNote.id ? { ...n, ...note } as Note : n));
+      setNotes(notes.map(n => n.id === noteId ? { ...n, ...note } as Note : n));
     }
-    setEditNote(null);
-    setShowCreateModal(false);
     setLoading(false);
-  };
-
-  const handleEditNote = (note: Note): void => {
-    setEditNote(note);
-    setShowCreateModal(true);
   };
 
   // Handler para eliminar nota
@@ -181,55 +182,101 @@ const Notes: React.FC = () => {
 
   const notesToShow = isDemo ? demoNotes : notes;
 
+  const handleNoteSelect = (noteId: string) => {
+    setSelectedNoteId(noteId === selectedNoteId ? undefined : noteId);
+  };
+
+  const handleBackToNotes = () => {
+    setSelectedNoteId(undefined);
+  };
+
+  const handleCreateNote = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const newNote: Omit<Note, 'id'> = {
+      title: 'New Note',
+      assignment: '',
+      description: 'Here goes your text',
+      date: today || ''
+    };
+    
+    const newNoteId = await handleAddNoteWithId(newNote);
+    
+    // Select the newly created note using its ID
+    if (newNoteId) {
+      setSelectedNoteId(newNoteId);
+    }
+  };
+
+  const selectedNote = selectedNoteId ? notesToShow.find((note: Note) => note.id === selectedNoteId) : null;
+
   return (
-    <div className="w-full  px-3 sm:px-4 md:px-3 lg:px-6 session-page mt-4">
-      <button
-        onClick={() => {
-          if (isDemo) showLoginPrompt();
-          else if (!user) setShowLoginModal(true);
-          else setShowCreateModal(true);
-        }}
-        className="fixed bottom-6 right-6 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
-        aria-label="Add Note"
-      >
-        <Plus className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9" />
-      </button>
-      <NotesCreateModal
-        isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          setEditNote(null);
-        }}
-        onAdd={editNote?.id ? handleUpdateNote : handleAddNote}
-        loading={loading}
-        initialValues={{
-          title: editNote?.title ?? '',
-          assignment: editNote?.assignment ?? '',
-          description: editNote?.description ?? '',
-          date: editNote?.date ?? new Date().toISOString().split('T')[0]
-        } as Partial<Note>}
-        isEdit={!!editNote?.id}
-      />
-      <LoginPromptModal
-        isOpen={showLoginModal || loginPromptOpen}
-        onClose={() => { setShowLoginModal(false); closeLoginPrompt(); }}
-      />
-      <NoteList
-        notes={notesToShow}
-        loading={loading}
-        error={error}
-        onEdit={handleEditNote}
-        onDelete={(note) => setNoteToDelete(note)}
-        editingId={null}
-        editForm={null}
-      />
-      <DeleteNoteModal
-        isOpen={!!noteToDelete}
-        onClose={() => setNoteToDelete(null)}
-        onConfirm={confirmDeleteNote}
-        noteTitle={noteToDelete?.title}
-      />
-    </div>
+    <React.Fragment>
+      <div className="w-full h-full relative">
+        {/* Sidepanel - Fixed positioning, below navbar, responsive */}
+        <div 
+          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${
+            isSidepanelCollapsed ? 'w-12' : 'w-80'
+          }`}
+        >
+          {/* Toggle Button */}
+          <button
+            onClick={() => setIsSidepanelCollapsed(!isSidepanelCollapsed)}
+            className={`absolute right-2 top-4 w-8 h-8 text-[var(--accent-primary)] flex items-center justify-center rounded hover:bg-[var(--accent-primary)]/10 transition-colors focus:outline-none z-20 ${
+              isSidepanelCollapsed ? 'ml-2' : ''
+            }`}
+            title={isSidepanelCollapsed ? 'Expand panel' : 'Collapse panel'}
+          >
+            {isSidepanelCollapsed ? (
+              <ChevronLast size={24} />
+            ) : (
+              <ChevronFirst size={24} />
+            )}
+          </button>
+          
+          {!isSidepanelCollapsed && (
+            <NotesSidepanel
+              notes={notesToShow}
+              loading={loading}
+              error={error}
+              onNoteSelect={handleNoteSelect}
+              selectedNoteId={selectedNoteId}
+              onDelete={(note) => setNoteToDelete(note)}
+              onCreateNote={handleCreateNote}
+            />
+          )}
+        </div>
+        
+        {/* Main Content Container - Separate from sidepanel */}
+        <div className={`w-full h-full transition-all duration-300 ${
+          isSidepanelCollapsed ? 'md:pl-12' : 'md:pl-80'
+        }`}>
+          {selectedNote ? (
+            <NoteView
+              note={selectedNote}
+              onSave={selectedNote?.id ? handleUpdateNote : handleAddNote}
+              onDelete={(note) => setNoteToDelete(note)}
+              onBack={handleBackToNotes}
+            />
+          ) : (
+            <WelcomeView
+              onCreateNote={handleCreateNote}
+            />
+          )}
+        </div>
+      </div>
+    
+    {/* Modals - always rendered */}
+    <LoginPromptModal
+      isOpen={showLoginModal || loginPromptOpen}
+      onClose={() => { setShowLoginModal(false); closeLoginPrompt(); }}
+    />
+    <DeleteNoteModal
+      isOpen={!!noteToDelete}
+      onClose={() => setNoteToDelete(null)}
+      onConfirm={confirmDeleteNote}
+      noteTitle={noteToDelete?.title || ''}
+    />
+    </React.Fragment>
   );
 };
 

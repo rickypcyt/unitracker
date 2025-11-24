@@ -1,12 +1,9 @@
 import { Check, Play, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import type { AppDispatch } from '@/store/store';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { motion } from 'framer-motion';
 import { supabase } from '@/utils/supabaseClient';
-import { updateLap } from '@/store/LapActions';
-import { useDispatch } from 'react-redux';
 
 interface UnfinishedSession {
   id: string;
@@ -32,7 +29,6 @@ const UnfinishedSessionsModal = ({
 }: UnfinishedSessionsModalProps) => {
   const [sessions, setSessions] = useState<UnfinishedSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch<AppDispatch>();
 
   // Safely parse date string, return null if invalid
   const safeParseDate = (value?: string | null): Date | null => {
@@ -101,10 +97,19 @@ const UnfinishedSessionsModal = ({
       };
       const duration = toHMS(seconds);
       
-      await dispatch(updateLap(sessionId, { 
-        ended_at: now,
-        duration
-      }));
+      // Direct Supabase update instead of Redux
+      const { error } = await supabase
+        .from('study_laps')
+        .update({ 
+          ended_at: now,
+          duration
+        })
+        .eq('id', sessionId);
+        
+      if (error) {
+        console.error('Error finishing session:', error);
+        return;
+      }
       
       setSessions(sessions.filter(s => s.id !== sessionId));
     } catch (error) {

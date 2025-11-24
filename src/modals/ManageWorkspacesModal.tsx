@@ -169,7 +169,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Manage Areas"
+      title="Manage Workspaces"
       maxWidth="max-w-2xl"
     >
       {error && (

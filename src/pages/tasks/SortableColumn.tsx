@@ -47,7 +47,7 @@ export const SortableColumn = ({
       setIsEditing(false);
     }
   };
-  // Set up the droppable area for the column
+  // Set up the droppable workspace for the column
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${assignment}`, // This ID must match what we check in handleDragEnd
     data: {

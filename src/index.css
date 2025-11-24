@@ -1,5 +1,8 @@
 /* src/index.css */
 
+/* Import highlight.js styles for syntax highlighting */
+@import 'highlight.js/styles/github.css';
+
 /* Importa las capas base, componentes y utilidades de Tailwind */
 @tailwind base;
 @tailwind components;

@@ -297,7 +297,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
                 className="flex items-center gap-2 px-3 py-2 text-[13px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                Edit areas
+                Edit workspaces
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}
@@ -372,7 +372,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
                 className="flex items-center gap-2 px-3 py-2 text-[11px] sm:text-[12px] md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >
                 <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                Edit areas
+                Edit workspaces
               </DropdownMenu.Item>
               <DropdownMenu.Item
                 onClick={() => setShowShareModal(true)}

@@ -2,21 +2,21 @@ import { Edit2, Trash2 } from 'lucide-react';
 import { FormActions, FormButton, FormInput, FormTextarea } from '@/modals/FormElements';
 import { deleteLap, updateLap } from '@/store/LapActions';
 
-import type { AppDispatch } from '@/store/store';
 import BaseModal from '@/modals/BaseModal';
 import React from 'react';
 import moment from 'moment';
 import { toast } from 'react-toastify';
-import { useDispatch } from 'react-redux';
 import { useState } from 'react';
 
 // Lap interface defined locally until we create a types file
 interface Lap {
   id: string;
   created_at: string;
+  started_at?: string;
   duration: string;
   session_number: number;
   name: string;
+  description?: string;
   tasks_completed: number;
   type: string;
   subject_id: string;
@@ -30,7 +30,6 @@ interface SessionDetailsModalProps {
 }
 
 const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onClose }) => {
-    const dispatch = useDispatch<AppDispatch>();
     const [isEditing, setIsEditing] = useState(false);
     const [editedSession, setEditedSession] = useState(session);
 
@@ -47,7 +46,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                 session_number: editedSession.session_number,
                 duration: editedSession.duration,
             };
-            await dispatch(updateLap(editedSession.id, updateData));
+            await updateLap(editedSession.id, updateData);
             setIsEditing(false);
             toast.success("Session updated successfully");
         } catch (error) {
@@ -58,7 +57,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
 
     const handleDelete = async () => {
         try {
-            await dispatch(deleteLap(session.id));
+            await deleteLap(session.id);
             toast.success("Session deleted successfully");
             onClose();
         } catch (error) {

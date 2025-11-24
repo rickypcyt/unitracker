@@ -120,7 +120,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                       }}
                     />
 
-                    {/* Three clickable areas */}
+                    {/* Three clickable workspaces */}
                     <button
                       onClick={() => handleThemeChange("light")}
                       className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"

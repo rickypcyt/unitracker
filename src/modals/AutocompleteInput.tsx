@@ -1,6 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 
-const AutocompleteInput = ({
+import React from 'react';
+
+interface AutocompleteInputProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  suggestions?: string[];
+  placeholder?: string;
+  error?: string;
+  required?: boolean;
+  className?: string;
+}
+
+const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   id,
   value,
   onChange,
@@ -12,10 +25,10 @@ const AutocompleteInput = ({
   ...props
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filtered, setFiltered] = useState([]);
+  const [filtered, setFiltered] = useState<string[]>([]); // Explicitly type as string[]
   const [activeIndex, setActiveIndex] = useState(-1);
-  const inputRef = useRef(null);
-  const listRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     if (showSuggestions && filtered.length > 0 && activeIndex >= 0) {
@@ -28,7 +41,7 @@ const AutocompleteInput = ({
     if (!showSuggestions) setActiveIndex(-1);
   }, [showSuggestions]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     onChange(val);
     if (val) {
@@ -43,12 +56,12 @@ const AutocompleteInput = ({
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = (suggestion: string) => {
     onChange(suggestion);
     setShowSuggestions(false);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || filtered.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();

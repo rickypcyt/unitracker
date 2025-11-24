@@ -1,9 +1,7 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import StarterKit from "@tiptap/starter-kit";
-
-// Quitamos import de tiptap-markdown
 
 interface MarkdownWysiwygProps {
   initialTitle?: string;
@@ -27,9 +25,17 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
     extensions: [StarterKit],
     content: initialBody,
     onUpdate: ({ editor }) => {
-      onChange?.({ title, body: editor.getHTML() });
+      const html = editor.getHTML();
+      onChange?.({ title, body: html });
     },
   });
+
+  // Update editor content when initialBody changes
+  useEffect(() => {
+    if (editor && initialBody !== editor.getHTML()) {
+      editor.commands.setContent(initialBody);
+    }
+  }, [editor, initialBody]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,7 +46,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
   );
 
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
+    <div className={`flex flex-col h-full ${className}`}>
       {showTitleInput && (
         <input
           className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg font-semibold transition-colors "
@@ -50,25 +56,15 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
           onChange={handleTitleChange}
         />
       )}
-      <div
-        className="border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] focus-within:border-[var(--accent-primary)] transition-colors mb-3 cursor-text relative"
-        onClick={() => {
-          // Focus the editor when clicking anywhere inside the container
-          editor?.chain().focus().run();
-        }}
-        onTouchStart={() => {
-          // Ensure focus on touch devices as well
-          editor?.chain().focus().run();
-        }}
-      >
-        <EditorContent
-          editor={editor}
-          className={`min-h-[200px] max-h-[400px] overflow-y-auto px-3 py-2 text-[var(--text-primary)] focus:outline-none mb-2 ${
-            editor?.getText().trim() === '' ? 'before:content-[attr(data-placeholder)] before:absolute before:text-[var(--text-secondary)] before:pointer-events-none before:top-2 before:left-3 before:opacity-70' : ''
-          }`}
-          data-placeholder={placeholder}
-        />
-      </div>
+      
+      {/* Editor Content - No borders, no scroll */}
+      <EditorContent
+        editor={editor}
+        className={`flex-1 text-[var(--text-primary)] focus:outline-none ${
+          editor?.getText().trim() === '' ? 'before:content-[attr(data-placeholder)] before:text-[var(--text-secondary)] before:pointer-events-none before:opacity-70' : ''
+        }`}
+        data-placeholder={placeholder}
+      />
     </div>
   );
 };

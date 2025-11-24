@@ -9,7 +9,7 @@ import {
 // moved to hooks/study-timer/useStudySync
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
-import { useAppStore } from "@/store/appStore";
+import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
@@ -111,14 +111,27 @@ const useModalStates = () => {
   return [modalStates, updateModal] as [typeof modalStates, typeof updateModal];
 };
 
-const useSyncStates = () => {
-  const { syncSettings } = useAppStore();
+const useSyncStates = (currentSessionId: string | null) => {
+  const { syncSettings, setSessionSyncSettings } = useAppStore();
+  const sessionSyncSettings = useSessionSyncSettings(currentSessionId);
   const syncPomodoroWithTimer = syncSettings.syncPomodoroWithTimer;
   const syncCountdownWithTimer = syncSettings.syncCountdownWithTimer;
+
+  const saveSessionSyncSettings = useCallback((sessionId: string) => {
+    if (sessionId) {
+      setSessionSyncSettings(sessionId, syncSettings);
+    }
+  }, [syncSettings, setSessionSyncSettings]);
+
+  const loadSessionSyncSettings = useCallback(() => {
+    return sessionSyncSettings || syncSettings;
+  }, [sessionSyncSettings, syncSettings]);
 
   return {
     isPomodoroSync: syncPomodoroWithTimer,
     isCountdownSync: syncCountdownWithTimer,
+    saveSessionSyncSettings,
+    loadSessionSyncSettings
   };
 };
 
@@ -132,22 +145,28 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const {
     resetTimerState,
     setCurrentSession,
-    setStudyRunning,
     setStudyTimerState,
     setSyncCountdownWithTimer,
     setSyncPomodoroWithTimer,
-    syncSettings
+    setStudyRunning,
   } = useAppStore();
-  
-  const syncPomodoroWithTimer = syncSettings.syncPomodoroWithTimer;
-  const syncCountdownWithTimer = syncSettings.syncCountdownWithTimer;
-  const isStudyRunningRedux = syncSettings.isStudyRunning;
+  const { ui } = useAppStore();
+  const isStudyRunningRedux = ui.isStudyRunning;
 
+  const { syncSettings, setSessionSyncSettings } = useAppStore();
   const [studyState, updateStudyState] = useStudyTimerState();
   const [currentSessionId, updateSessionId] = useSessionId();
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
-  const { isPomodoroSync, isCountdownSync } = useSyncStates();
+  const { isPomodoroSync, isCountdownSync } = useSyncStates(currentSessionId);
+  
+  // Save sync settings when they change and there's an active session
+  useEffect(() => {
+    if (currentSessionId) {
+      setSessionSyncSettings(currentSessionId, syncSettings);
+      console.log('[StudyTimer] Saved session sync settings:', { sessionId: currentSessionId });
+    }
+  }, [currentSessionId, syncSettings]);
   const { isNewTimestamp } = useTimestamp();
 
   const [summaryData, setSummaryData] = useState({
@@ -351,24 +370,42 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       },
 
       reset: (fromSync = false) => {
+        // Check if there's an active session - if so, don't terminate it
+        const hasActiveSession = !!currentSessionId;
+        
+        // Preserve current sync settings before reset
+        const currentSyncSettings = {
+          isPomodoroSync,
+          isCountdownSync
+        };
+        
         updateStudyState({
           isRunning: false,
           lastStart: null,
           timeAtStart: 0,
           time: 0,
-          sessionStatus: "inactive",
+          // Only set sessionStatus to inactive if there's no active session
+          sessionStatus: hasActiveSession ? studyState.sessionStatus : "inactive",
         });
 
         setStudyRunning(false);
         setStudyTimerState("stopped");
         resetTimerState();
 
-        // Limpiar localStorage
-        [
-          STORAGE_KEYS.STUDY_TIMER_STATE,
-          STORAGE_KEYS.ACTIVE_SESSION_ID,
-          STORAGE_KEYS.STUDY_TIMER_STARTED_AT,
-        ].forEach((key) => localStorage.removeItem(key));
+        // Limpiar localStorage - but preserve active session if it exists
+        if (!hasActiveSession) {
+          [
+            STORAGE_KEYS.STUDY_TIMER_STATE,
+            STORAGE_KEYS.ACTIVE_SESSION_ID,
+            STORAGE_KEYS.STUDY_TIMER_STARTED_AT,
+          ].forEach((key) => localStorage.removeItem(key));
+        } else {
+          // Only clear timer-related state, preserve session
+          [
+            STORAGE_KEYS.STUDY_TIMER_STATE,
+            STORAGE_KEYS.STUDY_TIMER_STARTED_AT,
+          ].forEach((key) => localStorage.removeItem(key));
+        }
 
         window.dispatchEvent(
           new CustomEvent(SYNC_EVENTS.STUDY_TIMER_STATE_CHANGED, {
@@ -380,28 +417,30 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           const emitTs = Date.now();
           console.warn("[StudyTimer] 🔄 RESET - Checking sync states:", {
             baseTimestamp: emitTs,
-            isCountdownSync,
-            willEmitResetCountdownSync: !!isCountdownSync,
+            isCountdownSync: currentSyncSettings.isCountdownSync,
+            hasActiveSession,
+            willEmitResetCountdownSync: !!currentSyncSettings.isCountdownSync,
+            syncSettingsPreserved: true,
           });
 
           emitSyncEvent(SYNC_EVENTS.RESET_TIMER, emitTs);
 
-          if (isPomodoroSync) {
+          if (currentSyncSettings.isPomodoroSync) {
             console.log("[StudyTimer] ✅ Emitting resetPomodoroSync", {
               baseTimestamp: emitTs,
             });
             emitSyncEvent(SYNC_EVENTS.RESET_POMODORO, emitTs);
           }
 
-          if (isCountdownSync) {
+          if (currentSyncSettings.isCountdownSync) {
             console.log("[StudyTimer] ✅ EMITTING resetCountdownSync", {
               baseTimestamp: emitTs,
-              isCountdownSync,
+              isCountdownSync: currentSyncSettings.isCountdownSync,
             });
             emitSyncEvent(SYNC_EVENTS.RESET_COUNTDOWN, emitTs);
           } else {
             console.log("[StudyTimer] ❌ NOT emitting resetCountdownSync", {
-              isCountdownSync,
+              isCountdownSync: currentSyncSettings.isCountdownSync,
               reason: "isCountdownSync is false",
             });
           }
@@ -768,7 +807,8 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
         updateModal("isStartModalOpen", false);
 
-        // Do not auto-start; wait for the user to press Start so the seeded time remains intact
+        // Auto-start the timer when session begins
+        studyControls.start(Date.now(), false, initialSeconds);
       } catch (e) {
         console.error("Error in handleStartSession:", e);
         toast.error("Could not start the session.");
@@ -912,9 +952,30 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   // Otros efectos necesarios
   useEffect(() => {
     if (currentSessionId) {
-      fetchCurrentSessionDetails();
+      // Fetch session details directly instead of using function dependency
+      const fetchDetails = async () => {
+        try {
+          const { data: session, error } = await supabase
+            .from('study_laps')
+            .select('title, description')
+            .eq('id', currentSessionId)
+            .single();
+          
+          if (session && !error) {
+            setSummaryData(prev => ({
+              ...prev,
+              title: session.title || '',
+              description: session.description || ''
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching session details:', error);
+        }
+      };
+      
+      fetchDetails();
     }
-  }, [currentSessionId, fetchCurrentSessionDetails]);
+  }, [currentSessionId]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -1005,30 +1066,32 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch sessions count for today
-  const fetchSessionsTodayCount = useCallback(async () => {
-    try {
-      const today = new Date().toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("study_laps")
-        .select("id")
-        .gte("created_at", `${today}T00:00:00`)
-        .lte("created_at", `${today}T23:59:59`);
-
-      if (error) throw error;
-      setSessionsTodayCount(data.length);
-      saveToLocalStorage(
-        STORAGE_KEYS.SESSIONS_TODAY_COUNT,
-        data.length.toString()
-      );
-    } catch (error) {
-      console.error("Error fetching sessions count:", error);
-    }
-  }, []);
+  // Fetch sessions count for today - logic now inlined in useEffect below
 
   useEffect(() => {
-    fetchSessionsTodayCount();
-  }, [fetchSessionsTodayCount]);
+    // Fetch sessions count directly instead of using function dependency
+    const fetchCount = async () => {
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const { data, error } = await supabase
+          .from("study_laps")
+          .select("id")
+          .gte("created_at", `${today}T00:00:00`)
+          .lte("created_at", `${today}T23:59:59`);
+
+        if (error) throw error;
+        setSessionsTodayCount(data.length);
+        saveToLocalStorage(
+          STORAGE_KEYS.SESSIONS_TODAY_COUNT,
+          data.length.toString()
+        );
+      } catch (error) {
+        console.error("Error fetching sessions count:", error);
+      }
+    };
+    
+    fetchCount();
+  }, []);
 
   // Define studyTick function for useStudyTimer hook
   const studyTick = useCallback(

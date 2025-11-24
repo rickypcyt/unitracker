@@ -69,9 +69,20 @@ export interface UiState {
 }
 
 export interface PomodoroMode {
+  label: string;
   work: number;
   break: number;
   longBreak: number;
+  description?: string;
+}
+
+export interface PomodoroSettings {
+  autoStartBreak: boolean;
+  autoStartWork: boolean;
+  soundEnabled: boolean;
+  notificationEnabled: boolean;
+  dailyGoal: number;
+  volume: number;
 }
 
 export interface CountdownTime {
@@ -102,6 +113,10 @@ export interface SyncSettings {
   syncPomodoroWithTimer: boolean;
   syncCountdownWithTimer: boolean;
   isSyncedWithStudyTimer: boolean;
+}
+
+export interface SessionSyncSettings {
+  [sessionId: string]: SyncSettings;
 }
 
 export interface AppState {
@@ -159,6 +174,11 @@ export interface AppState {
   setSyncSettings: (settings: SyncSettings) => void;
   updateSyncSettings: (updates: Partial<SyncSettings>) => void;
   
+  // 🔄 Session-specific Sync Settings
+  sessionSyncSettings: SessionSyncSettings;
+  setSessionSyncSettings: (sessionId: string, settings: SyncSettings) => void;
+  clearSessionSyncSettings: (sessionId: string) => void;
+  
   // UI State
   pomodoroTimerState: 'running' | 'paused' | 'stopped';
   setPomodoroTimerState: (state: 'running' | 'paused' | 'stopped') => void;
@@ -168,6 +188,11 @@ export interface AppState {
   
   countdownTimerState: 'running' | 'paused' | 'stopped';
   setCountdownTimerState: (state: 'running' | 'paused' | 'stopped') => void;
+  
+  // Pomodoro Settings
+  pomodoroSettings: PomodoroSettings;
+  setPomodoroSettings: (settings: PomodoroSettings) => void;
+  updatePomodoroSettings: (updates: Partial<PomodoroSettings>) => void;
   
   // 🎯 Reemplazo de Redux slices
   // Tasks
@@ -236,6 +261,15 @@ export interface AppState {
 }
 
 // 🎯 Estados por Defecto
+const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
+  autoStartBreak: false,
+  autoStartWork: false,
+  soundEnabled: true,
+  notificationEnabled: true,
+  dailyGoal: 8,
+  volume: 0.7,
+};
+
 const DEFAULT_POMODORO_STATE: PomoState = {
   timeLeft: 1500, // 25 minutes
   isRunning: false,
@@ -252,7 +286,48 @@ const DEFAULT_POMODORO_STATE: PomoState = {
 };
 
 const INITIAL_POMODORO_MODES: PomodoroMode[] = [
-  { work: 1500, break: 300, longBreak: 900 }, // 25min work, 5min break, 15min long break
+  { 
+    label: 'Traditional', 
+    work: 1500, // 25min
+    break: 300, // 5min  
+    longBreak: 900, // 15min
+    description: 'Classic 25-5-15 Pomodoro technique'
+  },
+  { 
+    label: 'Extended Focus', 
+    work: 3000, // 50min
+    break: 600, // 10min
+    longBreak: 1800, // 30min
+    description: 'Longer sessions for deep work'
+  },
+  { 
+    label: 'Quick Sprints', 
+    work: 1200, // 20min
+    break: 240, // 4min
+    longBreak: 720, // 12min
+    description: 'Shorter sessions for quick tasks'
+  },
+  { 
+    label: 'Ultra Focus', 
+    work: 3600, // 60min
+    break: 900, // 15min
+    longBreak: 2700, // 45min
+    description: 'Maximum focus for complex projects'
+  },
+  { 
+    label: 'Student', 
+    work: 2700, // 45min
+    break: 540, // 9min
+    longBreak: 1620, // 27min
+    description: 'Optimized for study sessions'
+  },
+  { 
+    label: 'Custom', 
+    work: 1500, 
+    break: 300, 
+    longBreak: 900,
+    description: 'Your personalized settings'
+  }
 ];
 
 const DEFAULT_COUNTDOWN_STATE: CountdownState = {
@@ -282,6 +357,8 @@ const DEFAULT_SYNC_SETTINGS: SyncSettings = {
   syncCountdownWithTimer: false,
   isSyncedWithStudyTimer: false,
 };
+
+const DEFAULT_SESSION_SYNC_SETTINGS: SessionSyncSettings = {};
 const DEFAULT_TASK_STATE: TaskState = {
   tasks: [],
   loading: false,
@@ -410,6 +487,25 @@ export const useAppStore = create<AppState>()(
       updateSyncSettings: (updates) =>
         set((state) => ({ 
           syncSettings: { ...state.syncSettings, ...updates } 
+        })),
+      
+      // 🔄 Session-specific Sync Settings
+      sessionSyncSettings: DEFAULT_SESSION_SYNC_SETTINGS,
+      setSessionSyncSettings: (sessionId: string, settings: SyncSettings) => set((state) => ({
+        sessionSyncSettings: { ...state.sessionSyncSettings, [sessionId]: settings }
+      })),
+      clearSessionSyncSettings: (sessionId: string) => set((state) => {
+        const newSettings = { ...state.sessionSyncSettings };
+        delete newSettings[sessionId];
+        return { sessionSyncSettings: newSettings };
+      }),
+      
+      // Pomodoro Settings
+      pomodoroSettings: DEFAULT_POMODORO_SETTINGS,
+      setPomodoroSettings: (settings) => set({ pomodoroSettings: settings }),
+      updatePomodoroSettings: (updates) =>
+        set((state) => ({ 
+          pomodoroSettings: { ...state.pomodoroSettings, ...updates } 
         })),
       
       // State replacements for Redux
@@ -646,8 +742,11 @@ export const useAppStore = create<AppState>()(
         studyTimerStartedAt: state.studyTimerStartedAt,
         sessionsTodayCount: state.sessionsTodayCount,
         syncSettings: state.syncSettings,
+        sessionSyncSettings: state.sessionSyncSettings,
         // Persistir workspace actual para mantener selección al hacer refresh
         workspace: state.workspace,
+        // Persistir pomodoro settings
+        pomodoroSettings: state.pomodoroSettings,
         // Persistir tasks y laps pero no estado temporal
         tasks: state.tasks,
         laps: state.laps,
@@ -671,6 +770,7 @@ export const useAppStore = create<AppState>()(
 // 🎯 Selectores optimizados para evitar re-renders
 export const usePomodoroState = () => useAppStore((state) => state.pomodoroState);
 export const usePomodoroModes = () => useAppStore((state) => state.pomodoroModes);
+export const usePomodoroSettings = () => useAppStore((state) => state.pomodoroSettings);
 export const usePomodoroCounts = () => useAppStore((state) => ({
   thisSession: state.pomodorosThisSession,
   todayLocal: state.pomodorosTodayLocal,
@@ -690,6 +790,9 @@ export const useStudySession = () => useAppStore((state) => ({
   setActiveId: state.setActiveSessionId,
   setStartedAt: state.setStudyTimerStartedAt,
 }));
+
+export const useSessionSyncSettings = (sessionId: string | null) => 
+  useAppStore((state) => sessionId ? state.sessionSyncSettings[sessionId] || null : null);
 
 export const useSyncSettings = () => useAppStore((state) => state.syncSettings);
 export const useTimerStates = () => useAppStore((state) => ({

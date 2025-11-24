@@ -15,6 +15,52 @@ const SessionPage = memo(() => {
   const isRunning = ui.isRunning;
   const resetKey = ui.resetKey;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [pomodoroState, setPomodoroState] = useState<any>(null);
+
+  // Load Pomodoro state from localStorage to show current mode
+  useEffect(() => {
+    const loadPomodoroState = () => {
+      try {
+        const saved = localStorage.getItem('pomodoroState');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setPomodoroState(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to load pomodoro state:', e);
+      }
+    };
+
+    loadPomodoroState();
+    
+    // Listen for Pomodoro state changes
+    const handlePomodoroUpdate = () => loadPomodoroState();
+    window.addEventListener('pomodoroStateUpdate', handlePomodoroUpdate);
+    
+    return () => window.removeEventListener('pomodoroStateUpdate', handlePomodoroUpdate);
+  }, []);
+
+  const getPomodoroModeDisplay = () => {
+    if (!pomodoroState || !pomodoroState.isRunning) return null;
+    
+    const mode = pomodoroState.currentMode || 'work';
+    const validModes = ['work', 'break', 'longBreak'] as const;
+    const currentMode = validModes.includes(mode as any) ? mode as any : 'work';
+    
+    const modeConfig = {
+      work: { text: 'WORK', color: 'text-red-500', bgColor: 'bg-red-500/10' },
+      break: { text: 'BREAK', color: 'text-green-500', bgColor: 'bg-green-500/10' },
+      longBreak: { text: 'LONG BREAK', color: 'text-blue-500', bgColor: 'bg-blue-500/10' }
+    };
+    
+    const config = modeConfig[currentMode];
+    
+    return (
+      <div className={`px-4 py-2 rounded-lg ${config.bgColor} ${config.color} font-semibold text-center uppercase tracking-wider`}>
+        {config.text}
+      </div>
+    );
+  };
 
   // --------------------------
   // Sincronización global de timers
@@ -52,6 +98,13 @@ const SessionPage = memo(() => {
 
   return (
     <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
+      {/* Pomodoro mode display at the very top when active */}
+      {getPomodoroModeDisplay() && (
+        <div className="w-full px-2 mb-4">
+          {getPomodoroModeDisplay()}
+        </div>
+      )}
+      
       <div className="w-full px-2 overflow-hidden pb-4">
         {/* Controles globales */}
         <div className="px-1 mb-4">
@@ -60,21 +113,15 @@ const SessionPage = memo(() => {
 
         {/* Fila superior: Tres timers en columnas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4">
+          {/* Pomodoro */}
+          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <Pomodoro />
+          </div>
+
           {/* Study Timer */}
           <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <StudyTimer
               isSynced={isSynced}
-              isRunning={isRunning}
-              resetKey={resetKey}
-            />
-          </div>
-
-          {/* Pomodoro */}
-          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
-            <Pomodoro
-              isSynced={isSynced}
-              isRunning={isRunning}
-              resetKey={resetKey}
             />
           </div>
 
@@ -83,7 +130,6 @@ const SessionPage = memo(() => {
             <Countdown
               isSynced={isSynced}
               isRunning={isRunning}
-              resetKey={resetKey}
             />
           </div>
         </div>
