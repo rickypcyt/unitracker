@@ -1,18 +1,15 @@
 import {
-  AudioLines,
   Cloud,
   CloudRain,
   MoreVertical,
   Pause,
   Play,
-  SquareArrowOutUpRight,
   Waves,
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 import BaseModal from "@/modals/BaseModal";
 import ReactSlider from "react-slider";
-import SectionTitle from "@/components/SectionTitle";
 import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
 
@@ -327,7 +324,7 @@ function NoiseSettingsModal({
                     onClick={() => {
                       applyPreset(sound.key as keyof PresetsMap, sound.soundRef, preset);
                       setSelectedPresets((sel) =>
-                        sel.map((v, i) => (i === idx ? pIdx : v))
+                        sel.map((v, i) => (i === idx ? pIdx : v)) as [number, number, number]
                       );
                     }}
                   >
@@ -364,7 +361,7 @@ export default function NoiseGenerator() {
       const arr = saved ? JSON.parse(saved) : null;
       if (Array.isArray(arr) && arr.length === 3) return arr;
     } catch {}
-    return [2, 4, 4];
+    return [4, 4, 4];
   });
 
   useEffect(
@@ -436,7 +433,7 @@ export default function NoiseGenerator() {
               start={() => handleStart(idx)}
               stop={() => stopSound(idx)}
               className={sound.key === "ocean" ? "mb-2" : ""}
-              max={maxVolumes[idx]}
+              max={maxVolumes[idx] || 4}
             />
           </motion.div>
         ))}

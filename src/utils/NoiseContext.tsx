@@ -22,14 +22,94 @@ const SOUND_CONFIGS = [
     defaultVolume: 1.5,
     volumeMultiplier: 0.5,
     create: (volume: number) => {
-      const noise = new Tone.Noise("brown").start();
-      const filter = new Tone.Filter(200, "lowpass");
-      const limiter = new Tone.Limiter(-3).toDestination();
-      const gain = new Tone.Gain(volume);
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(limiter);
-      return { noise, filter, gain, limiter };
+      // Clean deep foundation (very low frequencies, smooth)
+      const deepBrown = new Tone.Noise("brown").start();
+      const deepFilter = new Tone.Filter(60, "lowpass", -24);
+      deepFilter.Q.value = 0.2;
+      const deepGain = new Tone.Gain(0.3);
+
+      // Main clean brown (low frequencies, gentle slope)
+      const mainBrown = new Tone.Noise("brown").start();
+      const mainFilter = new Tone.Filter(180, "lowpass", -12);
+      mainFilter.Q.value = 0.3;
+      mainFilter.frequency.value = 180;
+      const mainGain = new Tone.Gain(0.5);
+
+      // Soft mid-brown (low-mid frequencies, very gentle)
+      const midBrown = new Tone.Noise("brown").start();
+      const midFilter = new Tone.Filter(300, "bandpass", -12);
+      midFilter.Q.value = 0.5;
+      midFilter.gain.value = -6;
+      const midGain = new Tone.Gain(0.15);
+
+      // Very gentle variation for smoothness
+      const slowLFO = new Tone.LFO(0.015, 0.9, 1.1).start();
+      const mediumLFO = new Tone.LFO(0.03, 0.95, 1.05).start();
+
+      // Subtle random modulation for organic feel
+      const randomModulation = new Tone.LFO(0.02, 0.01, 0.03).start();
+      randomModulation.connect(slowLFO.frequency);
+
+      // Clean high-frequency presence (minimal)
+      const highTexture = new Tone.Noise("pink").start();
+      const highFilter = new Tone.Filter(1000, "highpass", -24);
+      highFilter.Q.value = 0.3;
+      highFilter.gain.value = -12;
+      const highGain = new Tone.Gain(0.02);
+      const highLFO = new Tone.LFO(0.08, 0.01, 0.03).start();
+      highLFO.connect(highGain.gain);
+
+      // Additional smoothing filter for overall cleanliness
+      const smoothingFilter = new Tone.Filter(500, "lowpass", -12);
+      smoothingFilter.Q.value = 0.2;
+
+      // Gentle processing for clean sound
+      const limiter = new Tone.Limiter(-6).toDestination();
+      const compressor = new Tone.Compressor({
+        threshold: -18,
+        ratio: 2,
+        attack: 0.01,
+        release: 0.5,
+        knee: 6
+      });
+
+      // Main gain with cleaner volume control
+      const gain = new Tone.Gain(volume * 0.4).connect(smoothingFilter);
+      smoothingFilter.connect(compressor);
+      compressor.connect(limiter);
+
+      // Connect gentle LFOs for smooth modulation
+      slowLFO.connect(deepGain.gain);
+      mediumLFO.connect(mainGain.gain);
+
+      // Connect all noise sources with cleaner routing
+      deepBrown.chain(deepFilter, deepGain, gain);
+      mainBrown.chain(mainFilter, mainGain, gain);
+      midBrown.chain(midFilter, midGain, gain);
+      highTexture.chain(highFilter, highGain, gain);
+
+      return {
+        deepBrown,
+        deepFilter,
+        deepGain,
+        mainBrown,
+        mainFilter,
+        mainGain,
+        midBrown,
+        midFilter,
+        midGain,
+        highTexture,
+        highFilter,
+        highGain,
+        highLFO,
+        slowLFO,
+        mediumLFO,
+        randomModulation,
+        smoothingFilter,
+        compressor,
+        gain,
+        limiter,
+      };
     },
   },
   {
@@ -39,36 +119,74 @@ const SOUND_CONFIGS = [
     min: 0,
     max: 3,
     defaultVolume: 1,
-    volumeMultiplier: 0.2,
+    volumeMultiplier: 1.0,
     create: (volume: number) => {
-      const noise = new Tone.Noise("pink").start();
-      const highpass = new Tone.Filter(200, "highpass");
-      const lowpass = new Tone.Filter(1500, "lowpass");
-      const ambientNoise = new Tone.Noise("brown").start();
-      const ambientFilter = new Tone.Filter(100, "lowpass");
-      const ambientGain = new Tone.Gain(0.2);
+      // White noise source for rain drops
+      const noise = new Tone.Noise("white").start();
+      
+      // Band-pass filter for higher pitched rain frequencies
+      const filter = new Tone.Filter(2000, "bandpass");
+      filter.Q.value = 1.2;
+      
+      // Amplitude envelope for each rain drop (fast attack, short decay)
+      const envelope = new Tone.AmplitudeEnvelope({
+        attack: 0.01,    // Quick attack for drop impact
+        decay: 0.08,     // Short decay for realistic drop sound
+        sustain: 0,      // No sustain - drops don't sustain
+        release: 0.03    // Quick release
+      });
+      
+      // Reverb for space and depth
       const reverb = new Tone.Reverb({
-        decay: 2,
-        wet: 0.2,
-        preDelay: 0.1,
+        decay: 2.5,
+        wet: 0.3,
+        preDelay: 0.01
       }).toDestination();
-      const gain = new Tone.Gain(volume * 0.2).connect(reverb);
-
-      noise.connect(highpass);
-      highpass.connect(lowpass);
-      lowpass.connect(gain);
-
-      ambientNoise.connect(ambientFilter);
-      ambientFilter.connect(ambientGain);
-      ambientGain.connect(gain);
+      
+      // Main gain control (much louder)
+      const gain = new Tone.Gain(volume * 0.8).connect(reverb);
+      
+      // Connect the signal chain
+      noise.connect(filter);
+      filter.connect(envelope);
+      envelope.connect(gain);
+      
+      // Random interval generator for natural rain pattern
+      let nextDropTime = 0;
+      const scheduleRainDrops = (time: number) => {
+        // Random interval between drops (50ms to 300ms for moderate rain)
+        const interval = Math.random() * 0.25 + 0.05;
+        
+        // Trigger the envelope for a single drop
+        envelope.triggerAttackRelease(0.1, time);
+        
+        // Schedule next drop
+        nextDropTime = time + interval;
+        if (nextDropTime < Tone.now() + 60) { // Schedule drops for next minute
+          Tone.Transport.schedule(scheduleRainDrops, nextDropTime);
+        }
+      };
+      
+      // Start the rain pattern
+      Tone.Transport.schedule(scheduleRainDrops, Tone.now());
+      
+      // Additional continuous rain texture (higher pitched background)
+      const backgroundRain = new Tone.Noise("pink").start();
+      const backgroundFilter = new Tone.Filter(800, "lowpass");
+      backgroundFilter.Q.value = 0.4;
+      const backgroundGain = new Tone.Gain(volume * 0.3);
+      
+      backgroundRain.connect(backgroundFilter);
+      backgroundFilter.connect(backgroundGain);
+      backgroundGain.connect(reverb);
 
       return {
         noise,
-        highpass,
-        lowpass,
-        ambientNoise,
-        ambientFilter,
-        ambientGain,
+        filter,
+        envelope,
+        backgroundRain,
+        backgroundFilter,
+        backgroundGain,
         gain,
         reverb,
       };
@@ -110,6 +228,30 @@ const SOUND_CONFIGS = [
       const randomModulation = new Tone.LFO(0.04, 0.02, 0.08).start();
       randomModulation.connect(primaryWaveLFO.frequency);
       randomModulation.connect(secondaryWaveLFO.frequency);
+
+      // Wave wash/retreat effect (the "swoosh" of waves receding)
+      const waveRetreat = new Tone.Noise("pink").start();
+      const retreatFilterRise = new Tone.Filter({
+        type: "bandpass",
+        frequency: 600,
+        Q: 2.0,
+        gain: 0
+      });
+      const retreatFilterFall = new Tone.Filter({
+        type: "bandpass", 
+        frequency: 300,
+        Q: 1.5,
+        gain: 0
+      });
+      const retreatGain = new Tone.Gain(0.12);
+      
+      // Complex LFO for wave wash cycle (rise and fall)
+      const washCycleLFO = new Tone.LFO(0.08, 0, 1).start();
+      const washFrequencyLFO = new Tone.LFO(0.08, 300, 800).start();
+      washFrequencyLFO.connect(retreatFilterRise.frequency);
+      
+      // Create the wash effect by modulating gain and frequency
+      washCycleLFO.connect(retreatGain.gain);
 
       // Breaking waves (mid-high frequencies) with variation
       const breakingNoise = new Tone.Noise("pink").start();
@@ -153,7 +295,7 @@ const SOUND_CONFIGS = [
       }).toDestination();
       
       // Main gain with improved volume control
-      const gain = new Tone.Gain(volume * 0.25).connect(reverb);
+      const gain = new Tone.Gain(volume * 0.2).connect(reverb);
       primaryWaveLFO.connect(gain.gain);
       secondaryWaveLFO.connect(gain.gain);
 
@@ -166,6 +308,12 @@ const SOUND_CONFIGS = [
         pinkLowpass,
         gain
       );
+
+      // Connect wave wash effect with dual filters for realistic retreat
+      waveRetreat.fan(retreatFilterRise, retreatFilterFall);
+      retreatFilterRise.connect(retreatGain);
+      retreatFilterFall.connect(retreatGain);
+      retreatGain.connect(gain);
 
       breakingNoise.chain(
         breakingFilter,
@@ -194,6 +342,12 @@ const SOUND_CONFIGS = [
         pinkLowpass,
         brownNoise,
         brownFilter,
+        waveRetreat,
+        retreatFilterRise,
+        retreatFilterFall,
+        retreatGain,
+        washCycleLFO,
+        washFrequencyLFO,
         breakingNoise,
         breakingFilter,
         breakingGain,
@@ -411,48 +565,118 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
       
       // Mute all components if volume is 0
       if (isMuted) {
-        // Main gain
-        soundRef.gain?.gain.rampTo(0, 0.1);
+        // Main gain - immediate mute
+        soundRef.gain?.gain.cancelScheduledValues(0);
+        soundRef.gain?.gain.setValueAtTime(0, Tone.context.currentTime);
         
         // Individual components - set to 0 immediately for instant mute
+        soundRef.deepGain?.gain.cancelScheduledValues(0);
+        soundRef.deepGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
         soundRef.breakingGain?.gain.cancelScheduledValues(0);
         soundRef.breakingGain?.gain.setValueAtTime(0, Tone.context.currentTime);
         
         soundRef.splashGain?.gain.cancelScheduledValues(0);
         soundRef.splashGain?.gain.setValueAtTime(0, Tone.context.currentTime);
         
-        soundRef.brownFilter?.gain?.cancelScheduledValues(0);
-        soundRef.brownFilter?.gain?.setValueAtTime(0, Tone.context.currentTime);
+        soundRef.foamGain?.gain.cancelScheduledValues(0);
+        soundRef.foamGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
+        soundRef.retreatGain?.gain.cancelScheduledValues(0);
+        soundRef.retreatGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
+        // Mute all noise sources completely
+        soundRef.deepOcean?.volume?.cancelScheduledValues(0);
+        soundRef.deepOcean?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        
+        soundRef.brownNoise?.volume?.cancelScheduledValues(0);
+        soundRef.brownNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
         
         soundRef.pinkNoise?.volume?.cancelScheduledValues(0);
         soundRef.pinkNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
         
-        soundRef.brownNoise?.volume?.cancelScheduledValues(0);
-        soundRef.brownNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        soundRef.breakingNoise?.volume?.cancelScheduledValues(0);
+        soundRef.breakingNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        
+        soundRef.foamNoise?.volume?.cancelScheduledValues(0);
+        soundRef.foamNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        
+        soundRef.splashNoise?.volume?.cancelScheduledValues(0);
+        soundRef.splashNoise?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
+        
+        soundRef.waveRetreat?.volume?.cancelScheduledValues(0);
+        soundRef.waveRetreat?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
       } else {
         // Update volumes when not muted
         // Main gain
         soundRef.gain?.gain.rampTo(baseVolume, 0.1);
         
         // Individual components with proper balancing
+        if (soundRef.deepGain) {
+          soundRef.deepGain.gain.rampTo(0.4 * baseVolume, 0.1);
+        }
+        
         if (soundRef.breakingGain) {
-          soundRef.breakingGain.gain.rampTo(0.2 * baseVolume * 0.8, 0.1);
+          soundRef.breakingGain.gain.rampTo(0.15 * baseVolume, 0.1);
         }
         
         if (soundRef.splashGain) {
-          soundRef.splashGain.gain.rampTo(0.15 * baseVolume * 0.6, 0.1);
+          soundRef.splashGain.gain.rampTo(0.06 * baseVolume, 0.1);
         }
         
-        if (soundRef.brownFilter?.gain) {
-          soundRef.brownFilter.gain.rampTo(0.5 * baseVolume * 0.7, 0.1);
+        if (soundRef.foamGain) {
+          soundRef.foamGain.gain.rampTo(0.08 * baseVolume, 0.1);
         }
         
-        // Ensure noise sources are unmuted
-        soundRef.pinkNoise?.volume?.rampTo(0, 0.1);
-        soundRef.brownNoise?.volume?.rampTo(0, 0.1);
+        if (soundRef.retreatGain) {
+          soundRef.retreatGain.gain.rampTo(0.12 * baseVolume, 0.1);
+        }
+        
+        // Unmute all noise sources
+        if (soundRef.deepOcean?.volume) {
+          soundRef.deepOcean.volume.rampTo(-20 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.brownNoise?.volume) {
+          soundRef.brownNoise.volume.rampTo(-15 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.pinkNoise?.volume) {
+          soundRef.pinkNoise.volume.rampTo(-10 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.breakingNoise?.volume) {
+          soundRef.breakingNoise.volume.rampTo(-12 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.foamNoise?.volume) {
+          soundRef.foamNoise.volume.rampTo(-18 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.splashNoise?.volume) {
+          soundRef.splashNoise.volume.rampTo(-20 + (20 * Math.log10(baseVolume)), 0.1);
+        }
+        
+        if (soundRef.waveRetreat?.volume) {
+          soundRef.waveRetreat.volume.rampTo(-15 + (20 * Math.log10(baseVolume)), 0.1);
+        }
       }
-    } 
-    // For other sounds, just update the main gain
+    }
+    // For rain sound, update both main gain and background gain
+    else if (sound.key === 'rain' && soundRef) {
+      const isMuted = volume === 0;
+      const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * (sound.volumeMultiplier || 1);
+      
+      if (isMuted) {
+        // Mute all rain components
+        soundRef.gain?.gain.rampTo(0, 0.1);
+        soundRef.backgroundGain?.gain.rampTo(0, 0.1);
+      } else {
+        // Update rain volumes
+        soundRef.gain?.gain.rampTo(baseVolume, 0.1);
+        soundRef.backgroundGain?.gain.rampTo(baseVolume * 0.3, 0.1);
+      }
+    }
     else if (soundRef?.gain) {
       const safeVolume = volume === 0 
         ? 0.0001 * (sound.volumeMultiplier || 1)

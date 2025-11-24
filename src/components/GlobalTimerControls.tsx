@@ -10,7 +10,6 @@ const GlobalTimerControls = () => {
 
   if (!isSynced) return null;
 
-  // Determinar si algún timer está corriendo
   const anyTimerRunning = studyTimerState === 'running' || pomodoroState === 'running' || countdownState === 'running';
 
   const handlePlayPause = () => {
