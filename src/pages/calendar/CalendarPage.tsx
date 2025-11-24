@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import AllTasks from '@/pages/calendar/AllTasks';
 import Calendar from '@/pages/calendar/Calendar';
@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
 const CalendarPage = memo(() => {
   const location = useLocation();
   const isVisible = location.pathname === '/calendar';
+  const [calendarSize, setCalendarSize] = useState('lg');
 
   // Update calendar when the page becomes visible
   useEffect(() => {
@@ -15,15 +16,23 @@ const CalendarPage = memo(() => {
     }
   }, [isVisible]);
 
+  // Listen for calendar size changes
+  useEffect(() => {
+    const handleCalendarSizeChange = (e: CustomEvent) => {
+      setCalendarSize(e.detail.size);
+    };
+    
+    window.addEventListener('calendarSizeChange', handleCalendarSizeChange as EventListener);
+    return () => window.removeEventListener('calendarSizeChange', handleCalendarSizeChange as EventListener);
+  }, []);
+
   return (
-    <div className="w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-24 2xl:px-32 session-page mt-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="w-full">
-          <Calendar />
-        </div>
-        <div className="w-full">
-          <AllTasks />
-        </div>
+    <div className="w-full px-2 sm:px-4 md:px-6 lg:px-8 xl:px-16 2xl:px-24 session-page mt-2 sm:mt-4">
+      <div className="w-full">
+        <Calendar onSizeChange={setCalendarSize} />
+      </div>
+      <div className="w-full mt-6">
+        <AllTasks calendarSize={calendarSize} />
       </div>
     </div>
   );

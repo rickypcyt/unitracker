@@ -11,7 +11,8 @@ import { useTaskManager } from "@/hooks/useTaskManager";
 
 type ExpandedGroups = {
   today: boolean;
-  thisWeek: boolean;
+  next7Days: boolean;
+  sevenDaysPlus: boolean;
   past: boolean;
   noDeadline: boolean;
 };
@@ -29,7 +30,11 @@ interface ContextMenuState {
   task: Task;
 }
 
-const AllTasks = () => {
+interface AllTasksProps {
+  calendarSize?: string;
+}
+
+const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager();
   const realTasks = useAppStore((state) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
@@ -38,7 +43,8 @@ const AllTasks = () => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({
     today: true,
-    thisWeek: true,
+    next7Days: true,
+    sevenDaysPlus: true,
     past: false, // Past tasks collapsed by default
     noDeadline: true,
   });
@@ -54,6 +60,14 @@ const AllTasks = () => {
   // Get end of week (Sunday)
   const endOfWeek = new Date(today);
   endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+
+  // Get next 7 days from today
+  const next7DaysEnd = new Date(today);
+  next7DaysEnd.setDate(today.getDate() + 7);
+
+  // Get 7+ days start (8 days from today)
+  const sevenDaysPlusStart = new Date(today);
+  sevenDaysPlusStart.setDate(today.getDate() + 8);
 
   // Filter and sort all tasks
   const allTasks = [...tasks].sort((a, b) => {
@@ -86,9 +100,14 @@ const AllTasks = () => {
     return taskDate.toDateString() === today.toDateString();
   });
 
-  const thisWeekTasks = upcomingTasks.filter((task) => {
+  const next7DaysTasks = upcomingTasks.filter((task) => {
     const taskDate = new Date(task.deadline);
-    return taskDate > today && taskDate <= endOfWeek;
+    return taskDate > today && taskDate <= next7DaysEnd;
+  });
+
+  const sevenDaysPlusTasks = upcomingTasks.filter((task) => {
+    const taskDate = new Date(task.deadline);
+    return taskDate >= sevenDaysPlusStart;
   });
 
   // Tasks without deadlines
@@ -164,35 +183,19 @@ const AllTasks = () => {
         </button>
 
         {expandedGroups[groupKey] && (
-          <div
-            className={`mt-3 ${
-              tasks.length > 5
-                ? "max-h-80 overflow-y-auto hide-scrollbar"
-                : "space-y-2"
-            }`}
-            style={{
-              minHeight: "100px",
-              maxHeight: "336px",
-              overflowY: "auto",
-              padding: "0.5rem",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            <div className="space-y-2">
-              {tasks.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onToggleCompletion={handleToggleCompletion}
-                  onDelete={handleDeleteTask}
-                  onEditTask={() => handleEditTask(task)}
-                  onContextMenu={(e) => handleTaskContextMenu(e, task)}
-                  showAssignment={true}
-                  assignmentLeftOfDate={true}
-                />
-              ))}
-            </div>
+          <div className="mt-3 space-y-2">
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => handleTaskContextMenu(e, task)}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -201,14 +204,46 @@ const AllTasks = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="maincard relative mx-auto w-full transition-all duration-300 calendar-view max-w-4xl">
+      <div 
+        className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view flex flex-col ${
+          calendarSize === "xs"
+            ? "max-w-xs"
+            : calendarSize === "sm"
+            ? "max-w-sm"
+            : calendarSize === "md"
+            ? "max-w-lg"
+            : calendarSize === "lg"
+            ? "max-w-2xl"
+            : "max-w-4xl"
+        }`}
+        style={{ aspectRatio: '6/5' }}
+      >
         <div className="w-full text-center mb-4">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)]">
             Pending Tasks
           </h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="p-2 space-y-4">
+          {/* Today's Tasks */}
+          <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
+
+          {/* Next 7 Days */}
+          <TaskGroup 
+            title="Next 7 Days" 
+            tasks={next7DaysTasks} 
+            groupKey="next7Days"
+            icon={<Calendar size={18} className="text-blue-500" />}
+          />
+
+          {/* 7 Days + */}
+          <TaskGroup 
+            title="7 Days +" 
+            tasks={sevenDaysPlusTasks} 
+            groupKey="sevenDaysPlus"
+            icon={<Calendar size={18} className="text-purple-500" />}
+          />
+
           {/* Past Due Section */}
           {pastTasks.length > 0 && (
             <TaskGroup
@@ -218,16 +253,6 @@ const AllTasks = () => {
               icon={<Calendar size={18} className="text-red-500" />}
             />
           )}
-
-          {/* Today's Tasks */}
-          <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
-
-          {/* This Week */}
-          <TaskGroup
-            title="This Week"
-            tasks={thisWeekTasks}
-            groupKey="thisWeek"
-          />
 
           {/* No Deadline */}
           {noDeadlineTasks.filter((task) => !task.completed).length > 0 && (

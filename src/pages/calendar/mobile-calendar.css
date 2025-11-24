@@ -1,0 +1,114 @@
+/* Mobile Calendar Improvements */
+
+/* Custom breakpoint for extra small devices */
+@media (max-width: 320px) {
+  .calendar-view {
+    max-width: 280px !important;
+  }
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 640px) {
+  .calendar-view .touch-manipulation {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Improve button touch targets */
+  .calendar-view button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for small screens */
+  .calendar-view .grid-cols-7 {
+    gap: 1px;
+  }
+  
+  /* Smaller text on very small screens */
+  .calendar-view .text-xs {
+    font-size: 10px;
+  }
+  
+  /* Optimize calendar cells for touch */
+  .calendar-view .grid-cols-7 > div {
+    min-height: 44px;
+  }
+}
+
+/* Smooth transitions for mobile */
+@media (hover: none) {
+  .calendar-view .touch-manipulation {
+    transition: transform 0.1s ease-out;
+  }
+  
+  .calendar-view .touch-manipulation:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Improve readability on mobile */
+@media (max-width: 480px) {
+  .calendar-view {
+    font-size: 14px;
+  }
+  
+  .calendar-view .font-medium {
+    font-weight: 500;
+  }
+  
+  .calendar-view .font-semibold {
+    font-weight: 600;
+  }
+}
+
+/* Better modal positioning on mobile */
+@media (max-width: 640px) {
+  .calendar-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 80vh;
+    border-radius: 1rem 1rem 0 0;
+    transform: translateY(0);
+  }
+  
+  .calendar-modal.closing {
+    transform: translateY(100%);
+  }
+}
+
+/* Hide task indicators on mobile for cleaner UI */
+@media (max-width: 640px) {
+  .calendar-view .task-indicators {
+    display: none;
+  }
+}
+
+/* Optimize task indicators for small screens */
+@media (max-width: 400px) {
+  .calendar-view .w-1 {
+    width: 2px;
+    height: 2px;
+  }
+}
+
+/* Better focus states for accessibility */
+.calendar-view .touch-manipulation:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Improve contrast for better mobile visibility */
+@media (prefers-contrast: high) {
+  .calendar-view {
+    border-width: 2px;
+  }
+  
+  .calendar-view .border-[var(--border-primary)] {
+    border-width: 2px;
+  }
+}

@@ -1,3 +1,5 @@
+import "./mobile-calendar.css";
+
 import { CheckCircle2, Clock, MoreVertical } from "lucide-react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -284,13 +286,14 @@ const Calendar = () => {
 
   return (
     <div
-      className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view ${
+      className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view flex flex-col ${
         calendarSize === "sm"
           ? "max-w-md"
           : calendarSize === "md"
           ? "max-w-2xl"
-          : "max-w-4xl"
+          : "max-w-2xl"
       }`}
+      style={{ aspectRatio: calendarSize === "lg" ? '6/5' : 'auto' }}
     >
       {/* Top bar */}
       <div className="flex justify-center items-center mb-4 relative">
@@ -359,8 +362,8 @@ const Calendar = () => {
       )}
 
       {/* Calendar Grid */}
-      <div className="w-full mt-2 sm:mt-4 relative">
-        <div className="block border-[var(--border-primary)] p-0 sm:p-1 md:p-2 rounded-lg bg-[var(--bg-primary)]/90">
+      <div className="w-full mt-2 sm:mt-4 relative flex-1">
+        <div className="block border-[var(--border-primary)] p-0 sm:p-1 md:p-2 rounded-lg bg-[var(--bg-primary)]/90 h-full flex flex-col">
           {/* Weekdays */}
           <div className="grid grid-cols-7 gap-0.5 mb-1 sm:mb-2">
             {weekdays.map((day, index) => (
@@ -374,7 +377,7 @@ const Calendar = () => {
           </div>
 
           {/* Days */}
-          <div className="grid grid-cols-7 gap-0.5 text-center">
+          <div className="grid grid-cols-7 gap-0.5 text-center flex-1">
             {calendarDays.map((dayObj, index) => {
               const tasksWithDeadline =
                 dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -422,7 +425,7 @@ const Calendar = () => {
                         </div>
                       )}
                       {tasksWithDeadline.length > 0 && (
-                        <div className="flex justify-center gap-0.5 pt-1">
+                        <div className="flex justify-center gap-0.5 pt-1 task-indicators">
                           {tasksWithDeadline.map((task) => (
                             <div
                               key={task.id}
