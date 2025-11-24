@@ -333,12 +333,16 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo a la izquierda */}
           <div className="flex items-center flex-shrink-0">
-            <span className="text-[var(--text-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl lg:screen xl:text-2xl">Uni</span>
-            <span className="text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl lg:screen xl:text-2xl">Tracker</span>
+            {/* Mobile: Show "UT" with U in white and T in accent */}
+            <span className="lg:hidden text-[var(--text-primary)] font-bold text-lg sm:text-xl">U</span>
+            <span className="lg:hidden text-[var(--accent-primary)] font-bold text-lg sm:text-xl">T</span>
+            {/* Desktop: Show full "UniTracker" */}
+            <span className="hidden lg:inline text-[var(--text-primary)] font-bold text-lg lg:text-lg xl:text-2xl">Uni</span>
+            <span className="hidden lg:inline text-[var(--accent-primary)] font-bold text-lg lg:text-lg xl:text-2xl">Tracker</span>
           </div>
           {/* Botones de páginas al centro */}
           <div className="flex-1 flex justify-center items-center">
-            <div className="hidden lg:flex space-x-4 lg:space-x-4">
+            <div className="hidden lg:flex space-x-4 lg:space-x-4 items-center justify-center">
               {navIcons.map(({ page, icon: Icon, label }) => (
                 <button
                   key={page}
@@ -352,7 +356,7 @@ const Navbar = () => {
                 </button>
               ))}
             </div>
-            <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1">
+            <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1 items-center justify-center">
               {navIcons.map(({ page, icon: Icon, label }) => (
                 <button
                   key={page}
@@ -368,25 +372,30 @@ const Navbar = () => {
             </div>
           </div>
           {/* Briefcase y Settings a la derecha */}
-          <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-            <WorkspaceDropdown
-              workspaces={workspacesWithTaskCount}
-              activeWorkspace={activeWorkspace}
-              onSelectWorkspace={handleSelectWorkspace}
-              onCreateWorkspace={handleCreateWorkspace}
-              onEditWorkspace={handleEditWorkspace}
-              onDeleteWorkspace={handleDeleteWorkspace}
-              friends={friends}
-            />
-            <a
-              href="https://github.com/rickypcyt/unitracker"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
-              title="View on GitHub"
-            >
-              <Github className="w-5 h-5" />
-            </a>
+          <div className="flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2 flex-shrink-0">
+            {/* GitHub and Workspace only visible on desktop */}
+            <div className="hidden lg:flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2">
+              <WorkspaceDropdown
+                workspaces={workspacesWithTaskCount}
+                activeWorkspace={activeWorkspace}
+                onSelectWorkspace={handleSelectWorkspace}
+                onCreateWorkspace={handleCreateWorkspace}
+                onEditWorkspace={handleEditWorkspace}
+                onDeleteWorkspace={handleDeleteWorkspace}
+                friends={friends}
+              />
+              <a
+                href="https://github.com/rickypcyt/unitracker"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
+                title="View on GitHub"
+              >
+                <Github className="w-5 h-5" />
+              </a>
+            </div>
+            
+            {/* Settings button - always visible */}
             <SettingsButton
               isLoggedIn={isLoggedIn}
               loginWithGoogle={loginWithGoogle}
@@ -398,6 +407,10 @@ const Navbar = () => {
               onAccept={handleAccept}
               onReject={handleReject}
               friends={friends}
+              workspaces={workspacesWithTaskCount}
+              activeWorkspace={activeWorkspace}
+              onSelectWorkspace={handleSelectWorkspace}
+              githubUrl="https://github.com/rickypcyt/unitracker"
             />
           </div>
         </div>

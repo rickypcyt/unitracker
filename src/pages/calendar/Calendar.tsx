@@ -75,6 +75,7 @@ const Calendar = () => {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [calendarSize, setCalendarSize] = useState("lg"); // sm, md, lg
+  const [lastTap, setLastTap] = useState(0);
 
   const { selectedTask, editedTask, handleCloseTaskDetails } = useTaskDetails();
   const { handleUpdateTask } = useTaskManager();
@@ -151,6 +152,21 @@ const Calendar = () => {
     if (date < today) return setIsInfoModalOpen(true);
     if (!isLoggedIn) return setIsLoginPromptOpen(true);
     setShowTaskForm(true);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, date: Date) => {
+    e.preventDefault();
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    
+    if (tapLength < 500 && tapLength > 0) {
+      // Double tap detected
+      if (date) {
+        handleDateDoubleClick(date);
+      }
+    }
+    
+    setLastTap(currentTime);
   };
 
   const getTasksForDate = useCallback(
@@ -389,6 +405,9 @@ const Calendar = () => {
                   onClick={() => handleDateClick(dayObj.date)}
                   onDoubleClick={() =>
                     dayObj.currentMonth && handleDateDoubleClick(dayObj.date)
+                  }
+                  onTouchEnd={(e) => 
+                    dayObj.currentMonth && handleTouchEnd(e, dayObj.date)
                   }
                   onMouseEnter={() =>
                     tasksWithDeadline.length > 0 &&

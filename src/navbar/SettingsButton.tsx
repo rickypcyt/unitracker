@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { Info, LogIn, LogOut, Settings, User, UserPlus } from 'lucide-react';
+import { Briefcase, ChevronRight, Github, Info, LogIn, LogOut, Settings, User, UserPlus } from 'lucide-react';
 
 import AboutModal from '@/modals/AboutModal';
 import AddFriendModal from '@/modals/AddFriendModal';
@@ -9,7 +9,6 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
 import { useState } from 'react';
-import useTheme from '@/hooks/useTheme';
 
 const SettingsButton = ({
   isLoggedIn,
@@ -22,7 +21,11 @@ const SettingsButton = ({
   onSendRequest,
   onAccept,
   onReject,
-  friends = []
+  friends = [],
+  workspaces = [],
+  activeWorkspace,
+  onSelectWorkspace,
+  githubUrl = "https://github.com/rickypcyt/unitracker"
 }: {
   isLoggedIn: boolean;
   loginWithGoogle: () => void;
@@ -35,13 +38,16 @@ const SettingsButton = ({
   onAccept?: (requestId: any) => void;
   onReject?: (requestId: any) => void;
   friends?: any[];
+  workspaces?: any[];
+  activeWorkspace?: any;
+  onSelectWorkspace?: (workspace: any) => void;
+  githubUrl?: string;
 }) => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const { currentTheme, handleThemeChange } = useTheme();
 
   return (
     <>
@@ -71,12 +77,73 @@ const SettingsButton = ({
               <SettingsIcon className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
               Settings
             </DropdownMenu.Item>
+            
+            {/* Workspace Submenu - Always show */}
+            <DropdownMenu.Sub>
+              <DropdownMenu.SubTrigger className="flex items-center gap-2 px-3 py-2.5 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors">
+                <Briefcase className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                <span className="truncate flex-1">
+                  {activeWorkspace?.name || 'Select Workspace'}
+                </span>
+                <ChevronRight className="w-4 h-4 ml-auto" />
+              </DropdownMenu.SubTrigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.SubContent
+                  className="min-w-[150px] rounded-lg p-1 border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in0 zoom-in-95 antialiased text-[12px] sm:text-sm md:text-sm lg:text-base"
+                  sideOffset={5}
+                  alignOffset={-5}
+                >
+                  {workspaces && workspaces.length > 0 ? (
+                    workspaces.map((workspace) => (
+                      <DropdownMenu.Item
+                        key={workspace.id}
+                        onClick={() => onSelectWorkspace?.(workspace)}
+                        className={`flex items-center gap-2 px-3 py-2 text-sm sm:text-sm md:text-sm lg:text-base rounded-md cursor-pointer outline-none transition-colors ${
+                          activeWorkspace?.id === workspace.id
+                            ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]'
+                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+                        }`}
+                      >
+                        <span className="truncate">{workspace.name}</span>
+                        {workspace.taskCount !== undefined && workspace.taskCount > 0 && (
+                          <span className="ml-auto text-xs bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] px-1.5 py-0.5 rounded-full">
+                            {workspace.taskCount}
+                          </span>
+                        )}
+                      </DropdownMenu.Item>
+                    ))
+                  ) : (
+                    <DropdownMenu.Item
+                      disabled
+                      className="flex items-center gap-2 px-3 py-2 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--text-tertiary)] rounded-md cursor-not-allowed"
+                    >
+                      <span className="truncate">No workspaces available</span>
+                    </DropdownMenu.Item>
+                  )}
+                </DropdownMenu.SubContent>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Sub>
             <DropdownMenu.Item
               onClick={onOpenAbout || (() => setShowAbout(true))}
               className="flex items-center gap-2 px-3 py-2.5 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
             >
               <Info className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
               About
+            </DropdownMenu.Item>
+            
+            {/* GitHub Link */}
+            <DropdownMenu.Item
+              asChild
+            >
+              <a
+                href={githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2.5 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+              >
+                <Github className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                GitHub
+              </a>
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onClick={() => {
@@ -143,18 +210,16 @@ const SettingsButton = ({
       <AddFriendModal
         isOpen={showAddFriendModal}
         onClose={() => setShowAddFriendModal(false)}
-        onSendRequest={onSendRequest}
         receivedRequests={receivedRequests}
         sentRequests={sentRequests}
-        onAccept={onAccept}
-        onReject={onReject}
-        hasRequests={hasFriendRequests}
+        {...(onAccept && { onAccept })}
+        {...(onReject && { onReject })}
+        {...(onSendRequest && { onSendRequest })}
       />
       <FriendsModal
         isOpen={showFriendsModal}
         onClose={() => setShowFriendsModal(false)}
         friends={friends}
-        onRemoveFriend={undefined}
       />
       <SettingsModal
         isOpen={showSettingsModal}
