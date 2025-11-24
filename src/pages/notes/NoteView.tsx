@@ -1,8 +1,9 @@
-import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Save, Trash2, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '../../MarkdownWysiwyg';
+import MobileNotesSelector from './MobileNotesSelector';
 
 interface Note {
   id?: string;
@@ -18,9 +19,22 @@ interface NoteViewProps {
   onSave: (note: Omit<Note, 'id'>) => Promise<void>;
   onDelete: (note: Note) => void;
   onBack: () => void;
+  allNotes?: Note[];
+  onNoteSelect?: (noteId: string) => void;
+  selectedNoteId?: string | undefined;
+  onDeleteNote?: (note: Note) => void;
 }
 
-const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) => {
+const NoteView: React.FC<NoteViewProps> = ({ 
+  note, 
+  onSave, 
+  onDelete, 
+  onBack, 
+  allNotes = [], 
+  onNoteSelect, 
+  selectedNoteId, 
+  onDeleteNote 
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingAssignment, setIsEditingAssignment] = useState(false);
@@ -30,6 +44,7 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
   const [date, setDate] = useState(note.date);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showMobileNotes, setShowMobileNotes] = useState(false);
   const datePickerRef = useRef<any>(null);
 
   // Track unsaved changes
@@ -229,8 +244,19 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
       {/* Header */}
       <div className="sticky top-0 border-b border-[var(--border-primary)] p-2 sm:p-4 bg-[var(--bg-primary)]">
         <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Title - Left */}
-          <div className="flex-shrink-0">
+          {/* Mobile Notes Button - Left */}
+          <div className="flex items-center gap-1 sm:hidden">
+            <button
+              onClick={() => setShowMobileNotes(true)}
+              className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              title="View all notes"
+            >
+              <FileText size={16} className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Title - Center on mobile, Left on desktop */}
+          <div className={`flex-shrink-0 ${allNotes.length > 0 ? 'sm:flex-1' : ''}`}>
             {isEditingTitle ? (
               <input
                 type="text"
@@ -252,7 +278,7 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
               />
             ) : (
               <h1 
-                className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate"
+                className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate text-center sm:text-left"
                 onClick={handleTitleEdit}
                 title="Click to edit title"
               >
@@ -262,7 +288,7 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
           </div>
 
           {/* Assignment - Middle */}
-          <div className="flex-1 flex justify-center min-w-0">
+          <div className="flex-1 flex justify-center min-w-0 max-w-[40%] sm:max-w-[50%]">
             {isEditingAssignment ? (
               <input
                 value={assignment}
@@ -277,16 +303,15 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
                   }
                 }}
                 onBlur={handleAssignmentSave}
-                className="px-2 sm:px-3 py-1 bg-transparent border-2 border-[var(--accent-primary)] rounded-full text-[var(--accent-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-xs sm:text-sm font-medium transition-colors min-w-0 w-fit"
+                className="px-2 sm:px-3 py-1 bg-transparent border-2 border-[var(--accent-primary)] rounded-full text-[var(--accent-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-xs sm:text-sm font-medium transition-colors w-full max-w-[120px] sm:max-w-[150px]"
                 placeholder="Assignment"
                 autoFocus
-                style={{ width: `${Math.max(assignment.length * 0.6 + 4, 8)}ch` }}
               />
             ) : (
               <>
                 {note.assignment ? (
                   <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors"
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors max-w-full truncate"
                     onClick={handleAssignmentEdit}
                     title="Click to edit assignment"
                   >
@@ -294,11 +319,12 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
                   </span>
                 ) : (
                   <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border-2 border-dashed border-[var(--accent-primary)]"
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border border-dashed border-[var(--accent-primary)] whitespace-nowrap"
                     onClick={handleAssignmentEdit}
                     title="Click to add assignment"
                   >
-                    + Add assignment
+                    <span className="hidden sm:inline">+ Add assignment</span>
+                    <span className="sm:hidden">+ Add</span>
                   </span>
                 )}
               </>
@@ -360,7 +386,6 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
           >
             <ArrowLeft size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Back to notes</span>
-            <span className="sm:hidden">←</span>
           </button>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
@@ -381,6 +406,25 @@ const NoteView: React.FC<NoteViewProps> = ({ note, onSave, onDelete, onBack }) =
           </div>
         </div>
       </div>
+      
+      {/* Mobile Notes Selector */}
+      <MobileNotesSelector
+        notes={allNotes}
+        loading={false}
+        error={null}
+        onNoteSelect={(noteId) => {
+          onNoteSelect?.(noteId);
+          setShowMobileNotes(false);
+        }}
+        selectedNoteId={selectedNoteId}
+        onDelete={onDeleteNote || (() => {})}
+        onCreateNote={() => {
+          // This would need to be passed down from parent
+          setShowMobileNotes(false);
+        }}
+        isOpen={showMobileNotes}
+        onClose={() => setShowMobileNotes(false)}
+      />
     </div>
   );
 };

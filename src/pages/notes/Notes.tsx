@@ -256,10 +256,20 @@ const Notes: React.FC = () => {
               onSave={selectedNote?.id ? handleUpdateNote : handleAddNote}
               onDelete={(note) => setNoteToDelete(note)}
               onBack={handleBackToNotes}
+              allNotes={notesToShow}
+              onNoteSelect={handleNoteSelect}
+              selectedNoteId={selectedNoteId}
+              onDeleteNote={(note) => setNoteToDelete(note)}
             />
           ) : (
             <WelcomeView
               onCreateNote={handleCreateNote}
+              notes={notesToShow}
+              loading={loading}
+              error={error}
+              onNoteSelect={handleNoteSelect}
+              selectedNoteId={selectedNoteId}
+              onDelete={(note) => setNoteToDelete(note)}
             />
           )}
         </div>
