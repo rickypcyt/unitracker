@@ -104,9 +104,7 @@ const NoteView: React.FC<NoteViewProps> = ({
   };
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete "${note.title}"?`)) {
-      onDelete(note);
-    }
+    onDelete(note);
   };
 
   // Title editing handlers

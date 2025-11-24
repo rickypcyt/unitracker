@@ -1,4 +1,4 @@
-import { Calendar, FileText, Plus, X } from 'lucide-react';
+import { Calendar, FileText, Folder, Plus, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
@@ -109,48 +109,98 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="p-4 space-y-3">
-              {notes.map((note) => {
-                const noteKey = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
-                return (
-                  <div
-                    key={noteKey}
-                    onClick={() => onNoteSelect?.(note.id || noteKey)}
-                    className={`p-4 border border-[var(--border-primary)] rounded-lg cursor-pointer transition-colors ${
-                      selectedNoteId === note.id
-                        ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
-                        : 'hover:bg-[var(--bg-hover)]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <h4 className="text-sm font-medium text-[var(--text-primary)] truncate flex-1">
-                        {note.title}
-                      </h4>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete?.(note);
-                        }}
-                        className="p-1 rounded text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
-                        title="Delete"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                    {note.assignment && (
-                      <div className="mb-2">
-                        <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]">
-                          {note.assignment}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Group notes by assignment */}
+              {(() => {
+                const notesByAssignment: Record<string, any[]> = {};
+                notes.forEach(note => {
+                  const assignment = note.assignment || 'Unassigned';
+                  if (!notesByAssignment[assignment]) {
+                    notesByAssignment[assignment] = [];
+                  }
+                  notesByAssignment[assignment].push(note);
+                });
+
+                return Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
+                  <div key={assignment} className="mb-6">
+                    {/* Assignment Header */}
+                    <div className="px-2 py-2 bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10 mb-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                          <Folder size={14} className="text-[var(--accent-primary)]" />
+                          {assignment}
+                        </h3>
+                        <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2 py-1 rounded-full">
+                          {assignmentNotes.length}
                         </span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
-                      <Calendar size={12} />
-                      <span>{new Date(note.date).toLocaleDateString()}</span>
+                    </div>
+                    
+                    {/* Notes Grid - 2 columns */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {assignmentNotes.map((note) => {
+                        const noteKey = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
+                        return (
+                          <div
+                            key={noteKey}
+                            onClick={() => onNoteSelect?.(note.id || noteKey)}
+                            className={`relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square cursor-pointer ${
+                              selectedNoteId === note.id
+                                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5'
+                                : ''
+                            }`}
+                          >
+                            {/* Note Header */}
+                            <div className="mb-2 flex flex-col gap-1">
+                              <h4 className="font-semibold text-sm text-[var(--text-primary)] truncate leading-tight">
+                                {note.title}
+                              </h4>
+                            </div>
+
+                            {/* Note Content - Truncated description */}
+                            <div className="mb-2 flex-1 overflow-hidden relative">
+                              {note.description && note.description.includes('<') ? (
+                                <div
+                                  className="text-[var(--text-primary)] text-xs leading-relaxed break-words prose prose-sm prose-p:my-1 prose-p:whitespace-pre-wrap prose-ul:my-1 prose-ol:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:my-0 prose-li:whitespace-pre-wrap prose-headings:mt-1 prose-headings:mb-2 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full"
+                                  dangerouslySetInnerHTML={{ __html: note.description }}
+                                />
+                              ) : (
+                                <div
+                                  className="text-[var(--text-primary)] text-xs leading-relaxed break-words whitespace-pre-line max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full"
+                                >
+                                  {note.description}
+                                </div>
+                              )}
+                              {/* Fade bottom to indicate more content */}
+                              {note.description && note.description.length > 50 && (
+                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent" />
+                              )}
+                            </div>
+
+                            {/* Note Footer */}
+                            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
+                              <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                <Calendar size={10} />
+                                <span className="text-[10px]">{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDelete?.(note);
+                                }}
+                                className="p-1 rounded text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                                title="Delete"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                );
-              })}
+                ));
+              })()}
             </div>
           )}
         </div>
