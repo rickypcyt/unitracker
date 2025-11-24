@@ -1,19 +1,18 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Settings, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import { useEffect, useState, useRef, useCallback, RefObject } from 'react';
+import { BookOpen, Briefcase, Check, ChevronDown, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { supabase } from '@/utils/supabaseClient';
-import { useSelector } from 'react-redux';
+import { useAuth } from '@/store/appStore';
 
-const iconOptions = {
+const iconOptions: { [key: string]: React.ComponentType<any> } = {
   Briefcase,
   FolderOpen,
   Home,
-  Settings,
   User,
   Users,
   Zap,
@@ -48,13 +47,6 @@ interface User {
   // Add other user properties as needed
 }
 
-interface RootState {
-  auth: {
-    user: User;
-  };
-  // Add other state properties as needed
-}
-
 interface WorkspaceDropdownProps {
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
@@ -78,10 +70,9 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
   const [showManageModal, setShowManageModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user } = useAuth();
 
   const getTaskCountByWorkspace = (ws: Workspace) => ws.taskCount || 0;
 
@@ -275,7 +266,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map((ws, i) => (
                 <DropdownMenu.Item
                   key={ws.id}
-                  ref={el => itemRefs.current[i] = el}
+                  ref={el => { itemRefs.current[i] = el; }}
                   onKeyDown={handleKeyDown}
                   onFocus={() => setFocusedIndex(i)}
                   tabIndex={-1}
@@ -350,7 +341,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
               {[...workspaces].sort((a, b) => a.name.localeCompare(b.name)).map((ws, i) => (
                 <DropdownMenu.Item
                   key={ws.id}
-                  ref={el => itemRefs.current[i] = el}
+                  ref={el => { itemRefs.current[i] = el; }}
                   onKeyDown={handleKeyDown}
                   onFocus={() => setFocusedIndex(i)}
                   tabIndex={-1}
