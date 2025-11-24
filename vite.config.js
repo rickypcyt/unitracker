@@ -67,7 +67,6 @@ export default defineConfig(({ command, mode }) => {
     cssMinify: true,
     minify: 'esbuild', // esbuild es más rápido que terser
     reportCompressedSize: false, // Desactivar para builds más rápidos
-    chunkSizeWarningLimit: 1000
   },
   resolve: {
     alias: {
