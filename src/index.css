@@ -107,6 +107,7 @@
       Roboto, Helvetica, Arial, Oxygen, Ubuntu, Cantarell, "Open Sans",
       "Helvetica Neue", sans-serif;
     min-height: 100vh;
+    height: 100%;
     @apply text-base;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -114,6 +115,8 @@
     backface-visibility: hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     font-size: 18px; /* o 20px */
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
   }
 
   html.dark {
@@ -131,6 +134,17 @@
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color 0.1s ease;
+    min-height: 100vh;
+    height: 100%;
+  }
+
+  /* Ensure background extends under status bar on iOS */
+  @supports (-webkit-touch-callout: none) {
+    html, body {
+      min-height: -webkit-fill-available;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
   }
 
   body {
@@ -142,6 +156,25 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
+  }
+
+  /* Ensure root element covers full height */
+  #root {
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  /* Additional iOS Safari fixes */
+  @supports (-webkit-touch-callout: none) {
+    body {
+      background-color: var(--bg-primary) !important;
+    }
+    
+    #root {
+      min-height: -webkit-fill-available !important;
+      background-color: var(--bg-primary) !important;
+    }
   }
 
   * {

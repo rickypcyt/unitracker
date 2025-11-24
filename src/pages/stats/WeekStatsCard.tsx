@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import StatsChart from './StatsChart';
-import ChartCard from './ChartCard';
 import type { Dispatch, ReactElement, SetStateAction } from 'react';
+
+import ChartCard from './ChartCard';
+import StatsChart from './StatsChart';
 
 const weekDayInitials = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -13,9 +13,12 @@ interface WeekStatsCardProps {
   shownWeekNumber: number;
   weekOffset: number;
   setWeekOffset: Dispatch<SetStateAction<number>>;
+  handleWeekPrevious?: () => void;
+  handleWeekNext?: () => void;
+  isDemo?: boolean;
 }
 
-const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset }: WeekStatsCardProps): ReactElement => {
+const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset, handleWeekPrevious, handleWeekNext, isDemo = false }: WeekStatsCardProps): ReactElement => {
   // Asegura que siempre haya 7 elementos, uno por cada día de la semana
   const weekData = weekDayInitials.map((label, idx) => {
     const d = data && data[idx] ? data[idx] : { minutes: 0, hoursLabel: '0:00', date: '', dayName: label };
@@ -30,10 +33,11 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
       <ChartCard
         paddingClass="p-2"
         className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-4 z-50 backdrop-blur-sm"
+        isDemo={isDemo}
         header={
           <>
             <button
-              onClick={() => setWeekOffset((prev) => prev + 1)}
+              onClick={handleWeekPrevious || (() => setWeekOffset((prev) => prev + 1))}
               className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
               aria-label="Previous week"
             >
@@ -43,7 +47,7 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
               {`Week ${shownWeekNumber}`}
             </span>
             <button
-              onClick={() => setWeekOffset((prev) => prev - 1)}
+              onClick={handleWeekNext || (() => setWeekOffset((prev) => prev - 1))}
               className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
               aria-label="Next week"
               disabled={weekOffset === 0}

@@ -1,4 +1,5 @@
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useTasks } from '@/store/appStore';
@@ -15,20 +16,12 @@ function formatMinutesToHoursLabel(minutes: number) {
   return `${h}h`;
 }
 
-function getISOWeekNumber(date: Date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
-}
-
 const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   if (!active || !payload || !payload.length) return null;
   const entry = payload[0].payload;
   let date: string | undefined = undefined;
-  let year: string, month: string;
-  let monthIdx: number;
+  let year: string | undefined, month: string | undefined;
+  let monthIdx: number | undefined;
   if (title === "This Month") {
     // Buscar el objeto cuyo dayName sea igual al del entry
     const dayData = data.find((d: any) => d.dayName === entry.dayName);
@@ -39,13 +32,14 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
     // Extraer año y mes del primer dato del array (todos son del mismo mes)
     if (data.length > 0) {
       const d = new Date(data[0].date);
-      year = d.getFullYear();
-      month = d.getMonth();
+      year = d.getFullYear().toString();
+      month = d.getMonth().toString();
     }
   } else if (title === "This Year") {
     // Para 'This Year', filtrar tasks por mes y año
-    const yearStr = entry.date.split('-')[0];
-    const monthStr = entry.date.split('-')[1];
+    const dateParts = entry.date.split('-');
+    const yearStr = dateParts[0];
+    const monthStr = dateParts[1];
     year = yearStr;
     monthIdx = parseInt(monthStr, 10) - 1;
     // date = primer día del mes para formato
@@ -63,7 +57,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
       const completedDate = new Date(t.completed_at);
       return completedDate.getFullYear() === parseInt(year, 10) && completedDate.getMonth() === monthIdx;
     });
-  } else {
+  } else if (date) {
     dayTasks = tasks.filter((t: any) => {
       if (!t.completed_at) return false;
       const completedDate = new Date(t.completed_at).toISOString().split('T')[0];
@@ -75,7 +69,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   let dayLabel: string;
   if (title === "This Month" && entry.realDay && year !== undefined && month !== undefined) {
     // Construir la fecha manualmente para evitar desfases de zona horaria
-    const correctDate = new Date(year, month, parseInt(entry.realDay, 10));
+    const correctDate = new Date(parseInt(year), parseInt(month), parseInt(entry.realDay, 10));
     dayLabel = correctDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   } else if (title === "This Month" && date) {
     const dateObj = new Date(date);
@@ -89,20 +83,46 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   } else {
     dayLabel = label || '';
   }
+  
+  // Calculate trend compared to previous period
+  const getTrendIcon = () => {
+    const currentIndex = data.findIndex((d: any) => d.dayName === entry.dayName);
+    if (currentIndex > 0) {
+      const previousEntry = data[currentIndex - 1];
+      if (previousEntry && previousEntry.minutes > 0) {
+        const difference = entry.minutes - previousEntry.minutes;
+        if (difference > 0) return <TrendingUp className="w-4 h-4 text-green-500" />;
+        if (difference < 0) return <TrendingDown className="w-4 h-4 text-red-500" />;
+      }
+    }
+    return <Minus className="w-4 h-4 text-gray-500" />;
+  };
+  
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-xl min-w-[180px] text-center">
-      <div className="font-semibold text-[var(--accent-primary)] mb-1 text-center">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
-      <div className="text-[var(--text-primary)] text-center">Time: <b>{formatMinutesToHMText(entry.minutes)}</b></div>
-      <div className="text-[var(--text-primary)] text-center">Tasks: <b>{dayTasks.length}</b></div>
+    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-4 shadow-xl min-w-[200px] text-center backdrop-blur-sm">
+      <div className="font-semibold text-[var(--accent-primary)] mb-2 text-center text-sm">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <div className="text-[var(--text-primary)] text-center">Time: <b className="text-lg">{formatMinutesToHMText(entry.minutes)}</b></div>
+        {getTrendIcon()}
+      </div>
+      <div className="text-[var(--text-primary)] text-center mb-2">Tasks: <b>{dayTasks.length}</b></div>
       {tags.length > 0 && (
-        <div className="text-[var(--text-primary)] text-center">Tags: <span className="italic">{tags.map((tag: any) => `"${tag}"`).join(', ')}</span></div>
+        <div className="text-[var(--text-secondary)] text-center text-xs mt-2">
+          <div className="font-medium mb-1">Tags:</div>
+          <div className="flex flex-wrap gap-1 justify-center">
+            {tags.map((tag: any, index: number) => (
+              <span key={index} className="bg-[var(--bg-secondary)] px-2 py-1 rounded text-xs">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
 const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }: any) => {
-  const chartRef = useRef<HTMLDivElement>(null);
   const { tasks } = useTasks();
   const [isSmall, setIsSmall] = useState(false);
 
@@ -157,7 +177,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   );
   const isMonthChart = title === 'This Month';
   const isYearChart = title === 'This Year';
-  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-lg bg-[var(--bg-secondary)] z-10`;
+  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-xl bg-[var(--bg-secondary)] shadow-lg hover:shadow-xl transition-shadow duration-300 z-10`;
 
   // Para 'This Year': escalar y mostrar etiquetas enteras según el mayor valor
   const yearDivisor = title === 'This Year' && dataMaxMinutes > 0
@@ -271,18 +291,32 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 allowDecimals={false}
                 tickMargin={isSmall ? 4 : 8}
               />
-              <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.08)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
-              <CartesianGrid strokeDasharray="3 3" stroke="#444" opacity={0.25} vertical={false} />
+              <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.12)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" opacity={0.3} vertical={false} />
               <Bar
                 dataKey="minutes"
                 fill={accentColor}
-                radius={[6, 6, 0, 0]}
-                barSize={title === 'This Month' ? (isSmall ? 8 : 10) : title === 'This Year' ? 18 : 18}
-                animationDuration={0}
+                radius={[8, 8, 0, 0]}
+                barSize={title === 'This Month' ? (isSmall ? 10 : 12) : title === 'This Year' ? 20 : 20}
+                animationDuration={800}
+                animationBegin={0}
               >
-                {chartData.map((entry: any, index: number) => (
-                  <Cell key={`cell-${index}`} fill={index === todayIndex ? 'var(--accent-primary)' : accentColor} />
-                ))}
+                {chartData.map((entry: any, index: number) => {
+                  const isToday = index === todayIndex;
+                  const hasData = entry.minutes > 0;
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={
+                        isToday 
+                          ? 'var(--accent-primary)' 
+                          : hasData 
+                            ? accentColor 
+                            : 'var(--bg-tertiary)'
+                      } 
+                    />
+                  );
+                })}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

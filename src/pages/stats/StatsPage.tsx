@@ -49,7 +49,6 @@ const StatsPage = memo(() => {
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
         {/* Stats Banner at the top */}
         
-        
         {/* Charts and other content below */}
         <div className="space-y-3">
         <Statistics />

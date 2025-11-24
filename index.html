@@ -53,8 +53,8 @@
     <meta property="twitter:image" content="/assets/og-image.png" />
 
     <!-- PWA -->
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Uni Tracker" />
@@ -150,11 +150,29 @@
       data-cf-beacon='{"token": "b29c5e1a2c6144fe9178c0bd49fcecb2"}'
     ></script>
     <!-- End Cloudflare Web Analytics -->
+    <style>
+      /* Force black background for iOS Safari */
+      html, body, #root {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      @supports (-webkit-touch-callout: none) {
+        html, body, #root {
+          background-color: #000000 !important;
+          color: #ffffff !important;
+          min-height: -webkit-fill-available !important;
+        }
+      }
+    </style>
   </head>
 
-  <body style="background-color: #000000; color: #ffffff;">
+  <body style="background-color: #000000; color: #ffffff; margin: 0; padding: 0; min-height: 100vh; -webkit-font-smoothing: antialiased;">
     <!-- El contenido generado por React se montará aquí -->
-    <div id="root"></div>
+    <div id="root" style="background-color: #000000; color: #ffffff; min-height: 100vh;"></div>
 
     <!-- Importamos el archivo JavaScript principal donde se monta la aplicación React -->
     <script type="module" src="/src/main.tsx"></script>
