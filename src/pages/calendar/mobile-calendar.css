@@ -108,7 +108,7 @@
     border-width: 2px;
   }
   
-  .calendar-view .border-[var(--border-primary)] {
+  .calendar-view .border-\[var\(--border-primary\)\] {
     border-width: 2px;
   }
 }

@@ -672,6 +672,50 @@ h1 {
   @apply btn-base btn-rounded-full btn-padding-1 btn-bg-secondary  btn-hover-bg-secondary-opacity-30 btn-flex-center;
 }
 
+/* Timer text styles */
+.time-text {
+  @apply text-[var(--text-primary)];
+}
+
+.timer-display {
+  @apply text-[var(--text-primary)];
+}
+
+/* Prose text styles for markdown content */
+.prose {
+  @apply text-[var(--text-primary)];
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  @apply text-[var(--text-primary)];
+}
+
+.prose p {
+  @apply text-[var(--text-primary)];
+}
+
+.prose ul,
+.prose ol {
+  @apply text-[var(--text-primary)];
+}
+
+.prose li {
+  @apply text-[var(--text-primary)];
+}
+
+.prose strong {
+  @apply text-[var(--text-primary)];
+}
+
+.prose em {
+  @apply text-[var(--text-primary)];
+}
+
 .control-button:disabled {
   @apply btn-disabled;
 }

@@ -2,6 +2,7 @@ import { compression } from 'vite-plugin-compression2';
 import { defineConfig } from 'vite'
 import path from "path";
 import react from '@vitejs/plugin-react-swc'
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ command, mode }) => {
   // Disable compression for mobile builds to avoid duplicate resource issues in Android
@@ -12,6 +13,15 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [
       react(),
+      // Bundle analyzer solo cuando se solicita explícitamente
+      ...(process.env.ANALYZE === 'true' ? [
+        visualizer({
+          filename: 'dist/stats.html',
+          open: true,
+          gzipSize: true,
+          brotliSize: true,
+        })
+      ] : []),
       // Only enable compression for web builds, not mobile builds
       ...(!shouldDisableCompression ? [
         compression({
@@ -47,16 +57,24 @@ export default defineConfig(({ command, mode }) => {
   // Cache configuration
   cacheDir: 'node_modules/.vite',
   build: {
-    target: 'es2020',
-    chunkSizeWarningLimit: 1000,
+    target: ['es2020', 'firefox91'], // Firefox 91+ soporta características modernas
+    chunkSizeWarningLimit: 600, // Reducir para forzar mejor splitting
     rollupOptions: {
       output: {
         manualChunks: {
-          // Separar vendor chunks para mejor caching
+          // Separar vendor chunks para mejor caching y carga paralela
           'react-vendor': ['react', 'react-dom'],
-          'ui-vendor': ['@chakra-ui/react', 'framer-motion'],
-          'utils-vendor': ['@reduxjs/toolkit', 'react-redux'],
-          'supabase-vendor': ['@supabase/supabase-js', '@supabase/postgrest-js']
+          // Split large UI library into smaller chunks
+          'chakra-core': ['@chakra-ui/react'],
+          'motion-vendor': ['framer-motion'],
+          'emotion-vendor': ['@emotion/react', '@emotion/styled'],
+          'utils-vendor': ['@reduxjs/toolkit', 'react-redux', 'zustand'],
+          'supabase-vendor': ['@supabase/supabase-js'],
+          'chart-vendor': ['chart.js', 'react-chartjs-2', 'recharts'],
+          // @tiptap/pm tiene problemas de resolución, dejar que Rollup lo maneje automáticamente
+          // Split large utilities
+          'date-vendor': ['date-fns', 'dayjs'],
+          'icon-vendor': ['lucide-react', '@heroicons/react']
         },
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -65,8 +83,12 @@ export default defineConfig(({ command, mode }) => {
     },
     sourcemap: mode === 'development',
     cssMinify: true,
-    minify: 'esbuild', // esbuild es más rápido que terser
-    reportCompressedSize: false, // Desactivar para builds más rápidos
+    minify: mode === 'development' ? false : 'terser', // Usar terser en producción para mejor compresión
+    reportCompressedSize: false,
+    // Optimizaciones específicas para Firefox
+    modulePreload: {
+      polyfill: false // Firefox no necesita polyfill para modulePreload
+    }
   },
   resolve: {
     alias: {

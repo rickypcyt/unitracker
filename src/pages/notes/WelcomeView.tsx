@@ -245,7 +245,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-2 sm:gap-4 text-[var(--text-secondary]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-2 sm:gap-4 text-[var(--text-secondary)]">
             <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
               <DatePicker
                 ref={datePickerRef}
@@ -286,7 +286,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-6">
           <div className="max-w-none sm:max-w-4xl mx-auto">
-            <div className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert text-center">
+            <div className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert text-center text-[var(--text-primary)]">
               <ReactMarkdown>{description}</ReactMarkdown>
             </div>
             

@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { useAuth } from "./useAuth";
+
 const useTheme = () => {
+  const { user, isLoggedIn } = useAuth();
+  
   // Función para detectar el tema del sistema
   const getSystemTheme = () => {
     if (typeof window === 'undefined') return 'light';
@@ -35,10 +39,21 @@ const useTheme = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(
     !localStorage.getItem("hasSeenWelcomeModal")
   );
+  const [showThemeSelectionModal, setShowThemeSelectionModal] = useState(false);
+  const [showAccentColorModal, setShowAccentColorModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [accentPalette, setAccentPalette] = useState(
     localStorage.getItem("accentPalette") || "#0A84FF"
   );
+
+  // Update login modal state when authentication changes
+  useEffect(() => {
+    if (isLoggedIn) {
+      setShowLoginModal(false);
+      localStorage.setItem("hasSeenLoginModal", "true");
+    }
+  }, [isLoggedIn]);
 
   // Función para aplicar el tema
   const applyTheme = useCallback((theme) => {
@@ -71,6 +86,69 @@ const useTheme = () => {
   const handleCloseWelcome = () => {
     setShowWelcomeModal(false);
     localStorage.setItem("hasSeenWelcomeModal", "true");
+    // Automatically show theme selection modal after a short delay
+    setTimeout(() => {
+      if (!localStorage.getItem("hasSeenThemeSelectionModal")) {
+        setShowThemeSelectionModal(true);
+      }
+    }, 200);
+  };
+
+  const handleCloseThemeSelection = () => {
+    setShowThemeSelectionModal(false);
+    localStorage.setItem("hasSeenThemeSelectionModal", "true");
+    // Automatically show accent color modal after a short delay
+    setTimeout(() => {
+      if (!localStorage.getItem("hasSeenAccentColorModal")) {
+        setShowAccentColorModal(true);
+      }
+    }, 200);
+  };
+
+  const handleCloseAccentColor = () => {
+    setShowAccentColorModal(false);
+    localStorage.setItem("hasSeenAccentColorModal", "true");
+    // Automatically show login modal after a short delay, only if user is not logged in
+    setTimeout(() => {
+      if (!isLoggedIn && !localStorage.getItem("hasSeenLoginModal")) {
+        setShowLoginModal(true);
+      }
+    }, 200);
+  };
+
+  const handleCloseLogin = () => {
+    setShowLoginModal(false);
+    localStorage.setItem("hasSeenLoginModal", "true");
+  };
+
+  const handleLogin = () => {
+    setShowLoginModal(false);
+    localStorage.setItem("hasSeenLoginModal", "true");
+  };
+
+  const handleAccentColorSelection = (color) => {
+    setAccentPalette(color);
+    localStorage.setItem("accentPalette", color);
+    setShowAccentColorModal(false);
+    localStorage.setItem("hasSeenAccentColorModal", "true");
+    // Automatically show login modal after color selection, only if user is not logged in
+    setTimeout(() => {
+      if (!isLoggedIn && !localStorage.getItem("hasSeenLoginModal")) {
+        setShowLoginModal(true);
+      }
+    }, 200);
+  };
+
+  const handleThemeSelection = (theme) => {
+    handleThemeChange(theme);
+    setShowThemeSelectionModal(false);
+    localStorage.setItem("hasSeenThemeSelectionModal", "true");
+    // Automatically show accent color modal after theme selection
+    setTimeout(() => {
+      if (!localStorage.getItem("hasSeenAccentColorModal")) {
+        setShowAccentColorModal(true);
+      }
+    }, 200);
   };
 
   const handleOverlayClick = (e) => {
@@ -149,7 +227,16 @@ const useTheme = () => {
     themePreference,
     accentPalette,
     showWelcomeModal,
+    showThemeSelectionModal,
+    showAccentColorModal,
+    showLoginModal,
     handleCloseWelcome,
+    handleCloseThemeSelection,
+    handleCloseAccentColor,
+    handleCloseLogin,
+    handleThemeSelection,
+    handleAccentColorSelection,
+    handleLogin,
     handleOverlayClick,
     handleThemeChange,
     toggleTheme, // Para compatibilidad con el código existente

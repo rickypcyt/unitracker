@@ -14,7 +14,6 @@ import TourManager from "./components/TourManager";
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuthActions } from "@/store/appStore";
-import useTheme from "@/hooks/useTheme";
 
 // -------------------------
 // Pages mapping
@@ -107,8 +106,6 @@ const UserModalGate: FC = () => {
 // Main App component
 // -------------------------
 const App: FC = () => {
-  const { toggleTheme } = useTheme();
-
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -156,16 +153,9 @@ const App: FC = () => {
 
     requestNotificationPermission();
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && /^m$/i.test(e.key)) {
-        e.preventDefault();
-        toggleTheme();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleTheme]);
+    window.addEventListener("keydown", () => {});
+    return () => window.removeEventListener("keydown", () => {});
+  }, []);
 
   // -------------------------
   // Swipe navigation

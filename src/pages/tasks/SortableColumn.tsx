@@ -1,9 +1,9 @@
 import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
 import { TaskItem } from '@/pages/tasks/TaskItem';
-import { useState } from 'react';
 
 interface SortableColumnProps {
   id?: string;
@@ -44,6 +44,23 @@ export const SortableColumn = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
 
+  // Ordenar tareas por deadline (atrasadas primero, futuras después)
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      // Si no tienen deadline, ponerlas al final
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1; // a va al final
+      if (!b.deadline) return -1; // b va al final
+      
+      // Convertir deadlines a Date para comparar
+      const dateA = new Date(a.deadline);
+      const dateB = new Date(b.deadline);
+      
+      // Ordenar de más antiguo (atrasado) a más nuevo (futuro)
+      return dateA.getTime() - dateB.getTime();
+    });
+  }, [tasks]);
+
   const handleSave = () => {
     if (editedName.trim() && editedName !== assignment) {
       onUpdateAssignment(assignment, editedName);
@@ -51,7 +68,7 @@ export const SortableColumn = ({
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSave();
     } else if (e.key === 'Escape') {
@@ -168,7 +185,7 @@ export const SortableColumn = ({
           zIndex: 1,
         }}
       >
-        {tasks.map((task) => (
+        {sortedTasks.map((task) => (
           <TaskItem
             key={task.id}
             task={task}

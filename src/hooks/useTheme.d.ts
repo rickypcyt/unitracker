@@ -11,7 +11,16 @@ declare const useTheme: () => {
   accentPalette: string;
   setAccentPalette: (color: string) => void;
   showWelcomeModal: boolean;
+  showThemeSelectionModal: boolean;
+  showAccentColorModal: boolean;
+  showLoginModal: boolean;
   handleCloseWelcome: () => void;
+  handleCloseThemeSelection: () => void;
+  handleCloseAccentColor: () => void;
+  handleCloseLogin: () => void;
+  handleThemeSelection: (theme: ThemePreference) => void;
+  handleAccentColorSelection: (color: string) => void;
+  handleLogin: () => void;
   handleOverlayClick: (e: MouseEvent) => void;
 };
 

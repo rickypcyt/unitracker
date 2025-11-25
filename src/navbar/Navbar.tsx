@@ -9,6 +9,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-hot-toast';
 import useAppStore from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
+import useDemoMode from '@/utils/useDemoMode';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const Navbar = () => {
@@ -17,6 +18,7 @@ const Navbar = () => {
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { tasks } = useTasks();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
+  const { isDemo } = useDemoMode();
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
@@ -26,10 +28,15 @@ const Navbar = () => {
   useEffect(() => {
     const fetchWorkspaces = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!user && !isDemo) {
         setWorkspaces([]);
         localStorage.removeItem('activeWorkspaceId');
         localStorage.removeItem('workspacesHydrated');
+        return;
+      }
+      
+      // Don't fetch real workspaces in demo mode
+      if (isDemo) {
         return;
       }
       const { data, error } = await supabase
@@ -110,14 +117,14 @@ const Navbar = () => {
     }
   }, [workspaces.length]); // Re-fetch when workspaces change
 
-  // Clear workspaces if not logged in
+  // Clear workspaces if not logged in (but not in demo mode)
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isDemo) {
       setWorkspaces([]);
       localStorage.removeItem('activeWorkspaceId');
       localStorage.removeItem('workspacesHydrated');
     }
-  }, [isLoggedIn, setWorkspaces]);
+  }, [isLoggedIn, isDemo, setWorkspaces]);
 
   // Load friend requests from Supabase
   const fetchRequests = useCallback(async () => {

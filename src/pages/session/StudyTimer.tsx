@@ -1137,7 +1137,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
       {/* Timer display con tooltip para Session Title */}
       <div
-        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-4 text-center"
+        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-4 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current session time"
       >

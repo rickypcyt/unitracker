@@ -71,14 +71,14 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           onClick={onClose}
           className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
         >
-          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-200 group-hover:rotate-90" />
+          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-200" />
         </button>
         
         {/* Header Section */}
         <div className="flex flex-col items-center mb-6 sm:mb-8 md:mb-10 relative z-10">
           {/* Logo with animation */}
           <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
-            <span className="text-[var(--text-primary)] font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-secondary)] bg-clip-text text-transparent">Uni</span>
+            <span className="text-[var(--text-primary)] font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Uni</span>
             <span className="text-[var(--accent-primary)] font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Tracker</span>
           </div>
           
@@ -137,11 +137,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* CTA Section */}
         <div className="flex flex-col items-center gap-3 sm:gap-4 relative z-10">
           <button
-            className="group px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg cursor-pointer transition-all duration-300 hover:bg-[var(--accent-primary)] hover:text-white hover:shadow-xl hover:shadow-[var(--accent-primary)]/25 transform hover:scale-105 active:scale-[0.98] flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10 hover:from-[var(--accent-primary)] hover:to-[var(--accent-primary)] min-h-[44px] sm:min-h-[48px]"
+            className="group px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg cursor-pointer transition-all duration-300 transform active:scale-[0.98] flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10 min-h-[44px] sm:min-h-[48px]"
             onClick={onClose}
           >
             Get Started
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" />
           </button>
           
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] opacity-70 text-center px-4">

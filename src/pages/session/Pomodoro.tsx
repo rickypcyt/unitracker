@@ -867,7 +867,7 @@ const Pomodoro: React.FC = () => {
 
       {/* Timer Display */}
       <div
-        className="text-3xl md:text-4xl xl:text-5xl font-mono mb-6 lg:mb-4 text-center"
+        className="text-3xl md:text-4xl xl:text-5xl font-mono mb-6 lg:mb-4 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current pomodoro time"
       >
@@ -920,23 +920,7 @@ const Pomodoro: React.FC = () => {
         )}
       </div>
 
-      {/* Pomodoro State Footer */}
-      <div className="w-full py-0 px-4 bg-[var(--bg-secondary)] border-t border-[var(--border-primary)] rounded-b-lg">
-        <div className="text-center">
-          <span className={`text-sm font-mono font-bold uppercase tracking-wider ${
-            pomoState.currentMode === 'work' 
-              ? 'text-[var(--accent-primary)]' 
-              : pomoState.currentMode === 'break' 
-              ? 'text-blue-500' 
-              : 'text-green-500'
-          }`}>
-            {pomoState.currentMode === 'work' && 'Work'}
-            {pomoState.currentMode === 'break' && 'Break'}
-            {pomoState.currentMode === 'longBreak' && 'Long Break'}
-          </span>
-        </div>
-      </div>
-
+      
       {/* Settings Modal */}
       <PomodoroSettingsModal
         isOpen={isSettingsModalOpen}
