@@ -1,17 +1,30 @@
 import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
-import { SortableTaskItem } from '@/pages/tasks/SortableTaskItem';
 import { TaskItem } from '@/pages/tasks/TaskItem';
-import { useDroppable } from '@dnd-kit/core';
-import { useRef } from 'react';
-// @ts-nocheck
 import { useState } from 'react';
 
+interface SortableColumnProps {
+  id?: string;
+  assignment: string;
+  tasks: any[];
+  pinned: boolean;
+  onTogglePin: () => void;
+  onAddTask: () => void;
+  onTaskToggle: (task: any) => void;
+  onTaskDelete: (taskId: string) => void;
+  onEditTask: (task: any) => void;
+  onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
+  onSortClick: (assignmentId: string, position: { x: number; y: number }) => void;
+  columnMenu: any;
+  onCloseColumnMenu: () => void;
+  onMoveToWorkspace: (assignment: string) => void;
+  onDeleteAssignment: () => void;
+  onUpdateAssignment: (oldName: string, newName: string) => void;
+}
+
 export const SortableColumn = ({
-  id,
   assignment,
   tasks,
   pinned,
@@ -22,13 +35,12 @@ export const SortableColumn = ({
   onEditTask,
   onTaskContextMenu,
   onSortClick,
-  onMoveTask,
   columnMenu,
   onCloseColumnMenu,
   onMoveToWorkspace,
   onDeleteAssignment,
-  onUpdateAssignment, // New prop for updating assignment
-}) => {
+  onUpdateAssignment,
+}: SortableColumnProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
 
@@ -47,29 +59,6 @@ export const SortableColumn = ({
       setIsEditing(false);
     }
   };
-  // Set up the droppable workspace for the column
-  const { setNodeRef, isOver } = useDroppable({
-    id: `column-${assignment}`, // This ID must match what we check in handleDragEnd
-    data: {
-      type: 'column',
-      assignment: assignment,
-      // Add more context to help with debugging
-      columnId: assignment,
-      isColumn: true
-    },
-  });
-
-  // Handle drops in the empty space of the column
-  const handleDropInEmptySpace = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  // Handle drag over for the empty space
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
 
   const handleColumnDoubleClick = (e: React.MouseEvent) => {
     // Prevent opening modal if double-clicking on interactive elements
@@ -86,17 +75,14 @@ export const SortableColumn = ({
 
   return (
     <div
-      ref={setNodeRef}
       onDoubleClick={handleColumnDoubleClick}
-      className={`flex flex-col h-full min-h-0 transition-all duration-200 relative cursor-pointer ${
-        isOver ? 'task-drop-zone-active' : ''
-      }`}
+      className={`flex flex-col transition-all duration-200 relative cursor-pointer`}
       style={{
-        minHeight: '500px', // Maximum drop zone - entire column
+        minHeight: '200px',
         padding: '0rem',
-        height: '100%', // Take full available height
+        height: 'auto',
       }}
-      data-column-id={assignment} // Add data attribute for easier debugging
+      data-column-id={assignment}
       data-testid={`column-${assignment}`}
     >
       <div className="flex items-center justify-between w-full mb-3">
@@ -172,56 +158,27 @@ export const SortableColumn = ({
 
       
       <div
-        ref={setNodeRef}
-        onDrop={handleDropInEmptySpace}
-        onDragOver={handleDragOver}
-        className={`relative space-y-1.5 flex-1 min-h-0 transition-all duration-200 hide-scrollbar ${
-          isOver ? 'bg-accent-primary/5' : ''
-        }`}
+        className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar`}
         style={{
           minHeight: '100px',
-          maxHeight: '800px',
-          overflowY: 'auto',
+          maxHeight: 'none',
+          overflowY: 'visible',
           padding: '0.5rem',
           position: 'relative',
           zIndex: 1,
         }}
-        data-dnd-kit-sortable-context
       >
-        {/* Empty state drop zone */}
-        {tasks.length === 0 && (
-          <div 
-            className={`absolute inset-0 flex items-center justify-center pointer-events-none ${
-              isOver ? 'opacity-100' : 'opacity-0'
-            } transition-opacity duration-200`}
-          >
-            <div className="text-center p-4 rounded-lg bg-accent-primary/10 border-2 border-dashed border-accent-primary/50 w-full mx-4">
-              <p className="text-accent-primary font-medium">Drop task here</p>
-            </div>
-          </div>
-        )}
-        
-        {/* Drop indicator that appears when dragging over the column */}
-        {isOver && tasks.length > 0 && (
-          <div className="absolute inset-0 border-2 border-dashed border-[var(--accent-primary)] rounded-lg pointer-events-none z-10" />
-        )}  
-          <SortableContext 
-            items={tasks.map(task => task.id)} 
-            strategy={verticalListSortingStrategy}
-          >
-            {tasks.map((task) => (
-              <SortableTaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={onTaskToggle}
-                onDelete={onTaskDelete}
-                onEditTask={onEditTask}
-                onContextMenu={(e) => onTaskContextMenu(e, task)}
-                onDoubleClick={() => onEditTask(task)}
-                assignment={assignment}
-              />
-            ))}
-          </SortableContext>
+        {tasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            onToggleCompletion={onTaskToggle}
+            onDelete={onTaskDelete}
+            onEditTask={onEditTask}
+            onContextMenu={(e) => onTaskContextMenu(e, task)}
+            active={!!task.activetask}
+          />
+        ))}
       </div>
 
       {/* Column Menu - Mantenemos el menú original para compatibilidad */}

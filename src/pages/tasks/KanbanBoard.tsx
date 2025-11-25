@@ -1,6 +1,4 @@
 import { ClipboardCheck, Trash2 } from 'lucide-react';
-import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFetchTasks, useTasksLoading, useUpdateTaskSuccess, useWorkspace } from '@/store/appStore';
 
@@ -103,7 +101,6 @@ export const KanbanBoard = () => {
     return savedTaskOrder ? JSON.parse(savedTaskOrder) : {};
   });
 
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [sortMenu, setSortMenu] = useState<SortMenuState | null>(null);
   const [columnMenu, setColumnMenu] = useState<ColumnMenuState | null>(null);
   const [assignmentSortConfig, setAssignmentSortConfig] = useState<Record<string, { type: string; direction: string }>>(() => {
@@ -113,19 +110,6 @@ export const KanbanBoard = () => {
 
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceSelectionModal, setShowWorkspaceSelectionModal] = useState(false);
-
-
-  // Set up sensors for DnD
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   const handleSortClick = (assignmentId: string, position: { x: number; y: number }) => {
     // Calcular el ancho estimado del menú (aproximadamente 220px)
@@ -282,186 +266,6 @@ export const KanbanBoard = () => {
     }));
   }, [assignmentSortConfig, incompletedByAssignment, taskOrder]);
 
-  // Handle drag end event
-  const handleDragEnd = useCallback(async (event: any) => {
-    const { active, over } = event;
-
-    if (!over) {
-      setActiveId(null);
-      return;
-    }
-
-    console.log('Drag ended:', { activeId: active.id, overId: over.id, overData: over.data });
-
-    // Find the source assignment (where the task is coming from)
-    const sourceAssignmentId = Object.keys(incompletedByAssignment).find((assignmentId: string) =>
-      (incompletedByAssignment[assignmentId] as any[]).some((task: any) => task.id === active.id)
-    ) || 'No assignment';
-
-    // Get the task being moved
-    const taskToMove = sourceAssignmentId && 
-      (incompletedByAssignment[sourceAssignmentId] || []).find((task: any) => task.id === active.id);
-    
-    if (!taskToMove) {
-      console.log('Task not found in any assignment');
-      return;
-    }
-
-    // Determine target assignment
-    let targetAssignmentId: string = 'No assignment';
-    
-    // Debug log to help identify the issue
-    console.log('Over data:', over.data);
-    console.log('Over ID:', over.id);
-    
-    // Check if we're dropping on a task first
-    if ((over.data as any)?.type === 'task') {
-      // First try to get assignment from the task data in the drag event
-      const taskData = (over.data as any)?.current?.taskData || (over.data as any)?.current;
-      if (taskData?.assignment) {
-        targetAssignmentId = taskData.assignment;
-        console.log('Dropping on task, assignment from taskData:', targetAssignmentId);
-      } 
-      // Fallback to finding the task in the filtered tasks
-      else {
-        const targetTask = filteredTasks.find((t: any) => t.id === over.id);
-        if (targetTask?.assignment) {
-          targetAssignmentId = targetTask.assignment;
-          console.log('Dropping on task, assignment from filtered tasks:', targetAssignmentId);
-        }
-      }
-      
-      if (targetAssignmentId === 'No assignment') {
-        console.warn('Could not determine target assignment from task data:', over.data);
-      }
-    } 
-    // If not dropping on a task, check if we're dropping on a column
-    else if (over.id.toString().startsWith('column-') || (over.data as any)?.type === 'column') {
-      // Extract the assignment ID from the column ID
-      const columnId = over.id.toString();
-      targetAssignmentId = columnId.replace(/^column-/, '');
-      console.log('Dropping on column, assignment ID:', targetAssignmentId);
-    }
-    // If we couldn't determine the target, use the source assignment
-    if (targetAssignmentId === 'No assignment' && sourceAssignmentId) {
-      targetAssignmentId = sourceAssignmentId;
-    }
-
-    console.log('Moving task:', taskToMove.title, 'from', sourceAssignmentId, 'to', targetAssignmentId);
-
-    // Only proceed if we're actually moving to a different assignment
-    if (targetAssignmentId !== sourceAssignmentId) {
-
-      console.log('Moving task:', taskToMove.title, 'from', sourceAssignmentId, 'to', targetAssignmentId);
-
-      // Update the task's assignment in the database
-      try {
-        console.log('Attempting to update task in database...');
-        console.log('Task ID:', taskToMove.id);
-        console.log('Current assignment:', taskToMove.assignment);
-        console.log('New assignment:', targetAssignmentId);
-
-        const { data, error } = await supabase
-          .from('tasks')
-          .update({ assignment: targetAssignmentId })
-          .eq('id', taskToMove.id)
-          .select();
-
-        console.log('Supabase response:', { data, error });
-
-        if (error) {
-          console.error('Error moving task to different assignment:', error);
-          console.error('Error details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-            taskId: taskToMove.id,
-            oldAssignment: sourceAssignmentId,
-            newAssignment: targetAssignmentId
-          });
-          return;
-        }
-
-        // Create the updated task with the new assignment
-        const updatedTask = { 
-          ...taskToMove, 
-          assignment: targetAssignmentId,
-          // Ensure we have all required fields to avoid type errors
-          created_at: taskToMove.created_at || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          workspace_id: taskToMove.workspace_id || null,
-          completed: taskToMove.completed || false,
-          completed_at: taskToMove.completed_at || null,
-          priority: taskToMove.priority || 'medium',
-          deadline: taskToMove.deadline || null,
-          description: taskToMove.description || '',
-          subtasks: taskToMove.subtasks || [],
-          tags: taskToMove.tags || []
-        };
-
-        // Update Redux state with the updated task
-        updateTaskSuccess(updatedTask);
-
-        // Update task order state
-        setTaskOrder(prev => {
-          const newOrder = { ...prev };
-
-          // Remove from source assignment
-          if (sourceAssignmentId && newOrder[sourceAssignmentId]) {
-            newOrder[sourceAssignmentId] = newOrder[sourceAssignmentId]
-              .filter((id: string) => id !== taskToMove.id);
-          }
-
-          // Add to target assignment
-          if (!newOrder[targetAssignmentId]) {
-            newOrder[targetAssignmentId] = [];
-          }
-          
-          // Add to the end of the target column
-          if (!newOrder[targetAssignmentId]?.includes(taskToMove.id)) {
-            newOrder[targetAssignmentId] = [...(newOrder[targetAssignmentId] || []), taskToMove.id];
-          }
-
-          // Update localStorage
-          localStorage.setItem('kanbanTaskOrder', JSON.stringify(newOrder));
-          
-          return newOrder;
-        });
-
-        // Force a re-fetch of tasks to ensure UI is in sync
-        // Wrap in a setTimeout to avoid potential race conditions
-        setTimeout(() => {
-          fetchTasksAction(activeWorkspace?.id);
-        }, 0);
-
-        console.log('Task moved successfully - UI updated immediately');
-
-      } catch (error) {
-        console.error('Error moving task:', error);
-      }
-    } else {
-      // This is a same-assignment reorder
-      const assignmentTasks = [...(incompletedByAssignment[sourceAssignmentId] || [])];
-      const oldIndex = assignmentTasks.findIndex((task: any) => task.id === active.id);
-      const newIndex = assignmentTasks.findIndex((task: any) => task.id === over.id);
-
-      if (oldIndex === -1 || newIndex === -1) return;
-
-      // Update the task order in the state
-      const newTasks = arrayMove(assignmentTasks, oldIndex, newIndex);
-
-      // Update the task order in localStorage
-      const newTaskOrder = {
-        ...taskOrder,
-        [sourceAssignmentId]: newTasks.map((task: any) => task.id)
-      };
-
-      localStorage.setItem('kanbanTaskOrder', JSON.stringify(newTaskOrder));
-      setTaskOrder(newTaskOrder);
-    }
-  }, [incompletedByAssignment, taskOrder]);
-
   const sortedIncompletedAssignments = useMemo(() => {
     // Group tasks and apply per-assignment task sort if configured
     const grouped: Record<string, any[]> = {};
@@ -506,10 +310,17 @@ export const KanbanBoard = () => {
     // Combine both: assignments with tasks + pinned assignments (deduplicate)
     const allAssignments = [...new Set([...assignmentsWithTasks, ...pinnedAssignments])];
 
+    // Sort assignments by task count (highest to lowest)
+    const sortedAssignments = allAssignments.sort((a, b) => {
+      const aTaskCount = grouped[a]?.length || 0;
+      const bTaskCount = grouped[b]?.length || 0;
+      return bTaskCount - aTaskCount; // Highest to lowest
+    });
+
     // Respect saved column order if present, but include any new assignments at the end
     if (columnOrder.length > 0) {
       const orderedAssignments = [...columnOrder];
-      allAssignments.forEach(assignment => {
+      sortedAssignments.forEach(assignment => {
         if (!orderedAssignments.includes(assignment)) {
           orderedAssignments.push(assignment);
         }
@@ -517,7 +328,7 @@ export const KanbanBoard = () => {
       return orderedAssignments.filter(a => allAssignments.includes(a));
     }
 
-    return allAssignments;
+    return sortedAssignments;
   }, [incompletedTasks, assignmentSortConfig, columnOrder, taskOrder, activeWorkspace, currentWorkspacePins]);
 
   const togglePin = (assignment: string) => {
@@ -702,17 +513,8 @@ export const KanbanBoard = () => {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={({ active }) => {
-        setActiveId(active.id as string);
-      }}
-      onDragEnd={handleDragEnd}
-      onDragCancel={() => setActiveId(null)}
-    >
       <div className="flex flex-col h-full kanban-board">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full h-full mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full mb-4 auto-rows-auto">
           {sortedIncompletedAssignments.map((assignment) => (
             <div key={assignment} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
               <SortableColumn
@@ -727,7 +529,6 @@ export const KanbanBoard = () => {
                 onEditTask={handleEditTask}
                 onTaskContextMenu={handleTaskContextMenu}
                 onSortClick={handleSortClick}
-                onMoveTask={handleDragEnd}
                 columnMenu={columnMenu?.assignmentId === assignment ? columnMenu : null}
                 onCloseColumnMenu={handleCloseColumnMenu}
                 onMoveToWorkspace={handleMoveToWorkspace}
@@ -740,33 +541,6 @@ export const KanbanBoard = () => {
             </div>
           ))}
         </div>
-
-      {/* Drag Overlay para mostrar el elemento arrastrado */}
-      <DragOverlay>
-        {activeId ? (
-          <div className="rotate-3 opacity-90">
-            {(() => {
-              // Encontrar la tarea activa en todas las assignments
-              for (const assignment of sortedIncompletedAssignments) {
-                const task = incompletedByAssignment[assignment]?.find((t: any) => t.id === activeId);
-                if (task) {
-                  return (
-                    <TaskItem
-                      task={task}
-                      onToggleCompletion={() => {}}
-                      onDelete={() => {}}
-                      onEditTask={() => {}}
-                      onContextMenu={() => {}}
-                      active={!!task.activetask}
-                    />
-                  );
-                }
-              }
-              return null;
-            })()}
-          </div>
-        ) : null}
-      </DragOverlay>
 
       {/* Completed Tasks Section */}
       {showCompleted && completedTasks.length > 0 && (
@@ -937,6 +711,5 @@ export const KanbanBoard = () => {
         />
       )}
     </div>
-    </DndContext>
   );
 }; 
