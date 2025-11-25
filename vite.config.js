@@ -73,7 +73,7 @@ export default defineConfig(({ command, mode }) => {
           'chart-vendor': ['chart.js', 'react-chartjs-2', 'recharts'],
           // @tiptap/pm tiene problemas de resolución, dejar que Rollup lo maneje automáticamente
           // Split large utilities
-          'date-vendor': ['date-fns', 'dayjs'],
+          'date-vendor': ['date-fns'],
           'icon-vendor': ['lucide-react', '@heroicons/react']
         },
         entryFileNames: 'assets/[name]-[hash].js',
