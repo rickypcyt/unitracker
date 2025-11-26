@@ -144,7 +144,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   const predefinedModes = pomodoroModes.slice(0, customModeIndex);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0 lg:max-w-4xl">
       <div className="p-6 max-h-[80vh] overflow-y-auto">
         <div className="relative flex items-center justify-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
@@ -197,214 +197,226 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'modes' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
-              <div className="space-y-3">
-                {predefinedModes.map((mode, index) => (
-                  <div
-                    key={mode.label}
-                    onClick={() => handleModeSelect(index)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedModeIndex === index && !isCustomModeSelected
-                        ? 'border-[var(--accent-primary)]'
-                        : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-semibold text-[var(--text-primary)]">{mode.label}</h4>
-                        <p className="text-sm text-[var(--text-secondary)] mt-1">{mode.description}</p>
-                        <div className="flex gap-4 mt-2 text-sm text-[var(--text-secondary)]">
-                          <span>Work: {mode.work / 60}min</span>
-                          <span>Break: {mode.break / 60}min</span>
-                          <span>Long: {mode.longBreak / 60}min</span>
+        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+          {activeTab === 'modes' && (
+            <>
+              <div className="space-y-6 lg:col-span-2">
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {predefinedModes.map((mode, index) => (
+                      <div
+                        key={mode.label}
+                        onClick={() => handleModeSelect(index)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedModeIndex === index && !isCustomModeSelected
+                            ? 'border-[var(--accent-primary)]'
+                            : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-[var(--text-primary)]">{mode.label}</h4>
+                            <p className="text-sm text-[var(--text-secondary)] mt-1">{mode.description}</p>
+                            <div className="flex gap-4 mt-2 text-sm text-[var(--text-secondary)]">
+                              <span>Work: {mode.work / 60}min</span>
+                              <span>Break: {mode.break / 60}min</span>
+                              <span>Long: {mode.longBreak / 60}min</span>
+                            </div>
+                          </div>
+                          {selectedModeIndex === index && !isCustomModeSelected && (
+                            <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
+                          )}
                         </div>
                       </div>
-                      {selectedModeIndex === index && !isCustomModeSelected && (
-                        <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
-                      )}
+                    ))}
+                    <div
+                      onClick={() => handleModeSelect(customModeIndex)}
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        isCustomModeSelected
+                          ? 'border-[var(--accent-primary)]'
+                          : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-[var(--text-primary)]">Custom</h4>
+                          <p className="text-sm text-[var(--text-secondary)] mt-1">Your personalized settings</p>
+                        </div>
+                        {isCustomModeSelected && (
+                          <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-                <div
-                  onClick={() => handleModeSelect(customModeIndex)}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    isCustomModeSelected
-                      ? 'border-[var(--accent-primary)]'
-                      : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-[var(--text-primary)]">Custom</h4>
-                      <p className="text-sm text-[var(--text-secondary)] mt-1">Your personalized settings</p>
+                </div>
+
+                {isCustomModeSelected && (
+                  <div>
+                    <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Times</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                      <FormInput
+                        id="customWork"
+                        label="Work (min)"
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={customWorkTime}
+                        onChange={(value: string) => setCustomWorkTime(value)}
+                        placeholder="25"
+                        error=""
+                      />
+                      <FormInput
+                        id="customBreak"
+                        label="Break (min)"
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={customBreakTime}
+                        onChange={(value: string) => setCustomBreakTime(value)}
+                        placeholder="5"
+                        error=""
+                      />
+                      <FormInput
+                        id="customLongBreak"
+                        label="Long Break (min)"
+                        type="number"
+                        min="1"
+                        max="60"
+                        value={customLongBreakTime}
+                        onChange={(value: string) => setCustomLongBreakTime(value)}
+                        placeholder="15"
+                        error=""
+                      />
                     </div>
-                    {isCustomModeSelected && (
-                      <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
-                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === 'settings' && (
+            <>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Auto-start Settings</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-between p-3 rounded-lg">
+                      <span className="text-[var(--text-primary)]">Auto-start breaks</span>
+                      <input
+                        type="checkbox"
+                        checked={pomodoroSettings.autoStartBreak}
+                        onChange={(e) => handleSettingsChange('autoStartBreak', e.target.checked)}
+                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between p-3 rounded-lg">
+                      <span className="text-[var(--text-primary)]">Auto-start work sessions</span>
+                      <input
+                        type="checkbox"
+                        checked={pomodoroSettings.autoStartWork}
+                        onChange={(e) => handleSettingsChange('autoStartWork', e.target.checked)}
+                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
+                      />
+                    </label>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {isCustomModeSelected && (
-              <div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Times</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <FormInput
-                    id="customWork"
-                    label="Work (min)"
-                    type="number"
-                    min="1"
-                    max="120"
-                    value={customWorkTime}
-                    onChange={(value: string) => setCustomWorkTime(value)}
-                    placeholder="25"
-                    error=""
-                  />
-                  <FormInput
-                    id="customBreak"
-                    label="Break (min)"
-                    type="number"
-                    min="1"
-                    max="30"
-                    value={customBreakTime}
-                    onChange={(value: string) => setCustomBreakTime(value)}
-                    placeholder="5"
-                    error=""
-                  />
-                  <FormInput
-                    id="customLongBreak"
-                    label="Long Break (min)"
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={customLongBreakTime}
-                    onChange={(value: string) => setCustomLongBreakTime(value)}
-                    placeholder="15"
-                    error=""
-                  />
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Daily Goals</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 rounded-lg">
+                      <Target size={20} className="text-[var(--accent-primary)]" />
+                      <div className="flex-1">
+                        <label className="text-[var(--text-primary)]">Daily Pomodoro Goal</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={pomodoroSettings.dailyGoal}
+                          onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
+                          className="mt-1 w-20 px-2 py-1 rounded text-[var(--text-primary)] border border-[var(--border-primary)]"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </>
+          )}
 
-        {activeTab === 'settings' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Auto-start Settings</h3>
-              <div className="space-y-3">
-                <label className="flex items-center justify-between p-3 rounded-lg">
-                  <span className="text-[var(--text-primary)]">Auto-start breaks</span>
-                  <input
-                    type="checkbox"
-                    checked={pomodoroSettings.autoStartBreak}
-                    onChange={(e) => handleSettingsChange('autoStartBreak', e.target.checked)}
-                    className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                  />
-                </label>
-                <label className="flex items-center justify-between p-3 rounded-lg">
-                  <span className="text-[var(--text-primary)]">Auto-start work sessions</span>
-                  <input
-                    type="checkbox"
-                    checked={pomodoroSettings.autoStartWork}
-                    onChange={(e) => handleSettingsChange('autoStartWork', e.target.checked)}
-                    className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                  />
-                </label>
+          {activeTab === 'sounds' && (
+            <>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Sound Settings</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center justify-between p-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell size={20} className="text-[var(--accent-primary)]" />
+                        <span className="text-[var(--text-primary)]">Timer sounds</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={pomodoroSettings.soundEnabled}
+                        onChange={(e) => handleSettingsChange('soundEnabled', e.target.checked)}
+                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between p-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <BellOff size={20} className="text-[var(--accent-primary)]" />
+                        <span className="text-[var(--text-primary)]">Browser notifications</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={pomodoroSettings.notificationEnabled}
+                        onChange={(e) => handleSettingsChange('notificationEnabled', e.target.checked)}
+                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Daily Goals</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded-lg">
-                  <Target size={20} className="text-[var(--accent-primary)]" />
-                  <div className="flex-1">
-                    <label className="text-[var(--text-primary)]">Daily Pomodoro Goal</label>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Volume</h3>
+                  <div className="flex items-center gap-3 p-3 rounded-lg">
+                    <Volume2 size={20} className="text-[var(--accent-primary)]" />
                     <input
-                      type="number"
-                      min="1"
-                      max="50"
-                      value={pomodoroSettings.dailyGoal}
-                      onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
-                      className="mt-1 w-20 px-2 py-1 rounded text-[var(--text-primary)] border border-[var(--border-primary)]"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={pomodoroSettings.volume}
+                      onChange={(e) => handleSettingsChange('volume', parseFloat(e.target.value))}
+                      className="flex-1"
                     />
+                    <span className="text-[var(--text-primary)] w-12 text-right">
+                      {Math.round(pomodoroSettings.volume * 100)}%
+                    </span>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <button
+                      onClick={testAlarm}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                    >
+                      <Volume size={16} />
+                      Test Alarm Sound
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'sounds' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Sound Settings</h3>
-              <div className="space-y-3">
-                <label className="flex items-center justify-between p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Bell size={20} className="text-[var(--accent-primary)]" />
-                    <span className="text-[var(--text-primary)]">Timer sounds</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={pomodoroSettings.soundEnabled}
-                    onChange={(e) => handleSettingsChange('soundEnabled', e.target.checked)}
-                    className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                  />
-                </label>
-                <label className="flex items-center justify-between p-3 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BellOff size={20} className="text-[var(--accent-primary)]" />
-                    <span className="text-[var(--text-primary)]">Browser notifications</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={pomodoroSettings.notificationEnabled}
-                    onChange={(e) => handleSettingsChange('notificationEnabled', e.target.checked)}
-                    className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                  />
-                </label>
-                              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Volume</h3>
-              <div className="flex items-center gap-3 p-3 rounded-lg">
-                <Volume2 size={20} className="text-[var(--accent-primary)]" />
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={pomodoroSettings.volume}
-                  onChange={(e) => handleSettingsChange('volume', parseFloat(e.target.value))}
-                  className="flex-1"
-                />
-                <span className="text-[var(--text-primary)] w-12 text-right">
-                  {Math.round(pomodoroSettings.volume * 100)}%
-                </span>
-              </div>
-              
-              <div className="mt-3">
-                <button
-                  onClick={testAlarm}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-                >
-                  <Volume size={16} />
-                  Test Alarm Sound
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-primary)]">
+        <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-primary)] lg:col-span-2">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors border border-[var(--border-primary)]"

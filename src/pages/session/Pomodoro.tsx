@@ -24,9 +24,9 @@ import useEventListener from '@/hooks/useEventListener';
 // const { STORAGE_KEYS } = POMODORO_CONFIG; // Not used
 
 const DEFAULT_STATE = {
-  modeIndex: 0,
+  modeIndex: 1, // Extended Focus as default (50min work, 10min break)
   currentMode: 'work' as PomodoroModeType,
-  timeLeft: 1500, // Default 25 minutes
+  timeLeft: 3000, // Default 50 minutes (Extended Focus work duration)
   isRunning: false,
   pomodoroToday: 0,
   workSessionsBeforeLongBreak: 4,
@@ -87,18 +87,31 @@ const sounds = loadSounds();
 const loadPomoState = (): PomoState => {
   const today = getLocalDateString();
   const savedState = localStorage.getItem('pomodoroState');
-  console.log('🔧 DEBUG: loadPomoState - saved state from localStorage:', savedState);
   
   if (!savedState) {
-    console.log('🔧 DEBUG: loadPomoState - no saved state, using default');
-    return { ...DEFAULT_STATE, pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) };
+    // No saved state - use DEFAULT_STATE but ensure timeLeft matches the mode
+    const defaultState = { ...DEFAULT_STATE };
+    // Try to load modes to set correct time for the default mode
+    try {
+      const modesFromStore = localStorage.getItem('pomodoroModes');
+      if (modesFromStore) {
+        const modes = JSON.parse(modesFromStore);
+        const defaultModeConfig = modes[DEFAULT_STATE.modeIndex];
+        if (defaultModeConfig && defaultModeConfig[DEFAULT_STATE.currentMode]) {
+          defaultState.timeLeft = defaultModeConfig[DEFAULT_STATE.currentMode];
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load modes for default state, using fallback time');
+    }
+    
+    return { ...defaultState, pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) };
   }
 
   try {
     const parsed = JSON.parse(savedState);
-    console.log('🔧 DEBUG: loadPomoState - parsed state:', parsed);
     const state: PomoState = {
-      modeIndex: safeNumber(parsed.modeIndex, 0),
+      modeIndex: safeNumber(parsed.modeIndex, DEFAULT_STATE.modeIndex),
       currentMode: ['work', 'break', 'longBreak'].includes(parsed.currentMode) ? parsed.currentMode : 'work',
       timeLeft: safeNumber(parsed.timeLeft, DEFAULT_STATE.timeLeft),
       isRunning: false,
@@ -112,13 +125,11 @@ const loadPomoState = (): PomoState => {
       longBreakDuration: safeNumber(parsed.longBreakDuration, 900),
       manuallyPaused: parsed.manuallyPaused || false, // Load manual pause state
     };
-    console.log('🔧 DEBUG: loadPomoState - final state:', state);
 
     const hasInvalidValues = Object.values(state).some(
       (v) => v === null || v === undefined || (typeof v === 'number' && !Number.isFinite(v))
     );
     if (hasInvalidValues) {
-      console.log('🔧 DEBUG: loadPomoState - invalid values found, using default');
       localStorage.removeItem('pomodoroIsRunning');
       localStorage.removeItem('pomodorosThisSession');
       return DEFAULT_STATE;
@@ -126,16 +137,16 @@ const loadPomoState = (): PomoState => {
 
     return state;
   } catch (error) {
-    console.error('🔧 DEBUG: loadPomoState - error parsing saved state:', error);
+    console.error('Error parsing saved pomodoro state:', error);
     return DEFAULT_STATE;
   }
 };
 
 const savePomoState = (state: PomoState) => {
   const toSave = {
-    modeIndex: safeNumber(state.modeIndex, 0),
+    modeIndex: safeNumber(state.modeIndex, DEFAULT_STATE.modeIndex),
     currentMode: state.currentMode || 'work',
-    timeLeft: safeNumber(state.timeLeft, 1500),
+    timeLeft: safeNumber(state.timeLeft, DEFAULT_STATE.timeLeft),
     timeAtStart: safeNumber(state.timeAtStart, 0),
     lastStart: state.lastStart,
     workSessionsBeforeLongBreak: safeNumber(state.workSessionsBeforeLongBreak, 4),
@@ -271,57 +282,37 @@ const Pomodoro: React.FC = () => {
 
   // Force display update when modes change
   useEffect(() => {
-    console.log('🔧 DEBUG: useEffect for modes change triggered');
-    console.log('🔧 DEBUG: modes.length:', modes.length);
-    console.log('🔧 DEBUG: pomoState.modeIndex:', pomoState.modeIndex);
-    console.log('🔧 DEBUG: pomoState.currentMode:', pomoState.currentMode);
-    console.log('🔧 DEBUG: pomoState.timeLeft:', pomoState.timeLeft);
-    
     // Don't update time if timer is running or manually paused - let the timer logic handle it
     if (pomoState.isRunning || pomoState.manuallyPaused) {
-      console.log('🔧 DEBUG: Timer is running or manually paused, skipping mode change time update');
       return;
     }
 
     // Don't update time if synced and timer is stopped (to respect sync time)
     if (syncPomodoroWithTimer && !pomoState.isRunning) {
-      console.log('🔧 DEBUG: Timer is synced and stopped, respecting sync time, skipping mode change time update');
       return;
     }
     
     // Check if we should be on custom mode (last mode in array)
     const customModeIndex = modes.length - 1;
-    console.log('🔧 DEBUG: Checking if we should be on custom mode. Current index:', pomoState.modeIndex, 'custom index:', customModeIndex);
     
     // If we just saved a custom mode, we should be on it
     if (pomoState.modeIndex === customModeIndex) {
       // We're on the custom mode, ensure time is correct
       const customMode = modes[customModeIndex];
       if (!customMode) {
-        console.error('🔧 DEBUG: Custom mode is undefined');
+        console.error('Custom mode is undefined');
         return;
       }
       const correctTime = customMode[pomoState.currentMode];
-      console.log('🔧 DEBUG: On custom mode - Correct time should be:', correctTime);
-      console.log('🔧 DEBUG: On custom mode - Current timeLeft:', pomoState.timeLeft);
       
       if (pomoState.timeLeft !== correctTime) {
-        console.log('🔧 DEBUG: Time mismatch! Updating timeLeft from', pomoState.timeLeft, 'to', correctTime);
-        setPomoState(prev => {
-          console.log('🔧 DEBUG: In useEffect - updating pomoState timeLeft');
-          return { ...prev, timeLeft: correctTime };
-        });
-      } else {
-        console.log('🔧 DEBUG: Time is already correct, no update needed');
+        setPomoState(prev => ({ ...prev, timeLeft: correctTime }));
       }
     } else {
-      console.log('🔧 DEBUG: Not on custom mode, but checking if we should switch to it');
       // Check if the current mode's time doesn't match the expected time
       const currentModeTime = modes[pomoState.modeIndex]?.[pomoState.currentMode];
-      console.log('🔧 DEBUG: Current mode time should be:', currentModeTime);
       
       if (currentModeTime && pomoState.timeLeft !== currentModeTime) {
-        console.log('🔧 DEBUG: Current mode time mismatch! Updating from', pomoState.timeLeft, 'to', currentModeTime);
         setPomoState(prev => ({ ...prev, timeLeft: currentModeTime }));
       }
     }
@@ -330,11 +321,15 @@ const Pomodoro: React.FC = () => {
   // Remove session dependencies - Pomodoro is now independent
   // const activeSessionId = localStorage.getItem('activeSessionId');
   const isPomodoroRunning = pomoState.isRunning; // Remove sync dependency
-  const currentModeConfig = modes[pomoState.modeIndex] || {
-    work: 1500,
-    break: 300,
-    longBreak: 900
-  };
+  
+  // Ensure we always have a valid mode configuration - use Extended Focus as sensible default
+  const getDefaultModeConfig = () => ({
+    work: 3000, // 50min - Extended Focus default
+    break: 600, // 10min - Extended Focus default  
+    longBreak: 1800, // 30min - Extended Focus default
+  });
+  
+  const currentModeConfig = modes[pomoState.modeIndex] || getDefaultModeConfig();
 
   // ============================================================================
   // DATABASE OPERATIONS
@@ -401,7 +396,8 @@ const Pomodoro: React.FC = () => {
         // setPomodorosTodayLocal(newCount); // Not used
       }
 
-      const nextModeTime = currentModeConfig?.[nextMode] || 1500;
+      const nextModeTime = currentModeConfig?.[nextMode] || (nextMode === 'break' ? 600 : nextMode === 'longBreak' ? 1800 : 3000);
+      
       return {
         ...prev,
         currentMode: nextMode,
@@ -526,30 +522,22 @@ const Pomodoro: React.FC = () => {
   }, [currentModeConfig, syncPomodoroWithTimer]);
 
   const handleModeChange = useCallback((index: number) => {
-    console.log('🔧 DEBUG: handleModeChange called with index:', index);
-    console.log('🔧 DEBUG: handleModeChange - current modes:', modes);
-    console.log('🔧 DEBUG: handleModeChange - current pomoState:', pomoState);
-    
     const safeIndex = Math.min(index, modes.length - 1);
-    console.log('🔧 DEBUG: handleModeChange - safeIndex:', safeIndex);
     
     setPomoState((prev) => {
-      const modeTime = modes[safeIndex]?.[prev.currentMode] || 1500;
+      const modeTime = modes[safeIndex]?.[prev.currentMode] || DEFAULT_STATE.timeLeft;
       const newState = {
         ...prev,
         modeIndex: safeIndex,
         timeLeft: modeTime,
         isRunning: false,
       };
-      console.log('🔧 DEBUG: handleModeChange - new pomoState:', newState);
-      console.log('🔧 DEBUG: handleModeChange - timeLeft set to:', modeTime);
       
       // Save to localStorage
       try {
         localStorage.setItem('pomodoroState', JSON.stringify(newState));
-        console.log('🔧 DEBUG: handleModeChange - saved state to localStorage');
       } catch (error) {
-        console.error('🔧 DEBUG: handleModeChange - error saving state:', error);
+        console.error('Error saving pomodoro state on mode change:', error);
       }
       
       return newState;
@@ -557,10 +545,6 @@ const Pomodoro: React.FC = () => {
   }, [modes]);
 
   const handleSaveCustomMode = useCallback((customMode: { work: number; break: number; longBreak: number }) => {
-    console.log('🔧 DEBUG: handleSaveCustomMode called with:', customMode);
-    console.log('🔧 DEBUG: Current modes before:', modes);
-    console.log('🔧 DEBUG: Current pomoState before:', pomoState);
-    
     // Find the custom mode index (last mode in array)
     const customModeIndex = modes.length - 1;
     
@@ -573,8 +557,6 @@ const Pomodoro: React.FC = () => {
       description: 'Your personalized settings'
     });
     
-    console.log('🔧 DEBUG: Updated custom mode in Zustand store at index:', customModeIndex);
-    
     // Update state to use the new custom mode
     setPomoState((prev) => {
       const newState = {
@@ -584,13 +566,9 @@ const Pomodoro: React.FC = () => {
         isRunning: false, // Stop timer when switching modes
       };
       
-      console.log('🔧 DEBUG: New pomoState to be set:', newState);
-      console.log('🔧 DEBUG: Time for current mode (', prev.currentMode, '):', customMode[prev.currentMode]);
-      
       // Save state to localStorage
       try {
         localStorage.setItem('pomodoroState', JSON.stringify(newState));
-        console.log('🔧 DEBUG: Saved pomoState to localStorage successfully');
       } catch (error) {
         console.error('Failed to save pomodoro state to localStorage:', error);
       }
@@ -710,7 +688,7 @@ const Pomodoro: React.FC = () => {
     }
 
     const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
-    const currentModeDuration = currentModeConfig?.work || 1500; // Current mode duration in seconds
+    const currentModeDuration = currentModeConfig?.work || 3000; // Use Extended Focus work duration as fallback
     
     console.log('[Pomodoro] 📊 studyTimerTimeUpdate sync', { 
       studyTime, 
@@ -772,7 +750,8 @@ const Pomodoro: React.FC = () => {
     const interval = window.setInterval(() => {
       const now = Date.now();
       const elapsed = pomoState.timeAtStart + ((now - pomoState.lastStart!) / 1000);
-      const currentModeDuration = currentModeConfig?.[pomoState.currentMode] || 1500;
+      const currentModeDuration = currentModeConfig?.[pomoState.currentMode] || 
+        (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
       const newTimeLeft = Math.max(0, currentModeDuration - elapsed);
 
       if (newTimeLeft <= 0) {
