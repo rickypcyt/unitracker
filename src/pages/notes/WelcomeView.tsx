@@ -29,17 +29,13 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   const datePickerRef = useRef<any>(null);
   
   const originalTitle = 'Welcome to Notes';
-  const description = `Create and organize your notes with rich markdown support. Here you can organize your thoughts, create markdown documents, and keep track of your assignments.
+  const description = `Create notes with **rich markdown** support.
 
-## Features
+*Organize by assignments*
+*Format with bold, italic, and lists*
+*Search and filter your notes*
 
-📝 Create and edit notes with rich markdown support
-
-📚 Organize notes by assignments
-
-✨ Format text with bold, italic, lists, and more
-
-🔍 Quick search and filtering capabilities`;
+Start creating your first note!`;
 
   const handleTitleEdit = () => {
     setIsEditingTitle(true);

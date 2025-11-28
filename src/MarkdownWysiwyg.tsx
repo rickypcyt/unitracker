@@ -57,14 +57,26 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
         />
       )}
       
-      {/* Editor Content - No borders, no scroll */}
-      <EditorContent
-        editor={editor}
-        className={`flex-1 text-[var(--text-primary)] focus:outline-none ${
-          editor?.getText().trim() === '' ? 'before:content-[attr(data-placeholder)] before:text-[var(--text-secondary)] before:pointer-events-none before:opacity-70' : ''
-        }`}
-        data-placeholder={placeholder}
-      />
+      {/* Editor Content - With proper borders and styling */}
+      <div className="flex-1 flex flex-col">
+        <div className="relative flex-1">
+          <div 
+            className={`absolute inset-0 px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[100px] pointer-events-none ${
+              editor?.getText().trim() === '' ? '' : 'opacity-0'
+            }`}
+          >
+            <div className="text-[var(--text-secondary)] opacity-70">
+              {placeholder}
+            </div>
+          </div>
+          <div className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[100px]">
+            <EditorContent
+              editor={editor}
+              className="text-[var(--text-primary)] focus:outline-none h-full"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

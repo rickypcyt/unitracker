@@ -1,6 +1,6 @@
-import { BookOpen, Check, Edit2, Trash2, Users, X } from 'lucide-react';
+import { BookOpen, Check, Edit2, Trash2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useAppStore, useDeleteTaskSuccess, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
+import { useDeleteTaskSuccess, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -87,7 +87,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
         className="!p-0"
         showHeader={false}
       >
-        <div className="p-6 max-h-[66vh] overflow-y-auto">
+        <div className="p-6 max-h-[85vh] overflow-y-auto">
           <div className="relative flex items-center justify-center mb-6">
             <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
               Manage Assignments
@@ -116,108 +116,81 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                   return (
                     <div
                       key={assignment}
-                      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--bg-primary)] transition-colors duration-200 min-h-[120px]"
+                      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-300 cursor-pointer rounded-lg p-4 flex items-center gap-4"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            {editingAssignment?.originalName === assignment ? (
-                              <div className="flex-1 flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  className="flex-1 bg-transparent border-b border-[var(--accent-primary)] text-[var(--text-primary)] focus:outline-none"
-                                  value={editingAssignment.name}
-                                  onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
-                                    } else if (e.key === 'Escape') {
-                                      cancelEditing();
-                                    }
-                                  }}
-                                  autoFocus
-                                />
-                                <button 
-                                  onClick={() => handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name)}
-                                  className="text-green-500 hover:text-green-400 p-1"
-                                  title="Save changes"
-                                >
-                                  <Check size={16} />
-                                </button>
-                                <button 
-                                  onClick={cancelEditing}
-                                  className="text-red-500 hover:text-red-400 p-1"
-                                  title="Cancel"
-                                >
-                                  <X size={16} />
-                                </button>
-                              </div>
-                            ) : (
-                              <h3 className="font-semibold text-[var(--text-primary)] text-lg">
-                                {assignment}
-                              </h3>
-                            )}
-                            {editingAssignment?.originalName !== assignment && (
-                              <button
-                                onClick={() => startEditing(assignment)}
-                                className="p-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
-                                title="Edit assignment name"
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          {editingAssignment?.originalName === assignment ? (
+                            <div className="flex-1 flex items-center gap-2">
+                              <input
+                                type="text"
+                                className="flex-1 bg-transparent border-b border-[var(--accent-primary)] text-[var(--text-primary)] focus:outline-none"
+                                value={editingAssignment.name}
+                                onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
+                                  } else if (e.key === 'Escape') {
+                                    cancelEditing();
+                                  }
+                                }}
+                                autoFocus
+                              />
+                              <button 
+                                onClick={() => handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name)}
+                                className="text-green-500 hover:text-green-400 p-1"
+                                title="Save changes"
                               >
-                                <Edit2 size={16} />
+                                <Check size={16} />
                               </button>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
-                            <div className="flex items-center gap-1">
-                              <Users size={14} />
-                              <span>{assignmentTasks.length} total</span>
+                              <button 
+                                onClick={cancelEditing}
+                                className="text-red-500 hover:text-red-400 p-1"
+                                title="Cancel"
+                              >
+                                <X size={16} />
+                              </button>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span>{pendingTasks.length} pending</span>
-                            </div>
-                            {completedTasks.length > 0 && (
-                              <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full"></div>
-                                <span>{completedTasks.length} done</span>
-                              </div>
-                            )}
-                          </div>
+                          ) : (
+                            <h3 className="font-semibold text-[var(--text-primary)] text-lg truncate">
+                              {assignment}
+                            </h3>
+                          )}
+                          {editingAssignment?.originalName !== assignment && (
+                            <button
+                              onClick={() => startEditing(assignment)}
+                              className="p-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+                              title="Edit assignment name"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                          )}
                         </div>
-                        <button
-                          onClick={() => handleDeleteAssignment(assignment)}
-                          className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
-                          title="Delete assignment and all its tasks"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                            <span className="font-medium">{assignmentTasks.length} total</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="font-medium">{pendingTasks.length} pending</span>
+                          </div>
+                          {completedTasks.length > 0 && (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full"></div>
+                              <span className="font-medium">{completedTasks.length} done</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Progress bar */}
-                      {assignmentTasks.length > 0 && (
-                        <div className="w-full bg-[var(--bg-primary)] rounded-full h-2 mb-2">
-                          <div
-                            className="bg-[var(--accent-primary)] h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(completedTasks.length / assignmentTasks.length) * 100}%` }}
-                          />
-                        </div>
-                      )}
-
-                      {/* Task preview */}
-                      {assignmentTasks.length > 0 && (
-                        <div className="text-sm text-[var(--text-secondary)]">
-                          {pendingTasks.length > 0 && (
-                            <div className="mb-1">
-                              <span className="text-green-500 font-medium">Next:</span> {pendingTasks[0]?.title}
-                            </div>
-                          )}
-                          {assignmentTasks.length > 3 && (
-                            <div className="text-[var(--text-secondary)]">
-                              +{assignmentTasks.length - 3} more tasks
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment)}
+                        className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10"
+                        title="Delete assignment and all its tasks"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   );
                 })}

@@ -11,8 +11,11 @@ import TaskForm from "@/pages/tasks/TaskForm";
 import { formatDate } from "@/utils/dateUtils";
 import { useAppStore } from "@/store/appStore";
 import { useAuth } from "@/hooks/useAuth";
-import { useTaskDetails } from "@/hooks/useTaskDetails";
-import { useTaskManager } from "@/hooks/useTaskManager";
+
+interface TooltipContent {
+  date: Date;
+  tasks: any[];
+}
 
 const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
   useEffect(() => {
@@ -69,7 +72,7 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [focusedDate, setFocusedDate] = useState(new Date());
-  const [tooltipContent, setTooltipContent] = useState(null);
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
@@ -77,15 +80,43 @@ const Calendar = () => {
   const [calendarSize, setCalendarSize] = useState("lg"); // sm, md, lg
   const [lastTap, setLastTap] = useState(0);
 
-  const { selectedTask, editedTask, handleCloseTaskDetails } = useTaskDetails();
-  const { handleUpdateTask } = useTaskManager();
-
   const { tasks } = useAppStore((state) => state.tasks);
   const laps = useAppStore((state) => state.laps.laps);
 
   // ---------------------
   // Data is managed by Zustand store
   // ---------------------
+
+  // ---------------------
+  // Helper Functions
+  // ---------------------
+  const getPendingTasksForMonth = (date) => {
+    const currentMonth = date.getMonth();
+    const currentYear = date.getFullYear();
+    
+    return tasks.filter(task => {
+      if (task.completed) return false;
+      if (!task.deadline) return false;
+      
+      const taskDate = new Date(task.deadline);
+      return taskDate.getMonth() === currentMonth && taskDate.getFullYear() === currentYear;
+    }).length;
+  };
+
+  const getPendingTasksForNextMonth = (date) => {
+    const currentMonth = date.getMonth();
+    const currentYear = date.getFullYear();
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    
+    return tasks.filter(task => {
+      if (task.completed) return false;
+      if (!task.deadline) return false;
+      
+      const taskDate = new Date(task.deadline);
+      return taskDate.getMonth() === nextMonth && taskDate.getFullYear() === nextYear;
+    }).length;
+  };
 
   // ---------------------
   // Keyboard navigation
@@ -343,34 +374,49 @@ const Calendar = () => {
       {/* Tooltip */}
       {tooltipContent && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-secondary)] text-[var(--text-primary)] text-base rounded shadow-lg border border-[var(--border-color)] z-[9999] transition-all duration-200"
-          style={{ top: "0", minWidth: "180px", maxWidth: "250px" }}
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl z-[9999] transition-all duration-200 backdrop-blur-sm"
+          style={{ top: "5px", minWidth: "200px", maxWidth: "280px" }}
         >
-          <div className="font-medium p-2 border-b border-[var(--border-color)] text-center">
-            Tasks due for {formatDate(tooltipContent.date.toISOString())}:
+          <div className="px-3 py-2 border-b border-[var(--border-primary)]">
+            <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
+              {formatDate(tooltipContent.date.toISOString())}
+            </div>
+            <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
+              {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
+            </div>
           </div>
-          <div className="p-2 max-h-[180px] overflow-y-auto">
+          <div className="p-2 max-h-[200px] overflow-y-auto">
             {tooltipContent.tasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center gap-1 mb-1 last:mb-0"
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
               >
                 <div
-                  className={`w-1 h-1 rounded-full flex-shrink-0 ${
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${
                     task.completed
                       ? "bg-green-500"
                       : "bg-[var(--accent-primary)]"
                   }`}
                 />
-                <span
-                  className={`truncate text-base ${
-                    task.completed
-                      ? "line-through text-[var(--text-secondary)]"
-                      : ""
-                  }`}
-                >
-                  {task.title}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`text-sm font-medium break-words ${
+                      task.completed
+                        ? "line-through text-[var(--text-secondary)]"
+                        : "text-[var(--text-primary)]"
+                    }`}
+                  >
+                    {task.title}
+                  </div>
+                  {task.assignment && (
+                    <div className="text-xs text-[var(--text-secondary)] break-words">
+                      {task.assignment}
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                  {task.completed ? "✓" : "○"}
+                </div>
               </div>
             ))}
           </div>
@@ -429,6 +475,9 @@ const Calendar = () => {
                       : "hover:text-[var(--text-secondary)]"
                   }`}
                 >
+                  {tasksWithDeadline.length > 0 && (
+                    <div className="absolute top-0.5 right-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] opacity-80"></div>
+                  )}
                   <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-2">
                     <div className="flex flex-col items-center gap-0.5">
                       <div className="text-sm sm:text-base">
@@ -443,21 +492,29 @@ const Calendar = () => {
                           {getStudiedHoursForDate(dayObj.date)}h
                         </div>
                       )}
-                      {tasksWithDeadline.length > 0 && (
-                        <div className="flex justify-center gap-0.5 pt-1 task-indicators">
-                          {tasksWithDeadline.map((task) => (
-                            <div
-                              key={task.id}
-                              className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
-                            />
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar Footer */}
+      <div className="mt-4 p-3 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg">
+        <div className="flex justify-center items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></div>
+            <span className="text-[var(--text-primary)]">
+              {getPendingTasksForMonth(currentDate)} tasks this month
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[var(--text-secondary)]"></div>
+            <span className="text-[var(--text-primary)]">
+              {getPendingTasksForNextMonth(currentDate)} tasks next month
+            </span>
           </div>
         </div>
       </div>

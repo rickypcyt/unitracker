@@ -5,7 +5,7 @@ import { Calendar, CheckCircle2, ChevronDown, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { difficultyOptions, getDifficultyColor } from '@/hooks/tasks/useTaskDifficulty';
 import { formatDateForInput, getSelectedDateFromDMY, normalizeNaturalOrYMDDate, parseDateForDB } from '@/hooks/tasks/useTaskDateUtils';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import AIPreviewModal from './AIPreviewModal';
 import AutocompleteInput from '@/modals/AutocompleteInput';
@@ -135,10 +135,8 @@ const TaskForm = ({ initialAssignment = null, initialTask = null, initialDeadlin
     showAIPreview, setShowAIPreview,
     aiParsedTasks, setAiParsedTasks,
     aiTextareaRef,
-    aiCancelHover, setAiCancelHover,
-    aiAbortController, setAiAbortController,
+    setAiAbortController,
     aiCancelledRef,
-    handleCancelAI,
     MODEL_OPTIONS,
   } = useTaskAI();
 

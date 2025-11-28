@@ -1083,7 +1083,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         updateModal("isStartModalOpen", false);
 
         // Auto-start the timer when session begins
-        studyControls.start(Date.now(), false, initialSeconds);
+        studyControls.start(Date.now(), true, initialSeconds);
       } catch (e) {
         console.error("Error in handleStartSession:", e);
         toast.error("Could not start the session.");

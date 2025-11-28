@@ -11,8 +11,9 @@ import { useTaskManager } from "@/hooks/useTaskManager";
 
 type ExpandedGroups = {
   today: boolean;
-  next7Days: boolean;
-  sevenDaysPlus: boolean;
+  thisMonth: boolean;
+  nextMonth: boolean;
+  future: boolean;
   past: boolean;
   noDeadline: boolean;
 };
@@ -43,8 +44,9 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({
     today: true,
-    next7Days: true,
-    sevenDaysPlus: true,
+    thisMonth: true,
+    nextMonth: true,
+    future: false,
     past: false, // Past tasks collapsed by default
     noDeadline: true,
   });
@@ -56,18 +58,6 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  // Get end of week (Sunday)
-  const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
-
-  // Get next 7 days from today
-  const next7DaysEnd = new Date(today);
-  next7DaysEnd.setDate(today.getDate() + 7);
-
-  // Get 7+ days start (8 days from today)
-  const sevenDaysPlusStart = new Date(today);
-  sevenDaysPlusStart.setDate(today.getDate() + 8);
 
   // Filter and sort all tasks
   const allTasks = [...tasks].sort((a, b) => {
@@ -100,14 +90,42 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
     return taskDate.toDateString() === today.toDateString();
   });
 
-  const next7DaysTasks = upcomingTasks.filter((task) => {
+  // This month tasks (excluding today)
+  const thisMonthTasks = upcomingTasks.filter((task) => {
     const taskDate = new Date(task.deadline);
-    return taskDate > today && taskDate <= next7DaysEnd;
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    return (
+      taskDate.getMonth() === currentMonth &&
+      taskDate.getFullYear() === currentYear &&
+      taskDate.toDateString() !== today.toDateString()
+    );
   });
 
-  const sevenDaysPlusTasks = upcomingTasks.filter((task) => {
+  // Next month tasks
+  const nextMonthTasks = upcomingTasks.filter((task) => {
     const taskDate = new Date(task.deadline);
-    return taskDate >= sevenDaysPlusStart;
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    return (
+      taskDate.getMonth() === nextMonth &&
+      taskDate.getFullYear() === nextYear
+    );
+  });
+
+  // Future tasks (beyond next month)
+  const futureTasks = upcomingTasks.filter((task) => {
+    const taskDate = new Date(task.deadline);
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+    return (
+      (taskDate.getFullYear() > nextYear) ||
+      (taskDate.getFullYear() === nextYear && taskDate.getMonth() > nextMonth)
+    );
   });
 
   // Tasks without deadlines
@@ -228,21 +246,31 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
           {/* Today's Tasks */}
           <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
 
-          {/* Next 7 Days */}
+          {/* This Month */}
           <TaskGroup 
-            title="Next 7 Days" 
-            tasks={next7DaysTasks} 
-            groupKey="next7Days"
+            title="This Month" 
+            tasks={thisMonthTasks} 
+            groupKey="thisMonth"
             icon={<Calendar size={18} className="text-blue-500" />}
           />
 
-          {/* 7 Days + */}
+          {/* Next Month */}
           <TaskGroup 
-            title="7 Days +" 
-            tasks={sevenDaysPlusTasks} 
-            groupKey="sevenDaysPlus"
+            title="Next Month" 
+            tasks={nextMonthTasks} 
+            groupKey="nextMonth"
             icon={<Calendar size={18} className="text-purple-500" />}
           />
+
+          {/* Future */}
+          {futureTasks.length > 0 && (
+            <TaskGroup 
+              title="Future" 
+              tasks={futureTasks} 
+              groupKey="future"
+              icon={<Calendar size={18} className="text-gray-500" />}
+            />
+          )}
 
           {/* Past Due Section */}
           {pastTasks.length > 0 && (

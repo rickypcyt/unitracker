@@ -1,12 +1,10 @@
 import { Check, ChevronLeft, ChevronRight, Clock, Edit2, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { deleteTask, updateTaskAction } from '@/store/TaskActions';
 import { useTaskCrudActions, useTasks } from '@/store/appStore';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import type { Task } from '@/pages/tasks/taskStorage';
-import TaskDetailsModal from '@/modals/TaskDetailsModal';
 import moment from 'moment';
 
 interface ManageCompletedTasksModalProps {
@@ -19,10 +17,9 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   onClose,
 }) => {
   const { tasks } = useTasks();
-  const { deleteTask: deleteTaskAction, updateTask: updateTaskAction } = useTaskCrudActions();
+  const { deleteTask: deleteTaskAction } = useTaskCrudActions();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   // Agrupar tareas completadas por mes
@@ -50,16 +47,9 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   };
 
   const handleEditTask = (task: Task) => {
-    setTaskToEdit(task);
-  };
-
-  const handleSaveTask = async (updatedTask: Task) => {
-    try {
-      await updateTaskAction(updatedTask.id, updatedTask);
-      setTaskToEdit(null);
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
+    // This would open the TaskForm modal for editing
+    // Implementation depends on how you want to handle editing
+    console.log('Edit task:', task.title);
   };
 
   const handleMonthSelect = (month: string) => {
@@ -72,23 +62,6 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle task completion toggle
-  const handleToggleCompletion = async (task: Task) => {
-    try {
-      await updateTaskAction(task.id, { ...task, completed: !task.completed });
-    } catch (error) {
-      console.error('Error toggling task completion:', error);
-    }
-  };
-
-  // Handle setting active task
-  const handleSetActiveTask = async (task: Task) => {
-    try {
-      await updateTaskAction(task.id, { ...task, activetask: !task.activetask });
-    } catch (error) {
-      console.error('Error setting active task:', error);
-    }
-  };
 
   return (
     <>
@@ -102,8 +75,17 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
       >
         <div className="space-y-4 p-6">
           <div className="relative flex items-center justify-center mb-6">
+            {selectedMonth && (
+              <button
+                onClick={handleBackToMonths}
+                className="absolute left-0 flex items-center text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
+              >
+                <ChevronLeft size={20} className="mr-1" />
+                Back to all months
+              </button>
+            )}
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-              Manage Completed Tasks
+              {selectedMonth || 'Manage Completed Tasks'}
             </h2>
             <button
               onClick={onClose}
@@ -126,19 +108,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
               </div>
             ) : selectedMonth ? (
               <div className="space-y-4">
-                <button
-                  onClick={handleBackToMonths}
-                  className="flex items-center text-[var(--accent-primary)] hover:text-[var(--accent-primary-dark)] transition-colors mb-4"
-                >
-                  <ChevronLeft size={20} className="mr-1" />
-                  Back to all months
-                </button>
-                
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
-                  {selectedMonth}
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
                   {(groupedByMonth[selectedMonth] || [])
                     .slice()
                     .sort((a, b) => {
@@ -150,7 +120,6 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
                             <div
                               key={task.id}
                               className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4 hover:border-[var(--accent-primary)] transition-all duration-200 group"
-                              onDoubleClick={() => handleEditTask(task)}
                               onContextMenu={(e) => {
                                 e.preventDefault();
                                 handleEditTask(task);
@@ -208,9 +177,6 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
               </div>
             ) : (
               <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                  Select a month
-                </h2>
                 <div className="grid grid-cols-1 gap-3">
                   {months.map((month) => {
                     const tasksOfMonth = groupedByMonth[month] || [];
@@ -248,17 +214,6 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
           onConfirm={confirmDeleteTask}
           message={`Are you sure you want to delete the task "${taskToDelete.title}"? This action cannot be undone.`}
           confirmButtonText="Delete Task"
-        />
-      )}
-
-      {taskToEdit && (
-        <TaskDetailsModal
-          isOpen={!!taskToEdit}
-          onClose={() => setTaskToEdit(null)}
-          task={taskToEdit}
-          onSave={handleSaveTask}
-          onToggleCompletion={handleToggleCompletion}
-          onSetActiveTask={handleSetActiveTask}
         />
       )}
     </>

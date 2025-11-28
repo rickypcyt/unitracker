@@ -1,7 +1,6 @@
-import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X, Zap } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { deleteLap, forceLapRefresh } from '@/store/LapActions';
-import { useLapActions, useLaps } from '@/store/appStore';
 
 import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
@@ -11,6 +10,7 @@ import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
+import { useLaps } from '@/store/appStore';
 
 // Lap interface defined locally until we create a types file
 interface Lap {
@@ -49,8 +49,7 @@ interface ManageSessionsModalProps {
 }
 
 const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClose }) => {
-  const { laps, loading: status, error } = useLaps();
-  const { setLapsLoading, setLapsError, setLaps } = useLapActions();
+  const { laps, loading: status } = useLaps();
   const { isLoggedIn } = useAuth();
   const { isDemo } = useDemoMode();
 
@@ -177,6 +176,67 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
     }
     return out;
   };
+
+  // Grouped sessions by time period
+interface GroupedSessions {
+  today: Lap[];
+  thisWeek: Lap[];
+  lastWeek: Lap[];
+  olderThisMonth: Lap[];
+}
+
+const groupSessionsByTimePeriod = (lapsList: Lap[]): GroupedSessions => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  // Get start of current week (Sunday)
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  
+  // Get start of last week (Sunday of last week)
+  const startOfLastWeek = new Date(startOfWeek);
+  startOfLastWeek.setDate(startOfWeek.getDate() - 7);
+  
+  // Get end of last week (Saturday of last week)
+  const endOfLastWeek = new Date(startOfWeek);
+  endOfLastWeek.setDate(startOfWeek.getDate() - 1);
+  
+  // Get start of current month
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  const grouped: GroupedSessions = {
+    today: [],
+    thisWeek: [],
+    lastWeek: [],
+    olderThisMonth: []
+  };
+  
+  // Sort sessions by date (most recent first)
+  const sortedLaps = [...lapsList].sort((a, b) => {
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+    return dateB.getTime() - dateA.getTime();
+  });
+  
+  sortedLaps.forEach(lap => {
+    const lapDate = new Date(lap.created_at);
+    const lapDateOnly = new Date(lapDate.getFullYear(), lapDate.getMonth(), lapDate.getDate());
+    
+    if (lapDateOnly.getTime() === today.getTime()) {
+      grouped.today.push(lap);
+    } else if (lapDateOnly >= startOfWeek && lapDateOnly < today) {
+      grouped.thisWeek.push(lap);
+    } else if (lapDateOnly >= startOfLastWeek && lapDateOnly <= endOfLastWeek) {
+      grouped.lastWeek.push(lap);
+    } else if (lapDateOnly >= startOfMonth && lapDateOnly < startOfLastWeek) {
+      grouped.olderThisMonth.push(lap);
+    }
+  });
+  
+  return grouped;
+};
 
   // Group laps by month with proper type
   const groupedLaps: GroupedLabs = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
@@ -329,8 +389,16 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
       <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col">
         <div className="p-4 flex-shrink-0">
           <div className="relative flex items-center justify-center mb-6">
+            {selectedMonth ? (
+              <button
+                onClick={() => setSelectedMonth(null)}
+                className="absolute left-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+              >
+                <ArrowLeft size={20} className="-ml-1" /> Back to All Sessions
+              </button>
+            ) : null}
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-              Manage Sessions
+              {selectedMonth ? selectedMonth : 'Manage Sessions'}
             </h2>
             <button
               onClick={onClose}
@@ -343,190 +411,243 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
           
           <div className="flex-1 min-h-0">
             {selectedMonth ? (
-            // Month detail view
-            <div className="flex flex-col h-full">
-              <div className="relative mb-6 p-4 flex-shrink-0">
-                <button
-                  onClick={() => setSelectedMonth(null)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
-                >
-                  <ArrowLeft size={20} className="-ml-1" /> Back to All Sessions
-                </button>
-                <h3 className="text-xl font-semibold text-[var(--text-primary)] text-center">{selectedMonth}</h3>
-              </div>
-
+              // Month detail view
               <div className="flex-1 overflow-y-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-6">
-                  {selectedMonth && groupedLaps[selectedMonth]?.map((lap) => (
-                    <div
-                      key={lap.id}
-                      className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer flex flex-col h-full"
-                      onClick={() => setSelectedSession(lap)}
-                      onContextMenu={(e) => handleSessionContextMenu(e, lap)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)/10] flex items-center justify-center">
-                            <BookOpen size={16} className="text-[var(--accent-primary)]" />
-                          </div>
-                          <span className="text-sm font-medium text-[var(--accent-primary)] bg-[var(--accent-primary)/10] px-2 py-0.5 rounded-full">
-                            Session #{lap.session_number}
-                          </span>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(lap.id);
-                          }}
-                          className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1 -m-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-
-                      <h4 className="text-base font-semibold text-[var(--text-primary)] mb-3 line-clamp-2">
-                        {lap.name || `Study Session ${lap.session_number}`}
-                      </h4>
-
-                      <div className="mt-auto space-y-2.5">
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-                            <Calendar size={14} className="text-[var(--text-secondary)] opacity-70" />
-                            <span>{formatDateShort(lap.created_at)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-                            <Clock size={14} className="text-[var(--text-secondary)] opacity-70" />
-                            <span className="font-medium">{lap.duration}</span>
-                          </div>
-                        </div>
-                        
-                        {lap.tasks_completed > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] py-1.5 px-3 rounded-lg">
-                            <CheckCircle2 size={14} className="text-green-500" />
-                            <span>Completed {lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Months overview with scrollable content */
-            <div className="h-full overflow-y-auto px-6 py-4">
-              <div className="space-y-8">
-              {(() => {
-                // Group months by year
-                const monthsByYear: Record<string, MonthData[]> = {};
-
-                // First, convert the groupedLaps entries to an array and sort them by date
-                const sortedEntries = Object.entries(groupedLaps).sort(([aMonthYear], [bMonthYear]) => {
-                  // Parse the month and year from the formatted string
-                  const parseDate = (monthYear: string) => {
-                    const [month, year] = monthYear.split(' ');
-                    return new Date(Date.parse(`${month} 1, ${year}`));
-                  };
+                {(() => {
+                  const timeGroupedSessions = groupSessionsByTimePeriod(selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : []);
                   
-                  try {
-                    const aDate = parseDate(aMonthYear);
-                    const bDate = parseDate(bMonthYear);
-                    return bDate.getTime() - aDate.getTime();
-                  } catch (error) {
-                    console.error('Error parsing dates for sorting:', { aMonthYear, bMonthYear, error });
-                    return 0;
-                  }
-                });
-
-                // Group the sorted entries by year
-                sortedEntries.forEach(([monthYear, lapsOfMonth]) => {
-                  const yearParts = monthYear.split(' ')[1];
-                  const monthParts = monthYear.split(' ')[0];
-                  const year = yearParts || '2024'; // Default fallback
-                  const month = monthParts || 'January'; // Default fallback
+                  const sections = [
+                    { key: 'today', title: 'Today', sessions: timeGroupedSessions.today },
+                    { key: 'thisWeek', title: 'This Week', sessions: timeGroupedSessions.thisWeek },
+                    { key: 'lastWeek', title: 'Last Week', sessions: timeGroupedSessions.lastWeek },
+                    { key: 'olderThisMonth', title: 'Earlier This Month', sessions: timeGroupedSessions.olderThisMonth }
+                  ];
                   
-                  if (!monthsByYear[year]) {
-                    monthsByYear[year] = [];
-                  }
-                  
-                  monthsByYear[year].push({ 
-                    month, 
-                    monthYear, 
-                    lapsOfMonth,
-                    // Add a timestamp for consistent sorting
-                    timestamp: new Date(Date.parse(`${month} 1, ${year}`)).getTime()
-                  });
-                });
-
-                // Define the order of months for display
-                const monthOrder = [
-                  'January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'
-                ] as const;
-
-                return Object.entries(monthsByYear)
-                  .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
-                  .map(([year, months]) => (
-                    <div key={year} className="space-y-4">
-                      <div className="w-full flex justify-center mb-4">
-                        <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border border-[var(--border-primary)]">
-                          {year}
-                        </h2>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {months
-                          .sort((a, b) => monthOrder.indexOf(b.month as any) - monthOrder.indexOf(a.month as any))
-                          .map(({ month, monthYear, lapsOfMonth }) => {
-                            const stats = getMonthStats(lapsOfMonth);
-                            const totalHours = Math.floor(stats.totalMinutes / 60);
-                            const totalMins = stats.totalMinutes % 60;
-                            
-                            return (
-                              <div
-                                key={monthYear}
-                                className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer group"
-                                onClick={() => setSelectedMonth(monthYear)}
-                              >
-                                <div className="flex items-center justify-between mb-3">
-                                  <h3 className="text-lg font-semibold text-[var(--text-primary)]">{month}</h3>
-                                  <div className="flex items-center gap-1.5 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-sm font-medium px-2 py-1 rounded-full">
-                                    <BookOpen size={15} />
-                                    <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
-                                  </div>
-                                </div>
-                                <div className="space-y-3 max-h-96 overflow-y-auto pr-2 -mr-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-sm text-[var(--text-secondary)]">Total Time</span>
-                                    <div className="flex items-center gap-1">
-                                      <Clock size={14} className="text-[var(--accent-primary)]" />
-                                      <span className="font-mono font-medium">
-                                        {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
-                                      </span>
+                  return (
+                    <div className="space-y-8 pb-6">
+                      {sections.map(section => (
+                        section.sessions.length > 0 && (
+                          <div key={section.key}>
+                            <div className="flex items-center gap-3 mb-4">
+                              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                                {section.title}
+                              </h3>
+                              <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-1 rounded-full">
+                                {section.sessions.length} {section.sessions.length === 1 ? 'session' : 'sessions'}
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {section.sessions.map((lap) => (
+                                <div
+                                  key={lap.id}
+                                  className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-300 cursor-pointer rounded-lg p-4 flex items-center gap-4"
+                                  onClick={() => setSelectedSession(lap)}
+                                  onContextMenu={(e) => handleSessionContextMenu(e, lap)}
+                                >
+                                  <span className="text-sm font-bold text-[var(--accent-primary)] bg-[var(--accent-primary)/10] px-3 py-2 rounded-full whitespace-nowrap">
+                                    #{lap.session_number}
+                                  </span>
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <h4 className="text-lg font-bold text-[var(--text-primary)] truncate">
+                                        {lap.name || `Study Session ${lap.session_number}`}
+                                      </h4>
+                                      {lap.subject_name && (
+                                        <div className="flex items-center gap-1">
+                                          <div 
+                                            className="w-3 h-3 rounded-full border border-white/50"
+                                            style={{ backgroundColor: lap.subject_color || '#9CA3AF' }}
+                                          />
+                                          <span className="text-xs text-[var(--text-secondary)] font-medium">
+                                            {lap.subject_name || 'No assignment'}
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-6 text-sm">
+                                      <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                                        <Calendar size={16} className="text-[var(--accent-primary)]" />
+                                        <span className="font-medium">{formatDateShort(lap.created_at)}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Clock size={16} className="text-[var(--accent-primary)]" />
+                                        <span className="font-bold text-[var(--text-primary)] font-mono">{lap.duration}</span>
+                                      </div>
+                                      {lap.pomodoros_completed > 0 && (
+                                        <div className="flex items-center gap-2 text-orange-600">
+                                          <div className="w-4 h-4 bg-orange-500/20 rounded flex items-center justify-center">
+                                            <span className="text-xs font-bold text-orange-500">🍅</span>
+                                          </div>
+                                          <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                            {lap.pomodoros_completed} pomodoro{lap.pomodoros_completed !== 1 ? 's' : ''}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {lap.tasks_completed > 0 && (
+                                        <div className="flex items-center gap-2 text-green-600">
+                                          <CheckCircle2 size={16} className="text-green-500" />
+                                          <span className="font-semibold text-green-600 dark:text-green-400">
+                                            {lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
-                                  <div className="h-px bg-[var(--border-primary)] my-2"></div>
-                                  <div className="flex items-center justify-between text-sm">
-                                    <span className="text-[var(--text-secondary)]">Avg. Session</span>
-                                    <span className="font-medium">{stats.avgDuration}m</span>
-                                  </div>
+                                  
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(lap.id);
+                                    }}
+                                    className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
                                 </div>
-                                <div className="mt-3 pt-3 border-t border-[var(--border-primary)]">
-                                  <div className="text-sm text-[var(--text-secondary)] flex items-center justify-between">
-                                    <span>View all sessions</span>
-                                    <ArrowLeft size={14} className="transform rotate-180 group-hover:translate-x-0.5 transition-transform" />
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      ))}
+                      
+                      {sections.every(section => section.sessions.length === 0) && (
+                        <div className="text-center py-12">
+                          <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
+                            <BookOpen size={24} className="text-[var(--accent-primary)]" />
+                          </div>
+                          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No sessions this month</h3>
+                          <p className="text-[var(--text-secondary)]">
+                            Start a new study session to see your progress here.
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  ));
-              })()}
+                  );
+                })()}
               </div>
-            </div>
-          )}
+            ) : (
+              /* Months overview with scrollable content */
+              <div className="h-full overflow-y-auto px-6 py-4">
+                <div className="space-y-8">
+                {(() => {
+                  // Group months by year
+                  const monthsByYear: Record<string, MonthData[]> = {};
+
+                  // First, convert the groupedLaps entries to an array and sort them by date
+                  const sortedEntries = Object.entries(groupedLaps).sort(([aMonthYear], [bMonthYear]) => {
+                    // Parse the month and year from the formatted string
+                    const parseDate = (monthYear: string) => {
+                      const [month, year] = monthYear.split(' ');
+                      return new Date(Date.parse(`${month} 1, ${year}`));
+                    };
+                    
+                    try {
+                      const aDate = parseDate(aMonthYear);
+                      const bDate = parseDate(bMonthYear);
+                      return bDate.getTime() - aDate.getTime();
+                    } catch (error) {
+                      console.error('Error parsing dates for sorting:', { aMonthYear, bMonthYear, error });
+                      return 0;
+                    }
+                  });
+
+                  // Group the sorted entries by year
+                  sortedEntries.forEach(([monthYear, lapsOfMonth]) => {
+                    const yearParts = monthYear.split(' ')[1];
+                    const monthParts = monthYear.split(' ')[0];
+                    const year = yearParts || '2024'; // Default fallback
+                    const month = monthParts || 'January'; // Default fallback
+                    
+                    if (!monthsByYear[year]) {
+                      monthsByYear[year] = [];
+                    }
+                    
+                    monthsByYear[year].push({ 
+                      month, 
+                      monthYear, 
+                      lapsOfMonth,
+                      // Add a timestamp for consistent sorting
+                      timestamp: new Date(Date.parse(`${month} 1, ${year}`)).getTime()
+                    });
+                  });
+
+                  // Define the order of months for display
+                  const monthOrder = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                  ] as const;
+
+                  return Object.entries(monthsByYear)
+                    .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
+                    .map(([year, months]) => (
+                      <div key={year} className="space-y-4">
+                        <div className="w-full flex justify-center mb-4">
+                          <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border border-[var(--border-primary)]">
+                            {year}
+                          </h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                          {months
+                            .sort((a, b) => monthOrder.indexOf(b.month as any) - monthOrder.indexOf(a.month as any))
+                            .map(({ month, monthYear, lapsOfMonth }) => {
+                              const stats = getMonthStats(lapsOfMonth);
+                              const totalHours = Math.floor(stats.totalMinutes / 60);
+                              const totalMins = stats.totalMinutes % 60;
+                              
+                              return (
+                                <div
+                                  key={monthYear}
+                                  className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl p-5 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden"
+                                  onClick={() => setSelectedMonth(monthYear)}
+                                >
+                                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[var(--accent-primary)/20] to-transparent rounded-bl-full opacity-50"></div>
+                                  <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-4">
+                                      <h3 className="text-lg font-bold text-[var(--text-primary)]">{month}</h3>
+                                      <div className="flex items-center gap-2 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-sm font-semibold px-3 py-1.5 rounded-full  ">
+                                        <BookOpen size={16} />
+                                        <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-8 h-8 bg-[var(--accent-primary)/10] rounded-lg flex items-center justify-center">
+                                            <Clock size={16} className="text-[var(--accent-primary)]" />
+                                          </div>
+                                          <span className="font-mono font-bold text-[var(--text-primary)]">
+                                            {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center justify-between text-sm">
+                                        <span className="text-[var(--text-secondary)] font-medium">Avg. Session</span>
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-6 h-6 bg-[var(--bg-primary)] rounded flex items-center justify-center">
+                                            <Zap size={14} className="text-[var(--accent-primary)]" />
+                                          </div>
+                                          <span className="font-bold text-[var(--text-primary)]">{stats.avgDuration}m</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    ));
+                })()}
+                </div>
+              </div>
+            )}
+          </div>
 
           {selectedSession && (
             <SessionDetailsModal
@@ -578,7 +699,6 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
               </button>
             </div>
           )}
-        </div>
         </div>
       </div>
     </BaseModal>
