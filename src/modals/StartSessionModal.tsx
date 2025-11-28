@@ -106,12 +106,27 @@ const StartSessionModal = ({
   }, []);
 
   const applyTemplate = (template: typeof sessionTemplates[0], index: number) => {
+    console.log('[StartSessionModal] 📋 Applying template:', {
+      title: template.title,
+      description: template.description,
+      syncPomo: template.syncPomo,
+      syncCountdown: template.syncCountdown,
+      templateIndex: index
+    });
+
     setSessionTitle(template.title);
     setSessionDescription(template.description);
     setSyncPomo(template.syncPomo);
     setSyncCountdown(template.syncCountdown);
     setTitleError("");
     setSelectedTemplateIndex(index);
+    
+    console.log('[StartSessionModal] ✅ Template applied successfully:', {
+      newTitle: template.title,
+      newDescription: template.description,
+      newSyncPomo: template.syncPomo,
+      newSyncCountdown: template.syncCountdown
+    });
   };
 
   const validateForm = useCallback(() => {
@@ -302,7 +317,17 @@ const StartSessionModal = ({
   }, [lastAddedTaskId]); // Remove fetchSessionTasks dependency to prevent infinite loop
 
   const handleStart = async () => {
+    console.log('[StartSessionModal] 🚀 Starting session with current settings:', {
+      title: sessionTitle.trim(),
+      description: sessionDescription.trim(),
+      syncPomo,
+      syncCountdown,
+      selectedTasksCount: selectedTasks.length,
+      selectedTemplateIndex
+    });
+
     if (!validateForm()) {
+      console.log('[StartSessionModal] ❌ Form validation failed');
       return;
     }
 
@@ -344,6 +369,7 @@ const StartSessionModal = ({
       }
 
       if (existingSession) {
+        console.log('[StartSessionModal] 📋 Resuming existing session:', existingSession.id);
         onStart({
           sessionId: existingSession.id,
           tasks: selectedTasks,
@@ -376,7 +402,10 @@ const StartSessionModal = ({
 
       if (sessionError) throw sessionError;
 
+      console.log('[StartSessionModal] ✅ New session created:', session.id);
+
       if (selectedTasks.length > 0) {
+        console.log('[StartSessionModal] 📝 Adding tasks to session:', selectedTasks.length);
         const { error: sessionTasksError } = await supabase
           .from("session_tasks")
           .insert(
@@ -401,6 +430,15 @@ const StartSessionModal = ({
           );
         }
       }
+
+      console.log('[StartSessionModal] 🎯 Calling onStart with sync settings:', {
+        sessionId: session.id,
+        tasks: selectedTasks,
+        title: sessionTitle.trim(),
+        description: sessionDescription.trim(),
+        syncPomo,
+        syncCountdown,
+      });
 
       onStart({
         sessionId: session.id,

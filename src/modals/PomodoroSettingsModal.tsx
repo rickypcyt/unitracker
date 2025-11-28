@@ -41,29 +41,16 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
 
   useEffect(() => {
     if (isOpen) {
-      console.log('🔧 DEBUG: Modal isOpen - initializing values');
-      console.log('🔧 DEBUG: Modal - currentModeIndex:', currentModeIndex);
-      console.log('🔧 DEBUG: Modal - customModeIndex:', customModeIndex);
-      console.log('🔧 DEBUG: Modal - pomodoroModes:', pomodoroModes);
-      
       setSelectedModeIndex(currentModeIndex);
       
       // Always load custom mode values if they exist, regardless of current mode
       const customMode = pomodoroModes[customModeIndex];
-      console.log('🔧 DEBUG: Modal - customMode found:', customMode);
       
       if (customMode) {
-        console.log('🔧 DEBUG: Modal - Loading saved custom values');
         setCustomWorkTime((customMode.work / 60).toString());
         setCustomBreakTime((customMode.break / 60).toString());
         setCustomLongBreakTime((customMode.longBreak / 60).toString());
-        console.log('🔧 DEBUG: Modal - Set custom times to:', {
-          work: customMode.work / 60,
-          break: customMode.break / 60,
-          longBreak: customMode.longBreak / 60
-        });
       } else {
-        console.log('🔧 DEBUG: Modal - No custom mode found, clearing values');
         setCustomWorkTime('');
         setCustomBreakTime('');
         setCustomLongBreakTime('');
@@ -72,7 +59,6 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
       // Check if current mode is custom (last mode)
       const isCustom = currentModeIndex === customModeIndex;
       setIsCustomModeSelected(isCustom);
-      console.log('🔧 DEBUG: Modal - isCustomModeSelected:', isCustom);
     }
   }, [isOpen, currentModeIndex, pomodoroModes, customModeIndex]);
 
@@ -93,43 +79,26 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   };
 
   const handleSave = () => {
-    console.log('🔧 DEBUG: Modal - handleSave called');
-    console.log('🔧 DEBUG: Modal - isCustomModeSelected:', isCustomModeSelected);
-    console.log('🔧 DEBUG: Modal - customWorkTime:', customWorkTime);
-    console.log('🔧 DEBUG: Modal - customBreakTime:', customBreakTime);
-    console.log('🔧 DEBUG: Modal - customLongBreakTime:', customLongBreakTime);
-    console.log('🔧 DEBUG: Modal - selectedModeIndex:', selectedModeIndex);
-    console.log('🔧 DEBUG: Modal - customModeIndex:', customModeIndex);
-    
     if (isCustomModeSelected) {
       // Custom mode selected - validate and save custom values
       const workTimeSeconds = customWorkTime ? parseInt(customWorkTime) * 60 : 1500; // Default to 25 min if empty
       const breakTimeSeconds = customBreakTime ? parseInt(customBreakTime) * 60 : 300; // Default to 5 min if empty
       const longBreakTimeSeconds = customLongBreakTime ? parseInt(customLongBreakTime) * 60 : 900; // Default to 15 min if empty
       
-      console.log('🔧 DEBUG: Modal - Saving custom mode with times:', {
-        work: workTimeSeconds / 60,
-        break: breakTimeSeconds / 60,
-        longBreak: longBreakTimeSeconds / 60
-      });
-      
       if (!isNaN(workTimeSeconds) && !isNaN(breakTimeSeconds) && !isNaN(longBreakTimeSeconds) && 
           workTimeSeconds > 0 && breakTimeSeconds > 0 && longBreakTimeSeconds > 0) {
-        console.log('🔧 DEBUG: Modal - About to call onSaveCustomMode');
         onSaveCustomMode({ 
           label: 'Custom', 
           work: workTimeSeconds, 
           break: breakTimeSeconds,
           longBreak: longBreakTimeSeconds 
         });
-        console.log('🔧 DEBUG: Modal - Called onSaveCustomMode');
       } else {
         alert('Please enter valid positive numbers for all time values.');
         return;
       }
     } else {
       // Predefined mode selected - just switch to it
-      console.log('🔧 DEBUG: Modal - Switching to predefined mode:', selectedModeIndex);
       onModeChange(selectedModeIndex);
     }
     
@@ -144,8 +113,8 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   const predefinedModes = pomodoroModes.slice(0, customModeIndex);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0 lg:max-w-4xl">
-      <div className="p-6 max-h-[80vh] overflow-y-auto">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0 lg:max-w-6xl">
+      <div className="p-6 max-h-[95vh] overflow-y-auto">
         <div className="relative flex items-center justify-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
             Pomodoro Settings
@@ -203,19 +172,19 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
               <div className="space-y-6 lg:col-span-2">
                 <div>
                   <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {predefinedModes.map((mode, index) => (
                       <div
                         key={mode.label}
                         onClick={() => handleModeSelect(index)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg ${
                           selectedModeIndex === index && !isCustomModeSelected
-                            ? 'border-[var(--accent-primary)]'
+                            ? 'border-[var(--accent-primary)] shadow-md'
                             : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-semibold text-[var(--text-primary)]">{mode.label}</h4>
                             <p className="text-sm text-[var(--text-secondary)] mt-1">{mode.description}</p>
                             <div className="flex gap-4 mt-2 text-sm text-[var(--text-secondary)]">
@@ -225,26 +194,26 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                             </div>
                           </div>
                           {selectedModeIndex === index && !isCustomModeSelected && (
-                            <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
+                            <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)] flex-shrink-0 ml-3"></div>
                           )}
                         </div>
                       </div>
                     ))}
                     <div
                       onClick={() => handleModeSelect(customModeIndex)}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg ${
                         isCustomModeSelected
-                          ? 'border-[var(--accent-primary)]'
+                          ? 'border-[var(--accent-primary)] shadow-md'
                           : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold text-[var(--text-primary)]">Custom</h4>
                           <p className="text-sm text-[var(--text-secondary)] mt-1">Your personalized settings</p>
                         </div>
                         {isCustomModeSelected && (
-                          <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)]"></div>
+                          <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)] flex-shrink-0 ml-3"></div>
                         )}
                       </div>
                     </div>

@@ -138,7 +138,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     let remaining = secondsLeft;
     if (endTimestamp) {
       const diffMs = endTimestamp - Date.now();
-      remaining = Math.max(0, Math.ceil(diffMs / 1000));
+      remaining = Math.max(0, Math.round(diffMs / 1000));
     }
     setIsCountdownRunning(false);
     setPausedSecondsLeft(remaining);
@@ -280,7 +280,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     const interval = setInterval(() => {
       const now = Date.now();
       const diffMs = endTimestamp - now;
-      const newSecondsLeft = Math.max(0, Math.ceil(diffMs / 1000));
+      const newSecondsLeft = Math.max(0, Math.round(diffMs / 1000));
       if (newSecondsLeft !== prevSecondsLeftRef.current) {
         setSecondsLeft(newSecondsLeft);
         prevSecondsLeftRef.current = newSecondsLeft;
@@ -455,15 +455,14 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
   useEventListener('studyTimerTimeUpdate', (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
     if (!syncCountdownWithTimer) return;
 
+    // If countdown is paused, don't do anything - just stay paused at the current value
+    if (pausedSecondsLeft !== null) {
+      return;
+    }
+
     const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
     const baselineSeconds = calculateSeconds(baselineTimeRef.current); // Total countdown duration
     
-    console.log('[Countdown] 📊 studyTimerTimeUpdate sync', { 
-      studyTime, 
-      baselineSeconds,
-      willUpdate: studyTime >= 0 && baselineSeconds > 0
-    });
-
     // If StudyTimer resets to 0, reset countdown to baseline
     if (studyTime === 0 && baselineSeconds > 0) {
       console.log('[Countdown] ✅ StudyTimer reset detected - resetting countdown to baseline');
@@ -483,7 +482,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     // Calculate remaining countdown time based on StudyTimer elapsed time
     const remainingTime = Math.max(0, baselineSeconds - studyTime);
     
-    // Update countdown display to show remaining time
+    // Update countdown display
     setSecondsLeft(remainingTime);
     
     // Sync running state with StudyTimer
@@ -509,7 +508,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
         } catch {}
       }
     }
-  }, [syncCountdownWithTimer, calculateSeconds, isCountdownRunning]);
+  }, [syncCountdownWithTimer, calculateSeconds, isCountdownRunning, pausedSecondsLeft]);
 
   // resetCountdownSync: reiniciar cuando hay sync con StudyTimer O cuando viene de Pomodoro sincronizado
   useEventListener('resetCountdownSync', (event: CustomEvent<{ baseTimestamp?: number }>) => {

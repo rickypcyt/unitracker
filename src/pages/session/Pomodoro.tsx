@@ -7,7 +7,7 @@ import { useAppStore, usePomodoroModes, useUiActions } from '@/store/appStore';
 import { POMODORO_SOUNDS } from '../../constants/pomodoro';
 import type { PomodoroModeType } from '../../types/pomodoro';
 import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
-import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync';
+// import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
 import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
@@ -86,26 +86,46 @@ const sounds = loadSounds();
 
 const loadPomoState = (): PomoState => {
   const today = getLocalDateString();
+  
+  // Always get the authoritative daily count from localStorage first
+  const authoritativeDailyCount = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+  const authoritativeSessionCount = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
+  
   const savedState = localStorage.getItem('pomodoroState');
   
   if (!savedState) {
-    // No saved state - use DEFAULT_STATE but ensure timeLeft matches the mode
+    // No saved state - use DEFAULT_STATE but ensure count matches authoritative values
     const defaultState = { ...DEFAULT_STATE };
-    // Try to load modes to set correct time for the default mode
+    
+    // Limpiar modos antiguos del localStorage si existen
     try {
       const modesFromStore = localStorage.getItem('pomodoroModes');
       if (modesFromStore) {
         const modes = JSON.parse(modesFromStore);
-        const defaultModeConfig = modes[DEFAULT_STATE.modeIndex];
-        if (defaultModeConfig && defaultModeConfig[DEFAULT_STATE.currentMode]) {
-          defaultState.timeLeft = defaultModeConfig[DEFAULT_STATE.currentMode];
+        const hasOldModes = modes.some((mode: any) => 
+          mode.label === 'Quick Sprints' || mode.label === 'Student'
+        );
+        
+        if (hasOldModes) {
+          console.log('[Pomodoro] Clearing old modes from localStorage');
+          localStorage.removeItem('pomodoroModes');
+        } else {
+          const defaultModeConfig = modes[DEFAULT_STATE.modeIndex];
+          if (defaultModeConfig && defaultModeConfig[DEFAULT_STATE.currentMode]) {
+            defaultState.timeLeft = defaultModeConfig[DEFAULT_STATE.currentMode];
+          }
         }
       }
     } catch (e) {
       console.warn('Could not load modes for default state, using fallback time');
     }
     
-    return { ...defaultState, pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) };
+    return { 
+      ...defaultState, 
+      pomodoroToday: authoritativeDailyCount,
+      pomodorosThisSession: authoritativeSessionCount,
+      workSessionsCompleted: authoritativeSessionCount,
+    };
   }
 
   try {
@@ -115,14 +135,13 @@ const loadPomoState = (): PomoState => {
       currentMode: ['work', 'break', 'longBreak'].includes(parsed.currentMode) ? parsed.currentMode : 'work',
       timeLeft: safeNumber(parsed.timeLeft, DEFAULT_STATE.timeLeft),
       isRunning: false,
-      pomodoroToday: parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10),
+      pomodoroToday: authoritativeDailyCount, // Always use the authoritative value
+      pomodorosThisSession: authoritativeSessionCount, // Always use the authoritative value
       workSessionsBeforeLongBreak: safeNumber(parsed.workSessionsBeforeLongBreak, 4),
-      workSessionsCompleted: safeNumber(parsed.workSessionsCompleted, 0),
+      workSessionsCompleted: authoritativeSessionCount, // Always use the authoritative value
       timeAtStart: safeNumber(parsed.timeAtStart ?? parsed.startTime, 0), // Migrate from startTime
       lastStart: parsed.lastStart ?? null, // Keep existing lastStart or null
       lastManualAdjustment: 0,
-      pomodorosThisSession: parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10),
-      longBreakDuration: safeNumber(parsed.longBreakDuration, 900),
       manuallyPaused: parsed.manuallyPaused || false, // Load manual pause state
     };
 
@@ -132,13 +151,30 @@ const loadPomoState = (): PomoState => {
     if (hasInvalidValues) {
       localStorage.removeItem('pomodoroIsRunning');
       localStorage.removeItem('pomodorosThisSession');
-      return DEFAULT_STATE;
+      return { 
+        ...DEFAULT_STATE, 
+        pomodoroToday: authoritativeDailyCount,
+        pomodorosThisSession: authoritativeSessionCount,
+        workSessionsCompleted: authoritativeSessionCount,
+      };
     }
 
+    console.log('[Pomodoro] ✅ Loaded state with authoritative counts:', { 
+      authoritativeDailyCount, 
+      authoritativeSessionCount,
+      statePomodoroToday: state.pomodoroToday,
+      statePomodorosThisSession: state.pomodorosThisSession,
+      stateWorkSessionsCompleted: state.workSessionsCompleted
+    });
     return state;
   } catch (error) {
     console.error('Error parsing saved pomodoro state:', error);
-    return DEFAULT_STATE;
+    return { 
+      ...DEFAULT_STATE, 
+      pomodoroToday: authoritativeDailyCount,
+      pomodorosThisSession: authoritativeSessionCount,
+      workSessionsCompleted: authoritativeSessionCount,
+    };
   }
 };
 
@@ -151,7 +187,7 @@ const savePomoState = (state: PomoState) => {
     lastStart: state.lastStart,
     workSessionsBeforeLongBreak: safeNumber(state.workSessionsBeforeLongBreak, 4),
     workSessionsCompleted: safeNumber(state.workSessionsCompleted, 0),
-    pomodoroToday: safeNumber(state.pomodoroToday, 0),
+    // Don't save pomodoroToday here - localStorage is the authoritative source
     manuallyPaused: state.manuallyPaused || false, // Save manual pause state
   };
 
@@ -166,7 +202,7 @@ const savePomoState = (state: PomoState) => {
   }
 
   localStorage.setItem('pomodoroIsRunning', state.isRunning.toString());
-  localStorage.setItem(`pomodoroDailyCount_${getLocalDateString()}`, safeNumber(state.pomodoroToday, 0).toString());
+  // pomodoroDailyCount is managed separately in handlePomodoroComplete
 };
 
 // ============================================================================
@@ -174,7 +210,12 @@ const savePomoState = (state: PomoState) => {
 // ============================================================================
 
 const showNotification = (title: string, options: NotificationOptions) => {
-  if (typeof window === 'undefined' || !('Notification' in window)) return;
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    console.log('[Pomodoro] Notifications not supported');
+    return;
+  }
+
+  console.log('[Pomodoro] Attempting to show notification:', title, options);
 
   const opts = {
     ...options,
@@ -184,19 +225,20 @@ const showNotification = (title: string, options: NotificationOptions) => {
   };
 
   const createNotification = () => {
-    const n = new Notification(title, opts);
-    setTimeout(() => n.close(), 5000);
-    n.onclick = () => { window.focus(); n.close(); };
+    try {
+      const n = new Notification(title, opts);
+      console.log('[Pomodoro] ✅ Notification created successfully:', title);
+      setTimeout(() => n.close(), 5000);
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch (error) {
+      console.error('[Pomodoro] ❌ Error creating notification:', error);
+    }
   };
 
-  try {
-    if (Notification.permission === 'granted') {
-      createNotification();
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then((p) => p === 'granted' && createNotification());
-    }
-  } catch (e) {
-    console.error('Notification error:', e);
+  if (Notification.permission === 'granted') {
+    createNotification();
+  } else {
+    console.log('[Pomodoro] ⚠️ Notification permission not granted:', Notification.permission);
   }
 };
 
@@ -273,12 +315,119 @@ const Pomodoro: React.FC = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
   const [localResetKey, setLocalResetKey] = useState(0);
+  const [isCounting, setIsCounting] = useState(false); // Prevent double counting
   // const [pomodorosTodayLocal, setPomodorosTodayLocal] = useState(() =>
   //   parseInt(localStorage.getItem(`pomodoroDailyCount_${getLocalDateString()}`) || '0', 10)
   // ); // Not used
 
   const [alarmEnabled, toggleAlarm] = useAlarmEnabled();
   // const { total: pomodorosToday, fetchPomodoros } = usePomodorosToday(user?.id || ''); // Not used
+
+  // ============================================================================
+  // DATABASE OPERATIONS
+  // ============================================================================
+
+  // Remove database dependency - Pomodoro is now independent
+  // Store pomodoro stats separately from study sessions
+  const updatePomodoroStats = useCallback(async (increment = 1) => {
+    try {
+      // Get current pomodoro count to save to database
+      const today = getLocalDateString();
+      const currentPomodoroCount = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+      
+      console.log('🔧 DEBUG: Saving pomodoro stats to database:', { 
+        increment, 
+        currentPomodoroCount,
+        today 
+      });
+      
+      // TODO: Implement database save here
+      // await savePomodoroStatsToDatabase({
+      //   date: today,
+      //   pomodoroCount: currentPomodoroCount,
+      //   sessionId: getCurrentSessionId()
+      // });
+      
+    } catch (e) {
+      console.error('Error updating pomodoro stats:', e);
+    }
+  }, []);
+
+  // ============================================================================
+// POMODORO COUNT MANAGEMENT (inside component)
+  // ============================================================================
+
+  // Single source of truth for pomodoro count
+  const getPomodoroCount = useCallback(() => {
+    const today = getLocalDateString();
+    return parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
+  }, []);
+
+  const incrementPomodoroCount = useCallback(async () => {
+    // Prevent double counting
+    if (isCounting) {
+      console.log('[Pomodoro] ⚠️ Already counting, skipping duplicate call');
+      return;
+    }
+    
+    setIsCounting(true);
+    const currentCount = getPomodoroCount();
+    console.log('[Pomodoro] 🍅 Incrementing pomodoro count:', {
+      currentCount,
+      stateCount: pomoState.pomodoroToday,
+      stackTrace: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    });
+    
+    try {
+      // Get current count from single source of truth
+      const newCount = currentCount + 1;
+      const today = getLocalDateString();
+      
+      // Update localStorage (single source of truth)
+      localStorage.setItem(`pomodoroDailyCount_${today}`, String(newCount));
+      localStorage.setItem('pomodorosThisSession', String(newCount));
+      
+      // Update state to match localStorage
+      setPomoState(prev => ({
+        ...prev,
+        pomodoroToday: newCount,
+        pomodorosThisSession: newCount,
+        workSessionsCompleted: prev.workSessionsCompleted + 1,
+      }));
+      
+      // Dispatch event and update stats
+      window.dispatchEvent(new CustomEvent('pomodoroCompleted'));
+      await updatePomodoroStats(1);
+      
+      console.log('[Pomodoro] ✅ Pomodoro count updated:', { 
+        newCount,
+        previousCount: currentCount
+      });
+      
+      return newCount;
+    } finally {
+      // Always reset the flag after a short delay
+      setTimeout(() => setIsCounting(false), 100);
+    }
+  }, [getPomodoroCount, updatePomodoroStats, isCounting, pomoState.pomodoroToday]);
+
+  // Reset pomodoro count to 0
+  const resetPomodoroCount = useCallback(() => {
+    console.log('[Pomodoro] 🔄 Resetting pomodoro count to 0');
+    const today = getLocalDateString();
+    
+    // Reset localStorage (single source of truth)
+    localStorage.setItem(`pomodoroDailyCount_${today}`, '0');
+    localStorage.setItem('pomodorosThisSession', '0');
+    
+    // Update state to match localStorage
+    setPomoState(prev => ({
+      ...prev,
+      pomodoroToday: 0,
+      pomodorosThisSession: 0,
+      workSessionsCompleted: 0,
+    }));
+  }, []);
 
   // Force display update when modes change
   useEffect(() => {
@@ -332,33 +481,12 @@ const Pomodoro: React.FC = () => {
   const currentModeConfig = modes[pomoState.modeIndex] || getDefaultModeConfig();
 
   // ============================================================================
-  // DATABASE OPERATIONS
-  // ============================================================================
-
-  // Remove database dependency - Pomodoro is now independent
-  // Store pomodoro stats separately from study sessions
-  const updatePomodoroStats = useCallback(async (increment = 1) => {
-    try {
-      // Store pomodoro stats in a separate table or localStorage
-      const today = getLocalDateString();
-      const currentStats = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
-      const newStats = currentStats + increment;
-      localStorage.setItem(`pomodoroDailyCount_${today}`, String(newStats));
-      
-      // Update the state - removed setPomodorosTodayLocal as it's not used
-      // setPomodorosTodayLocal(newStats);
-      
-      console.log('🔧 DEBUG: Updated pomodoro stats:', { today, currentStats, newStats });
-    } catch (e) {
-      console.error('Error updating pomodoro stats:', e);
-    }
-  }, []);
-
-  // ============================================================================
   // POMODORO ACTIONS
   // ============================================================================
 
   const handlePomodoroComplete = useCallback(async () => {
+    console.log('[Pomodoro] 🍅 Session completed - current mode:', pomoState.currentMode);
+    
     const isWork = pomoState.currentMode === 'work';
     const willTakeLongBreak = isWork &&
       (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
@@ -367,42 +495,52 @@ const Pomodoro: React.FC = () => {
       ? (willTakeLongBreak ? 'longBreak' : 'break')
       : 'work';
 
+    console.log('[Pomodoro] 🔄 Mode transition:', {
+      from: pomoState.currentMode,
+      to: nextMode,
+      isWork,
+      willTakeLongBreak,
+      workSessionsCompleted: pomoState.workSessionsCompleted,
+      workSessionsBeforeLongBreak: pomoState.workSessionsBeforeLongBreak
+    });
+
     // Play sound
     if (alarmEnabled) {
+      console.log('[Pomodoro] 🔊 Playing completion sound');
       const soundKey = isWork ? 'work' : (pomoState.currentMode === 'longBreak' ? 'longBreak' : 'break');
       sounds[soundKey].currentTime = 0;
       sounds[soundKey].play().catch(console.error);
     }
 
-    // Update database for work sessions
+    // Update database and stats for work sessions ONLY
     if (isWork) {
-      window.dispatchEvent(new CustomEvent('pomodoroCompleted'));
-      const current = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
-      localStorage.setItem('pomodorosThisSession', String(current + 1));
-
-      try {
-        await updatePomodoroStats(1); // Update independent pomodoro stats
-      } catch (e) {
-        console.error('Error updating pomodoro count:', e);
-      }
+      console.log('[Pomodoro] 📊 Updating work session stats');
+      
+      // Use centralized count increment
+      await incrementPomodoroCount();
     }
 
-    // Update state
+    // Update state - use the localStorage value as single source of truth
     setPomoState((prev) => {
-      if (isWork) {
-        const today = getLocalDateString();
-        const newCount = prev.pomodoroToday + 1;
-        localStorage.setItem(`pomodoroDailyCount_${today}`, String(newCount));
-        // setPomodorosTodayLocal(newCount); // Not used
-      }
+      const today = getLocalDateString();
+      const updatedDailyCount = isWork 
+        ? parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10)
+        : prev.pomodoroToday;
 
       const nextModeTime = currentModeConfig?.[nextMode] || (nextMode === 'break' ? 600 : nextMode === 'longBreak' ? 1800 : 3000);
+      
+      console.log('[Pomodoro] ⏰ Setting next mode time:', {
+        nextMode,
+        nextModeTime,
+        nextModeMinutes: nextModeTime / 60,
+        updatedDailyCount
+      });
       
       return {
         ...prev,
         currentMode: nextMode,
         timeLeft: nextModeTime,
-        pomodoroToday: isWork ? prev.pomodoroToday + 1 : prev.pomodoroToday,
+        pomodoroToday: updatedDailyCount, // Use the authoritative value from localStorage
         workSessionsCompleted: isWork ? prev.workSessionsCompleted + 1 : prev.workSessionsCompleted,
         pomodorosThisSession: isWork ? prev.pomodorosThisSession + 1 : prev.pomodorosThisSession,
       };
@@ -415,6 +553,8 @@ const Pomodoro: React.FC = () => {
     const notifBody = isWork
       ? (willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.')
       : 'Break is over! Time to get back to work.';
+
+    console.log('[Pomodoro] 📱 Showing notification:', { notifTitle, notifBody });
 
     showToast(
       isWork
@@ -430,7 +570,7 @@ const Pomodoro: React.FC = () => {
       tag: 'pomodoro-notification',
       requireInteraction: true,
     });
-  }, [pomoState, currentModeConfig, alarmEnabled, updatePomodoroStats]);
+  }, [pomoState, currentModeConfig, alarmEnabled, incrementPomodoroCount]);
 
   const handleStart = useCallback((baseTimestamp?: number, fromSync?: boolean) => {
     const now = baseTimestamp || Date.now();
@@ -495,6 +635,11 @@ const Pomodoro: React.FC = () => {
     const now = Date.now();
     const modeDuration = currentModeConfig?.work || 1500;
 
+    // Reset pomodoro count to 0 when manually resetting
+    if (!fromSync) {
+      resetPomodoroCount();
+    }
+
     setPomoState((prev) => ({
       ...prev,
       isRunning: false,
@@ -504,13 +649,15 @@ const Pomodoro: React.FC = () => {
       lastStart: null, // Reset last start
       lastManualAdjustment: now,
       manuallyPaused: false, // Clear manual pause flag on reset
+      // Don't reset count here - resetPomodoroCount handles it
     }));
 
     // Zustand action would go here - currently using local state
 
-    localStorage.removeItem('pomodoroState');
-    localStorage.removeItem('pomodoroIsRunning');
-    localStorage.removeItem('pomodorosThisSession');
+    if (!fromSync) {
+      localStorage.removeItem('pomodoroState');
+      localStorage.removeItem('pomodoroIsRunning');
+    }
 
     if (!fromSync) {
       window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: now } }));
@@ -519,7 +666,7 @@ const Pomodoro: React.FC = () => {
         window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
       }
     }
-  }, [currentModeConfig, syncPomodoroWithTimer]);
+  }, [currentModeConfig, syncPomodoroWithTimer, resetPomodoroCount]);
 
   const handleModeChange = useCallback((index: number) => {
     const safeIndex = Math.min(index, modes.length - 1);
@@ -580,10 +727,47 @@ const Pomodoro: React.FC = () => {
     toast.success('Custom mode saved and activated!');
   }, [modes, updatePomodoroMode]);
 
-  const handleTimeAdjustment = useCallback((adjustment: number) => {
+  const handleTimeAdjustment = useCallback(async (adjustment: number) => {
     const now = Date.now();
     const maxTime = currentModeConfig?.[pomoState.currentMode] || 1500;
     const newTimeLeft = Math.max(0, Math.min(pomoState.timeLeft + adjustment, maxTime));
+
+    // Check if we're completing a work session by manual adjustment
+    const isWork = pomoState.currentMode === 'work';
+    const wasWorkSessionCompleted = isWork && newTimeLeft === 0 && pomoState.timeLeft > 0;
+
+    if (wasWorkSessionCompleted) {
+      console.log('[Pomodoro] 🍅 Work session completed by manual adjustment');
+      
+      // Use centralized count increment
+      await incrementPomodoroCount();
+
+      // Show completion notification
+      showToast('Work session completed! 🎉', '🎉');
+      showNotification('Work Session Complete! 🎉', {
+        body: 'Great job! Time to take a break.',
+        icon: '🍅',
+        badge: '🍅',
+        tag: 'pomodoro-notification',
+        requireInteraction: true,
+      });
+
+      // Transition to break mode
+      const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
+      const nextMode: PomodoroModeType = willTakeLongBreak ? 'longBreak' : 'break';
+      const nextModeTime = currentModeConfig?.[nextMode] || (nextMode === 'break' ? 600 : 1800);
+      
+      setTimeout(() => {
+        setPomoState(prev => ({
+          ...prev,
+          currentMode: nextMode,
+          timeLeft: nextModeTime,
+          isRunning: false,
+        }));
+      }, 1000);
+
+      return;
+    }
 
     setPomoState((prev) => {
       // If running, update timeAtStart to reflect the adjustment
@@ -608,7 +792,7 @@ const Pomodoro: React.FC = () => {
         detail: { adjustment: -adjustment, forceSync: true },
       }));
     }
-  }, [pomoState, currentModeConfig, syncPomodoroWithTimer, handlePomodoroComplete]);
+  }, [pomoState, currentModeConfig, syncPomodoroWithTimer, incrementPomodoroCount]);
 
   // ============================================================================
   // SYNC EVENT HANDLERS
@@ -659,6 +843,26 @@ const Pomodoro: React.FC = () => {
     window.dispatchEvent(new CustomEvent('pomodoroStateUpdate', { detail: pomoState }));
   }, [pomoState]);
 
+  // Sync pomodoroToday with localStorage (authoritative source) - only on mount
+  useEffect(() => {
+    const authoritativeCount = getPomodoroCount();
+    
+    if (pomoState.pomodoroToday !== authoritativeCount) {
+      console.log('[Pomodoro] 🔄 Initial sync with localStorage:', {
+        stateCount: pomoState.pomodoroToday,
+        authoritativeCount,
+        difference: authoritativeCount - pomoState.pomodoroToday
+      });
+      
+      setPomoState(prev => ({ 
+        ...prev, 
+        pomodoroToday: authoritativeCount,
+        pomodorosThisSession: authoritativeCount,
+        workSessionsCompleted: authoritativeCount,
+      }));
+    }
+  }, []); // Run only on mount - remove getPomodoroCount dependency to prevent re-runs
+
   // Save session pomodoros
   useEffect(() => {
     localStorage.setItem('pomodorosThisSession', pomoState.pomodorosThisSession.toString());
@@ -669,67 +873,158 @@ const Pomodoro: React.FC = () => {
     setPomoState((prev) => ({ ...prev, pomodoroToday: 0 }));
   }, []));
 
-  // Remove fetchPomodoros dependency - not used
-  // useEffect(() => {
-  //   fetchPomodoros();
-  //   const handler = () => fetchPomodoros();
-  //   window.addEventListener('refreshStats', handler);
-  //   return () => window.removeEventListener('refreshStats', handler);
-  // }, [fetchPomodoros]);
-
-  // Study timer sync - Listen for time updates from Study Timer (same logic as Countdown)
-  useEventListener(SYNC_EVENTS.STUDY_TIMER_TIME_UPDATE, (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
+  // Listen to studyTimerTimeUpdate for continuous sync (like Pomodoro does)
+  useEventListener('studyTimerTimeUpdate', async (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
     if (!syncPomodoroWithTimer) return;
 
-    // IMPORTANT: If manually paused, ignore ALL sync events to prevent interference
+    // If manually paused, don't do anything - just stay paused at the current value
     if (pomoState.manuallyPaused) {
-      console.log('[Pomodoro] 🚫 Ignoring sync event - timer is manually paused');
       return;
     }
 
     const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
-    const currentModeDuration = currentModeConfig?.work || 3000; // Use Extended Focus work duration as fallback
     
-    console.log('[Pomodoro] 📊 studyTimerTimeUpdate sync', { 
-      studyTime, 
-      currentModeDuration,
-      pomoStateIsRunning: pomoState.isRunning,
-      studyIsRunning: event.detail.isRunning,
-      manuallyPaused: pomoState.manuallyPaused,
-      willUpdate: studyTime >= 0 && currentModeDuration > 0
-    });
-
-    // If StudyTimer resets to 0, reset Pomodoro to current mode duration
-    // But only if Pomodoro is also supposed to reset (don't interfere with manual pause)
-    if (studyTime === 0 && currentModeDuration > 0 && !event.detail.isRunning && !pomoState.manuallyPaused) {
-      console.log('[Pomodoro] ✅ StudyTimer reset detected - resetting to current mode duration');
+    // If StudyTimer resets to 0, reset Pomodoro to work mode and reset count
+    if (studyTime === 0 && !event.detail.isRunning && !pomoState.manuallyPaused) {
+      console.log('[Pomodoro] ✅ StudyTimer reset detected - resetting to work mode and count');
+      
+      // Use centralized reset function
+      resetPomodoroCount();
+      
       setPomoState(prev => ({
         ...prev,
         isRunning: false,
         currentMode: 'work',
-        timeLeft: currentModeDuration,
-        timeAtStart: 0, // Reset accumulated time
-        lastStart: null, // Reset last start
+        timeLeft: currentModeConfig?.work || 3000,
+        timeAtStart: 0,
+        lastStart: null,
         lastManualAdjustment: Date.now(),
-        manuallyPaused: false, // Clear manual pause flag on reset
+        manuallyPaused: false,
+        // Count is already reset by resetPomodoroCount
       }));
       return;
     }
 
-    // Calculate remaining Pomodoro time based on StudyTimer elapsed time
-    const remainingTime = Math.max(0, currentModeDuration - studyTime);
+    // Calculate how many complete cycles have passed based on studyTime
+    const workDuration = currentModeConfig?.work || 3000;
+    const breakDuration = currentModeConfig?.break || 600;
+    const totalCycle = workDuration + breakDuration;
     
-    // Only update if the time actually changed to prevent unnecessary re-renders
-    // AND if not manually paused (don't override manual pause)
-    // AND if the running states match (don't override manual pause)
-    if (Math.abs(remainingTime - pomoState.timeLeft) >= 0.1 && 
-        !pomoState.manuallyPaused && 
-        pomoState.isRunning === event.detail.isRunning) {
-      // Update Pomodoro display to show remaining time
-      setPomoState(prev => ({ ...prev, timeLeft: remainingTime }));
+    const expectedCompletedCycles = Math.floor(studyTime / totalCycle);
+    const currentCompletedCycles = pomoState.workSessionsCompleted;
+    
+    // Check if we need to adjust the count (user went back in time)
+    if (expectedCompletedCycles < currentCompletedCycles && studyTime > 0) {
+      console.log('[Pomodoro] ⏪ Time went backwards - adjusting pomodoro count:', {
+        expectedCompletedCycles,
+        currentCompletedCycles,
+        studyTime,
+        difference: currentCompletedCycles - expectedCompletedCycles
+      });
+      
+      // Update localStorage to match the actual elapsed time
+      const today = getLocalDateString();
+      localStorage.setItem(`pomodoroDailyCount_${today}`, String(expectedCompletedCycles));
+      localStorage.setItem('pomodorosThisSession', String(expectedCompletedCycles));
+      
+      // Update state to match localStorage
+      setPomoState(prev => ({
+        ...prev,
+        pomodoroToday: expectedCompletedCycles,
+        pomodorosThisSession: expectedCompletedCycles,
+        workSessionsCompleted: expectedCompletedCycles,
+      }));
     }
+
+    // Calculate which mode we should be in based on studyTime
+    let targetMode: PomodoroModeType = 'work';
+    let timeInCurrentMode = studyTime;
     
-    // Sync running state with StudyTimer, but don't interfere with manual pause
+    const longBreakDuration = currentModeConfig?.longBreak || 1800;
+
+    // Calculate how many complete cycles have passed
+    const timeInCurrentCycle = studyTime % totalCycle;
+    
+    // Determine current mode based on time in cycle
+    if (timeInCurrentCycle < workDuration) {
+      targetMode = 'work';
+      timeInCurrentMode = timeInCurrentCycle;
+    } else {
+      targetMode = 'break';
+      timeInCurrentMode = timeInCurrentCycle - workDuration;
+    }
+
+    // Get the duration for the target mode
+    const targetModeDuration = targetMode === 'work' ? workDuration : 
+                              targetMode === 'break' ? breakDuration : longBreakDuration;
+
+    // Calculate remaining time in current mode
+    const remainingTime = Math.max(0, targetModeDuration - timeInCurrentMode);
+
+    // Check if we need to transition to a new mode
+    if (targetMode !== pomoState.currentMode) {
+      console.log('[Pomodoro] 🔄 Mode transition needed:', {
+        from: pomoState.currentMode,
+        to: targetMode,
+        studyTime,
+        timeInCurrentMode,
+        remainingTime
+      });
+
+      // Check if we're transitioning from work to break (work session completed)
+      // This means we completed a work session, so count the pomodoro
+      const isWorkSessionCompleted = pomoState.currentMode === 'work' && targetMode === 'break';
+
+      if (isWorkSessionCompleted) {
+        console.log('[Pomodoro] 🍅 Work session completed - counting pomodoro');
+        
+        // Use centralized count increment
+        await incrementPomodoroCount();
+
+        // Show completion notifications
+        const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
+        const notifTitle = willTakeLongBreak ? 'Work Session Complete! Time for a Long Break! 🎉' : 'Work Session Complete! 🎉';
+        const notifBody = willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.';
+
+        showToast(
+          willTakeLongBreak ? 'Work session complete! Time for a long break.' : 'Work session complete! Time for a break.',
+          '🎉'
+        );
+
+        showNotification(notifTitle, {
+          body: notifBody,
+          icon: '🍅',
+          badge: '🍅',
+          tag: 'pomodoro-notification',
+          requireInteraction: true,
+        });
+
+        // Play sound if enabled
+        if (alarmEnabled) {
+          console.log('[Pomodoro] 🔊 Playing completion sound for sync transition');
+          sounds.work.currentTime = 0;
+          sounds.work.play().catch(console.error);
+        }
+      } else {
+        // Regular mode transition (not work completion)
+        setPomoState(prev => ({
+          ...prev,
+          currentMode: targetMode,
+          timeLeft: remainingTime,
+          timeAtStart: timeInCurrentMode,
+          isRunning: event.detail.isRunning,
+        }));
+      }
+    } else if (Math.abs(remainingTime - pomoState.timeLeft) >= 0.1) {
+      // Just update the time if we're in the same mode
+      setPomoState(prev => ({ 
+        ...prev, 
+        timeLeft: remainingTime,
+        timeAtStart: timeInCurrentMode,
+      }));
+    }
+
+    // Sync running state with StudyTimer
     const studyIsRunning = event.detail.isRunning;
     if (studyIsRunning !== pomoState.isRunning && !pomoState.manuallyPaused) {
       if (studyIsRunning) {
@@ -739,6 +1034,44 @@ const Pomodoro: React.FC = () => {
       }
     }
   });
+
+  // Check for work session completion based on elapsed time
+  const checkWorkSessionCompletion = useCallback(async () => {
+    if (pomoState.currentMode !== 'work' || !pomoState.lastStart) return;
+    
+    const workDuration = currentModeConfig?.work || 3000;
+    const elapsed = pomoState.timeAtStart + ((Date.now() - pomoState.lastStart) / 1000);
+    
+    // Check if we've completed the work session based on elapsed time
+    if (elapsed >= workDuration && !pomoState.manuallyPaused) {
+      // Only increment if we haven't already counted this session
+      const expectedCount = Math.floor(elapsed / workDuration);
+      if (expectedCount > pomoState.pomodoroToday) {
+        console.log('[Pomodoro] 🍅 Work session completed by elapsed time detection');
+        
+        // Use centralized count increment
+        await incrementPomodoroCount();
+
+        // Show completion notification
+        showToast('Work session completed! 🎉', '🎉');
+        showNotification('Work Session Complete! 🎉', {
+          body: 'Great job! Time to take a break.',
+          icon: '🍅',
+          badge: '🍅',
+          tag: 'pomodoro-notification',
+          requireInteraction: true,
+        });
+      }
+    }
+  }, [pomoState, currentModeConfig, incrementPomodoroCount]);
+
+  // Check for completion when timer is running
+  useEffect(() => {
+    if (!pomoState.isRunning || pomoState.currentMode !== 'work') return;
+    
+    const interval = setInterval(checkWorkSessionCompletion, 1000); // Check every second
+    return () => clearInterval(interval);
+  }, [pomoState.isRunning, pomoState.currentMode, checkWorkSessionCompletion]);
 
   // Internal timer for when NOT synced - using 100ms intervals and StudyTimer's elapsed time pattern
   useEffect(() => {
@@ -846,26 +1179,70 @@ const Pomodoro: React.FC = () => {
 
       {/* Timer Display */}
       <div
-        className="text-3xl md:text-4xl xl:text-5xl font-mono mb-6 lg:mb-4 text-center text-[var(--text-primary)]"
+        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-6 lg:mb-4 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current pomodoro time"
       >
         <span>{formatPomoTime(pomoState.timeLeft)}</span>
+        
+        {/* Hover tooltip showing current mode */}
+        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[200px] text-center">
+          <div className="flex items-center justify-center gap-2">
+            {pomoState.currentMode === 'work' && (
+              <>
+                <span className="text-lg">🍅</span>
+                <span>Work Session</span>
+              </>
+            )}
+            {pomoState.currentMode === 'break' && (
+              <>
+                <span className="text-lg">☕</span>
+                <span>Short Break</span>
+              </>
+            )}
+            {pomoState.currentMode === 'longBreak' && (
+              <>
+                <span className="text-lg">🎉</span>
+                <span>Long Break</span>
+              </>
+            )}
+          </div>
+          
+          {/* Additional mode info */}
+          <div className="mt-2 text-xs text-[var(--text-secondary)]">
+            {pomoState.currentMode === 'work' && (
+              <div>Focus time: {Math.floor((currentModeConfig?.work || 3000) / 60)}min</div>
+            )}
+            {pomoState.currentMode === 'break' && (
+              <div>Break time: {Math.floor((currentModeConfig?.break || 600) / 60)}min</div>
+            )}
+            {pomoState.currentMode === 'longBreak' && (
+              <div>Long break: {Math.floor((currentModeConfig?.longBreak || 1800) / 60)}min</div>
+            )}
+          </div>
+          
+          {/* Pomodoro count */}
+          <div className="mt-2 text-xs text-[var(--text-secondary)]">
+            Completed today: {pomoState.pomodoroToday}
+          </div>
+        </div>
       </div>
 
-      {/* Time Adjustment Buttons */}
-      <div className="flex gap-2 mb-4 md:mb-4 lg:mb-4">
-        {[-600, -300, 300, 600].map((adj) => (
-          <button
-            key={adj}
-            onClick={() => handleTimeAdjustment(adj)}
-            className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            aria-label={`${adj > 0 ? 'Add' : 'Subtract'} ${Math.abs(adj / 60)} minutes`}
-          >
-            {adj > 0 ? '+' : ''}{adj / 60}
-          </button>
-        ))}
-      </div>
+      {/* Time adjustment buttons - only show when not synced */}
+      {!syncPomodoroWithTimer && (
+        <div className="flex gap-2 mb-6 md:mb-6 lg:mb-6">
+          {[-600, -300, 300, 600].map((adj) => (
+            <button
+              key={adj}
+              onClick={() => handleTimeAdjustment(adj)}
+              className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label={`${adj > 0 ? 'Add' : 'Subtract'} ${Math.abs(adj / 60)} minutes`}
+            >
+              {adj > 0 ? '+' : ''}{adj / 60}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Timer Controls */}
       <div className="timer-controls flex justify-center items-center gap-3 xl:mb-0 mb-4">

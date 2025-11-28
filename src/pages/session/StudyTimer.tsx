@@ -160,6 +160,254 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
   const { isPomodoroSync, isCountdownSync } = useSyncStates(currentSessionId);
   
+  // Restore running state on component mount
+  useEffect(() => {
+    // Check if there's an active session and timer was running
+    const savedState = getFromLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE);
+    const activeSessionId = getFromLocalStorage(STORAGE_KEYS.ACTIVE_SESSION_ID);
+    
+    if (savedState && activeSessionId) {
+      try {
+        const parsed = JSON.parse(savedState);
+        const wasRunning = parsed.isRunning === true;
+        const lastStart = parsed.lastStart;
+        const timeAtStart = parsed.timeAtStart;
+        
+        // Restore the current session in the global store
+        setCurrentSession(activeSessionId);
+        
+        // Restore session details from saved state
+        if (parsed.sessionTitle || parsed.sessionDescription) {
+          updateStudyState({
+            sessionTitle: parsed.sessionTitle || "",
+            sessionDescription: parsed.sessionDescription || "",
+          });
+        }
+        
+        // Get Pomodoro current mode for console logging
+        let pomodoroMode = 'N/A';
+        try {
+          const pomodoroState = localStorage.getItem('pomodoroState');
+          if (pomodoroState) {
+            const pomoParsed = JSON.parse(pomodoroState);
+            pomodoroMode = pomoParsed.currentMode || 'work';
+            
+            // Get mode name for better readability
+            const modeNames: Record<string, string> = {
+              'work': 'Work',
+              'break': 'Break', 
+              'longBreak': 'Long Break'
+            };
+            pomodoroMode = modeNames[pomodoroMode] || pomodoroMode;
+          }
+        } catch (e) {
+          console.warn('[StudyTimer] Could not read Pomodoro mode:', e);
+        }
+        
+        if (wasRunning && lastStart && timeAtStart >= 0) {
+          // Restore the running state in the global store
+          setStudyRunning(true);
+          setStudyTimerState("running");
+          
+          // Update the local state to match
+          updateStudyState({
+            isRunning: true,
+            lastStart: lastStart,
+            timeAtStart: timeAtStart,
+            sessionStatus: "active",
+          });
+          
+          // Load session sync settings and emit sync events to restart other timers
+          const sessionSyncSettings = useSessionSyncSettings(activeSessionId);
+          const currentSyncSettings = sessionSyncSettings || syncSettings;
+          const shouldSyncPomodoro = currentSyncSettings.syncPomodoroWithTimer;
+          const shouldSyncCountdown = currentSyncSettings.syncCountdownWithTimer;
+          
+          // Emit sync events to restart other timers if they were synced
+          const emitTs = Date.now();
+          if (shouldSyncPomodoro) {
+            window.dispatchEvent(new CustomEvent(SYNC_EVENTS.PLAY_POMODORO, {
+              detail: { baseTimestamp: emitTs }
+            }));
+          }
+          if (shouldSyncCountdown) {
+            window.dispatchEvent(new CustomEvent(SYNC_EVENTS.PLAY_COUNTDOWN, {
+              detail: { baseTimestamp: emitTs }
+            }));
+          }
+          
+          console.log('[StudyTimer] Restored running state after refresh:', {
+            wasRunning,
+            lastStart,
+            timeAtStart,
+            activeSessionId,
+            shouldSyncPomodoro,
+            shouldSyncCountdown,
+            pomodoroMode: pomodoroMode
+          });
+        } else {
+          // Log session info even if not running
+          console.log('[StudyTimer] Session restored after refresh:', {
+            wasRunning,
+            activeSessionId,
+            pomodoroMode: pomodoroMode
+          });
+        }
+      } catch (error) {
+        console.error('[StudyTimer] Error restoring running state:', error);
+      }
+    }
+  }, [setStudyRunning, setStudyTimerState, updateStudyState, setCurrentSession, syncSettings, useSessionSyncSettings]);
+
+  // Log current Pomodoro mode when session is active
+  useEffect(() => {
+    if (currentSessionId) {
+      // Get Pomodoro current mode for console logging
+      let pomodoroMode = 'N/A';
+      let pomodoroRunning = false;
+      try {
+        const pomodoroState = localStorage.getItem('pomodoroState');
+        if (pomodoroState) {
+          const pomoParsed = JSON.parse(pomodoroState);
+          pomodoroMode = pomoParsed.currentMode || 'work';
+          pomodoroRunning = pomoParsed.isRunning || false;
+          
+          // Get mode name for better readability
+          const modeNames: Record<string, string> = {
+            'work': 'Work',
+            'break': 'Break', 
+            'longBreak': 'Long Break'
+          };
+          pomodoroMode = modeNames[pomodoroMode] || pomodoroMode;
+        }
+      } catch (e) {
+        console.warn('[StudyTimer] Could not read Pomodoro mode:', e);
+      }
+      
+      // Only log when session starts or important changes happen (not every second)
+      if (studyState.isRunning && !studyState.lastStart) {
+        console.log('[StudyTimer] 📚 Active session started:', {
+          sessionId: currentSessionId,
+          sessionTitle: studyState.sessionTitle,
+          currentTime: formatStudyTime(studyState.time, false),
+          pomodoroMode: pomodoroMode,
+          pomodoroRunning: pomodoroRunning,
+          syncPomodoro: isPomodoroSync,
+          syncCountdown: isCountdownSync
+        });
+      }
+    }
+  }, [currentSessionId, studyState.sessionTitle, studyState.isRunning, studyState.time, isPomodoroSync, isCountdownSync]);
+
+  // Log Pomodoro mode changes (even without active session)
+  useEffect(() => {
+    let lastLoggedMode = '';
+    let lastLoggedIndex = '';
+    let lastLoggedRunning = false;
+    
+    const handlePomodoroModeChange = () => {
+      let pomodoroMode = 'N/A';
+      let pomodoroRunning = false;
+      let pomodoroModeIndex = 'N/A';
+      let modeDetails = null;
+      
+      try {
+        const pomodoroState = localStorage.getItem('pomodoroState');
+        if (pomodoroState) {
+          const pomoParsed = JSON.parse(pomodoroState);
+          pomodoroMode = pomoParsed.currentMode || 'work';
+          pomodoroRunning = pomoParsed.isRunning || false;
+          pomodoroModeIndex = pomoParsed.modeIndex || 0;
+          
+          // Get mode name for better readability
+          const modeNames: Record<string, string> = {
+            'work': 'Work',
+            'break': 'Break', 
+            'longBreak': 'Long Break'
+          };
+          pomodoroMode = modeNames[pomodoroMode] || pomodoroMode;
+          
+          // Get mode details from store (more reliable than localStorage)
+          try {
+            // Try to get modes from the store first
+            const pomodoroModesStr = localStorage.getItem('pomodoroModes');
+            let modes = [];
+            
+            if (pomodoroModesStr) {
+              modes = JSON.parse(pomodoroModesStr);
+            } else {
+              // Fallback to default modes if not in localStorage
+              modes = [
+                { label: 'Traditional', work: 1500, break: 300, longBreak: 900, description: 'Classic 25-5-15 Pomodoro technique' },
+                { label: 'Extended Focus', work: 3000, break: 600, longBreak: 1800, description: 'Longer sessions for deep work' },
+                { label: 'Ultra Focus', work: 3600, break: 900, longBreak: 2700, description: 'Maximum focus for complex projects' },
+                { label: 'Custom', work: 1500, break: 300, longBreak: 900, description: 'Your personalized settings' }
+              ];
+            }
+            
+            const currentModeData = modes[pomodoroModeIndex];
+            if (currentModeData) {
+              modeDetails = {
+                label: currentModeData.label || 'Unknown',
+                work: currentModeData.work || 0,
+                break: currentModeData.break || 0,
+                longBreak: currentModeData.longBreak || 0,
+                description: currentModeData.description || ''
+              };
+            }
+          } catch (e) {
+            console.warn('[StudyTimer] Could not read pomodoro modes:', e);
+          }
+        }
+      } catch (e) {
+        console.warn('[StudyTimer] Could not read Pomodoro mode:', e);
+      }
+      
+      // Only log if something actually changed
+      if (pomodoroMode !== lastLoggedMode || 
+          pomodoroModeIndex !== lastLoggedIndex || 
+          pomodoroRunning !== lastLoggedRunning) {
+        
+        const logData: any = {
+          previousMode: lastLoggedMode || 'None',
+          newMode: pomodoroMode,
+          modeIndex: pomodoroModeIndex,
+          isRunning: pomodoroRunning,
+          hasActiveSession: !!currentSessionId
+        };
+        
+        // Always add mode details (even if fallback)
+        if (modeDetails) {
+          logData.workMinutes = modeDetails.work / 60;
+          logData.breakMinutes = modeDetails.break / 60;
+          logData.longBreakMinutes = modeDetails.longBreak / 60;
+          logData.modeName = modeDetails.label;
+          logData.description = modeDetails.description;
+        } else {
+          // Fallback if no mode details found
+          logData.workMinutes = 'Unknown';
+          logData.breakMinutes = 'Unknown';
+          logData.longBreakMinutes = 'Unknown';
+          logData.modeName = 'Unknown';
+        }
+        
+        console.log('[StudyTimer] 🍅 Pomodoro mode changed:', logData);
+        
+        lastLoggedMode = pomodoroMode;
+        lastLoggedIndex = pomodoroModeIndex;
+        lastLoggedRunning = pomodoroRunning;
+      }
+    };
+
+    // Check immediately on mount
+    handlePomodoroModeChange();
+    
+    // Listen for Pomodoro mode changes
+    const intervalId = setInterval(handlePomodoroModeChange, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, [currentSessionId]);
+
   // Save sync settings when they change and there's an active session
   useEffect(() => {
     if (currentSessionId) {
@@ -659,10 +907,23 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
       window.dispatchEvent(new CustomEvent(SYNC_EVENTS.FINISH_SESSION));
 
-      // Reset session state
+      // Reset session state - ensure timer shows 00:00:00 immediately
       studyControls.reset();
       updateSessionId(null);
       setCurrentSession(null);
+      
+      // Force immediate timer display update to 00:00:00
+      updateStudyState({
+        time: 0,
+        isRunning: false,
+        lastStart: null,
+        timeAtStart: 0,
+        sessionStatus: "inactive",
+      });
+      
+      // Also update the timer time directly to ensure immediate UI update
+      updateTimerTime(0, false);
+      
       // Remove optional properties instead of setting to undefined
       const { sessionTitle, sessionDescription, ...resetState } = studyState;
       updateStudyState(resetState);
@@ -701,6 +962,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     isPomodoroSync,
     isCountdownSync,
     emitSyncEvent,
+    updateTimerTime,
   ]);
 
   // Función para manejar salida de sesión
@@ -713,11 +975,24 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     studyControls.reset();
     updateSessionId(null);
     setCurrentSession(null);
+    
+    // Force immediate timer display update to 00:00:00
+    updateStudyState({
+      time: 0,
+      isRunning: false,
+      lastStart: null,
+      timeAtStart: 0,
+      sessionStatus: "inactive",
+    });
+    
+    // Also update the timer time directly to ensure immediate UI update
+    updateTimerTime(0, false);
+    
     // Remove optional properties instead of setting to undefined
     const { sessionTitle, sessionDescription, ...resetState } = studyState;
     updateStudyState(resetState);
     setExitChoiceOpen(false);
-  }, [studyControls, updateSessionId, updateStudyState, studyState]);
+  }, [studyControls, updateSessionId, updateStudyState, studyState, updateTimerTime]);
 
   const handleExitAndDelete = useCallback(() => {
     setExitChoiceOpen(false);
@@ -843,6 +1118,19 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       studyControls.reset();
       updateSessionId(null);
       setCurrentSession(null);
+      
+      // Force immediate timer display update to 00:00:00
+      updateStudyState({
+        time: 0,
+        isRunning: false,
+        lastStart: null,
+        timeAtStart: 0,
+        sessionStatus: "inactive",
+      });
+      
+      // Also update the timer time directly to ensure immediate UI update
+      updateTimerTime(0, false);
+      
       updateModal("isDeleteModalOpen", false);
       // Remove optional properties instead of setting to undefined
       const { sessionTitle, sessionDescription, ...resetState } = studyState;
@@ -872,6 +1160,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     isPomodoroSync,
     isCountdownSync,
     emitSyncEvent,
+    updateTimerTime,
   ]);
 
   // Función para calcular tiempo desde la última pausa
@@ -955,18 +1244,35 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       // Fetch session details directly instead of using function dependency
       const fetchDetails = async () => {
         try {
+          console.log('[StudyTimer] 📋 Fetching session details for:', currentSessionId);
           const { data: session, error } = await supabase
             .from('study_laps')
-            .select('title, description')
+            .select('name, description')
             .eq('id', currentSessionId)
             .single();
           
           if (session && !error) {
+            console.log('[StudyTimer] ✅ Session details fetched:', {
+              name: session.name,
+              description: session.description
+            });
+            
+            // Update both summaryData and studyState
             setSummaryData(prev => ({
               ...prev,
-              title: session.title || '',
+              title: session.name || '',
               description: session.description || ''
             }));
+            
+            // Also update studyState.sessionTitle to ensure hover shows correct title
+            updateStudyState({
+              sessionTitle: session.name || '',
+              sessionDescription: session.description || ''
+            });
+          } else if (error) {
+            console.error('[StudyTimer] ❌ Error fetching session details:', error);
+          } else {
+            console.warn('[StudyTimer] ⚠️ No session data found for ID:', currentSessionId);
           }
         } catch (error) {
           console.error('Error fetching session details:', error);
@@ -975,7 +1281,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       
       fetchDetails();
     }
-  }, [currentSessionId]);
+  }, [currentSessionId, updateStudyState]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -1145,7 +1451,11 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         {currentSessionId && (
           <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>
-            <div>{studyState.sessionTitle || "No Session"}</div>
+            <div 
+              onMouseEnter={() => console.log('[StudyTimer] 🖱️ Hover - sessionTitle:', studyState.sessionTitle, 'summaryData.title:', summaryData.title)}
+            >
+              {studyState.sessionTitle || summaryData.title || "No Session"}
+            </div>
             {/* Last paused info */}
             {studyState.sessionStatus === "paused" &&
               studyState.lastPausedAt && (

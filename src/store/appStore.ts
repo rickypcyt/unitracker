@@ -314,25 +314,11 @@ const INITIAL_POMODORO_MODES: PomodoroMode[] = [
     description: 'Longer sessions for deep work'
   },
   { 
-    label: 'Quick Sprints', 
-    work: 1200, // 20min
-    break: 240, // 4min
-    longBreak: 720, // 12min
-    description: 'Shorter sessions for quick tasks'
-  },
-  { 
     label: 'Ultra Focus', 
     work: 3600, // 60min
     break: 900, // 15min
     longBreak: 2700, // 45min
     description: 'Maximum focus for complex projects'
-  },
-  { 
-    label: 'Student', 
-    work: 2700, // 45min
-    break: 540, // 9min
-    longBreak: 1620, // 27min
-    description: 'Optimized for study sessions'
   },
   { 
     label: 'Custom', 
@@ -796,6 +782,25 @@ export const useAppStore = create<AppState>()(
           state.setPomodoroTimerState('stopped');
           state.setStudyTimerState('stopped');
           state.setCountdownTimerState('stopped');
+          
+          // Limpiar completamente los modos antiguos y establecer los nuevos
+          // Esto elimina Quick Sprints y Student que puedan estar en localStorage
+          const currentModes = state.pomodoroModes || [];
+          const hasOldModes = currentModes.some(mode => 
+            mode.label === 'Quick Sprints' || mode.label === 'Student'
+          );
+          
+          if (hasOldModes || currentModes.length !== INITIAL_POMODORO_MODES.length) {
+            console.log('[AppStore] Cleaning old Pomodoro modes and setting new ones');
+            state.setPomodoroModes(INITIAL_POMODORO_MODES);
+            
+            // También limpiar localStorage directamente para asegurar que no queden residuos
+            try {
+              localStorage.removeItem('pomodoroModes');
+            } catch (e) {
+              console.warn('[AppStore] Could not clear pomodoroModes from localStorage:', e);
+            }
+          }
           
           // Asegurar que pomodoroModes siempre tenga todos los modos predefinidos
           if (!state.pomodoroModes || state.pomodoroModes.length < INITIAL_POMODORO_MODES.length) {
