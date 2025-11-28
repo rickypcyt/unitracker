@@ -118,7 +118,10 @@ const UnfinishedSessionsModal = ({
   };
 
   const handleResumeSession = (sessionId: string) => {
+    console.log('[UnfinishedSessionsModal] 🔄 handleResumeSession called with sessionId:', sessionId);
+    console.log('[UnfinishedSessionsModal] 📋 Calling onSessionResumed with sessionId...');
     onSessionResumed(sessionId);
+    console.log('[UnfinishedSessionsModal] 📱 Closing modal...');
     onClose();
   };
 
@@ -176,7 +179,10 @@ const UnfinishedSessionsModal = ({
                     </div>
                     <div className="flex items-center space-x-1 self-end">
                       <button
-                        onClick={() => handleResumeSession(session.id)}
+                        onClick={() => {
+                          console.log('[UnfinishedSessionsModal] 🖱️ Resume button clicked for session:', session.id);
+                          handleResumeSession(session.id);
+                        }}
                         className="p-2 rounded-md text-green-600 hover:text-green-500 transition-colors"
                         title="Resume session"
                         aria-label="Resume session"
@@ -224,7 +230,10 @@ const UnfinishedSessionsModal = ({
               Close
             </button>
             <button
-              onClick={() => onSessionResumed('')}
+              onClick={() => {
+                console.log('[UnfinishedSessionsModal] 🆕 Start New Session button clicked');
+                onSessionResumed('');
+              }}
               className="px-4 border-2 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               Start New Session

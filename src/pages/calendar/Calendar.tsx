@@ -17,53 +17,117 @@ interface TooltipContent {
   tasks: any[];
 }
 
-const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }) => {
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEscape = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+interface DayInfoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  date: Date;
+  tasks: any[];
+  studiedHours: string | number;
+}
 
+const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoModalProps) => {
   if (!isOpen) return null;
 
-  const completedTasks = tasks?.filter((t) => t.completed).length || 0;
+  const completedTasks = tasks?.filter((t: any) => t.completed).length || 0;
   const totalTasks = tasks?.length || 0;
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm"
-      onClick={onClose}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={formatDate(date.toISOString())}
+      maxWidth="max-w-lg"
     >
-      <div
-        className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 max-w-md w-full mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-white">
-            {formatDate(date.toISOString())}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-neutral-400 hover:text-white transition-colors"
-          >
-            ×
-          </button>
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 text-neutral-300">
-            <CheckCircle2 size={20} className="text-green-500" />
-            <span>
-              {completedTasks} of {totalTasks} tasks completed
-            </span>
+      <div className="space-y-6">
+        
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Tasks Card */}
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[var(--accent-primary)]/20 rounded-lg flex items-center justify-center">
+                <CheckCircle2 size={20} className="text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <div className="text-sm text-[var(--text-secondary)] font-medium">Tasks</div>
+                <div className="text-xl font-bold text-[var(--text-primary)]">
+                  {completedTasks}/{totalTasks}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-neutral-300">
-            <Clock size={20} className="text-[var(--accent-primary)]" />
-            <span>{studiedHours || 0} hours studied</span>
+
+          {/* Study Time Card */}
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[var(--accent-primary)]/20 rounded-lg flex items-center justify-center">
+                <Clock size={20} className="text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <div className="text-sm text-[var(--text-secondary)] font-medium">Study Time</div>
+                <div className="text-xl font-bold text-[var(--text-primary)]">
+                  {studiedHours || 0}h
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Task List */}
+        {tasks && tasks.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
+              <div className="w-1 h-4 bg-[var(--accent-primary)] rounded-full"></div>
+              Tasks Overview
+            </h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {tasks.map((task: any) => (
+                <div 
+                  key={task.id}
+                  className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
+                >
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                    task.completed ? "bg-green-500" : "bg-yellow-500"
+                  }`}></div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-medium truncate ${
+                      task.completed 
+                        ? "text-[var(--text-secondary)] line-through" 
+                        : "text-[var(--text-primary)]"
+                    }`}>
+                      {task.title}
+                    </div>
+                    {task.assignment && (
+                      <div className="text-xs text-[var(--text-secondary)] truncate">
+                        {task.assignment}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`text-xs px-2 py-1 rounded-full ${
+                    task.completed 
+                      ? "bg-green-500/20 text-green-400" 
+                      : "bg-yellow-500/20 text-yellow-400"
+                  }`}>
+                    {task.completed ? "Done" : "Pending"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {(!tasks || tasks.length === 0) && (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 size={32} className="text-[var(--text-secondary)]" />
+            </div>
+            <p className="text-[var(--text-secondary)] text-sm">No tasks recorded for this day</p>
+            <p className="text-[var(--text-secondary)]/60 text-xs mt-2">Take a look at other days for activity</p>
+          </div>
+        )}
       </div>
-    </div>
+    </BaseModal>
   );
 };
 
@@ -90,7 +154,7 @@ const Calendar = () => {
   // ---------------------
   // Helper Functions
   // ---------------------
-  const getPendingTasksForMonth = (date) => {
+  const getPendingTasksForMonth = (date: Date) => {
     const currentMonth = date.getMonth();
     const currentYear = date.getFullYear();
     
@@ -103,7 +167,7 @@ const Calendar = () => {
     }).length;
   };
 
-  const getPendingTasksForNextMonth = (date) => {
+  const getPendingTasksForNextMonth = (date: Date) => {
     const currentMonth = date.getMonth();
     const currentYear = date.getFullYear();
     const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
@@ -122,7 +186,7 @@ const Calendar = () => {
   // Keyboard navigation
   // ---------------------
   useEffect(() => {
-    const handleKeyPress = (e) => {
+    const handleKeyPress = (e: KeyboardEvent) => {
       const newDate = new Date(focusedDate);
       switch (e.key) {
         case "ArrowLeft":
@@ -160,22 +224,22 @@ const Calendar = () => {
   // Helpers
   // ---------------------
   // Use date-fns isSameDay for consistent timezone handling
-  const isToday = (date) => isSameDay(date, new Date());
-  const isSelected = (date) => isSameDay(date, selectedDate);
+  const isToday = (date: Date) => isSameDay(date, new Date());
+  const isSelected = (date: Date) => isSameDay(date, selectedDate);
 
-  const getDaysInMonth = (year, month) =>
+  const getDaysInMonth = (year: number, month: number) =>
     new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year, month) => {
+  const getFirstDayOfMonth = (year: number, month: number) => {
     const day = new Date(year, month, 1).getDay();
     return day === 0 ? 6 : day - 1; // Monday start
   };
 
-  const handleDateClick = (date) => {
+  const handleDateClick = (date: Date) => {
     setSelectedDate(date);
     setFocusedDate(date);
   };
 
-  const handleDateDoubleClick = (date) => {
+  const handleDateDoubleClick = (date: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     date.setHours(0, 0, 0, 0);
@@ -201,16 +265,38 @@ const Calendar = () => {
   };
 
   const getTasksForDate = useCallback(
-    (date) =>
-      tasks.filter((task) => {
-        const taskDate = new Date(task.created_at);
-        return isSameDay(parseISO(taskDate.toISOString()), parseISO(date.toISOString()));
-      }),
+    (date: Date) => {
+      const targetDate = new Date(date);
+      targetDate.setHours(0, 0, 0, 0);
+      
+      // Show tasks with deadline on this date OR tasks completed on this date
+      return tasks.filter(task => {
+        // Tasks with deadline on this date
+        if (task.deadline) {
+          const taskDate = new Date(task.deadline);
+          taskDate.setHours(0, 0, 0, 0);
+          if (isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()))) {
+            return true;
+          }
+        }
+        
+        // Tasks completed on this date
+        if (task.completed && task.completed_at) {
+          const completedDate = new Date(task.completed_at);
+          completedDate.setHours(0, 0, 0, 0);
+          if (isSameDay(parseISO(completedDate.toISOString()), parseISO(targetDate.toISOString()))) {
+            return true;
+          }
+        }
+        
+        return false;
+      });
+    },
     [tasks]
   );
 
   const getStudiedHoursForDate = useCallback(
-    (date) => {
+    (date: Date) => {
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
       
@@ -233,7 +319,7 @@ const Calendar = () => {
   );
 
   const hasTasksWithDeadline = useCallback(
-    (date) => {
+    (date: Date) => {
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
       
@@ -248,7 +334,7 @@ const Calendar = () => {
   );
 
   const getTasksWithDeadline = useCallback(
-    (date) => {
+    (date: Date) => {
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
       
@@ -524,8 +610,8 @@ const Calendar = () => {
         <TaskForm
           initialAssignment=""
           initialDeadline={selectedDate}
-          onClose={(newTaskId) => {
-            setShowTaskForm(false);
+          onClose={() => setShowTaskForm(false)}
+          onTaskCreated={(newTaskId: string) => {
             if (newTaskId)
               window.dispatchEvent(new CustomEvent("refreshTaskList"));
           }}

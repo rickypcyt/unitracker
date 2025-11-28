@@ -1,10 +1,10 @@
+import { AlertCircle, CheckCircle, Clock, Loader2, Target, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
-import TaskSelectionPanel from '@/pages/tasks/TaskSelectionPanel';
-import { X } from 'lucide-react';
 import { supabase } from '@/utils/supabaseClient';
+import { toast } from 'react-hot-toast';
 
 interface FinishSessionModalProps {
   isOpen: boolean;
@@ -14,21 +14,32 @@ interface FinishSessionModalProps {
   onSessionDetailsUpdated?: () => void;
 }
 
+interface SessionStats {
+  duration: string;
+  pomodorosCompleted: number;
+  tasksCompleted: number;
+  startedAt: string;
+}
+
 const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose, onFinish, sessionId, onSessionDetailsUpdated }) => {
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState<string | null>(null);
-  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [activeTasks, setActiveTasks] = useState<Task[]>([]);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
+  const [sessionStats, setSessionStats] = useState<SessionStats | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showTaskSelector, setShowTaskSelector] = useState(false);
 
   useEffect(() => {
     if (isOpen && sessionId) {
       fetchSessionDetails();
       fetchSessionTasks();
-      setSessionStartTime(new Date());
+      fetchSessionStats();
     }
   }, [isOpen, sessionId]);
 
@@ -39,6 +50,39 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       fetchSessionTasks();
     }
   }, [lastAddedTaskId]);
+
+  const fetchSessionStats = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data: session, error } = await supabase
+        .from('study_laps')
+        .select('duration, pomodoros_completed, tasks_completed, started_at')
+        .eq('id', sessionId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching session stats:', error);
+        setError('Failed to load session statistics');
+        return;
+      }
+
+      if (session) {
+        setSessionStats({
+          duration: session.duration || '00:00:00',
+          pomodorosCompleted: session.pomodoros_completed || 0,
+          tasksCompleted: session.tasks_completed || 0,
+          startedAt: session.started_at
+        });
+      }
+    } catch (error) {
+      console.error('Error in fetchSessionStats:', error);
+      setError('Failed to load session statistics');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchSessionDetails = async () => {
     try {
@@ -56,7 +100,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       if (session) {
         setSessionTitle(session.name || 'Untitled Session');
         setSessionDescription(session.description || '');
-        setSessionStartTime(new Date(session.started_at));
       }
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
@@ -112,17 +155,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
     }
   };
 
-  const handleMoveTask = (task: Task, toActive: boolean) => {
-    if (toActive) {
-      setActiveTasks(prev => [...prev, task]);
-      setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
-    } else {
-      setAvailableTasks(prev => [...prev, task]);
-      setActiveTasks(prev => prev.filter(t => t.id !== task.id));
-      setSelectedTasks(prev => prev.filter(id => id !== task.id)); // Unselect if moved to available
-    }
-  };
-
   const handleTaskFormClose = (newTaskId?: string) => {
     setShowTaskForm(false);
     if (newTaskId) {
@@ -130,16 +162,103 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
     }
   };
 
+  const handleAddTaskToFinished = (task: Task) => {
+    // Add task to active tasks
+    setActiveTasks(prev => [...prev, task]);
+    setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
+    
+    // Add to session_tasks table
+    supabase
+      .from('session_tasks')
+      .insert({
+        session_id: sessionId,
+        task_id: task.id,
+        started_at: new Date().toISOString()
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error adding task to session:', error);
+        }
+      });
+  };
+
+  const handleRemoveTaskFromFinished = (task: Task) => {
+    // Remove from active tasks
+    setActiveTasks(prev => prev.filter(t => t.id !== task.id));
+    setAvailableTasks(prev => [...prev, task]);
+    
+    // Remove from selected tasks if it was selected
+    setSelectedTasks(prev => prev.filter(id => id !== task.id));
+    
+    // Remove from session_tasks table
+    supabase
+      .from('session_tasks')
+      .delete()
+      .eq('session_id', sessionId)
+      .eq('task_id', task.id)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error removing task from session:', error);
+        }
+      });
+  };
+
+  const formatDuration = (totalSeconds: number): string => {
+    const roundedSeconds = Math.round(totalSeconds);
+    const hours = Math.floor(roundedSeconds / 3600);
+    const minutes = Math.floor((roundedSeconds % 3600) / 60);
+    const seconds = roundedSeconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const getPomodorosFromTimer = (): number => {
+    // Try to get current pomodoros from Pomodoro timer
+    try {
+      const pomodorosThisSession = localStorage.getItem('pomodorosThisSession');
+      if (pomodorosThisSession) {
+        const count = parseInt(pomodorosThisSession, 10);
+        if (!isNaN(count)) {
+          return count;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not get pomodoros from timer:', e);
+    }
+    return sessionStats?.pomodorosCompleted || 0;
+  };
+
+  const getDurationFromTimer = (): string => {
+    // Try to get current duration from StudyTimer state
+    try {
+      const savedState = localStorage.getItem('studyTimerState');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        if (parsed.time && typeof parsed.time === 'number') {
+          return formatDuration(parsed.time);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not get duration from timer:', e);
+    }
+    return sessionStats?.duration || '00:00:00';
+  };
+
   const handleFinish = async () => {
     try {
+      setIsFinishing(true);
+      setError(null);
+      
       const endTime = new Date();
-      const durationMinutes = Math.round((endTime.getTime() - sessionStartTime!.getTime()) / (1000 * 60));
-
-      // Update session with duration and number of completed tasks
+      
+      // Get current duration from timer or use session stats
+      const currentDuration = getDurationFromTimer();
+      
+      // Update session with proper duration format and task completion
       const { error: updateError } = await supabase
         .from('study_laps')
         .update({
-          duration: durationMinutes,
+          duration: currentDuration,
+          ended_at: endTime.toISOString(),
           description: sessionDescription.trim() || null,
           tasks_completed: selectedTasks.length
         })
@@ -175,23 +294,72 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
         onSessionDetailsUpdated();
       }
 
+      toast.success('Session finished successfully!');
       onFinish(selectedTasks);
       onClose();
     } catch (error) {
       console.error('Error finishing session:', error);
+      setError('Failed to finish session. Please try again.');
+      toast.error('Failed to finish session');
+    } finally {
+      setIsFinishing(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-sm">
-      <div className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-4xl border-2 border-[var(--border-primary)] shadow-xl">
-        <div className="flex justify-between items-center mb-4">
+    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-sm p-4">
+      <div className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-3xl border-2 border-[var(--border-primary)] shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Finish Session</h2>
           <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <X size={22} />
           </button>
+        </div>
+
+        {/* Session Statistics */}
+        <div className="mb-6 p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <Target size={18} />
+            Session Statistics
+          </h3>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="animate-spin text-[var(--accent-primary)]" size={20} />
+              <span className="ml-2 text-[var(--text-secondary)]">Loading session data...</span>
+            </div>
+          ) : error ? (
+            <div className="flex items-center gap-2 text-red-500 py-2">
+              <AlertCircle size={16} />
+              <span className="text-sm">{error}</span>
+            </div>
+          ) : sessionStats ? (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)] mb-1">
+                  <Clock size={16} />
+                  <span className="text-2xl font-bold">{getDurationFromTimer()}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Duration</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-orange-500 mb-1">
+                  <Target size={16} />
+                  <span className="text-2xl font-bold">{getPomodorosFromTimer()}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Pomodoros</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-green-500 mb-1">
+                  <CheckCircle size={16} />
+                  <span className="text-2xl font-bold">{selectedTasks.length}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Tasks Completed</div>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="mb-6">
@@ -227,34 +395,152 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
           </div>
         </div>
 
-        <TaskSelectionPanel
-          activeTasks={activeTasks}
-          availableTasks={availableTasks}
-          onMoveTask={handleMoveTask}
-          onAddTask={() => setShowTaskForm(true)}
-          mode="move"
-          showNewTaskButton={true}
-          activeTitle="Finished Tasks"
-          availableTitle="Available Tasks"
-        />
-        {(activeTasks.length === 0 && availableTasks.length === 0) && (
-          <div className="text-center text-gray-400 py-6 text-lg font-medium">
-            There are no tasks to complete.
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-medium text-[var(--text-primary)] flex items-center gap-2">
+              <CheckCircle size={18} />
+              Tasks Completed This Session
+            </h3>
+            <button
+              onClick={() => setShowTaskSelector(true)}
+              className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1"
+            >
+              <CheckCircle size={14} />
+              Add Finished Tasks
+            </button>
+          </div>
+          
+          {activeTasks.length === 0 ? (
+            <div className="text-center text-gray-400 py-6 text-lg font-medium bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+              No tasks were completed in this session.
+              <div className="text-sm mt-2">
+                Click "Add Finished Tasks" to mark tasks as completed.
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {activeTasks.map(task => (
+                <div 
+                  key={task.id} 
+                  className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]"
+                >
+                  <input
+                    type="checkbox"
+                    id={`task-${task.id}`}
+                    checked={selectedTasks.includes(task.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedTasks(prev => [...prev, task.id]);
+                      } else {
+                        setSelectedTasks(prev => prev.filter(id => id !== task.id));
+                      }
+                    }}
+                    className="w-4 h-4 text-[var(--accent-primary)] border-[var(--border-primary)] rounded focus:ring-[var(--accent-primary)]"
+                  />
+                  <label 
+                    htmlFor={`task-${task.id}`}
+                    className="flex-1 text-[var(--text-primary)] cursor-pointer"
+                  >
+                    {task.title}
+                  </label>
+                  <button
+                    onClick={() => handleRemoveTaskFromFinished(task)}
+                    className="text-red-500 hover:text-red-400 transition-colors"
+                    title="Remove from finished tasks"
+                  >
+                    <X size={16} />
+                  </button>
+                  <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2 py-1 rounded">
+                    {selectedTasks.includes(task.id) ? 'Marked as completed' : 'Not completed'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Task Selector Modal */}
+        {showTaskSelector && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)]">
+              <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center sticky top-0 bg-[var(--bg-primary)] z-10">
+                <h2 className="text-xl font-semibold">Add Finished Tasks</h2>
+                <button 
+                  onClick={() => setShowTaskSelector(false)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="p-4">
+                {availableTasks.length === 0 ? (
+                  <div className="text-center py-8 text-[var(--text-secondary)]">
+                    No available tasks to add.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {availableTasks.map(task => (
+                      <div 
+                        key={task.id} 
+                        className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors"
+                      >
+                        <span className="flex-1 text-[var(--text-primary)]">{task.title}</span>
+                        <button
+                          onClick={() => handleAddTaskToFinished(task)}
+                          className="px-3 py-1 text-sm bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors"
+                        >
+                          Add to Finished
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 border-t border-[var(--border-primary)] flex justify-end">
+                <button
+                  onClick={() => setShowTaskSelector(false)}
+                  className="px-4 py-2 border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="mt-6 flex justify-end gap-2">
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle size={16} />
+              <span className="text-sm">{error}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="cancel-button border-2"
+            disabled={isFinishing}
+            className="cancel-button border-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleFinish}
-            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 undefined border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]"
+            disabled={isFinishing || isLoading}
+            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Finish Session
+            {isFinishing ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Finishing...
+              </>
+            ) : (
+              <span>Finish Session</span>
+            )}
           </button>
         </div>
       </div>

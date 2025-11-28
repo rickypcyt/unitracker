@@ -477,9 +477,7 @@ const groupSessionsByTimePeriod = (lapsList: Lap[]): GroupedSessions => {
                                       </div>
                                       {'pomodoros_completed' in lap && typeof lap.pomodoros_completed === 'number' && lap.pomodoros_completed > 0 && (
                                         <div className="flex items-center gap-2 text-orange-600">
-                                          <div className="w-4 h-4 bg-orange-500/20 rounded flex items-center justify-center">
-                                            <span className="text-xs font-bold text-orange-500">🍅</span>
-                                          </div>
+
                                           <span className="font-semibold text-orange-600 dark:text-orange-400">
                                             {lap.pomodoros_completed} pomodoro{lap.pomodoros_completed !== 1 ? 's' : ''}
                                           </span>

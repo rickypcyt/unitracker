@@ -78,12 +78,15 @@ export const SortableColumn = ({
   };
 
   const handleColumnDoubleClick = (e: React.MouseEvent) => {
-    // Prevent opening modal if double-clicking on interactive elements
+    // Prevent opening modal if double-clicking on interactive elements or tasks
     const target = e.target as HTMLElement;
     if (
       target.closest('button') ||
       target.closest('input') ||
-      target.closest('[role="button"]')
+      target.closest('[role="button"]') ||
+      target.closest('[role="listitem"]') || // Avoid task items
+      target.closest('[data-testid*="task"]') || // Avoid task-related elements
+      target.closest('.cursor-pointer') // Avoid elements with cursor-pointer (tasks)
     ) {
       return;
     }

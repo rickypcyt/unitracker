@@ -19,6 +19,7 @@ import FinishSessionModal from "@/modals/FinishSessionModal";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import SectionTitle from "@/components/SectionTitle";
 import SessionSummaryModal from "@/modals/SessionSummaryModal";
+import SessionsModal from "@/modals/TodaysSessionsModal";
 import StartSessionModal from "@/modals/StartSessionModal";
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-hot-toast";
@@ -97,6 +98,7 @@ const useTimestamp = () => {
 const useModalStates = () => {
   const [modalStates, setModalStates] = useState({
     isStartModalOpen: false,
+    isSessionsModalOpen: false,
     isFinishModalOpen: false,
     isLoginPromptOpen: false,
     isSummaryOpen: false,
@@ -532,7 +534,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           currentSessionId ||
           getFromLocalStorage(STORAGE_KEYS.ACTIVE_SESSION_ID);
         if (!activeId) {
-          updateModal("isStartModalOpen", true);
+          updateModal("isSessionsModalOpen", true); // Show SessionsModal first
           return;
         }
 
@@ -764,6 +766,49 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     ),
     [isCountdownSync, studyControls]
   );
+
+  // Event listener for loading session duration
+  useEventListener('loadSessionDuration', useCallback((event: CustomEvent) => {
+    console.log('[StudyTimer] 📡 loadSessionDuration event received:', event.detail);
+    const { duration, sessionId } = event.detail || {};
+    
+    if (typeof duration === 'number' && duration > 0) {
+      console.log('[StudyTimer] 📊 Loading session duration:', { duration, sessionId });
+      
+      // Update the timer state with the loaded duration
+      updateStudyState({
+        time: duration,
+        timeAtStart: duration,
+        isRunning: false,
+        lastStart: null,
+        sessionStatus: "active",
+      });
+      
+      console.log('[StudyTimer] ✅ Updated study state with duration');
+      
+      // Update timer time display
+      updateTimerTime(duration, false);
+      
+      console.log('[StudyTimer] ✅ Updated timer time display');
+      
+      // Save to localStorage for persistence
+      const savedState = getFromLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE);
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        saveToLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE, {
+          ...parsed,
+          time: duration,
+          timeAtStart: duration,
+          isRunning: false,
+          lastStart: null,
+        });
+        
+        console.log('[StudyTimer] 💾 Saved duration to localStorage');
+      }
+    } else {
+      console.log('[StudyTimer] ❌ Invalid duration or duration is 0:', { duration, sessionId });
+    }
+  }, [updateStudyState, updateTimerTime]));
 
   // Función para formatear duración
   const formatDuration = useCallback((totalSeconds: number): string => {
@@ -1008,19 +1053,35 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       syncPomo?: boolean;
       syncCountdown?: boolean;
     }) => {
+      console.log('[StudyTimer] 🚀 handleStartSession called with:', {
+        sessionId,
+        title,
+        description,
+        syncPomo,
+        syncCountdown
+      });
+      
       try {
-        if (!sessionId) return;
+        if (!sessionId) {
+          console.log('[StudyTimer] ❌ No sessionId provided, returning early');
+          return;
+        }
 
+        console.log('[StudyTimer] 📝 Updating session ID:', sessionId);
         updateSessionId(sessionId);
 
         // Fetch started_at, ended_at and duration to seed timer time appropriately
         let initialSeconds = 0;
         try {
+          console.log('[StudyTimer] 📊 Fetching session data from database...');
           const { data: lap, error } = await supabase
             .from("study_laps")
             .select("started_at, ended_at, duration")
             .eq("id", sessionId)
             .maybeSingle();
+            
+          console.log('[StudyTimer] 📋 Database response:', { lap, error });
+          
           if (error) throw error;
 
           const parseHms = (hms?: string | null): number => {
@@ -1035,13 +1096,23 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           const durationSeconds = parseHms(lap?.duration);
           const isUnfinished = !lap?.ended_at;
 
+          console.log('[StudyTimer] ⏱️ Parsed session data:', {
+            duration: lap?.duration,
+            durationSeconds,
+            started_at: lap?.started_at,
+            ended_at: lap?.ended_at,
+            isUnfinished
+          });
+
           if (isUnfinished) {
             // Unfinished session: trust the accumulated duration from DB
             initialSeconds = durationSeconds;
+            console.log('[StudyTimer] ⏰ Using unfinished session duration:', initialSeconds);
           } else {
             // Finished session: prefer stored duration, fallback to timestamps
             if (durationSeconds > 0) {
               initialSeconds = durationSeconds;
+              console.log('[StudyTimer] ⏰ Using finished session duration:', initialSeconds);
             } else if (lap?.started_at && lap?.ended_at) {
               initialSeconds = Math.max(
                 0,
@@ -1049,6 +1120,9 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
                   (new Date(lap.ended_at).getTime() - new Date(lap.started_at).getTime()) / 1000
                 )
               );
+              console.log('[StudyTimer] ⏰ Calculated duration from timestamps:', initialSeconds);
+            } else {
+              console.log('[StudyTimer] ⏰ No duration data found, using 0');
             }
           }
         } catch (fe) {
@@ -1071,18 +1145,23 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           stateUpdates.sessionDescription = studyState.sessionDescription;
         }
         
+        console.log('[StudyTimer] 📊 Updating study state:', stateUpdates);
         updateStudyState(stateUpdates);
 
         if (typeof syncPomo === "boolean") {
+          console.log('[StudyTimer] 🔄 Setting syncPomodoroWithTimer:', syncPomo);
           setSyncPomodoroWithTimer(!!syncPomo);
         }
         if (typeof syncCountdown === "boolean") {
+          console.log('[StudyTimer] 🔄 Setting syncCountdownWithTimer:', syncCountdown);
           setSyncCountdownWithTimer(!!syncCountdown);
         }
 
+        console.log('[StudyTimer] 📱 Closing start modal');
         updateModal("isStartModalOpen", false);
 
         // Auto-start the timer when session begins
+        console.log('[StudyTimer] ▶️ Auto-starting timer with initial seconds:', initialSeconds);
         studyControls.start(Date.now(), true, initialSeconds);
       } catch (e) {
         console.error("Error in handleStartSession:", e);
@@ -1098,6 +1177,126 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       studyControls,
     ]
   );
+
+  // SessionsModal handlers
+  const handleSessionSelected = useCallback(async (sessionId: string) => {
+    console.log('[StudyTimer] 📅 Session selected:', sessionId);
+    
+    if (!sessionId) {
+      console.log('[StudyTimer] ❌ No sessionId provided');
+      return;
+    }
+
+    try {
+      const { data: session, error: fetchError } = await supabase
+        .from('study_laps')
+        .select('name, description, duration, pomodoros_completed')
+        .eq('id', sessionId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching session details:", fetchError);
+        toast.error("Error loading session");
+        return;
+      }
+
+      // Update the session to resume it
+      const { error: updateError } = await supabase
+        .from('study_laps')
+        .update({
+          ended_at: null,
+          started_at: new Date().toISOString()
+        })
+        .eq('id', sessionId);
+
+      if (updateError) {
+        console.error("Error resuming session:", updateError);
+        toast.error("Error resuming session");
+        return;
+      }
+
+      console.log('[StudyTimer] ✅ Session resumed successfully');
+
+      // Load existing session data
+      if (session.duration) {
+        const [hours, minutes, seconds] = session.duration.split(':').map(Number);
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        window.dispatchEvent(new CustomEvent('loadSessionDuration', { detail: totalSeconds }));
+      }
+
+      if (session.pomodoros_completed) {
+        window.dispatchEvent(new CustomEvent('loadSessionPomodoros', { detail: session.pomodoros_completed }));
+      }
+
+      // Update session ID and start
+      updateSessionId(sessionId);
+      updateModal("isSessionsModalOpen", false);
+
+      // Auto-start the timer
+      const initialSeconds = session.duration ? 
+        session.duration.split(':').reduce((acc: number, time: string, idx: number) => acc + parseInt(time) * Math.pow(60, 2 - idx), 0) : 0;
+      
+      studyControls.start(Date.now(), true, initialSeconds);
+
+    } catch (error) {
+      console.error('[StudyTimer] 💥 Error in handleSessionSelected:', error);
+      toast.error("Error starting session");
+    }
+  }, [updateSessionId, updateModal, studyControls]);
+
+  const handleStartNewSession = useCallback(() => {
+    console.log('[StudyTimer] 🆕 Start New Session requested');
+    updateModal("isSessionsModalOpen", false);
+    updateModal("isStartModalOpen", true);
+  }, [updateModal]);
+
+  const handleFinishAllSessions = useCallback(async () => {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user) return;
+
+      const now = new Date().toISOString();
+      const { data: sessions, error: fetchError } = await supabase
+        .from("study_laps")
+        .select("id, started_at, duration")
+        .is("ended_at", null)
+        .eq("user_id", authData.user.id);
+
+      if (fetchError) throw fetchError;
+      if (!sessions || sessions.length === 0) return;
+
+      const toHMS = (totalSeconds: number) => {
+        const s = Math.max(0, Math.floor(totalSeconds));
+        const h = Math.floor(s / 3600).toString().padStart(2, "0");
+        const m = Math.floor((s % 3600) / 60).toString().padStart(2, "0");
+        const sec = (s % 60).toString().padStart(2, "0");
+        return `${h}:${m}:${sec}`;
+      };
+
+      const parseHMS = (hms: string) => {
+        const parts = hms.split(":");
+        if (parts.length !== 3) return 0;
+        const [h, m, s] = parts.map((p) => parseInt(p, 10));
+        return (Number.isFinite(h || 0) ? (h || 0) : 0) * 3600 + (Number.isFinite(m || 0) ? (m || 0) : 0) * 60 + (Number.isFinite(s || 0) ? (s || 0) : 0);
+      };
+
+      const updates = sessions.map((session) => {
+        const existingSec = parseHMS(session.duration as any);
+        const payload: any = { ended_at: now };
+        if (!existingSec || existingSec <= 0) {
+          const seconds = Math.floor((Date.now() - new Date(session.started_at as any).getTime()) / 1000);
+          payload.duration = toHMS(seconds);
+        }
+        return supabase.from("study_laps").update(payload).eq("id", session.id).eq("user_id", authData.user.id);
+      });
+
+      await Promise.all(updates);
+      toast.success("All unfinished sessions finished");
+    } catch (error) {
+      console.error("Error finishing all sessions:", error);
+      toast.error("Error finishing sessions");
+    }
+  }, []);
 
   // Función para confirmar eliminación
   const handleConfirmDelete = useCallback(async () => {
@@ -1539,6 +1738,14 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       </div>
 
       {/* Modals */}
+      <SessionsModal
+        isOpen={modalStates.isSessionsModalOpen}
+        onClose={() => updateModal("isSessionsModalOpen", false)}
+        onSessionSelected={handleSessionSelected}
+        onFinishAllSessions={handleFinishAllSessions}
+        onStartNewSession={handleStartNewSession}
+      />
+
       <StartSessionModal
         isOpen={modalStates.isStartModalOpen}
         onClose={() => updateModal("isStartModalOpen", false)}
@@ -1585,7 +1792,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       <SessionSummaryModal
         isOpen={modalStates.isSummaryOpen}
         onClose={() => updateModal("isSummaryOpen", false)}
-        title={summaryData.title || studyState.sessionTitle || "Untitled Session"}
         durationFormatted={summaryData.duration}
         completedTasksCount={summaryData.tasksCount}
         pomodorosCompleted={summaryData.pomodoros}

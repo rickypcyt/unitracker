@@ -739,18 +739,8 @@ const Pomodoro: React.FC = () => {
     if (wasWorkSessionCompleted) {
       console.log('[Pomodoro] 🍅 Work session completed by manual adjustment');
       
-      // Use centralized count increment
+      // Use centralized count increment - notification will be handled by mode transition
       await incrementPomodoroCount();
-
-      // Show completion notification
-      showToast('Work session completed! 🎉', '🎉');
-      showNotification('Work Session Complete! 🎉', {
-        body: 'Great job! Time to take a break.',
-        icon: '🍅',
-        badge: '🍅',
-        tag: 'pomodoro-notification',
-        requireInteraction: true,
-      });
 
       // Transition to break mode
       const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
@@ -831,6 +821,43 @@ const Pomodoro: React.FC = () => {
   useEventListener('resetTimerSync', createSyncHandler('reset'));
   useEventListener('resetPomodoroSync', createSyncHandler('reset'));
   useEventListener('resetCountdownSync', createSyncHandler('reset'));
+
+  // Event listener for loading session pomodoros
+  useEventListener('loadSessionPomodoros', useCallback((event: CustomEvent) => {
+    console.log('[Pomodoro] 📡 loadSessionPomodoros event received:', event.detail);
+    const { pomodoros, sessionId } = event.detail || {};
+    
+    if (typeof pomodoros === 'number' && pomodoros > 0) {
+      console.log('[Pomodoro] 🍅 Loading session pomodoros:', { pomodoros, sessionId });
+      
+      // Update pomodoro count to match the session
+      const today = getLocalDateString();
+      localStorage.setItem(`pomodoroDailyCount_${today}`, String(pomodoros));
+      localStorage.setItem('pomodorosThisSession', String(pomodoros));
+      
+      console.log('[Pomodoro] 💾 Updated localStorage with pomodoro count');
+      
+      // Update state to match localStorage
+      setPomoState(prev => {
+        const newState = {
+          ...prev,
+          pomodoroToday: pomodoros,
+          pomodorosThisSession: pomodoros,
+          workSessionsCompleted: pomodoros,
+        };
+        
+        console.log('[Pomodoro] ✅ Updated pomodoro state:', newState);
+        return newState;
+      });
+      
+      console.log('[Pomodoro] ✅ Pomodoro count loaded from session:', { 
+        newCount: pomodoros,
+        sessionId
+      });
+    } else {
+      console.log('[Pomodoro] ❌ Invalid pomodoros or pomodoros is 0:', { pomodoros, sessionId });
+    }
+  }, []));
 
   // ============================================================================
   // EFFECTS
@@ -978,14 +1005,15 @@ const Pomodoro: React.FC = () => {
       if (isWorkSessionCompleted) {
         console.log('[Pomodoro] 🍅 Work session completed - counting pomodoro');
         
-        // Use centralized count increment
-        await incrementPomodoroCount();
-
-        // Show completion notifications
+        // Calculate break type BEFORE incrementing to ensure consistency
         const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
         const notifTitle = willTakeLongBreak ? 'Work Session Complete! Time for a Long Break! 🎉' : 'Work Session Complete! 🎉';
         const notifBody = willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.';
 
+        // Use centralized count increment
+        await incrementPomodoroCount();
+
+        // Show completion notifications (using pre-calculated values)
         showToast(
           willTakeLongBreak ? 'Work session complete! Time for a long break.' : 'Work session complete! Time for a break.',
           '🎉'
@@ -1049,21 +1077,11 @@ const Pomodoro: React.FC = () => {
       if (expectedCount > pomoState.pomodoroToday) {
         console.log('[Pomodoro] 🍅 Work session completed by elapsed time detection');
         
-        // Use centralized count increment
+        // Use centralized count increment - notification will be handled by mode transition
         await incrementPomodoroCount();
-
-        // Show completion notification
-        showToast('Work session completed! 🎉', '🎉');
-        showNotification('Work Session Complete! 🎉', {
-          body: 'Great job! Time to take a break.',
-          icon: '🍅',
-          badge: '🍅',
-          tag: 'pomodoro-notification',
-          requireInteraction: true,
-        });
       }
     }
-  }, [pomoState, currentModeConfig, incrementPomodoroCount]);
+  }, [pomoState, currentModeConfig, incrementPomodoroCount, pomoState.pomodoroToday]);
 
   // Check for completion when timer is running
   useEffect(() => {

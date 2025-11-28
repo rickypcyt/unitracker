@@ -1,18 +1,30 @@
-import { CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
-import { formatDateShort, isToday, isTomorrow, getTimeRemainingString } from '@/utils/dateUtils';
+import { CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/utils/dateUtils';
 
-// Helper para saber si la fecha es pasada
-const isPast = (dateStr) => {
-    if (!dateStr) return false;
-    const date = new Date(dateStr);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
-    return date < now;
-};
+import React from 'react';
+
+// Extended Task interface to include deadline field
+interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    completed: boolean;
+    completed_at: string | null;
+    created_at?: string;
+    updated_at?: string;
+    due_date?: string;
+    priority?: number;
+    tags?: string[];
+    user_id?: string;
+    workspace_id?: string;
+    activetask?: boolean;
+    difficulty?: string;
+    assignment?: string;
+    deadline?: string;
+}
 
 // Helper para determinar el color del deadline
-const getDeadlineColor = (dateStr) => {
+const getDeadlineColor = (dateStr: string) => {
     if (!dateStr) return 'text-[var(--text-secondary)]'; // No deadline
 
     const date = new Date(dateStr);
@@ -49,7 +61,18 @@ const getDeadlineColor = (dateStr) => {
     }
 };
 
-export const TaskItem = ({
+interface TaskItemProps {
+    task: Task;
+    onToggleCompletion: (id: string) => void;
+    onDelete: (id: string) => void;
+    onEditTask: (task: Task) => void;
+    onContextMenu: (e: React.MouseEvent, task: Task) => void;
+    showAssignment?: boolean;
+    assignmentLeftOfDate?: boolean;
+    active?: boolean;
+}
+
+export const TaskItem: React.FC<TaskItemProps> = ({
     task,
     onToggleCompletion,
     onDelete,
@@ -61,20 +84,7 @@ export const TaskItem = ({
     assignmentLeftOfDate = false,
     active = false
 }) => {
-    const getPriorityColor = (priority) => {
-        switch (priority?.toLowerCase()) {
-            case 'high':
-                return 'text-[#FF003C]'; /* Neon red */
-            case 'medium':
-                return 'text-[#FFD700]'; /* Neon yellow */
-            case 'low':
-                return 'text-[#00FF41]'; /* Matrix green */
-            default:
-                return 'text-[var(--text-secondary)]';
-        }
-    };
-
-    const getDifficultyColor = (difficulty, type = 'text') => {
+    const getDifficultyColor = (difficulty: string, type: 'text' | 'bg' | 'border' = 'text') => {
         // type: 'text' | 'bg' | 'border'
         switch (difficulty?.toLowerCase()) {
             case 'easy':
@@ -96,13 +106,13 @@ export const TaskItem = ({
         }
     };
 
-    const handleToggleClick = (e) => {
+    const handleToggleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
         onToggleCompletion(task.id);
     };
 
-    const handleDeleteClick = (e) => {
+    const handleDeleteClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
         onDelete(task.id);
@@ -113,7 +123,7 @@ export const TaskItem = ({
     };
 
     // Helper para el label de hoy/mañana
-    const renderDateLabel = (deadline) => {
+    const renderDateLabel = (deadline: string) => {
         if (isToday(deadline)) {
             return <span className="text-green-500 ml-1">(Today)</span>;
         }
@@ -125,9 +135,9 @@ export const TaskItem = ({
 
     return (
         <div
-            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-3 
+            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-3 items-center
                 bg-[var(--bg-secondary)] 
-                ${active ? `${getDifficultyColor(task.difficulty, 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
+                ${active ? `${getDifficultyColor(task.difficulty || 'medium', 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
             `}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
@@ -147,13 +157,13 @@ export const TaskItem = ({
                     {task.completed ? (
                         <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
                     ) : (
-                        <Circle className={getDifficultyColor(task.difficulty)} size={22} strokeWidth={2.2} />
+                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
                     )}
                 </button>
             </div>
             {/* Contenido principal */}
             <div className="flex-1 min-w-0 flex flex-col justify-between">
-                {/* Título y descripción arriba */}
+                {/* Título y descripción */}
                 <div>
                     <span
                         className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
@@ -166,21 +176,19 @@ export const TaskItem = ({
                         {task.title}
                     </span>
                     {task.description ? (
-                        <div
-                            className="text-md mt-0.5 prose prose-sm prose-invert max-w-none"
-                            style={{ color: 'var(--muted-strong)' }}
-                            dangerouslySetInnerHTML={{ __html: task.description }}
-                        />
+                        <div className="text-sm mt-0.5" style={{ color: '#A5A5A5' }}>
+                            {task.description.replace(/<[^>]*>/g, '')}
+                        </div>
                     ) : (
-                        <span className="text-md mt-0.5 italic" style={{ color: 'var(--muted-strong)' }}>
+                        <span className="text-sm mt-0.5 italic" style={{ color: '#A5A5A5' }}>
                             No description
                         </span>
                     )}
                 </div>
-                {/* Priority, assignment, date and delete button at the bottom */}
+                {/* Priority, assignment, date and delete button */}
                 <div className={`flex items-center gap-2 w-full${task.description ? ' ' : ''}`}>
                     {/* Date on the left */}
-                    <div className="text-base" style={{ color: 'var(--muted-strong)' }}>
+                    <div className="text-sm" style={{ color: 'var(--muted-strong)' }}>
                         <span>
                           {task.deadline && task.deadline !== '' ? (
                             <>

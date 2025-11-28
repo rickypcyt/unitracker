@@ -10,7 +10,6 @@ import AutocompleteInput from "@/modals/AutocompleteInput";
 import BaseModal from "@/modals/BaseModal";
 import { Task } from '@/pages/tasks/task';
 import TaskForm from "@/pages/tasks/TaskForm";
-import UnfinishedSessionsModal from "./UnfinishedSessionsModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useAppStore } from "@/store/appStore";
 
@@ -58,8 +57,6 @@ const StartSessionModal = ({
   ];
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
-  const [showUnfinishedSessions, setShowUnfinishedSessions] = useState(false);
-  const [isCheckingSessions, setIsCheckingSessions] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const fetchSessionTasks = useCallback(async () => {
@@ -157,151 +154,6 @@ const StartSessionModal = ({
     setSyncPomo(syncPomodoroWithTimer);
     setSyncCountdown(syncCountdownWithTimer);
   }, [syncPomodoroWithTimer, syncCountdownWithTimer]);
-
-  const checkUnfinishedSessions = useCallback(async () => {
-    if (!isOpen) return;
-
-    try {
-      const { data, error: authError } = await supabase.auth.getUser();
-      if (authError || !data?.user) return;
-
-      const { data: sessions, error } = await supabase
-        .from("study_laps")
-        .select("id")
-        .is("ended_at", null)
-        .eq("user_id", data.user.id)
-        .limit(1);
-
-      if (error) throw error;
-
-      const hasSessions = sessions ? sessions.length > 0 : false;
-      setShowUnfinishedSessions(hasSessions);
-    } catch (error) {
-      console.error("Error checking for unfinished sessions:", error);
-    } finally {
-      setIsCheckingSessions(false);
-    }
-  }, [isOpen]);
-
-  const handleSessionResumed = useCallback(
-    async (sessionId: string) => {
-      if (sessionId) {
-        try {
-          // Fetch real session title to avoid showing "Untitled" on resume
-          const { data: session, error } = await supabase
-            .from("study_laps")
-            .select("name, description")
-            .eq("id", sessionId)
-            .maybeSingle();
-
-          const resolvedTitle = (session?.name || sessionTitle || "Untitled Session").trim();
-
-          if (error) {
-            console.error("Error fetching session name on resume:", error);
-          }
-
-          onStart({
-            sessionId,
-            title: resolvedTitle,
-            syncPomo,
-            syncCountdown,
-          });
-        } catch (e) {
-          console.error("Resume session failed, falling back:", e);
-          onStart({
-            sessionId,
-            title: sessionTitle || "Untitled Session",
-            syncPomo,
-            syncCountdown,
-          });
-        }
-      } else {
-        setShowUnfinishedSessions(false);
-      }
-    },
-    [onStart, sessionTitle, syncPomo, syncCountdown]
-  );
-
-  const handleFinishAllSessions = useCallback(async () => {
-    try {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData?.user) return;
-
-      const now = new Date().toISOString();
-
-      const { data: sessions, error: fetchError } = await supabase
-        .from("study_laps")
-        .select("id, started_at, duration")
-        .is("ended_at", null)
-        .eq("user_id", authData.user.id);
-
-      if (fetchError) throw fetchError;
-
-      if (!sessions || sessions.length === 0) {
-        setShowUnfinishedSessions(false);
-        return;
-      }
-
-      // TypeScript now knows sessions is defined
-      const validSessions = sessions;
-
-      const toHMS = (totalSeconds: number) => {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(s / 3600)
-          .toString()
-          .padStart(2, "0");
-        const m = Math.floor((s % 3600) / 60)
-          .toString()
-          .padStart(2, "0");
-        const sec = (s % 60).toString().padStart(2, "0");
-        return `${h}:${m}:${sec}`;
-      };
-
-      const parseHMS = (hms: string) => {
-        const parts = hms.split(":");
-        if (parts.length !== 3) return 0;
-        const [h, m, s] = parts.map((p) => parseInt(p, 10));
-        return (Number.isFinite(h || 0) ? (h || 0) : 0) * 3600 + (Number.isFinite(m || 0) ? (m || 0) : 0) * 60 + (Number.isFinite(s || 0) ? (s || 0) : 0);
-      };
-
-      const updates = validSessions.map((session) => {
-        const existingSec = parseHMS(session.duration as any);
-        const payload: any = { ended_at: now };
-        if (!existingSec || existingSec <= 0) {
-          const seconds = Math.floor(
-            (new Date(now).getTime() - new Date(session.started_at).getTime()) / 1000
-          );
-          payload.duration = toHMS(seconds);
-        }
-        return supabase
-          .from("study_laps")
-          .update(payload)
-          .eq("id", session.id)
-          .eq("user_id", authData.user.id);
-      });
-
-      await Promise.all(updates);
-      setShowUnfinishedSessions(false);
-    } catch (error) {
-      console.error("Error finishing all sessions:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchSessionTasks();
-      fetchAssignments();
-      resetForm();
-      setIsCheckingSessions(true);
-      checkUnfinishedSessions();
-    } else {
-      setShowUnfinishedSessions(false);
-      setIsCheckingSessions(false);
-    }
-  }, [isOpen]); // Remove function dependencies to prevent infinite loop
-
-  // Removed problematic useEffect that was causing infinite loops
-  // The sync settings are now properly initialized in useState and managed by user interaction/templates
 
   useEffect(() => {
     if (lastAddedTaskId) {
@@ -491,35 +343,6 @@ const StartSessionModal = ({
 
   if (!isOpen) return null;
 
-  if (isCheckingSessions) {
-    return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-[var(--bg-primary)] rounded-xl p-8 max-w-md w-full mx-4 border border-[var(--border-primary)]">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-primary)]"></div>
-            <p className="text-[var(--text-primary)]">
-              Checking for unfinished sessions...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (showUnfinishedSessions) {
-    return (
-      <UnfinishedSessionsModal
-        isOpen={showUnfinishedSessions}
-        onClose={() => {
-          setShowUnfinishedSessions(false);
-          onClose();
-        }}
-        onSessionResumed={handleSessionResumed}
-        onFinishAllSessions={handleFinishAllSessions}
-      />
-    );
-  }
-
   return (
     <BaseModal
       isOpen={isOpen}
@@ -529,51 +352,6 @@ const StartSessionModal = ({
       fullWidthOnMd={true}
     >
       <div className="space-y-6 w-full">
-        {/* Quick Templates Section */}
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <Zap size={20} className="text-purple-500" />
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Quick Templates</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-            {sessionTemplates.map((template, index) => (
-              <button
-                key={index}
-                onClick={() => applyTemplate(template, index)}
-                className={`p-2 bg-[var(--bg-primary)] border-2 rounded-lg hover:bg-[var(--bg-hover)] transition-all duration-200 text-left group ${
-                  selectedTemplateIndex === index
-                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10"
-                    : "border-[var(--border-primary)]"
-                }`}
-              >
-                <div className="font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] text-sm">
-                  {template.title}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] mt-1">
-                  {template.description}
-                </div>
-                <div className="flex gap-1 mt-2">
-                  {template.syncPomo && (
-                    <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs rounded">
-                      Pomodoro
-                    </span>
-                  )}
-                  {template.syncCountdown && (
-                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs rounded">
-                      Countdown
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-[var(--border-primary)]/50"></div>
-
         {/* Session Details Section */}
         <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-4">
@@ -821,25 +599,13 @@ const StartSessionModal = ({
             {!includeTasks && (
               <span className="flex items-center gap-2">
                 <Zap size={16} />
-                Focus mode enabled
+                Focus mode
               </span>
             )}
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="text-xs text-[var(--text-secondary)] hidden sm:flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <kbd className="px-2 py-1 bg-[var(--bg-secondary)] rounded text-xs">Ctrl+Enter</kbd>
-                <span>Start</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-2 py-1 bg-[var(--bg-secondary)] rounded text-xs">Ctrl+N</kbd>
-                <span>New Task</span>
-              </span>
-            </div>
             
-            <div className="flex gap-3">
-              <button
+          <div className="flex gap-3">
+            <button
                 type="button"
                 onClick={onClose}
                 className="px-6 py-3 bg-[var(--bg-secondary)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors duration-200"
@@ -873,7 +639,6 @@ const StartSessionModal = ({
             </div>
           </div>
         </div>
-      </div>
 
       {showTaskForm && (
         <TaskForm
