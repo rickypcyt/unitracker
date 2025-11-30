@@ -86,17 +86,17 @@ export const KanbanBoard = () => {
     ? demoTasks.filter(task => task.workspace_id === activeWorkspace?.id)
     : realTasks;
 
-  // Debug: log para verificar las tareas
-  console.log('KanbanBoard - activeWorkspace:', activeWorkspace);
-  console.log('KanbanBoard - tasks count:', tasks.length);
-  console.log('KanbanBoard - tasks:', tasks);
+  // Remove debug logs to prevent infinite loop
+  // console.log('KanbanBoard - activeWorkspace:', activeWorkspace);
+  // console.log('KanbanBoard - tasks count:', tasks.length);
+  // console.log('KanbanBoard - tasks:', tasks);
 
   // No need to filter here anymore since useTaskManager already returns filtered tasks
   const filteredTasks = tasks;
 
-  // Debug: log para verificar el filtrado
-  console.log('KanbanBoard - filteredTasks count:', filteredTasks.length);
-  console.log('KanbanBoard - filteredTasks:', filteredTasks);
+  // Remove debug logs to prevent infinite loop
+  // console.log('KanbanBoard - filteredTasks count:', filteredTasks.length);
+  // console.log('KanbanBoard - filteredTasks:', filteredTasks);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -200,8 +200,8 @@ export const KanbanBoard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const completedTasks = filteredTasks.filter((task) => task.completed);
-  const incompletedTasks = filteredTasks.filter((task) => !task.completed);
+  const completedTasks = useMemo(() => filteredTasks.filter((task) => task.completed), [filteredTasks]);
+  const incompletedTasks = useMemo(() => filteredTasks.filter((task) => !task.completed), [filteredTasks]);
 
   // Memoize incompletedByAssignment before it's used in handleSelectSort
   const incompletedByAssignment = useMemo(() => {
@@ -544,7 +544,7 @@ export const KanbanBoard = () => {
 
   return (
       <div className="flex flex-col h-full kanban-board">
-        <div className="flex justify-center w-full mb-4 px-4">
+        <div className="flex justify-center w-full mb-4 px-0 sm:px-4">
           <div className={`grid gap-4 ${sortedIncompletedAssignments.length === 1 ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`} style={{ gridAutoRows: 'minmax(200px, auto)' }}>
           {(() => {
             // Agrupar asignaciones para optimizar espacio vertical
@@ -622,7 +622,7 @@ export const KanbanBoard = () => {
                     <div className="bg-transparent rounded-lg p-4 border border-transparent"></div>
                     {/* Columna central con el assignment */}
                     {group.length === 1 ? (
-                      <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
+                      <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
                         <SortableColumn
                           id={assignment.name}
                           assignment={assignment.name}
@@ -651,7 +651,7 @@ export const KanbanBoard = () => {
                         {group.map((assignment) => {
                           if (!assignment) return null;
                           return (
-                            <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm flex-1">
+                            <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm flex-1">
                               <SortableColumn
                                 id={assignment.name}
                                 assignment={assignment.name}
@@ -690,7 +690,7 @@ export const KanbanBoard = () => {
                 if (!assignment) return null;
                 
                 return (
-                  <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm">
+                  <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
                     <SortableColumn
                       id={assignment.name}
                       assignment={assignment.name}
@@ -721,7 +721,7 @@ export const KanbanBoard = () => {
                     {group.map((assignment) => {
                       if (!assignment) return null;
                       return (
-                        <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] shadow-sm flex-1">
+                        <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm flex-1">
                           <SortableColumn
                             id={assignment.name}
                             assignment={assignment.name}

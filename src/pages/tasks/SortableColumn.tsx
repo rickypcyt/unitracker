@@ -1,4 +1,4 @@
-import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pin, PinOff, Plus, Save, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
@@ -43,6 +43,7 @@ export const SortableColumn = ({
 }: SortableColumnProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   // Ordenar tareas por deadline (atrasadas primero, futuras después)
   const sortedTasks = useMemo(() => {
@@ -60,6 +61,10 @@ export const SortableColumn = ({
       return dateA.getTime() - dateB.getTime();
     });
   }, [tasks]);
+
+  const handleToggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
 
   const handleSave = () => {
     if (editedName.trim() && editedName !== assignment) {
@@ -96,16 +101,16 @@ export const SortableColumn = ({
   return (
     <div
       onDoubleClick={handleColumnDoubleClick}
-      className={`flex flex-col transition-all duration-200 relative cursor-pointer`}
+      className={`flex flex-col transition-all duration-200 relative cursor-pointer ${isMinimized ? 'h-fit' : ''} ${isMinimized ? 'minimized-column' : ''}`}
       style={{
-        minHeight: '200px',
+        minHeight: isMinimized ? 'auto' : '100px',
         padding: '0rem',
         height: 'auto',
       }}
       data-column-id={assignment}
       data-testid={`column-${assignment}`}
     >
-      <div className="flex items-center justify-between w-full mb-3">
+      <div className="flex items-center justify-between w-full mt-1 mb-2 sm:mt-3 sm:mb-3">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onTogglePin}
@@ -173,19 +178,32 @@ export const SortableColumn = ({
               onEditAssignment={() => setIsEditing(true)}
               onSortClick={onSortClick}
             />
+            {/* Chevron button */}
+            <button
+              onClick={handleToggleMinimize}
+              className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              title={isMinimized ? "Expand tasks" : "Collapse tasks"}
+            >
+              {isMinimized ? (
+                <ChevronUp size={22} />
+              ) : (
+                <ChevronDown size={22} />
+              )}
+            </button>
           </div>
       </div>
 
       
       <div
-        className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar`}
+        className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar pb-2`}
         style={{
           minHeight: '100px',
           maxHeight: 'none',
           overflowY: 'visible',
-          padding: '0.5rem',
+          padding: '0 0 0.5rem 0',
           position: 'relative',
           zIndex: 1,
+          display: isMinimized ? 'none' : 'block',
         }}
       >
         {sortedTasks.map((task) => (

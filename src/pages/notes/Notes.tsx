@@ -190,12 +190,12 @@ const Notes: React.FC = () => {
     setSelectedNoteId(undefined);
   };
 
-  const handleCreateNote = async () => {
+  const handleCreateNote = async (assignment?: string) => {
     const today = new Date().toISOString().split('T')[0];
     const newNote: Omit<Note, 'id'> = {
       title: 'New Note',
-      assignment: '',
-      description: 'Here goes your text',
+      assignment: assignment || '',
+      description: '',
       date: today || ''
     };
     

@@ -28,7 +28,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   max,
   ...props
 }) => (
-  <div className="mb-4 flex flex-col h-full">
+  <div className="flex flex-col h-full">
     <div className="flex-1 flex flex-col">
       {label && (
         <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2 min-h-[20px]">
@@ -153,7 +153,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 );
 
 type ButtonType = 'button' | 'submit' | 'reset';
-type ButtonVariant = 'primary' | 'secondary' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'custom';
 
 interface FormButtonProps {
   type?: ButtonType;
@@ -174,8 +174,9 @@ export const FormButton: React.FC<FormButtonProps> = ({
   const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
   const variantClasses = {
     primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
-    secondary: 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 border border-[var(--border-primary)]',
-    danger: 'bg-red-500 text-white hover:bg-red-600'
+    secondary: 'bg-transparent text-[var(--text-secondary)] border border-[var(--text-secondary)] hover:bg-transparent hover:text-[var(--text-primary)]',
+    danger: 'bg-red-500 text-white hover:bg-red-600',
+    custom: '',
   };
 
   return (
@@ -196,7 +197,7 @@ interface FormActionsProps {
 }
 
 export const FormActions: React.FC<FormActionsProps> = ({ children, className = '' }) => (
-  <div className={`flex justify-end gap-2 ${className}`}>
+  <div className={`flex flex-row justify-center gap-2 mb-4 ${className}`}>
     {children}
   </div>
 ); 

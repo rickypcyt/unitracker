@@ -12,7 +12,6 @@ export const useTaskManager = (activeWorkspace) => {
   const toggleTaskStatusAction = useToggleTaskStatus();
   const fetchTasksAction = useFetchTasks();
   const { tasks } = useTasks();
-  console.log('useTaskManager - tasks from store:', tasks);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ export const useTaskManager = (activeWorkspace) => {
   // Fetch tasks when user or workspace changes
   useEffect(() => {
     if (user) {
-      console.log('useTaskManager - fetching tasks for workspace:', activeWorkspace?.id || 'all');
       // Always fetch with workspace filter if activeWorkspace exists
       // This ensures we only load the tasks we need
       fetchTasksAction(activeWorkspace?.id);
@@ -57,13 +55,10 @@ export const useTaskManager = (activeWorkspace) => {
           filter: `user_id=eq.${user.id}`
         }, 
         (payload) => {
-          console.log('Real-time update received:', payload);
-          
           // Only process real-time updates if the task belongs to the current workspace
           // or if no workspace is active
           const taskWorkspaceId = payload.new?.workspace_id || payload.old?.workspace_id;
           if (activeWorkspace && taskWorkspaceId !== activeWorkspace.id) {
-            console.log('Ignoring real-time update for different workspace:', taskWorkspaceId);
             return;
           }
           

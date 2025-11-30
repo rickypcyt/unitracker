@@ -1,5 +1,5 @@
-import { ArrowLeft, Calendar, FileText, Save, Trash2, X } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '../../MarkdownWysiwyg';
@@ -46,26 +46,7 @@ const NoteView: React.FC<NoteViewProps> = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showMobileNotes, setShowMobileNotes] = useState(false);
   const datePickerRef = useRef<any>(null);
-
-  // Track unsaved changes
-  useEffect(() => {
-    setHasUnsavedChanges(
-      title !== note.title || 
-      description !== note.description || 
-      assignment !== (note.assignment || '') ||
-      date !== note.date
-    );
-  }, [title, description, assignment, date, note]);
-
-  // Reset local states when note changes
-  useEffect(() => {
-    setTitle(note.title);
-    setDescription(note.description);
-    setAssignment(note.assignment || '');
-    setDate(note.date);
-    setIsEditingTitle(false);
-    setIsEditingAssignment(false);
-  }, [note]);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generic save handler
   const saveNote = async (updates: Partial<Omit<Note, 'id'>>) => {
@@ -93,6 +74,62 @@ const NoteView: React.FC<NoteViewProps> = ({
       setHasUnsavedChanges(false);
     }
   };
+
+  // Auto-save with debounce
+  const autoSave = useCallback(async () => {
+    if (hasUnsavedChanges && !isSaving) {
+      const success = await saveNote({ title, assignment: assignment || null, description, date });
+      if (success) {
+        setHasUnsavedChanges(false);
+      }
+    }
+  }, [hasUnsavedChanges, isSaving, title, assignment, description, date]);
+
+  // Debounced auto-save
+  const debouncedAutoSave = useCallback(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 1000); // Save after 1 second of inactivity
+  }, [autoSave]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Track unsaved changes
+  useEffect(() => {
+    setHasUnsavedChanges(
+      title !== note.title || 
+      description !== note.description || 
+      assignment !== (note.assignment || '') ||
+      date !== note.date
+    );
+  }, [title, description, assignment, date, note]);
+
+  // Auto-save when there are changes
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      debouncedAutoSave();
+    }
+  }, [hasUnsavedChanges, debouncedAutoSave]);
+
+  // Reset local states when note changes
+  useEffect(() => {
+    setTitle(note.title);
+    setDescription(note.description);
+    setAssignment(note.assignment || '');
+    setDate(note.date);
+    setIsEditingTitle(false);
+    setIsEditingAssignment(false);
+  }, [note]);
 
   const handleCancel = () => {
     setTitle(note.title);
@@ -240,53 +277,76 @@ const NoteView: React.FC<NoteViewProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 border-b border-[var(--border-primary)] p-2 sm:p-4 bg-[var(--bg-primary)]">
-        <div className="flex items-center justify-between gap-2 sm:gap-4">
-          {/* Mobile Notes Button - Left */}
-          <div className="flex items-center gap-1 sm:hidden">
-            <button
-              onClick={() => setShowMobileNotes(true)}
-              className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-              title="View all notes"
-            >
-              <FileText size={16} className="w-4 h-4" />
-            </button>
-          </div>
+      <div className="sticky top-0 border-b border-[var(--border-primary)] p-4 sm:p-6 bg-[var(--bg-primary)]">
+        <div className="flex items-start justify-between gap-2 sm:gap-4">
+          {/* Title and Date - Left/Center */}
+          <div className={`flex-1 ${allNotes.length > 0 ? 'sm:flex-1' : ''}`}>
+            {/* Title */}
+            <div className="mb-1">
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleTitleSave();
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      handleTitleCancel();
+                    }
+                  }}
+                  onBlur={handleTitleSave}
+                  className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
+                  placeholder="Note Title"
+                  autoFocus
+                />
+              ) : (
+                <h1 
+                  className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate text-left"
+                  onClick={handleTitleEdit}
+                  title="Click to edit title"
+                >
+                  {note.title}
+                </h1>
+              )}
+            </div>
 
-          {/* Title - Center on mobile, Left on desktop */}
-          <div className={`flex-shrink-0 ${allNotes.length > 0 ? 'sm:flex-1' : ''}`}>
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleTitleSave();
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleTitleCancel();
-                  }
-                }}
-                onBlur={handleTitleSave}
-                className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
-                placeholder="Note Title"
-                autoFocus
+            {/* Date */}
+            <div className="flex justify-start">
+              <DatePicker
+                ref={datePickerRef}
+                selected={new Date(date)}
+                onChange={handleDateSave}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="DD/MM/YYYY"
+                popperPlacement="bottom"
+                calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
+                dayClassName={(date) =>
+                  (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
+                }
+                showPopperArrow={false}
+                customInput={
+                  <div 
+                    className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded py-1 transition-colors text-xs sm:text-sm text-[var(--text-secondary)]"
+                    title="Click to edit date"
+                  >
+                    <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span>{new Date(date).toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}</span>
+                  </div>
+                }
               />
-            ) : (
-              <h1 
-                className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate text-center sm:text-left"
-                onClick={handleTitleEdit}
-                title="Click to edit title"
-              >
-                {note.title}
-              </h1>
-            )}
+            </div>
           </div>
 
-          {/* Assignment - Middle */}
-          <div className="flex-1 flex justify-center min-w-0 max-w-[40%] sm:max-w-[50%]">
+          {/* Assignment - Right */}
+          <div className="flex-shrink-0">
             {isEditingAssignment ? (
               <input
                 value={assignment}
@@ -309,7 +369,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               <>
                 {note.assignment ? (
                   <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors max-w-full truncate"
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-sm sm:text-base font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors max-w-full truncate"
                     onClick={handleAssignmentEdit}
                     title="Click to edit assignment"
                   >
@@ -317,7 +377,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                   </span>
                 ) : (
                   <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border border-dashed border-[var(--accent-primary)] whitespace-nowrap"
+                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-sm sm:text-base font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border-2 border-dashed border-[var(--accent-primary)] whitespace-nowrap"
                     onClick={handleAssignmentEdit}
                     title="Click to add assignment"
                   >
@@ -327,37 +387,6 @@ const NoteView: React.FC<NoteViewProps> = ({
                 )}
               </>
             )}
-          </div>
-
-          {/* Date - Right */}
-          <div className="flex-shrink-0">
-            <DatePicker
-              ref={datePickerRef}
-              selected={new Date(date)}
-              onChange={handleDateSave}
-              dateFormat="dd/MM/yyyy"
-              placeholderText="DD/MM/YYYY"
-              popperPlacement="bottom-start"
-              calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
-              dayClassName={(date) =>
-                (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
-              }
-              showPopperArrow={false}
-              customInput={
-                <div 
-                  className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded px-2 py-1 -mx-2 -my-1 transition-colors text-xs sm:text-sm text-[var(--text-secondary)]"
-                  title="Click to edit date"
-                >
-                  <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span>{new Date(date).toLocaleDateString('en-US', { 
-                    weekday: 'short', 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}</span>
-                </div>
-              }
-            />
           </div>
         </div>
       </div>

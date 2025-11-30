@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 import ReactMarkdown from 'react-markdown';
 
 interface WelcomeViewProps {
-  onCreateNote: () => void;
+  onCreateNote: (assignment?: string) => void;
   notes?: any[];
   loading?: boolean;
   error?: string | null;
@@ -68,11 +68,11 @@ Start creating your first note!`;
             Notes ({notes.length})
           </h2>
           <button
-            onClick={onCreateNote}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors text-sm"
+            onClick={() => onCreateNote()}
+            className="inline-flex items-center justify-center gap-2 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)] hover:text-white transition-colors text-sm"
           >
-            <Plus size={16} className="w-4 h-4" />
             New
+            <Plus size={16} className="w-4 h-4" />
           </button>
         </div>
 
@@ -97,7 +97,7 @@ Start creating your first note!`;
               <FileText className="mx-auto mb-4 w-12 h-12 text-[var(--text-secondary)] opacity-50" />
               <p className="text-[var(--text-secondary)] mb-4">No notes yet</p>
               <button
-                onClick={onCreateNote}
+                onClick={() => onCreateNote()}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors"
               >
                 <Plus size={16} className="w-4 h-4" />
@@ -124,11 +124,14 @@ Start creating your first note!`;
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                           <Folder size={14} className="text-[var(--accent-primary)]" />
-                          {assignment}
+                          {assignment} ({assignmentNotes.length})
                         </h3>
-                        <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2 py-1 rounded-full">
-                          {assignmentNotes.length}
-                        </span>
+                        <button
+                          onClick={() => onCreateNote(assignment)}
+                          className="p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                        >
+                          <Plus size={16} />
+                        </button>
                       </div>
                     </div>
                     
@@ -289,7 +292,7 @@ Start creating your first note!`;
             <div className="mt-8 text-center space-y-4">
               {/* Create Note Button - Always visible */}
               <button
-                onClick={onCreateNote}
+                onClick={() => onCreateNote()}
                 className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm sm:text-base"
               >
                 Create New Note

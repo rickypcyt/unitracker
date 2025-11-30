@@ -16,13 +16,16 @@ const DeleteNoteModal = ({ isOpen, onClose, onConfirm, noteTitle = '' }: DeleteN
       onClose={onClose}
       title="Delete Note"
       maxWidth="max-w-md"
+      fullWidthOnMd={true}
     >
-      <div className="space-y-4">
-        <p className="text-base text-[var(--text-secondary)]">
-          Are you sure you want to delete the note "{noteTitle || 'Untitled'}"? This action cannot be undone.
+      <div className="space-y-6 p-2 sm:p-0">
+        <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed">
+          Are you sure you want to delete the note "{noteTitle || 'Untitled'}"? 
+          <br />
+          <span className="text-red-500 font-medium">This action cannot be undone.</span>
         </p>
 
-        <div className="flex justify-end gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onClose}
             className="cancel-button border-2"
@@ -31,7 +34,7 @@ const DeleteNoteModal = ({ isOpen, onClose, onConfirm, noteTitle = '' }: DeleteN
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            className="px-4 py-3 sm:py-2 border-2 border-red-500 text-red-500 bg-transparent rounded-lg hover:bg-red-500 hover:text-white transition-colors font-medium"
           >
             Delete Note
           </button>

@@ -1,17 +1,28 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 import { Edit2, ListOrdered, MoreVertical, Move, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+
+import { useState } from 'react';
+
+interface ColumnDropdownMenuProps {
+  assignment: string;
+  tasks: any[];
+  onMoveToWorkspace: (assignment: string) => void;
+  columnMenu: any;
+  onDeleteAssignment?: (assignment: string) => void;
+  onEditAssignment?: () => void;
+  onSortClick?: (assignmentId: string, position: { x: number; y: number }) => void;
+}
 
 const ColumnDropdownMenu = ({
   assignment,
-  tasks,
+  tasks, // eslint-disable-line @typescript-eslint/no-unused-vars
   onMoveToWorkspace,
   columnMenu,
   onDeleteAssignment,
   onEditAssignment,
   onSortClick,
-}) => {
+}: ColumnDropdownMenuProps) => {
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -20,7 +31,7 @@ const ColumnDropdownMenu = ({
     setOpen(false);
   };
 
-  const handleSortClick = (event) => {
+  const handleSortClick = (event: React.MouseEvent) => {
     // Trigger sort with the button position before closing
     if (onSortClick) {
       const rect = event.currentTarget.getBoundingClientRect();

@@ -30,7 +30,7 @@ const CONFIRM_MESSAGE = "You have unsaved changes. Are you sure you want to clos
 const isTouch = () => "ontouchstart" in window || (navigator as any).maxTouchPoints > 0;
 
 const isFocusable = (element: HTMLElement | null): element is HTMLElement => 
-  element && typeof element.focus === "function";
+  element !== null && typeof element.focus === "function";
 
 const findFocusableElement = (container: string, selector: string): HTMLElement | null =>
   document.querySelector(`${container} ${selector}`) as HTMLElement | null;
@@ -151,14 +151,14 @@ const BaseModal = ({
     BaseModal fixed inset-0 w-screen h-screen 
     ${overlayClassName ?? DEFAULT_OVERLAY_CLASS} 
     flex items-center justify-center ${zIndex} 
-    backdrop-blur-md w-full px-2 overflow-hidden
+    backdrop-blur-md w-full px-3 sm:px-4 overflow-hidden
   `.trim();
 
   const dialogClasses = `
     bg-[var(--bg-primary)] border border-[var(--border-primary)] 
-    sm:border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 
-    w-full ${maxWidth} mx-0 sm:mx-4 ${className} 
-    shadow-xl max-h-[85vh] h-auto overflow-y-auto 
+    sm:border-2 rounded-lg sm:rounded-xl p-4 sm:p-5 
+    w-full ${maxWidth} mx-2 sm:mx-4 ${className} 
+    shadow-xl max-h-[90vh] h-auto overflow-y-auto 
     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] 
     flex flex-col
     ${fullWidthOnMd ? 'md:max-w-[95%] md:w-[95%]' : ''}
@@ -166,7 +166,7 @@ const BaseModal = ({
 
   const headerClasses = `
     relative bg-[var(--bg-primary)] flex items-center 
-    justify-end p-0 mt-0 mb-4
+    justify-end p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
   `.trim();
 
   const titleClasses = `

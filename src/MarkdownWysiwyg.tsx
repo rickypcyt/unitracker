@@ -61,7 +61,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
       <div className="flex-1 flex flex-col">
         <div className="relative flex-1">
           <div 
-            className={`absolute inset-0 px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[100px] pointer-events-none ${
+            className={`absolute inset-0 px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[120px] sm:min-h-[150px] pointer-events-none ${
               editor?.getText().trim() === '' ? '' : 'opacity-0'
             }`}
           >
@@ -69,7 +69,7 @@ const MarkdownWysiwyg: React.FC<MarkdownWysiwygProps> = ({
               {placeholder}
             </div>
           </div>
-          <div className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[100px]">
+          <div className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] min-h-[120px] sm:min-h-[150px]">
             <EditorContent
               editor={editor}
               className="text-[var(--text-primary)] focus:outline-none h-full"

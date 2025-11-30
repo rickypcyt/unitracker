@@ -17,12 +17,11 @@ type AITask = {
 type Props = {
   isOpen: boolean;
   tasks?: AITask[];
-  onAccept: (task: AITask) => void;
   onAcceptAll?: (tasks: AITask[]) => void;
   onCancel: () => void;
 };
 
-const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }: Props) => {
+const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) => {
   // Keep a local copy so we can delete items without mutating parent
   const [items, setItems] = useState<AITask[]>(tasks ?? []);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -101,7 +100,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
         if (idx === editIdx) {
           setEditIdx(null);
         } else if (idx < editIdx) {
-          setEditIdx(prevIdx => prevIdx - 1);
+          setEditIdx(prevIdx => prevIdx !== null ? prevIdx - 1 : null);
         }
       }
       
@@ -118,24 +117,24 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
       className="overflow-hidden flex flex-col"
       overlayClassName="!bg-white/60 dark:!bg-black/70"
     >
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Scrollable content. Add top padding on mobile so it doesn't sit under navbar/timer */}
-        <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 pb-12 pt-12 sm:pt-0">
+      <div className="flex flex-col h-full max-h-[90vh]">
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-4 py-4 sm:py-0">
           {items.length === 0 && (
             <div className="text-center text-[var(--text-secondary)]">No tasks to preview.</div>
           )}
           {items.map((task, idx) => (
             <div
               key={idx}
-              className={`flex items-start gap-3 border rounded-lg p-3 sm:p-4 transition-colors ${selectedIdx === idx ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'}`}
+              className={`flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 border rounded-lg p-3 sm:p-4 transition-colors ${selectedIdx === idx ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'}`}
               onClick={() => setSelectedIdx(idx)}
               role="button"
             >
               {/* Content */}
               <div className="flex-1">
-                {/* Header: inline index badge + title */}
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="shrink-0 select-none w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
+                {/* Header: index badge + title + actions */}
+                <div className="flex items-center gap-2 mb-2 sm:mb-1">
+                  <div className="shrink-0 select-none w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
                   {editIdx === idx ? (
                     <input
                       value={editTitle}
@@ -145,72 +144,72 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <div className="font-bold text-base sm:text-lg text-[var(--text-primary)] truncate">
+                    <div className="flex-1 font-bold text-sm sm:text-lg text-[var(--text-primary)] truncate">
                       {task.task || 'Untitled task'}
                     </div>
                   )}
-                  {/* Item actions: edit (gray) and delete (red) */}
-                  <div className="ml-auto flex items-center gap-1">
+                  {/* Item actions: edit and delete */}
+                  <div className="flex items-center gap-1 sm:ml-auto">
                     <button
                       type="button"
                       title="Edit"
                       onClick={(e) => { e.stopPropagation(); editIdx === idx ? cancelEdit() : beginEdit(idx); }}
-                      className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      className="p-1.5 sm:p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:scale-95 transition-transform"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={14} className="sm:w-4 sm:h-4" />
                     </button>
                     <button
                       type="button"
                       title="Delete"
                       onClick={(e) => { e.stopPropagation(); deleteItem(idx); }}
-                      className="p-1 rounded-md text-red-500 hover:text-red-400"
+                      className="p-1.5 sm:p-1 rounded-md text-red-500 hover:text-red-400 active:scale-95 transition-transform"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
-                {/* Body content (indented to align after # badge) */}
-                <div className="pl-9 sm:pl-10">
+                {/* Body content */}
+                <div className="pl-8 sm:pl-10 space-y-1">
                   {editIdx === idx ? (
                     <div onClick={(e) => e.stopPropagation()} className="space-y-1">
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] w-28">Description:</span>
+                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Description:</span>
                         <input
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                           placeholder="Description"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] w-28">Assignment:</span>
+                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Assignment:</span>
                         <input
                           value={editSubject}
                           onChange={(e) => setEditSubject(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                           placeholder="Assignment/Subject"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] w-28">Date:</span>
+                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Date:</span>
                         <div className="relative flex-1 min-w-0">
                           <DatePicker
                             selected={editDate}
                             onChange={(date) => setEditDate(date)}
-                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8"
+                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8 text-sm"
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
                           />
-                          <Calendar size={16} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
+                          <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] w-28">Difficulty:</span>
+                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Difficulty:</span>
                         <select
                           value={editDifficulty}
                           onChange={(e) => setEditDifficulty(e.target.value)}
-                          className="px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)]"
+                          className="px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                         >
                           <option value="easy">easy</option>
                           <option value="medium">medium</option>
@@ -218,10 +217,10 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                         </select>
                       </div>
                       <div className="mt-2 flex items-center gap-2 justify-end">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-3 py-1.5 text-sm sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] active:scale-95 transition-transform">
                           Cancel
                         </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-3 py-1.5 text-sm sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium active:scale-95 transition-transform">
                           Save
                         </button>
                       </div>
@@ -229,7 +228,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                   ) : (
                     <>
                       {task.description && (
-                        <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                        <div className="text-sm text-[var(--text-secondary)]">
                           <span className="font-semibold">Description:</span> {task.description}
                         </div>
                       )}
@@ -237,14 +236,14 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                   )}
                   {editIdx !== idx && (
                     <>
-                      <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
                       </div>
-                      <div className="text-sm sm:text-base text-[var(--text-secondary)] mb-1">
+                      <div className="text-sm text-[var(--text-secondary)]">
                         <span className="font-semibold">Date:</span> {task.date || <span className="italic">None</span>}
                       </div>
                       {task.difficulty && (
-                        <div className="text-sm sm:text-base text-[var(--text-secondary)]">
+                        <div className="text-sm text-[var(--text-secondary)]">
                           <span className="font-semibold">Difficulty:</span> {task.difficulty}
                         </div>
                       )}
@@ -252,37 +251,35 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAccept, onAcceptAll, onCancel }:
                   )}
                 </div>
 
-                <div className="mt-2 md:mt-3" />
-              </div>
+                </div>
+
+                <div className="mt-1 sm:mt-2" />
             </div>
           ))}
         </div>
-        {/* Footer pinned to bottom of modal */}
-        <div className="mt-1 sm:mt-2 pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
-          <div className="mb-2 md:mb-2 lg:mb-2 flex items-center justify-between gap-2">
-            {/* Left small square Cancel */}
+        
+        {/* Sticky footer - outside scrollable content */}
+        <div className="flex-shrink-0 pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
+          <div className="flex items-center justify-between gap-2">
+            {/* Cancel button */}
             <button
               onClick={onCancel}
               aria-label="Cancel"
               title="Cancel"
-              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-md border border-[var(--border-primary)] hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)]"
+              className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border border-[var(--border-primary)] hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] active:scale-95 transition-transform"
             >
-              <X size={16} />
+              <X size={18} className="sm:w-4 sm:h-4" />
             </button>
-            {/* Right: Accept */}
-            <div className="flex items-center gap-2">
-
-
-              <button
-                onClick={() => items.length > 0 && onAcceptAll?.(items)}
-                title="Accept all"
-                className="p-2 rounded-md hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-green-500"
-                disabled={items.length === 0}
-              >
-                <Check size={18} />
-                <span className="hidden md:inline ml-2">Accept</span>
-              </button>
-            </div>
+            {/* Accept button */}
+            <button
+              onClick={() => items.length > 0 && onAcceptAll?.(items)}
+              title="Accept all"
+              className="px-4 py-2 sm:p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-green-500 border border-green-500/20 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={items.length === 0}
+            >
+              <Check size={18} className="sm:w-4 sm:h-4" />
+              <span className="ml-2 text-sm font-medium">Accept</span>
+            </button>
           </div>
         </div>
       </div>

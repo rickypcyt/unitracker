@@ -8,6 +8,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS for minimized columns */
+.minimized-column {
+  height: fit-content !important;
+}
+
+.minimized-column > div {
+  height: fit-content !important;
+}
+
 /* #1793d1 archlinux color */
 
 /* =========================

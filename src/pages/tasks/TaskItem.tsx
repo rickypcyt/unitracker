@@ -135,9 +135,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
     return (
         <div
-            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-3 items-center
+            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-2 items-start
                 bg-[var(--bg-secondary)] 
-                ${active ? `${getDifficultyColor(task.difficulty || 'medium', 'border')} border-2` : 'border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
+                ${active ? `${getDifficultyColor(task.difficulty || 'medium', 'border')} border` : 'border border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
             `}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
@@ -146,7 +146,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         >
             {/* Botón de eliminar en la esquina superior derecha */}
             {/* Move delete button to bottom right, next to date */}
-            <div className="flex flex-col justify-between items-center py-0.5">
+            <div className="flex items-center mt-1">
                 <button
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
