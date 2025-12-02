@@ -1,34 +1,46 @@
 import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   STUDY_TIMER_STATE: "studyTimerState",
+  ACTIVE_SESSION_ID: "activeSessionId",
+  STUDY_TIMER_STARTED_AT: "studyTimerStartedAt"
 };
 
 const safeNumber = (value: unknown, defaultValue = 0) =>
   typeof value === "number" && Number.isFinite(value) ? value : defaultValue;
 
 const parseStoredState = (savedState: string | null, defaultState: any) => {
-  if (!savedState) return defaultState;
+  // If there's no active session, always return the default state
+  const hasActiveSession = typeof window !== 'undefined' && 
+    (localStorage.getItem('activeSessionId') || 
+     localStorage.getItem(STORAGE_KEYS.ACTIVE_SESSION_ID));
+     
+  if (!savedState || !hasActiveSession) return defaultState;
+  
   try {
     const parsed = JSON.parse(savedState);
-    return {
-      ...defaultState,
-      time: safeNumber(Number(parsed.time)),
-      isRunning: typeof parsed.isRunning === "boolean" ? parsed.isRunning : false,
-      lastStart: parsed.lastStart ? safeNumber(Number(parsed.lastStart)) : null,
-      timeAtStart: safeNumber(Number(parsed.timeAtStart)),
-      sessionStatus: ["inactive", "active", "paused"].includes(
-        parsed.sessionStatus
-      )
-        ? parsed.sessionStatus
-        : "inactive",
-      sessionTitle:
-        typeof parsed.sessionTitle === "string" ? parsed.sessionTitle : "",
-      sessionDescription:
-        typeof parsed.sessionDescription === "string"
-          ? parsed.sessionDescription
-          : "",
-    };
+    // Only use saved state if there's an active session
+    if (hasActiveSession) {
+      return {
+        ...defaultState,
+        time: safeNumber(Number(parsed.time)),
+        isRunning: typeof parsed.isRunning === "boolean" ? parsed.isRunning : false,
+        lastStart: parsed.lastStart ? safeNumber(Number(parsed.lastStart)) : null,
+        timeAtStart: safeNumber(Number(parsed.timeAtStart)),
+        sessionStatus: ["inactive", "active", "paused"].includes(
+          parsed.sessionStatus
+        )
+          ? parsed.sessionStatus
+          : "inactive",
+        sessionTitle:
+          typeof parsed.sessionTitle === "string" ? parsed.sessionTitle : "",
+        sessionDescription:
+          typeof parsed.sessionDescription === "string"
+            ? parsed.sessionDescription
+            : "",
+      };
+    }
+    return defaultState;
   } catch {
     return defaultState;
   }

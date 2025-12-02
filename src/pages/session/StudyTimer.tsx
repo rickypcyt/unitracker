@@ -10,7 +10,7 @@ import {
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
 import EditSessionModal from "@/modals/EditSessionModal";
@@ -157,6 +157,28 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
   const { syncSettings, setSessionSyncSettings } = useAppStore();
   const [studyState, updateStudyState] = useStudyTimerState();
+  const [, forceUpdate] = useState({});
+  
+  // Verificar si hay una sesión activa al cargar
+  React.useEffect(() => {
+    const checkActiveSession = async () => {
+      const hasActiveSession = localStorage.getItem(STORAGE_KEYS.ACTIVE_SESSION_ID);
+      if (!hasActiveSession) {
+        // Si no hay sesión activa, forzar el reinicio del timer
+        updateStudyState({
+          time: 0,
+          isRunning: false,
+          lastStart: null,
+          timeAtStart: 0,
+          sessionStatus: "inactive",
+          lastPausedAt: null,
+        });
+        updateTimerTime(0, false);
+      }
+    };
+    checkActiveSession();
+  }, []);
+  
   const [currentSessionId, updateSessionId] = useSessionId();
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
@@ -964,10 +986,20 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         lastStart: null,
         timeAtStart: 0,
         sessionStatus: "inactive",
+        lastPausedAt: null,
       });
       
       // Also update the timer time directly to ensure immediate UI update
       updateTimerTime(0, false);
+      
+      // Clear any stored timer state in localStorage
+      [
+        STORAGE_KEYS.STUDY_TIMER_STATE,
+        STORAGE_KEYS.STUDY_TIMER_STARTED_AT,
+      ].forEach((key) => localStorage.removeItem(key));
+      
+      // Force a re-render of the timer display
+      forceUpdate({});
       
       // Remove optional properties instead of setting to undefined
       const { sessionTitle, sessionDescription, ...resetState } = studyState;
