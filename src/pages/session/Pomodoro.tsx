@@ -1,6 +1,6 @@
 import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 // Pomodoro.tsx - Refactored
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppStore, usePomodoroModes, useUiActions } from '@/store/appStore';
 
 // import { POMODORO_CONFIG, POMODORO_SOUNDS } from '../../constants/pomodoro';
@@ -900,167 +900,60 @@ const Pomodoro: React.FC = () => {
     setPomoState((prev) => ({ ...prev, pomodoroToday: 0 }));
   }, []));
 
-  // Listen to studyTimerTimeUpdate for continuous sync (like Pomodoro does)
+  const lastCountedCycleRef = useRef<number>(0); // track último ciclo contado
+
+  // Reemplaza el handler de studyTimerTimeUpdate con una versión robusta:
   useEventListener('studyTimerTimeUpdate', async (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
     if (!syncPomodoroWithTimer) return;
+    if (pomoState.manuallyPaused) return;
+    const studyTime = Math.floor(event.detail.time);
+    const workDuration = currentModeConfig?.work || 3000;
+    const breakDuration = currentModeConfig?.break || 600;
+    const totalCycle = workDuration + breakDuration;
+    const expectedCompletedCycles = Math.floor(studyTime / totalCycle);
+    const timeInCurrentCycle = studyTime % totalCycle;
 
-    // If manually paused, don't do anything - just stay paused at the current value
-    if (pomoState.manuallyPaused) {
-      return;
+    // Calcular modo y timeLeft SIEMPRE
+    let targetMode: PomodoroModeType = 'work';
+    let timeInCurrentMode = timeInCurrentCycle;
+    if (timeInCurrentCycle >= workDuration) {
+      targetMode = 'break';
+      timeInCurrentMode = timeInCurrentCycle - workDuration;
     }
+    const newTimeLeft = (targetMode === 'work' ? workDuration : breakDuration) - timeInCurrentMode;
 
-    const studyTime = Math.floor(event.detail.time); // Time elapsed in StudyTimer (seconds)
-    
-    // If StudyTimer resets to 0, reset Pomodoro to work mode and reset count
+    // Si resetea el timer externo
     if (studyTime === 0 && !event.detail.isRunning && !pomoState.manuallyPaused) {
-      console.log('[Pomodoro] ✅ StudyTimer reset detected - resetting to work mode and count');
-      
-      // Use centralized reset function
       resetPomodoroCount();
-      
       setPomoState(prev => ({
         ...prev,
         isRunning: false,
         currentMode: 'work',
-        timeLeft: currentModeConfig?.work || 3000,
-        timeAtStart: 0,
-        lastStart: null,
-        lastManualAdjustment: Date.now(),
-        manuallyPaused: false,
-        // Count is already reset by resetPomodoroCount
+        timeLeft: workDuration,
+        workSessionsCompleted: 0,
+        pomodoroToday: 0,
+        pomodorosThisSession: 0,
       }));
+      lastCountedCycleRef.current = 0;
       return;
     }
 
-    // Calculate how many complete cycles have passed based on studyTime
-    const workDuration = currentModeConfig?.work || 3000;
-    const breakDuration = currentModeConfig?.break || 600;
-    const totalCycle = workDuration + breakDuration;
-    
-    const expectedCompletedCycles = Math.floor(studyTime / totalCycle);
-    const currentCompletedCycles = pomoState.workSessionsCompleted;
-    
-    // Check if we need to adjust the count (user went back in time)
-    if (expectedCompletedCycles < currentCompletedCycles && studyTime > 0) {
-      console.log('[Pomodoro] ⏪ Time went backwards - adjusting pomodoro count:', {
-        expectedCompletedCycles,
-        currentCompletedCycles,
-        studyTime,
-        difference: currentCompletedCycles - expectedCompletedCycles
-      });
-      
-      // Update localStorage to match the actual elapsed time
-      const today = getLocalDateString();
-      localStorage.setItem(`pomodoroDailyCount_${today}`, String(expectedCompletedCycles));
-      localStorage.setItem('pomodorosThisSession', String(expectedCompletedCycles));
-      
-      // Update state to match localStorage
-      setPomoState(prev => ({
-        ...prev,
-        pomodoroToday: expectedCompletedCycles,
-        pomodorosThisSession: expectedCompletedCycles,
-        workSessionsCompleted: expectedCompletedCycles,
-      }));
+    // Si ocurre el cambio de ciclo, dispara la función robusta de ciclo completo
+    if (expectedCompletedCycles > lastCountedCycleRef.current &&
+        pomoState.currentMode === 'work' &&
+        timeInCurrentCycle >= workDuration
+    ) {
+      lastCountedCycleRef.current = expectedCompletedCycles;
+      await handlePomodoroComplete();
     }
 
-    // Calculate which mode we should be in based on studyTime
-    let targetMode: PomodoroModeType = 'work';
-    let timeInCurrentMode = studyTime;
-    
-    const longBreakDuration = currentModeConfig?.longBreak || 1800;
-
-    // Calculate how many complete cycles have passed
-    const timeInCurrentCycle = studyTime % totalCycle;
-    
-    // Determine current mode based on time in cycle
-    if (timeInCurrentCycle < workDuration) {
-      targetMode = 'work';
-      timeInCurrentMode = timeInCurrentCycle;
-    } else {
-      targetMode = 'break';
-      timeInCurrentMode = timeInCurrentCycle - workDuration;
-    }
-
-    // Get the duration for the target mode
-    const targetModeDuration = targetMode === 'work' ? workDuration : 
-                              targetMode === 'break' ? breakDuration : longBreakDuration;
-
-    // Calculate remaining time in current mode
-    const remainingTime = Math.max(0, targetModeDuration - timeInCurrentMode);
-
-    // Check if we need to transition to a new mode
-    if (targetMode !== pomoState.currentMode) {
-      console.log('[Pomodoro] 🔄 Mode transition needed:', {
-        from: pomoState.currentMode,
-        to: targetMode,
-        studyTime,
-        timeInCurrentMode,
-        remainingTime
-      });
-
-      // Check if we're transitioning from work to break (work session completed)
-      // This means we completed a work session, so count the pomodoro
-      const isWorkSessionCompleted = pomoState.currentMode === 'work' && targetMode === 'break';
-
-      if (isWorkSessionCompleted) {
-        console.log('[Pomodoro] 🍅 Work session completed - counting pomodoro');
-        
-        // Calculate break type BEFORE incrementing to ensure consistency
-        const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
-        const notifTitle = willTakeLongBreak ? 'Work Session Complete! Time for a Long Break! 🎉' : 'Work Session Complete! 🎉';
-        const notifBody = willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.';
-
-        // Use centralized count increment
-        await incrementPomodoroCount();
-
-        // Show completion notifications (using pre-calculated values)
-        showToast(
-          willTakeLongBreak ? 'Work session complete! Time for a long break.' : 'Work session complete! Time for a break.',
-          '🎉'
-        );
-
-        showNotification(notifTitle, {
-          body: notifBody,
-          icon: '🍅',
-          badge: '🍅',
-          tag: 'pomodoro-notification',
-          requireInteraction: true,
-        });
-
-        // Play sound if enabled
-        if (alarmEnabled) {
-          console.log('[Pomodoro] 🔊 Playing completion sound for sync transition');
-          sounds.work.currentTime = 0;
-          sounds.work.play().catch(console.error);
-        }
-      } else {
-        // Regular mode transition (not work completion)
-        setPomoState(prev => ({
-          ...prev,
-          currentMode: targetMode,
-          timeLeft: remainingTime,
-          timeAtStart: timeInCurrentMode,
-          isRunning: event.detail.isRunning,
-        }));
-      }
-    } else if (Math.abs(remainingTime - pomoState.timeLeft) >= 0.1) {
-      // Just update the time if we're in the same mode
-      setPomoState(prev => ({ 
-        ...prev, 
-        timeLeft: remainingTime,
-        timeAtStart: timeInCurrentMode,
-      }));
-    }
-
-    // Sync running state with StudyTimer
-    const studyIsRunning = event.detail.isRunning;
-    if (studyIsRunning !== pomoState.isRunning && !pomoState.manuallyPaused) {
-      if (studyIsRunning) {
-        handleStart(Date.now(), true);
-      } else {
-        handleStop(true);
-      }
-    }
+    // Sincroniza SIEMPRE UI (modo, timeLeft, ciclos)
+    setPomoState(prev => ({
+      ...prev,
+      currentMode: targetMode,
+      timeLeft: newTimeLeft,
+      workSessionsCompleted: expectedCompletedCycles,
+    }));
   });
 
   // Check for work session completion based on elapsed time

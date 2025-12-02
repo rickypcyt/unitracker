@@ -1431,6 +1431,11 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     [adjustTime, currentSessionId]
   );
 
+  // Botón personalizado para sumar un minuto
+  const handleAddMinute = () => {
+    adjustTime(60); // suma 60 segundos
+  };
+
   // Timer logic y efectos optimizados
   useEffect(() => {
     const syncTimer = () => {
@@ -1704,6 +1709,15 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           createAdjustButton(adjustment, label)
         )}
       </div>
+      {/* Botón temporal para añadir un minuto */}
+      <button
+        type="button"
+        className="mt-1 mb-4 px-4 py-2 rounded bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition"
+        onClick={handleAddMinute}
+        disabled={!currentSessionId}
+      >
+        +1 min (TEMP)
+      </button>
 
       {/* Timer controls */}
       <div className="timer-controls flex justify-center items-center gap-1 lg:mb-0">
