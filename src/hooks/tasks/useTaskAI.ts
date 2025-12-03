@@ -8,9 +8,9 @@ type AiParsedTask = {
   difficulty?: 'easy' | 'medium' | 'hard';
 };
 
-export function useTaskAI() {
+export function useTaskAI(initialTab: 'manual' | 'ai' = 'ai') {
   const AI_DEBUG = import.meta.env['VITE_AI_DEBUG'] === 'true';
-  const [activeTab, setActiveTab] = useState<'manual' | 'ai'>('ai');
+  const [activeTab, setActiveTab] = useState<'manual' | 'ai'>(initialTab);
   const [aiPrompt, setAiPrompt] = useState<string>(() => localStorage.getItem('aiPromptDraft') || '');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');

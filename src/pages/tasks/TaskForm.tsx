@@ -22,6 +22,7 @@ type TaskFormProps = {
   initialAssignment?: string | null;
   initialTask?: any | null;
   initialDeadline?: string | Date | null;
+  initialActiveTab?: 'ai' | 'manual';
   onClose: () => void;
   onTaskCreated?: (id: string) => void;
 };
@@ -91,7 +92,7 @@ const TaskForm = ({
     setAiAbortController,
     aiCancelledRef,
     handleCancelAI,
-  } = useTaskAI();
+  } = useTaskAI(initialTask ? 'ai' : 'manual');
 
   // Effects
   useEffect(() => {
