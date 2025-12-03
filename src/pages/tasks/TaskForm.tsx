@@ -123,7 +123,17 @@ const TaskForm = ({
         userId: typedUser.id,
         initialTask,
         activeWorkspaceId: activeWorkspace?.id ?? null,
-        parseDateForDB: (date: string | null | undefined) => date || null,
+        parseDateForDB: (date: string | null | undefined) => {
+          if (!date) return null;
+          // If it's already in ISO format, return as is
+          if (date.match(/^\d{4}-\d{2}-\d{2}/)) return date;
+          // Handle DD/MM/YYYY format
+          const [day, month, year] = date.split('/');
+          if (day && month && year) {
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          }
+          return null;
+        },
       });
       
       if (!initialTask && saved?.id && onTaskCreated) {
