@@ -545,7 +545,7 @@ export const KanbanBoard = () => {
   return (
       <div className="flex flex-col h-full kanban-board">
         <div className="flex justify-center w-full mb-4 px-0 sm:px-4">
-          <div className={`grid gap-4 ${sortedIncompletedAssignments.length === 1 ? 'grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`} style={{ gridAutoRows: 'minmax(200px, auto)' }}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-1 lg:grid-cols-3" style={{ gridAutoRows: 'minmax(200px, auto)' }}>
           {(() => {
             // Agrupar asignaciones para optimizar espacio vertical
             const assignments = sortedIncompletedAssignments.map(assignment => ({
@@ -613,74 +613,33 @@ export const KanbanBoard = () => {
             }
 
             return groups.map((group, groupIndex) => {
+              // Si solo hay un assignment, mostrarlo ocupando todo el ancho
               if (sortedIncompletedAssignments.length === 1 && groupIndex === 0 && group[0]) {
-                // Si solo hay un assignment, agregar columnas vacías para centrarlo
                 const assignment = group[0];
                 return (
-                  <React.Fragment key={`centered-${assignment.name}`}>
-                    {/* Columna vacía izquierda */}
-                    <div className="bg-transparent rounded-lg p-4 border border-transparent"></div>
-                    {/* Columna central con el assignment */}
-                    {group.length === 1 ? (
-                      <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
-                        <SortableColumn
-                          id={assignment.name}
-                          assignment={assignment.name}
-                          tasks={assignment.tasks}
-                          pinned={activeWorkspace ? currentWorkspacePins[assignment.name] === true : false}
-                          onTogglePin={() => handleTogglePin(assignment.name)}
-                          onAddTask={() => handleAddTask(assignment.name)}
-                          onTaskToggle={handleToggleCompletion}
-                          onTaskDelete={handleConfirmDeleteTask}
-                          onEditTask={handleEditTask}
-                          onTaskContextMenu={handleTaskContextMenu}
-                          onSortClick={handleSortClick}
-                          columnMenu={columnMenu?.assignmentId === assignment.name ? columnMenu : null}
-                          onCloseColumnMenu={handleCloseColumnMenu}
-                          onMoveToWorkspace={handleMoveToWorkspace}
-                          onDeleteAssignment={() => {
-                            setAssignmentToDelete(assignment.name);
-                            setShowDeleteAssignmentModal(true);
-                          }}
-                          onUpdateAssignment={handleUpdateAssignment}
-                        />
-                      </div>
-                    ) : (
-                      // Si por alguna razón hay múltiples en el grupo (no debería pasar con 1 assignment)
-                      <div key={`stack-center-${groupIndex}`} className="flex flex-col gap-4">
-                        {group.map((assignment) => {
-                          if (!assignment) return null;
-                          return (
-                            <div key={assignment.name} className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm flex-1">
-                              <SortableColumn
-                                id={assignment.name}
-                                assignment={assignment.name}
-                                tasks={assignment.tasks}
-                                pinned={activeWorkspace ? currentWorkspacePins[assignment.name] === true : false}
-                                onTogglePin={() => handleTogglePin(assignment.name)}
-                                onAddTask={() => handleAddTask(assignment.name)}
-                                onTaskToggle={handleToggleCompletion}
-                                onTaskDelete={handleConfirmDeleteTask}
-                                onEditTask={handleEditTask}
-                                onTaskContextMenu={handleTaskContextMenu}
-                                onSortClick={handleSortClick}
-                                columnMenu={columnMenu?.assignmentId === assignment.name ? columnMenu : null}
-                                onCloseColumnMenu={handleCloseColumnMenu}
-                                onMoveToWorkspace={handleMoveToWorkspace}
-                                onDeleteAssignment={() => {
-                                  setAssignmentToDelete(assignment.name);
-                                  setShowDeleteAssignmentModal(true);
-                                }}
-                                onUpdateAssignment={handleUpdateAssignment}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {/* Columna vacía derecha */}
-                    <div className="bg-transparent rounded-lg p-4 border border-transparent"></div>
-                  </React.Fragment>
+                  <div key={assignment.name} className="col-span-full bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
+                    <SortableColumn
+                      id={assignment.name}
+                      assignment={assignment.name}
+                      tasks={assignment.tasks}
+                      pinned={activeWorkspace ? currentWorkspacePins[assignment.name] === true : false}
+                      onTogglePin={() => handleTogglePin(assignment.name)}
+                      onAddTask={() => handleAddTask(assignment.name)}
+                      onTaskToggle={handleToggleCompletion}
+                      onTaskDelete={handleConfirmDeleteTask}
+                      onEditTask={handleEditTask}
+                      onTaskContextMenu={handleTaskContextMenu}
+                      onSortClick={handleSortClick}
+                      columnMenu={columnMenu?.assignmentId === assignment.name ? columnMenu : null}
+                      onCloseColumnMenu={handleCloseColumnMenu}
+                      onMoveToWorkspace={handleMoveToWorkspace}
+                      onDeleteAssignment={() => {
+                        setAssignmentToDelete(assignment.name);
+                        setShowDeleteAssignmentModal(true);
+                      }}
+                      onUpdateAssignment={handleUpdateAssignment}
+                    />
+                  </div>
                 );
               }
 
