@@ -35,6 +35,7 @@ export const useTaskManager = (activeWorkspace) => {
   // Fetch tasks when user or workspace changes
   useEffect(() => {
     if (user) {
+      console.log('useTaskManager - Fetching tasks for workspace:', activeWorkspace?.id);
       // Always fetch with workspace filter if activeWorkspace exists
       // This ensures we only load the tasks we need
       fetchTasksAction(activeWorkspace?.id);
@@ -45,6 +46,7 @@ export const useTaskManager = (activeWorkspace) => {
   useEffect(() => {
     if (!user) return;
 
+    console.log('useTaskManager - Setting up real-time subscription for user:', user.id);
     const channel = supabase
       .channel('tasks_changes')
       .on('postgres_changes', 
@@ -55,27 +57,34 @@ export const useTaskManager = (activeWorkspace) => {
           filter: `user_id=eq.${user.id}`
         }, 
         (payload) => {
+          console.log('useTaskManager - Real-time update received:', payload);
+          
           // Only process real-time updates if the task belongs to the current workspace
           // or if no workspace is active
           const taskWorkspaceId = payload.new?.workspace_id || payload.old?.workspace_id;
           if (activeWorkspace && taskWorkspaceId !== activeWorkspace.id) {
+            console.log('useTaskManager - Ignoring update for different workspace:', taskWorkspaceId);
             return;
           }
           
           switch (payload.eventType) {
             case 'INSERT':
+              console.log('useTaskManager - Processing INSERT');
               addTaskSuccess(payload.new);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             case 'UPDATE':
+              console.log('useTaskManager - Processing UPDATE');
               updateTaskSuccess(payload.new);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             case 'DELETE':
+              console.log('useTaskManager - Processing DELETE');
               deleteTaskSuccess(payload.old.id);
               window.dispatchEvent(new CustomEvent('refreshTaskList'));
               break;
             default:
+              console.log('useTaskManager - Unknown event type:', payload.eventType);
               // Don't fetch on default events to avoid unnecessary calls
               // The real-time updates handle individual changes
               break;
@@ -85,6 +94,7 @@ export const useTaskManager = (activeWorkspace) => {
       .subscribe();
 
     return () => {
+      console.log('useTaskManager - Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [user, activeWorkspace?.id]); // Include activeWorkspace to filter real-time updates

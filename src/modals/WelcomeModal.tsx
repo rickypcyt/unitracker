@@ -92,44 +92,52 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         </div>
         
         {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10 relative z-10">
-          <div className="group flex items-start gap-3 sm:gap-4 p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Clock className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[var(--accent-primary)]" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 text-[var(--text-primary)]">AI Task Creation</h3>
-              <p className="text-[var(--text-secondary)] text-xs sm:text-sm md:text-base leading-relaxed">Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.</p>
-            </div>
-          </div>
-          
-          <div className="group flex items-start gap-3 sm:gap-4 p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[var(--accent-primary)]" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 text-[var(--text-primary)]">Weekly & Monthly Stats</h3>
-              <p className="text-[var(--text-secondary)] text-xs sm:text-sm md:text-base leading-relaxed">Track your progress and productivity with comprehensive analytics and beautiful visualizations.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8 relative z-10">
+          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">AI Task Creation</h3>
+                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.</p>
+              </div>
             </div>
           </div>
           
-          <div className="group flex items-start gap-3 sm:gap-4 p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[var(--accent-primary)]" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 text-[var(--text-primary)]">Calendar Planning</h3>
-              <p className="text-[var(--text-secondary)] text-xs sm:text-sm md:text-base leading-relaxed">Plan sessions and deadlines visually with our intuitive calendar system.</p>
+          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Weekly & Monthly Stats</h3>
+                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Track your progress and productivity with comprehensive analytics and beautiful visualizations.</p>
+              </div>
             </div>
           </div>
           
-          <div className="group flex items-start gap-3 sm:gap-4 p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
-            <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-[var(--accent-primary)]" />
+          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Calendar Planning</h3>
+                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Plan sessions and deadlines visually with our intuitive calendar system.</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2 text-[var(--text-primary)]">Advanced Task System</h3>
-              <p className="text-[var(--text-secondary)] text-xs sm:text-sm md:text-base leading-relaxed">Organize with kanban board system and manage your workflow efficiently.</p>
+          </div>
+          
+          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Advanced Task System</h3>
+                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Organize with kanban board system and manage your workflow efficiently.</p>
+              </div>
             </div>
           </div>
         </div>

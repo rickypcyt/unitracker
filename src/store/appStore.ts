@@ -861,7 +861,7 @@ export const useWorkspace = () => useAppStore((state) => state.workspace);
 export const useUi = () => useAppStore((state) => state.ui);
 export const usePinnedColumns = () => useAppStore((state) => state.pinnedColumns);
 export const useIsPinned = (workspaceId: string, assignment: string) => 
-  useAppStore((state) => state.pinnedColumns[workspaceId]?.[assignment] ?? true); // Default to true (pinned)
+  useAppStore((state) => state.pinnedColumns[workspaceId]?.[assignment] ?? false); // Default to false (not pinned)
 export const useTimerActions = () => useAppStore((state) => ({
   // Pomodoro
   setPomodoroState: state.setPomodoroState,

@@ -18,6 +18,8 @@ function saveTasksToLocalStorage(tasks: any[]) {
 
 // En tu archivo TaskActions.js
 export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = false) => {
+  console.log('TaskActions.fetchTasks - Called with:', { workspaceId, forceRefresh });
+  
   const { tasks: taskState } = useAppStore.getState();
   
   // Create a unique key for this request

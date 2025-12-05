@@ -27,62 +27,53 @@ const Navbar = () => {
   // Load workspaces from Supabase on mount
   useEffect(() => {
     const fetchWorkspaces = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user && !isDemo) {
+      console.log('Navbar: Starting fetchWorkspaces');
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Navbar: Error getting user:', userError);
+      }
+      
+      console.log('Navbar: User data:', user);
+      console.log('Navbar: isDemo:', isDemo);
+      
+      if (!user) {
+        console.log('Navbar: No user, clearing workspaces');
         setWorkspaces([]);
         localStorage.removeItem('activeWorkspaceId');
         localStorage.removeItem('workspacesHydrated');
         return;
       }
       
-      // Don't fetch real workspaces in demo mode
-      if (isDemo) {
-        return;
-      }
+      // Always fetch real workspaces if user exists, regardless of demo mode
+      console.log('Navbar: Fetching workspaces for user:', user.id);
       const { data, error } = await supabase
         .from('workspaces')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
       
+      console.log('Navbar: Workspaces fetch result:', { data, error });
+      
       if (!error && data) {
-        // If no workspaces exist, create a default "Área" workspace
-        if (data.length === 0) {
-          try {
-            const { data: newWorkspace, error: createError } = await supabase
-              .from('workspaces')
-              .insert([
-                {
-                  name: 'Área',
-                  user_id: user.id,
-                  icon: 'Home'
-                }
-              ])
-              .select()
-              .single();
-            
-            if (!createError && newWorkspace) {
-              const workspacesWithDefault = [newWorkspace];
-              setWorkspaces(workspacesWithDefault);
-              setCurrentWorkspace(newWorkspace);
-              localStorage.setItem('activeWorkspaceId', newWorkspace.id);
-              return;
-            }
-          } catch (error) {
-            console.error('Error creating default workspace:', error);
-          }
-        }
+        console.log('Navbar: Found workspaces:', data.length);
         
         setWorkspaces(data);
+        console.log('Navbar: Setting workspaces:', data);
         const savedId = localStorage.getItem('activeWorkspaceId');
+        console.log('Navbar: Saved workspace ID from localStorage:', savedId);
         if (savedId) {
           const found = data.find((ws: any) => ws.id === savedId);
+          console.log('Navbar: Found saved workspace:', found);
           if (found) setCurrentWorkspace(found);
         } else if (data.length > 0) {
           // If no saved workspace but workspaces exist, set the first one as active
+          console.log('Navbar: No saved workspace, setting first as active:', data[0]);
           setCurrentWorkspace(data[0]);
           localStorage.setItem('activeWorkspaceId', data[0].id);
         }
+      } else {
+        console.error('Navbar: Error fetching workspaces:', error);
       }
     };
     fetchWorkspaces();

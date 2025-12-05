@@ -24,15 +24,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('useAuth - Initial session:', session);
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      console.log('useAuth - isLoggedIn set to:', !!session);
       if (session?.user) ensureProfile(session.user);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('useAuth - Auth state changed:', { event: _event, session });
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      console.log('useAuth - isLoggedIn updated to:', !!session);
       if (session?.user) ensureProfile(session.user);
       
       if (session) {

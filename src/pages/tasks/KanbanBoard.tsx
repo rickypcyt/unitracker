@@ -1,6 +1,6 @@
 import { ClipboardCheck, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useFetchTasks, usePinnedColumns, usePinnedColumnsActions, useTasksLoading, useUpdateTaskSuccess, useWorkspace } from '@/store/appStore';
+import { useFetchTasks, usePinnedColumns, usePinnedColumnsActions, useTasksLoading, useUpdateTaskSuccess, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -73,6 +73,7 @@ export const KanbanBoard = () => {
   const updateTaskSuccess = useUpdateTaskSuccess();
   const fetchTasksAction = useFetchTasks();
   const { currentWorkspace: activeWorkspace, workspaces } = useWorkspace();
+  const { setCurrentWorkspace } = useWorkspaceActions();
   
   const {
     tasks: realTasks,
@@ -106,24 +107,24 @@ export const KanbanBoard = () => {
   const { togglePin } = usePinnedColumnsActions();
   const screenSize = useScreenSize();
   
-  // Get pinned columns for current workspace (con por defecto pinnado)
+  // Get pinned columns for current workspace (con por defecto no pinnado)
   const currentWorkspacePins = useMemo(() => {
     if (!activeWorkspace) return {};
     
     const workspacePins = pinnedColumns[activeWorkspace.id] || {};
     
-    // Obtener todas las asignaciones actuales y marcar como pinnadas por defecto
+    // Obtener todas las asignaciones actuales y marcar como no pinnadas por defecto
     const allAssignments = new Set<string>();
     filteredTasks.forEach((task: any) => {
       const assignment = task.assignment || "No assignment";
       allAssignments.add(assignment);
     });
     
-    // Crear objeto de pinnings con true por defecto para asignaciones sin registro explícito
+    // Crear objeto de pinnings con false por defecto para asignaciones sin registro explícito
     const pinsWithDefaults: Record<string, boolean> = {};
     allAssignments.forEach(assignment => {
-      // Si hay un registro explícito, usarlo, si no, asumir true (pinnado)
-      pinsWithDefaults[assignment] = workspacePins[assignment] ?? true;
+      // Si hay un registro explícito, usarlo, si no, asumir false (no pinnado)
+      pinsWithDefaults[assignment] = workspacePins[assignment] ?? false;
     });
     
     return pinsWithDefaults;
@@ -190,6 +191,14 @@ export const KanbanBoard = () => {
       // This prevents duplicate requests and race conditions
     }
   }, [activeWorkspace?.id]); // Log workspace changes
+
+  // Fallback automático al primer workspace disponible si none está seleccionado
+  useEffect(() => {
+    if (!activeWorkspace && workspaces && workspaces.length > 0 && isReady) {
+      console.log('KanbanBoard - No active workspace, auto-selecting first available:', workspaces[0]);
+      setCurrentWorkspace(workspaces[0]);
+    }
+  }, [activeWorkspace, workspaces, isReady, setCurrentWorkspace]);
 
   // Add a small delay to ensure everything is properly loaded
   useEffect(() => {
@@ -493,7 +502,7 @@ export const KanbanBoard = () => {
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
   // Don't show anything until workspace is properly loaded and validated
-  if (!isReady || !activeWorkspace || tasksLoading) {
+  if (!isReady || tasksLoading) {
     return (
       <div className="flex items-center justify-center pt-16 sm:pt-20 pb-12 min-h-[calc(100vh-4rem)]">
         <div className="text-center">
@@ -504,18 +513,30 @@ export const KanbanBoard = () => {
     );
   }
 
-  // Show message when no workspace is selected (this should rarely show now)
-  if (!activeWorkspace) {
+  // Show message when no workspaces are available at all
+  if (!activeWorkspace && (!workspaces || workspaces.length === 0)) {
     return (
       <div className="flex items-center justify-center py-12 min-h-[40vh]">
         <div className="text-center">
           <ClipboardCheck className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
           <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-            No Workspace Selected
+            No Workspaces Available
           </h3>
           <p className="text-base text-[var(--text-secondary)] mb-1">
-            Please select a workspace from the dropdown to view your tasks.
+            Create your first workspace to start organizing your tasks.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // This should rarely show now due to fallback, but keeping as safety net
+  if (!activeWorkspace && workspaces && workspaces.length > 0) {
+    return (
+      <div className="flex items-center justify-center py-12 min-h-[40vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)]">Selecting workspace...</p>
         </div>
       </div>
     );
