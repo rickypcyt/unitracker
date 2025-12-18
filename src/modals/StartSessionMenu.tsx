@@ -1,4 +1,4 @@
-import { Clock, Play, Timer } from 'lucide-react';
+import { Clock, Play } from 'lucide-react';
 
 import BaseMenu from '@/modals/BaseMenu';
 import React from 'react';
@@ -9,7 +9,6 @@ interface StartSessionMenuProps {
   onClose: () => void;
   onStartSession: () => void;
   onStartTimer: () => void;
-  onStartPomodoro: () => void;
 }
 
 const StartSessionMenu: React.FC<StartSessionMenuProps> = ({
@@ -18,7 +17,6 @@ const StartSessionMenu: React.FC<StartSessionMenuProps> = ({
   onClose,
   onStartSession,
   onStartTimer,
-  onStartPomodoro,
 }) => {
   return (
     <BaseMenu
@@ -47,16 +45,6 @@ const StartSessionMenu: React.FC<StartSessionMenuProps> = ({
         >
           <Clock size={16} />
           Start Timer
-        </button>
-        <button
-          onClick={() => {
-            onStartPomodoro();
-            onClose();
-          }}
-          className="w-full px-4 py-2 text-left text-base bg-neutral-800 hover:bg-neutral-700 rounded-md bg-opacity-60 flex items-center gap-2 transition-colors duration-200"
-        >
-          <Timer size={16} />
-          Start Pomodoro
         </button>
       </div>
     </BaseMenu>

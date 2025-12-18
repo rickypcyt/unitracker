@@ -8,7 +8,6 @@ type SessionSummaryModalProps = {
   onClose: () => void;
   durationFormatted: string; // HH:MM:SS
   completedTasksCount: number;
-  pomodorosCompleted?: number;
 };
 
 const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
@@ -16,9 +15,7 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
   onClose,
   durationFormatted,
   completedTasksCount,
-  pomodorosCompleted,
 }) => {
-  const pomodoroCount = pomodorosCompleted ?? 0;
   
   return (
     <BaseModal
@@ -72,23 +69,6 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Achievement Badge */}
-          {pomodoroCount >= 4 && (
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-xl p-4 border border-yellow-200 dark:border-yellow-700/50">
-              <div className="flex items-center gap-3">
-                <Award className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
-                <div>
-                  <div className="font-semibold text-yellow-800 dark:text-yellow-200">
-                    Productive Session!
-                  </div>
-                  <div className="text-sm text-yellow-600 dark:text-yellow-400">
-                    {pomodoroCount} focus sessions completed - Great concentration!
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Action Button */}
           <div className="flex gap-3 pt-2">

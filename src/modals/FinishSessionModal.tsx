@@ -16,7 +16,6 @@ interface FinishSessionModalProps {
 
 interface SessionStats {
   duration: string;
-  pomodorosCompleted: number;
   tasksCompleted: number;
   startedAt: string;
 }
@@ -71,7 +70,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       if (session) {
         setSessionStats({
           duration: session.duration || '00:00:00',
-          pomodorosCompleted: session.pomodoros_completed || 0,
           tasksCompleted: session.tasks_completed || 0,
           startedAt: session.started_at
         });
@@ -211,22 +209,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
-  const getPomodorosFromTimer = (): number => {
-    // Try to get current pomodoros from Pomodoro timer
-    try {
-      const pomodorosThisSession = localStorage.getItem('pomodorosThisSession');
-      if (pomodorosThisSession) {
-        const count = parseInt(pomodorosThisSession, 10);
-        if (!isNaN(count)) {
-          return count;
-        }
-      }
-    } catch (e) {
-      console.warn('Could not get pomodoros from timer:', e);
-    }
-    return sessionStats?.pomodorosCompleted || 0;
-  };
-
   const getDurationFromTimer = (): string => {
     // Try to get current duration from StudyTimer state
     try {
@@ -338,18 +320,11 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
           ) : sessionStats ? (
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)] mb-1">
+                <div className="flex items-center justify-center gap-2 text-blue-500 mb-1">
                   <Clock size={16} />
                   <span className="text-2xl font-bold">{getDurationFromTimer()}</span>
                 </div>
                 <div className="text-sm text-[var(--text-secondary)]">Duration</div>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-orange-500 mb-1">
-                  <Target size={16} />
-                  <span className="text-2xl font-bold">{getPomodorosFromTimer()}</span>
-                </div>
-                <div className="text-sm text-[var(--text-secondary)]">Pomodoros</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-green-500 mb-1">

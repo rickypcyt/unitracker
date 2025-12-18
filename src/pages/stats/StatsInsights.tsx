@@ -1,4 +1,4 @@
-import { Award, Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { useLaps } from '@/store/appStore';
 import { useMemo } from 'react';
@@ -39,7 +39,6 @@ const StatsInsights = () => {
         totalStudyTime: 0,
         averageDailyTime: 0,
         mostProductiveDay: '',
-        streakDays: 0,
         weeklyTrend: 'neutral' as 'up' | 'down' | 'neutral',
         monthlyGoal: 0,
         monthlyProgress: 0
@@ -75,26 +74,7 @@ const StatsInsights = () => {
       }
     });
 
-    // Calculate streak (consecutive days with study time)
-    let streakDays = 0;
-    const sortedDates = dates.sort((a: string, b: string) => new Date(b).getTime() - new Date(a).getTime());
-    
-    for (let i = 0; i < sortedDates.length; i++) {
-      const date = sortedDates[i];
-      if (!date) continue;
-      
-      const expectedDate = new Date();
-      expectedDate.setDate(expectedDate.getDate() - i);
-      const expectedDateStr = expectedDate.toISOString().split('T')[0];
-      
-      if (date === expectedDateStr && dailyMinutes[date] && dailyMinutes[date] > 0) {
-        streakDays++;
-      } else {
-        break;
-      }
-    }
-
-    // Calculate total study time
+    // Calculate monthly goal progress
     const monthlyGoal = 20 * 60; // 20 hours in minutes
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -107,14 +87,13 @@ const StatsInsights = () => {
         const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
         return acc + minutes;
       }, 0);
-    
+
     const monthlyProgress = Math.min((monthlyMinutes / monthlyGoal) * 100, 100);
 
     return {
       totalStudyTime: totalMinutes,
       averageDailyTime,
       mostProductiveDay,
-      streakDays,
       weeklyTrend,
       monthlyGoal,
       monthlyProgress
@@ -172,16 +151,6 @@ const StatsInsights = () => {
         <div className="text-xs text-[var(--text-secondary)] mb-1">Best Day</div>
         <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
           {insights.mostProductiveDay ? formatDate(insights.mostProductiveDay) : 'None'}
-        </div>
-      </div>
-
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
-        <div className="flex items-center justify-center mb-2">
-          <Award className="w-4 h-4 text-[var(--accent-primary)]" />
-        </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Streak</div>
-        <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
-          {insights.streakDays} days
         </div>
       </div>
 
