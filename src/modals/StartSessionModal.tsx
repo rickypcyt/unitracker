@@ -1,4 +1,4 @@
-import { Check, ChevronRight, Clock, List, Square, Target, Zap } from "lucide-react";
+import { Check, Clock, List, Square, Target, Zap } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/FormElements";
 import {
   useCallback,
@@ -355,7 +355,7 @@ const StartSessionModal = ({
         {/* Session Details Section */}
         <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[var(--accent-primary)]/10 rounded-lg">
+            <div className=" bg-[var(--accent-primary)]/10 rounded-lg">
               <Target size={20} className="text-[var(--accent-primary)]" />
             </div>
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">Session Details</h3>
@@ -368,7 +368,6 @@ const StartSessionModal = ({
                   htmlFor="session-title"
                   className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
                 >
-                  <Clock size={16} className="text-[var(--text-secondary)]" />
                   Session Title <span className="text-red-500">*</span>
                 </label>
                 <FormInput
@@ -392,7 +391,6 @@ const StartSessionModal = ({
                   htmlFor="assignment"
                   className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
                 >
-                  <ChevronRight size={16} className="text-[var(--text-secondary)]" />
                   Assignment (optional)
                 </label>
                 <AutocompleteInput
@@ -410,7 +408,6 @@ const StartSessionModal = ({
                 htmlFor="session-description"
                 className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
               >
-                <Target size={16} className="text-[var(--text-secondary)]" />
                 Description (optional)
               </label>
               <FormTextarea
@@ -428,7 +425,6 @@ const StartSessionModal = ({
             {/* Timer Sync Options */}
             <div className="bg-[var(--bg-primary)] rounded-lg p-3">
               <div className="flex items-center gap-2 mb-3">
-                <Zap size={16} className="text-[var(--accent-primary)]" />
                 <h4 className="text-sm font-medium text-[var(--text-primary)]">Timer Options</h4>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -596,12 +592,7 @@ const StartSessionModal = ({
                 No tasks selected
               </span>
             )}
-            {!includeTasks && (
-              <span className="flex items-center gap-2">
-                <Zap size={16} />
-                Focus mode
-              </span>
-            )}
+
           </div>
             
           <div className="flex gap-3">
@@ -631,7 +622,6 @@ const StartSessionModal = ({
                   </>
                 ) : (
                   <>
-                    <Zap size={18} aria-hidden="true" />
                     Start Session
                   </>
                 )}

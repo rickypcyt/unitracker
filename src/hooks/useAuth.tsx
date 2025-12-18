@@ -80,6 +80,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Clear all caches and local storage
+      clearAllCaches();
+      
       toast.success('Successfully logged out', {
         containerId: 'main-toast-container',
         position: 'top-center'
@@ -90,6 +94,73 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         containerId: 'main-toast-container',
         position: 'top-center'
       });
+    }
+  };
+
+  // Function to clear all caches and local storage
+  const clearAllCaches = () => {
+    try {
+      // Clear localStorage
+      localStorage.clear();
+      
+      // Clear sessionStorage
+      sessionStorage.clear();
+      
+      // Clear Zustand persist storage specifically
+      localStorage.removeItem('uni-tracker-storage');
+      
+      // Clear any remaining app-specific keys
+      const appKeys = [
+        'localTasks',
+        'tasksHydrated',
+        'pomodoroModes',
+        'activeWorkspace',
+        'activeWorkspaceId',
+        'userPreferences',
+        'theme',
+        'accentColor'
+      ];
+      
+      appKeys.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+        } catch (e) {
+          console.warn(`Could not remove ${key} from storage:`, e);
+        }
+      });
+      
+      // Clear any noise generator settings
+      const noiseKeys = Object.keys(localStorage).filter(key => 
+        key.includes('Volume') || key.includes('IsPlaying')
+      );
+      
+      noiseKeys.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.warn(`Could not remove noise key ${key}:`, e);
+        }
+      });
+      
+      // Clear any remaining workspace-related keys
+      const workspaceKeys = Object.keys(localStorage).filter(key => 
+        key.toLowerCase().includes('workspace') || 
+        key.toLowerCase().includes('workspaces')
+      );
+      
+      workspaceKeys.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
+        } catch (e) {
+          console.warn(`Could not remove workspace key ${key}:`, e);
+        }
+      });
+      
+      console.log('All caches cleared successfully');
+    } catch (error) {
+      console.error('Error clearing caches:', error);
     }
   };
 
