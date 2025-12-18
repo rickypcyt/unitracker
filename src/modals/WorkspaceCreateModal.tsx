@@ -1,4 +1,4 @@
-import { BookOpen, Briefcase, Coffee, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { BookOpen, Briefcase, Code, Coffee, Database, FolderOpen, Gamepad2, Globe, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 
 import BaseModal from './BaseModal';
 import { supabase } from '@/utils/supabaseClient';
@@ -27,6 +27,9 @@ const iconOptions = [
   { name: 'Umbrella', icon: Umbrella },
   { name: 'Wifi', icon: Wifi },
   { name: 'Workflow', icon: Workflow },
+  { name: 'Code', icon: Code },
+  { name: 'Database', icon: Database },
+  { name: 'Globe', icon: Globe },
 ];
 
 type Props = {
@@ -115,8 +118,8 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             />
         </div>
         <div>
-          <div className="text-sm font-medium text-[var(--text-secondary)] mb-2">Choose Icon</div>
-          <div className="flex gap-2 flex-wrap mb-2">
+          <div className="text-sm font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
+          <div className="grid grid-cols-6 sm:grid-cols-7 md:grid-cols-8 gap-2 mb-4">
             {iconOptions.map((option) => {
               const IconComp = option.icon;
               return (
@@ -124,19 +127,29 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
                   key={option.name}
                   type="button"
                   onClick={() => setSelectedIcon(option.name)}
-                  className={`p-2 rounded-lg border transition-all ${
+                  className={`group relative p-3 rounded-xl border-2 transition-all duration-200 ${
                     selectedIcon === option.name
-                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                      : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]'
+                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/15 shadow-sm shadow-[var(--accent-primary)]/20'
+                      : 'border-[var(--border-primary)]'
                   }`}
+                  title={option.name}
+                  aria-label={`Select ${option.name} icon`}
+                  aria-pressed={selectedIcon === option.name}
                 >
                   <IconComp 
-                    size={18} 
-                    className={selectedIcon === option.name ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} 
+                    size={20} 
+                    className={`transition-colors duration-200 ${
+                      selectedIcon === option.name 
+                        ? 'text-[var(--accent-primary)]' 
+                        : 'text-[var(--text-secondary)]'
+                    }`} 
                   />
                 </button>
               );
             })}
+          </div>
+          <div className="text-xs text-[var(--text-secondary)] text-center">
+            Selected: <span className="font-medium text-[var(--text-primary)]">{selectedIcon}</span>
           </div>
         </div>
           {error && (
@@ -146,14 +159,14 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+              className="flex-1 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !workspaceName.trim()}
-              className="flex-1 px-4 py-2 text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating...' : 'Create Workspace'}
             </button>

@@ -1,4 +1,4 @@
-import { Check, Clock, List, Square, Target, Zap } from "lucide-react";
+import { Check, Clock, List, Square, Target } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/FormElements";
 import {
   useCallback,
