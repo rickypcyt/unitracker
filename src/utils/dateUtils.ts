@@ -91,7 +91,7 @@ export function getTimeRemainingString(dateStr: string): string {
     
     if (diffDays === 0) return 'today';
     if (diffDays === 1) return 'tomorrow';
-    if (diffDays === -1) return 'yesterday';
+    if (diffDays === -1) return 'Yesterday';
     if (diffDays > 0) return `in ${diffDays} days`;
     return `${Math.abs(diffDays)} days ago`;
 }

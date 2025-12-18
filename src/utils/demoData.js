@@ -23,9 +23,9 @@ export const demoAssignments = [
 ];
 
 export const demoTasks = [
-  { id: 'demo-task-1', title: 'Demo Task Today', assignment: 'Demo Assignment A', workspace_id: 'demo-ws-1', completed: false, deadline: todayStr, created_at: todayStr, difficulty: 'medium' },
-  { id: 'demo-task-2', title: 'Demo Task Yesterday', assignment: 'Demo Assignment A', workspace_id: 'demo-ws-1', completed: true, deadline: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy' },
-  { id: 'demo-task-3', title: 'Demo Task Tomorrow', assignment: 'Demo Assignment B', workspace_id: 'demo-ws-2', completed: false, deadline: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard' },
+  { id: 'demo-task-1', title: 'Demo Task Today', assignment: 'Demo Assignment A', workspace_id: 'demo-ws-1', completed: false, due_date: todayStr, created_at: todayStr, difficulty: 'medium', completed_at: null },
+  { id: 'demo-task-2', title: 'Demo Task Yesterday', assignment: 'Demo Assignment A', workspace_id: 'demo-ws-1', completed: true, due_date: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy', completed_at: yesterdayStr },
+  { id: 'demo-task-3', title: 'Demo Task Tomorrow', assignment: 'Demo Assignment B', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
 ];
 
 export const demoNotes = [

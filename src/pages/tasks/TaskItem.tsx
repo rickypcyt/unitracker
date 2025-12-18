@@ -50,8 +50,8 @@ const getDeadlineColor = (dateStr: string) => {
         // Overdue - Red
         return 'text-red-500';
     } else if (date >= startOfWeek && date <= endOfWeek) {
-        // This week (Monday-Sunday) - Green
-        return 'text-green-500';
+        // This week (Monday-Sunday) - Yellow
+        return 'text-yellow-500';
     } else if (date >= startOfNextWeek) {
         // Next week or later - Blue
         return 'text-blue-500';
@@ -125,14 +125,15 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     // Helper para el label de hoy/mañana
     const renderDateLabel = (deadline: string) => {
         if (isToday(deadline)) {
-            return <span className="text-green-500 ml-1">(Today)</span>;
+            return <span className="text-yellow-500 ml-1">(Today)</span>;
         }
         if (isTomorrow(deadline)) {
-            return <span className="text-green-500 ml-1">(Tomorrow)</span>;
+            return <span className="text-yellow-500 ml-1">(Tomorrow)</span>;
         }
         return null;
     };
 
+    
     return (
         <div
             className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-2 items-start
@@ -193,7 +194,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                           {task.deadline && task.deadline !== '' ? (
                             <>
                               <span className={getDeadlineColor(task.deadline)}>
-                                {formatDateShort(task.deadline)} <span className="text-[var(--text-secondary)]">({getTimeRemainingString(task.deadline)})</span>
+                                {formatDateShort(task.deadline)}
+                                {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                                  <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
+                                )}
                               </span>
                               {renderDateLabel(task.deadline)}
                             </>

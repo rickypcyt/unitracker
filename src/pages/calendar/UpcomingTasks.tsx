@@ -1,33 +1,64 @@
 import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
 
+import type { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
+import type { UnknownAction } from '@reduxjs/toolkit';
 import { fetchTasks } from '@/store/TaskActions';
 import useDemoMode from '@/utils/useDemoMode';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
+interface RootState {
+  tasks: {
+    tasks: Task[];
+  };
+}
+
+interface ExpandedGroups {
+  [key: string]: boolean;
+}
+
+interface ContextMenuState {
+  type: string;
+  x: number;
+  y: number;
+  task: Task;
+}
+
+interface TaskGroupProps {
+  title: string;
+  tasks: Task[];
+  groupKey: string;
+}
+
+interface MonthGroup {
+  month: number;
+  year: number;
+  tasks: Task[];
+}
+
 const UpcomingTasks = () => {
   const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
-  const realTasks = useSelector((state) => state.tasks.tasks);
+  const realTasks = useSelector((state: RootState) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
-  const [editingTask, setEditingTask] = useState(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState({
+  const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({
     today: true,
     thisWeek: true,
     noDeadline: true,
   });
   const dispatch = useDispatch();
-  const [contextMenu, setContextMenu] = useState(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
   useEffect(() => {
     // Listen for the refreshTaskList event
-    const handleRefresh = () => {
-      dispatch(fetchTasks());
+    const handleRefresh = async () => {
+      await dispatch(fetchTasks() as unknown as UnknownAction);
     };
 
     window.addEventListener('refreshTaskList', handleRefresh);
@@ -49,26 +80,30 @@ const UpcomingTasks = () => {
   // Filter and sort upcoming tasks
   const upcomingTasks = tasks
     .filter(task => {
-      const taskDate = new Date(task.deadline);
+      if (!task.due_date) return false;
+      const taskDate = new Date(task.due_date);
       taskDate.setHours(0, 0, 0, 0);
       return taskDate >= today && !task.completed;
     })
-    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    .sort((a: Task, b: Task) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
 
   // Group tasks by time periods
   const todayTasks = upcomingTasks.filter(task => {
-    const taskDate = new Date(task.deadline);
+    if (!task.due_date) return false;
+    const taskDate = new Date(task.due_date);
     return taskDate.toDateString() === today.toDateString();
   });
 
   const thisWeekTasks = upcomingTasks.filter(task => {
-    const taskDate = new Date(task.deadline);
+    if (!task.due_date) return false;
+    const taskDate = new Date(task.due_date);
     return taskDate > today && taskDate <= endOfWeek;
   });
 
   // Group remaining tasks by month
-  const tasksByMonth = upcomingTasks.reduce((groups, task) => {
-    const taskDate = new Date(task.deadline);
+  const tasksByMonth = upcomingTasks.reduce((groups: Record<string, MonthGroup>, task: Task) => {
+    if (!task.due_date) return groups;
+    const taskDate = new Date(task.due_date);
     if (taskDate <= today || taskDate <= endOfWeek) return groups;
 
     const monthKey = `${taskDate.getFullYear()}-${taskDate.getMonth()}`;
@@ -84,7 +119,7 @@ const UpcomingTasks = () => {
   }, {});
 
   // Sort months chronologically
-  const sortedMonths = Object.values(tasksByMonth).sort((a, b) => {
+  const sortedMonths = Object.values(tasksByMonth).sort((a: MonthGroup, b: MonthGroup) => {
     if (a.year !== b.year) return a.year - b.year;
     return a.month - b.month;
   });
@@ -104,7 +139,7 @@ const UpcomingTasks = () => {
     });
   }, []);
 
-  const toggleGroup = (group) => {
+  const toggleGroup = (group: string) => {
     setExpandedGroups(prev => {
       const newState = { ...prev };
       newState[group] = !prev[group];
@@ -112,7 +147,7 @@ const UpcomingTasks = () => {
     });
   };
 
-  const handleEditTask = (task) => {
+  const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setShowTaskForm(true);
   };
@@ -125,9 +160,9 @@ const UpcomingTasks = () => {
   // Removed unused getDifficultyColor
 
   // Add No Deadline group
-  const noDeadlineTasks = tasks.filter(task => (!task.deadline || task.deadline === '' || task.deadline === null) && !task.completed);
+  const noDeadlineTasks = tasks.filter(task => (!task.due_date || task.due_date === '' || task.due_date === null) && !task.completed);
 
-  const handleTaskContextMenu = (e, task) => {
+  const handleTaskContextMenu = (e: React.MouseEvent, task: Task) => {
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({
@@ -141,7 +176,7 @@ const UpcomingTasks = () => {
 
   const hasUpcoming = upcomingTasks.length > 0;
 
-  const TaskGroup = ({ title, tasks, groupKey }) => {
+  const TaskGroup = ({ title, tasks, groupKey }: TaskGroupProps) => {
     if (tasks.length === 0) return null;
 
     return (
@@ -170,7 +205,7 @@ const UpcomingTasks = () => {
         
         {expandedGroups[groupKey] && (
           <div className="space-y-2 mt-3">
-            {tasks.map(task => (
+            {tasks.map((task: Task) => (
               <TaskItem
                 key={task.id}
                 task={task}
@@ -202,7 +237,7 @@ const UpcomingTasks = () => {
           <>
             <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
             <TaskGroup title="This Week" tasks={thisWeekTasks} groupKey="thisWeek" />
-            {sortedMonths.map(({ month, year, tasks }) => (
+            {sortedMonths.map(({ month, year, tasks }: MonthGroup) => (
               <TaskGroup
                 key={`${year}-${month}`}
                 title={new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -226,8 +261,8 @@ const UpcomingTasks = () => {
         <TaskForm
           onClose={handleCloseTaskForm}
           initialTask={editingTask}
-          onTaskCreated={() => {
-            dispatch(fetchTasks());
+          onTaskCreated={async () => {
+            await dispatch(fetchTasks() as unknown as UnknownAction);
             handleCloseTaskForm();
           }}
         />
