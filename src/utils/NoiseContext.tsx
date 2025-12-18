@@ -198,24 +198,44 @@ const SOUND_CONFIGS = [
     icon: "Waves",
     min: 0,
     max: 3,
-    defaultVolume: 1,
-    volumeMultiplier: 0.2,
+    defaultVolume: 0.8,
+    volumeMultiplier: 0.3,
     create: (volume: number) => {
-      // Deep ocean rumble (very low frequencies)
+      // Create master gain first - this will control everything
+      const masterGain = new Tone.Gain(0).toDestination();
+      
+      // Enhanced spatial reverb
+      const reverb = new Tone.Reverb({
+        decay: 8,
+        wet: 0.4,
+        preDelay: 0.15,
+      }).connect(masterGain);
+      
+      // Main gain - start at absolute zero
+      const gain = new Tone.Gain(0).connect(reverb);
+      
+      // Deep ocean rumble (very low frequencies) - start muted
       const deepOcean = new Tone.Noise("brown").start();
+      deepOcean.volume.value = -Infinity; // Start completely muted
       const deepFilter = new Tone.Filter(80, "lowpass");
       deepFilter.frequency.value = 80;
       deepFilter.Q.value = 0.3;
-      const deepGain = new Tone.Gain(0.4);
+      const deepGain = new Tone.Gain(0);
+      const retreatGain = new Tone.Gain(0);
+      const breakingGain = new Tone.Gain(0);
+      const foamGain = new Tone.Gain(0);
+      const splashGain = new Tone.Gain(0);
       
-      // Main ocean waves (low-mid frequencies)
+      // Main ocean waves (low-mid frequencies) - start muted
       const brownNoise = new Tone.Noise("brown").start();
+      brownNoise.volume.value = -Infinity; // Start completely muted
       const brownFilter = new Tone.Filter(150, "lowpass");
       brownFilter.frequency.value = 150;
       brownFilter.Q.value = 0.6;
       
-      // Ocean surface water (mid frequencies)
+      // Ocean surface water (mid frequencies) - start muted
       const pinkNoise = new Tone.Noise("pink").start();
+      pinkNoise.volume.value = -Infinity; // Start completely muted
       const pinkHighpass = new Tone.Filter(80, "highpass");
       const pinkLowpass = new Tone.Filter(1200, "lowpass");
       pinkHighpass.frequency.value = 80;
@@ -229,8 +249,9 @@ const SOUND_CONFIGS = [
       randomModulation.connect(primaryWaveLFO.frequency);
       randomModulation.connect(secondaryWaveLFO.frequency);
 
-      // Wave wash/retreat effect (the "swoosh" of waves receding)
+      // Wave wash/retreat effect (the "swoosh" of waves receding) - start muted
       const waveRetreat = new Tone.Noise("pink").start();
+      waveRetreat.volume.value = -Infinity; // Start completely muted
       const retreatFilterRise = new Tone.Filter({
         type: "bandpass",
         frequency: 600,
@@ -243,7 +264,6 @@ const SOUND_CONFIGS = [
         Q: 1.5,
         gain: 0
       });
-      const retreatGain = new Tone.Gain(0.12);
       
       // Complex LFO for wave wash cycle (rise and fall)
       const washCycleLFO = new Tone.LFO(0.08, 0, 1).start();
@@ -253,49 +273,40 @@ const SOUND_CONFIGS = [
       // Create the wash effect by modulating gain and frequency
       washCycleLFO.connect(retreatGain.gain);
 
-      // Breaking waves (mid-high frequencies) with variation
+      // Breaking waves (mid-high frequencies) with variation - start muted
       const breakingNoise = new Tone.Noise("pink").start();
+      breakingNoise.volume.value = -Infinity; // Start completely muted
       const breakingFilter = new Tone.Filter({
         type: "bandpass",
         frequency: 800,
         Q: 1.5,
         gain: 0
       });
-      const breakingGain = new Tone.Gain(0.15);
       const breakingLFO = new Tone.LFO(0.15, 0.05, 0.2).start();
       breakingLFO.connect(breakingGain.gain);
 
-      // Foam and bubbles (high frequencies)
+      // Foam and bubbles (high frequencies) - start muted
       const foamNoise = new Tone.Noise("white").start();
+      foamNoise.volume.value = -Infinity; // Start completely muted
       const foamFilter = new Tone.Filter({
         type: "highpass",
         frequency: 3000,
         Q: 0.5,
         gain: 0
       });
-      const foamGain = new Tone.Gain(0.08);
       const foamLFO = new Tone.LFO(0.25, 0.02, 0.1).start();
       foamLFO.connect(foamGain.gain);
 
-      // Water splashes (very high frequencies)
+      // Water splashes (very high frequencies) - start muted
       const splashNoise = new Tone.Noise("white").start();
+      splashNoise.volume.value = -Infinity; // Start completely muted
       const splashFilter = new Tone.Filter({
         type: "bandpass",
         frequency: 4000,
         Q: 1.0,
         gain: 0
       });
-      const splashGain = new Tone.Gain(0.06);
-
-      // Enhanced spatial reverb
-      const reverb = new Tone.Reverb({
-        decay: 8,
-        wet: 0.4,
-        preDelay: 0.15,
-      }).toDestination();
       
-      // Main gain with improved volume control
-      const gain = new Tone.Gain(volume * 0.2).connect(reverb);
       primaryWaveLFO.connect(gain.gain);
       secondaryWaveLFO.connect(gain.gain);
 
@@ -333,7 +344,30 @@ const SOUND_CONFIGS = [
         gain
       );
 
+      // Start all individual components at absolute zero, then fade in very slowly
+      setTimeout(() => {
+        // First, unmute all noise sources gradually
+        deepOcean.volume.rampTo(-20, 0.5);
+        brownNoise.volume.rampTo(-15, 0.5);
+        pinkNoise.volume.rampTo(-10, 0.5);
+        waveRetreat.volume.rampTo(-15, 0.5);
+        breakingNoise.volume.rampTo(-12, 0.5);
+        foamNoise.volume.rampTo(-18, 0.5);
+        splashNoise.volume.rampTo(-20, 0.5);
+        
+        // Then fade in individual gains with higher values
+        deepGain.gain.rampTo(0.15, 2.5);
+        retreatGain.gain.rampTo(0.08, 2.8);
+        breakingGain.gain.rampTo(0.12, 3.0);
+        foamGain.gain.rampTo(0.06, 3.2);
+        splashGain.gain.rampTo(0.04, 3.4);
+        
+        // Finally, fade in master gain with higher volume
+        masterGain.gain.rampTo(volume * 0.3, 3.0);
+      }, 200);
+
       return {
+        masterGain,
         deepOcean,
         deepFilter,
         deepGain,
@@ -558,13 +592,17 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
     const soundRef = sound.soundRef as any;
     if (!soundRef) return;
 
-    // For ocean sound, we need to update multiple gain nodes with proper balancing
+    // For ocean sound, update master gain and all components with proper balancing
     if (sound.key === 'ocean' && soundRef) {
       const isMuted = volume === 0;
       const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * (sound.volumeMultiplier || 1);
       
       // Mute all components if volume is 0
       if (isMuted) {
+        // Master gain - immediate mute
+        soundRef.masterGain?.gain.cancelScheduledValues(0);
+        soundRef.masterGain?.gain.setValueAtTime(0, Tone.context.currentTime);
+        
         // Main gain - immediate mute
         soundRef.gain?.gain.cancelScheduledValues(0);
         soundRef.gain?.gain.setValueAtTime(0, Tone.context.currentTime);
@@ -607,29 +645,28 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
         soundRef.waveRetreat?.volume?.cancelScheduledValues(0);
         soundRef.waveRetreat?.volume?.setValueAtTime(-Infinity, Tone.context.currentTime);
       } else {
-        // Update volumes when not muted
-        // Main gain
-        soundRef.gain?.gain.rampTo(baseVolume, 0.1);
+        // Update volumes when not muted - use master gain for smooth control
+        soundRef.masterGain?.gain.rampTo(baseVolume, 0.1);
         
-        // Individual components with proper balancing
+        // Individual components with proper balancing - updated for audible volume
         if (soundRef.deepGain) {
-          soundRef.deepGain.gain.rampTo(0.4 * baseVolume, 0.1);
+          soundRef.deepGain.gain.rampTo(0.15 * baseVolume, 0.1);
         }
         
         if (soundRef.breakingGain) {
-          soundRef.breakingGain.gain.rampTo(0.15 * baseVolume, 0.1);
+          soundRef.breakingGain.gain.rampTo(0.12 * baseVolume, 0.1);
         }
         
         if (soundRef.splashGain) {
-          soundRef.splashGain.gain.rampTo(0.06 * baseVolume, 0.1);
+          soundRef.splashGain.gain.rampTo(0.04 * baseVolume, 0.1);
         }
         
         if (soundRef.foamGain) {
-          soundRef.foamGain.gain.rampTo(0.08 * baseVolume, 0.1);
+          soundRef.foamGain.gain.rampTo(0.06 * baseVolume, 0.1);
         }
         
         if (soundRef.retreatGain) {
-          soundRef.retreatGain.gain.rampTo(0.12 * baseVolume, 0.1);
+          soundRef.retreatGain.gain.rampTo(0.08 * baseVolume, 0.1);
         }
         
         // Unmute all noise sources
