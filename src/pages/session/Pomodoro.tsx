@@ -452,7 +452,7 @@ const Pomodoro: React.FC = () => {
     }));
   }, []);
 
-  // Sync and notify when StudyTimer posts desktop notification. Increment on true Work->Break only if not immediately after resume.
+  // Sync y notifica cuando StudyTimer emite la notificación. Incrementa sólo si NO es tras reanudar y si el tiempo indica cruce real Work->Break reciente.
   useEventListener(
     'pomodoroWorkCompleteNotice',
     useCallback(async (event: CustomEvent) => {
@@ -462,9 +462,25 @@ const Pomodoro: React.FC = () => {
         const next = detail.newMode;
         const isWorkToBreak = prev === 'Work' && (next === 'Break' || next === 'Long Break');
         if (isWorkToBreak) {
-          // For the very first pomodoro (fresh start), ensure we count here (tick-based will dedupe via lastPomoIncrementTs)
-          if (hasSyncedFromStudyRef.current === true) {
-            try { await incrementPomodoroCount(); } catch {}
+          // Validación basada en tiempo para evitar falsos positivos al reanudar
+          const workDuration = currentModeConfig?.work || 3000;
+          const breakDuration = currentModeConfig?.break || 600;
+          const totalCycle = workDuration + breakDuration;
+          const studyTime = latestStudyTimeRef.current;
+          const timeInCurrentCycle = studyTime % totalCycle;
+          const targetMode: PomodoroModeType = timeInCurrentCycle >= workDuration ? 'break' : 'work';
+          const timeInCurrentMode = targetMode === 'break' ? (timeInCurrentCycle - workDuration) : timeInCurrentCycle;
+          const expectedCompletedCycles = Math.floor(studyTime / totalCycle);
+
+          const justEnteredBreak = targetMode === 'break' && timeInCurrentMode < 3; // 3s de margen
+          const notAfterResume = hasSyncedFromStudyRef.current === true;
+          const nextCycleReady = expectedCompletedCycles > lastCountedCycleRef.current;
+
+          if (notAfterResume && justEnteredBreak && nextCycleReady) {
+            try {
+              await incrementPomodoroCount();
+              lastCountedCycleRef.current = expectedCompletedCycles;
+            } catch {}
           }
           if (alarmEnabled) {
             try {
@@ -961,6 +977,8 @@ const Pomodoro: React.FC = () => {
       localStorage.setItem('pomodorosThisSession', String(pomodoros));
       // Re-arm first-tick sync guard to avoid accidental increment after resume
       try { hasSyncedFromStudyRef.current = false; } catch {}
+      // Align cycle counter with DB/session pomodoros to prevent recounting past cycles
+      try { lastCountedCycleRef.current = pomodoros; } catch {}
       
       console.log('[Pomodoro] 💾 Updated localStorage with pomodoro count');
       
@@ -1028,6 +1046,7 @@ const Pomodoro: React.FC = () => {
   }, []));
 
   const lastCountedCycleRef = useRef<number>(0); // track último ciclo contado
+  const latestStudyTimeRef = useRef<number>(0); // último tiempo reportado por StudyTimer para validaciones
   const hasSyncedFromStudyRef = useRef<boolean>(true); // por defecto no saltar el primer ciclo; sólo al reanudar se arma
 
   // Reemplaza el handler de studyTimerTimeUpdate con una versión robusta:
@@ -1035,10 +1054,10 @@ const Pomodoro: React.FC = () => {
     if (!syncPomodoroWithTimer) return;
     if (pomoState.manuallyPaused) return;
     const studyTime = Math.floor(event.detail.time);
+    latestStudyTimeRef.current = studyTime;
     const workDuration = currentModeConfig?.work || 3000;
     const breakDuration = currentModeConfig?.break || 600;
     const totalCycle = workDuration + breakDuration;
-    const expectedCompletedCycles = Math.floor(studyTime / totalCycle);
     const timeInCurrentCycle = studyTime % totalCycle;
 
     // Calcular modo y timeLeft SIEMPRE
@@ -1049,11 +1068,13 @@ const Pomodoro: React.FC = () => {
       timeInCurrentMode = timeInCurrentCycle - workDuration;
     }
     const newTimeLeft = (targetMode === 'work' ? workDuration : breakDuration) - timeInCurrentMode;
+    const expectedCompletedPomodoros = Math.floor(studyTime / totalCycle) + (timeInCurrentCycle >= workDuration ? 1 : 0);
 
     // Primer tick tras reanudar: sincroniza estado sin contar
     if (!hasSyncedFromStudyRef.current) {
       hasSyncedFromStudyRef.current = true;
-      lastCountedCycleRef.current = expectedCompletedCycles;
+      // Keep the higher of what we already know (from DB) vs what time suggests for completed work sessions
+      lastCountedCycleRef.current = Math.max(lastCountedCycleRef.current || 0, expectedCompletedPomodoros);
       // Asegura que el modo/tiempo reflejen el estado actual del StudyTimer
       setPomoState(prev => ({
         ...prev,
@@ -1081,12 +1102,12 @@ const Pomodoro: React.FC = () => {
       return;
     }
 
-    // Si ocurre el cambio de ciclo (Work->Break) detectado por el tiempo, cuenta de forma robusta
+    // Si detectamos que aumentó el número de pomodoros completados (al entrar en break), cuenta de forma robusta
     if (
-      expectedCompletedCycles > lastCountedCycleRef.current &&
+      expectedCompletedPomodoros > lastCountedCycleRef.current &&
       targetMode === 'break'
     ) {
-      lastCountedCycleRef.current = expectedCompletedCycles;
+      lastCountedCycleRef.current = expectedCompletedPomodoros;
       await handlePomodoroComplete();
     }
 
@@ -1095,7 +1116,7 @@ const Pomodoro: React.FC = () => {
       ...prev,
       currentMode: targetMode,
       timeLeft: newTimeLeft,
-      workSessionsCompleted: expectedCompletedCycles,
+      workSessionsCompleted: expectedCompletedPomodoros,
     }));
   });
 
