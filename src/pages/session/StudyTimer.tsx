@@ -1275,8 +1275,13 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         window.dispatchEvent(new CustomEvent('loadSessionDuration', { detail: totalSeconds }));
       }
 
-      if (session.pomodoros_completed) {
-        window.dispatchEvent(new CustomEvent('loadSessionPomodoros', { detail: session.pomodoros_completed }));
+      if (session.pomodoros_completed !== null && session.pomodoros_completed !== undefined) {
+        window.dispatchEvent(new CustomEvent('loadSessionPomodoros', {
+          detail: {
+            pomodoros: session.pomodoros_completed,
+            sessionId,
+          }
+        }));
       }
 
       // Update session ID and start
