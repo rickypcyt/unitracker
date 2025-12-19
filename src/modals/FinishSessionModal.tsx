@@ -17,6 +17,7 @@ interface FinishSessionModalProps {
 interface SessionStats {
   duration: string;
   tasksCompleted: number;
+  pomodorosCompleted: number;
   startedAt: string;
 }
 
@@ -68,9 +69,17 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       }
 
       if (session) {
+        // Use the same authoritative daily count as Pomodoro hover
+        let pomodorosToday = 0;
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          pomodorosToday = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
+        } catch {}
+
         setSessionStats({
           duration: session.duration || '00:00:00',
           tasksCompleted: session.tasks_completed || 0,
+          pomodorosCompleted: pomodorosToday,
           startedAt: session.started_at
         });
       }
@@ -236,17 +245,38 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       const currentDuration = getDurationFromTimer();
       
       // Update session with proper duration format and task completion
+      // Use the DAILY count as the authoritative value for pomodoros_completed
+      let finalDailyPomos = 0;
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        finalDailyPomos = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
+      } catch {}
+
+      console.log('[FinishSessionModal] Attempting to finish session', {
+        sessionId,
+        currentDuration,
+        tasksCompleted: selectedTasks.length,
+        finalDailyPomos,
+        endedAt: endTime.toISOString(),
+      });
+
       const { error: updateError } = await supabase
         .from('study_laps')
         .update({
           duration: currentDuration,
           ended_at: endTime.toISOString(),
           description: sessionDescription.trim() || null,
-          tasks_completed: selectedTasks.length
+          tasks_completed: selectedTasks.length,
+          pomodoros_completed: finalDailyPomos
         })
         .eq('id', sessionId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[FinishSessionModal] Error updating study_laps:', updateError);
+        throw updateError;
+      } else {
+        console.log('[FinishSessionModal] ✅ study_laps updated successfully');
+      }
 
       // Update task completion status in session_tasks
       const updatePromises = activeTasks.map(task => {
@@ -259,6 +289,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       });
 
       await Promise.all(updatePromises);
+      console.log('[FinishSessionModal] ✅ session_tasks updated for all active tasks');
 
       // Update task activetask status (set all to false)
       const { error: tasksUpdateError } = await supabase
@@ -277,6 +308,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       }
 
       toast.success('Session finished successfully!');
+      console.log('[FinishSessionModal] ✅ Finish flow completed, closing modal');
       onFinish(selectedTasks);
       onClose();
     } catch (error) {
@@ -332,6 +364,13 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
                   <span className="text-2xl font-bold">{selectedTasks.length}</span>
                 </div>
                 <div className="text-sm text-[var(--text-secondary)]">Tasks Completed</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-[var(--accent-primary)] mb-1">
+                  <Target size={16} />
+                  <span className="text-2xl font-bold">{sessionStats.pomodorosCompleted}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Pomodoros Completed</div>
               </div>
             </div>
           ) : null}

@@ -208,32 +208,8 @@ const StartSessionModal = ({
         ? Number(latestSession.session_number) + 1
         : 1;
 
-      const { data: existingSession, error: checkError } = await supabase
-        .from("study_laps")
-        .select("id")
-        .eq("name", sessionTitle.trim())
-        .gte("created_at", `${today}T00:00:00`)
-        .lte("created_at", `${today}T23:59:59`)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error("Error checking for existing session:", checkError);
-      }
-
-      if (existingSession) {
-        console.log('[StartSessionModal] 📋 Resuming existing session:', existingSession.id);
-        onStart({
-          sessionId: existingSession.id,
-          tasks: selectedTasks,
-          title: sessionTitle.trim(),
-          description: sessionDescription.trim(),
-          syncPomo,
-          syncCountdown,
-        });
-        onClose();
-        setIsSubmitting(false);
-        return;
-      }
+      // Always create a new session even if another one shares the same name
+      // Each session must have a unique id; do not reuse by name
 
       const { data: session, error: sessionError } = await supabase
         .from("study_laps")
@@ -291,6 +267,14 @@ const StartSessionModal = ({
         syncPomo,
         syncCountdown,
       });
+
+      // Reset per-session Pomodoro count and set active session id immediately
+      try {
+        localStorage.setItem('pomodorosThisSession', '0');
+        localStorage.setItem('activeSessionId', session.id);
+        // Clear last notification timestamp so first completion notifies correctly
+        localStorage.removeItem('lastPomoNotifyTs');
+      } catch {}
 
       onStart({
         sessionId: session.id,

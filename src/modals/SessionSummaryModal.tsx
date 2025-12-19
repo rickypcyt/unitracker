@@ -8,6 +8,7 @@ type SessionSummaryModalProps = {
   onClose: () => void;
   durationFormatted: string; // HH:MM:SS
   completedTasksCount: number;
+  pomodorosCompleted?: number;
 };
 
 const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
@@ -15,6 +16,7 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
   onClose,
   durationFormatted,
   completedTasksCount,
+  pomodorosCompleted,
 }) => {
   
   return (
@@ -67,6 +69,24 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
                   {completedTasksCount}
                 </div>
               </div>
+
+              {/* Pomodoros Item (if provided) */}
+              {typeof pomodorosCompleted === 'number' && (
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                      <Target className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-[var(--text-primary)]">Pomodoros Completed</div>
+                      <div className="text-sm text-[var(--text-secondary)]">Work intervals finished</div>
+                    </div>
+                  </div>
+                  <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                    {pomodorosCompleted}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -10,8 +10,10 @@ import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
 // import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
 import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
+import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
 import { toast } from 'sonner';
+import { updateLap } from '@/store/LapActions';
 // import { useAuth } from '@/hooks/useAuth'; // Not used
 import useEventListener from '@/hooks/useEventListener';
 
@@ -331,23 +333,31 @@ const Pomodoro: React.FC = () => {
   // Store pomodoro stats separately from study sessions
   const updatePomodoroStats = useCallback(async (increment = 1) => {
     try {
-      // Get current pomodoro count to save to database
-      const today = getLocalDateString();
-      const currentPomodoroCount = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
-      
-      console.log('🔧 DEBUG: Saving pomodoro stats to database:', { 
-        increment, 
-        currentPomodoroCount,
-        today 
+      const activeSessionId = localStorage.getItem('activeSessionId');
+      if (!activeSessionId) {
+        console.log('[Pomodoro] No active session, skipping DB pomodoro update');
+        return;
+      }
+
+      // Ensure user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.warn('[Pomodoro] Skipping DB update - user not authenticated');
+        return;
+      }
+
+      // Sync DB using the DAILY count as the authoritative value
+      const todayKey = `pomodoroDailyCount_${getLocalDateString()}`;
+      const todayCount = parseInt(localStorage.getItem(todayKey) || '0', 10) || 0;
+
+      // Update via shared Lap action to also update store
+      await updateLap(activeSessionId, { pomodoros_completed: todayCount });
+
+      console.log('[Pomodoro] Synced study_laps.pomodoros_completed from daily count', {
+        activeSessionId,
+        todayCount,
+        increment,
       });
-      
-      // TODO: Implement database save here
-      // await savePomodoroStatsToDatabase({
-      //   date: today,
-      //   pomodoroCount: currentPomodoroCount,
-      //   sessionId: getCurrentSessionId()
-      // });
-      
     } catch (e) {
       console.error('Error updating pomodoro stats:', e);
     }
@@ -369,6 +379,15 @@ const Pomodoro: React.FC = () => {
       console.log('[Pomodoro] ⚠️ Already counting, skipping duplicate call');
       return;
     }
+    // Additional dedupe window using lastPomoIncrementTs
+    try {
+      const lastTs = Number(localStorage.getItem('lastPomoIncrementTs') || '0');
+      const nowTs = Date.now();
+      if (lastTs && Math.abs(nowTs - lastTs) < 2000) {
+        console.log('[Pomodoro] ⏭️ Skipping increment within dedupe window', { lastTs, nowTs });
+        return;
+      }
+    } catch {}
     
     setIsCounting(true);
     const currentCount = getPomodoroCount();
@@ -380,24 +399,28 @@ const Pomodoro: React.FC = () => {
     
     try {
       // Get current count from single source of truth
-      const newCount = currentCount + 1;
+      const newCount = currentCount + 1; // Daily count
       const today = getLocalDateString();
       
       // Update localStorage (single source of truth)
       localStorage.setItem(`pomodoroDailyCount_${today}`, String(newCount));
-      localStorage.setItem('pomodorosThisSession', String(newCount));
+      // Update per-session count separately (not equal to daily)
+      const currentSessionCount = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10) || 0;
+      const newSessionCount = currentSessionCount + 1;
+      localStorage.setItem('pomodorosThisSession', String(newSessionCount));
+      // Mark last increment time for deduping external events
+      try { localStorage.setItem('lastPomoIncrementTs', String(Date.now())); } catch {}
       
       // Update state to match localStorage
       setPomoState(prev => ({
         ...prev,
         pomodoroToday: newCount,
-        pomodorosThisSession: newCount,
+        pomodorosThisSession: newSessionCount,
         workSessionsCompleted: prev.workSessionsCompleted + 1,
       }));
       
-      // Dispatch event and update stats
+      // Dispatch event (DB sync is deferred to Finish Session to avoid drift)
       window.dispatchEvent(new CustomEvent('pomodoroCompleted'));
-      await updatePomodoroStats(1);
       
       console.log('[Pomodoro] ✅ Pomodoro count updated:', { 
         newCount,
@@ -406,8 +429,8 @@ const Pomodoro: React.FC = () => {
       
       return newCount;
     } finally {
-      // Always reset the flag after a short delay
-      setTimeout(() => setIsCounting(false), 100);
+      // Always reset the flag after a short delay (longer window to avoid duplicates)
+      setTimeout(() => setIsCounting(false), 800);
     }
   }, [getPomodoroCount, updatePomodoroStats, isCounting, pomoState.pomodoroToday]);
 
@@ -428,6 +451,72 @@ const Pomodoro: React.FC = () => {
       workSessionsCompleted: 0,
     }));
   }, []);
+
+  // Sync counts immediately when StudyTimer posts desktop notification
+  useEventListener(
+    'pomodoroWorkCompleteNotice',
+    useCallback(async (event: CustomEvent) => {
+      try {
+        // Do not increment here to avoid double counting.
+        // The single source of truth for increments is handlePomodoroComplete().
+        // But we DO show the notification and sound here when StudyTimer drives the transition.
+        try {
+          const detail: any = event?.detail || {};
+          const prev = detail.previousMode;
+          const next = detail.newMode;
+          const isWorkToBreak = prev === 'Work' && (next === 'Break' || next === 'Long Break');
+          if (isWorkToBreak) {
+            // Increment here to ensure first pomodoro is counted when StudyTimer drives the transition.
+            // incrementPomodoroCount has strong dedupe and handlePomodoroComplete also checks timestamps.
+            await incrementPomodoroCount();
+            if (alarmEnabled) {
+              try {
+                const nowTs = Date.now();
+                const lastNotifyTs = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
+                const recentlyNotified = lastNotifyTs && Math.abs(nowTs - lastNotifyTs) < 3000;
+                if (!recentlyNotified) {
+                  sounds['work'].currentTime = 0;
+                  sounds['work'].play().catch(() => {});
+                  localStorage.setItem('lastPomoNotifyTs', String(nowTs));
+                }
+              } catch {}
+            }
+            const notifTitle = 'Work Session Complete! 🎉';
+            const notifBody = next === 'Long Break'
+              ? 'Great job! Time to take a well-deserved long break.'
+              : 'Great job! Time to take a short break.';
+            try {
+              const nowTs2 = Date.now();
+              const lastNotifyTs2 = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
+              const recentlyNotified2 = lastNotifyTs2 && Math.abs(nowTs2 - lastNotifyTs2) < 3000;
+              if (!recentlyNotified2) {
+                showNotification(notifTitle, {
+                  body: notifBody,
+                  icon: '🍅',
+                  badge: '🍅',
+                  tag: 'pomodoro-notification',
+                  requireInteraction: true,
+                });
+                localStorage.setItem('lastPomoNotifyTs', String(nowTs2));
+              }
+            } catch {}
+          }
+        } catch {}
+
+        // Final sync from localStorage to ensure UI reflects authoritative values
+        const todayCount = getPomodoroCount();
+        const sessionCount = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
+        setPomoState((prev: PomoState) => ({
+          ...prev,
+          pomodoroToday: todayCount,
+          pomodorosThisSession: sessionCount,
+        }));
+        console.log('[Pomodoro] 🔄 Synced counts after desktop notification:', { todayCount, sessionCount });
+      } catch (e) {
+        console.warn('[Pomodoro] Could not sync counts after notification', e);
+      }
+    }, [getPomodoroCount, alarmEnabled])
+  );
 
   // Force display update when modes change
   useEffect(() => {
@@ -504,20 +593,44 @@ const Pomodoro: React.FC = () => {
       workSessionsBeforeLongBreak: pomoState.workSessionsBeforeLongBreak
     });
 
-    // Play sound
+    // Play sound (deduped)
     if (alarmEnabled) {
-      console.log('[Pomodoro] 🔊 Playing completion sound');
-      const soundKey = isWork ? 'work' : (pomoState.currentMode === 'longBreak' ? 'longBreak' : 'break');
-      sounds[soundKey].currentTime = 0;
-      sounds[soundKey].play().catch(console.error);
+      try {
+        const nowTs = Date.now();
+        const lastNotifyTs = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
+        const recentlyNotified = lastNotifyTs && Math.abs(nowTs - lastNotifyTs) < 3000;
+        if (!recentlyNotified) {
+          console.log('[Pomodoro] 🔊 Playing completion sound');
+          const soundKey = isWork ? 'work' : (pomoState.currentMode === 'longBreak' ? 'longBreak' : 'break');
+          sounds[soundKey].currentTime = 0;
+          sounds[soundKey].play().catch(console.error);
+          localStorage.setItem('lastPomoNotifyTs', String(nowTs));
+        } else {
+          console.log('[Pomodoro] 🔇 Skipping duplicate sound (recent notify)');
+        }
+      } catch (e) {
+        console.warn('[Pomodoro] Could not process sound dedupe:', e);
+      }
     }
 
     // Update database and stats for work sessions ONLY
     if (isWork) {
       console.log('[Pomodoro] 📊 Updating work session stats');
       
-      // Use centralized count increment
-      await incrementPomodoroCount();
+      // Deduplicate: if a manual adjustment already incremented very recently, skip
+      try {
+        const lastTs = Number(localStorage.getItem('lastPomoIncrementTs') || '0');
+        const nowTs = Date.now();
+        const recentlyIncremented = lastTs && Math.abs(nowTs - lastTs) < 1500;
+        if (recentlyIncremented) {
+          console.log('[Pomodoro] ⏭️ Skipping duplicate increment (recent manual increment)');
+        } else {
+          // Use centralized count increment
+          await incrementPomodoroCount();
+        }
+      } catch {
+        await incrementPomodoroCount();
+      }
     }
 
     // Update state - use the localStorage value as single source of truth
@@ -638,6 +751,19 @@ const Pomodoro: React.FC = () => {
     // Reset pomodoro count to 0 when manually resetting
     if (!fromSync) {
       resetPomodoroCount();
+      // Ensure next completion can notify immediately
+      try { localStorage.removeItem('lastPomoNotifyTs'); } catch {}
+    } else {
+      // From StudyTimer sync: reset ONLY the per-session count locally (keep daily and DB untouched)
+      try { localStorage.setItem('pomodorosThisSession', '0'); } catch {}
+      setPomoState((prev) => ({
+        ...prev,
+        pomodorosThisSession: 0,
+        workSessionsCompleted: 0,
+      }));
+      // Ensure next completion can notify immediately
+      try { localStorage.removeItem('lastPomoNotifyTs'); } catch {}
+      // Do NOT touch DB here to avoid race with Finish Session write
     }
 
     setPomoState((prev) => ({
@@ -738,9 +864,8 @@ const Pomodoro: React.FC = () => {
 
     if (wasWorkSessionCompleted) {
       console.log('[Pomodoro] 🍅 Work session completed by manual adjustment');
-      
-      // Use centralized count increment - notification will be handled by mode transition
-      await incrementPomodoroCount();
+      // Do NOT increment here to avoid double counting.
+      // We immediately transition and let handlePomodoroComplete() run the single increment with dedupe.
 
       // Transition to break mode
       const willTakeLongBreak = (pomoState.workSessionsCompleted + 1) % pomoState.workSessionsBeforeLongBreak === 0;
@@ -775,7 +900,11 @@ const Pomodoro: React.FC = () => {
       };
     });
 
-    if (newTimeLeft === 0) handlePomodoroComplete();
+    if (newTimeLeft === 0 && pomoState.isRunning) {
+      // Stop the timer before calling complete to prevent duplicate calls
+      setPomoState(prev => ({ ...prev, isRunning: false, lastStart: null }));
+      handlePomodoroComplete();
+    }
 
     if (syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent('adjustStudyTimerTime', {
@@ -988,7 +1117,7 @@ const Pomodoro: React.FC = () => {
   useEffect(() => {
     if (syncPomodoroWithTimer) return; // Don't run internal timer when synced
     
-    if (!pomoState.isRunning || !pomoState.lastStart || pomoState.timeLeft <= 0) return;
+    if (!pomoState.isRunning || !pomoState.lastStart) return;
 
     // Use StudyTimer's exact elapsed time calculation: timeAtStart + ((now - lastStart) / 1000)
     const interval = window.setInterval(() => {
@@ -999,6 +1128,9 @@ const Pomodoro: React.FC = () => {
       const newTimeLeft = Math.max(0, currentModeDuration - elapsed);
 
       if (newTimeLeft <= 0) {
+        // Stop the timer immediately to prevent multiple completion calls
+        setPomoState(prev => ({ ...prev, isRunning: false, lastStart: null }));
+        
         if (alarmEnabled) {
           try { new Audio('/sounds/pomo-end.mp3').play(); } catch {}
         }

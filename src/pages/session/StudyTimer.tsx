@@ -45,6 +45,7 @@ const TIME_ADJUSTMENTS = {
   MINUS_FIVE: -300,
   PLUS_FIVE: 300,
   PLUS_TEN: 600,
+  PLUS_NINETY: 90,
 };
 
 
@@ -415,6 +416,24 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           logData.modeName = 'Unknown';
         }
         
+        // Notify when a work session ends (Work -> Break or Long Break)
+        if (lastLoggedMode === 'Work' && (pomodoroMode === 'Break' || pomodoroMode === 'Long Break')) {
+          
+          // Inform Pomodoro UI to sync counts from localStorage immediately
+          try {
+            window.dispatchEvent(new CustomEvent('pomodoroWorkCompleteNotice', {
+              detail: {
+                previousMode: lastLoggedMode,
+                newMode: pomodoroMode,
+                modeIndex: pomodoroModeIndex,
+                timestamp: Date.now(),
+              }
+            }));
+          } catch (e) {
+            // no-op
+          }
+        }
+
         console.log('[StudyTimer] 🍅 Pomodoro mode changed:', logData);
         
         lastLoggedMode = pomodoroMode;
@@ -904,18 +923,18 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       const formattedDuration = formatDuration(studyState.time);
 
       if (formattedDuration !== "00:00:00") {
-        // Calcular pomodoros automáticamente basados en la duración total
-        // Solo para sesiones de estudio, no para sesiones de pomodoro
-        const pomodorosThisSession = calculatePomodorosFromDuration(
-          studyState.time, 
-          session.type || 'study'
-        );
+        // Obtener pomodoros DIARIOS desde la fuente autoritativa local
+        let pomodorosToday = 0;
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          pomodorosToday = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
+        } catch {}
 
         const updateData: any = {
           duration: formattedDuration,
           tasks_completed: completedTasks.length,
           ended_at: endedAt,
-          pomodoros_completed: pomodorosThisSession,
+          pomodoros_completed: pomodorosToday,
         };
 
         if (localStartedAt) {
@@ -954,7 +973,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         setSummaryData({
           duration: formattedDuration,
           tasksCount: completedTasks.length,
-          pomodoros: pomodorosThisSession,
+          pomodoros: pomodorosToday,
           title: latestTitle || studyState.sessionTitle || "Untitled Session",
         });
 
@@ -963,7 +982,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           detail: {
             sessionId: currentSessionId,
             duration: formattedDuration,
-            pomodoros: pomodorosThisSession,
+            pomodoros: pomodorosToday,
             tasksCompleted: completedTasks.length
           }
         }));
@@ -1645,6 +1664,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const timeAdjustmentButtons = [
     { adjustment: TIME_ADJUSTMENTS.MINUS_TEN, label: "-10" },
     { adjustment: TIME_ADJUSTMENTS.MINUS_FIVE, label: "-5" },
+    { adjustment: TIME_ADJUSTMENTS.PLUS_NINETY, label: "+1:30" },
     { adjustment: TIME_ADJUSTMENTS.PLUS_FIVE, label: "+5" },
     { adjustment: TIME_ADJUSTMENTS.PLUS_TEN, label: "+10" },
   ];
