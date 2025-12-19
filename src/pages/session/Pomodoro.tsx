@@ -434,6 +434,29 @@ const Pomodoro: React.FC = () => {
     }
   }, [getPomodoroCount, updatePomodoroStats, isCounting, pomoState.pomodoroToday]);
 
+  // Decrement pomodoro count (e.g., when rewinding time via media controls)
+  const decrementPomodoroCount = useCallback((by: number = 1) => {
+    if (by <= 0) return 0;
+    const today = getLocalDateString();
+    const currentDaily = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
+    const currentSession = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10) || 0;
+    const newDaily = Math.max(0, currentDaily - by);
+    const newSession = Math.max(0, currentSession - by);
+
+    localStorage.setItem(`pomodoroDailyCount_${today}`, String(newDaily));
+    localStorage.setItem('pomodorosThisSession', String(newSession));
+
+    setPomoState(prev => ({
+      ...prev,
+      pomodoroToday: newDaily,
+      pomodorosThisSession: newSession,
+      workSessionsCompleted: Math.max(0, (prev.workSessionsCompleted || 0) - by),
+    }));
+
+    console.log('[Pomodoro] ↩️ Decremented pomodoro count due to rewind:', { by, newDaily, newSession });
+    return newDaily;
+  }, []);
+
   // Reset pomodoro count to 0
   const resetPomodoroCount = useCallback(() => {
     console.log('[Pomodoro] 🔄 Resetting pomodoro count to 0');
@@ -475,14 +498,15 @@ const Pomodoro: React.FC = () => {
           const justEnteredBreak = targetMode === 'break' && timeInCurrentMode < 3; // 3s de margen
           const notAfterResume = hasSyncedFromStudyRef.current === true;
           const nextCycleReady = expectedCompletedCycles > lastCountedCycleRef.current;
+          const pastResumeWindow = Date.now() > (resumeUntilTsRef.current || 0);
 
-          if (notAfterResume && justEnteredBreak && nextCycleReady) {
+          if (notAfterResume && justEnteredBreak && nextCycleReady && pastResumeWindow) {
             try {
               await incrementPomodoroCount();
               lastCountedCycleRef.current = expectedCompletedCycles;
             } catch {}
           }
-          if (alarmEnabled) {
+          if (notAfterResume && justEnteredBreak && nextCycleReady && pastResumeWindow && alarmEnabled) {
             try {
               const nowTs = Date.now();
               const lastSoundTs = Number(localStorage.getItem('lastPomoSoundTs') || '0');
@@ -498,21 +522,23 @@ const Pomodoro: React.FC = () => {
           const notifBody = next === 'Long Break'
             ? 'Great job! Time to take a well-deserved long break.'
             : 'Great job! Time to take a short break.';
-          try {
-            const nowTs2 = Date.now();
-            const lastNotifyTs2 = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
-            const recentlyNotified2 = lastNotifyTs2 && Math.abs(nowTs2 - lastNotifyTs2) < 3000;
-            if (!recentlyNotified2) {
-              showNotification(notifTitle, {
-                body: notifBody,
-                icon: '🍅',
-                badge: '🍅',
-                tag: 'pomodoro-notification',
-                requireInteraction: true,
-              });
-              localStorage.setItem('lastPomoNotifyTs', String(nowTs2));
-            }
-          } catch {}
+          if (notAfterResume && justEnteredBreak && nextCycleReady && pastResumeWindow) {
+            try {
+              const nowTs2 = Date.now();
+              const lastNotifyTs2 = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
+              const recentlyNotified2 = lastNotifyTs2 && Math.abs(nowTs2 - lastNotifyTs2) < 3000;
+              if (!recentlyNotified2) {
+                showNotification(notifTitle, {
+                  body: notifBody,
+                  icon: '🍅',
+                  badge: '🍅',
+                  tag: 'pomodoro-notification',
+                  requireInteraction: true,
+                });
+                localStorage.setItem('lastPomoNotifyTs', String(nowTs2));
+              }
+            } catch {}
+          }
         }
 
         // Final sync from localStorage to ensure UI reflects authoritative values
@@ -977,6 +1003,8 @@ const Pomodoro: React.FC = () => {
       localStorage.setItem('pomodorosThisSession', String(pomodoros));
       // Re-arm first-tick sync guard to avoid accidental increment after resume
       try { hasSyncedFromStudyRef.current = false; } catch {}
+      // Suprime notificaciones/sonidos unos segundos tras reanudar
+      try { resumeUntilTsRef.current = Date.now() + 4000; } catch {}
       // Align cycle counter with DB/session pomodoros to prevent recounting past cycles
       try { lastCountedCycleRef.current = pomodoros; } catch {}
       
@@ -1002,6 +1030,14 @@ const Pomodoro: React.FC = () => {
     } else {
       console.log('[Pomodoro] ❌ Invalid pomodoros or pomodoros is 0:', { pomodoros, sessionId });
     }
+  }, []));
+
+  // También armar el guard si sólo llega la duración primero
+  useEventListener('loadSessionDuration', useCallback(() => {
+    try {
+      hasSyncedFromStudyRef.current = false;
+      resumeUntilTsRef.current = Date.now() + 4000;
+    } catch {}
   }, []));
 
   // ============================================================================
@@ -1048,6 +1084,8 @@ const Pomodoro: React.FC = () => {
   const lastCountedCycleRef = useRef<number>(0); // track último ciclo contado
   const latestStudyTimeRef = useRef<number>(0); // último tiempo reportado por StudyTimer para validaciones
   const hasSyncedFromStudyRef = useRef<boolean>(true); // por defecto no saltar el primer ciclo; sólo al reanudar se arma
+  const resumeUntilTsRef = useRef<number>(0); // ventana para suprimir notificaciones/sonidos tras reanudar
+  const lastTargetModeRef = useRef<PomodoroModeType>('work'); // último modo calculado por el tiempo
 
   // Reemplaza el handler de studyTimerTimeUpdate con una versión robusta:
   useEventListener('studyTimerTimeUpdate', async (event: CustomEvent<{ time: number; isRunning: boolean }>) => {
@@ -1069,6 +1107,15 @@ const Pomodoro: React.FC = () => {
     }
     const newTimeLeft = (targetMode === 'work' ? workDuration : breakDuration) - timeInCurrentMode;
     const expectedCompletedPomodoros = Math.floor(studyTime / totalCycle) + (timeInCurrentCycle >= workDuration ? 1 : 0);
+
+    // Si el usuario retrocede el tiempo con media controls, ajustar el conteo hacia abajo
+    if (expectedCompletedPomodoros < (lastCountedCycleRef.current || 0)) {
+      const delta = (lastCountedCycleRef.current || 0) - expectedCompletedPomodoros;
+      if (delta > 0) {
+        decrementPomodoroCount(delta);
+        lastCountedCycleRef.current = expectedCompletedPomodoros;
+      }
+    }
 
     // Primer tick tras reanudar: sincroniza estado sin contar
     if (!hasSyncedFromStudyRef.current) {
@@ -1109,6 +1156,54 @@ const Pomodoro: React.FC = () => {
     ) {
       lastCountedCycleRef.current = expectedCompletedPomodoros;
       await handlePomodoroComplete();
+    }
+
+    // Notificación/sonido al pasar de break -> work (no cuenta pomodoro)
+    try {
+      const notAfterResume = hasSyncedFromStudyRef.current === true;
+      const pastResumeWindow = Date.now() > (resumeUntilTsRef.current || 0);
+      const justEnteredWork = lastTargetModeRef.current === 'break' && targetMode === 'work' && timeInCurrentMode < 2; // margen 2s
+      if (notAfterResume && pastResumeWindow && justEnteredWork) {
+        // Sonido (dedupe)
+        if (alarmEnabled) {
+          try {
+            const nowTs = Date.now();
+            const lastSoundTs = Number(localStorage.getItem('lastPomoSoundTs') || '0');
+            const recentlyNotified = lastSoundTs && Math.abs(nowTs - lastSoundTs) < 3000;
+            if (!recentlyNotified) {
+              // Baja un poco el volumen sólo para esta transición (break -> work)
+              const prevVol = sounds['break'].volume;
+              const tempVol = Math.max(0, Math.min(1, prevVol * 0.7));
+              sounds['break'].volume = tempVol;
+              sounds['break'].currentTime = 0; // sonido al finalizar break
+              sounds['break'].play().catch(() => {}).finally(() => {
+                // Restaura el volumen anterior inmediatamente después de intentar reproducir
+                try { sounds['break'].volume = prevVol; } catch {}
+              });
+              localStorage.setItem('lastPomoSoundTs', String(nowTs));
+            }
+          } catch {}
+        }
+        // Notificación escritorio (dedupe)
+        try {
+          const nowTs2 = Date.now();
+          const lastNotifyTs2 = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
+          const recentlyNotified2 = lastNotifyTs2 && Math.abs(nowTs2 - lastNotifyTs2) < 3000;
+          if (!recentlyNotified2) {
+            showNotification('Break Complete! ⏰', {
+              body: 'Break is over! Time to get back to work.',
+              icon: '💪',
+              badge: '💪',
+              tag: 'pomodoro-notification',
+              requireInteraction: true,
+            });
+            localStorage.setItem('lastPomoNotifyTs', String(nowTs2));
+          }
+        } catch {}
+      }
+    } finally {
+      // Actualiza último modo calculado
+      lastTargetModeRef.current = targetMode;
     }
 
     // Sincroniza SIEMPRE UI (modo, timeLeft, ciclos)
