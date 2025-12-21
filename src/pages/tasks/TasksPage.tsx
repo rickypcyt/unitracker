@@ -77,12 +77,12 @@ const TasksPage = memo(() => {
     setShowTaskForm(true);
   };
 
-  // Mouse wheel switches between workspaces (down: previous, up: next)
+  // Mouse wheel switches between workspaces (left: previous, right: next)
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     if (!workspaces || workspaces.length <= 1 || !activeWorkspace) return;
 
     const threshold = 10; // ignore tiny trackpad deltas
-    if (Math.abs(e.deltaY) < threshold) return;
+    if (Math.abs(e.deltaX) < threshold) return; 
 
     const now = Date.now();
     if (now - lastWheelSwitchRef.current < 350) return; // throttle rapid wheel events
@@ -93,9 +93,10 @@ const TasksPage = memo(() => {
     const currentIndex = workspaces.findIndex(ws => ws.id === activeWorkspace.id);
     if (currentIndex === -1) return;
 
-    const nextIndex = e.deltaY > 0
-      ? (currentIndex - 1 + workspaces.length) % workspaces.length
-      : (currentIndex + 1) % workspaces.length;
+    // deltaX > 0 means scrolling right, deltaX < 0 means scrolling left
+    const nextIndex = e.deltaX > 0
+      ? (currentIndex + 1) % workspaces.length
+      : (currentIndex - 1 + workspaces.length) % workspaces.length;
 
     const nextWorkspace = workspaces[nextIndex];
     if (nextWorkspace && nextWorkspace.id !== activeWorkspace.id) {
