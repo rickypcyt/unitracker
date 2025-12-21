@@ -1,4 +1,4 @@
-import { Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
+import { CheckCircle, Clock, Database, List, Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
@@ -33,12 +33,12 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     handleThemeChange,
     currentTheme,
   } = useTheme();
-  const [showAssignments, setShowAssignments] = useState(false);
-  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
-  const [showStudySessions, setShowStudySessions] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
+  const [showManageAssignmentsModal, setShowManageAssignmentsModal] = useState(false);
+  const [showSessionsModal, setShowSessionsModal] = useState(false);
+  const [showCompletedTasksModal, setShowCompletedTasksModal] = useState(false);
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);
@@ -54,7 +54,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
         isOpen={isOpen}
         onClose={onClose}
         title=""
-        maxWidth="max-w-md"
+        maxWidth="max-w-5xl"
         className="!p-0"
         showHeader={false}
       >
@@ -71,204 +71,216 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
               <X size={24} />
             </button>
           </div>
-          <div className="space-y-4">
-          {/* Theme Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              {themePreference === "auto" ? (
-                <Monitor size={22} />
-              ) : currentTheme === "dark" ? (
-                <Moon size={22} />
-              ) : (
-                <Sun size={22} />
-              )}
-              Theme
-            </h3>
-            <div className="space-y-3">
-              <div className="bg-[var(--bg-primary)] p-4 rounded-lg pb-2 pt-2">
-                {/* Three-position theme selector */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Sun size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">
-                      Light
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column - Theme and Colors */}
+            <div className="space-y-4">
+              {/* Theme Section */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
+                <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                  {themePreference === "auto" ? (
+                    <Monitor size={22} />
+                  ) : currentTheme === "dark" ? (
+                    <Moon size={22} />
+                  ) : (
+                    <Sun size={22} />
+                  )}
+                  Theme
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-[var(--bg-primary)] p-4 rounded-lg pb-2 pt-2">
+                    {/* Three-position theme selector */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Sun size={16} className="text-[var(--text-primary)]" />
+                        <span className="text-sm text-[var(--text-primary)]">
+                          Light
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Monitor size={16} className="text-[var(--text-primary)]" />
+                        <span className="text-sm text-[var(--text-primary)]">
+                          System
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Moon size={16} className="text-[var(--text-primary)]" />
+                        <span className="text-sm text-[var(--text-primary)]">
+                          Dark
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Custom three-position slider */}
+                    <div className="relative">
+                      <div className="w-full h-8 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
+                        {/* Slider track background */}
+                        <div
+                          className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
+                          style={{
+                            backgroundColor: accentPalette,
+                            width: "calc(33.333% - 4px)",
+                            left:
+                              themePreference === "light"
+                                ? "2px"
+                                : themePreference === "auto"
+                                ? "calc(33.333% + 1px)"
+                                : "calc(66.666% + 0px)",
+                          }}
+                        />
+
+                        {/* Three clickable workspaces */}
+                        <button
+                          onClick={() => handleThemeChange("light")}
+                          className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                          aria-label="Light theme"
+                        >
+                          <Sun
+                            size={16}
+                            className={`${
+                              themePreference === "light"
+                                ? "text-white"
+                                : "text-[var(--text-secondary)]"
+                            }`}
+                          />
+                        </button>
+
+                        <button
+                          onClick={() => handleThemeChange("auto")}
+                          className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                          aria-label="System theme"
+                        >
+                          <Monitor
+                            size={16}
+                            className={`${
+                              themePreference === "auto"
+                                ? "text-white"
+                                : "text-[var(--text-secondary)]"
+                            }`}
+                          />
+                        </button>
+
+                        <button
+                          onClick={() => handleThemeChange("dark")}
+                          className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                          aria-label="Dark theme"
+                        >
+                          <Moon
+                            size={16}
+                            className={`${
+                              themePreference === "dark"
+                                ? "text-white"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Monitor size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">
-                      System
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Moon size={16} className="text-[var(--text-primary)]" />
-                    <span className="text-sm text-[var(--text-primary)]">
-                      Dark
-                    </span>
-                  </div>
-                </div>
 
-                {/* Custom three-position slider */}
-                <div className="relative">
-                  <div className="w-full h-8 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
-                    {/* Slider track background */}
-                    <div
-                      className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
-                      style={{
-                        backgroundColor: accentPalette,
-                        width: "calc(33.333% - 4px)",
-                        left:
-                          themePreference === "light"
-                            ? "2px"
-                            : themePreference === "auto"
-                            ? "calc(33.333% + 1px)"
-                            : "calc(66.666% + 0px)",
-                      }}
-                    />
-
-                    {/* Three clickable workspaces */}
-                    <button
-                      onClick={() => handleThemeChange("light")}
-                      className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
-                      aria-label="Light theme"
-                    >
-                      <Sun
-                        size={16}
-                        className={`${
-                          themePreference === "light"
-                            ? "text-white"
-                            : "text-[var(--text-secondary)]"
-                        }`}
-                      />
-                    </button>
-
-                    <button
-                      onClick={() => handleThemeChange("auto")}
-                      className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
-                      aria-label="System theme"
-                    >
-                      <Monitor
-                        size={16}
-                        className={`${
-                          themePreference === "auto"
-                            ? "text-white"
-                            : "text-[var(--text-secondary)]"
-                        }`}
-                      />
-                    </button>
-
-                    <button
-                      onClick={() => handleThemeChange("dark")}
-                      className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
-                      aria-label="Dark theme"
-                    >
-                      <Moon
-                        size={16}
-                        className={`${
-                          themePreference === "dark"
-                            ? "text-white"
-                            : "text-[var(--text-secondary)]"
-                        }`}
-                      />
-                    </button>
+                  {/* Accent Color Section */}
+                  <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
+                    <h3 className="text-base font-semibold mb-3 text-[var(--text-primary)] flex items-center gap-2">
+                      <Palette size={18} />
+                      Accent Color
+                    </h3>
+                    <div className="grid grid-cols-6 gap-1.5">
+                      {ACCENT_COLORS.map((color: AccentColor) => (
+                        <button
+                          key={color.value}
+                          onClick={() => handleAccentColorChange(color.value)}
+                          className={`relative aspect-square rounded-md transition-all ${
+                            accentPalette === color.value
+                              ? "ring-1.5 ring-[var(--text-primary)] ring-offset-1 ring-offset-[var(--bg-primary)]"
+                              : "hover:opacity-90"
+                          } ${color.class}`}
+                          aria-label={`Select ${color.name} accent color`}
+                          title={color.name}
+                        >
+                          <span className="sr-only">{color.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Accent Color Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-0 pb-3">
-            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              <Palette size={22} />
-              Accent Color
-            </h3>
-            <div className="grid grid-cols-6 gap-2">
-              {ACCENT_COLORS.map((color: AccentColor) => (
-                <button
-                  key={color.value}
-                  onClick={() => handleAccentColorChange(color.value)}
-                  className={`relative aspect-square rounded-lg transition-all ${
-                    accentPalette === color.value
-                      ? "ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]"
-                      : "hover:opacity-80"
-                  } ${color.class}`}
-                  aria-label={`Select ${color.name} accent color`}
-                  title={color.name}
-                >
-                  <span className="sr-only">{color.name}</span>
-                </button>
-              ))}
+            {/* Right Column - User & Data Management */}
+            <div className="space-y-4">
+              {/* User & Friends Section */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
+                <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                  <User size={22} />
+                  User & Friends
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowUserModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+                  >
+                    <User size={16} />
+                    User Profile
+                  </button>
+                  <button
+                    onClick={() => setShowAddFriendModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+                  >
+                    <Users size={16} />
+                    Add Friends
+                  </button>
+                  <button
+                    onClick={() => setShowFriendsModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+                  >
+                    <Users size={16} />
+                    Manage Friends
+                  </button>
+                </div>
+              </div>
+              
+              {/* Data Management Section */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
+                <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                  <Database size={22} />
+                  Data Management
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowManageAssignmentsModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2 text-left"
+                  >
+                    <List size={16} />
+                    Manage Assignments
+                  </button>
+                  <button
+                    onClick={() => setShowSessionsModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2 text-left"
+                  >
+                    <Clock size={16} />
+                    Manage Study Sessions
+                  </button>
+                  <button
+                    onClick={() => setShowCompletedTasksModal(true)}
+                    className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2 text-left"
+                  >
+                    <CheckCircle size={16} />
+                    Manage Completed Tasks
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* User & Friends Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              <User size={22} />
-              User & Friends
-            </h3>
-            <div className="space-y-2">
-              <button
-                onClick={() => setShowUserModal(true)}
-                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
-              >
-                <User size={16} />
-                User Profile
-              </button>
-              <button
-                onClick={() => setShowAddFriendModal(true)}
-                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
-              >
-                <Users size={16} />
-                Add Friends
-              </button>
-              <button
-                onClick={() => setShowFriendsModal(true)}
-                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
-              >
-                <Users size={16} />
-                Manage Friends
-              </button>
-            </div>
-          </div>
-
-          {/* Assignments Section */}
-          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-3 pb-3">
-            <button
-              onClick={() => setShowAssignments(true)}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            >
-              Manage Assignments
-            </button>
-            <button
-              onClick={() => setShowStudySessions(true)}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors mt-2 "
-            >
-              Manage Sessions
-            </button>
-            <button
-              onClick={() => setShowCompletedTasks(true)}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors mt-2"
-            >
-              Manage Completed Tasks
-            </button>
-          </div>
           </div>
         </div>
       </BaseModal>
 
+      {/* Modal Components */}
       <ManageAssignmentsModal
-        isOpen={showAssignments}
-        onClose={() => setShowAssignments(false)}
-      />
-      <ManageCompletedTasksModal
-        isOpen={showCompletedTasks}
-        onClose={() => setShowCompletedTasks(false)}
+        isOpen={showManageAssignmentsModal}
+        onClose={() => setShowManageAssignmentsModal(false)}
       />
       <ManageSessionsModal
-        isOpen={showStudySessions}
-        onClose={() => setShowStudySessions(false)}
+        isOpen={showSessionsModal}
+        onClose={() => setShowSessionsModal(false)}
       />
       <UserModal
         isOpen={showUserModal}
@@ -281,6 +293,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <FriendsModal
         isOpen={showFriendsModal}
         onClose={() => setShowFriendsModal(false)}
+      />
+      <ManageCompletedTasksModal
+        isOpen={showCompletedTasksModal}
+        onClose={() => setShowCompletedTasksModal(false)}
       />
     </>
   );

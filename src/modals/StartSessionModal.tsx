@@ -44,17 +44,9 @@ const StartSessionModal = ({
   const [titleError, setTitleError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [assignment, setAssignment] = useState("");
-  const [assignments, setAssignments] = useState<string[]>([]);
-  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<number | null>(null);
+  const [assignments] = useState<string[]>([]);
   const [includeTasks, setIncludeTasks] = useState(false);
   
-  // Session templates
-  const sessionTemplates = [
-    { title: "Pomodoro Study", description: "25 minutes focused work", syncPomo: true, syncCountdown: false },
-    { title: "Deep Work Session", description: "2 hours uninterrupted study", syncPomo: false, syncCountdown: true },
-    { title: "Quick Review", description: "15 minutes material review", syncPomo: true, syncCountdown: false },
-    { title: "Assignment Work", description: "Complete homework tasks", syncPomo: false, syncCountdown: true },
-  ];
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,52 +71,6 @@ const StartSessionModal = ({
     }
   }, []);
 
-  const fetchAssignments = useCallback(async () => {
-    try {
-      const { data, error: authError } = await supabase.auth.getUser();
-      if (authError || !data?.user) return;
-
-      const { data: assignmentData, error } = await supabase
-        .from("tasks")
-        .select("assignment")
-        .not("assignment", "is", null)
-        .eq("user_id", data.user.id)
-        .order("assignment");
-
-      if (error) throw error;
-
-      const uniqueAssignments = Array.from(
-        new Set(assignmentData?.map((task: { assignment: string }) => task.assignment) || [])
-      );
-      setAssignments(uniqueAssignments);
-    } catch (error) {
-      console.error("Error fetching assignments:", error);
-    }
-  }, []);
-
-  const applyTemplate = (template: typeof sessionTemplates[0], index: number) => {
-    console.log('[StartSessionModal] 📋 Applying template:', {
-      title: template.title,
-      description: template.description,
-      syncPomo: template.syncPomo,
-      syncCountdown: template.syncCountdown,
-      templateIndex: index
-    });
-
-    setSessionTitle(template.title);
-    setSessionDescription(template.description);
-    setSyncPomo(template.syncPomo);
-    setSyncCountdown(template.syncCountdown);
-    setTitleError("");
-    setSelectedTemplateIndex(index);
-    
-    console.log('[StartSessionModal] ✅ Template applied successfully:', {
-      newTitle: template.title,
-      newDescription: template.description,
-      newSyncPomo: template.syncPomo,
-      newSyncCountdown: template.syncCountdown
-    });
-  };
 
   const validateForm = useCallback(() => {
     const titleValid = sessionTitle.trim().length > 0;
@@ -142,18 +88,6 @@ const StartSessionModal = ({
     setIsFormValid(sessionTitle.trim().length > 0 && !titleError);
   }, [sessionTitle, titleError]);
 
-  const resetForm = useCallback(() => {
-    setSessionTitle("");
-    setSessionDescription("");
-    setSelectedTasks([]);
-    setAssignment("");
-    setTitleError("");
-    setIsFormValid(false);
-    setSelectedTemplateIndex(null);
-    setIncludeTasks(false);
-    setSyncPomo(syncPomodoroWithTimer);
-    setSyncCountdown(syncCountdownWithTimer);
-  }, [syncPomodoroWithTimer, syncCountdownWithTimer]);
 
   useEffect(() => {
     if (lastAddedTaskId) {
@@ -174,8 +108,6 @@ const StartSessionModal = ({
       description: sessionDescription.trim(),
       syncPomo,
       syncCountdown,
-      selectedTasksCount: selectedTasks.length,
-      selectedTemplateIndex
     });
 
     if (!validateForm()) {
