@@ -1669,7 +1669,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   const timeAdjustmentButtons = [
     { adjustment: TIME_ADJUSTMENTS.MINUS_TEN, label: "-10" },
     { adjustment: TIME_ADJUSTMENTS.MINUS_FIVE, label: "-5" },
-    { adjustment: TIME_ADJUSTMENTS.PLUS_NINETY, label: "+1:30" },
     { adjustment: TIME_ADJUSTMENTS.PLUS_FIVE, label: "+5" },
     { adjustment: TIME_ADJUSTMENTS.PLUS_TEN, label: "+10" },
   ];
