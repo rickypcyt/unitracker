@@ -8,20 +8,43 @@ interface NewFeaturesModalProps {
 interface ChangelogEntry {
   version: string;
   date: string;
+  time: string;
   type: 'major' | 'minor' | 'patch';
   changes: {
     added?: string[];
     improved?: string[];
     fixed?: string[];
     removed?: string[];
+    soon?: string[];
   };
 }
 
 const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
   const changelog: ChangelogEntry[] = [
     {
+      version: "1.1.2",
+      date: "December 21, 2025",
+      time: "5:17 PM",
+      type: "patch",
+      changes: {
+        fixed: [
+          "Fixed Pomodoro timer synchronization issues"
+        ],
+        improved: [
+          "New workspace switching mode with sideways scroll",
+          "Share workspace with friends feature is now fully functional",
+          "Task status system for better task organization"
+        ],
+        soon: [
+          "Timeblocks page - Assign time blocks to tasks",
+          "Leaderboard system - Compete with friends"
+        ]
+      }
+    },
+    {
       version: "1.1.1",
       date: "December 21, 2025",
+      time: "5:00 PM",
       type: "patch",
       changes: {
         added: [
@@ -58,6 +81,9 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
                     {entry.date}
                   </h4>
                 </div>
+                <span className="text-sm text-gray-500">
+                  {entry.time}
+                </span>
               </div>
 
               {/* Changes */}
@@ -68,10 +94,10 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
                       <span className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full"></span>
                       Added
                     </h5>
-                    <ul className="space-y-1 ml-4">
+                    <ul className="space-y-1 ml-0">
                       {entry.changes.added.map((change, i) => (
-                        <li key={i} className="text-sm text-[var(--text-secondary)] list-disc">
-                          {change}
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
                         </li>
                       ))}
                     </ul>
@@ -84,10 +110,10 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
                       <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></span>
                       Improved
                     </h5>
-                    <ul className="space-y-1 ml-4">
+                    <ul className="space-y-1 ml-0">
                       {entry.changes.improved.map((change, i) => (
-                        <li key={i} className="text-sm text-[var(--text-secondary)] list-disc">
-                          {change}
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
                         </li>
                       ))}
                     </ul>
@@ -100,10 +126,26 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
                       <span className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></span>
                       Fixed
                     </h5>
-                    <ul className="space-y-1 ml-4">
+                    <ul className="space-y-1 ml-0">
                       {entry.changes.fixed.map((change, i) => (
-                        <li key={i} className="text-sm text-[var(--text-secondary)] list-disc">
-                          {change}
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {entry.changes.soon && entry.changes.soon.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full"></span>
+                      Coming Soon
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.soon.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
                         </li>
                       ))}
                     </ul>
@@ -116,9 +158,9 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
                       <span className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full"></span>
                       Removed
                     </h5>
-                    <ul className="space-y-1 ml-4">
+                    <ul className="space-y-1 ml-0">
                       {entry.changes.removed.map((change, i) => (
-                        <li key={i} className="text-sm text-[var(--text-secondary)] list-disc line-through">
+                        <li key={i} className="text-sm text-[var(--text-secondary)] line-through">
                           {change}
                         </li>
                       ))}
@@ -145,7 +187,7 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
               </button>
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-white bg-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors"
+                className="px-6 py-3 text-base font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 Close
               </button>

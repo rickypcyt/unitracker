@@ -121,7 +121,7 @@ const NewFeaturesGate: FC = () => {
 
     // Check if user has seen the new features modal
     const lastSeenVersion = localStorage.getItem('newFeaturesSeenVersion');
-    const currentVersion = "1.1.1"; // Update this with each new release
+    const currentVersion = "1.1.2"; // Update this with each new release
     
     // Show modal if version is different or hasn't been shown
     if (lastSeenVersion !== currentVersion) {
@@ -140,7 +140,7 @@ const NewFeaturesGate: FC = () => {
   const handleClose = () => {
     setShowNewFeaturesModal(false);
     // Mark as seen for current version
-    localStorage.setItem('newFeaturesSeenVersion', "1.1.1");
+    localStorage.setItem('newFeaturesSeenVersion', "1.1.2");
   };
 
   return (
