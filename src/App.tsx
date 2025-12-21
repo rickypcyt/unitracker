@@ -4,6 +4,7 @@ import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
 
 import CalendarPage from "@/pages/calendar/CalendarPage";
 import Navbar from "@/navbar/Navbar";
+import NewFeaturesModal from "@/modals/NewFeaturesModal";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import Notes from "@/pages/notes/Notes";
 import SessionPage from "@/pages/session/SessionPage";
@@ -103,6 +104,51 @@ const UserModalGate: FC = () => {
 };
 
 // -------------------------
+// New Features modal gate
+// -------------------------
+const NewFeaturesGate: FC = () => {
+  const { user, isLoggedIn } = useAuth() as {
+    user: any;
+    isLoggedIn: boolean;
+  };
+  const [showNewFeaturesModal, setShowNewFeaturesModal] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn || !user?.id) {
+      setShowNewFeaturesModal(false);
+      return;
+    }
+
+    // Check if user has seen the new features modal
+    const lastSeenVersion = localStorage.getItem('newFeaturesSeenVersion');
+    const currentVersion = "1.1.1"; // Update this with each new release
+    
+    // Show modal if version is different or hasn't been shown
+    if (lastSeenVersion !== currentVersion) {
+      // Add a small delay to show after login
+      const timer = setTimeout(() => {
+        setShowNewFeaturesModal(true);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+    
+    // Explicit return for the case where modal should not be shown
+    return;
+  }, [isLoggedIn, user]);
+
+  const handleClose = () => {
+    setShowNewFeaturesModal(false);
+    // Mark as seen for current version
+    localStorage.setItem('newFeaturesSeenVersion', "1.1.1");
+  };
+
+  return (
+    <NewFeaturesModal isOpen={showNewFeaturesModal} onClose={handleClose} />
+  );
+};
+
+// -------------------------
 // Main App component
 // -------------------------
 const App: FC = () => {
@@ -198,6 +244,7 @@ const App: FC = () => {
         <AuthProvider>
           <TourManager>
             <UserModalGate />
+            <NewFeaturesGate />
             <NavigationProvider>
               <PageContent />
             </NavigationProvider>

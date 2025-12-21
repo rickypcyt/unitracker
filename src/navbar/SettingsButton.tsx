@@ -1,10 +1,11 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { FolderOpen, Github, Info, LogIn, LogOut, Settings } from 'lucide-react';
+import { FolderOpen, Github, Info, LogIn, LogOut, Settings, Sparkles } from 'lucide-react';
 
 import AboutModal from '@/modals/AboutModal';
 import AddFriendModal from '@/modals/AddFriendModal';
 import FriendsModal from '@/modals/FriendsModal';
+import NewFeaturesModal from '@/modals/NewFeaturesModal';
 import { Settings as SettingsIcon } from 'lucide-react';
 import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
@@ -56,6 +57,7 @@ const SettingsButton = ({
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showNewFeaturesModal, setShowNewFeaturesModal] = useState(false);
 
   return (
     <>
@@ -109,6 +111,13 @@ const SettingsButton = ({
                 <Github className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
                 GitHub
               </a>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              onClick={() => setShowNewFeaturesModal(true)}
+              className="flex items-center gap-2 px-3 py-2.5 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
+            >
+              <Sparkles className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+              What's New
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onClick={onOpenAbout || (() => setShowAbout(true))}
@@ -171,6 +180,10 @@ const SettingsButton = ({
         onCreateWorkspace={onCreateWorkspace || (() => {})}
         onEditWorkspace={onEditWorkspace || (() => {})}
         onDeleteWorkspace={onDeleteWorkspace || (() => {})}
+      />
+      <NewFeaturesModal
+        isOpen={showNewFeaturesModal}
+        onClose={() => setShowNewFeaturesModal(false)}
       />
     </>
   );
