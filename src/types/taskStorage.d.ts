@@ -7,6 +7,7 @@ export interface Task {
   created_at?: string;
   updated_at?: string;
   due_date?: string;
+  deadline?: string; // Alias de due_date para compatibilidad
   priority?: number;
   tags?: string[];
   user_id?: string;
@@ -14,6 +15,7 @@ export interface Task {
   activetask?: boolean;
   difficulty?: string;
   assignment?: string;
+  status?: string; // Añadido para el nuevo sistema de estados
 }
 
 export interface TaskStorage {

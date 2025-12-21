@@ -165,6 +165,11 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
     });
   };
 
+  // Wrapper para compatibilidad con TaskItem
+  const handleTaskContextMenuWrapper = (e: any, task: Task) => {
+    handleTaskContextMenu(e, task);
+  };
+
   const TaskGroup = ({
     title,
     tasks,
@@ -209,7 +214,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
                 onToggleCompletion={handleToggleCompletion}
                 onDelete={handleDeleteTask}
                 onEditTask={() => handleEditTask(task)}
-                onContextMenu={(e: React.MouseEvent<HTMLDivElement>) => handleTaskContextMenu(e, task)}
+                onContextMenu={handleTaskContextMenuWrapper}
                 showAssignment={true}
                 assignmentLeftOfDate={true}
               />
@@ -307,6 +312,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
       {contextMenu && (
         <TaskListMenu
           contextMenu={{
+            type: "task",
             x: contextMenu.x,
             y: contextMenu.y,
             task: contextMenu.task,
@@ -320,7 +326,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
             handleDeleteTask(contextMenu.task.id);
             setContextMenu(null);
           }}
-          onSetActiveTask={() => {}}
+          onSetTaskStatus={() => {}}
         />
       )}
     </div>

@@ -2,7 +2,7 @@ import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
-import type { Task } from '@/pages/tasks/task';
+import type { Task } from '@/types/taskStorage';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
@@ -273,7 +273,7 @@ const UpcomingTasks = () => {
           contextMenu={contextMenu}
           onClose={handleCloseContextMenu}
           onEditTask={handleEditTask}
-          onSetActiveTask={handleUpdateTask}
+          onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
         />
       )}

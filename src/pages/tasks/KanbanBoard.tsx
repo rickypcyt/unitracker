@@ -772,7 +772,7 @@ export const KanbanBoard = () => {
           contextMenu={contextMenu}
           onClose={handleCloseContextMenu}
           onEditTask={handleEditTask}
-          onSetActiveTask={handleUpdateTask}
+          onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleConfirmDeleteTask}
         />
       )}

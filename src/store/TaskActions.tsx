@@ -56,7 +56,7 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
       // Filter by workspace if provided, otherwise get all tasks
       let query = supabase
         .from('tasks')
-        .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id')
+        .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status')
         .eq('user_id', user.id);
 
       // Add workspace filter if workspaceId is provided
@@ -213,6 +213,8 @@ export const deleteTask = async (id: any) => {
 export const updateTaskAction = async (task: any) => {
   const { updateTask, tasks: taskState } = useAppStore.getState();
   
+  console.log('updateTaskAction - Updating task with data:', task);
+  
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -237,22 +239,31 @@ export const updateTaskAction = async (task: any) => {
       throw new Error('No tienes permiso para editar esta tarea');
     }
 
+    const updateData = {
+      title: task.title,
+      description: task.description,
+      deadline: task.deadline,
+      completed: task.completed,
+      difficulty: task.difficulty,
+      assignment: task.assignment,
+      activetask: task.activetask,
+      status: task.status
+    };
+    
+    console.log('updateTaskAction - Sending to database:', updateData);
+
     const { data, error } = await supabase
       .from('tasks')
-      .update({
-        title: task.title,
-        description: task.description,
-        deadline: task.deadline,
-        completed: task.completed,
-        difficulty: task.difficulty,
-        assignment: task.assignment,
-        activetask: task.activetask
-      })
+      .update(updateData)
       .eq('id', task.id)
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('updateTaskAction - Database error:', error);
+      throw error;
+    }
 
+    console.log('updateTaskAction - Database response:', data);
     updateTask(task.id, data[0]);
     // Actualiza localStorage
     const updatedTasks = taskState.tasks.map(t => t.id === data[0].id ? data[0] : t);

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDeleteTaskSuccess, useFetchTasks, useLaps, useTasks, useToggleTaskStatus } from '@/store/appStore';
 
 import { SYNC_EVENTS } from '@/utils/constants';
+import { Task } from '@/types/taskStorage';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import { motion } from 'framer-motion';
 import { updateTaskAction } from '@/store/TaskActions';
@@ -16,18 +17,6 @@ interface ContextMenu {
 const TodaysSession = () => {
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  // Define types for our data
-  interface Task {
-    id: string;
-    title: string;
-    completed: boolean;
-    completed_at?: string;
-    deadline?: string;
-    status?: string;
-    isActive?: boolean;
-    activetask?: boolean;
-    assignment?: string;
-  }
 
   interface Lap {
     id: string;
@@ -369,7 +358,7 @@ const TodaysSession = () => {
           <TaskListMenu
             contextMenu={contextMenu}
             onClose={() => setContextMenu(null)}
-            onSetActiveTask={handleSetActiveTask}
+            onSetTaskStatus={handleSetActiveTask}
             onDeleteTask={handleDeleteTask}
             onEditTask={handleEditTask}
           />

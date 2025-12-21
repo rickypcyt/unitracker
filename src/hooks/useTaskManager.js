@@ -178,7 +178,8 @@ export const useTaskManager = (activeWorkspace) => {
           completed: updatedTask.completed,
           difficulty: updatedTask.difficulty,
           assignment: updatedTask.assignment,
-          activetask: updatedTask.activetask
+          activetask: updatedTask.activetask,
+          status: updatedTask.status
         })
         .eq('id', updatedTask.id);
 
