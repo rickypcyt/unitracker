@@ -1,9 +1,9 @@
-import { memo, useCallback, useEffect, useState } from 'react';
-import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
+import { Info, Plus, X } from 'lucide-react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
-import { Plus } from 'lucide-react';
 import TaskForm from '@/pages/tasks/TaskForm';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,12 +16,15 @@ const TasksPage = memo(() => {
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showScrollTip, setShowScrollTip] = useState(true);
   
   // Use Zustand selectors
   const { workspaces } = useWorkspace();
   const { currentWorkspace: activeWorkspace } = useWorkspace();
+  const { setCurrentWorkspace } = useWorkspaceActions();
   const { loading } = useTasks();
   const fetchTasks = useFetchTasks();
+  const lastWheelSwitchRef = useRef(0);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
@@ -67,6 +70,34 @@ const TasksPage = memo(() => {
     setShowTaskForm(true);
   };
 
+  // Mouse wheel switches between workspaces (down: previous, up: next)
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    if (!workspaces || workspaces.length <= 1 || !activeWorkspace) return;
+
+    const threshold = 10; // ignore tiny trackpad deltas
+    if (Math.abs(e.deltaY) < threshold) return;
+
+    const now = Date.now();
+    if (now - lastWheelSwitchRef.current < 350) return; // throttle rapid wheel events
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const currentIndex = workspaces.findIndex(ws => ws.id === activeWorkspace.id);
+    if (currentIndex === -1) return;
+
+    const nextIndex = e.deltaY > 0
+      ? (currentIndex - 1 + workspaces.length) % workspaces.length
+      : (currentIndex + 1) % workspaces.length;
+
+    const nextWorkspace = workspaces[nextIndex];
+    if (nextWorkspace && nextWorkspace.id !== activeWorkspace.id) {
+      try { localStorage.setItem('activeWorkspaceId', nextWorkspace.id); } catch {}
+      setCurrentWorkspace(nextWorkspace);
+      lastWheelSwitchRef.current = now;
+    }
+  }, [workspaces, activeWorkspace, setCurrentWorkspace]);
+
   if (!isVisible) {
     return null;
   }
@@ -83,8 +114,22 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0">
+    <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
       <KanbanBoard />
+      {/* Scroll Instruction Message */}
+      {workspaces && workspaces.length > 1 && showScrollTip && (
+        <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
+          <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
+          <span className="flex-1">Scroll to switch workspace</span>
+          <button
+            onClick={() => setShowScrollTip(false)}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-1 rounded hover:bg-[var(--bg-secondary)]"
+            aria-label="Close scroll tip"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      )}
       {/* Floating Action Button */}
       <button
         onClick={handleAddTask}

@@ -5,9 +5,32 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
+import { Workspace } from '@/types/workspace';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/store/appStore';
+
+interface Friend {
+  id: string;
+  username?: string;
+  email?: string;
+  avatar_url?: string;
+}
+
+interface User {
+  id: string;
+  // Add other user properties as needed
+}
+
+interface WorkspaceDropdownProps {
+  workspaces: (Workspace & { taskCount?: number })[];
+  activeWorkspace: (Workspace & { taskCount?: number }) | null;
+  onSelectWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onCreateWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onEditWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onDeleteWorkspace: (workspaceId: string | number) => void;
+  friends?: Friend[] | undefined;
+}
 
 const iconOptions: { [key: string]: React.ComponentType<any> } = {
   Briefcase,
@@ -35,26 +58,19 @@ const iconOptions: { [key: string]: React.ComponentType<any> } = {
 // Key para localStorage (unificado con workspaceSlice)
 const LAST_WORKSPACE_KEY = 'activeWorkspaceId';
 
-interface Workspace {
-  id: string;
-  name: string;
-  icon: string;
-  taskCount?: number;
-}
-
 interface User {
   id: string;
   // Add other user properties as needed
 }
 
 interface WorkspaceDropdownProps {
-  workspaces: Workspace[];
-  activeWorkspace: Workspace | null;
-  onSelectWorkspace: (workspace: Workspace) => void;
-  onCreateWorkspace: (workspace: Workspace) => void;
-  onEditWorkspace: (workspace: Workspace) => void;
-  onDeleteWorkspace: (workspaceId: string) => void;
-  friends?: any[]; // Replace 'any' with the actual Friend type if available
+  workspaces: (Workspace & { taskCount?: number })[];
+  activeWorkspace: (Workspace & { taskCount?: number }) | null;
+  onSelectWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onCreateWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onEditWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
+  onDeleteWorkspace: (workspaceId: string | number) => void;
+  friends?: Friend[] | undefined;
 }
 
 const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
@@ -74,7 +90,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
 
   const { user } = useAuth();
 
-  const getTaskCountByWorkspace = (ws: Workspace) => {
+  const getTaskCountByWorkspace = (ws: Workspace & { taskCount?: number }) => {
     const count = ws.taskCount || 0;
     return count;
   };
@@ -128,7 +144,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
     }
     
     console.log('Saving workspace to localStorage:', ws.id);
-    localStorage.setItem(LAST_WORKSPACE_KEY, ws.id);
+    localStorage.setItem(LAST_WORKSPACE_KEY, ws.id.toString());
     
     console.log('Calling onSelectWorkspace with:', ws);
     onSelectWorkspace(ws);
@@ -214,8 +230,11 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
       case 'Enter':
         if (focusedIndex >= 0 && focusedIndex < workspaces.length) {
           e.preventDefault();
-          const ws = [...workspaces].sort((a, b) => a.name.localeCompare(b.name))[focusedIndex];
-          handleSelectWorkspace(ws);
+          const sortedWorkspaces = [...workspaces].sort((a, b) => a.name.localeCompare(b.name));
+          const ws = sortedWorkspaces[focusedIndex];
+          if (ws) {
+            handleSelectWorkspace(ws);
+          }
         }
         break;
       default:
@@ -251,13 +270,13 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
         }}>
           <DropdownMenu.Trigger asChild>
             <button 
-              className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+              className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] relative"
               onKeyDown={handleWorkspaceKeyDown}
               tabIndex={0}
-              aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Use Ctrl+Arrow Up/Down to switch workspaces.`}
+              aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Use Ctrl+Arrow Up/Down to switch workspaces. Scroll to switch workspace.`}
             >
               {(() => {
-                const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
+                const IconComp = iconOptions[activeWorkspace?.icon || 'Briefcase'] || Briefcase;
                 return <IconComp className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />;
               })()}
               <span className="font-medium truncate max-w-[140px] text-[13px] sm:text-sm md:text-base">{activeWorkspace?.name || 'Select Workspace'}</span>
@@ -277,7 +296,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer outline-none transition-colors text-[12px] sm:text-sm md:text-sm lg:text-base ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'} focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50`}
                 >
                   {(() => {
-                    const IconComp = iconOptions[ws.icon] || Briefcase;
+                    const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
                     return <IconComp className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />;
                   })()}
                   <span className="flex-1 break-words">{ws.name} <span className="text-[11px] sm:text-[12px] md:text-sm lg:text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
@@ -328,13 +347,13 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
         }}>
           <DropdownMenu.Trigger asChild>
             <button 
-              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg antialiased focus:ring-2 focus:ring-[var(--accent-primary)]"
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus:outline-none p-2 rounded-lg antialiased focus:ring-2 focus:ring-[var(--accent-primary)] relative"
               onKeyDown={handleWorkspaceKeyDown}
               tabIndex={0}
-              aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Use Ctrl+Arrow Up/Down to switch workspaces.`}
+              aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Use Ctrl+Arrow Up/Down to switch workspaces. Scroll to switch workspace.`}
             >
               {(() => {
-                const IconComp = iconOptions[activeWorkspace?.icon] || Briefcase;
+                const IconComp = iconOptions[activeWorkspace?.icon || 'Briefcase'] || Briefcase;
                 return <IconComp className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6" />;
               })()}
             </button>
@@ -352,7 +371,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-md cursor-pointer outline-none transition-colors text-[11px] sm:text-[12px] md:text-sm lg:text-base ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'} focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50`}
                 >
                   {(() => {
-                    const IconComp = iconOptions[ws.icon] || Briefcase;
+                    const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
                     return <IconComp className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />;
                   })()}
                   <span className="flex-1 break-words">{ws.name} <span className="text-[10px] sm:text-[11px] md:text-sm lg:text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(ws)})</span></span>
@@ -403,7 +422,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
           isOpen={showShareModal}
           onClose={() => setShowShareModal(false)}
           workspaces={workspaces}
-          friends={friends}
+          friends={friends || []}
           currentUserId={user?.id}
           onShare={handleShareWorkspace}
         />
