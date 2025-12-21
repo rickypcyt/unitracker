@@ -1,11 +1,14 @@
-import { Monitor, Moon, Palette, Sun, X } from "lucide-react";
+import { Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
+import AddFriendModal from "@/modals/AddFriendModal";
 import BaseModal from "./BaseModal";
+import FriendsModal from "@/modals/FriendsModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
+import UserModal from "@/modals/UserModal";
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -33,6 +36,9 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [showAssignments, setShowAssignments] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);
@@ -196,6 +202,37 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* User & Friends Section */}
+          <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
+            <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+              <User size={22} />
+              User & Friends
+            </h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowUserModal(true)}
+                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+              >
+                <User size={16} />
+                User Profile
+              </button>
+              <button
+                onClick={() => setShowAddFriendModal(true)}
+                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+              >
+                <Users size={16} />
+                Add Friends
+              </button>
+              <button
+                onClick={() => setShowFriendsModal(true)}
+                className="w-full px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2"
+              >
+                <Users size={16} />
+                Manage Friends
+              </button>
+            </div>
+          </div>
+
           {/* Assignments Section */}
           <div className="bg-[var(--bg-secondary)] p-4 rounded-xl pt-3 pb-3">
             <button
@@ -232,6 +269,18 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <ManageSessionsModal
         isOpen={showStudySessions}
         onClose={() => setShowStudySessions(false)}
+      />
+      <UserModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+      />
+      <AddFriendModal
+        isOpen={showAddFriendModal}
+        onClose={() => setShowAddFriendModal(false)}
+      />
+      <FriendsModal
+        isOpen={showFriendsModal}
+        onClose={() => setShowFriendsModal(false)}
       />
     </>
   );

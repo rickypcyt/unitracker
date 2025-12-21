@@ -595,7 +595,7 @@ const StartSessionModal = ({
                 className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                   isSubmitting || !sessionTitle.trim()
                     ? "bg-[var(--bg-secondary)] text-[var(--text-secondary)] cursor-not-allowed"
-                    : "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 shadow-lg hover:shadow-xl"
+                    : "text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10"
                 }`}
                 aria-label={isSubmitting ? "Starting session" : "Start study session"}
               >

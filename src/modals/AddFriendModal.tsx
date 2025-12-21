@@ -47,7 +47,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(sentRequests);
   const { user } = useAuth();
   // Get friends from Zustand store if available
-  const friends = []; // TODO: Replace with actual friends data from Zustand store
+  const friends: Friend[] = []; // TODO: Replace with actual friends data from Zustand store
 
   // Check if user exists in DB when username changes
   useEffect(() => {
@@ -87,7 +87,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       return;
     }
     // Check if already a friend (case-insensitive)
-    const alreadyFriend = friends.some((f: Friend) => (f.username || '').toLowerCase() === username.trim().toLowerCase());
+    const alreadyFriend = friends.some((f) => (f.username || '').toLowerCase() === username.trim().toLowerCase());
     if (alreadyFriend) {
       setError('This user is already your friend.');
       return;

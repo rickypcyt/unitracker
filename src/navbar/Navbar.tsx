@@ -380,7 +380,6 @@ const Navbar = () => {
                 onCreateWorkspace={handleCreateWorkspace}
                 onEditWorkspace={handleEditWorkspace}
                 onDeleteWorkspace={handleDeleteWorkspace}
-                friends={friends}
               />
               <a
                 href="https://github.com/rickypcyt/unitracker"
