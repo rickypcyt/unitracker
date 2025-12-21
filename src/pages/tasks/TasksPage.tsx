@@ -16,7 +16,14 @@ const TasksPage = memo(() => {
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
-  const [showScrollTip, setShowScrollTip] = useState(true);
+  const [showScrollTip, setShowScrollTip] = useState(() => {
+    // Check if user has dismissed the tip before
+    try {
+      return localStorage.getItem('scrollTipDismissed') !== 'true';
+    } catch {
+      return true;
+    }
+  });
   
   // Use Zustand selectors
   const { workspaces } = useWorkspace();
@@ -122,7 +129,14 @@ const TasksPage = memo(() => {
           <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
           <span className="flex-1">Scroll to switch workspace</span>
           <button
-            onClick={() => setShowScrollTip(false)}
+            onClick={() => {
+              setShowScrollTip(false);
+              try {
+                localStorage.setItem('scrollTipDismissed', 'true');
+              } catch {
+                // Silently fail if localStorage is not available
+              }
+            }}
             className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-1 rounded hover:bg-[var(--bg-secondary)]"
             aria-label="Close scroll tip"
           >
