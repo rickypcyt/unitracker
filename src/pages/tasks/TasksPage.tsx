@@ -82,7 +82,8 @@ const TasksPage = memo(() => {
     if (!workspaces || workspaces.length <= 1 || !activeWorkspace) return;
 
     const threshold = 10; // ignore tiny trackpad deltas
-    if (Math.abs(e.deltaX) < threshold) return; 
+    // Only proceed if swiping right (deltaX > 0)
+    if (e.deltaX < threshold) return; 
 
     const now = Date.now();
     if (now - lastWheelSwitchRef.current < 350) return; // throttle rapid wheel events
@@ -93,12 +94,10 @@ const TasksPage = memo(() => {
     const currentIndex = workspaces.findIndex(ws => ws.id === activeWorkspace.id);
     if (currentIndex === -1) return;
 
-    // deltaX > 0 means scrolling right, deltaX < 0 means scrolling left
-    const nextIndex = e.deltaX > 0
-      ? (currentIndex + 1) % workspaces.length
-      : (currentIndex - 1 + workspaces.length) % workspaces.length;
-
+    // Only move to the next workspace (right)
+    const nextIndex = (currentIndex + 1) % workspaces.length;
     const nextWorkspace = workspaces[nextIndex];
+    
     if (nextWorkspace && nextWorkspace.id !== activeWorkspace.id) {
       try { localStorage.setItem('activeWorkspaceId', nextWorkspace.id); } catch {}
       setCurrentWorkspace(nextWorkspace);
@@ -128,7 +127,7 @@ const TasksPage = memo(() => {
       {workspaces && workspaces.length > 1 && showScrollTip && (
         <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
           <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
-          <span className="flex-1">Scroll to switch workspace</span>
+          <span className="flex-1">Swipe right to switch workspace</span>
           <button
             onClick={() => {
               setShowScrollTip(false);
