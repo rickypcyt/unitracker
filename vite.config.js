@@ -61,20 +61,61 @@ export default defineConfig(({ command, mode }) => {
     chunkSizeWarningLimit: 600, // Reducir para forzar mejor splitting
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Separar vendor chunks para mejor caching y carga paralela
-          'react-vendor': ['react', 'react-dom'],
-          // Split large UI library into smaller chunks
-          'chakra-core': ['@chakra-ui/react'],
-          'motion-vendor': ['framer-motion'],
-          'emotion-vendor': ['@emotion/react', '@emotion/styled'],
-          'utils-vendor': ['@reduxjs/toolkit', 'react-redux', 'zustand'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'chart-vendor': ['chart.js', 'react-chartjs-2', 'recharts'],
-          // @tiptap/pm tiene problemas de resolución, dejar que Rollup lo maneje automáticamente
-          // Split large utilities
-          'date-vendor': ['date-fns'],
-          'icon-vendor': ['lucide-react', '@heroicons/react']
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@chakra-ui')) {
+              return 'chakra-core';
+            }
+            if (id.includes('framer-motion')) {
+              return 'motion-vendor';
+            }
+            if (id.includes('@emotion')) {
+              return 'emotion-vendor';
+            }
+            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux') || id.includes('zustand')) {
+              return 'utils-vendor';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor';
+            }
+            if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            if (id.includes('date-fns')) {
+              return 'date-vendor';
+            }
+            if (id.includes('lucide-react') || id.includes('@heroicons/react')) {
+              return 'icon-vendor';
+            }
+            // Group toast notifications together
+            if (id.includes('react-toastify') || id.includes('react-hot-toast') || id.includes('sonner')) {
+              return 'toast-vendor';
+            }
+          }
+
+          // Split large application chunks
+          if (id.includes('src/modals/LoginPromptModal')) {
+            return 'auth-modal';
+          }
+          if (id.includes('src/pages/session/StudyTimer')) {
+            return 'study-timer';
+          }
+          if (id.includes('src/pages/notes/')) {
+            return 'notes-page';
+          }
+          if (id.includes('src/pages/tasks/')) {
+            return 'tasks-page';
+          }
+          if (id.includes('src/pages/calendar/')) {
+            return 'calendar-page';
+          }
+          if (id.includes('src/pages/stats/')) {
+            return 'stats-page';
+          }
         },
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',

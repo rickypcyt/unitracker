@@ -1,8 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { Save, Trash2, X } from 'lucide-react';
 
-import MarkdownWysiwyg from '../../MarkdownWysiwyg';
 import MobileNotesSelector from './MobileNotesSelector';
+
+const MarkdownWysiwyg = lazy(() => import('../../MarkdownWysiwyg'));
+
+// Loading component for the editor
+const EditorLoader: React.FC = () => (
+  <div className="flex items-center justify-center h-32">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]"></div>
+  </div>
+);
 
 interface Note {
   id?: string;
@@ -255,14 +263,16 @@ const NoteView: React.FC<NoteViewProps> = ({
         {/* Editor Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="w-full min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-10rem)]">
-            <MarkdownWysiwyg
-              ref={editorRef}
-              initialBody={description}
-              onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
-              showTitleInput={false}
-              variant="notes"
-              className="h-full"
-            />
+            <Suspense fallback={<EditorLoader />}>
+              <MarkdownWysiwyg
+                ref={editorRef}
+                initialBody={description}
+                onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
+                showTitleInput={false}
+                variant="notes"
+                className="h-full"
+              />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -331,14 +341,16 @@ const NoteView: React.FC<NoteViewProps> = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="w-full min-h-[calc(100vh-2rem)]">
-          <MarkdownWysiwyg
-            ref={editorRef}
-            initialBody={description}
-            onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
-            showTitleInput={false}
-            variant="notes"
-            className="h-full"
-          />
+          <Suspense fallback={<EditorLoader />}>
+            <MarkdownWysiwyg
+              ref={editorRef}
+              initialBody={description}
+              onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
+              showTitleInput={false}
+              variant="notes"
+              className="h-full"
+            />
+          </Suspense>
         </div>
         </div>
 

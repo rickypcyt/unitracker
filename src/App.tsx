@@ -1,20 +1,22 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
 
-import CalendarPage from "@/pages/calendar/CalendarPage";
 import Navbar from "@/navbar/Navbar";
 import NewFeaturesModal from "@/modals/NewFeaturesModal";
 import { NoiseProvider } from "@/utils/NoiseContext";
-import Notes from "@/pages/notes/Notes";
-import SessionPage from "@/pages/session/SessionPage";
-import StatsPage from "@/pages/stats/StatsPage";
-import TasksPage from "@/pages/tasks/TasksPage";
 import { Toaster } from "react-hot-toast";
 import TourManager from "./components/TourManager";
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useAuthActions } from "@/store/appStore";
+
+// Lazy load pages for better performance
+const CalendarPage = lazy(() => import("@/pages/calendar/CalendarPage"));
+const Notes = lazy(() => import("@/pages/notes/Notes"));
+const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
+const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
+const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
 
 // -------------------------
 // Types
@@ -45,6 +47,15 @@ const pagesMap: Record<string, FC> = {
 };
 
 // -------------------------
+// Loading component for lazy loaded pages
+// -------------------------
+const PageLoader: FC = () => (
+  <div className="min-h-screen bg-[var(--bg-primary)] w-full flex items-center justify-center">
+    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--accent-primary)]"></div>
+  </div>
+);
+
+// -------------------------
 // PageContent component
 // -------------------------
 const PageContent: FC = () => {
@@ -55,7 +66,9 @@ const PageContent: FC = () => {
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
       <Navbar />
       <div className="pt-16">
-        <ActiveComponent />
+        <Suspense fallback={<PageLoader />}>
+          <ActiveComponent />
+        </Suspense>
       </div>
     </div>
   );
