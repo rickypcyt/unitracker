@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Save, Trash2, X } from 'lucide-react';
 
 import MarkdownWysiwyg from '../../MarkdownWysiwyg';
 import MobileNotesSelector from './MobileNotesSelector';
@@ -10,6 +11,7 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  created_at?: string;
   last_edited?: string;
 }
 
@@ -17,26 +19,22 @@ interface NoteViewProps {
   note: Note;
   onSave: (note: Omit<Note, 'id'>) => Promise<void>;
   onDelete: (note: Note) => void;
-  onBack: () => void;
   allNotes?: Note[];
   onNoteSelect?: (noteId: string) => void;
   selectedNoteId?: string | undefined;
   onDeleteNote?: (note: Note) => void;
 }
 
-const NoteView: React.FC<NoteViewProps> = ({ 
-  note, 
-  onSave, 
-  onDelete, 
-  onBack, 
-  allNotes = [], 
-  onNoteSelect, 
-  selectedNoteId, 
-  onDeleteNote 
+const NoteView: React.FC<NoteViewProps> = ({
+  note,
+  onSave,
+  onDelete,
+  allNotes = [],
+  onNoteSelect,
+  selectedNoteId,
+  onDeleteNote
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [isEditingAssignment, setIsEditingAssignment] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [description, setDescription] = useState(note.description);
   const [assignment, setAssignment] = useState(note.assignment || '');
@@ -141,8 +139,6 @@ const NoteView: React.FC<NoteViewProps> = ({
     setDescription(note.description);
     setAssignment(note.assignment || '');
     setDate(note.date);
-    setIsEditingTitle(false);
-    setIsEditingAssignment(false);
     setHasUnsavedChanges(false);
     setIsInitialized(true);
   }, [note]);
@@ -160,31 +156,7 @@ const NoteView: React.FC<NoteViewProps> = ({
     onDelete(note);
   };
 
-  // Title editing handlers
-  const handleTitleEdit = () => setIsEditingTitle(true);
-  
-  const handleTitleSave = async () => {
-    const success = await saveNote({ title });
-    if (success) setIsEditingTitle(false);
-  };
 
-  const handleTitleCancel = () => {
-    setTitle(note.title);
-    setIsEditingTitle(false);
-  };
-
-  // Assignment editing handlers
-  const handleAssignmentEdit = () => setIsEditingAssignment(true);
-  
-  const handleAssignmentSave = async () => {
-    const success = await saveNote({ assignment: assignment || null });
-    if (success) setIsEditingAssignment(false);
-  };
-
-  const handleAssignmentCancel = () => {
-    setAssignment(note.assignment || '');
-    setIsEditingAssignment(false);
-  };
 
   // Date editing handled in right panel; header date controls removed
 

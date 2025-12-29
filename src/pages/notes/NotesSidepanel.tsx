@@ -37,7 +37,7 @@ interface NotesSidepanelProps {
   error: string | null;
   onNoteSelect: (noteId: string) => void;
   selectedNoteId?: string | undefined;
-  onCreateNote: () => void;
+  onCreateNote: (assignment?: string) => void;
 }
 
 const NotesSidepanel: React.FC<NotesSidepanelProps> = ({

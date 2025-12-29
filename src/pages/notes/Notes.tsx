@@ -268,7 +268,6 @@ const Notes: React.FC = () => {
               note={selectedNote}
               onSave={selectedNote?.id ? handleUpdateNote : handleAddNote}
               onDelete={(note) => setNoteToDelete(note)}
-              onBack={handleBackToNotes}
               allNotes={notesToShow}
               onNoteSelect={handleNoteSelect}
               selectedNoteId={selectedNoteId}
@@ -290,8 +289,10 @@ const Notes: React.FC = () => {
       <Footer
         showActions={!!selectedNote}
         onBackToNotes={handleBackToNotes}
-        onSave={selectedNote ? () => handleUpdateNote({ title: selectedNote.title, assignment: selectedNote.assignment, description: selectedNote.description, date: selectedNote.date }) : undefined}
-        onDelete={selectedNote ? () => setNoteToDelete(selectedNote) : undefined}
+        {...(selectedNote && {
+          onSave: () => { handleUpdateNote({ title: selectedNote.title, assignment: selectedNote.assignment, description: selectedNote.description, date: selectedNote.date }); },
+          onDelete: () => { setNoteToDelete(selectedNote); }
+        })}
       />
 
     {/* Modals - always rendered */}
