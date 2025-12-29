@@ -37,8 +37,6 @@ export default defineConfig(({ command, mode }) => {
   optimizeDeps: {
     include: [
       '@chakra-ui/react',
-      '@chakra-ui/react/modal',
-      '@chakra-ui/react/button',
       'react',
       'react-dom',
       'react-redux',
@@ -47,7 +45,11 @@ export default defineConfig(({ command, mode }) => {
       'react-toastify',
       'lucide-react',
       '@supabase/supabase-js',
-      '@supabase/postgrest-js'
+      '@supabase/postgrest-js',
+      // TipTap dependencies for lazy-loaded editor
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-placeholder'
     ],
     esbuildOptions: {
       target: 'es2020'
@@ -104,8 +106,11 @@ export default defineConfig(({ command, mode }) => {
           if (id.includes('src/pages/session/StudyTimer')) {
             return 'study-timer';
           }
-          if (id.includes('src/pages/notes/')) {
+          if (id.includes('src/pages/notes/') && !id.includes('MarkdownWysiwyg')) {
             return 'notes-page';
+          }
+          if (id.includes('src/MarkdownWysiwyg') || id.includes('@tiptap/')) {
+            return 'tiptap-editor';
           }
           if (id.includes('src/pages/tasks/')) {
             return 'tasks-page';
