@@ -1,10 +1,12 @@
-import { ChevronFirst, ChevronLast } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import DeleteNoteModal from '../../modals/DeleteNoteModal';
+import { FileText } from 'lucide-react';
+import Footer from '../../components/Footer';
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteView from './NoteView';
 import NotesSidepanel from './NotesSidepanel';
+import Sidepanel from '../../components/Sidepanel';
 import WelcomeView from './WelcomeView';
 import { demoNotes } from '@/utils/demoData';
 import { supabase } from '@/utils/supabaseClient';
@@ -18,6 +20,8 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  created_at?: string;
+  last_edited?: string;
 }
 
 
@@ -33,7 +37,7 @@ const Notes: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(undefined);
-  const [isSidepanelCollapsed, setIsSidepanelCollapsed] = useState(false);
+  const [isSidepanelCollapsed, setIsSidepanelCollapsed] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
@@ -50,7 +54,7 @@ const Notes: React.FC = () => {
           .from('notes')
           .select('*')
           .eq('user_id', userId)
-          .order('created_at', { ascending: false });
+          .order('last_edited', { ascending: false });
         if (error) setError('Error loading notes');
         else setNotes((data as Note[]) || []);
       } else {
@@ -88,6 +92,7 @@ const Notes: React.FC = () => {
     try {
       const safeDate = getSafeDate(noteData.date);
       
+      const now = new Date().toISOString();
       if (user) {
         const { data, error: insertError } = await supabase
           .from('notes')
@@ -96,7 +101,9 @@ const Notes: React.FC = () => {
             assignment: noteData.assignment ?? null,
             description: noteData.description || '',
             date: safeDate,
-            user_id: user.id 
+            user_id: user.id,
+            created_at: now,
+            last_edited: now
           }])
           .select()
           .single();
@@ -108,12 +115,15 @@ const Notes: React.FC = () => {
         }
         return null;
       } else {
+        const now = new Date().toISOString();
         const newNote: Note = {
           id: Date.now().toString(),
           title: noteData.title || '',
           assignment: noteData.assignment ?? null,
           description: noteData.description || '',
-          date: safeDate
+          date: safeDate,
+          created_at: now,
+          last_edited: now
         };
         setNotes([newNote, ...notes]);
         return newNote.id || null;
@@ -137,10 +147,16 @@ const Notes: React.FC = () => {
     
     setLoading(true);
     setError(null);
+    
+    const updatedNote = {
+      ...note,
+      last_edited: new Date().toISOString()
+    };
+    
     if (user) {
       const { data, error: updateError } = await supabase
         .from('notes')
-        .update(note)
+        .update(updatedNote)
         .eq('id', noteId)
         .select()
         .single();
@@ -150,7 +166,7 @@ const Notes: React.FC = () => {
         setNotes(notes.map(n => n.id === noteId ? data as Note : n));
       }
     } else {
-      setNotes(notes.map(n => n.id === noteId ? { ...n, ...note } as Note : n));
+      setNotes(notes.map(n => n.id === noteId ? { ...n, ...updatedNote } as Note : n));
     }
     setLoading(false);
   };
@@ -211,42 +227,39 @@ const Notes: React.FC = () => {
 
   return (
     <React.Fragment>
-      <div className="w-full h-full relative">
-        {/* Sidepanel - Fixed positioning, below navbar, responsive */}
-        <div 
-          className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${
-            isSidepanelCollapsed ? 'w-12' : 'w-80'
-          }`}
+      <div className="w-full min-h-screen relative pb-16">
+        {/* Left Sidepanel */}
+        <Sidepanel
+          position="left"
+          isCollapsed={isSidepanelCollapsed}
+          onToggle={() => setIsSidepanelCollapsed(!isSidepanelCollapsed)}
+          width={80}
+          collapsedWidth={12}
+          toggleTitle={{ expand: 'Expand panel', collapse: 'Collapse panel' }}
+          title={
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                <FileText size={20} />
+                Note Explorer
+              </h2>
+              <p className="text-base text-[var(--text-secondary)]">
+                {notesToShow.length} {notesToShow.length === 1 ? 'note' : 'notes'}
+              </p>
+            </div>
+          }
         >
-          {/* Toggle Button */}
-          <button
-            onClick={() => setIsSidepanelCollapsed(!isSidepanelCollapsed)}
-            className={`absolute right-2 top-4 w-8 h-8 text-[var(--accent-primary)] flex items-center justify-center rounded hover:bg-[var(--accent-primary)]/10 transition-colors focus:outline-none z-20 ${
-              isSidepanelCollapsed ? 'ml-2' : ''
-            }`}
-            title={isSidepanelCollapsed ? 'Expand panel' : 'Collapse panel'}
-          >
-            {isSidepanelCollapsed ? (
-              <ChevronLast size={24} />
-            ) : (
-              <ChevronFirst size={24} />
-            )}
-          </button>
-          
-          {!isSidepanelCollapsed && (
-            <NotesSidepanel
-              notes={notesToShow}
-              loading={loading}
-              error={error}
-              onNoteSelect={handleNoteSelect}
-              selectedNoteId={selectedNoteId}
-              onDelete={(note) => setNoteToDelete(note)}
-              onCreateNote={handleCreateNote}
-            />
-          )}
-        </div>
-        
-        {/* Main Content Container - Separate from sidepanel */}
+          <NotesSidepanel
+            notes={notesToShow}
+            loading={loading}
+            error={error}
+            onNoteSelect={handleNoteSelect}
+            selectedNoteId={selectedNoteId}
+            onCreateNote={handleCreateNote}
+          />
+        </Sidepanel>
+
+
+        {/* Main Content Container - Separate from sidepanels */}
         <div className={`w-full h-full transition-all duration-300 ${
           isSidepanelCollapsed ? 'md:pl-12' : 'md:pl-80'
         }`}>
@@ -274,7 +287,13 @@ const Notes: React.FC = () => {
           )}
         </div>
       </div>
-    
+      <Footer
+        showActions={!!selectedNote}
+        onBackToNotes={handleBackToNotes}
+        onSave={selectedNote ? () => handleUpdateNote({ title: selectedNote.title, assignment: selectedNote.assignment, description: selectedNote.description, date: selectedNote.date }) : undefined}
+        onDelete={selectedNote ? () => setNoteToDelete(selectedNote) : undefined}
+      />
+
     {/* Modals - always rendered */}
     <LoginPromptModal
       isOpen={showLoginModal || loginPromptOpen}

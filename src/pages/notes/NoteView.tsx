@@ -1,7 +1,5 @@
-import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '../../MarkdownWysiwyg';
 import MobileNotesSelector from './MobileNotesSelector';
 
@@ -12,6 +10,7 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  last_edited?: string;
 }
 
 interface NoteViewProps {
@@ -45,8 +44,18 @@ const NoteView: React.FC<NoteViewProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showMobileNotes, setShowMobileNotes] = useState(false);
-  const datePickerRef = useRef<any>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const editorRef = useRef<{ getCurrentContent: () => string } | null>(null);
+
+  // Helper function to safely update description only when there's an actual change
+  const handleDescriptionChange = useCallback((newDescription: string) => {
+    if (!isInitialized) return;
+    if (newDescription !== description) {
+      setDescription(newDescription);
+    }
+  }, [isInitialized, description]);
+
 
   // Generic save handler
   const saveNote = async (updates: Partial<Omit<Note, 'id'>>) => {
@@ -68,7 +77,9 @@ const NoteView: React.FC<NoteViewProps> = ({
   };
 
   const handleSave = async () => {
-    const success = await saveNote({ title, assignment: assignment || null, description, date });
+    // Get current content from editor to ensure we save the latest changes
+    const currentContent = editorRef.current?.getCurrentContent() || description;
+    const success = await saveNote({ title, assignment: assignment || null, description: currentContent, date });
     if (success) {
       setIsEditing(false);
       setHasUnsavedChanges(false);
@@ -104,15 +115,18 @@ const NoteView: React.FC<NoteViewProps> = ({
     };
   }, []);
 
-  // Track unsaved changes
+  // Track unsaved changes (only after initialization to prevent auto-save on mount)
   useEffect(() => {
-    setHasUnsavedChanges(
-      title !== note.title || 
-      description !== note.description || 
+    if (!isInitialized) return;
+
+    const hasChanges =
+      title !== note.title ||
+      description !== note.description ||
       assignment !== (note.assignment || '') ||
-      date !== note.date
-    );
-  }, [title, description, assignment, date, note]);
+      date !== note.date;
+
+    setHasUnsavedChanges(hasChanges);
+  }, [title, description, assignment, date, note, isInitialized]);
 
   // Auto-save when there are changes
   useEffect(() => {
@@ -129,6 +143,8 @@ const NoteView: React.FC<NoteViewProps> = ({
     setDate(note.date);
     setIsEditingTitle(false);
     setIsEditingAssignment(false);
+    setHasUnsavedChanges(false);
+    setIsInitialized(true);
   }, [note]);
 
   const handleCancel = () => {
@@ -170,13 +186,7 @@ const NoteView: React.FC<NoteViewProps> = ({
     setIsEditingAssignment(false);
   };
 
-  // Date handler
-  const handleDateSave = async (newDate: Date | null) => {
-    if (!newDate) return;
-    const dateString = newDate.toISOString().split('T')[0] as string;
-    const success = await saveNote({ date: dateString });
-    if (success) setDate(dateString);
-  };
+  // Date editing handled in right panel; header date controls removed
 
   // Keyboard shortcut for save
   useEffect(() => {
@@ -196,7 +206,7 @@ const NoteView: React.FC<NoteViewProps> = ({
   // Render edit mode
   if (isEditing) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col relative">
         {/* Edit Header */}
         <div className="border-b border-[var(--border-primary)] p-3 sm:p-6">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -229,7 +239,7 @@ const NoteView: React.FC<NoteViewProps> = ({
           </div>
 
           {/* Edit Form */}
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4 mt-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
                 <input
@@ -259,15 +269,29 @@ const NoteView: React.FC<NoteViewProps> = ({
           </div>
         </div>
 
-        {/* Editor Content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-          <MarkdownWysiwyg
-            initialBody={description}
-            onChange={(data: { body: string }) => setDescription(data.body)}
-            showTitleInput={false}
-            placeholder="Start writing your note..."
-            className="min-h-full"
+        {/* Note Title Header */}
+        <div className="px-4 py-3 bg-[var(--bg-primary)]">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none text-xl sm:text-2xl font-bold transition-colors"
+            placeholder="Note Title"
           />
+        </div>
+
+        {/* Editor Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-10rem)]">
+            <MarkdownWysiwyg
+              ref={editorRef}
+              initialBody={description}
+              onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
+              showTitleInput={false}
+              variant="notes"
+              className="h-full"
+            />
+          </div>
         </div>
       </div>
     );
@@ -275,165 +299,77 @@ const NoteView: React.FC<NoteViewProps> = ({
 
   // Render view mode
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 border-b border-[var(--border-primary)] p-4 sm:p-6 bg-[var(--bg-primary)]">
-        <div className="flex items-start justify-between gap-2 sm:gap-4">
-          {/* Title and Date - Left/Center */}
-          <div className={`flex-1 ${allNotes.length > 0 ? 'sm:flex-1' : ''}`}>
-            {/* Title */}
-            <div className="mb-1">
-              {isEditingTitle ? (
+    <div className="h-full flex flex-col relative">
+      {/* Note Title Header */}
+      <div className="p-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
+          placeholder="Note Title"
+        />
+      </div>
+
+      {/* Note Properties */}
+      <div className="p-0 bg-[var(--bg-primary)]">
+        <div className="border-b border-[var(--border-primary)] overflow-hidden">
+          <div className="flex flex-col">
+            {/* Assignment */}
+            <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Assignment</span>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleTitleSave();
-                    } else if (e.key === 'Escape') {
-                      e.preventDefault();
-                      handleTitleCancel();
-                    }
-                  }}
-                  onBlur={handleTitleSave}
-                  className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
-                  placeholder="Note Title"
-                  autoFocus
+                  value={assignment}
+                  onChange={(e) => setAssignment(e.target.value)}
+                  className={`text-sm font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-right flex-1 ml-4 ${
+                    !assignment || assignment.trim() === ''
+                      ? 'text-red-400 placeholder-red-400'
+                      : 'text-[var(--text-primary)]'
+                  }`}
+                  placeholder="Add here"
                 />
-              ) : (
-                <h1 
-                  className="text-lg sm:text-xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors truncate text-left"
-                  onClick={handleTitleEdit}
-                  title="Click to edit title"
-                >
-                  {note.title}
-                </h1>
-              )}
+              </div>
             </div>
 
-            {/* Date */}
-            <div className="flex justify-start">
-              <DatePicker
-                ref={datePickerRef}
-                selected={new Date(date)}
-                onChange={handleDateSave}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="DD/MM/YYYY"
-                popperPlacement="bottom"
-                calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
-                dayClassName={(date) =>
-                  (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
-                }
-                showPopperArrow={false}
-                customInput={
-                  <div 
-                    className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded py-1 transition-colors text-xs sm:text-sm text-[var(--text-secondary)]"
-                    title="Click to edit date"
-                  >
-                    <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>{new Date(date).toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}</span>
-                  </div>
-                }
-              />
-            </div>
-          </div>
+            {/* Created Date */}
+            {note.created_at && (
+              <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Created</span>
+                  <span className="text-sm text-[var(--text-primary)] font-medium">{new Date(note.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            )}
 
-          {/* Assignment - Right */}
-          <div className="flex-shrink-0">
-            {isEditingAssignment ? (
-              <input
-                value={assignment}
-                onChange={(e) => setAssignment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAssignmentSave();
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleAssignmentCancel();
-                  }
-                }}
-                onBlur={handleAssignmentSave}
-                className="px-2 sm:px-3 py-1 bg-transparent border-2 border-[var(--accent-primary)] rounded-full text-[var(--accent-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-xs sm:text-sm font-medium transition-colors w-full max-w-[120px] sm:max-w-[150px]"
-                placeholder="Assignment"
-                autoFocus
-              />
-            ) : (
-              <>
-                {note.assignment ? (
-                  <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-sm sm:text-base font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] cursor-text hover:bg-[var(--accent-primary)]/20 transition-colors max-w-full truncate"
-                    onClick={handleAssignmentEdit}
-                    title="Click to edit assignment"
-                  >
-                    {note.assignment}
-                  </span>
-                ) : (
-                  <span 
-                    className="inline-block px-2 sm:px-3 py-1 rounded-full text-sm sm:text-base font-medium text-[var(--text-secondary)] cursor-text hover:bg-[var(--bg-secondary)] transition-colors border-2 border-dashed border-[var(--accent-primary)] whitespace-nowrap"
-                    onClick={handleAssignmentEdit}
-                    title="Click to add assignment"
-                  >
-                    <span className="hidden sm:inline">+ Add assignment</span>
-                    <span className="sm:hidden">+ Add</span>
-                  </span>
-                )}
-              </>
+            {/* Updated Date */}
+            {note.last_edited && (
+              <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Updated</span>
+                  <span className="text-sm text-[var(--text-primary)] font-medium">{new Date(note.last_edited).toLocaleDateString()}</span>
+                </div>
+              </div>
             )}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-        <div className="max-w-none sm:max-w-4xl">
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full min-h-[calc(100vh-2rem)]">
           <MarkdownWysiwyg
+            ref={editorRef}
             initialBody={description}
-            onChange={(data: { body: string }) => setDescription(data.body)}
+            onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
             showTitleInput={false}
-            placeholder="Start writing your note..."
-            className="min-h-full"
+            variant="notes"
+            className="h-full"
           />
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="fixed bottom-0 left-0 right-0 w-full border-t border-[var(--border-primary)] px-2 py-1 sm:px-4 sm:py-2 bg-[var(--bg-primary)] h-12 sm:h-14 z-50">
-        <div className="flex items-center justify-between w-full h-full">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm sm:text-base flex-shrink-0"
-          >
-            <ArrowLeft size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="hidden sm:inline">Back to notes</span>
-          </button>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges || isSaving}
-              className="p-1 sm:p-1.5 rounded-lg text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={isSaving ? 'Saving...' : 'Save'}
-            >
-              <Save size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-            <button
-              onClick={handleDelete}
-              className="p-1 sm:p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
-              title="Delete note"
-            >
-              <Trash2 size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-          </div>
         </div>
-      </div>
-      
+
       {/* Mobile Notes Selector */}
       <MobileNotesSelector
         notes={allNotes}

@@ -18,6 +18,33 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.1.3",
+    date: "December 29, 2025",
+    time: "12:00 PM",
+    type: "minor",
+    changes: {
+      improved: [
+        "Enhanced Notes page UI with modern design and improved navigation",
+        "Upgraded WYSIWYG editor with context-specific variants for Notes and Tasks",
+        "Improved side panel functionality with scrollable content and quick actions",
+        "Enhanced footer with navigation and save/delete actions",
+        "Better responsive design for mobile devices",
+        "Optimized note saving system with improved auto-save and keyboard shortcuts"
+      ],
+      added: [
+        "Contextual placeholders for different editor variants",
+        "Quick assignment creation buttons in side panel",
+        "Visual indicators for editable areas in editors",
+        "Improved note metadata display with responsive layout"
+      ],
+      fixed: [
+        "Fixed note saving issues with Ctrl+S keyboard shortcut",
+        "Resolved auto-save conflicts and synchronization problems",
+        "Fixed side panel height issues with footer positioning"
+      ]
+    }
+  },
+  {
     version: "1.1.2",
     date: "December 21, 2025",
     time: "5:17 PM",

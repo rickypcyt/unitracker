@@ -240,6 +240,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <MarkdownWysiwyg
               initialBody={formData.description || ''}
               onChange={({ body }) => handleChange('description', body)}
+              variant="tasks"
               className="min-h-[150px]"
             />
           </div>

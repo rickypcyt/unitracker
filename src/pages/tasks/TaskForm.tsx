@@ -836,8 +836,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         initialBody={formData.description}
         onChange={({ body }) => handleChange('description', body)}
         showTitleInput={false}
+        variant="tasks"
         className="pb-2"
-        placeholder="Describe your task in detail (supports markdown formatting)"
       />
       {errors.description && (
         <p className="mt-1 text-base text-red-500">{errors.description}</p>

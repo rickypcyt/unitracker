@@ -9,6 +9,8 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  created_at?: string;
+  last_edited?: string;
 }
 
 interface NotesCreateModalProps {

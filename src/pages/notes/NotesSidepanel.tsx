@@ -1,5 +1,24 @@
-import { ChevronDown, ChevronRight, FileText, Folder } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Folder, Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+
+// Utility function to get time ago string
+const getTimeAgo = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return '';
+
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+  return date.toLocaleDateString();
+};
 
 interface Note {
   id?: string;
@@ -8,6 +27,8 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  created_at?: string;
+  last_edited?: string;
 }
 
 interface NotesSidepanelProps {
@@ -16,7 +37,6 @@ interface NotesSidepanelProps {
   error: string | null;
   onNoteSelect: (noteId: string) => void;
   selectedNoteId?: string | undefined;
-  onDelete: (note: Note) => void;
   onCreateNote: () => void;
 }
 
@@ -24,7 +44,6 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   notes,
   loading,
   error,
-  onDelete,
   selectedNoteId,
   onNoteSelect,
   onCreateNote,
@@ -66,9 +85,9 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     setExpandedAssignments(newExpanded);
   };
 
-  // Expand all assignments initially
+  // Collapse all assignments initially (none expanded by default)
   React.useEffect(() => {
-    setExpandedAssignments(new Set(Object.keys(notesByAssignment)));
+    setExpandedAssignments(new Set());
   }, [notesByAssignment]);
 
   if (loading && notes.length === 0) {
@@ -91,18 +110,8 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   }
 
   return (
-    <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] h-full overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-[var(--border-primary)]">
-        <h2 className="text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <FileText size={20} />
-          Notes
-        </h2>
-        <p className="text-base text-[var(--text-secondary)] mt-1">
-          {notes.length} {notes.length === 1 ? 'note' : 'notes'}
-        </p>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 h-full">
+    <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col">
+      <div className="flex-1 p-4">
         {Object.keys(notesByAssignment).length === 0 ? (
           <div className="text-center py-8">
             <FileText className="mx-auto mb-2 w-8 h-8 text-[var(--text-secondary)] opacity-50" />
@@ -112,25 +121,34 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
           <div className="space-y-2">
             {Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
               <div key={assignment} className="border border-[var(--border-primary)] rounded-lg overflow-hidden">
-                <button
-                  onClick={() => toggleAssignment(assignment)}
-                  className="w-full px-3 py-3 bg-[var(--bg-primary)] hover:bg-[var(--bg-hover)] transition-colors flex items-center justify-between text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    {expandedAssignments.has(assignment) ? (
-                      <ChevronDown size={18} className="text-[var(--text-secondary)]" />
-                    ) : (
-                      <ChevronRight size={18} className="text-[var(--text-secondary)]" />
-                    )}
-                    <Folder size={18} className="text-[var(--accent-primary)]" />
-                    <span className="text-base font-medium text-[var(--text-primary)]">
-                      {assignment}
+                <div className="flex items-center">
+                  <button
+                    onClick={() => toggleAssignment(assignment)}
+                    className="flex-1 px-3 py-3 bg-[var(--bg-primary)] flex items-center justify-between text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {expandedAssignments.has(assignment) ? (
+                        <ChevronDown size={18} className="text-[var(--text-secondary)]" />
+                      ) : (
+                        <ChevronRight size={18} className="text-[var(--text-secondary)]" />
+                      )}
+                      <Folder size={18} className="text-[var(--accent-primary)]" />
+                      <span className="text-base font-medium text-[var(--text-primary)]">
+                        {assignment}
+                      </span>
+                    </div>
+                    <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-1 rounded-full">
+                      {assignmentNotes.length}
                     </span>
-                  </div>
-                  <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-1 rounded-full">
-                    {assignmentNotes.length}
-                  </span>
-                </button>
+                  </button>
+                  <button
+                    onClick={() => onCreateNote(assignment)}
+                    className="px-2 py-3 bg-[var(--bg-primary)] border-l border-[var(--border-primary)]"
+                    title={`Create new note for "${assignment}"`}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
                 
                 {expandedAssignments.has(assignment) && (
                   <div className="bg-[var(--bg-secondary)]">
@@ -140,10 +158,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                         <div
                           key={noteKey}
                           onClick={() => onNoteSelect(note.id || noteKey)}
-                          className={`px-3 py-3 border-b border-[var(--border-primary)] last:border-b-0 cursor-pointer transition-colors ${
+                          className={`px-3 py-3 border-b border-[var(--border-primary)] last:border-b-0 cursor-pointer ${
                             selectedNoteId === note.id
                               ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
-                              : 'hover:bg-[var(--bg-hover)]'
+                              : ''
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
@@ -151,25 +169,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                               <h4 className="text-base font-medium text-[var(--text-primary)] truncate">
                                 {note.title}
                               </h4>
-                              <div className="flex items-center justify-between mt-1">
+                              <div className="mt-1">
                                 <p className="text-sm text-[var(--text-secondary)]">
-                                  {new Date(note.date).toLocaleDateString()}
+                                  Updated {getTimeAgo(note.last_edited)}
                                 </p>
-                                <div className="flex items-center gap-1 flex-shrink-0">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onDelete(note);
-                                    }}
-                                    className="p-1.5 rounded text-red-500 hover:bg-red-500/10 transition-colors"
-                                    title="Delete"
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <polyline points="3,6 5,6 21,6"></polyline>
-                                      <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
-                                    </svg>
-                                  </button>
-                                </div>
                               </div>
                             </div>
                           </div>

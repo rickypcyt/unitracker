@@ -161,6 +161,7 @@ interface FormButtonProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 export const FormButton: React.FC<FormButtonProps> = ({
@@ -169,6 +170,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
   children,
   className = '',
   onClick,
+  disabled,
   ...props
 }) => {
   const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
@@ -184,6 +186,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
       type={type}
       className={`${baseClasses} ${variantClasses[variant as ButtonVariant]} ${className}`}
       onClick={onClick}
+      disabled={disabled}
       {...props}
     >
       {children}

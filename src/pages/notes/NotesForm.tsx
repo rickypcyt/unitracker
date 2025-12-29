@@ -1,4 +1,3 @@
-import { FileText, Save, X } from "lucide-react";
 import { FormActions, FormButton, FormInput } from "../../modals/FormElements";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -11,6 +10,8 @@ interface Note {
   description: string;
   date: string;
   user_id?: string;
+  created_at?: string;
+  last_edited?: string;
 }
 
 interface NotesFormProps {
@@ -99,6 +100,7 @@ const NotesForm: React.FC<NotesFormProps> = ({
             initialTitle={wysiwyg.title}
             initialBody={wysiwyg.body}
             onChange={handleWysiwygChange}
+            variant="notes"
             className="min-h-[300px]"
           />
           <FormInput
@@ -107,7 +109,6 @@ const NotesForm: React.FC<NotesFormProps> = ({
             value={form.assignment}
             onChange={handleAssignmentChange}
             placeholder="Enter assignment name..."
-            error={null}
           />
         </div>
       </div>

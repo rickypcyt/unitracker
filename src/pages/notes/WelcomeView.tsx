@@ -1,4 +1,4 @@
-import { Calendar, FileText, Folder, Plus, X } from 'lucide-react';
+import { Calendar, FileText, Folder, Plus } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
@@ -26,6 +26,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState('Welcome to Notes');
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0] || '');
+  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const datePickerRef = useRef<any>(null);
   
   const originalTitle = 'Welcome to Notes';
@@ -93,16 +94,26 @@ Start creating your first note!`;
               </div>
             </div>
           ) : notes.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="mx-auto mb-4 w-12 h-12 text-[var(--text-secondary)] opacity-50" />
-              <p className="text-[var(--text-secondary)] mb-4">No notes yet</p>
-              <button
-                onClick={() => onCreateNote()}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors"
-              >
-                <Plus size={16} className="w-4 h-4" />
-                Create your first note
-              </button>
+            <div className="text-center py-12 px-6">
+              <div className="max-w-md mx-auto">
+                <div className="relative mb-6">
+                  <FileText className="mx-auto w-16 h-16 text-[var(--text-secondary)] opacity-30" />
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-[var(--accent-primary)] rounded-full flex items-center justify-center animate-pulse">
+                    <Plus size={16} className="text-white" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Welcome to Notes</h3>
+                <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">
+                  Start organizing your thoughts and ideas. Create your first note to get started.
+                </p>
+                <button
+                  onClick={() => onCreateNote()}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
+                >
+                  <Plus size={18} className="w-5 h-5" />
+                  Create your first note
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-4">
@@ -120,78 +131,56 @@ Start creating your first note!`;
                 return Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
                   <div key={assignment} className="mb-6">
                     {/* Assignment Header */}
-                    <div className="px-2 py-2 bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] sticky top-0 z-10 mb-3">
+                    <div className="px-3 py-2.5 bg-gradient-to-r from-[var(--bg-secondary)] to-[var(--bg-primary)] border-b border-[var(--border-primary)] sticky top-0 z-10 mb-4 rounded-t-lg shadow-sm">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                          <Folder size={14} className="text-[var(--accent-primary)]" />
-                          {assignment} ({assignmentNotes.length})
+                          <Folder size={16} className="text-[var(--accent-primary)]" />
+                          {assignment}
+                          <span className="text-xs font-normal text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2 py-0.5 rounded-full">
+                            {assignmentNotes.length}
+                          </span>
                         </h3>
                         <button
                           onClick={() => onCreateNote(assignment)}
-                          className="p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                          className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-all duration-200 hover:scale-110"
+                          title={`Create new note in ${assignment}`}
                         >
                           <Plus size={16} />
                         </button>
                       </div>
                     </div>
                     
-                    {/* Notes Grid - 2 columns */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* Notes List */}
+                    <div className="space-y-2 px-1">
                       {assignmentNotes.map((note) => {
                         const noteKey = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
                         return (
                           <div
                             key={noteKey}
                             onClick={() => onNoteSelect?.(note.id || noteKey)}
-                            className={`relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square cursor-pointer ${
+                            className={`relative flex flex-row w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 shadow-sm hover:shadow-xl hover:border-[var(--accent-primary)]/70 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer transform animate-in fade-in slide-in-from-bottom-2 ${
                               selectedNoteId === note.id
-                                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5'
-                                : ''
+                                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/8 shadow-lg scale-[1.01] ring-2 ring-[var(--accent-primary)]/20'
+                                : 'hover:bg-gradient-to-r hover:from-[var(--bg-primary)] hover:to-[var(--bg-secondary)]'
                             }`}
                           >
-                            {/* Note Header */}
-                            <div className="mb-2 flex flex-col gap-1">
-                              <h4 className="font-semibold text-sm text-[var(--text-primary)] truncate leading-tight">
+                            {/* Left side - Title */}
+                            <div className="flex-1 min-w-0 pr-4">
+                              <h4 className="font-semibold text-sm text-[var(--text-primary)] truncate leading-tight mb-1">
                                 {note.title}
                               </h4>
-                            </div>
-
-                            {/* Note Content - Truncated description */}
-                            <div className="mb-2 flex-1 overflow-hidden relative">
-                              {note.description && note.description.includes('<') ? (
-                                <div
-                                  className="text-[var(--text-primary)] text-xs leading-relaxed break-words prose prose-sm prose-p:my-1 prose-p:whitespace-pre-wrap prose-ul:my-1 prose-ol:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:my-0 prose-li:whitespace-pre-wrap prose-headings:mt-1 prose-headings:mb-2 max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full"
-                                  dangerouslySetInnerHTML={{ __html: note.description }}
-                                />
-                              ) : (
-                                <div
-                                  className="text-[var(--text-primary)] text-xs leading-relaxed break-words whitespace-pre-line max-w-none overflow-hidden bg-transparent p-0 border-0 shadow-none rounded-none h-full"
-                                >
-                                  {note.description}
-                                </div>
-                              )}
-                              {/* Fade bottom to indicate more content */}
-                              {note.description && note.description.length > 50 && (
-                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[var(--bg-secondary)] to-transparent" />
-                              )}
-                            </div>
-
-                            {/* Note Footer */}
-                            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
-                              <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
-                                <Calendar size={10} />
-                                <span className="text-[10px]">{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                              <div className="text-[var(--text-secondary)] text-xs leading-relaxed line-clamp-2">
+                                {note.description && note.description.includes('<')
+                                  ? note.description.replace(/<[^>]*>/g, '').substring(0, 100) + (note.description.replace(/<[^>]*>/g, '').length > 100 ? '...' : '')
+                                  : note.description?.substring(0, 100) + (note.description && note.description.length > 100 ? '...' : '') || 'No description'
+                                }
                               </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDelete?.(note);
-                                }}
-                                className="p-1 rounded text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                                title="Delete"
-                              >
-                                <X size={12} />
-                              </button>
+                            </div>
+
+                            {/* Right side - Date */}
+                            <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)] flex-shrink-0">
+                              <Calendar size={12} />
+                              <span>{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                             </div>
                           </div>
                         );
@@ -205,102 +194,222 @@ Start creating your first note!`;
         </div>
       </div>
 
-      {/* Desktop: Show original welcome view */}
+      {/* Desktop: Show assignments and notes view */}
       <div className="hidden md:flex flex-col h-full">
-        {/* Header */}
-        <div className="border-b border-[var(--border-primary)] p-3 sm:p-6">
-          <div className="flex justify-center mb-3 sm:mb-4">
-            {/* No navigation buttons for welcome view */}
-          </div>
+        {notes.length === 0 ? (
+          // Show welcome message only when no notes
+          <>
+            {/* Header */}
+            <div className="border-b border-[var(--border-primary)] p-3 sm:p-6">
+              <div className="flex justify-center mb-3 sm:mb-4">
+                {/* No navigation buttons for welcome view */}
+              </div>
 
-          <div className="mb-2 sm:mb-3 text-center">
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={tempTitle}
-                onChange={(e) => setTempTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleTitleCancel();
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleTitleCancel();
-                  }
-                }}
-                onBlur={handleTitleCancel}
-                className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-2xl sm:text-3xl font-bold transition-colors text-center"
-                placeholder="Note Title"
-                autoFocus
-              />
+              <div className="mb-2 sm:mb-3 text-center">
+                {isEditingTitle ? (
+                  <input
+                    type="text"
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleTitleCancel();
+                      } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        handleTitleCancel();
+                      }
+                    }}
+                    onBlur={handleTitleCancel}
+                    className="w-full px-0 py-0 bg-transparent border-0 border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-2xl sm:text-3xl font-bold transition-colors text-center"
+                    placeholder="Note Title"
+                    autoFocus
+                  />
+                ) : (
+                  <h1 
+                    className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors inline-block"
+                    onClick={handleTitleEdit}
+                    title="Click to edit title"
+                  >
+                    {tempTitle}
+                  </h1>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-2 sm:gap-4 text-[var(--text-secondary)]">
+                <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <DatePicker
+                    ref={datePickerRef}
+                    selected={tempDate ? new Date(tempDate) : new Date()}
+                    onChange={handleDateSave}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    popperPlacement="bottom-start"
+                    calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
+                    dayClassName={(date) =>
+                      (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
+                    }
+                    showPopperArrow={false}
+                    customInput={
+                      <div 
+                        className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                        title="Click to edit date"
+                      >
+                        <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span>{tempDate ? new Date(tempDate).toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        }) : new Date().toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}</span>
+                      </div>
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6">
+              <div className="max-w-none sm:max-w-4xl mx-auto">
+                <div className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert text-center text-[var(--text-primary)]">
+                  <ReactMarkdown>{description}</ReactMarkdown>
+                </div>
+                
+                <div className="mt-8 text-center space-y-4">
+                  {/* Create Note Button - Always visible */}
+                  <button
+                    onClick={() => onCreateNote()}
+                    className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm sm:text-base"
+                  >
+                    Create New Note
+                    <Plus size={16} className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          // Show assignments boxes navigation when there are notes
+          <div className="flex-1 overflow-y-auto p-4">
+            {selectedAssignment ? (
+              // Show notes for selected assignment
+              <div>
+                {/* Back button */}
+                <button
+                  onClick={() => setSelectedAssignment(null)}
+                  className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                  </svg>
+                  Back to assignments
+                </button>
+
+                {/* Assignment header */}
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2 mb-2">
+                    <Folder size={24} className="text-[var(--accent-primary)]" />
+                    {selectedAssignment}
+                  </h2>
+                  <p className="text-[var(--text-secondary)]">
+                    {(() => {
+                      const assignmentNotes = notes.filter(note => (note.assignment || 'Unassigned') === selectedAssignment);
+                      return `${assignmentNotes.length} ${assignmentNotes.length === 1 ? 'note' : 'notes'}`;
+                    })()}
+                  </p>
+                </div>
+
+                {/* Notes grid */}
+                <div className="space-y-3">
+                  {notes
+                    .filter(note => (note.assignment || 'Unassigned') === selectedAssignment)
+                    .map((note) => {
+                      const noteKey = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
+                      return (
+                        <div
+                          key={noteKey}
+                          onClick={() => onNoteSelect?.(note.id || noteKey)}
+                          className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group"
+                        >
+                          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 truncate">
+                            {note.title}
+                          </h3>
+                          <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
+                            <Calendar size={14} />
+                            <span>{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             ) : (
-              <h1 
-                className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] break-words cursor-text hover:bg-[var(--bg-secondary)] rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors inline-block"
-                onClick={handleTitleEdit}
-                title="Click to edit title"
-              >
-                {tempTitle}
-              </h1>
+              // Show assignments boxes
+              <div className="space-y-3">
+                {(() => {
+                  const notesByAssignment: Record<string, any[]> = {};
+                  notes.forEach(note => {
+                    const assignment = note.assignment || 'Unassigned';
+                    if (!notesByAssignment[assignment]) {
+                      notesByAssignment[assignment] = [];
+                    }
+                    notesByAssignment[assignment].push(note);
+                  });
+
+                  return Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
+                    <div
+                      key={assignment}
+                      onClick={() => {
+                        if (assignmentNotes.length === 0) {
+                          onCreateNote(assignment);
+                        } else {
+                          setSelectedAssignment(assignment);
+                        }
+                      }}
+                      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:shadow-md hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group flex items-center gap-4"
+                    >
+                      <div className="flex-shrink-0">
+                        <Folder size={32} className="text-[var(--accent-primary)]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                          {assignment}
+                        </h3>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {assignmentNotes.length} {assignmentNotes.length === 1 ? 'note' : 'notes'}
+                        </p>
+                      </div>
+                    </div>
+                  ));
+                })()}
+                
+                {/* Create new note item */}
+                <div
+                  onClick={() => onCreateNote()}
+                  className="bg-[var(--bg-secondary)] border-2 border-dashed border-[var(--border-primary)] rounded-lg p-4 hover:border-[var(--accent-primary)]/50 transition-all duration-200 cursor-pointer group flex items-center gap-4"
+                >
+                  <div className="flex-shrink-0 opacity-50 group-hover:opacity-70 transition-opacity">
+                    <Plus size={32} className="text-[var(--text-secondary)]" />
+                  </div>
+                  <div className="flex-1 min-w-0 opacity-50 group-hover:opacity-70 transition-opacity">
+                    <h3 className="text-lg font-medium text-[var(--text-secondary)]">
+                      Create New Note
+                    </h3>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      Click to create
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-center gap-2 sm:gap-4 text-[var(--text-secondary)]">
-            <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-              <DatePicker
-                ref={datePickerRef}
-                selected={tempDate ? new Date(tempDate) : new Date()}
-                onChange={handleDateSave}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="DD/MM/YYYY"
-                popperPlacement="bottom-start"
-                calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
-                dayClassName={(date) =>
-                  (date.getDay() === 0 || date.getDay() === 6) ? 'text-red-500' : ''
-                }
-                showPopperArrow={false}
-                customInput={
-                  <div 
-                    className="flex items-center gap-1 sm:gap-2 cursor-text hover:bg-[var(--bg-secondary)] rounded px-2 py-1 -mx-2 -my-1 transition-colors"
-                    title="Click to edit date"
-                  >
-                    <Calendar size={12} className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>{tempDate ? new Date(tempDate).toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    }) : new Date().toLocaleDateString('en-US', { 
-                      weekday: 'short', 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}</span>
-                  </div>
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6">
-          <div className="max-w-none sm:max-w-4xl mx-auto">
-            <div className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert text-center text-[var(--text-primary)]">
-              <ReactMarkdown>{description}</ReactMarkdown>
-            </div>
-            
-            <div className="mt-8 text-center space-y-4">
-              {/* Create Note Button - Always visible */}
-              <button
-                onClick={() => onCreateNote()}
-                className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm sm:text-base"
-              >
-                Create New Note
-                <Plus size={16} className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
