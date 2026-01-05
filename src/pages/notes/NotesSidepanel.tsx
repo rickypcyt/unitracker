@@ -90,16 +90,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     setExpandedAssignments(new Set());
   }, [notesByAssignment]);
 
-  if (loading && notes.length === 0) {
-    return (
-      <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] h-full p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--accent-primary)] mx-auto mb-2"></div>
-          <p className="text-sm text-[var(--text-secondary)]">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   if (error) {
     return (

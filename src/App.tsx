@@ -46,14 +46,6 @@ const pagesMap: Record<string, FC> = {
   notes: Notes,
 };
 
-// -------------------------
-// Loading component for lazy loaded pages
-// -------------------------
-const PageLoader: FC = () => (
-  <div className="min-h-screen bg-[var(--bg-primary)] w-full flex items-center justify-center">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[var(--accent-primary)]"></div>
-  </div>
-);
 
 // -------------------------
 // PageContent component
@@ -66,7 +58,7 @@ const PageContent: FC = () => {
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
       <Navbar />
       <div className="pt-16">
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={null}>
           <ActiveComponent />
         </Suspense>
       </div>

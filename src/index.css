@@ -583,24 +583,6 @@ h1 {
    ========================= */
 /* Si usas Tailwind 3+, puedes mapear tus variables en tailwind.config.js para usar clases como bg-[color:var(--bg-primary)] directamente en JSX/HTML */
 
-/* Loading Spinner Styles */
-.loading-spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  width: 100%;
-}
-
-.loading-spinner {
-  color: var(--accent-primary);
-}
-
-.loading-spinner svg {
-  width: 24px;
-  height: 24px;
-}
-
 /* Accessibility */
 .sr-only {
   position: absolute;
@@ -664,9 +646,6 @@ h1 {
     border: 1px solid CanvasText;
   }
 
-  .loading-spinner {
-    forced-color-adjust: none;
-  }
 }
 
 /* StudyTimer Controls */

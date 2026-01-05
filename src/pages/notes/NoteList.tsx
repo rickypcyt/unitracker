@@ -25,27 +25,7 @@ interface NoteListProps {
 const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDelete, editingId, editForm }) => {
   const { isLoggedIn } = useAuth();
   // Solo mostrar el spinner si loading y aún no se sabe si hay notas (notes.length === 0)
-  if (loading && notes.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading notes...</p>
-        </div>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="text-red-500 mb-4">{error}</div>
-          <p className="text-[var(--text-secondary)]">Failed to load notes</p>
-        </div>
-      </div>
-    );
-  }
 
   if (notes.length === 0) {
     return (

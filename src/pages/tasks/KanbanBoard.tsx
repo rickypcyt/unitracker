@@ -502,16 +502,7 @@ export const KanbanBoard = () => {
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
   // Don't show anything until workspace is properly loaded and validated
-  if (!isReady || tasksLoading) {
-    return (
-      <div className="flex items-center justify-center pt-16 sm:pt-20 pb-12 min-h-[calc(100vh-4rem)]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   // Show message when no workspaces are available at all
   if (!activeWorkspace && (!workspaces || workspaces.length === 0)) {
