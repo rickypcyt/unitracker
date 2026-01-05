@@ -59,41 +59,50 @@ export default defineConfig(({ command, mode }) => {
   // Cache configuration
   cacheDir: 'node_modules/.vite',
   build: {
-    target: ['es2020', 'firefox91'], // Firefox 91+ soporta características modernas
-    chunkSizeWarningLimit: 600, // Reducir para forzar mejor splitting
+    target: ['es2020', 'firefox91'],
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Separar vendor chunks para mejor caching y carga paralela
+          // Group all React and Emotion related code together to prevent initialization issues
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            // Core React and React DOM must be together
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
               return 'react-vendor';
             }
+            // Emotion and its dependencies
+            if (id.includes('@emotion') || id.includes('@babel/runtime/helpers/')) {
+              return 'emotion-vendor';
+            }
+            // Chakra UI and its dependencies
             if (id.includes('@chakra-ui')) {
               return 'chakra-core';
             }
-            if (id.includes('framer-motion')) {
+            // Animation libraries
+            if (id.includes('framer-motion') || id.includes('popmotion')) {
               return 'motion-vendor';
             }
-            if (id.includes('@emotion')) {
-              return 'emotion-vendor';
-            }
+            // State management
             if (id.includes('@reduxjs/toolkit') || id.includes('react-redux') || id.includes('zustand')) {
               return 'utils-vendor';
             }
-            if (id.includes('@supabase')) {
+            // Database
+            if (id.includes('@supabase') || id.includes('postgrest-js')) {
               return 'supabase-vendor';
             }
+            // Charting libraries
             if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts')) {
               return 'chart-vendor';
             }
+            // Date handling
             if (id.includes('date-fns')) {
               return 'date-vendor';
             }
+            // Icons
             if (id.includes('lucide-react') || id.includes('@heroicons/react')) {
               return 'icon-vendor';
             }
-            // Group toast notifications together
+            // Toast notifications
             if (id.includes('react-toastify') || id.includes('react-hot-toast') || id.includes('sonner')) {
               return 'toast-vendor';
             }
