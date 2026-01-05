@@ -1,7 +1,7 @@
 import { compression } from 'vite-plugin-compression2';
 import { defineConfig } from 'vite'
 import path from "path";
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ command, mode }) => {
@@ -51,7 +51,12 @@ export default defineConfig(({ command, mode }) => {
       '@supabase/postgrest-js',
       '@tiptap/react',
       '@tiptap/starter-kit',
-      '@tiptap/extension-placeholder'
+      '@tiptap/extension-placeholder',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime'
+    ],
+    exclude: [
+      'chart.js'
     ],
     esbuildOptions: {
       target: 'es2020',
@@ -74,76 +79,18 @@ export default defineConfig(({ command, mode }) => {
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Group all React and Emotion related code together to prevent initialization issues
+          // Ensure React, React DOM, and JSX runtimes live together for stable exports
           if (id.includes('node_modules')) {
-            // Core React and React DOM must be together
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+            if (
+              id.includes('react/jsx-runtime') ||
+              id.includes('react/jsx-dev-runtime') ||
+              id.includes('react-dom') ||
+              id.includes('scheduler') ||
+              // match '/react/' but avoid matching unrelated packages with 'react' in path segments
+              /[\\/]node_modules[\\/](react)[\\/]/.test(id)
+            ) {
               return 'react-vendor';
             }
-            // Emotion and its dependencies - ensure proper order
-            if (id.includes('@emotion/react') || id.includes('@emotion/styled') || id.includes('@emotion/cache')) {
-              return 'emotion-vendor';
-            }
-            // Babel runtime helpers (often used with Emotion)
-            if (id.includes('@babel/runtime/helpers/')) {
-              return 'emotion-vendor';
-            }
-            // Chakra UI and its dependencies
-            if (id.includes('@chakra-ui')) {
-              return 'chakra-core';
-            }
-            // Animation libraries
-            if (id.includes('framer-motion') || id.includes('popmotion')) {
-              return 'motion-vendor';
-            }
-            // State management
-            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux') || id.includes('zustand')) {
-              return 'utils-vendor';
-            }
-            // Database
-            if (id.includes('@supabase') || id.includes('postgrest-js')) {
-              return 'supabase-vendor';
-            }
-            // Charting libraries
-            // Only group Recharts to avoid mixing different chart ecosystems that can cause init order issues
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
-            }
-            // Date handling
-            if (id.includes('date-fns')) {
-              return 'date-vendor';
-            }
-            // Icons
-            if (id.includes('lucide-react') || id.includes('@heroicons/react')) {
-              return 'icon-vendor';
-            }
-            // Toast notifications
-            if (id.includes('react-toastify') || id.includes('react-hot-toast') || id.includes('sonner')) {
-              return 'toast-vendor';
-            }
-          }
-
-          // Split large application chunks
-          if (id.includes('src/modals/LoginPromptModal')) {
-            return 'auth-modal';
-          }
-          if (id.includes('src/pages/session/StudyTimer')) {
-            return 'study-timer';
-          }
-          if (id.includes('src/pages/notes/') && !id.includes('MarkdownWysiwyg')) {
-            return 'notes-page';
-          }
-          if (id.includes('src/MarkdownWysiwyg') || id.includes('@tiptap/')) {
-            return 'tiptap-editor';
-          }
-          if (id.includes('src/pages/tasks/')) {
-            return 'tasks-page';
-          }
-          if (id.includes('src/pages/calendar/')) {
-            return 'calendar-page';
-          }
-          if (id.includes('src/pages/stats/')) {
-            return 'stats-page';
           }
         },
         entryFileNames: 'assets/[name]-[hash].js',
@@ -151,9 +98,9 @@ export default defineConfig(({ command, mode }) => {
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    sourcemap: mode === 'development',
+    sourcemap: true,
     cssMinify: true,
-    minify: mode === 'development' ? false : 'terser', // Usar terser en producción para mejor compresión
+    minify: false, // disable minification for diagnostics
     reportCompressedSize: false,
     // Optimizaciones específicas para Firefox
     modulePreload: {
@@ -164,7 +111,7 @@ export default defineConfig(({ command, mode }) => {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
-    dedupe: ['@supabase/supabase-js', '@supabase/postgrest-js'],
+    dedupe: ['react', 'react-dom', '@supabase/supabase-js', '@supabase/postgrest-js'],
     // Ensure Emotion modules are resolved correctly
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
