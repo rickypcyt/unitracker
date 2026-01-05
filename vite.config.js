@@ -37,8 +37,11 @@ export default defineConfig(({ command, mode }) => {
   optimizeDeps: {
     include: [
       '@chakra-ui/react',
+      '@emotion/react',
+      '@emotion/styled',
       'react',
       'react-dom',
+      'react-dom/client',
       'react-redux',
       '@reduxjs/toolkit',
       'framer-motion',
@@ -46,21 +49,28 @@ export default defineConfig(({ command, mode }) => {
       'lucide-react',
       '@supabase/supabase-js',
       '@supabase/postgrest-js',
-      // TipTap dependencies for lazy-loaded editor
       '@tiptap/react',
       '@tiptap/starter-kit',
       '@tiptap/extension-placeholder'
     ],
     esbuildOptions: {
-      target: 'es2020'
+      target: 'es2020',
+      // This helps with circular dependencies
+      define: {
+        global: 'globalThis',
+      },
     },
-    force: false // Solo forzar cuando sea necesario
+    force: true // Force optimization to ensure Emotion is processed correctly
   },
   // Cache configuration
   cacheDir: 'node_modules/.vite',
   build: {
     target: ['es2020', 'firefox91'],
     chunkSizeWarningLimit: 600,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+      include: [/node_modules/],
+    },
     rollupOptions: {
       output: {
         manualChunks: (id) => {
