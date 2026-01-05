@@ -566,7 +566,7 @@ export const KanbanBoard = () => {
   return (
       <div className="flex flex-col h-full kanban-board">
         <div className="flex justify-center w-full mb-4 px-0 sm:px-4">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-1 lg:grid-cols-3" style={{ gridAutoRows: 'minmax(200px, auto)' }}>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gridAutoRows: 'minmax(200px, auto)' }}>
           {(() => {
             // Agrupar asignaciones para optimizar espacio vertical
             const assignments = sortedIncompletedAssignments.map(assignment => ({
