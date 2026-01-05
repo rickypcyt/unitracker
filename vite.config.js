@@ -105,7 +105,8 @@ export default defineConfig(({ command, mode }) => {
               return 'supabase-vendor';
             }
             // Charting libraries
-            if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts')) {
+            // Only group Recharts to avoid mixing different chart ecosystems that can cause init order issues
+            if (id.includes('recharts')) {
               return 'chart-vendor';
             }
             // Date handling
