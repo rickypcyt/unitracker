@@ -52,10 +52,13 @@ function getISOWeekNumber(date: Date) {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
 }
 
+// Obtener color de acento una sola vez fuera del componente
+const getAccentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
+
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
-  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
+  const accentColor = getAccentColor();
 
   // Semana
   const [weekOffset, setWeekOffset] = useState(0);
@@ -65,7 +68,7 @@ const StatsChartsPanel = memo(() => {
   }, [weekOffset]);
   const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
   const shownWeekData = useMemo(() => {
-    const weekDays = getWeekDays(shownWeekMonday); // array de fechas (YYYY-MM-DD) de lunes a domingo
+    // Pre-calcular dailyMinutes una sola vez
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
       if (lapDate) {
@@ -74,6 +77,8 @@ const StatsChartsPanel = memo(() => {
       }
       return acc;
     }, {} as Record<string, number>);
+    
+    const weekDays = getWeekDays(shownWeekMonday);
     // Siempre 7 elementos, uno por cada día de la semana
     return weekDayLabels.map((label, idx) => {
       const date = weekDays[idx];
@@ -99,6 +104,8 @@ const StatsChartsPanel = memo(() => {
     const year = shownMonthDate.getFullYear();
     const month = shownMonthDate.getMonth();
     const monthDays = getMonthDays(shownMonthDate);
+    
+    // Pre-calcular dailyMinutes para el mes específico
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDateObj = new Date(lap.created_at);
       if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
@@ -110,6 +117,7 @@ const StatsChartsPanel = memo(() => {
       }
       return acc;
     }, {} as Record<string, number>);
+    
     return monthDays.map((date, idx) => {
       const minutes = date && dailyMinutes[date] ? dailyMinutes[date] : 0;
       return {
@@ -123,26 +131,33 @@ const StatsChartsPanel = memo(() => {
   }, [laps, shownMonthDate]);
 
   // Año
-  const thisYearData = useMemo(() => {
+  const [yearOffset, setYearOffset] = useState(0);
+  const shownYear = useMemo(() => {
     const today = new Date();
-    const year = today.getFullYear();
+    return today.getFullYear() - yearOffset;
+  }, [yearOffset]);
+  
+  const shownYearData = useMemo(() => {
     const monthlyMinutes = Array(12).fill(0);
+    
+    // Procesar laps una sola vez para el año específico
     laps.forEach(lap => {
       const lapDate = new Date(lap.created_at);
-      if (lapDate.getFullYear() === year) {
+      if (lapDate.getFullYear() === shownYear) {
         const month = lapDate.getMonth();
         const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
         monthlyMinutes[month] = (monthlyMinutes[month] || 0) + minutes;
       }
     });
+    
     return monthLabels.map((label, idx) => ({
       month: label,
       minutes: monthlyMinutes[idx] || 0,
       hoursLabel: formatMinutesToHHMM(monthlyMinutes[idx] || 0),
       dayName: label,
-      date: `${year}-${String(idx+1).padStart(2,'0')}-01`,
+      date: `${shownYear}-${String(idx+1).padStart(2,'0')}-01`,
     }));
-  }, [laps]);
+  }, [laps, shownYear]);
 
   // Memoize the handlers to prevent unnecessary re-renders
   const handleWeekPrevious = useCallback(() => {
@@ -159,6 +174,14 @@ const StatsChartsPanel = memo(() => {
   
   const handleMonthNext = useCallback(() => {
     setMonthOffset((prev) => prev + 1);
+  }, []);
+  
+  const handleYearPrevious = useCallback(() => {
+    setYearOffset((prev) => prev + 1);
+  }, []);
+  
+  const handleYearNext = useCallback(() => {
+    setYearOffset((prev) => prev - 1);
   }, []);
 
   if (isDemo) {
@@ -200,7 +223,7 @@ const StatsChartsPanel = memo(() => {
       minutes: demoYear[idx] || 0,
       hoursLabel: formatMinutesToHHMM(demoYear[idx] || 0),
       dayName: label,
-      date: `${today.getFullYear()}-${String(idx+1).padStart(2,'0')}-01`,
+      date: `${shownYear}-${String(idx+1).padStart(2,'0')}-01`,
     }));
     return (
       <div className="w-full flex flex-col gap-2 sm:gap-3">
@@ -234,7 +257,12 @@ const StatsChartsPanel = memo(() => {
           <YearStatsCard
             data={thisYearData}
             accentColor={accentColor}
+            shownYear={shownYear}
+            yearOffset={yearOffset}
+            setYearOffset={setYearOffset}
             isDemo={true}
+            handleYearPrevious={handleYearPrevious}
+            handleYearNext={handleYearNext}
           />
         </div>
       </div>
@@ -272,9 +300,14 @@ const StatsChartsPanel = memo(() => {
       </div>
       <div className="w-full">
         <YearStatsCard
-          data={thisYearData}
+          data={shownYearData}
           accentColor={accentColor}
+          shownYear={shownYear}
+          yearOffset={yearOffset}
+          setYearOffset={setYearOffset}
           isDemo={false}
+          handleYearPrevious={handleYearPrevious}
+          handleYearNext={handleYearNext}
         />
       </div>
     </div>

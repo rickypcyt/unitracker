@@ -1,6 +1,6 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTasks } from '@/store/appStore';
 
@@ -35,8 +35,8 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
       year = d.getFullYear().toString();
       month = d.getMonth().toString();
     }
-  } else if (title === "This Year") {
-    // Para 'This Year', filtrar tasks por mes y año
+  } else if (title === 'This Year' || !isNaN(parseInt(title))) {
+    // Para 'This Year' o años específicos, filtrar tasks por mes y año
     const dateParts = entry.date.split('-');
     const yearStr = dateParts[0];
     const monthStr = dateParts[1];
@@ -51,7 +51,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   }
   // Filtrar tareas por fecha o mes según el gráfico
   let dayTasks: any[] = [];
-  if (title === "This Year" && typeof monthIdx === 'number' && year) {
+  if ((title === "This Year" || !isNaN(parseInt(title))) && typeof monthIdx === 'number' && year) {
     dayTasks = tasks.filter((t: any) => {
       if (!t.completed_at) return false;
       const completedDate = new Date(t.completed_at);
@@ -74,7 +74,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   } else if (title === "This Month" && date) {
     const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
-  } else if (title === "This Year" && date) {
+  } else if ((title === "This Year" || !isNaN(parseInt(title))) && date) {
     const dateObj = new Date(date);
     dayLabel = dateObj.toLocaleDateString('en-US', { month: 'long' });
   } else if (date) {
@@ -162,7 +162,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
       const dDate = new Date(d.date);
       return dDate.toDateString() === today.toDateString();
     });
-  } else if (title === 'This Year') {
+  } else if (title === 'This Year' || !isNaN(parseInt(title))) {
     todayIndex = data.findIndex((d: any) => {
       const dDate = new Date(d.date);
       return dDate.getMonth() === today.getMonth() && dDate.getFullYear() === today.getFullYear();
@@ -176,15 +176,15 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     (Array.isArray(xAxisTicks) && xAxisTicks.length === 7)
   );
   const isMonthChart = title === 'This Month';
-  const isYearChart = title === 'This Year';
+  const isYearChart = title === 'This Year' || !isNaN(parseInt(title));
   const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-xl bg-[var(--bg-secondary)] shadow-lg hover:shadow-xl transition-shadow duration-300 z-10`;
 
-  // Para 'This Year': escalar y mostrar etiquetas enteras según el mayor valor
-  const yearDivisor = title === 'This Year' && dataMaxMinutes > 0
+  // Para 'This Year' o años específicos: escalar y mostrar etiquetas enteras según el mayor valor
+  const yearDivisor = (title === 'This Year' || !isNaN(parseInt(title))) && dataMaxMinutes > 0
     ? Math.max(1, Math.ceil(dataMaxMinutes / 10))
     : 1;
   const chartData = Array.isArray(data)
-    ? (title === 'This Year'
+    ? (title === 'This Year' || !isNaN(parseInt(title))
         ? data.map(d => ({
             ...d,
             displayValue: Math.round((typeof d?.minutes === 'number' ? d.minutes : 0) / yearDivisor),
@@ -291,14 +291,20 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 allowDecimals={false}
                 tickMargin={isSmall ? 4 : 8}
               />
-              <Tooltip content={<CustomTooltip tasks={tasks} data={data} title={title} />} cursor={{ fill: 'rgba(30,144,255,0.12)' }} wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}} />
+              <Tooltip 
+                content={<CustomTooltip tasks={tasks} data={data} title={title} />} 
+                cursor={{ fill: 'rgba(30,144,255,0.12)' }} 
+                wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}}
+                animationDuration={200}
+                isAnimationActive={false}
+              />
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" opacity={0.3} vertical={false} />
               <Bar
                 dataKey="minutes"
                 fill={accentColor}
                 radius={[8, 8, 0, 0]}
                 barSize={title === 'This Month' ? (isSmall ? 10 : 12) : title === 'This Year' ? 20 : 20}
-                animationDuration={800}
+                animationDuration={300}
                 animationBegin={0}
               >
                 {chartData.map((entry: any, index: number) => {
