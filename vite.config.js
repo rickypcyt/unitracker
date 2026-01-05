@@ -60,7 +60,7 @@ export default defineConfig(({ command, mode }) => {
         global: 'globalThis',
       },
     },
-    force: true // Force optimization to ensure Emotion is processed correctly
+    force: false // Remove force optimization to prevent initialization issues
   },
   // Cache configuration
   cacheDir: 'node_modules/.vite',
@@ -80,8 +80,12 @@ export default defineConfig(({ command, mode }) => {
             if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
               return 'react-vendor';
             }
-            // Emotion and its dependencies
-            if (id.includes('@emotion') || id.includes('@babel/runtime/helpers/')) {
+            // Emotion and its dependencies - ensure proper order
+            if (id.includes('@emotion/react') || id.includes('@emotion/styled') || id.includes('@emotion/cache')) {
+              return 'emotion-vendor';
+            }
+            // Babel runtime helpers (often used with Emotion)
+            if (id.includes('@babel/runtime/helpers/')) {
               return 'emotion-vendor';
             }
             // Chakra UI and its dependencies
@@ -159,7 +163,9 @@ export default defineConfig(({ command, mode }) => {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
-    dedupe: ['@supabase/supabase-js', '@supabase/postgrest-js']
+    dedupe: ['@supabase/supabase-js', '@supabase/postgrest-js'],
+    // Ensure Emotion modules are resolved correctly
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   server: {
     host: '0.0.0.0',
