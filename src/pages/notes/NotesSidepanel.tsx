@@ -48,7 +48,26 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   onNoteSelect,
   onCreateNote,
 }) => {
-  const [expandedAssignments, setExpandedAssignments] = useState<Set<string>>(new Set());
+  // Get initial state from localStorage
+  const getInitialState = (): Set<string> => {
+    try {
+      const saved = localStorage.getItem('expandedAssignments');
+      return saved ? new Set(JSON.parse(saved) as string[]) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  };
+
+  const [expandedAssignments, setExpandedAssignments] = useState<Set<string>>(getInitialState());
+
+  // Save state to localStorage whenever it changes
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('expandedAssignments', JSON.stringify(Array.from(expandedAssignments)));
+    } catch (error) {
+      console.warn('Failed to save expanded assignments to localStorage:', error);
+    }
+  }, [expandedAssignments]);
 
   // Group notes by assignment and remove duplicates
   const notesByAssignment = useMemo(() => {
@@ -86,9 +105,50 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   };
 
   // Collapse all assignments initially (none expanded by default)
+  // Only reset when notes change
   React.useEffect(() => {
     setExpandedAssignments(new Set());
   }, [notesByAssignment]);
+
+  // Listen for note saved events to collapse assignment section
+  React.useEffect(() => {
+    const handleNoteSaved = (event: CustomEvent) => {
+      if (event.detail?.noteId && selectedNoteId === event.detail.noteId) {
+        // Find the assignment of the saved note and collapse it
+        const savedNote = notes.find(n => n.id === event.detail.noteId);
+        if (savedNote) {
+          const assignment = savedNote.assignment || 'Unassigned';
+          setExpandedAssignments(prev => {
+            const newExpanded = new Set(prev);
+            newExpanded.delete(assignment);
+            return newExpanded;
+          });
+        }
+      }
+    };
+
+    const handleNoteDeleted = (event: CustomEvent) => {
+      if (event.detail?.noteId && selectedNoteId === event.detail.noteId) {
+        // Find the assignment of the deleted note and collapse it
+        const deletedNote = notes.find(n => n.id === event.detail.noteId);
+        if (deletedNote) {
+          const assignment = deletedNote.assignment || 'Unassigned';
+          setExpandedAssignments(prev => {
+            const newExpanded = new Set(prev);
+            newExpanded.delete(assignment);
+            return newExpanded;
+          });
+        }
+      }
+    };
+
+    window.addEventListener('noteSaved', handleNoteSaved as EventListener);
+    window.addEventListener('noteDeleted', handleNoteDeleted as EventListener);
+    return () => {
+      window.removeEventListener('noteSaved', handleNoteSaved as EventListener);
+      window.removeEventListener('noteDeleted', handleNoteDeleted as EventListener);
+    };
+  }, [notes, selectedNoteId]);
 
 
 

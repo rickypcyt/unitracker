@@ -89,6 +89,8 @@ const NoteView: React.FC<NoteViewProps> = ({
     if (success) {
       setIsEditing(false);
       setHasUnsavedChanges(false);
+      // Emit event to notify sidepanel that note was saved
+      window.dispatchEvent(new CustomEvent('noteSaved', { detail: { noteId: note.id } }));
     }
   };
 
@@ -98,6 +100,8 @@ const NoteView: React.FC<NoteViewProps> = ({
       const success = await saveNote({ title, assignment: assignment || null, description, date });
       if (success) {
         setHasUnsavedChanges(false);
+        // Emit event to notify sidepanel that note was saved
+        window.dispatchEvent(new CustomEvent('noteSaved', { detail: { noteId: note.id } }));
       }
     }
   }, [hasUnsavedChanges, isSaving, title, assignment, description, date]);
@@ -162,6 +166,8 @@ const NoteView: React.FC<NoteViewProps> = ({
 
   const handleDelete = () => {
     onDelete(note);
+    // Emit event to notify sidepanel that note was deleted
+    window.dispatchEvent(new CustomEvent('noteDeleted', { detail: { noteId: note.id } }));
   };
 
 
