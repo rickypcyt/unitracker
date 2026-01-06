@@ -15,7 +15,7 @@ const DeleteNoteModal = ({ isOpen, onClose, onConfirm, noteTitle = '' }: DeleteN
       isOpen={isOpen}
       onClose={onClose}
       title="Delete Note"
-      maxWidth="max-w-md"
+      maxWidth="max-w-xs"
       fullWidthOnMd={true}
     >
       <div className="space-y-6 p-2 sm:p-0">

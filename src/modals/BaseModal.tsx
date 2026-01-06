@@ -161,7 +161,7 @@ const BaseModal = ({
     shadow-xl max-h-[90vh] h-auto overflow-y-auto 
     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] 
     flex flex-col
-    ${fullWidthOnMd ? 'md:max-w-[95%] md:w-[95%]' : ''}
+    ${fullWidthOnMd ? 'md:max-w-[48%] md:w-[48%]' : ''}
   `.trim();
 
   const headerClasses = `
