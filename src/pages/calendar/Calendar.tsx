@@ -131,6 +131,9 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
   );
 };
 
+interface CalendarProps {
+}
+
 const Calendar = () => {
   const { isLoggedIn } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -140,8 +143,6 @@ const Calendar = () => {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const [calendarSize, setCalendarSize] = useState("lg"); // sm, md, lg
   const [lastTap, setLastTap] = useState(0);
 
   const { tasks } = useAppStore((state) => state.tasks);
@@ -151,37 +152,7 @@ const Calendar = () => {
   // Data is managed by Zustand store
   // ---------------------
 
-  // ---------------------
-  // Helper Functions
-  // ---------------------
-  const getPendingTasksForMonth = (date: Date) => {
-    const currentMonth = date.getMonth();
-    const currentYear = date.getFullYear();
-    
-    return tasks.filter(task => {
-      if (task.completed) return false;
-      if (!task.deadline) return false;
-      
-      const taskDate = new Date(task.deadline);
-      return taskDate.getMonth() === currentMonth && taskDate.getFullYear() === currentYear;
-    }).length;
-  };
-
-  const getPendingTasksForNextMonth = (date: Date) => {
-    const currentMonth = date.getMonth();
-    const currentYear = date.getFullYear();
-    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-    
-    return tasks.filter(task => {
-      if (task.completed) return false;
-      if (!task.deadline) return false;
-      
-      const taskDate = new Date(task.deadline);
-      return taskDate.getMonth() === nextMonth && taskDate.getFullYear() === nextYear;
-    }).length;
-  };
-
+  
   // ---------------------
   // Keyboard navigation
   // ---------------------
@@ -418,16 +389,10 @@ const Calendar = () => {
   ];
 
   return (
-    <div
-      className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view flex flex-col ${
-        calendarSize === "sm"
-          ? "max-w-md"
-          : calendarSize === "md"
-          ? "max-w-2xl"
-          : "max-w-2xl"
-      }`}
-      style={{ aspectRatio: calendarSize === "lg" ? '6/5' : 'auto' }}
-    >
+    <div className="w-full h-full flex flex-col">
+      <div 
+        className={`maincard p-0 pt-4 relative w-full transition-all duration-300 calendar-view flex flex-col lg:min-h-[500px] aspect-square overflow-hidden`}
+      >
       {/* Top bar */}
       <div className="flex justify-center items-center mb-4 relative">
         <div className="flex items-center gap-2 px-2 py-1 rounded-lg text-[var(--text-primary)]">
@@ -448,19 +413,12 @@ const Calendar = () => {
             <FaChevronRight size={16} />
           </button>
         </div>
-        <button
-          className="absolute right-0 top-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] p-2"
-          onClick={() => setIsOptionsOpen(true)}
-          aria-label="Calendar options"
-        >
-          <MoreVertical size={22} />
-        </button>
       </div>
 
       {/* Tooltip */}
       {tooltipContent && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl z-[9999] transition-all duration-200 backdrop-blur-sm"
+          className="absolute left-1/2 -translate-x-1/2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl z-[100] transition-all duration-200 backdrop-blur-sm"
           style={{ top: "5px", minWidth: "200px", maxWidth: "280px" }}
         >
           <div className="px-3 py-2 border-b border-[var(--border-primary)]">
@@ -587,24 +545,7 @@ const Calendar = () => {
         </div>
       </div>
 
-      {/* Calendar Footer */}
-      <div className="mt-4 p-3 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg">
-        <div className="flex justify-center items-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></div>
-            <span className="text-[var(--text-primary)]">
-              {getPendingTasksForMonth(currentDate)} tasks this month
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[var(--text-secondary)]"></div>
-            <span className="text-[var(--text-primary)]">
-              {getPendingTasksForNextMonth(currentDate)} tasks next month
-            </span>
-          </div>
-        </div>
-      </div>
-
+      
       {/* Modals */}
       {showTaskForm && (
         <TaskForm
@@ -628,27 +569,7 @@ const Calendar = () => {
         isOpen={isLoginPromptOpen}
         onClose={() => setIsLoginPromptOpen(false)}
       />
-      <BaseModal
-        isOpen={isOptionsOpen}
-        onClose={() => setIsOptionsOpen(false)}
-        title="Calendar Options"
-        maxWidth="max-w-sm"
-      >
-        <div className="flex flex-col gap-4">
-          <label className="block mb-2 text-base font-medium text-[var(--text-primary)]">
-            Calendar Size
-          </label>
-          <select
-            className="w-full p-2 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-            value={calendarSize}
-            onChange={(e) => setCalendarSize(e.target.value)}
-          >
-            <option value="sm">Small</option>
-            <option value="md">Medium</option>
-            <option value="lg">Large</option>
-          </select>
-        </div>
-      </BaseModal>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/utils/dateUtils';
 
 import React from 'react';
@@ -64,7 +64,7 @@ const getDeadlineColor = (dateStr: string) => {
 interface TaskItemProps {
     task: Task;
     onToggleCompletion: (id: string) => void;
-    onDelete: (id: string) => void;
+    onDelete?: (id: string) => void;
     onEditTask: (task: Task) => void;
     onContextMenu: (e: React.MouseEvent, task: Task) => void;
     showAssignment?: boolean;
@@ -75,11 +75,8 @@ interface TaskItemProps {
 export const TaskItem: React.FC<TaskItemProps> = ({
     task,
     onToggleCompletion,
-    onDelete,
     onEditTask,
     onContextMenu,
-    // assignmentId (unused)
-    // isSelected (unused)
     showAssignment = false,
     assignmentLeftOfDate = false,
     active = false
@@ -112,11 +109,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         onToggleCompletion(task.id);
     };
 
-    const handleDeleteClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        onDelete(task.id);
-    };
 
     const handleDoubleClick = () => {
         onEditTask(task);
@@ -136,7 +128,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     return (
         <div
-            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-2 items-start
+            className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-2 items-center
                 bg-[var(--bg-secondary)] 
                 ${active ? `${getDifficultyColor(task.difficulty || 'medium', 'border')} border` : 'border border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
             `}
@@ -145,64 +137,33 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             tabIndex={0}
             role="listitem"
         >
-            {/* Botón de eliminar en la esquina superior derecha */}
-            {/* Move delete button to bottom right, next to date */}
-            <div className="flex items-center mt-1">
-                <button
-                    onClick={handleToggleClick}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    className="bg-transparent border-none cursor-pointer flex items-center mr-1 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200 hover:scale-110"
-                    aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-                >
-                    {task.completed ? (
-                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
-                    ) : (
-                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
-                    )}
-                </button>
-            </div>
             {/* Contenido principal */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between">
-                {/* Título y descripción */}
-                <div>
-                    <span
-                        className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-2 ${
-                            task.completed
-                                ? "line-through text-[var(--text-secondary)]"
-                                : "text-[var(--text-primary)]"
-                        }`}
-                        title={task.title}
-                    >
-                        {task.title}
-                    </span>
-                    {task.description ? (
-                        <div className="text-sm mt-0.5" style={{ color: '#A5A5A5' }}>
-                            {task.description.replace(/<[^>]*>/g, '')}
-                        </div>
-                    ) : (
-                        <span className="text-sm mt-0.5 italic" style={{ color: '#A5A5A5' }}>
-                            No description
-                        </span>
-                    )}
-                </div>
-                {/* Priority, assignment, date and delete button */}
-                <div className={`flex items-center gap-2 w-full${task.description ? ' ' : ''}`}>
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <span
+                    className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                        task.completed
+                            ? "line-through text-[var(--text-secondary)]"
+                            : "text-[var(--text-primary)]"
+                    }`}
+                    title={task.title}
+                >
+                    {task.title}
+                </span>
+                {/* Priority, assignment, date */}
+                <div className={`flex items-center gap-2 w-full`}>
                     {/* Date on the left */}
                     <div className="text-sm" style={{ color: 'var(--muted-strong)' }}>
-                        <span>
-                          {task.deadline && task.deadline !== '' ? (
+                        {task.deadline && task.deadline !== '' ? (
                             <>
-                              <span className={getDeadlineColor(task.deadline)}>
-                                {formatDateShort(task.deadline)}
-                                {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
-                                  <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
-                                )}
-                              </span>
-                              {renderDateLabel(task.deadline)}
+                                <span className={getDeadlineColor(task.deadline)}>
+                                    {formatDateShort(task.deadline)}
+                                    {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                                        <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
+                                    )}
+                                </span>
+                                {renderDateLabel(task.deadline)}
                             </>
-                          ) : 'No Deadline'}
-                        </span>
+                        ) : 'No Deadline'}
                     </div>
                     
                     <div className="flex-1" />
@@ -213,18 +174,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             {task.assignment}
                         </div>
                     )}
-                    
-                    {/* Delete button */}
-                    <button
-                        onClick={handleDeleteClick}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        className="transition-all duration-200 z-20 bg-transparent border-none p-1 rounded-full"
-                        aria-label="Delete task"
-                    >
-                        <Trash2 size={22} className="text-red-500" />
-                    </button>
                 </div>
+            </div>
+            
+            {/* Botón de completar a la derecha */}
+            <div className="flex items-center justify-center h-full">
+                <button
+                    onClick={handleToggleClick}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
+                    aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                >
+                    {task.completed ? (
+                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
+                    ) : (
+                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
+                    )}
+                </button>
             </div>
         </div>
     );

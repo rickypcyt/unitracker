@@ -1,29 +1,11 @@
-import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { CheckCircle2 } from "lucide-react";
 import { Task } from "@/types/taskStorage";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { TaskItem } from "@/pages/tasks/TaskItem";
 import { TaskListMenu } from "@/modals/TaskListMenu";
-import { useAppStore } from "@/store/appStore";
-import useDemoMode from "@/utils/useDemoMode";
 import { useTaskManager } from "@/hooks/useTaskManager";
-
-type ExpandedGroups = {
-  today: boolean;
-  thisMonth: boolean;
-  nextMonth: boolean;
-  future: boolean;
-  past: boolean;
-  noDeadline: boolean;
-};
-
-interface TaskGroupProps {
-  title: string;
-  tasks: Task[];
-  groupKey: keyof ExpandedGroups;
-  icon?: React.ReactNode;
-}
 
 interface ContextMenuState {
   x: number;
@@ -32,25 +14,16 @@ interface ContextMenuState {
 }
 
 interface AllTasksProps {
-  calendarSize?: string;
+  filteredTasks?: Task[];
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager();
-  const realTasks = useAppStore((state) => state.tasks.tasks);
-  const { isDemo, demoTasks } = useDemoMode();
-  const tasks = isDemo ? demoTasks : realTasks;
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({
-    today: true,
-    thisMonth: true,
-    nextMonth: true,
-    future: false,
-    past: false, // Past tasks collapsed by default
-    noDeadline: true,
-  });
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  
+  const tasks = filteredTasks || [];
 
   useEffect(() => {
     // Tasks are managed by Zustand store
@@ -86,12 +59,14 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
 
   // Group upcoming tasks by time periods
   const todayTasks = upcomingTasks.filter((task) => {
+    if (!task.deadline) return false;
     const taskDate = new Date(task.deadline);
     return taskDate.toDateString() === today.toDateString();
   });
 
   // This month tasks (excluding today)
   const thisMonthTasks = upcomingTasks.filter((task) => {
+    if (!task.deadline) return false;
     const taskDate = new Date(task.deadline);
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -104,6 +79,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
 
   // Next month tasks
   const nextMonthTasks = upcomingTasks.filter((task) => {
+    if (!task.deadline) return false;
     const taskDate = new Date(task.deadline);
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -117,6 +93,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
 
   // Future tasks (beyond next month)
   const futureTasks = upcomingTasks.filter((task) => {
+    if (!task.deadline) return false;
     const taskDate = new Date(task.deadline);
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -133,15 +110,6 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
     (task) => !task.deadline || task.deadline === "" || task.deadline === null
   );
 
-  const toggleGroup = (group: keyof ExpandedGroups) => {
-    setExpandedGroups(
-      (prev) =>
-        ({
-          ...prev,
-          [group]: !prev[group],
-        } as ExpandedGroups)
-    );
-  };
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -170,132 +138,108 @@ const AllTasks: React.FC<AllTasksProps> = ({ calendarSize = "lg" }) => {
     handleTaskContextMenu(e, task);
   };
 
-  const TaskGroup = ({
-    title,
-    tasks,
-    groupKey,
-    icon = null,
-  }: TaskGroupProps) => {
-    if (tasks.length === 0) return null;
-
-    return (
-      <div className="mb-4">
-        <button
-          className="w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-3 hover:bg-[var(--bg-primary)] transition-colors flex items-center justify-between"
-          onClick={() => toggleGroup(groupKey)}
-          aria-expanded={expandedGroups[groupKey]}
-        >
-          <div className="flex items-center gap-2">
-            {icon || (
-              <Calendar size={18} className="text-[var(--accent-primary)]" />
-            )}
-            <span className="text-[var(--text-primary)] font-medium">
-              {title}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[var(--text-secondary)] text-sm">
-              {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-            </span>
-            {expandedGroups[groupKey] ? (
-              <ChevronUp size={20} className="text-[var(--text-secondary)]" />
-            ) : (
-              <ChevronDown size={20} className="text-[var(--text-secondary)]" />
-            )}
-          </div>
-        </button>
-
-        {expandedGroups[groupKey] && (
-          <div className="mt-3 space-y-2">
-            {tasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
+  
   return (
     <div className="w-full h-full">
       <div 
-        className={`maincard relative mx-auto w-full transition-all duration-300 calendar-view flex flex-col ${
-          calendarSize === "xs"
-            ? "max-w-xs"
-            : calendarSize === "sm"
-            ? "max-w-sm"
-            : calendarSize === "md"
-            ? "max-w-lg"
-            : calendarSize === "lg"
-            ? "max-w-2xl"
-            : "max-w-4xl"
-        }`}
-        style={{ aspectRatio: '6/5' }}
+        className={`relative w-full transition-all duration-300 calendar-view flex flex-col border-0 lg:min-h-[400px] lg:min-w-[300px] overflow-y-auto`}
       >
-        <div className="w-full text-center mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)]">
-            Pending Tasks
-          </h2>
-        </div>
-
-        <div className="p-2 space-y-4">
+        
+        <div className="p-0 space-y-2 md:space-y-0 grid md:grid-cols-2 lg:grid-cols-1 gap-2">
+          {/* Empty State */}
+          {allTasks.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} className="text-[var(--text-secondary)]" />
+              </div>
+              <p className="text-[var(--text-secondary)] text-sm font-medium">No tasks found</p>
+              <p className="text-[var(--text-secondary)]/60 text-xs mt-2">Try selecting a different filter or create a new task</p>
+            </div>
+          )}
+          
           {/* Today's Tasks */}
-          <TaskGroup title="Today" tasks={todayTasks} groupKey="today" />
+          {todayTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
+            />
+          ))}
 
           {/* This Month */}
-          <TaskGroup 
-            title="This Month" 
-            tasks={thisMonthTasks} 
-            groupKey="thisMonth"
-            icon={<Calendar size={18} className="text-blue-500" />}
-          />
+          {thisMonthTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
+            />
+          ))}
 
           {/* Next Month */}
-          <TaskGroup 
-            title="Next Month" 
-            tasks={nextMonthTasks} 
-            groupKey="nextMonth"
-            icon={<Calendar size={18} className="text-purple-500" />}
-          />
+          {nextMonthTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
+            />
+          ))}
 
           {/* Future */}
-          {futureTasks.length > 0 && (
-            <TaskGroup 
-              title="Future" 
-              tasks={futureTasks} 
-              groupKey="future"
-              icon={<Calendar size={18} className="text-gray-500" />}
+          {futureTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
             />
-          )}
+          ))}
 
-          {/* Past Due Section */}
-          {pastTasks.length > 0 && (
-            <TaskGroup
-              title="Past Due"
-              tasks={pastTasks}
-              groupKey="past"
-              icon={<Calendar size={18} className="text-red-500" />}
+          {/* Past Due */}
+          {pastTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
             />
-          )}
+          ))}
 
           {/* No Deadline */}
-          {noDeadlineTasks.filter((task) => !task.completed).length > 0 && (
-            <TaskGroup
-              title="No Deadline"
-              tasks={noDeadlineTasks.filter((task) => !task.completed)}
-              groupKey="noDeadline"
-              icon={<Calendar size={18} className="text-gray-500" />}
+          {noDeadlineTasks.filter((task) => !task.completed).map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggleCompletion={handleToggleCompletion}
+              onDelete={handleDeleteTask}
+              onEditTask={() => handleEditTask(task)}
+              onContextMenu={handleTaskContextMenuWrapper}
+              showAssignment={true}
+              assignmentLeftOfDate={true}
             />
-          )}
+          ))}
         </div>
       </div>
 
