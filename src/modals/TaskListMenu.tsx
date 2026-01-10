@@ -36,6 +36,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [statusPosition, setStatusPosition] = useState({ x: 0, y: 0 });
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Cerrar con click fuera y Escape
   useEffect(() => {
@@ -73,13 +74,50 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
     };
   }, [contextMenu, onClose, showStatusMenu]);
 
+  // Initialize and adjust main menu position to avoid viewport overflow
+  useEffect(() => {
+    if (!contextMenu) return;
+    // Initialize with raw pointer position
+    setMenuPosition({ x: contextMenu.x, y: contextMenu.y });
+
+    const adjust = () => {
+      const el = menuRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      let x = contextMenu.x;
+      let y = contextMenu.y;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // If overflowing right, shift left
+      if (x + rect.width > vw - 8) {
+        x = Math.max(8, vw - rect.width - 8);
+      }
+      // If overflowing bottom, open upwards
+      if (y + rect.height > vh - 8) {
+        y = Math.max(8, vh - rect.height - 8);
+      }
+      setMenuPosition({ x, y });
+    };
+    // Wait a frame to ensure dimensions ready
+    const raf = requestAnimationFrame(adjust);
+    return () => cancelAnimationFrame(raf);
+  }, [contextMenu]);
+
   const handleStatusButtonClick = (e: React.MouseEvent) => {
     console.log('TaskListMenu - Status button clicked!');
     e.stopPropagation();
     const buttonElement = (e.target as HTMLElement).closest('button');
     const rect = buttonElement?.getBoundingClientRect();
     if (rect) {
-      setStatusPosition({ x: rect.right + 20, y: rect.top - 10 });
+      // Default open to the right of the button
+      let x = rect.right + 20;
+      let y = rect.top - 10;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      // Rough initial clamp to viewport; final adjustment occurs after render
+      if (x > vw - 8) x = Math.max(8, vw - 220); // assume ~220px min width
+      if (y > vh - 8) y = Math.max(8, vh - 200); // assume ~200px height
+      setStatusPosition({ x, y });
       setShowStatusMenu(true);
       console.log('TaskListMenu - Status menu should be visible now');
     }
@@ -116,8 +154,8 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
         className="fixed z-50 min-w-[220px] rounded-lg bg-[var(--bg-primary)] p-2 shadow-xl"
         style={{
           position: 'fixed',
-          left: contextMenu.x,
-          top: contextMenu.y,
+          left: (menuPosition?.x ?? contextMenu.x),
+          top: (menuPosition?.y ?? contextMenu.y),
           border: '2px solid var(--border-primary)',
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         }}
