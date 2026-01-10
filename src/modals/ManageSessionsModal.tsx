@@ -185,27 +185,44 @@ interface GroupedSessions {
   olderThisMonth: Lap[];
 }
 
-const groupSessionsByTimePeriod = (lapsList: Lap[]): GroupedSessions => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  // Get start of current week (Sunday)
+const groupSessionsByTimePeriod = (lapsList: Lap[], referenceMonthYear?: string): GroupedSessions => {
+  // Determine the reference date (end of the selected month) to build the buckets
+  let refDate = new Date();
+  if (referenceMonthYear) {
+    try {
+      const parts = referenceMonthYear.split(' ');
+      const refMonthName = parts[0];
+      const refYearStr = parts[1];
+      if (!refMonthName || !refYearStr) throw new Error('Invalid monthYear format');
+      const refYear = parseInt(refYearStr, 10);
+      if (Number.isNaN(refYear)) throw new Error('Invalid year');
+      const parsed = Date.parse(`${refMonthName} 1, ${refYear}`);
+      if (Number.isNaN(parsed)) throw new Error('Invalid month name');
+      const refMonthIndex = new Date(parsed).getMonth();
+      // Set to last day of the reference month
+      refDate = new Date(refYear, refMonthIndex + 1, 0);
+    } catch (e) {
+      // Fallback to current date if parsing fails
+      refDate = new Date();
+    }
+  }
+
+  const today = new Date(refDate.getFullYear(), refDate.getMonth(), refDate.getDate());
+
+  // Start of the reference week (Sunday)
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - today.getDay());
-  
-  // Get start of last week (Sunday of last week)
+
+  // Start and end of last week relative to reference week
   const startOfLastWeek = new Date(startOfWeek);
   startOfLastWeek.setDate(startOfWeek.getDate() - 7);
-  
-  // Get end of last week (Saturday of last week)
+
   const endOfLastWeek = new Date(startOfWeek);
   endOfLastWeek.setDate(startOfWeek.getDate() - 1);
-  
-  // Get start of current month
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  
+
+  // Start of the reference month
+  const startOfMonth = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
+
   const grouped: GroupedSessions = {
     today: [],
     thisWeek: [],
@@ -414,7 +431,10 @@ const groupSessionsByTimePeriod = (lapsList: Lap[]): GroupedSessions => {
               // Month detail view
               <div className="flex-1 overflow-y-auto px-6">
                 {(() => {
-                  const timeGroupedSessions = groupSessionsByTimePeriod(selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : []);
+                  const timeGroupedSessions = groupSessionsByTimePeriod(
+                    selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : [],
+                    selectedMonth || undefined
+                  );
                   
                   const sections = [
                     { key: 'today', title: 'Today', sessions: timeGroupedSessions.today },

@@ -161,8 +161,8 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   }
 
   return (
-    <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col">
-      <div className="flex-1 p-4">
+    <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col h-full">
+      <div className="flex-1 p-4 overflow-y-auto pb-20">
         {Object.keys(notesByAssignment).length === 0 ? (
           <div className="text-center py-8">
             <FileText className="mx-auto mb-2 w-8 h-8 text-[var(--text-secondary)] opacity-50" />
@@ -236,6 +236,16 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
             ))}
           </div>
         )}
+      </div>
+      <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)] sticky bottom-0">
+        <button
+          onClick={() => onCreateNote()}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-[var(--accent-primary)]/15 hover:bg-[var(--accent-primary)]/25 text-[var(--text-primary)] transition-colors"
+          aria-label="Create note"
+        >
+          <Plus size={16} className="text-[var(--accent-primary)]" />
+          <span>Create note</span>
+        </button>
       </div>
     </div>
   );

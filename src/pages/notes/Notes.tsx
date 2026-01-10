@@ -206,6 +206,10 @@ const Notes: React.FC = () => {
   };
 
   const handleCreateNote = async (assignment?: string) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     const today = new Date().toISOString().split('T')[0];
     const newNote: Omit<Note, 'id'> = {
       title: 'New Note',
