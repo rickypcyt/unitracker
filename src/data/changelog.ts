@@ -18,6 +18,20 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.1.4",
+    date: "January 10, 2026",
+    time: "5:08 AM",
+    type: "minor",
+    changes: {
+      improved: [
+        "Added new Week and Day views to the calendar for better time management",
+        "Implemented time block functionality to assign tasks to specific hours",
+        "Improved task page layout to display 4 columns on large screens (previously 3)",
+        "Enhanced calendar navigation and time indicators for better usability"
+      ]
+    }
+  },
+  {
     version: "1.1.3",
     date: "December 29, 2025",
     time: "12:00 PM",

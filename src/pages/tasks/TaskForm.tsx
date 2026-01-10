@@ -3,7 +3,6 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
-import { formatDateForInput, getSelectedDateFromDMY, normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
 import { useEffect, useRef } from 'react';
 
 import AIPreviewModal from './AIPreviewModal';
@@ -12,6 +11,7 @@ import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { addTask } from '@/store/TaskActions';
+import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskAI } from '@/hooks/tasks/useTaskAI';
 import { useTaskManager } from '@/hooks/useTaskManager';
@@ -222,12 +222,19 @@ const TaskForm = ({
   // Helper Functions
   function getInitialDeadline(): string {
     if (initialDeadline) {
-      return typeof initialDeadline === 'string' 
-        ? initialDeadline 
-        : formatDateForInput(initialDeadline);
+      if (typeof initialDeadline === 'string') {
+        // If it's already a string, check if it's ISO format (contains 'T')
+        // If it is, return as is. If not (DD/MM/YYYY), return as is (getSelectedDate handles both)
+        return initialDeadline;
+      } else {
+        // If it's a Date object, convert to ISO string to preserve time information
+        return initialDeadline.toISOString();
+      }
     }
     if (initialTask?.deadline) {
-      return formatDateForInput(new Date(initialTask.deadline));
+      // If deadline is already an ISO string, return as is. Otherwise parse and convert
+      const taskDeadline = new Date(initialTask.deadline);
+      return taskDeadline.toISOString();
     }
     return '';
   }
@@ -691,7 +698,28 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     ? 'Edit Task' 
     : (initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task');
 
-  const getSelectedDate = () => getSelectedDateFromDMY(formData.deadline);
+  function formatDateTimeForDisplay(datetime: string): string {
+    if (!datetime) return '';
+    const date = new Date(datetime);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
+  function getSelectedDate() {
+    if (!formData.deadline) return null;
+    // Handle both date-only and datetime strings
+    if (formData.deadline.includes('T')) {
+      return new Date(formData.deadline);
+    } else {
+      // For date-only strings, return as Date at 09:00
+      const [day, month, year] = formData.deadline.split('/');
+      return new Date(`${year}-${month}-${day}T09:00:00`);
+    }
+  }
 
   // Render Components
   const renderTabSelector = (isAIActive: boolean) => (
@@ -759,14 +787,29 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           id="deadline"
           ref={datePickerRef}
           selected={getSelectedDate()}
-          onChange={(date) => handleChange('deadline', formatDateForInput(date))}
-          dateFormat="dd/MM/yyyy"
-          placeholderText="DD/MM/YYYY"
+          onChange={(date) => {
+            if (date) {
+              // react-datepicker with showTimeSelect handles time preservation/selection correctly
+              // The date parameter already includes the correct time (preserved or newly selected)
+              const dateTime = new Date(date);
+              // Only set default time (09:00) if there's no existing deadline and time is midnight
+              if (!formData.deadline && dateTime.getHours() === 0 && dateTime.getMinutes() === 0) {
+                dateTime.setHours(9, 0, 0, 0);
+              }
+              handleChange('deadline', dateTime.toISOString());
+            } else {
+              handleChange('deadline', '');
+            }
+          }}
+          showTimeSelect
+          timeFormat="HH:mm"
+          dateFormat="dd/MM/yyyy HH:mm"
+          placeholderText="DD/MM/YYYY HH:mm"
           customInput={
             <input
               type="text"
               readOnly
-              value={formData.deadline || 'None'}
+              value={formData.deadline ? formatDateTimeForDisplay(formData.deadline) : 'None'}
               className={`w-full pl-3 pr-20 py-2 bg-[var(--bg-primary)] border-2 ${
                 errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
               } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
@@ -777,7 +820,6 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           dayClassName={(date) =>
             date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
           }
-          showPopperArrow={false}
         />
         <button
           type="button"

@@ -6,10 +6,12 @@ import { useState } from "react";
 interface TaskFilterProps {
   tasks: Task[];
   onFilteredTasksChange: (filteredTasks: Task[]) => void;
+  selectedFilter?: string;
+  onFilterChange?: (filter: string) => void;
 }
 
-const TaskFilter: React.FC<TaskFilterProps> = ({ tasks, onFilteredTasksChange }) => {
-  const [selectedFilter, setSelectedFilter] = useState<string>("all");
+const TaskFilter: React.FC<TaskFilterProps> = ({ tasks, onFilteredTasksChange, selectedFilter: externalSelectedFilter, onFilterChange }) => {
+  const [internalSelectedFilter, setInternalSelectedFilter] = useState<string>(externalSelectedFilter || "all");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -78,7 +80,8 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ tasks, onFilteredTasksChange })
   };
 
   const handleFilterChange = (filter: string) => {
-    setSelectedFilter(filter);
+    setInternalSelectedFilter(filter);
+    onFilterChange?.(filter);
     const filtered = getFilteredTasks(filter, false);
     onFilteredTasksChange(filtered);
   };
@@ -99,46 +102,47 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ tasks, onFilteredTasksChange })
   ];
 
   return (
-    <div className="w-full h-full mx-auto">
-      <div className="lg:min-h-[400px] lg:min-w-[350px] overflow-y-auto">
+    <div className="w-full h-full">
+      <div className="relative w-full h-full calendar-view flex flex-col border-0 lg:min-h-[400px] lg:min-w-[350px] overflow-y-auto">
+
         {/* Filter Options */}
-        <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-1">
-        {filterOptions.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => handleFilterChange(option.id)}
-            className={`w-full flex items-center justify-between py-2 px-2 sm:min-w-[10rem] rounded-lg border-2 transition-colors whitespace-nowrap ${
-              selectedFilter === option.id
-                ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10"
-                : "border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50"
-            }`}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className={`${
-                selectedFilter === option.id
-                  ? "text-[var(--accent-primary)]"
-                  : "text-[var(--text-secondary)]"
-              }`}>
-                {option.icon}
-              </div>
-              <span className={`truncate ${
-                selectedFilter === option.id
-                  ? "text-[var(--accent-primary)] font-medium"
-                  : "text-[var(--text-primary)]"
-              }`}>
-                {option.label}
-              </span>
-            </div>
-            <span className={`text-sm shrink-0 ${
-              selectedFilter === option.id
-                ? "text-[var(--accent-primary)]"
-                : "text-[var(--text-secondary)]"
-            }`}>
-              {getFilterCount(option.id, false)}
-            </span>
-          </button>
-        ))}
-      </div>
+        <div className="p-2 grid gap-2 md:grid-cols-3 lg:grid-cols-1">
+            {filterOptions.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleFilterChange(option.id)}
+                className={`w-full flex items-center justify-between py-2 px-2 sm:min-w-[10rem] rounded-lg border-2 transition-colors whitespace-nowrap ${
+                  internalSelectedFilter === option.id
+                    ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10"
+                    : "border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`${
+                    internalSelectedFilter === option.id
+                      ? "text-[var(--accent-primary)]"
+                      : "text-[var(--text-secondary)]"
+                  }`}>
+                    {option.icon}
+                  </div>
+                  <span className={`truncate ${
+                    internalSelectedFilter === option.id
+                      ? "text-[var(--accent-primary)] font-medium"
+                      : "text-[var(--text-primary)]"
+                  }`}>
+                    {option.label}
+                  </span>
+                </div>
+                <span className={`text-sm shrink-0 ${
+                  internalSelectedFilter === option.id
+                    ? "text-[var(--accent-primary)]"
+                    : "text-[var(--text-secondary)]"
+                }`}>
+                  {getFilterCount(option.id, false)}
+                </span>
+              </button>
+            ))}
+        </div>
       </div>
     </div>
   );

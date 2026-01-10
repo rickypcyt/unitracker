@@ -1,6 +1,6 @@
+import { CheckCircle2, ChevronFirst, ChevronLast } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { CheckCircle2 } from "lucide-react";
 import { Task } from "@/types/taskStorage";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { TaskItem } from "@/pages/tasks/TaskItem";
@@ -15,14 +15,16 @@ interface ContextMenuState {
 
 interface AllTasksProps {
   filteredTasks?: Task[];
+  title?: string;
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   const tasks = filteredTasks || [];
 
   useEffect(() => {
@@ -86,8 +88,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
     const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     return (
-      taskDate.getMonth() === nextMonth &&
-      taskDate.getFullYear() === nextYear
+      taskDate.getMonth() === nextMonth && taskDate.getFullYear() === nextYear
     );
   });
 
@@ -100,7 +101,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
     const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
     const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
     return (
-      (taskDate.getFullYear() > nextYear) ||
+      taskDate.getFullYear() > nextYear ||
       (taskDate.getFullYear() === nextYear && taskDate.getMonth() > nextMonth)
     );
   });
@@ -109,7 +110,6 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
   const noDeadlineTasks = allTasks.filter(
     (task) => !task.deadline || task.deadline === "" || task.deadline === null
   );
-
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -138,109 +138,146 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks }) => {
     handleTaskContextMenu(e, task);
   };
 
-  
   return (
-    <div className="w-full h-full">
-      <div 
-        className={`relative w-full transition-all duration-300 calendar-view flex flex-col border-0 lg:min-h-[400px] lg:min-w-[300px] overflow-y-auto`}
+    <div
+      className={`w-full h-full transition-all duration-300 ${
+        isCollapsed ? "w-12" : "w-full"
+      }`}
+    >
+      <div
+        className={`relative w-full h-full calendar-view flex flex-col border-0 lg:min-h-[400px] ${
+          isCollapsed ? "lg:min-w-[48px]" : "lg:min-w-[300px] ml-4"
+        } overflow-y-auto ${
+          isCollapsed ? "border-r border-[var(--border-primary)]" : ""
+        }`}
       >
-        
-        <div className="p-0 space-y-2 md:space-y-0 grid md:grid-cols-2 lg:grid-cols-1 gap-2">
-          {/* Empty State */}
-          {allTasks.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 size={32} className="text-[var(--text-secondary)]" />
-              </div>
-              <p className="text-[var(--text-secondary)] text-sm font-medium">No tasks found</p>
-              <p className="text-[var(--text-secondary)]/60 text-xs mt-2">Try selecting a different filter or create a new task</p>
-            </div>
+        {/* Collapsible Header */}
+        <div
+          className="flex items-center justify-between p-3 border-[var(--border-primary)] cursor-pointer hover:bg-[var(--bg-secondary)]/30 transition-colors"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          {!isCollapsed && (
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+              {title || "All Tasks"}
+            </h3>
           )}
-          
-          {/* Today's Tasks */}
-          {todayTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
-
-          {/* This Month */}
-          {thisMonthTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
-
-          {/* Next Month */}
-          {nextMonthTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
-
-          {/* Future */}
-          {futureTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
-
-          {/* Past Due */}
-          {pastTasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
-
-          {/* No Deadline */}
-          {noDeadlineTasks.filter((task) => !task.completed).map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggleCompletion={handleToggleCompletion}
-              onDelete={handleDeleteTask}
-              onEditTask={() => handleEditTask(task)}
-              onContextMenu={handleTaskContextMenuWrapper}
-              showAssignment={true}
-              assignmentLeftOfDate={true}
-            />
-          ))}
+          {isCollapsed ? (
+            <div className="w-full flex justify-center">
+              <ChevronLast size={24} className="text-[var(--accent-primary)]" />
+            </div>
+          ) : (
+            <ChevronFirst size={24} className="text-[var(--accent-primary)]" />
+          )}
         </div>
+
+        {/* Collapsible Content */}
+        {!isCollapsed && (
+          <div className="p-0 space-y-2 md:space-y-0 grid md:grid-cols-2 lg:grid-cols-1 gap-2">
+            {/* Empty State */}
+            {allTasks.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2
+                    size={32}
+                    className="text-[var(--text-secondary)]"
+                  />
+                </div>
+                <p className="text-[var(--text-secondary)] text-sm font-medium">
+                  No tasks found
+                </p>
+                <p className="text-[var(--text-secondary)]/60 text-xs mt-2">
+                  Try selecting a different filter or create a new task
+                </p>
+              </div>
+            )}
+
+            {/* Today's Tasks */}
+            {todayTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={handleTaskContextMenuWrapper}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
+
+            {/* This Month */}
+            {thisMonthTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={handleTaskContextMenuWrapper}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
+
+            {/* Next Month */}
+            {nextMonthTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={handleTaskContextMenuWrapper}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
+
+            {/* Future */}
+            {futureTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={handleTaskContextMenuWrapper}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
+
+            {/* Past Due */}
+            {pastTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onToggleCompletion={handleToggleCompletion}
+                onDelete={handleDeleteTask}
+                onEditTask={() => handleEditTask(task)}
+                onContextMenu={handleTaskContextMenuWrapper}
+                showAssignment={true}
+                assignmentLeftOfDate={true}
+              />
+            ))}
+
+            {/* No Deadline */}
+            {noDeadlineTasks
+              .filter((task) => !task.completed)
+              .map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  onToggleCompletion={handleToggleCompletion}
+                  onDelete={handleDeleteTask}
+                  onEditTask={() => handleEditTask(task)}
+                  onContextMenu={handleTaskContextMenuWrapper}
+                  showAssignment={true}
+                  assignmentLeftOfDate={true}
+                />
+              ))}
+          </div>
+        )}
       </div>
 
       {/* Task Form Modal */}
