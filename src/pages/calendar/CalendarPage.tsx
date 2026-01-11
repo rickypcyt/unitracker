@@ -121,7 +121,7 @@ const CalendarPage = memo(() => {
             onFilterChange={handleFilterChange}
           />
           {tooltipContent && (
-            <div className="-mt-36 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
+            <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
               <div className="px-3 py-2 border-b border-[var(--border-primary)]">
                 <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
                   {formatDate(tooltipContent.date.toISOString())}

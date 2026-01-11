@@ -42,11 +42,6 @@ if (
 }
 
 // -------------------------
-// Logging app start
-// -------------------------
-logger.info("Application starting", { environment: import.meta.env.MODE });
-
-// -------------------------
 // Render Toaster
 // -------------------------
 createPortal(

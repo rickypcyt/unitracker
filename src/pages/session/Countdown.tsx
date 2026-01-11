@@ -561,8 +561,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
 
   // Montaje: verificar que el componente está activo y los logs aparecen
   useEffect(() => {
-    console.log('[Countdown] mounted');
-    return () => console.log('[Countdown] unmounted');
+    // Component mounted/unmounted logging removed
   }, []);
 
   // DEBUG: listeners nativos para verificar llegada de eventos (independiente del hook)

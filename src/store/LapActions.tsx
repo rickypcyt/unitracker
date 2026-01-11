@@ -5,19 +5,15 @@ import { useAppStore } from '@/store/appStore';
 const CACHE_DURATION = 5 * 60 * 1000;
 
 export const fetchLaps = async () => {
-  console.log('[DEBUG] fetchLaps - Iniciando obtención de sesiones');
-  
   const store = useAppStore.getState();
   const { laps } = store;
-  
+
   try {
     // Verificar caché
     if (laps.isCached && laps.lastFetch && (Date.now() - laps.lastFetch < CACHE_DURATION)) {
-      console.log('[DEBUG] Usando datos en caché');
       return; // Usar datos en caché
     }
 
-    console.log('[DEBUG] Obteniendo usuario...');
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       const errorMsg = userError?.message || 'Usuario no autenticado';
@@ -25,7 +21,6 @@ export const fetchLaps = async () => {
       throw new Error(errorMsg);
     }
 
-    console.log(`[DEBUG] Obteniendo sesiones para el usuario: ${user.id}`);
     const { data, error, count } = await supabase
       .from('study_laps')
       .select('*', { count: 'exact' })
@@ -35,18 +30,6 @@ export const fetchLaps = async () => {
     if (error) {
       console.error('[DEBUG] Error al obtener sesiones:', error);
       throw error;
-    }
-
-    console.log(`[DEBUG] Sesiones obtenidas: ${count}`);
-    if (data && data.length > 0) {
-      console.log('[DEBUG] Ejemplo de sesión:', {
-        id: data[0].id,
-        created_at: data[0].created_at,
-        name: data[0].name,
-        duration: data[0].duration
-      });
-    } else {
-      console.log('[DEBUG] No se encontraron sesiones');
     }
 
     // Update Zustand store
@@ -99,8 +82,6 @@ export const updateLap = async (id, updates) => {
 };
 
 export const deleteLap = async (id) => {
-  console.log('[DEBUG] deleteLap - Iniciando eliminación de sesión, ID:', id);
-  
   try {
     // 1. Verificar autenticación
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -109,10 +90,8 @@ export const deleteLap = async (id) => {
       console.error('[DEBUG] Error de autenticación:', errorMsg);
       throw new Error(errorMsg);
     }
-    console.log('[DEBUG] Usuario autenticado:', user.id);
 
     // 2. Obtener tareas asociadas a la sesión
-    console.log('[DEBUG] Obteniendo tareas de la sesión...');
     const { data: sessionTasks, error: fetchError } = await supabase
       .from('session_tasks')
       .select('task_id')
@@ -122,10 +101,8 @@ export const deleteLap = async (id) => {
       console.error('[DEBUG] Error al obtener tareas de la sesión:', fetchError);
       throw fetchError;
     }
-    console.log(`[DEBUG] Tareas asociadas: ${sessionTasks?.length || 0}`);
 
     // 3. Eliminar relaciones session_tasks
-    console.log('[DEBUG] Eliminando relaciones session_tasks...');
     const { error: deleteSessionTasksError } = await supabase
       .from('session_tasks')
       .delete()
@@ -137,7 +114,6 @@ export const deleteLap = async (id) => {
     }
 
     // 4. Eliminar la sesión
-    console.log('[DEBUG] Eliminando sesión...');
     const { error: deleteError, count } = await supabase
       .from('study_laps')
       .delete()
@@ -148,14 +124,11 @@ export const deleteLap = async (id) => {
       console.error('[DEBUG] Error al eliminar la sesión:', deleteError);
       throw deleteError;
     }
-    
-    console.log(`[DEBUG] Sesión eliminada, filas afectadas: ${count}`);
 
     // 5. Actualizar tareas asociadas
     if (sessionTasks?.length > 0) {
       const taskIds = sessionTasks.map(st => st.task_id);
-      console.log(`[DEBUG] Actualizando ${taskIds.length} tareas asociadas...`);
-      
+
       const { error: updateTasksError } = await supabase
         .from('tasks')
         .update({ activetask: false })
@@ -166,8 +139,6 @@ export const deleteLap = async (id) => {
         throw updateTasksError;
       }
     }
-
-    console.log('[DEBUG] deleteLap - Sesión eliminada exitosamente');
     useAppStore.getState().deleteLap(id);
     return { success: true, id };
     

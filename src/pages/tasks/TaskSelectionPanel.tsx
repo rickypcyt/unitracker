@@ -152,7 +152,7 @@ const TaskSelectionPanel = ({
           className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-md ${borderColor} bg-[var(--bg-secondary)]`}
         >
           <div className="flex items-center gap-2 w-full">
-            <span className="font-medium text-[var(--text-primary)] truncate">
+            <span className="font-medium text-base text-[var(--text-primary)] truncate">
               {task.title}
             </span>
             <button
@@ -180,7 +180,7 @@ const TaskSelectionPanel = ({
         >
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-[var(--text-primary)]">
+              <div className="font-medium text-base text-[var(--text-primary)]">
                 {task.title}
               </div>
               {task.assignment && (
@@ -220,7 +220,7 @@ const TaskSelectionPanel = ({
             >
               <ArrowLeft size={18} className="text-[var(--text-secondary)]" />
             </button>
-            <div className="font-medium text-[var(--text-primary)] truncate">
+            <div className="font-medium text-base text-[var(--text-primary)] truncate">
               {task.title}
             </div>
           </div>
@@ -238,7 +238,7 @@ const TaskSelectionPanel = ({
           {isActive ? (
             <>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-[var(--text-primary)]">
+                <div className="font-medium text-base text-[var(--text-primary)]">
                   {task.title}
                 </div>
               </div>
@@ -262,7 +262,7 @@ const TaskSelectionPanel = ({
                 <ArrowLeft size={20} className="text-[var(--text-secondary)]" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-[var(--text-primary)]">
+                <div className="font-medium text-base text-[var(--text-primary)]">
                   {task.title}
                 </div>
               </div>

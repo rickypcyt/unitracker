@@ -1,4 +1,5 @@
 import { CheckCircle2, Clock } from "lucide-react";
+
 import BaseModal from "@/modals/BaseModal";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -80,7 +81,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
                         ? "text-[var(--text-secondary)] line-through"
                         : "text-[var(--text-primary)]"
                     }`}>
-                      {task.title}
+                      <span className="text-base">{task.title}</span>
                     </div>
                     {task.assignment && (
                       <div className="text-xs text-[var(--text-secondary)] truncate">

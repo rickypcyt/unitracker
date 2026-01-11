@@ -18,16 +18,13 @@ function saveTasksToLocalStorage(tasks: any[]) {
 
 // En tu archivo TaskActions.js
 export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = false) => {
-  console.log('TaskActions.fetchTasks - Called with:', { workspaceId, forceRefresh });
-  
   const { tasks: taskState } = useAppStore.getState();
-  
+
   // Create a unique key for this request
   const requestKey = `${workspaceId || 'all'}-${forceRefresh ? 'force' : 'cached'}`;
-  
+
   // Check if there's already an ongoing request for the same parameters
   if (ongoingRequests.has(requestKey)) {
-    console.log('fetchTasks - returning ongoing request for:', requestKey);
     return ongoingRequests.get(requestKey);
   }
   
@@ -69,10 +66,6 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
       const { data, error } = await query;
 
       if (error) throw error;
-
-      console.log('fetchTasks - fetched tasks count:', data?.length);
-      console.log('fetchTasks - fetched tasks:', data);
-      console.log('fetchTasks - workspaceId:', workspaceId);
 
       useAppStore.setState((state) => ({
         tasks: { ...state.tasks, loading: false, tasks: data, error: null, isCached: true, lastFetch: Date.now() }
@@ -249,8 +242,6 @@ export const updateTaskAction = async (task: any) => {
       activetask: task.activetask,
       status: task.status
     };
-    
-    console.log('updateTaskAction - Sending to database:', updateData);
 
     const { data, error } = await supabase
       .from('tasks')
@@ -262,8 +253,6 @@ export const updateTaskAction = async (task: any) => {
       console.error('updateTaskAction - Database error:', error);
       throw error;
     }
-
-    console.log('updateTaskAction - Database response:', data);
     updateTask(task.id, data[0]);
     // Actualiza localStorage
     const updatedTasks = taskState.tasks.map(t => t.id === data[0].id ? data[0] : t);

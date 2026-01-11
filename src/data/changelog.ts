@@ -18,6 +18,24 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.1.5",
+    date: "January 11, 2026",
+    time: "12:00 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "New Habits page inspired by bullet journal methodology for habit tracking",
+        "Day names display (Mon, Tue, Wed, etc.) in calendar cells",
+        "Tooltip system on day hover showing task details, similar to calendar functionality"
+      ],
+      improved: [
+        "Enhanced calendar layout with day names and task indicators",
+        "Optimized tooltip positioning in calendar page for better visibility",
+        "Improved task navigation with clickable dropdown items"
+      ]
+    }
+  },
+  {
     version: "1.1.4",
     date: "January 10, 2026",
     time: "5:08 AM",

@@ -15,7 +15,6 @@ import { useAuth } from '@/hooks/useAuth';
 export default function useDemoMode() {
   const { isLoggedIn } = useAuth();
   const isDemo = !isLoggedIn;
-  console.log('useDemoMode - isLoggedIn:', isLoggedIn, 'isDemo:', isDemo);
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const { currentWorkspace, workspaces } = useWorkspace();

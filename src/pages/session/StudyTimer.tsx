@@ -434,8 +434,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
           }
         }
 
-        console.log('[StudyTimer] 🍅 Pomodoro mode changed:', logData);
-        
         lastLoggedMode = pomodoroMode;
         lastLoggedIndex = pomodoroModeIndex;
         lastLoggedRunning = pomodoroRunning;

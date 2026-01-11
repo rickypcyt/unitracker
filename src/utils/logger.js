@@ -22,10 +22,10 @@ class Logger {
 
   log(level, message, data = {}) {
     const formattedMessage = this.formatMessage(level, message, data);
-    
-    if (this.isDevelopment) {
-      console.log(`[${level}] ${message}`, data);
-    }
+
+    // Logging disabled for cleaner console output
+    // If debugging is needed, re-enable or use external logging services like Sentry
+
     // En producción, no hacer logging para mejorar rendimiento
     // Si se necesita debugging, usar herramientas como Sentry
   }

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats';
+type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits';
 
 interface NavigationContextType {
   activePage: Page;
@@ -26,11 +26,12 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.ctrlKey) {
       const pageMap = {
-        'tasks': { left: 'stats', right: 'calendar' },
+        'tasks': { left: 'habits', right: 'calendar' },
         'calendar': { left: 'tasks', right: 'session' },
         'session': { left: 'calendar', right: 'notes' },
         'notes': { left: 'session', right: 'stats' },
-        'stats': { left: 'notes', right: 'tasks' },
+        'stats': { left: 'notes', right: 'habits' },
+        'habits': { left: 'stats', right: 'tasks' },
       };
 
       const routes = pageMap[activePage] || pageMap['session'];

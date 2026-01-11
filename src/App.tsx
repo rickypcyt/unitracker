@@ -13,6 +13,7 @@ import { useAuthActions } from "@/store/appStore";
 
 // Lazy load pages for better performance
 const CalendarPage = lazy(() => import("@/pages/calendar/CalendarPage"));
+const HabitsPage = lazy(() => import("@/pages/habits/HabitsPage"));
 const Notes = lazy(() => import("@/pages/notes/Notes"));
 const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
 const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
@@ -43,6 +44,7 @@ const pagesMap: Record<string, FC> = {
   tasks: TasksPage,
   calendar: CalendarPage,
   stats: StatsPage,
+  habits: HabitsPage,
   notes: Notes,
 };
 
@@ -242,38 +244,25 @@ const App: FC = () => {
   // -------------------------
   useEffect(() => {
     const requestNotificationPermission = async (): Promise<void> => {
-      console.log('Checking notification support...');
       if (typeof window === "undefined") {
-        console.log('Not in browser environment');
-        return;
-      }
-      
-      if (!("Notification" in window)) {
-        console.log('This browser does not support notifications');
         return;
       }
 
-      console.log('Current notification permission:', Notification.permission);
-      
+      if (!("Notification" in window)) {
+        return;
+      }
+
       if (Notification.permission === "default") {
-        console.log('Notification permission not set, checking localStorage...');
         const permissionRequested = localStorage.getItem("notificationPermissionRequested");
-        console.log('Previously requested:', permissionRequested);
-        
+
         if (!permissionRequested) {
           try {
-            console.log('Requesting notification permission...');
             const permission = await Notification.requestPermission();
-            console.log('User responded with permission:', permission);
             localStorage.setItem("notificationPermissionRequested", "true");
           } catch (error) {
             console.error("Notification permission request failed:", error);
           }
-        } else {
-          console.log('Notification permission was already requested before');
         }
-      } else {
-        console.log('Notification permission already set to:', Notification.permission);
       }
     };
 
@@ -338,7 +327,7 @@ const App: FC = () => {
 // -------------------------
 // Helpers
 // -------------------------
-const navPages = ["tasks", "calendar", "session", "notes", "stats"];
+const navPages = ["tasks", "calendar", "session", "notes", "stats", "habits"];
 
 const swipeNavigate = (diff: number): void => {
   const currentPage =

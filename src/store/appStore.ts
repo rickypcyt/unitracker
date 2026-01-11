@@ -791,7 +791,6 @@ export const useAppStore = create<AppState>()(
           );
           
           if (hasOldModes || currentModes.length !== INITIAL_POMODORO_MODES.length) {
-            console.log('[AppStore] Cleaning old Pomodoro modes and setting new ones');
             state.setPomodoroModes(INITIAL_POMODORO_MODES);
             
             // También limpiar localStorage directamente para asegurar que no queden residuos
