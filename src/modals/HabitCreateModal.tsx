@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 
 import BaseModal from './BaseModal';
-import { Habit } from '../types/common';
 
 interface HabitCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (habit: Omit<Habit, 'id' | 'createdAt'>) => void;
+  onAdd: (habit: { name: string }) => void;
 }
 
 const HabitCreateModal: React.FC<HabitCreateModalProps> = ({

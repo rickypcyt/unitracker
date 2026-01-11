@@ -156,8 +156,8 @@ const HabitsPage = memo(() => {
     }
   };
 
-  const handleAddHabit = async (newHabit: Omit<Habit, 'id' | 'createdAt' | 'user_id'>) => {
-    await createHabit(newHabit.name);
+  const handleAddHabit = async (habit: { name: string }) => {
+    await createHabit(habit.name);
   };
 
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);

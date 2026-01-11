@@ -308,8 +308,8 @@ const Navbar = () => {
     { page: 'calendar', icon: Calendar, label: 'Calendar' },
     { page: 'session', icon: Timer, label: 'Session' },
     { page: 'notes', icon: BookOpen, label: 'Notes' },
-    { page: 'stats', icon: BarChart3, label: 'Statistics' },
     { page: 'habits', icon: CircleCheckBig, label: 'Habits' },
+    { page: 'stats', icon: BarChart3, label: 'Statistics' },
   ];
 
   return (
@@ -356,9 +356,9 @@ const Navbar = () => {
               ))}
             </div>
           </div>
-          {/* Briefcase y Settings a la derecha */}
+          {/* Workspace, GitHub y Settings a la derecha */}
           <div className="flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2 flex-shrink-0">
-            {/* GitHub and Workspace only visible on desktop */}
+            {/* Workspace and GitHub only visible on desktop */}
             <div className="hidden lg:flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2">
               <WorkspaceDropdown
                 workspaces={workspacesWithTaskCount}
