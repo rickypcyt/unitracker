@@ -304,11 +304,11 @@ const Navbar = () => {
     `px-4 py-2 rounded-md text-xl ${isActive(page) ? 'text-[var(--accent-primary)] ' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'}`;
 
   const navIcons = [
-    { page: 'tasks', icon: ListTodo, label: 'Tasks' },
     { page: 'calendar', icon: Calendar, label: 'Calendar' },
+    { page: 'tasks', icon: ListTodo, label: 'Tasks' },
     { page: 'session', icon: Timer, label: 'Session' },
-    { page: 'notes', icon: BookOpen, label: 'Notes' },
     { page: 'habits', icon: CircleCheckBig, label: 'Habits' },
+    { page: 'notes', icon: BookOpen, label: 'Notes' },
     { page: 'stats', icon: BarChart3, label: 'Statistics' },
   ];
 

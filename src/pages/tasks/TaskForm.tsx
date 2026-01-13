@@ -29,7 +29,7 @@ type TaskFormProps = {
 
 const DIFFICULTY_OPTIONS = [
   { value: 'easy', label: 'Easy', color: 'text-[#00FF41]' },
-  { value: 'medium', label: 'Medium', color: 'text-[#1E90FF]' },
+  { value: 'medium', label: 'Medium', color: 'text-[#00BFFF]' },
   { value: 'hard', label: 'Hard', color: 'text-[#FF003C]' }
 ] as const;
 
@@ -60,6 +60,8 @@ const TaskForm = ({
 
   const validationRules = {
     title: { required: true, minLength: 3, maxLength: 100 },
+    assignment: { required: true },
+    difficulty: { required: true },
     description: { maxLength: 500 },
     deadline: {
       required: false,
@@ -68,9 +70,7 @@ const TaskForm = ({
     time: {
       required: false,
       validate: validateTime
-    },
-    difficulty: { required: true },
-    assignment: { required: true }
+    }
   };
 
   const { formData, errors, handleChange, validateForm } = useFormState(
@@ -115,7 +115,7 @@ const TaskForm = ({
   // Handlers
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       console.warn('Validation errors:', errors);
       return;
@@ -139,7 +139,7 @@ const TaskForm = ({
           const [day, month, year] = date.split('/');
           if (day && month && year) {
             const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            const timeStr = formData.time || '09:00';
+            const timeStr = formData.time || '00:00';
             return `${dateStr}T${timeStr}:00`;
           }
           return null;
@@ -267,7 +267,7 @@ const TaskForm = ({
           const minutes = String(date.getMinutes()).padStart(2, '0');
           return `${hours}:${minutes}`;
         }
-        return '09:00';
+        return '';
       } else {
         // If it's a Date object
         const hours = String(initialDeadline.getHours()).padStart(2, '0');
@@ -281,7 +281,7 @@ const TaskForm = ({
       const minutes = String(taskDeadline.getMinutes()).padStart(2, '0');
       return `${hours}:${minutes}`;
     }
-    return '09:00';
+    return '';
   }
 
   function validateDeadline(value: string): true | string {
@@ -772,11 +772,31 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   function getSelectedDate() {
     if (!formData.deadline) return null;
-    // Use the time from formData
-    const date = new Date(formData.deadline);
-    if (formData.time) {
+
+    let date: Date;
+
+    // Handle DD/MM/YYYY format
+    if (formData.deadline.includes('/')) {
+      const [day, month, year] = formData.deadline.split('/');
+      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    } else {
+      date = new Date(formData.deadline);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    if (formData.time && formData.time.includes(':')) {
       const [hours, minutes] = formData.time.split(':');
-      date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const hoursNum = parseInt(hours);
+      const minutesNum = parseInt(minutes);
+      if (!isNaN(hoursNum) && !isNaN(minutesNum) && hoursNum >= 0 && hoursNum <= 23 && minutesNum >= 0 && minutesNum <= 59) {
+        date.setHours(hoursNum, minutesNum, 0, 0);
+      } else {
+        date.setHours(9, 0, 0, 0);
+      }
     } else {
       date.setHours(9, 0, 0, 0);
     }
@@ -820,7 +840,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             <button
               type="button"
               onClick={() => handleChange('difficulty', option.value)}
-              className="p-1 rounded-full transition-all duration-200 hover:scale-110"
+              className="p-1 rounded-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -860,6 +880,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               handleChange('deadline', `${day}/${month}/${year}`);
             } else {
               handleChange('deadline', '');
+              handleChange('time', ''); // Clear time when date is cleared
             }
           }}
           dateFormat="dd/MM/yyyy"
@@ -892,9 +913,18 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         </button>
         <button
           type="button"
-          onClick={() => datePickerRef.current?.setOpen(true)}
+          onClick={() => {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            handleChange('deadline', `${day}/${month}/${year}`);
+            // Clear time when setting to today to avoid invalid time combinations
+            handleChange('time', '');
+          }}
           className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
           tabIndex={-1}
+          title="Set to today"
         >
           <Calendar size={20} />
         </button>
@@ -907,7 +937,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   const renderTimeInput = () => {
     const incrementTime = () => {
-      const [hours, minutes] = (formData.time || '09:00').split(':').map(Number);
+      const [hours, minutes] = (formData.time || '00:00').split(':').map(Number);
       const newMinutes = (minutes + 15) % 60;
       const newHours = hours + Math.floor((minutes + 15) / 60);
       const finalHours = newHours % 24;
@@ -916,7 +946,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     };
 
     const decrementTime = () => {
-      const [hours, minutes] = (formData.time || '09:00').split(':').map(Number);
+      const [hours, minutes] = (formData.time || '00:00').split(':').map(Number);
       let newMinutes = minutes - 15;
       let newHours = hours;
       if (newMinutes < 0) {
@@ -928,31 +958,42 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       handleChange('time', newTime);
     };
 
+    const isDisabled = !formData.deadline;
+
     return (
       <div className="w-full">
         <div className="relative flex items-center w-full">
           <input
             id="time"
-            type="time"
+            type="text"
             value={formData.time}
             onChange={(e) => handleChange('time', e.target.value)}
+            disabled={isDisabled}
             className={`w-full pl-3 pr-12 py-2 bg-[var(--bg-primary)] border-2 ${
               errors.time ? 'border-red-500' : 'border-[var(--border-primary)]'
-            } rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]`}
-            placeholder="HH:MM"
+            } rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] ${
+              isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            placeholder={isDisabled ? 'Add a date first' : 'HH:MM AM/PM'}
           />
           <div className="absolute right-2 flex flex-col">
             <button
               type="button"
               onClick={incrementTime}
-              className="p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              disabled={isDisabled}
+              className={`p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] ${
+                isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <span className="text-xs font-bold">▲</span>
             </button>
             <button
               type="button"
               onClick={decrementTime}
-              className="p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              disabled={isDisabled}
+              className={`p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] ${
+                isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <span className="text-xs font-bold">▼</span>
             </button>

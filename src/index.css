@@ -495,7 +495,7 @@
   }
 
   .task-item-active[data-difficulty="medium"] {
-    border-color: #1e90ff; /* Electric neon blue */
+    border-color: #00bfff; /* Deep sky blue */
   }
 
   .task-item-active[data-difficulty="hard"] {

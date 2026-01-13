@@ -54,7 +54,7 @@ const getDeadlineColor = (dateStr: string) => {
         return 'text-yellow-500';
     } else if (date >= startOfNextWeek) {
         // Next week or later - Blue
-        return 'text-blue-500';
+        return 'text-[#00BFFF]';
     } else {
         // Between end of this week and start of next week (shouldn't happen but fallback)
         return 'text-[var(--text-secondary)]';
@@ -91,7 +91,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             case 'medium':
                 if (type === 'bg') return 'bg-blue-900/60';
                 if (type === 'border') return 'border-blue-500';
-                return 'text-[#1E90FF]';
+                return 'text-[#00BFFF]';
             case 'hard':
                 if (type === 'bg') return 'bg-red-900/60';
                 if (type === 'border') return 'border-red-500';
@@ -183,7 +183,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:ring-opacity-50 rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
+                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (

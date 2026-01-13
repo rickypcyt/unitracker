@@ -92,7 +92,6 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        required={required}
         className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
           error ? 'border-red-500' : 'border-[var(--border-primary)]'
         } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}

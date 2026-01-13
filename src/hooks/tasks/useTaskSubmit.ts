@@ -17,8 +17,10 @@ export function useTaskSubmit() {
   const { currentWorkspace: activeWorkspace } = useWorkspace();
 
   const saveTask = useCallback(async ({ formData, userId, initialTask, activeWorkspaceId, parseDateForDB }: SaveArgs) => {
+    // Exclude 'time' field since it's not a database column - time is combined into deadline
+    const { time, ...formDataWithoutTime } = formData;
     const taskData = {
-      ...formData,
+      ...formDataWithoutTime,
       deadline: formData.deadline ? parseDateForDB(formData.deadline) : null,
       user_id: userId,
       completed: initialTask?.completed || false,

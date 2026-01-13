@@ -30,8 +30,74 @@ const DayView = ({
     <div className="flex-1 flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative min-h-0 h-full">
       {/* Header with day - Sticky header */}
       <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm pb-1 border-b border-[var(--border-primary)]/30 flex-shrink-0">
-        <div className="text-center text-lg font-medium p-2">
-          {selectedDate.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+        <div className="flex items-center justify-between p-2">
+          <div className="text-lg font-medium">
+            {selectedDate.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          </div>
+          {/* Time selector */}
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={(() => {
+                const hours = selectedDate.getHours();
+                const minutes = selectedDate.getMinutes();
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+                return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+              })()}
+              onChange={(e) => {
+                const timeValue = e.target.value;
+                // Parse time in format "H:MM AM/PM" or "HH:MM AM/PM"
+                const match = timeValue.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (match) {
+                  let [, hoursStr, minutesStr, period] = match;
+                  let hours = parseInt(hoursStr);
+                  const minutes = parseInt(minutesStr);
+
+                  // Convert 12-hour to 24-hour format
+                  if (period) {
+                    if (period.toUpperCase() === 'PM' && hours !== 12) {
+                      hours += 12;
+                    } else if (period.toUpperCase() === 'AM' && hours === 12) {
+                      hours = 0;
+                    }
+                  }
+
+                  if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+                    const newDate = new Date(selectedDate);
+                    newDate.setHours(hours, minutes, 0, 0);
+                    setSelectedDate(newDate);
+                  }
+                }
+              }}
+              className="w-24 px-2 py-1 text-sm bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+              placeholder="H:MM AM"
+            />
+            <button
+              onClick={() => {
+                const newDate = new Date(selectedDate);
+                const minutes = newDate.getMinutes();
+                newDate.setMinutes(minutes + 15);
+                setSelectedDate(newDate);
+              }}
+              className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              title="Add 15 minutes"
+            >
+              ▲
+            </button>
+            <button
+              onClick={() => {
+                const newDate = new Date(selectedDate);
+                const minutes = newDate.getMinutes();
+                newDate.setMinutes(Math.max(0, minutes - 15));
+                setSelectedDate(newDate);
+              }}
+              className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              title="Subtract 15 minutes"
+            >
+              ▼
+            </button>
+          </div>
         </div>
       </div>
 
@@ -49,13 +115,19 @@ const DayView = ({
                 </div>
                 <div
                   className="col-span-4 border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-visible"
-                  onClick={() => {
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const y = e.clientY - rect.top;
+                    const height = rect.height;
+                    // Calculate minutes based on click position (0-59 minutes)
+                    const minutes = Math.round((y / height) * 59);
                     const newDate = new Date(selectedDate);
-                    newDate.setHours(hour, 0, 0, 0);
+                    newDate.setHours(hour, minutes, 0, 0);
                     setSelectedDate(newDate);
                     if (!isLoggedIn) return setIsLoginPromptOpen(true);
                     setShowTaskForm(true);
                   }}
+                  title={`Click to set time at ${format12Hour(hour)}`}
                 >
                   {isCurrentHour && (
                     <div

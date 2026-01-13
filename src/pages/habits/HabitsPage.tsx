@@ -3,7 +3,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
 import HabitEditModal from '../../modals/HabitEditModal';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
 import { useAuth } from '../../hooks/useAuth';
 import { useCalendarData } from '../calendar/hooks/useCalendarData';
@@ -22,6 +22,11 @@ const HabitsPage = memo(() => {
   const [pendingNoteSaves, setPendingNoteSaves] = useState<Record<string, string>>({}); // Track pending saves
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [tooltipContent, setTooltipContent] = useState<{ date: Date; tasks: any[] } | null>(null);
+  const [showPastDays, setShowPastDays] = useState(() => {
+    // Load from localStorage with default false
+    const saved = localStorage.getItem('habits-show-past-days');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const {
     habits,
@@ -162,6 +167,11 @@ const HabitsPage = memo(() => {
 
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  // Save showPastDays to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('habits-show-past-days', JSON.stringify(showPastDays));
+  }, [showPastDays]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -232,9 +242,19 @@ const HabitsPage = memo(() => {
 
   return (
     <div className="w-full px-0 overflow-hidden">
-      <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
+      <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6 lg:max-w-1/2 lg:mx-auto lg:px-8">
           <div className="mt-4">
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
+              {/* Toggle for past days */}
+              <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
+                <button
+                  onClick={() => setShowPastDays(!showPastDays)}
+                  className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                >
+                  {showPastDays ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {showPastDays ? 'Hide past days' : 'Show past days'}
+                </button>
+              </div>
               <div>
                 <table className="w-full border-collapse">
                   <thead className="bg-[var(--bg-tertiary)] sticky top-0 z-10">
@@ -268,15 +288,42 @@ const HabitsPage = memo(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    {days.map((day, index) => {
+                    {days.filter(day => {
+                      if (!isCurrentMonth) return true; // Show all days for past/future months
+                      if (showPastDays) return true; // Show all days when toggle is on
+
+                      // For current month, show from Monday of current week onwards
+                      if (todayDay === null) return true;
+
+                      // Calculate Monday of current week
+                      const today = new Date();
+                      const mondayOfWeek = new Date(today);
+                      mondayOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
+                      const mondayDayOfMonth = mondayOfWeek.getDate();
+
+                      return day >= mondayDayOfMonth; // Show from Monday of current week
+                    }).map((day, index) => {
                       const isPastDay = isCurrentMonth && todayDay !== null && day < todayDay;
                       const isFutureDay = isCurrentMonth && todayDay !== null && day > todayDay;
+
+                      // Calculate if day is before Monday of current week
+                      let isBeforeCurrentWeek = false;
+                      if (isCurrentMonth && todayDay !== null) {
+                        const today = new Date();
+                        const mondayOfWeek = new Date(today);
+                        mondayOfWeek.setDate(today.getDate() - today.getDay() + 1);
+                        const mondayDayOfMonth = mondayOfWeek.getDate();
+                        isBeforeCurrentWeek = day < mondayDayOfMonth;
+                      }
+
                       return (
                         <tr
                           key={day}
                           className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors ${
-                            index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]'
-                          } ${isPastDay ? 'opacity-60' : ''}`}
+                            isBeforeCurrentWeek
+                              ? (index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]')
+                              : 'bg-[var(--bg-primary)]'
+                          } ${isBeforeCurrentWeek ? 'opacity-75' : ''}`}
                         >
                           {/* Day number column */}
                           <td

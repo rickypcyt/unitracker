@@ -90,8 +90,19 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
 
 // Acción para obtener tareas
 export const addTask = async (newTask: any) => {
+  // Validate required fields
+  if (!newTask.title || newTask.title.trim().length < 3) {
+    throw new Error('Task title is required and must be at least 3 characters long');
+  }
+  if (!newTask.assignment || newTask.assignment.trim().length === 0) {
+    throw new Error('Task assignment/subject is required');
+  }
+  if (!newTask.difficulty) {
+    throw new Error('Task difficulty is required');
+  }
+
   const { addTask, tasks: taskState, workspace } = useAppStore.getState();
-  
+
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
