@@ -53,6 +53,7 @@ const TaskForm = ({
     title: initialTask?.title || '',
     description: initialTask?.description || '',
     deadline: getInitialDeadline(),
+    time: getInitialTime(),
     difficulty: initialTask?.difficulty || 'medium',
     assignment: initialTask?.assignment || initialAssignment || ''
   };
@@ -63,6 +64,10 @@ const TaskForm = ({
     deadline: {
       required: false,
       validate: validateDeadline
+    },
+    time: {
+      required: false,
+      validate: validateTime
     },
     difficulty: { required: true },
     assignment: { required: true }
@@ -126,12 +131,16 @@ const TaskForm = ({
         activeWorkspaceId: activeWorkspace?.id ?? null,
         parseDateForDB: (date: string | null | undefined) => {
           if (!date) return null;
+
           // If it's already in ISO format, return as is
           if (date.match(/^\d{4}-\d{2}-\d{2}/)) return date;
-          // Handle DD/MM/YYYY format
+
+          // Handle DD/MM/YYYY format and combine with time
           const [day, month, year] = date.split('/');
           if (day && month && year) {
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            const timeStr = formData.time || '09:00';
+            return `${dateStr}T${timeStr}:00`;
           }
           return null;
         },
@@ -224,30 +233,82 @@ const TaskForm = ({
     if (initialDeadline) {
       if (typeof initialDeadline === 'string') {
         // If it's already a string, check if it's ISO format (contains 'T')
-        // If it is, return as is. If not (DD/MM/YYYY), return as is (getSelectedDate handles both)
+        // If it is, return date part only. If not (DD/MM/YYYY), return as is
+        if (initialDeadline.includes('T')) {
+          return initialDeadline.split('T')[0]!; // Return only date part for display
+        }
         return initialDeadline;
       } else {
-        // If it's a Date object, convert to ISO string to preserve time information
-        return initialDeadline.toISOString();
+        // If it's a Date object, convert to date string
+        const year = initialDeadline.getFullYear();
+        const month = String(initialDeadline.getMonth() + 1).padStart(2, '0');
+        const day = String(initialDeadline.getDate()).padStart(2, '0');
+        return `${day}/${month}/${year}`;
       }
     }
     if (initialTask?.deadline) {
-      // If deadline is already an ISO string, return as is. Otherwise parse and convert
+      // Extract date part from ISO string for display
       const taskDeadline = new Date(initialTask.deadline);
-      return taskDeadline.toISOString();
+      const year = taskDeadline.getFullYear();
+      const month = String(taskDeadline.getMonth() + 1).padStart(2, '0');
+      const day = String(taskDeadline.getDate()).padStart(2, '0');
+      return `${day}/${month}/${year}`;
     }
     return '';
   }
 
+  function getInitialTime(): string {
+    if (initialDeadline) {
+      if (typeof initialDeadline === 'string') {
+        // If it's already a string with time info
+        if (initialDeadline.includes('T')) {
+          const date = new Date(initialDeadline);
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+        return '09:00';
+      } else {
+        // If it's a Date object
+        const hours = String(initialDeadline.getHours()).padStart(2, '0');
+        const minutes = String(initialDeadline.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    }
+    if (initialTask?.deadline) {
+      const taskDeadline = new Date(initialTask.deadline);
+      const hours = String(taskDeadline.getHours()).padStart(2, '0');
+      const minutes = String(taskDeadline.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+    return '09:00';
+  }
+
   function validateDeadline(value: string): true | string {
     if (!value) return true;
-    
-    const [day, month, year] = value.split('/');
+
+    // Validate DD/MM/YYYY format
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = value.match(dateRegex);
+
+    if (!match) {
+      return 'Please enter a valid date in DD/MM/YYYY format';
+    }
+
+    const [, day, month, year] = match;
     const date = new Date(`${year}-${month}-${day}`);
-    
-    return isNaN(date.getTime()) 
+
+    return isNaN(date.getTime())
       ? 'Please enter a valid date in DD/MM/YYYY format'
       : true;
+  }
+
+  function validateTime(value: string): true | string {
+    if (!value) return true;
+
+    // Validate HH:MM format
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return timeRegex.test(value) ? true : 'Please enter a valid time in HH:MM format';
   }
 
   
@@ -711,46 +772,49 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   function getSelectedDate() {
     if (!formData.deadline) return null;
-    // Handle both date-only and datetime strings
-    if (formData.deadline.includes('T')) {
-      return new Date(formData.deadline);
+    // Use the time from formData
+    const date = new Date(formData.deadline);
+    if (formData.time) {
+      const [hours, minutes] = formData.time.split(':');
+      date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
     } else {
-      // For date-only strings, return as Date at 09:00
-      const [day, month, year] = formData.deadline.split('/');
-      return new Date(`${year}-${month}-${day}T09:00:00`);
+      date.setHours(9, 0, 0, 0);
     }
+    return date;
   }
 
   // Render Components
   const renderTabSelector = (isAIActive: boolean) => (
-    <div className="w-full max-w-md flex justify-center items-center gap-2 sm:gap-3 mt-1 pt-2 select-none mb-4 sm:mb-4">
-      <span
-        className={`cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base ${
-          isAIActive 
-            ? 'text-[var(--accent-primary)]' 
-            : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
-        }`}
-        onClick={() => setActiveTab('ai')}
-      >
-        AI
-      </span>
-      <span className="text-[var(--border-primary)] font-bold text-sm sm:text-base">|</span>
-      <span
-        className={`cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base ${
-          !isAIActive 
-            ? 'text-[var(--accent-primary)]' 
-            : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
-        }`}
-        onClick={() => setActiveTab('manual')}
-      >
-        Manual
-      </span>
+    <div className="w-full flex justify-center items-center select-none mb-4 sm:mb-4 px-4">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span
+          className={`cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base ${
+            !isAIActive
+              ? 'text-[var(--accent-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+          }`}
+          onClick={() => setActiveTab('manual')}
+        >
+          Manual
+        </span>
+        <span className="text-[var(--border-primary)] font-bold text-sm sm:text-base mx-1">|</span>
+        <span
+          className={`cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base ${
+            isAIActive
+              ? 'text-[var(--accent-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--accent-primary)]'
+          }`}
+          onClick={() => setActiveTab('ai')}
+        >
+          Auto (AI)
+        </span>
+      </div>
     </div>
   );
 
   const renderDifficultySelector = () => (
     <div>
-      <div className="flex items-center justify-center gap-4 sm:gap-8">
+      <div className="flex items-center gap-8">
         {DIFFICULTY_OPTIONS.map((option) => (
           <div key={option.value} className="flex flex-col items-center gap-1">
             <button
@@ -764,13 +828,13 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
                 }
               }}
             >
-              {formData.difficulty === option.value ? (
-                <CheckCircle2 size={22} className={option.color} />
-              ) : (
-                <Circle size={22} className={option.color} />
-              )}
+                {formData.difficulty === option.value ? (
+                  <CheckCircle2 size={28} className={option.color} />
+                ) : (
+                  <Circle size={28} className={option.color} />
+                )}
             </button>
-            <span className="text-base text-[var(--text-primary)]">{option.label}</span>
+            <span className="text-base font-medium text-[var(--text-primary)]">{option.label}</span>
           </div>
         ))}
       </div>
@@ -789,28 +853,23 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           selected={getSelectedDate()}
           onChange={(date) => {
             if (date) {
-              // react-datepicker with showTimeSelect handles time preservation/selection correctly
-              // The date parameter already includes the correct time (preserved or newly selected)
-              const dateTime = new Date(date);
-              // Only set default time (09:00) if there's no existing deadline and time is midnight
-              if (!formData.deadline && dateTime.getHours() === 0 && dateTime.getMinutes() === 0) {
-                dateTime.setHours(9, 0, 0, 0);
-              }
-              handleChange('deadline', dateTime.toISOString());
+              // Convert to DD/MM/YYYY format for display
+              const day = String(date.getDate()).padStart(2, '0');
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const year = date.getFullYear();
+              handleChange('deadline', `${day}/${month}/${year}`);
             } else {
               handleChange('deadline', '');
             }
           }}
-          showTimeSelect
-          timeFormat="HH:mm"
-          dateFormat="dd/MM/yyyy HH:mm"
-          placeholderText="DD/MM/YYYY HH:mm"
+          dateFormat="dd/MM/yyyy"
+          placeholderText="DD/MM/YYYY"
           customInput={
             <input
               type="text"
               readOnly
               value={formData.deadline ? formatDateTimeForDisplay(formData.deadline) : 'None'}
-              className={`w-full pl-3 pr-20 py-2 bg-[var(--bg-primary)] border-2 ${
+              className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${
                 errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
               } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
             />
@@ -824,7 +883,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         <button
           type="button"
           onClick={() => handleChange('deadline', '')}
-          className="absolute right-12 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer"
+          className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer"
           tabIndex={-1}
           title="Clear deadline"
           style={{ zIndex: 2 }}
@@ -834,7 +893,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         <button
           type="button"
           onClick={() => datePickerRef.current?.setOpen(true)}
-          className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+          className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
           tabIndex={-1}
         >
           <Calendar size={20} />
@@ -845,6 +904,66 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       )}
     </div>
   );
+
+  const renderTimeInput = () => {
+    const incrementTime = () => {
+      const [hours, minutes] = (formData.time || '09:00').split(':').map(Number);
+      const newMinutes = (minutes + 15) % 60;
+      const newHours = hours + Math.floor((minutes + 15) / 60);
+      const finalHours = newHours % 24;
+      const newTime = `${String(finalHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+      handleChange('time', newTime);
+    };
+
+    const decrementTime = () => {
+      const [hours, minutes] = (formData.time || '09:00').split(':').map(Number);
+      let newMinutes = minutes - 15;
+      let newHours = hours;
+      if (newMinutes < 0) {
+        newMinutes = 60 + newMinutes;
+        newHours = hours - 1;
+        if (newHours < 0) newHours = 23;
+      }
+      const newTime = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+      handleChange('time', newTime);
+    };
+
+    return (
+      <div className="w-full">
+        <div className="relative flex items-center w-full">
+          <input
+            id="time"
+            type="time"
+            value={formData.time}
+            onChange={(e) => handleChange('time', e.target.value)}
+            className={`w-full pl-3 pr-12 py-2 bg-[var(--bg-primary)] border-2 ${
+              errors.time ? 'border-red-500' : 'border-[var(--border-primary)]'
+            } rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]`}
+            placeholder="HH:MM"
+          />
+          <div className="absolute right-2 flex flex-col">
+            <button
+              type="button"
+              onClick={incrementTime}
+              className="p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            >
+              <span className="text-xs font-bold">▲</span>
+            </button>
+            <button
+              type="button"
+              onClick={decrementTime}
+              className="p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            >
+              <span className="text-xs font-bold">▼</span>
+            </button>
+          </div>
+        </div>
+        {errors.time && (
+          <p className="mt-1 text-base text-red-500">{errors.time}</p>
+        )}
+      </div>
+    );
+  };
 
   const renderManualForm = () => (
     <form onSubmit={handleSubmit} className="space-y-1">
@@ -879,18 +998,28 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         onChange={({ body }) => handleChange('description', body)}
         showTitleInput={false}
         variant="tasks"
-        className="pb-2"
+        className="pb-4"
       />
       {errors.description && (
         <p className="mt-1 text-base text-red-500">{errors.description}</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pb-4">
-        {renderDifficultySelector()}
-        {renderDatePicker()}
+      <div className="pb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex justify-center">
+            {renderDatePicker()}
+          </div>
+          <div className="flex justify-center">
+            {renderTimeInput()}
+          </div>
+        </div>
       </div>
 
-      <FormActions>
+      <div className="flex justify-center pb-4">
+        {renderDifficultySelector()}
+      </div>
+
+      <FormActions className="mt-6">
         <FormButton type="button" variant="secondary" onClick={onClose}>
           Cancel
         </FormButton>
