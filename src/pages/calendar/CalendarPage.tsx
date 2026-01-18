@@ -1,5 +1,6 @@
 import Calendar, { TooltipContent } from '@/pages/calendar/Calendar';
 import { memo, useCallback, useEffect, useState } from 'react';
+import { Helmet } from "react-helmet-async";
 
 import AllTasks from '@/pages/calendar/AllTasks';
 import { Task } from '@/types/taskStorage';
@@ -103,7 +104,27 @@ const CalendarPage = memo(() => {
   };
 
   return (
-    <div className="w-full session-page mt-2 sm:mt-4">
+    <>
+      <Helmet>
+        <title>Calendar & Schedule Management | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
+        />
+        <meta
+          name="keywords"
+          content="academic calendar, study planner, assignment deadlines, schedule management, student calendar, deadline tracker"
+        />
+        <meta property="og:title" content="Calendar & Schedule Management | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/calendar" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/calendar" />
+      </Helmet>
+      <div className="w-full session-page mt-2 sm:mt-4">
       <div className="w-full flex flex-col lg:flex-row gap-6 h-[calc(100vh-8rem)]">
         <div className="order-1 md:order-1 lg:order-1 md:px-2 flex-1">
           <AllTasks filteredTasks={filteredTasks} title={getFilterLabel(selectedFilter)} />
@@ -170,6 +191,7 @@ const CalendarPage = memo(() => {
         </div>
       </div>
     </div>
+    </>
   );
 });
 

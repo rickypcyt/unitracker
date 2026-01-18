@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from 'react';
+import { Helmet } from "react-helmet-async";
 
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
@@ -456,7 +457,27 @@ const HabitsPage = memo(() => {
 
 
   return (
-    <div className="w-full px-0 overflow-hidden">
+    <>
+      <Helmet>
+        <title>Habit Tracking & Daily Goals | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
+        />
+        <meta
+          name="keywords"
+          content="habit tracker, daily goals, study habits, routine builder, habit formation, productivity habits, study consistency"
+        />
+        <meta property="og:title" content="Habit Tracking & Daily Goals | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/habits" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/habits" />
+      </Helmet>
+      <div className="w-full px-0 overflow-hidden">
       <div className="space-y-8 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6 lg:max-w-1/2 lg:mx-auto lg:px-8">
         {/* Current Month */}
         {renderHabitsTable(
@@ -552,6 +573,7 @@ const HabitsPage = memo(() => {
         </div>
       )}
     </div>
+    </>
   );
 });
 

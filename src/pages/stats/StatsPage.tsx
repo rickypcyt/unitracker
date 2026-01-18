@@ -1,4 +1,5 @@
 import { memo, useEffect } from 'react';
+import { Helmet } from "react-helmet-async";
 import { useAuth, useFetchTasks, useWorkspace } from '@/store/appStore';
 
 import Statistics from '@/pages/stats/Stats';
@@ -45,7 +46,27 @@ const StatsPage = memo(() => {
   }, [user]); // Remove fetchTasks from dependencies
 
   return (
-    <div className="w-full px-0 overflow-hidden">
+    <>
+      <Helmet>
+        <title>Study Statistics & Analytics | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Track your study progress with detailed analytics. View study time statistics, productivity charts, and performance insights."
+        />
+        <meta
+          name="keywords"
+          content="study statistics, productivity analytics, study time tracking, performance charts, study insights, academic analytics"
+        />
+        <meta property="og:title" content="Study Statistics & Analytics | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Track your study progress with detailed analytics. View study time statistics, productivity charts, and performance insights."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/stats" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/stats" />
+      </Helmet>
+      <div className="w-full px-0 overflow-hidden">
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
         {/* Stats Banner at the top */}
         
@@ -56,6 +77,7 @@ const StatsPage = memo(() => {
         </div>
       </div>
     </div>
+    </>
   );
 });
 

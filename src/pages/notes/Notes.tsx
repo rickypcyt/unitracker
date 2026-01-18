@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from "react-helmet-async";
 
 import DeleteNoteModal from '../../modals/DeleteNoteModal';
 import { FileText } from 'lucide-react';
@@ -229,8 +230,28 @@ const Notes: React.FC = () => {
   const selectedNote = selectedNoteId ? notesToShow.find((note: Note) => note.id === selectedNoteId) : null;
 
   return (
-    <React.Fragment>
-      <div className="w-full min-h-screen relative pb-16">
+    <>
+      <Helmet>
+        <title>Study Notes & Note Taking | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Take and organize study notes digitally. Create rich text notes, organize by assignments, and access your study materials anywhere."
+        />
+        <meta
+          name="keywords"
+          content="study notes, note taking, digital notes, assignment notes, study materials, note organization, rich text notes"
+        />
+        <meta property="og:title" content="Study Notes & Note Taking | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Take and organize study notes digitally. Create rich text notes, organize by assignments, and access your study materials anywhere."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/notes" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/notes" />
+      </Helmet>
+      <React.Fragment>
+        <div className="w-full min-h-screen relative pb-16">
         {/* Left Sidepanel */}
         <Sidepanel
           position="left"
@@ -309,7 +330,8 @@ const Notes: React.FC = () => {
       onConfirm={confirmDeleteNote}
       noteTitle={noteToDelete?.title || ''}
     />
-    </React.Fragment>
+      </React.Fragment>
+    </>
   );
 };
 

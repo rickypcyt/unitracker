@@ -1,4 +1,5 @@
 import { memo, useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 
 import Countdown from "./Countdown";
 import GlobalTimerControls from "@/components/GlobalTimerControls";
@@ -97,7 +98,27 @@ const SessionPage = memo(() => {
   }, [isSynced, isRunning, resetKey]);
 
   return (
-    <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
+    <>
+      <Helmet>
+        <title>Pomodoro Timer & Study Sessions | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app. No ads, no subscriptions."
+        />
+        <meta
+          name="keywords"
+          content="pomodoro timer, study timer, productivity timer, focus timer, study sessions, break timer, time management, student productivity"
+        />
+        <meta property="og:title" content="Pomodoro Timer & Study Sessions | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/session" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/session" />
+      </Helmet>
+      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
       {/* Pomodoro mode display at the very top when active */}
       {getPomodoroModeDisplay() && (
         <div className="w-full px-2 mb-4">
@@ -156,6 +177,7 @@ const SessionPage = memo(() => {
         onClose={() => setIsSettingsOpen(false)}
       />
     </div>
+    </>
   );
 });
 

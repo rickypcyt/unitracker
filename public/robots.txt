@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Allow access to main assets
+Allow: /assets/
+Allow: /sounds/
+
+# Disallow access to sensitive or unnecessary files
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.log
+Disallow: /*.tmp
+
+# Sitemap
+Sitemap: https://uni-tracker.vercel.app/sitemap.xml

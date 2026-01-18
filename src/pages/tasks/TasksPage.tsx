@@ -1,5 +1,6 @@
 import { Info, Plus, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Helmet } from "react-helmet-async";
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
@@ -110,7 +111,27 @@ const TasksPage = memo(() => {
   }
 
   return (
-    <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
+    <>
+      <Helmet>
+        <title>Task Management & Kanban Board | Uni Tracker 2026</title>
+        <meta
+          name="description"
+          content="Free task management app for students. Organize assignments, track progress with Kanban boards, and manage study tasks efficiently."
+        />
+        <meta
+          name="keywords"
+          content="task management, kanban board, assignment tracker, study tasks, project management, student planner, todo list"
+        />
+        <meta property="og:title" content="Task Management & Kanban Board | Uni Tracker 2026" />
+        <meta
+          property="og:description"
+          content="Free task management app for students. Organize assignments, track progress with Kanban boards, and manage study tasks efficiently."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://uni-tracker.vercel.app/tasks" />
+        <link rel="canonical" href="https://uni-tracker.vercel.app/tasks" />
+      </Helmet>
+      <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
       <KanbanBoard />
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (
@@ -165,6 +186,7 @@ const TasksPage = memo(() => {
         onClose={() => setIsLoginPromptOpen(false)}
       />
     </div>
+    </>
   );
 });
 
