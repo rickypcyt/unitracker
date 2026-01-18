@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
@@ -11,7 +11,7 @@ import { useHabits } from '../../hooks/useHabits';
 
 const HabitsPage = memo(() => {
   const { isLoggedIn } = useAuth();
-  const [currentDate] = useState(new Date());
+  const currentDate = new Date(); // Use current date directly instead of state
   const { getTasksWithDeadline } = useCalendarData({
     currentDate,
     selectedDate: currentDate,
@@ -20,7 +20,6 @@ const HabitsPage = memo(() => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [pendingNoteSaves, setPendingNoteSaves] = useState<Record<string, string>>({}); // Track pending saves
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [tooltipContent, setTooltipContent] = useState<{ date: Date; tasks: any[] } | null>(null);
   const [showPastDays, setShowPastDays] = useState(() => {
     // Load from localStorage with default false
@@ -41,9 +40,17 @@ const HabitsPage = memo(() => {
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  // Next month calculations
+  const nextMonthDate = new Date(currentYear, currentMonth + 1);
+  const nextMonth = nextMonthDate.getMonth();
+  const nextMonthYear = nextMonthDate.getFullYear();
+  const daysInNextMonth = new Date(nextMonthYear, nextMonth + 1, 0).getDate();
+
   const today = new Date();
   const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
-  const todayDay = isCurrentMonth ? today.getDate() : null;
+  const isNextMonth = today.getMonth() === nextMonth && today.getFullYear() === nextMonthYear;
+  const todayDay = isCurrentMonth ? today.getDate() : (isNextMonth ? today.getDate() : null);
 
 
   const handleNoteChange = (day: number, note: string) => {
@@ -55,30 +62,6 @@ const HabitsPage = memo(() => {
       ...prev,
       [dateString]: note
     }));
-
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    // Set new timeout to save after 2.5 seconds of inactivity
-    saveTimeoutRef.current = setTimeout(async () => {
-      const savesToProcess = { ...pendingNoteSaves };
-      setPendingNoteSaves({}); // Clear pending saves
-
-      // Process all pending saves
-      for (const [dateKey, noteText] of Object.entries(savesToProcess)) {
-        const dateParts = dateKey.split('-').map(Number);
-        const year = dateParts[0];
-        const month = dateParts[1];
-        const day = dateParts[2];
-        if (year !== undefined && month !== undefined && day !== undefined &&
-            !isNaN(year) && !isNaN(month) && !isNaN(day)) {
-          const saveDate = new Date(year, month - 1, day);
-          await saveJournalNote(saveDate, noteText);
-        }
-      }
-    }, 1000);
   };
 
   const handleNoteKeyDown = async (day: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -87,12 +70,6 @@ const HabitsPage = memo(() => {
       const date = new Date(currentYear, currentMonth, day);
       const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       const noteValue = (e.target as HTMLInputElement).value;
-
-      // Clear timeout to prevent double saving
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
 
       // Remove from pending saves and save immediately
       setPendingNoteSaves(prev => {
@@ -113,12 +90,6 @@ const HabitsPage = memo(() => {
 
     // Only save if there are unsaved changes
     if (pendingNoteSaves[dateString] !== undefined) {
-      // Clear timeout to prevent double saving
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
-
       // Remove from pending saves and save
       setPendingNoteSaves(prev => {
         const newPending = { ...prev };
@@ -165,21 +136,265 @@ const HabitsPage = memo(() => {
     await createHabit(habit.name);
   };
 
+  // Helper functions for any month
+  const handleNoteChangeForMonth = (year: number, month: number, day: number, note: string) => {
+    const date = new Date(year, month, day);
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    // Update pending saves
+    setPendingNoteSaves(prev => ({
+      ...prev,
+      [dateString]: note
+    }));
+  };
+
+  const handleNoteKeyDownForMonth = async (year: number, month: number, day: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // Save immediately on Enter
+      const date = new Date(year, month, day);
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const noteValue = (e.target as HTMLInputElement).value;
+
+      // Remove from pending saves and save immediately
+      setPendingNoteSaves(prev => {
+        const newPending = { ...prev };
+        delete newPending[dateString];
+        return newPending;
+      });
+
+      await saveJournalNote(date, noteValue);
+    }
+  };
+
+  const handleNoteBlurForMonth = async (year: number, month: number, day: number) => {
+    // Save when user leaves the input field
+    const date = new Date(year, month, day);
+    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const noteValue = pendingNoteSaves[dateString] ?? journalNotes[dateString] ?? '';
+
+    // Only save if there are unsaved changes
+    if (pendingNoteSaves[dateString] !== undefined) {
+      // Remove from pending saves and save
+      setPendingNoteSaves(prev => {
+        const newPending = { ...prev };
+        delete newPending[dateString];
+        return newPending;
+      });
+
+      await saveJournalNote(date, noteValue);
+    }
+  };
+
+  const handleToggleHabitForMonth = async (habitId: string, year: number, month: number, day: number) => {
+    const date = new Date(year, month, day);
+    await toggleHabitCompletion(habitId, date);
+  };
+
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const nextMonthDays = Array.from({ length: daysInNextMonth }, (_, i) => i + 1);
+
+  // Function to render habits table for a specific month
+  const renderHabitsTable = (
+    year: number,
+    month: number,
+    daysArray: number[],
+    monthTitle: string,
+    showToggle: boolean = true
+  ) => {
+    const isThisMonthCurrent = today.getMonth() === month && today.getFullYear() === year;
+    const todayDayForMonth = isThisMonthCurrent ? today.getDate() : null;
+
+    return (
+      <div className="mt-4">
+        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
+          {showToggle && (
+            <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-between">
+              <button
+                onClick={() => setShowPastDays(!showPastDays)}
+                className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+              >
+                {showPastDays ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {showPastDays ? 'Hide past days' : 'Show past days'}
+              </button>
+
+              <div className="text-lg font-semibold text-[var(--accent-primary)]">
+                {monthTitle}
+              </div>
+
+              <div className="w-24"></div> {/* Spacer for balance */}
+            </div>
+          )}
+          {!showToggle && (
+            <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center">
+              <div className="text-lg font-semibold text-[var(--accent-primary)]">
+                {monthTitle}
+              </div>
+            </div>
+          )}
+          <div>
+            <table className="w-full border-collapse">
+              <thead className="bg-[var(--bg-tertiary)] sticky top-0 z-10">
+                <tr className="border-b border-[var(--border-primary)]">
+                  <th className="px-4 py-3 text-center text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] w-16">
+                    Day
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] min-w-[200px]">
+                    Notes
+                  </th>
+                  {habits.map(habit => (
+                    <th key={`${habit.id}-${year}-${month}`} className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] w-12">
+                      <span
+                        className="truncate cursor-pointer hover:text-[var(--accent-primary)] transition-colors"
+                        title={`Click to edit: ${habit.name}`}
+                        onClick={() => handleStartEditHabit(habit)}
+                      >
+                        {habit.name}
+                      </span>
+                    </th>
+                  ))}
+                  <th className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] w-12">
+                    <button
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
+                      title="Add new habit"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {daysArray.filter(day => {
+                  if (!isThisMonthCurrent) return true; // Show all days for past/future months
+                  if (showPastDays) return true; // Show all days when toggle is on
+
+                  // For current month, show from Sunday of current week onwards
+                  if (todayDayForMonth === null) return true;
+
+                  // Calculate Sunday of current week
+                  const today = new Date();
+                  const sundayOfWeek = new Date(today);
+                  sundayOfWeek.setDate(today.getDate() - today.getDay()); // Sunday of current week
+                  const sundayDayOfMonth = sundayOfWeek.getDate();
+
+                  return day >= sundayDayOfMonth; // Show from Sunday of current week
+                }).map((day, index) => {
+                  const isPastDay = isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
+                  const isFutureDay = isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
+
+                  // Calculate if day is before Sunday of current week
+                  let isBeforeCurrentWeek = false;
+                  if (isThisMonthCurrent && todayDayForMonth !== null) {
+                    const today = new Date();
+                    const sundayOfWeek = new Date(today);
+                    sundayOfWeek.setDate(today.getDate() - today.getDay());
+                    const sundayDayOfMonth = sundayOfWeek.getDate();
+                    isBeforeCurrentWeek = day < sundayDayOfMonth;
+                  }
+
+                  return (
+                    <tr
+                      key={`${year}-${month}-${day}`}
+                      className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors ${
+                        isBeforeCurrentWeek
+                          ? (index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]')
+                          : 'bg-[var(--bg-primary)]'
+                      } ${isBeforeCurrentWeek ? 'opacity-75' : ''}`}
+                    >
+                      {/* Day number column */}
+                      <td
+                        className="px-4 py-3 text-center border-r border-[var(--border-primary)] relative"
+                        onMouseLeave={() => setTooltipContent(null)}
+                        onClick={() => setTooltipContent(null)}
+                      >
+                        <span
+                          className={`font-bold text-sm cursor-pointer ${
+                            day === todayDayForMonth
+                              ? 'text-[var(--accent-primary)]'
+                              : isFutureDay
+                              ? 'text-white'
+                              : 'text-gray-400'
+                          }`}
+                          onMouseEnter={() => {
+                            const date = new Date(year, month, day);
+                            const tasks = getTasksWithDeadline(date);
+                            if (tasks.length > 0) {
+                              setTooltipContent({ date, tasks });
+                            }
+                          }}
+                        >
+                          {day}
+                        </span>
+                        {/* Task indicator */}
+                        {(() => {
+                          const date = new Date(year, month, day);
+                          const tasks = getTasksWithDeadline(date);
+                          return tasks.length > 0 && (
+                            <div
+                              className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[var(--accent-primary)] opacity-90 z-10 cursor-pointer"
+                              onMouseEnter={() => setTooltipContent({ date, tasks })}
+                            ></div>
+                          );
+                        })()}
+
+                        {/* Day name */}
+                        <div className="text-xs text-[var(--text-secondary)] mt-1 text-center">
+                          {(() => {
+                            const date = new Date(year, month, day);
+                            return date.toLocaleDateString('en-US', { weekday: 'short' });
+                          })()}
+                        </div>
+                      </td>
+
+                      {/* Notes column */}
+                      <td className="px-4 py-3 border-r border-[var(--border-primary)]">
+                        <input
+                          type="text"
+                          value={(pendingNoteSaves[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`] ?? journalNotes[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]) || ''}
+                          onChange={(e) => handleNoteChangeForMonth(year, month, day, e.target.value)}
+                          onKeyDown={(e) => handleNoteKeyDownForMonth(year, month, day, e)}
+                          onBlur={() => handleNoteBlurForMonth(year, month, day)}
+                          placeholder="Note..."
+                          className="w-full px-3 py-2 bg-transparent border border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] text-sm"
+                        />
+                      </td>
+
+                      {/* Habit columns */}
+                      {habits.map(habit => {
+                        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const isCompleted = habit.completions[dateKey] || false;
+                        return (
+                          <td key={`${habit.id}-${year}-${month}-${day}`} className="px-2 py-3 text-center border-r border-[var(--border-primary)] w-12">
+                            <button
+                              onClick={() => handleToggleHabitForMonth(habit.id, year, month, day)}
+                              className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                                isCompleted
+                                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                                  : 'border-white hover:border-[var(--accent-primary)]'
+                              }`}
+                              title={isCompleted ? 'Completed' : 'Not completed'}
+                            />
+                          </td>
+                        );
+                      })}
+
+                      {/* Empty cell for the + button column */}
+                      <td className="px-2 py-3 text-center w-12"></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Save showPastDays to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('habits-show-past-days', JSON.stringify(showPastDays));
   }, [showPastDays]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -242,176 +457,24 @@ const HabitsPage = memo(() => {
 
   return (
     <div className="w-full px-0 overflow-hidden">
-      <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6 lg:max-w-1/2 lg:mx-auto lg:px-8">
-          <div className="mt-4">
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
-              {/* Toggle for past days */}
-              <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
-                <button
-                  onClick={() => setShowPastDays(!showPastDays)}
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
-                >
-                  {showPastDays ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  {showPastDays ? 'Hide past days' : 'Show past days'}
-                </button>
-              </div>
-              <div>
-                <table className="w-full border-collapse">
-                  <thead className="bg-[var(--bg-tertiary)] sticky top-0 z-10">
-                    <tr className="border-b border-[var(--border-primary)]">
-                      <th className="px-4 py-3 text-center text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] w-16">
-                        Day
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] min-w-[200px]">
-                        Notes
-                      </th>
-                      {habits.map(habit => (
-                        <th key={habit.id} className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] w-12">
-                          <span
-                            className="truncate cursor-pointer hover:text-[var(--accent-primary)] transition-colors"
-                            title={`Click to edit: ${habit.name}`}
-                            onClick={() => handleStartEditHabit(habit)}
-                          >
-                            {habit.name}
-                          </span>
-                        </th>
-                      ))}
-                      <th className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] w-12">
-                        <button
-                          onClick={() => setIsCreateModalOpen(true)}
-                          className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
-                          title="Add new habit"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {days.filter(day => {
-                      if (!isCurrentMonth) return true; // Show all days for past/future months
-                      if (showPastDays) return true; // Show all days when toggle is on
+      <div className="space-y-8 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6 lg:max-w-1/2 lg:mx-auto lg:px-8">
+        {/* Current Month */}
+        {renderHabitsTable(
+          currentYear,
+          currentMonth,
+          days,
+          new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          true
+        )}
 
-                      // For current month, show from Monday of current week onwards
-                      if (todayDay === null) return true;
-
-                      // Calculate Monday of current week
-                      const today = new Date();
-                      const mondayOfWeek = new Date(today);
-                      mondayOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday of current week
-                      const mondayDayOfMonth = mondayOfWeek.getDate();
-
-                      return day >= mondayDayOfMonth; // Show from Monday of current week
-                    }).map((day, index) => {
-                      const isPastDay = isCurrentMonth && todayDay !== null && day < todayDay;
-                      const isFutureDay = isCurrentMonth && todayDay !== null && day > todayDay;
-
-                      // Calculate if day is before Monday of current week
-                      let isBeforeCurrentWeek = false;
-                      if (isCurrentMonth && todayDay !== null) {
-                        const today = new Date();
-                        const mondayOfWeek = new Date(today);
-                        mondayOfWeek.setDate(today.getDate() - today.getDay() + 1);
-                        const mondayDayOfMonth = mondayOfWeek.getDate();
-                        isBeforeCurrentWeek = day < mondayDayOfMonth;
-                      }
-
-                      return (
-                        <tr
-                          key={day}
-                          className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors ${
-                            isBeforeCurrentWeek
-                              ? (index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]')
-                              : 'bg-[var(--bg-primary)]'
-                          } ${isBeforeCurrentWeek ? 'opacity-75' : ''}`}
-                        >
-                          {/* Day number column */}
-                          <td
-                            className="px-4 py-3 text-center border-r border-[var(--border-primary)] relative"
-                            onMouseLeave={() => setTooltipContent(null)}
-                            onClick={() => setTooltipContent(null)}
-                          >
-                            <span
-                              className={`font-bold text-sm cursor-pointer ${
-                                day === todayDay
-                                  ? 'text-[var(--accent-primary)]'
-                                  : isFutureDay
-                                  ? 'text-white'
-                                  : 'text-gray-400'
-                              }`}
-                              onMouseEnter={() => {
-                                const date = new Date(currentYear, currentMonth, day);
-                                const tasks = getTasksWithDeadline(date);
-                                if (tasks.length > 0) {
-                                  setTooltipContent({ date, tasks });
-                                }
-                              }}
-                            >
-                              {day}
-                            </span>
-                            {/* Task indicator */}
-                            {(() => {
-                              const date = new Date(currentYear, currentMonth, day);
-                              const tasks = getTasksWithDeadline(date);
-                              return tasks.length > 0 && (
-                                <div
-                                  className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[var(--accent-primary)] opacity-90 z-10 cursor-pointer"
-                                  onMouseEnter={() => setTooltipContent({ date, tasks })}
-                                ></div>
-                              );
-                            })()}
-
-                            {/* Day name */}
-                            <div className="text-xs text-[var(--text-secondary)] mt-1 text-center">
-                              {(() => {
-                                const date = new Date(currentYear, currentMonth, day);
-                                return date.toLocaleDateString('en-US', { weekday: 'short' });
-                              })()}
-                            </div>
-                          </td>
-
-                          {/* Notes column */}
-                          <td className="px-4 py-3 border-r border-[var(--border-primary)]">
-                            <input
-                              type="text"
-                              value={(pendingNoteSaves[`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`] ?? journalNotes[`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]) || ''}
-                              onChange={(e) => handleNoteChange(day, e.target.value)}
-                              onKeyDown={(e) => handleNoteKeyDown(day, e)}
-                              onBlur={() => handleNoteBlur(day)}
-                              placeholder="Note..."
-                              className="w-full px-3 py-2 bg-transparent border border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] text-sm"
-                            />
-                          </td>
-
-                          {/* Habit columns */}
-                          {habits.map(habit => {
-                            const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const isCompleted = habit.completions[dateKey] || false;
-                            return (
-                              <td key={`${habit.id}-${day}`} className="px-2 py-3 text-center border-r border-[var(--border-primary)] w-12">
-                                <button
-                                  onClick={() => handleToggleHabit(habit.id, day)}
-                                  className={`w-6 h-6 rounded-full border-2 transition-colors ${
-                                    isCompleted
-                                      ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
-                                      : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]'
-                                  }`}
-                                  title={isCompleted ? 'Completed' : 'Not completed'}
-                                />
-                              </td>
-                            );
-                          })}
-
-                          {/* Empty cell for the + button column */}
-                          <td className="px-2 py-3 text-center w-12"></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        {/* Next Month */}
+        {renderHabitsTable(
+          nextMonthYear,
+          nextMonth,
+          nextMonthDays,
+          new Date(nextMonthYear, nextMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          false
+        )}
       </div>
 
       <HabitCreateModal

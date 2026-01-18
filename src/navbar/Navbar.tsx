@@ -309,7 +309,7 @@ const Navbar = () => {
     { page: 'session', icon: Timer, label: 'Session' },
     { page: 'habits', icon: CircleCheckBig, label: 'Habits' },
     { page: 'notes', icon: BookOpen, label: 'Notes' },
-    { page: 'stats', icon: BarChart3, label: 'Statistics' },
+    { page: 'stats', icon: BarChart3, label: 'Stats' },
   ];
 
   return (
