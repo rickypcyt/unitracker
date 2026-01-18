@@ -37,8 +37,8 @@ export const useTaskManager = (activeWorkspace) => {
     if (user) {
       console.log('useTaskManager - Fetching tasks for workspace:', activeWorkspace?.id);
       // Always fetch with workspace filter if activeWorkspace exists
-      // This ensures we only load the tasks we need
-      fetchTasksAction(activeWorkspace?.id);
+      // Force refresh when workspace changes to ensure we get the correct tasks
+      fetchTasksAction(activeWorkspace?.id, true);
     }
   }, [user, activeWorkspace?.id]); // Include workspaceId to fetch workspace-specific tasks
 

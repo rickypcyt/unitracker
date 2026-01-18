@@ -346,7 +346,7 @@ const NoteView: React.FC<NoteViewProps> = ({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="w-full min-h-[calc(100vh-2rem)]">
+        <div className="w-full min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-10rem)]">
           <Suspense fallback={<EditorLoader />}>
             <MarkdownWysiwyg
               ref={editorRef}
@@ -354,7 +354,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
               showTitleInput={false}
               variant="notes"
-              className="h-full"
+              className="h-full [&_.ProseMirror]:text-sm [&_.ProseMirror]:sm:text-base [&_.ProseMirror_p]:text-sm [&_.ProseMirror_p]:sm:text-base [&_.ProseMirror_h1]:text-lg [&_.ProseMirror_h1]:sm:text-xl [&_.ProseMirror_h2]:text-base [&_.ProseMirror_h2]:sm:text-lg [&_.ProseMirror_h3]:text-sm [&_.ProseMirror_h3]:sm:text-base"
             />
           </Suspense>
         </div>

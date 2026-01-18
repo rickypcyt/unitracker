@@ -36,8 +36,8 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
         tasks: { ...state.tasks, loading: true }
       }));
       
-      // Check if we have a valid cache (unless force refresh)
-      if (!forceRefresh && taskState.isCached && taskState.lastFetch && (Date.now() - taskState.lastFetch < CACHE_DURATION)) {
+      // Check if we have a valid cache (unless force refresh or workspace-specific fetch)
+      if (!forceRefresh && !workspaceId && taskState.isCached && taskState.lastFetch && (Date.now() - taskState.lastFetch < CACHE_DURATION)) {
         useAppStore.setState((state) => ({
           tasks: { ...state.tasks, loading: false, tasks: taskState.tasks }
         }));
@@ -71,6 +71,13 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
         tasks: { ...state.tasks, loading: false, tasks: data, error: null, isCached: true, lastFetch: Date.now() }
       }));
       saveTasksToLocalStorage(data);
+
+      // If fetching for a specific workspace, filter current tasks to show only this workspace's tasks immediately
+      if (workspaceId) {
+        useAppStore.setState((state) => ({
+          tasks: { ...state.tasks, tasks: data }
+        }));
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       useAppStore.setState((state) => ({

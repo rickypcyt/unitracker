@@ -354,6 +354,28 @@ export default function NoiseGenerator() {
     initializeAudio,
   } = useNoise();
 
+  // Check if any sound is playing
+  const anySoundPlaying = sounds.some(sound => sound.isPlaying);
+
+  // Play/Pause all sounds
+  const handlePlayPauseAll = useCallback(async () => {
+    if (!isInitialized) await initializeAudio();
+
+    if (anySoundPlaying) {
+      // Pause all playing sounds
+      sounds.forEach((sound, idx) => {
+        if (sound.isPlaying) {
+          stopSound(idx);
+        }
+      });
+    } else {
+      // Start all sounds
+      sounds.forEach((sound, idx) => {
+        startSound(idx);
+      });
+    }
+  }, [anySoundPlaying, sounds, startSound, stopSound, isInitialized, initializeAudio]);
+
   // Max volumes
   const [maxVolumes, setMaxVolumes] = useState<number[]>(() => {
     try {
@@ -395,11 +417,23 @@ export default function NoiseGenerator() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between pb-3 border-b border-[var(--border-primary)]"
       >
+        {/* Play/Pause All button */}
+        <button
+          onClick={handlePlayPauseAll}
+          className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
+        >
+          {anySoundPlaying ? <Pause size={20} /> : <Play size={20} />}
+        </button>
+
+        {/* Title centered */}
         <div className="flex-1">
           <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] text-center">
             Noise Generator
           </h3>
         </div>
+
+        {/* Settings button */}
         <button
           className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
           onClick={() => setIsSettingsOpen(true)}

@@ -1,13 +1,12 @@
 import { memo, useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
 
 import Countdown from "./Countdown";
 import GlobalTimerControls from "@/components/GlobalTimerControls";
+import { Helmet } from "react-helmet-async";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
 import TimerSettings from "@/components/TimerSettings";
-import TodaysSession from "@/components/TodaysSession";
 import { useUi } from "@/store/appStore";
 
 const SessionPage = memo(() => {
@@ -121,33 +120,33 @@ const SessionPage = memo(() => {
       <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
       {/* Pomodoro mode display at the very top when active */}
       {getPomodoroModeDisplay() && (
-        <div className="w-full px-2 mb-4">
+        <div className="w-full px-2 mb-3">
           {getPomodoroModeDisplay()}
         </div>
       )}
       
-      <div className="w-full px-2 overflow-hidden pb-4">
+      <div className="w-full px-2 overflow-hidden pb-2">
         {/* Controles globales */}
-        <div className="px-1 mb-4">
+        <div className="px-1 mb-3">
           <GlobalTimerControls />
         </div>
 
-        {/* Fila superior: Tres timers en columnas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-4">
-          {/* Pomodoro */}
-          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
-            <Pomodoro />
-          </div>
-
-          {/* Study Timer */}
-          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+        {/* Grid con Timer ocupando toda la primera fila en mobile/tablet, tres columnas en lg */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 w-full mb-3">
+          {/* Study Timer - ocupa toda la primera fila en mobile/tablet, una columna en lg */}
+          <div className="col-span-2 lg:col-span-1 maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <StudyTimer
               isSynced={isSynced}
             />
           </div>
 
+          {/* Pomo */}
+          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <Pomodoro />
+          </div>
+
           {/* Countdown */}
-          <div className="maincard p-4 sm:p-5 w-full space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <Countdown
               isSynced={isSynced}
               isRunning={isRunning}
@@ -155,16 +154,8 @@ const SessionPage = memo(() => {
           </div>
         </div>
 
-        {/* Fila inferior: Stats y Noise Generator */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          {/* Stats */}
-          <div className="maincard p-3 sm:p-4 md:p-5 w-full min-h-[400px] md:min-h-[450px] lg:min-h-[500px] space-y-4 md:space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-sm">
-            <div className="h-full">
-              <TodaysSession />
-            </div>
-          </div>
-          
-          {/* Noise Generator */}
+        {/* Noise Generator */}
+        <div className="w-full">
           <div className="maincard p-3 sm:p-4 md:p-5 w-full min-h-[400px] md:min-h-[450px] lg:min-h-[500px] space-y-4 md:space-y-5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-sm">
             <NoiseGenerator />
           </div>

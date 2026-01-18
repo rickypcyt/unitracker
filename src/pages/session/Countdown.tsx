@@ -775,9 +775,10 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
             <RefreshCwOff size={20} className="icon" style={{ color: 'var(--accent-primary)' }} />
           )}
         </button>
-        <SectionTitle 
-          title="Countdown" 
+        <SectionTitle
+          title="Countdown"
           tooltip="A countdown timer that counts down from a set time. Perfect for timed exams, presentations, or any activity with a specific duration limit."
+          size="sm"
           size="md"
         />
         {/* Botón de alarma */}
@@ -795,7 +796,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
         </button>
       </div>
 
-      <div className="flex items-center justify-center mb-6">
+      <div className="flex items-center justify-center mb-4">
         {fields.map((field, idx) => {
           // Derivar el valor mostrado desde la fuente de verdad
           let value;
@@ -835,19 +836,19 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-14 md:w-16 text-center text-3xl md:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-12 md:w-14 text-center text-2xl md:text-3xl xl:text-4xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
                 disabled={isCountdownRunning} // Opcional: deshabilita edición durante cuenta regresiva
               />
-              {field !== 'seconds' && <span className="text-3xl md:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
+              {field !== 'seconds' && <span className="text-2xl md:text-3xl xl:text-4xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
           );
         })}
       </div>
 
       {/* Time adjustment buttons */}
-      <div className="flex gap-2 mb-4 md:mb-4 lg:mb-4">
+      <div className="flex gap-1 mb-3 md:mb-3 lg:mb-3">
         <button
           onClick={() => handleTimeAdjustment(-1800)}
           className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"

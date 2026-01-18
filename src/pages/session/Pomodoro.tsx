@@ -1327,8 +1327,9 @@ const Pomodoro: React.FC = () => {
         </button>
 
         <SectionTitle
-          title="Pomodoro"
+          title="Pomo"
           tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks."
+          size="sm"
           size="md"
         />
 
@@ -1352,37 +1353,37 @@ const Pomodoro: React.FC = () => {
 
       {/* Timer Display */}
       <div
-        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-6 lg:mb-4 text-center text-[var(--text-primary)]"
+        className="relative group text-2xl md:text-3xl xl:text-4xl font-mono mb-4 lg:mb-3 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current pomodoro time"
       >
         <span>{formatPomoTime(pomoState.timeLeft)}</span>
         
         {/* Hover tooltip showing current mode */}
-        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[200px] text-center">
-          <div className="flex items-center justify-center gap-2">
+        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+          <div className="flex items-center justify-center gap-1.5">
             {pomoState.currentMode === 'work' && (
               <>
-                <span className="text-lg">🍅</span>
+                <span className="text-sm">🍅</span>
                 <span>Work Session</span>
               </>
             )}
             {pomoState.currentMode === 'break' && (
               <>
-                <span className="text-lg">☕</span>
+                <span className="text-sm">☕</span>
                 <span>Short Break</span>
               </>
             )}
             {pomoState.currentMode === 'longBreak' && (
               <>
-                <span className="text-lg">🎉</span>
+                <span className="text-sm">🎉</span>
                 <span>Long Break</span>
               </>
             )}
           </div>
-          
+
           {/* Additional mode info */}
-          <div className="mt-2 text-xs text-[var(--text-secondary)]">
+          <div className="mt-1 text-xs text-[var(--text-secondary)]">
             {pomoState.currentMode === 'work' && (
               <div>Focus time: {Math.floor((currentModeConfig?.work || 3000) / 60)}min</div>
             )}
@@ -1393,9 +1394,9 @@ const Pomodoro: React.FC = () => {
               <div>Long break: {Math.floor((currentModeConfig?.longBreak || 1800) / 60)}min</div>
             )}
           </div>
-          
+
           {/* Pomodoro count */}
-          <div className="mt-2 text-xs text-[var(--text-secondary)]">
+          <div className="mt-1 text-xs text-[var(--text-secondary)]">
             Completed today: {pomoState.pomodoroToday}
           </div>
         </div>
@@ -1403,7 +1404,7 @@ const Pomodoro: React.FC = () => {
 
       {/* Time adjustment buttons - only show when not synced */}
       {!syncPomodoroWithTimer && (
-        <div className="flex gap-2 mb-6 md:mb-6 lg:mb-6">
+        <div className="flex gap-1 mb-4 md:mb-4 lg:mb-4">
           {[-600, -300, 300, 600].map((adj) => (
             <button
               key={adj}

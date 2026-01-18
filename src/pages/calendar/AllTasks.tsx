@@ -146,7 +146,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
     >
       <div
         className={`relative w-full h-full calendar-view flex flex-col border-0 lg:min-h-[400px] ${
-          isCollapsed ? "lg:min-w-[48px]" : "lg:min-w-[300px] ml-4"
+          isCollapsed ? "lg:min-w-[48px]" : "lg:mr-4 lg:min-w-[300px] lg:ml-4"
         } overflow-y-auto ${
           isCollapsed ? "border-r border-[var(--border-primary)]" : ""
         }`}
@@ -172,7 +172,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
 
         {/* Collapsible Content */}
         {!isCollapsed && (
-          <div className="p-0 space-y-2 md:space-y-0 grid md:grid-cols-2 lg:grid-cols-1 gap-2">
+          <div className="p-0 space-y-2 md:space-y-0 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-x-4">
             {/* Empty State */}
             {allTasks.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">

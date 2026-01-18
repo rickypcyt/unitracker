@@ -1678,6 +1678,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
         <SectionTitle
           title="Timer"
           tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management."
+          size="sm"
           size="md"
         />
         {/* Botón de configuración de sesión */}
@@ -1721,7 +1722,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       </div>
 
       {/* Time adjustment buttons */}
-      <div className="flex gap-2 mb-6 md:mb-6 lg:mb-6">
+      <div className="flex gap-1 mb-6 md:mb-6 lg:mb-6">
         {timeAdjustmentButtons.map(({ adjustment, label }) =>
           createAdjustButton(adjustment, label)
         )}

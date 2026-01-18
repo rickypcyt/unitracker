@@ -25,14 +25,19 @@ const TasksPage = memo(() => {
       return true;
     }
   });
-  
+
   // Use Zustand selectors
-  const { workspaces } = useWorkspace();
-  const { currentWorkspace: activeWorkspace } = useWorkspace();
+  const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { setCurrentWorkspace } = useWorkspaceActions();
   const { loading } = useTasks();
   const fetchTasks = useFetchTasks();
   const lastWheelSwitchRef = useRef(0);
+
+  // Touch swipe refs and state
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
 
   const handleRefresh = useCallback(() => {
     if (isVisible) {
@@ -52,10 +57,18 @@ const TasksPage = memo(() => {
 
     window.addEventListener('refreshTaskList', handleRefreshEvent);
 
+    // Touch event listeners for swipe navigation between workspaces
+    if (isVisible) {
+      window.addEventListener('touchstart', handleTouchStart, { passive: true });
+      window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
+
     return () => {
       window.removeEventListener('refreshTaskList', handleRefreshEvent);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleRefresh, activeWorkspace?.id]); // Add activeWorkspace?.id to dependencies
+  }, [handleRefresh, activeWorkspace?.id, isVisible]); // Add activeWorkspace?.id to dependencies
 
   const handleAddTask = () => {
     if (!isLoggedIn) {
@@ -84,7 +97,7 @@ const TasksPage = memo(() => {
 
     const threshold = 10; // ignore tiny trackpad deltas
     // Only proceed if swiping right (deltaX > 0)
-    if (e.deltaX < threshold) return; 
+    if (e.deltaX < threshold) return;
 
     const now = Date.now();
     if (now - lastWheelSwitchRef.current < 350) return; // throttle rapid wheel events
@@ -98,7 +111,52 @@ const TasksPage = memo(() => {
     // Only move to the next workspace (right)
     const nextIndex = (currentIndex + 1) % workspaces.length;
     const nextWorkspace = workspaces[nextIndex];
-    
+
+    if (nextWorkspace && nextWorkspace.id !== activeWorkspace.id) {
+      try { localStorage.setItem('activeWorkspaceId', nextWorkspace.id); } catch {}
+      setCurrentWorkspace(nextWorkspace);
+      lastWheelSwitchRef.current = now;
+    }
+  }, [workspaces, activeWorkspace, setCurrentWorkspace]);
+
+  // Touch swipe switches between workspaces
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartX.current = e.changedTouches[0]?.screenX || 0;
+    touchStartY.current = e.changedTouches[0]?.screenY || 0;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    touchEndX.current = e.changedTouches[0]?.screenX || 0;
+    touchEndY.current = e.changedTouches[0]?.screenY || 0;
+
+    const diffX = touchEndX.current - touchStartX.current;
+    const diffY = touchEndY.current - touchStartY.current;
+
+    // Only handle horizontal swipes (ignore vertical swipes)
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    const threshold = 60; // minimum swipe distance
+    if (Math.abs(diffX) < threshold) return;
+
+    if (!workspaces || workspaces.length <= 1 || !activeWorkspace) return;
+
+    const now = Date.now();
+    if (now - lastWheelSwitchRef.current < 350) return; // throttle rapid gestures
+
+    const currentIndex = workspaces.findIndex(ws => ws.id === activeWorkspace.id);
+    if (currentIndex === -1) return;
+
+    let nextWorkspace;
+    if (diffX > 0) {
+      // Swipe right: previous workspace
+      const prevIndex = currentIndex === 0 ? workspaces.length - 1 : currentIndex - 1;
+      nextWorkspace = workspaces[prevIndex];
+    } else {
+      // Swipe left: next workspace
+      const nextIndex = (currentIndex + 1) % workspaces.length;
+      nextWorkspace = workspaces[nextIndex];
+    }
+
     if (nextWorkspace && nextWorkspace.id !== activeWorkspace.id) {
       try { localStorage.setItem('activeWorkspaceId', nextWorkspace.id); } catch {}
       setCurrentWorkspace(nextWorkspace);
