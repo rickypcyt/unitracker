@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
-import { TaskItem } from '@/pages/tasks/TaskItem';
+import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 
 interface SortableColumnProps {
   id?: string;
@@ -207,14 +207,14 @@ export const SortableColumn = ({
         }}
       >
         {sortedTasks.map((task) => (
-          <TaskItem
+          <AssignmentTask
             key={task.id}
             task={task}
+            assignment={assignment}
             onToggleCompletion={onTaskToggle}
-            onDelete={onTaskDelete}
+            onTaskDelete={onTaskDelete}
             onEditTask={onEditTask}
-            onContextMenu={(e) => onTaskContextMenu(e, task)}
-            active={!!task.activetask}
+            onTaskContextMenu={onTaskContextMenu}
           />
         ))}
       </div>

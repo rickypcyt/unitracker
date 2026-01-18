@@ -42,10 +42,11 @@ const SessionPage = memo(() => {
 
   const getPomodoroModeDisplay = () => {
     if (!pomodoroState || !pomodoroState.isRunning) return null;
-    
+
     const mode = pomodoroState.currentMode || 'work';
     const validModes = ['work', 'break', 'longBreak'] as const;
-    const currentMode = validModes.includes(mode as any) ? mode as any : 'work';
+    type ValidMode = typeof validModes[number];
+    const currentMode: ValidMode = validModes.includes(mode as ValidMode) ? mode as ValidMode : 'work';
     
     const modeConfig = {
       work: { text: 'WORK', color: 'text-red-500', bgColor: 'bg-red-500/10' },

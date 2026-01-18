@@ -1330,7 +1330,6 @@ const Pomodoro: React.FC = () => {
           title="Pomo"
           tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks."
           size="sm"
-          size="md"
         />
 
         <button

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLaps } from '@/store/appStore';
 
 import { SYNC_EVENTS } from '@/utils/constants';
 import { motion } from 'framer-motion';
+import { useLaps } from '@/store/appStore';
 
 interface Lap {
   id: string;

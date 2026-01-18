@@ -363,14 +363,14 @@ export default function NoiseGenerator() {
 
     if (anySoundPlaying) {
       // Pause all playing sounds
-      sounds.forEach((sound, idx) => {
-        if (sound.isPlaying) {
+      sounds.forEach((_sound, idx) => {
+        if (_sound.isPlaying) {
           stopSound(idx);
         }
       });
     } else {
       // Start all sounds
-      sounds.forEach((sound, idx) => {
+      sounds.forEach((_sound, idx) => {
         startSound(idx);
       });
     }

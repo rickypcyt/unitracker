@@ -189,7 +189,7 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/tasks" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/tasks" />
       </Helmet>
-      <div className="w-full px-3 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
+      <div className="w-full px-6 lg:px-16 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
       <KanbanBoard />
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (

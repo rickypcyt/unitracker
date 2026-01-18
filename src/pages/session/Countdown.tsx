@@ -779,7 +779,6 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
           title="Countdown"
           tooltip="A countdown timer that counts down from a set time. Perfect for timed exams, presentations, or any activity with a specific duration limit."
           size="sm"
-          size="md"
         />
         {/* Botón de alarma */}
         <button

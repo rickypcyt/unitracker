@@ -1,45 +1,21 @@
-import { ClipboardCheck, Trash2 } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useFetchTasks, usePinnedColumns, usePinnedColumnsActions, useTasksLoading, useUpdateTaskSuccess, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { usePinnedColumns, usePinnedColumnsActions } from '@/store/appStore';
 
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
-import { SortableColumn } from '@/pages/tasks/SortableColumn';
 import TaskForm from '@/pages/tasks/TaskForm';
-import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import { useTaskManager } from '@/hooks/useTaskManager';
-
-// Hook para detectar tamaño de pantalla
-const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState('lg');
-
-  useEffect(() => {
-    const updateScreenSize = () => {
-      const width = window.innerWidth;
-      if (width < 768) {
-        setScreenSize('sm');
-      } else if (width < 1024) {
-        setScreenSize('md');
-      } else {
-        setScreenSize('lg');
-      }
-    };
-
-    updateScreenSize();
-    window.addEventListener('resize', updateScreenSize);
-    return () => window.removeEventListener('resize', updateScreenSize);
-  }, []);
-
-  return screenSize;
-};
+import { useTaskBoard } from '@/hooks/useTaskBoard';
+import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
+import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 
 interface ColumnMenuState {
   assignmentId: string;
@@ -62,74 +38,64 @@ interface ContextMenuState {
 
 export const KanbanBoard = () => {
   const { isLoggedIn } = useAuth();
-  const tasksLoading = useTasksLoading();
   const {
     isDemo,
-    demoTasks,
     loginPromptOpen,
     showLoginPrompt,
     closeLoginPrompt,
   } = useDemoMode();
-  const updateTaskSuccess = useUpdateTaskSuccess();
-  const fetchTasksAction = useFetchTasks();
-  const { currentWorkspace: activeWorkspace, workspaces } = useWorkspace();
-  const { setCurrentWorkspace } = useWorkspaceActions();
-  
+
+  // Use the custom hook for task board logic
   const {
-    tasks: realTasks,
+    tasksLoading,
+    activeWorkspace,
+    workspaces,
+    tasks,
+    filteredTasks,
+    completedTasks,
+    incompletedTasks,
+    incompletedByAssignment,
+    setCurrentWorkspace,
+    fetchTasksAction,
+    updateTaskSuccess,
     handleToggleCompletion,
     handleUpdateTask,
     handleDeleteTask: originalHandleDeleteTask,
-  } = useTaskManager(activeWorkspace);
-
-  // Usar tasks demo si isDemo
-  const tasks = isDemo 
-    ? demoTasks.filter(task => task.workspace_id === activeWorkspace?.id)
-    : realTasks;
-
-  // Remove debug logs to prevent infinite loop
-  // console.log('KanbanBoard - activeWorkspace:', activeWorkspace);
-  // console.log('KanbanBoard - tasks count:', tasks.length);
-  // console.log('KanbanBoard - tasks:', tasks);
-
-  // No need to filter here anymore since useTaskManager already returns filtered tasks
-  const filteredTasks = tasks;
-
-  // Remove debug logs to prevent infinite loop
-  // console.log('KanbanBoard - filteredTasks count:', filteredTasks.length);
-  // console.log('KanbanBoard - filteredTasks:', filteredTasks);
+    handleDeleteAllCompletedTasks,
+    handleDeleteAssignment,
+    handleUpdateAssignment,
+  } = useTaskBoard();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isReady, setIsReady] = useState(false);
-  
+
   // Zustand store hooks
   const pinnedColumns = usePinnedColumns();
   const { togglePin } = usePinnedColumnsActions();
-  const screenSize = useScreenSize();
+  const [showCompleted] = useState(false);
   
   // Get pinned columns for current workspace (con por defecto no pinnado)
   const currentWorkspacePins = useMemo(() => {
     if (!activeWorkspace) return {};
-    
+
     const workspacePins = pinnedColumns[activeWorkspace.id] || {};
-    
+
     // Obtener todas las asignaciones actuales y marcar como no pinnadas por defecto
     const allAssignments = new Set<string>();
     filteredTasks.forEach((task: any) => {
       const assignment = task.assignment || "No assignment";
       allAssignments.add(assignment);
     });
-    
+
     // Crear objeto de pinnings con false por defecto para asignaciones sin registro explícito
     const pinsWithDefaults: Record<string, boolean> = {};
     allAssignments.forEach(assignment => {
       // Si hay un registro explícito, usarlo, si no, asumir false (no pinnado)
       pinsWithDefaults[assignment] = workspacePins[assignment] ?? false;
     });
-    
+
     return pinsWithDefaults;
   }, [pinnedColumns, activeWorkspace, filteredTasks]);
-  const [showCompleted] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
@@ -199,17 +165,17 @@ export const KanbanBoard = () => {
 
   // Reset workspace changing state after tasks are loaded or after minimum delay
   useEffect(() => {
-    if (workspaceChanging) {
-      const minDelay = 300; // Minimum 300ms to show loading
-      const elapsed = Date.now() - lastWorkspaceChange;
-      const remainingDelay = Math.max(0, minDelay - elapsed);
+    if (!workspaceChanging) return;
 
-      const timer = setTimeout(() => {
-        setWorkspaceChanging(false);
-      }, remainingDelay);
+    const minDelay = 300; // Minimum 300ms to show loading
+    const elapsed = Date.now() - lastWorkspaceChange;
+    const remainingDelay = Math.max(0, minDelay - elapsed);
 
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => {
+      setWorkspaceChanging(false);
+    }, remainingDelay);
+
+    return () => clearTimeout(timer);
   }, [workspaceChanging, lastWorkspaceChange]);
 
   // Fallback automático al primer workspace disponible si none está seleccionado
@@ -229,41 +195,6 @@ export const KanbanBoard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const completedTasks = useMemo(() => filteredTasks.filter((task) => task.completed), [filteredTasks]);
-  const incompletedTasks = useMemo(() => filteredTasks.filter((task) => !task.completed), [filteredTasks]);
-
-  // Memoize incompletedByAssignment before it's used in handleSelectSort
-  const incompletedByAssignment = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
-    incompletedTasks.forEach((task: any) => {
-      const assignment = task.assignment || "No assignment";
-      if (!grouped[assignment]) grouped[assignment] = [];
-      grouped[assignment].push(task);
-    });
-    
-    // Apply sort position for each assignment
-    Object.keys(grouped).forEach((assignment: string) => {
-      const sortConfig = assignmentSortConfig[assignment];
-      if (sortConfig && grouped[assignment]) {
-        const savedOrder = taskOrder[assignment];
-        if (savedOrder && savedOrder.length > 0) {
-          const taskMap = new Map(grouped[assignment].map((task: any) => [task.id, task]));
-          const sortedTasks: any[] = [];
-          savedOrder.forEach((taskId: string) => {
-            const task = taskMap.get(taskId);
-            if (task) {
-              sortedTasks.push(task);
-              taskMap.delete(taskId);
-            }
-          });
-          taskMap.forEach((task: any) => sortedTasks.push(task));
-          grouped[assignment] = sortedTasks;
-        }
-      }
-    });
-    
-    return grouped;
-  }, [incompletedTasks, assignmentSortConfig, taskOrder]);
 
   const handleSelectSort = useCallback((assignmentId: string, sortType: string, sortDirection: string = 'asc') => {
     const currentConfig = assignmentSortConfig[assignmentId];
@@ -437,10 +368,6 @@ export const KanbanBoard = () => {
     setShowTaskForm(true);
   };
 
-  const handleDeleteAllCompletedTasks = () => {
-    completedTasks.forEach((task: any) => originalHandleDeleteTask(task.id));
-    setShowDeleteCompletedModal(false);
-  };
 
   const handleEditTask = (task: any) => {
     if (isDemo) {
@@ -476,23 +403,6 @@ export const KanbanBoard = () => {
     setShowWorkspaceSelectionModal(true);
   };
 
-  const handleDeleteAssignment = useCallback((assignment: string) => {
-    if (isDemo) {
-      showLoginPrompt();
-      return;
-    }
-
-    // Find all tasks with this assignment
-    const tasksToDelete = filteredTasks.filter(task => task.assignment === assignment);
-    
-    if (tasksToDelete.length > 0) {
-      // Delete each task with this assignment
-      tasksToDelete.forEach(task => {
-        originalHandleDeleteTask(task.id);
-      });
-    }
-  }, [filteredTasks, originalHandleDeleteTask, isDemo, showLoginPrompt]);
-
   const confirmDeleteAssignment = useCallback(() => {
     if (assignmentToDelete) {
       handleDeleteAssignment(assignmentToDelete);
@@ -500,24 +410,6 @@ export const KanbanBoard = () => {
       setAssignmentToDelete(null);
     }
   }, [assignmentToDelete, handleDeleteAssignment]);
-
-  const handleUpdateAssignment = useCallback((oldName: string, newName: string) => {
-    if (isDemo) {
-      showLoginPrompt();
-      return;
-    }
-
-    // Find all tasks with the old assignment name
-    const tasksToUpdate = filteredTasks.filter(task => task.assignment === oldName);
-    
-    // Update each task with the new assignment name
-    tasksToUpdate.forEach((task: any) => {
-      handleUpdateTask({
-        ...task,
-        assignment: newName
-      });
-    });
-  }, [filteredTasks, handleUpdateTask, isDemo, showLoginPrompt]);
 
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
@@ -588,68 +480,36 @@ export const KanbanBoard = () => {
 
   return (
       <div className="flex flex-col h-full kanban-board">
-        <div className="flex justify-center w-full mb-4 px-0 sm:px-4">
-          <div className="w-full bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-4 border-2 border-[var(--border-primary)] shadow-sm">
-            <div className="space-y-4">
-              {sortedIncompletedAssignments.map((assignment) => (
-                <SortableColumn
-                  key={assignment}
-                  id={assignment}
-                  assignment={assignment}
-                  tasks={incompletedByAssignment[assignment] || []}
-                  pinned={activeWorkspace ? currentWorkspacePins[assignment] === true : false}
-                  onTogglePin={() => handleTogglePin(assignment)}
-                  onAddTask={() => handleAddTask(assignment)}
-                  onTaskToggle={handleToggleCompletion}
-                  onTaskDelete={handleConfirmDeleteTask}
-                  onEditTask={handleEditTask}
-                  onTaskContextMenu={handleTaskContextMenu}
-                  onSortClick={handleSortClick}
-                  columnMenu={columnMenu?.assignmentId === assignment ? columnMenu : null}
-                  onCloseColumnMenu={handleCloseColumnMenu}
-                  onMoveToWorkspace={handleMoveToWorkspace}
-                  onDeleteAssignment={() => {
-                    setAssignmentToDelete(assignment);
-                    setShowDeleteAssignmentModal(true);
-                  }}
-                  onUpdateAssignment={handleUpdateAssignment}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <AssignmentColumns
+          assignments={sortedIncompletedAssignments}
+          incompletedByAssignment={incompletedByAssignment}
+          currentWorkspacePins={currentWorkspacePins}
+          onTogglePin={handleTogglePin}
+          onAddTask={handleAddTask}
+          onTaskToggle={handleToggleCompletion}
+          onTaskDelete={handleConfirmDeleteTask}
+          onEditTask={handleEditTask}
+          onTaskContextMenu={handleTaskContextMenu}
+          onSortClick={handleSortClick}
+          columnMenu={columnMenu}
+          onCloseColumnMenu={handleCloseColumnMenu}
+          onMoveToWorkspace={handleMoveToWorkspace}
+          onDeleteAssignment={(assignment) => {
+            setAssignmentToDelete(assignment);
+            setShowDeleteAssignmentModal(true);
+          }}
+          onUpdateAssignment={handleUpdateAssignment}
+        />
 
-      {/* Completed Tasks Section */}
-      {showCompleted && completedTasks.length > 0 && (
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-medium text-neutral-200">
-              Completed Tasks
-              <span className="text-base text-neutral-400 ml-2">
-                ({completedTasks.length})
-              </span>
-            </h2>
-            <button
-              onClick={() => setShowDeleteCompletedModal(true)}
-              className="text-red-500 hover:text-red-400 transition-colors"
-            >
-              <Trash2 size={20} />
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {completedTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleConfirmDeleteTask}
-                onEditTask={handleEditTask}
-                onContextMenu={(e: React.MouseEvent) => handleTaskContextMenu(e, task)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+        <CompletedTasksSection
+          showCompleted={showCompleted}
+          completedTasks={completedTasks}
+          onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
+          onTaskToggle={handleToggleCompletion}
+          onTaskDelete={handleConfirmDeleteTask}
+          onEditTask={handleEditTask}
+          onTaskContextMenu={handleTaskContextMenu}
+        />
 
       {/* Context Menu */}
       {contextMenu && (
