@@ -82,8 +82,8 @@ const CalendarHeader = ({
   );
 
   return (
-    <div className="flex justify-between items-center mb-3 sm:mb-4 relative px-2 flex-shrink-0">
-      <div className="flex items-center justify-center gap-4 px-2 py-1 rounded-lg text-[var(--text-primary)]">
+    <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-3 sm:mb-4 relative px-2 flex-shrink-0 gap-3 sm:gap-0">
+      <div className="flex items-center justify-center gap-4 px-2 py-1 rounded-lg text-[var(--text-primary)] order-1">
         {view === 'day' ? (
           <>
             <button onClick={goToPreviousDay}>
@@ -112,9 +112,9 @@ const CalendarHeader = ({
           </>
         )}
       </div>
-      <div className="inline-flex rounded-md overflow-hidden border border-[var(--border-primary)]">
+      <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] order-2 mx-auto w-full max-w-xs">
         <button
-          className={`flex-1 px-4 py-1.5 text-base font-medium transition-colors relative ${
+          className={`flex-1 px-4 py-1.5 text-base font-medium transition-colors relative whitespace-nowrap ${
             view === 'month'
               ? 'text-[var(--accent-primary)]'
               : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
@@ -127,7 +127,7 @@ const CalendarHeader = ({
           )}
         </button>
         <button
-          className={`flex-1 px-4 py-1.5 text-base font-medium border-l border-[var(--border-primary)] transition-colors relative ${
+          className={`flex-1 px-4 py-1.5 text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap ${
             view === 'week'
               ? 'text-[var(--accent-primary)]'
               : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
@@ -140,7 +140,7 @@ const CalendarHeader = ({
           )}
         </button>
         <button
-          className={`flex-1 px-4 py-1.5 text-base font-medium border-l border-[var(--border-primary)] transition-colors relative ${
+          className={`flex-1 px-4 py-1.5 text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap ${
             view === 'day'
               ? 'text-[var(--accent-primary)]'
               : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
