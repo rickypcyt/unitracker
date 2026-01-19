@@ -121,8 +121,8 @@ const FocusWidgetPage = () => {
         )}
       </div>
 
-      {/* Timer display in center - only show when in active session */}
-      {studyState.sessionStatus === 'active' && studyState.time > 0 && (
+      {/* Timer display in center - show when in active or paused session */}
+      {(studyState.sessionStatus === 'active' || studyState.sessionStatus === 'paused') && studyState.time > 0 && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center space-y-4">
           <div className="text-white font-mono text-4xl font-bold">
             {formatStudyTime(studyState.time)}
@@ -139,8 +139,8 @@ const FocusWidgetPage = () => {
         </div>
       )}
 
-      {/* Plus button to open Today's Sessions modal - only show when not in active session */}
-      {studyState.sessionStatus !== 'active' && (
+      {/* Plus button to open Today's Sessions modal - only show when not in active or paused session */}
+      {studyState.sessionStatus !== 'active' && studyState.sessionStatus !== 'paused' && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
         <button
           onClick={() => setIsSessionsModalOpen(true)}
