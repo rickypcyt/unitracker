@@ -324,7 +324,6 @@ const App: FC = () => {
         <AuthProvider>
           <TourManager>
             <UserModalGate />
-            <NewFeaturesGate />
             <NavigationProvider>
               <PageContent />
             </NavigationProvider>

@@ -1,14 +1,21 @@
+import { useEffect } from 'react';
 import BaseModal from './BaseModal';
 import { changelogData } from '../data/changelog';
 
 interface NewFeaturesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onMarkAsSeen?: () => void;
 }
 
-const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
+const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalProps) => {
 
-  
+  useEffect(() => {
+    if (isOpen && onMarkAsSeen) {
+      onMarkAsSeen();
+    }
+  }, [isOpen, onMarkAsSeen]);
+
   return (
     <BaseModal
       isOpen={isOpen}
@@ -122,11 +129,11 @@ const NewFeaturesModal = ({ isOpen, onClose }: NewFeaturesModalProps) => {
 
         {/* Footer */}
         <div className="border-t border-[var(--border-primary)] pt-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-[var(--text-secondary)]">
+          <div className="flex flex-col gap-4 items-center">
+            <p className="text-sm text-[var(--text-secondary)] text-center">
               For detailed technical documentation, visit our GitHub repository.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={() => window.open('https://github.com/rickypcyt/unitracker', '_blank')}
                 className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"

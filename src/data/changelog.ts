@@ -18,6 +18,30 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.1.6",
+    date: "January 19, 2026",
+    time: "6:30 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "Focus widget page - Full-screen focus mode for distraction-free studying with timer, session status, and sound controls",
+        "Next month preview component in Habits page for better habit planning",
+        "Play all button in noise generator for ambient sound combinations",
+        "Manual changelog notifications system with badges instead of automatic popups"
+      ],
+      improved: [
+        "SEO optimization with meta tags, Open Graph, and structured data",
+        "Minimalist README documentation with essential setup and feature overview",
+        "Calendar component fixes and performance optimizations",
+        "Removed Session Today component for cleaner UI"
+      ],
+      fixed: [
+        "Calendar rendering issues and layout problems",
+        "Session component redundancy and navigation conflicts"
+      ]
+    }
+  },
+  {
     version: "1.1.5",
     date: "January 11, 2026",
     time: "12:00 PM",

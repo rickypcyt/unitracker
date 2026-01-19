@@ -11,6 +11,7 @@ import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
 import WorkspaceModal from '@/modals/WorkspaceModal';
 import { useState } from 'react';
+import { useChangelog } from '@/hooks/useChangelog';
 
 const SettingsButton = ({
   isLoggedIn,
@@ -51,6 +52,7 @@ const SettingsButton = ({
   onDeleteWorkspace?: (workspaceId: string | number) => void;
   githubUrl?: string;
 }) => {
+  const { hasNewChanges, markAsSeen } = useChangelog();
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -68,8 +70,8 @@ const SettingsButton = ({
             title="Settings"
           >
             <Settings className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-            {hasFriendRequests && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)] z-10"></span>
+            {(hasFriendRequests || hasNewChanges) && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--accent-primary)] border border-[var(--bg-primary)] z-10"></span>
             )}
           </button>
         </DropdownMenu.Trigger>
@@ -118,6 +120,9 @@ const SettingsButton = ({
             >
               <Sparkles className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />
               What's New
+              {hasNewChanges && (
+                <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] ml-auto"></span>
+              )}
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onClick={onOpenAbout || (() => setShowAbout(true))}
@@ -184,6 +189,7 @@ const SettingsButton = ({
       <NewFeaturesModal
         isOpen={showNewFeaturesModal}
         onClose={() => setShowNewFeaturesModal(false)}
+        onMarkAsSeen={markAsSeen}
       />
     </>
   );
