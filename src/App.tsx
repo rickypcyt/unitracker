@@ -13,6 +13,7 @@ import { useAuthActions } from "@/store/appStore";
 
 // Lazy load pages for better performance
 const CalendarPage = lazy(() => import("@/pages/calendar/CalendarPage"));
+const FocusWidgetPage = lazy(() => import("@/pages/FocusWidgetPage"));
 const HabitsPage = lazy(() => import("@/pages/habits/HabitsPage"));
 const Notes = lazy(() => import("@/pages/notes/Notes"));
 const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
@@ -46,6 +47,7 @@ const pagesMap: Record<string, FC> = {
   stats: StatsPage,
   habits: HabitsPage,
   notes: Notes,
+  focusWidget: FocusWidgetPage,
 };
 
 
@@ -55,6 +57,15 @@ const pagesMap: Record<string, FC> = {
 const PageContent: FC = () => {
   const { activePage } = useNavigation();
   const ActiveComponent = pagesMap[activePage] || SessionPage;
+
+  // Focus widget page should occupy full screen without navbar
+  if (activePage === 'focusWidget') {
+    return (
+      <Suspense fallback={null}>
+        <ActiveComponent />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
@@ -257,7 +268,7 @@ const App: FC = () => {
 
         if (!permissionRequested) {
           try {
-            const permission = await Notification.requestPermission();
+            await Notification.requestPermission();
             localStorage.setItem("notificationPermissionRequested", "true");
           } catch (error) {
             console.error("Notification permission request failed:", error);

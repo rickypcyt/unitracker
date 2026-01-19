@@ -1,4 +1,4 @@
-import { Check, Clock, List, Square, Target } from "lucide-react";
+import { Check, List, Square, Target } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/FormElements";
 import {
   useCallback,
@@ -101,6 +101,13 @@ const StartSessionModal = ({
       fetchSessionTasks();
     }
   }, [lastAddedTaskId]); // Remove fetchSessionTasks dependency to prevent infinite loop
+
+  // Fetch tasks when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchSessionTasks();
+    }
+  }, [isOpen, fetchSessionTasks]);
 
   const handleStart = async () => {
     console.log('[StartSessionModal] 🚀 Starting session with current settings:', {
@@ -403,13 +410,13 @@ const StartSessionModal = ({
               </div>
               <button
                 onClick={() => setIncludeTasks(!includeTasks)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                  includeTasks ? "bg-[var(--accent-primary)]" : "bg-[var(--bg-secondary)]"
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 border-2 ${
+                  includeTasks ? "bg-[var(--accent-primary)] border-[var(--accent-primary)]" : "bg-[var(--bg-secondary)] border-[var(--border-primary)]"
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                    includeTasks ? "translate-x-6" : "translate-x-1"
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    includeTasks ? "translate-x-5" : "translate-x-0.5"
                   }`}
                 />
               </button>
@@ -493,57 +500,42 @@ const StartSessionModal = ({
 
         <div className="border-t border-[var(--border-primary)]/50"></div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-2">
-          <div className="text-sm text-[var(--text-secondary)]">
-            {includeTasks && selectedTasks.length > 0 && (
-              <span className="flex items-center gap-2">
-                <Check size={16} className="text-green-500" />
-                Ready with {selectedTasks.length} task{selectedTasks.length !== 1 ? 's' : ''}
-              </span>
-            )}
-            {includeTasks && selectedTasks.length === 0 && (
-              <span className="flex items-center gap-2">
-                <Clock size={16} />
-                No tasks selected
-              </span>
-            )}
-
-          </div>
-            
+        {/* Action Section */}
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
+          {/* Action Buttons */}
           <div className="flex gap-3">
             <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-3 bg-[var(--bg-secondary)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors duration-200"
-                aria-label="Cancel and close modal"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleStart}
-                disabled={isSubmitting || !sessionTitle.trim()}
-                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                  isSubmitting || !sessionTitle.trim()
-                    ? "bg-[var(--bg-secondary)] text-[var(--text-secondary)] cursor-not-allowed"
-                    : "text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10"
-                }`}
-                aria-label={isSubmitting ? "Starting session" : "Start study session"}
-              >
-                {isSubmitting ? (
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-8 py-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-secondary)] transition-all duration-200"
+              aria-label="Cancel and close modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleStart}
+              disabled={isSubmitting || !sessionTitle.trim()}
+              className={`flex-1 px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                isSubmitting || !sessionTitle.trim()
+                  ? "bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-secondary)] cursor-not-allowed"
+                  : "text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10"
+              }`}
+              aria-label={isSubmitting ? "Starting session" : "Start study session"}
+            >
+              {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" aria-hidden="true"></div>
-                    Starting Session...
+                    Starting...
                   </>
                 ) : (
                   <>
                     Start Session
                   </>
                 )}
-              </button>
-            </div>
+            </button>
           </div>
+        </div>
         </div>
 
       {showTaskForm && (

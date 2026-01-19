@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits';
+type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits' | 'focusWidget';
 
 interface NavigationContextType {
   activePage: Page;
@@ -32,6 +32,7 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
         'notes': { left: 'session', right: 'stats' },
         'stats': { left: 'notes', right: 'habits' },
         'habits': { left: 'stats', right: 'tasks' },
+        'focusWidget': { left: 'session', right: 'session' },
       };
 
       const routes = pageMap[activePage] || pageMap['session'];

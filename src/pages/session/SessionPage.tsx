@@ -7,10 +7,12 @@ import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
 import TimerSettings from "@/components/TimerSettings";
+import { useNavigation } from "@/navbar/NavigationContext";
 import { useUi } from "@/store/appStore";
 
 const SessionPage = memo(() => {
   const ui = useUi();
+  const { navigateTo } = useNavigation();
   const isSynced = ui.isSynced;
   const isRunning = ui.isRunning;
   const resetKey = ui.resetKey;
@@ -119,6 +121,18 @@ const SessionPage = memo(() => {
         <link rel="canonical" href="https://uni-tracker.vercel.app/session" />
       </Helmet>
       <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
+      {/* Focus widget mode header */}
+      <div className="w-full px-2 mt-4 mb-4">
+        <button
+          onClick={() => {
+            navigateTo('focusWidget');
+          }}
+          className="w-full text-center py-2 px-4 bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 rounded-lg border border-[var(--accent-primary)]/30 transition-colors duration-200 cursor-pointer"
+        >
+          <span className="text-[var(--accent-primary)] font-medium">Go to focus widget mode</span>
+        </button>
+      </div>
+
       {/* Pomodoro mode display at the very top when active */}
       {getPomodoroModeDisplay() && (
         <div className="w-full px-2 mb-3">

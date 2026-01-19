@@ -846,37 +846,39 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
         })}
       </div>
 
-      {/* Time adjustment buttons */}
-      <div className="flex gap-1 mb-3 md:mb-3 lg:mb-3">
-        <button
-          onClick={() => handleTimeAdjustment(-1800)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Subtract 30 minutes"
-        >
-          -30
-        </button>
-        <button
-          onClick={() => handleTimeAdjustment(-900)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Subtract 15 minutes"
-        >
-          -15
-        </button>
-        <button
-          onClick={() => handleTimeAdjustment(900)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Add 15 minutes"
-        >
-          +15
-        </button>
-        <button
-          onClick={() => handleTimeAdjustment(1800)}
-          className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-          aria-label="Add 30 minutes"
-        >
-          +30
-        </button>
-      </div>
+      {/* Time adjustment buttons - only show when not synced */}
+      {!(isSynced || syncCountdownWithTimer) && (
+        <div className="flex gap-1 mb-3 md:mb-3 lg:mb-3">
+          <button
+            onClick={() => handleTimeAdjustment(-1800)}
+            className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Subtract 30 minutes"
+          >
+            -30
+          </button>
+          <button
+            onClick={() => handleTimeAdjustment(-900)}
+            className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Subtract 15 minutes"
+          >
+            -15
+          </button>
+          <button
+            onClick={() => handleTimeAdjustment(900)}
+            className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Add 15 minutes"
+          >
+            +15
+          </button>
+          <button
+            onClick={() => handleTimeAdjustment(1800)}
+            className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Add 30 minutes"
+          >
+            +30
+          </button>
+        </div>
+      )}
 
       {!(isSynced || syncCountdownWithTimer) && (
         <div className="flex justify-center items-center gap-3 xl:mb-0">
