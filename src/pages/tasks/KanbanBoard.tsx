@@ -1,7 +1,9 @@
-import { ClipboardCheck } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePinnedColumns, usePinnedColumnsActions } from '@/store/appStore';
 
+import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
+import { ClipboardCheck } from 'lucide-react';
+import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
@@ -14,8 +16,6 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useTaskBoard } from '@/hooks/useTaskBoard';
-import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
-import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 
 interface ColumnMenuState {
   assignmentId: string;
@@ -151,40 +151,11 @@ export const KanbanBoard = () => {
     setColumnMenu(null);
   };
 
-  const [lastWorkspaceChange, setLastWorkspaceChange] = useState<number>(0);
-
   useEffect(() => {
     if (activeWorkspace) {
-      console.log('KanbanBoard - workspace changed, ensuring tasks are loaded for:', activeWorkspace.id);
-      setWorkspaceChanging(true);
-      setLastWorkspaceChange(Date.now());
-      // No need to fetch here since useTaskManager already handles workspace-specific fetching
-      // This prevents duplicate requests and race conditions
+      console.log('KanbanBoard - workspace changed:', activeWorkspace.id);
     }
-  }, [activeWorkspace?.id]); // Log workspace changes
-
-  // Reset workspace changing state after tasks are loaded or after minimum delay
-  useEffect(() => {
-    if (!workspaceChanging) return;
-
-    const minDelay = 300; // Minimum 300ms to show loading
-    const elapsed = Date.now() - lastWorkspaceChange;
-    const remainingDelay = Math.max(0, minDelay - elapsed);
-
-    const timer = setTimeout(() => {
-      setWorkspaceChanging(false);
-    }, remainingDelay);
-
-    return () => clearTimeout(timer);
-  }, [workspaceChanging, lastWorkspaceChange]);
-
-  // Fallback automático al primer workspace disponible si none está seleccionado
-  useEffect(() => {
-    if (!activeWorkspace && workspaces && workspaces.length > 0 && isReady) {
-      console.log('KanbanBoard - No active workspace, auto-selecting first available:', workspaces[0]);
-      setCurrentWorkspace(workspaces[0]);
-    }
-  }, [activeWorkspace, workspaces, isReady, setCurrentWorkspace]);
+  }, [activeWorkspace?.id]);
 
   // Add a small delay to ensure everything is properly loaded
   useEffect(() => {

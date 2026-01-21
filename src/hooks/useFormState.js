@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Helper function to do deep comparison of objects
 const isEqual = (obj1, obj2) => {
@@ -21,7 +21,7 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     }
   }, [initialState]);
 
-  const handleChange = (field, value) => {
+  const handleChange = useCallback((field, value) => {
     // Update form data
     setFormData(prev => ({
       ...prev,
@@ -29,18 +29,15 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     }));
     
     // Mark form as dirty
-    if (!isDirty) {
-      setIsDirty(true);
-    }
+    setIsDirty(prev => prev || true);
 
     // Clear error for this field if it exists
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
-    }
-  };
+    setErrors(prev => {
+      if (!prev[field]) return prev;
+      const { [field]: _removed, ...rest } = prev;
+      return rest;
+    });
+  }, []);
 
   const validateField = (field, value) => {
     const rules = initialValidation[field];

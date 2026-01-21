@@ -3,6 +3,7 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
+import { useAuth, useWorkspace } from '@/store/appStore';
 import { useEffect, useRef } from 'react';
 
 import AIPreviewModal from './AIPreviewModal';
@@ -14,9 +15,8 @@ import { addTask } from '@/store/TaskActions';
 import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskAI } from '@/hooks/tasks/useTaskAI';
-import { useTaskManager } from '@/hooks/useTaskManager';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
-import { useWorkspace } from '@/store/appStore';
+import { useTasks } from '@/store/appStore';
 
 type TaskFormProps = {
   initialAssignment?: string | null;
@@ -42,8 +42,9 @@ const TaskForm = ({
 }: TaskFormProps) => {
   const { saveTask } = useTaskSubmit();
   const workspace = useWorkspace();
+  const { user } = useAuth();
+  const { tasks } = useTasks();
   const activeWorkspace = workspace.currentWorkspace;
-  const { user, tasks } = useTaskManager(activeWorkspace);
   const datePickerRef = useRef<any>(null);
 
   const typedUser = user as any;

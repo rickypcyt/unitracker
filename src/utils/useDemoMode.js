@@ -27,7 +27,7 @@ export default function useDemoMode() {
       // Set first demo workspace as current
       setCurrentWorkspace(demoWorkspaces[0]);
     }
-  }, [isDemo, workspaces.length, setWorkspaces, setCurrentWorkspace]);
+  }, [isDemo, workspaces.length]); // Remove setWorkspaces and setCurrentWorkspace from dependencies
 
   // Clear demo workspaces when user logs in
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function useDemoMode() {
         setCurrentWorkspace(null);
       }
     }
-  }, [isDemo, workspaces, setWorkspaces, setCurrentWorkspace]);
+  }, [isDemo, workspaces]); // Remove setWorkspaces and setCurrentWorkspace from dependencies
 
   // Handler para bloquear acciones y mostrar el modal
   function showLoginPrompt() {

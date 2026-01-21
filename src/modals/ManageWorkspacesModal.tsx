@@ -1,21 +1,16 @@
 import { BookOpen, Briefcase, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Save, Settings, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, X, Zap } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
 import DeleteCompletedModal from './DeleteTasksPop';
 import { supabase } from '@/utils/supabaseClient';
 import { useModalClose } from '@/hooks/useModalClose';
-import { useTasks } from '@/store/appStore';
 
 type Workspace = {
   id: string | number;
   name: string;
   icon?: string | null;
-};
-
-type Task = {
-  workspace_id: string | number;
-  completed?: boolean;
+  taskCount?: number;
 };
 
 type ManageWorkspacesModalProps = {
@@ -57,13 +52,73 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedIconSelector, setExpandedIconSelector] = useState<Workspace['id'] | null>(null);
-  const { tasks } = useTasks();
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null);
+  const [taskCounts, setTaskCounts] = useState<Record<string | number, number>>({});
+
+  const workspaceIdSignature = useMemo(
+    () => workspaces.map(ws => ws.id).sort((a, b) => a.toString().localeCompare(b.toString())).join('|'),
+    [workspaces]
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isCancelled = false;
+
+    const fetchTaskCounts = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          if (!isCancelled) setTaskCounts({});
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('workspace_id')
+          .eq('user_id', user.id)
+          .eq('completed', false);
+
+        if (error) {
+          throw error;
+        }
+
+        if (!isCancelled && data) {
+          const counts = data.reduce((acc, task) => {
+            if (!task.workspace_id && task.workspace_id !== 0) return acc;
+            const key = task.workspace_id as Workspace['id'];
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+          }, {} as Record<string | number, number>);
+          setTaskCounts(counts);
+        }
+      } catch (fetchError) {
+        if (!isCancelled) {
+          console.error('ManageWorkspacesModal: Failed to fetch task counts', fetchError);
+          setTaskCounts({});
+        }
+      } finally {
+        // no-op
+      }
+    };
+
+    fetchTaskCounts();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, workspaceIdSignature]);
 
   // Función para contar tareas por workspace
-  const getTaskCountByWorkspace = (workspaceId: Workspace['id']) => {
-    return tasks.filter((task: Task) => task.workspace_id === workspaceId && !task.completed).length;
+  const getTaskCountByWorkspace = (workspaceId: Workspace['id'], fallbackCount?: number) => {
+    const countFromState = taskCounts[workspaceId];
+    if (typeof countFromState === 'number') {
+      return countFromState;
+    }
+    if (typeof fallbackCount === 'number') {
+      return fallbackCount;
+    }
+    return 0;
   };
 
   const handleEdit = (workspace: Workspace) => {
@@ -217,7 +272,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                     />
                   ) : (
                     <span className="text-[var(--text-primary)] font-medium">
-                      {workspace.name} ({getTaskCountByWorkspace(workspace.id)})
+                      {workspace.name} ({getTaskCountByWorkspace(workspace.id, workspace.taskCount)})
                     </span>
                   )}
                 </div>
