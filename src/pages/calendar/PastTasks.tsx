@@ -1,18 +1,21 @@
 import { Calendar } from 'lucide-react';
-import { useSelector } from 'react-redux';
-
 import { TaskItem } from '@/pages/tasks/TaskItem';
-import { useTaskManager } from '@/hooks/useTaskManager';
 import useDemoMode from '@/utils/useDemoMode';
+import { useSelector } from 'react-redux';
+import { useTaskManager } from '@/hooks/useTaskManager';
 
 const PastTasks = () => {
-  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(undefined);
   const realTasks = useSelector((state: any) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  const handleContextMenu = () => {
+    // No-op for context menu in PastTasks
+  };
 
   // Past tasks: deadline < today and not completed (only if deadline exists)
   const pastTasks = tasks
@@ -44,6 +47,7 @@ const PastTasks = () => {
               onToggleCompletion={handleToggleCompletion}
               onDelete={handleDeleteTask}
               onEditTask={() => handleUpdateTask(task)}
+              onContextMenu={handleContextMenu}
               showAssignment={true}
               assignmentLeftOfDate={true}
             />

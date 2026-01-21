@@ -41,7 +41,7 @@ interface MonthGroup {
 }
 
 const UpcomingTasks = () => {
-  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager();
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(undefined);
   const realTasks = useSelector((state: RootState) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;

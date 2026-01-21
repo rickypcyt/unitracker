@@ -40,10 +40,10 @@ const TaskForm = ({
   onClose, 
   onTaskCreated 
 }: TaskFormProps) => {
-  const { user, tasks } = useTaskManager();
   const { saveTask } = useTaskSubmit();
   const workspace = useWorkspace();
   const activeWorkspace = workspace.currentWorkspace;
+  const { user, tasks } = useTaskManager(activeWorkspace);
   const datePickerRef = useRef<any>(null);
 
   const typedUser = user as any;

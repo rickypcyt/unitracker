@@ -19,7 +19,7 @@ interface AllTasksProps {
 }
 
 const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
-  const { handleToggleCompletion, handleDeleteTask } = useTaskManager();
+  const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
