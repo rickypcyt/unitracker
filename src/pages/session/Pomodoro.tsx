@@ -1352,7 +1352,7 @@ const Pomodoro: React.FC = () => {
 
       {/* Timer Display */}
       <div
-        className="relative group text-2xl md:text-3xl xl:text-4xl font-mono mb-4 lg:mb-3 text-center text-[var(--text-primary)]"
+        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-3 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current pomodoro time"
       >

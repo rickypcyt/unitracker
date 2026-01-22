@@ -835,12 +835,12 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-12 md:w-14 text-center text-2xl md:text-3xl xl:text-4xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-12 md:w-14 text-center text-3xl md:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
                 disabled={isCountdownRunning} // Opcional: deshabilita edición durante cuenta regresiva
               />
-              {field !== 'seconds' && <span className="text-2xl md:text-3xl xl:text-4xl font-mono text-[var(--text-primary)] mx-0">:</span>}
+              {field !== 'seconds' && <span className="text-3xl md:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
           );
         })}
