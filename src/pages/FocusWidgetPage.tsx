@@ -1,4 +1,4 @@
-import { Pause, Play, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { useEffect, useState } from "react";
 
@@ -78,25 +78,6 @@ const FocusWidgetPage = () => {
     // For now, just navigate back
   };
 
-  const handlePlayPause = () => {
-    if (studyState.sessionStatus === 'active') {
-      // Pause the session
-      updateStudyState({
-        isRunning: false,
-        sessionStatus: 'paused',
-        lastPausedAt: Date.now(),
-      });
-      setStudyRunning(false);
-    } else if (studyState.sessionStatus === 'paused') {
-      // Resume the session
-      updateStudyState({
-        isRunning: true,
-        sessionStatus: 'active',
-        lastStart: Date.now(),
-      });
-      setStudyRunning(true);
-    }
-  };
 
   const todaysDate = new Date();
 
@@ -111,20 +92,6 @@ const FocusWidgetPage = () => {
         <X size={20} />
       </button>
 
-      {/* Play/Pause button - top right corner */}
-      {(studyState.sessionStatus === 'active' || studyState.sessionStatus === 'paused') && (
-        <button
-          onClick={handlePlayPause}
-          className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors duration-200 z-10"
-          aria-label={studyState.sessionStatus === 'active' ? 'Pause session' : 'Resume session'}
-        >
-          {studyState.sessionStatus === 'active' ? (
-            <Pause size={18} />
-          ) : (
-            <Play size={18} />
-          )}
-        </button>
-      )}
 
       {/* Date and time display at same height as X button (top center) */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 text-center flex items-center justify-center h-10">
