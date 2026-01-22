@@ -1,11 +1,10 @@
 import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X, Zap } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { deleteLap, forceLapRefresh } from '@/store/LapActions';
 
 import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
-import { formatDateShort } from '@/utils/dateUtils';
 import { getMonthYear } from '@/hooks/useTimers';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,16 +48,16 @@ interface ManageSessionsModalProps {
 }
 
 const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClose }) => {
-  const { laps, loading: status } = useLaps();
+  const { laps: lapsData, loading: status, isCached } = useLaps();
   const { isLoggedIn } = useAuth();
   const { isDemo } = useDemoMode();
 
-  // Fetch sessions when the modal opens
+  // Fetch sessions when the modal opens (only if needed)
   useEffect(() => {
-    if (isOpen && isLoggedIn) {
+    if (isOpen && isLoggedIn && !isCached) {
       forceLapRefresh();
     }
-  }, [isOpen, isLoggedIn]);
+  }, [isOpen, isLoggedIn, isCached]);
 
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<Lap | null>(null);
@@ -177,16 +176,36 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
     return out;
   };
 
-  // Grouped sessions by time period
-interface GroupedSessions {
-  today: Lap[];
-  thisWeek: Lap[];
-  lastWeek: Lap[];
-  olderThisMonth: Lap[];
+  // Weekly grouping with days
+interface WeekDay {
+  date: Date;
+  dayName: string;
+  dayNumber: number;
+  sessions: Lap[];
+  isToday?: boolean;
 }
 
-const groupSessionsByTimePeriod = (lapsList: Lap[], referenceMonthYear?: string): GroupedSessions => {
-  // Determine the reference date (end of the selected month) to build the buckets
+interface WeekData {
+  weekNumber: number;
+  weekName: string;
+  days: WeekDay[];
+  totalSessions: number;
+}
+
+const sortDaysByCurrentFirst = (days: WeekDay[]): WeekDay[] => {
+  return days
+    .filter(day => day.sessions.length > 0)
+    .sort((a, b) => {
+      // Current day first
+      if (a.isToday) return -1;
+      if (b.isToday) return 1;
+      // Then by date (newest first)
+      return b.date.getTime() - a.date.getTime();
+    });
+};
+
+const groupSessionsByWeeks = (lapsList: Lap[], referenceMonthYear?: string): WeekData[] => {
+  // Determine reference month and year
   let refDate = new Date();
   if (referenceMonthYear) {
     try {
@@ -199,91 +218,103 @@ const groupSessionsByTimePeriod = (lapsList: Lap[], referenceMonthYear?: string)
       const parsed = Date.parse(`${refMonthName} 1, ${refYear}`);
       if (Number.isNaN(parsed)) throw new Error('Invalid month name');
       const refMonthIndex = new Date(parsed).getMonth();
-      // Set to last day of the reference month
-      refDate = new Date(refYear, refMonthIndex + 1, 0);
+      refDate = new Date(refYear, refMonthIndex, 1);
     } catch (e) {
-      // Fallback to current date if parsing fails
       refDate = new Date();
     }
   }
 
-  const today = new Date(refDate.getFullYear(), refDate.getMonth(), refDate.getDate());
-
-  // Start of the reference week (Sunday)
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay());
-
-  // Start and end of last week relative to reference week
-  const startOfLastWeek = new Date(startOfWeek);
-  startOfLastWeek.setDate(startOfWeek.getDate() - 7);
-
-  const endOfLastWeek = new Date(startOfWeek);
-  endOfLastWeek.setDate(startOfWeek.getDate() - 1);
-
-  // Start of the reference month
-  const startOfMonth = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
-
-  const grouped: GroupedSessions = {
-    today: [],
-    thisWeek: [],
-    lastWeek: [],
-    olderThisMonth: []
-  };
+  const year = refDate.getFullYear();
+  const month = refDate.getMonth();
   
-  // Sort sessions by date (most recent first)
-  const sortedLaps = [...lapsList].sort((a, b) => {
-    const dateA = new Date(a.created_at);
-    const dateB = new Date(b.created_at);
-    return dateB.getTime() - dateA.getTime();
-  });
+  // Get first day of month
+  const firstDay = new Date(year, month, 1);
   
-  sortedLaps.forEach(lap => {
-    const lapDate = new Date(lap.created_at);
-    const lapDateOnly = new Date(lapDate.getFullYear(), lapDate.getMonth(), lapDate.getDate());
+  // Get the first Sunday of the month (start of first week)
+  const firstSunday = new Date(firstDay);
+  firstSunday.setDate(firstDay.getDate() - firstDay.getDay());
+  
+  const weeks: WeekData[] = [];
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const today = new Date();
+  
+  // Generate 4 weeks
+  for (let weekNum = 1; weekNum <= 4; weekNum++) {
+    const weekStart = new Date(firstSunday);
+    weekStart.setDate(firstSunday.getDate() + (weekNum - 1) * 7);
     
-    if (lapDateOnly.getTime() === today.getTime()) {
-      grouped.today.push(lap);
-    } else if (lapDateOnly >= startOfWeek && lapDateOnly < today) {
-      grouped.thisWeek.push(lap);
-    } else if (lapDateOnly >= startOfLastWeek && lapDateOnly <= endOfLastWeek) {
-      grouped.lastWeek.push(lap);
-    } else if (lapDateOnly >= startOfMonth && lapDateOnly < startOfLastWeek) {
-      grouped.olderThisMonth.push(lap);
+    const days: WeekDay[] = [];
+    let weekSessionCount = 0;
+    
+    // Generate 7 days for each week
+    for (let dayNum = 0; dayNum < 7; dayNum++) {
+      const currentDate = new Date(weekStart);
+      currentDate.setDate(weekStart.getDate() + dayNum);
+      
+      // Only include days that are within the current month
+      if (currentDate.getMonth() === month && currentDate.getFullYear() === year) {
+        const daySessions = lapsList.filter(lap => {
+          const lapDate = new Date(lap.created_at);
+          return lapDate.toDateString() === currentDate.toDateString();
+        }).reverse();
+        
+        const isToday = currentDate.toDateString() === today.toDateString();
+        
+        days.push({
+          date: currentDate,
+          dayName: dayNames[dayNum] || 'Unknown',
+          dayNumber: currentDate.getDate(),
+          sessions: daySessions,
+          isToday,
+        });
+        
+        weekSessionCount += daySessions.length;
+      }
     }
-  });
+    
+    if (days.length > 0 && weekSessionCount > 0) {
+      weeks.push({
+        weekNumber: weekNum,
+        weekName: `Week ${weekNum}`,
+        days,
+        totalSessions: weekSessionCount
+      });
+    }
+  }
   
-  return grouped;
+  return weeks.reverse();
 };
 
-  // Group laps by month with proper type
-  const groupedLaps: GroupedLabs = isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(laps);
+  // Group laps by month with proper type - memoized for performance
+const groupedLaps: GroupedLabs = useMemo(() => {
+  return isDemo ? buildDemoGroupedLaps() : groupSessionsByMonth(lapsData);
+}, [isDemo, lapsData]);
 
+// Calculate statistics for a month
+interface MonthStats {
+  totalSessions: number;
+  totalMinutes: number;
+  avgDuration: number;
+}
 
-  // Calculate statistics for a month
-  interface MonthStats {
-    totalSessions: number;
-    totalMinutes: number;
-    avgDuration: number;
-  }
-
-  const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
-    const getTotalMinutes = (duration: string): number => {
-      const [h, m] = duration.split(':');
-      return (parseInt(h || '0', 10) * 60) + parseInt(m || '0', 10);
-    };
-
-    const totalSessions = lapsOfMonth.length;
-    const totalMinutes = lapsOfMonth.reduce((acc: number, lap: Lap) => {
-      return acc + getTotalMinutes(lap.duration);
-    }, 0);
-    const avgDuration = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
-
-    return {
-      totalSessions,
-      totalMinutes,
-      avgDuration
-    };
+const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
+  const getTotalMinutes = (duration: string): number => {
+    const [h, m] = duration.split(':');
+    return (parseInt(h || '0', 10) * 60) + parseInt(m || '0', 10);
   };
+
+  const totalSessions = lapsOfMonth.length;
+  const totalMinutes = lapsOfMonth.reduce((acc: number, lap: Lap) => {
+    return acc + getTotalMinutes(lap.duration);
+  }, 0);
+  const avgDuration = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
+
+  return {
+    totalSessions,
+    totalMinutes,
+    avgDuration
+  };
+};
 
   
   // Right-click handler for session
@@ -351,7 +382,7 @@ const groupSessionsByTimePeriod = (lapsList: Lap[], referenceMonthYear?: string)
   }
 
   // If not in demo mode and no sessions, show empty state
-  if (!isDemo && !status && laps.length === 0) {
+  if (!isDemo && !status && lapsData.length === 0) {
     return (
       <BaseModal 
         isOpen={isOpen} 
@@ -431,113 +462,139 @@ const groupSessionsByTimePeriod = (lapsList: Lap[], referenceMonthYear?: string)
               // Month detail view
               <div className="flex-1 overflow-y-auto px-6">
                 {(() => {
-                  const timeGroupedSessions = groupSessionsByTimePeriod(
-                    selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : [],
-                    selectedMonth || undefined
-                  );
+                  const monthLaps = selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : [];
+                  const monthStats = getMonthStats(monthLaps);
+                  const weeksData = groupSessionsByWeeks(monthLaps, selectedMonth || undefined);
                   
-                  const sections = [
-                    { key: 'today', title: 'Today', sessions: timeGroupedSessions.today },
-                    { key: 'thisWeek', title: 'This Week', sessions: timeGroupedSessions.thisWeek },
-                    { key: 'lastWeek', title: 'Last Week', sessions: timeGroupedSessions.lastWeek },
-                    { key: 'olderThisMonth', title: 'Earlier This Month', sessions: timeGroupedSessions.olderThisMonth }
-                  ];
+                  const totalHours = Math.floor(monthStats.totalMinutes / 60);
+                  const totalMins = monthStats.totalMinutes % 60;
                   
                   return (
-                    <div className="space-y-8 pb-6">
-                      {sections.map(section => (
-                        section.sessions.length > 0 && (
-                          <div key={section.key}>
-                            <div className="flex items-center gap-3 mb-4">
-                              <h3 className="text-lg font-bold text-[var(--text-primary)]">
-                                {section.title}
-                              </h3>
-                              <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-1 rounded-full">
-                                {section.sessions.length} {section.sessions.length === 1 ? 'session' : 'sessions'}
-                              </span>
+                    <div className="space-y-6 pb-6">
+                      {/* Month Statistics Header */}
+                      <div className="bg-gradient-to-r from-[var(--accent-primary)/10] to-[var(--accent-primary)/5]  rounded-2xl mb-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <BookOpen size={16} className="text-[var(--accent-primary)]" />
+                              <span className="text-sm text-[var(--text-secondary)] font-medium">Sessions</span>
                             </div>
-                            <div className="space-y-2">
-                              {section.sessions.map((lap) => (
-                                <div
-                                  key={lap.id}
-                                  className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-300 cursor-pointer rounded-lg p-4 flex items-center gap-4"
-                                  onClick={() => setSelectedSession(lap)}
-                                  onContextMenu={(e) => handleSessionContextMenu(e, lap)}
-                                >
-                                  <span className="text-sm font-bold text-[var(--accent-primary)] bg-[var(--accent-primary)/10] px-3 py-2 rounded-full whitespace-nowrap">
-                                    #{lap.session_number}
-                                  </span>
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <h4 className="text-lg font-bold text-[var(--text-primary)] truncate">
-                                        {lap.name || `Study Session ${lap.session_number}`}
-                                      </h4>
-                                      {lap.subject_name && (
-                                        <div className="flex items-center gap-1">
-                                          <div 
-                                            className="w-3 h-3 rounded-full border border-white/50"
-                                            style={{ backgroundColor: lap.subject_color || '#9CA3AF' }}
-                                          />
-                                          <span className="text-xs text-[var(--text-secondary)] font-medium">
-                                            {lap.subject_name || 'No assignment'}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-6 text-sm">
-                                      <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-                                        <Calendar size={16} className="text-[var(--accent-primary)]" />
-                                        <span className="font-medium">{formatDateShort(lap.created_at)}</span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Clock size={16} className="text-[var(--accent-primary)]" />
-                                        <span className="font-bold text-[var(--text-primary)] font-mono">{lap.duration}</span>
-                                      </div>
-                                      {'pomodoros_completed' in lap && typeof lap.pomodoros_completed === 'number' && lap.pomodoros_completed > 0 && (
-                                        <div className="flex items-center gap-2 text-orange-600">
+                            <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.totalSessions}</p>
+                          </div>
+                          
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock size={16} className="text-[var(--accent-primary)]" />
+                              <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
+                            </div>
+                            <p className="text-2xl font-bold text-[var(--text-primary)]">
+                              {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
+                            </p>
+                          </div>
+                          
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Zap size={16} className="text-[var(--accent-primary)]" />
+                              <span className="text-sm text-[var(--text-secondary)] font-medium">Avg Duration</span>
+                            </div>
+                            <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.avgDuration}m</p>
+                          </div>
+                          
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Calendar size={16} className="text-[var(--accent-primary)]" />
+                              <span className="text-sm text-[var(--text-secondary)] font-medium">Days Active</span>
+                            </div>
+                            <p className="text-2xl font-bold text-[var(--text-primary)]">
+                              {new Set(monthLaps.map(lap => new Date(lap.created_at).toDateString())).size}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                                          <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                            {lap.pomodoros_completed} pomodoro{lap.pomodoros_completed !== 1 ? 's' : ''}
-                                          </span>
+                      {/* Weeks View */}
+                      {weeksData.length > 0 ? (
+                        <div className="space-y-6">
+                          {weeksData.map((week) => (
+                            <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-primary)]">
+                              <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-8 bg-[var(--accent-primary)] rounded-full"></div>
+                                  <h3 className="text-xl font-bold text-[var(--text-primary)]">
+                                    {week.weekName}
+                                  </h3>
+                                </div>
+                                <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] px-3 py-1.5 rounded-full border border-[var(--border-primary)] font-medium">
+                                  {week.totalSessions} {week.totalSessions === 1 ? 'session' : 'sessions'}
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                {sortDaysByCurrentFirst(week.days).map((day, dayIndex) => (
+                                  <div key={dayIndex} className={`bg-[var(--bg-primary)] rounded-lg p-3 border ${day.isToday ? 'border-[var(--accent-primary)] border-2' : 'border-[var(--border-primary)]'}`}>
+                                    <div className="flex items-center gap-3">
+                                      <div className="text-center min-w-[60px]">
+                                        <div className="text-xs text-[var(--text-secondary)] font-medium mb-1">
+                                          {day.dayName.substring(0, 3).toUpperCase()}
                                         </div>
-                                      )}
-                                      {lap.tasks_completed > 0 && (
-                                        <div className="flex items-center gap-2 text-green-600">
-                                          <CheckCircle2 size={16} className="text-green-500" />
-                                          <span className="font-semibold text-green-600 dark:text-green-400">
-                                            {lap.tasks_completed} task{lap.tasks_completed !== 1 ? 's' : ''}
-                                          </span>
+                                        <div className="text-base font-bold text-[var(--text-primary)]">
+                                          {day.dayNumber}
                                         </div>
-                                      )}
+                                      </div>
+                                      
+                                      <div className="flex-1 space-y-2">
+                                        {day.sessions.map((lap, sessionIndex) => (
+                                          <div
+                                            key={lap.id}
+                                            className="bg-[var(--accent-primary)/10] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-0 cursor-pointer rounded-lg p-2 group relative overflow-hidden"
+                                            onClick={() => setSelectedSession(lap)}
+                                            onContextMenu={(e) => handleSessionContextMenu(e, lap)}
+                                            style={{
+                                              animationDelay: `${dayIndex * 50 + sessionIndex * 25}ms`
+                                            }}
+                                          >
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-[var(--accent-primary)]">
+                                                  #{lap.session_number}
+                                                </span>
+                                                <span className="text-sm font-medium text-[var(--text-primary)] truncate">
+                                                  {lap.name || `Session ${lap.session_number}`}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-sm text-[var(--text-secondary)] font-mono">
+                                                  {lap.duration}
+                                                </span>
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteClick(lap.id);
+                                                  }}
+                                                  className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+                                                >
+                                                  <Trash2 size={12} />
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
                                     </div>
                                   </div>
-                                  
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteClick(lap.id);
-                                    }}
-                                    className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10"
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-16 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-primary)]">
+                          <div className="mx-auto w-20 h-20 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-6">
+                            <BookOpen size={32} className="text-[var(--accent-primary)]" />
                           </div>
-                        )
-                      ))}
-                      
-                      {sections.every(section => section.sessions.length === 0) && (
-                        <div className="text-center py-12">
-                          <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
-                            <BookOpen size={24} className="text-[var(--accent-primary)]" />
-                          </div>
-                          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No sessions this month</h3>
-                          <p className="text-[var(--text-secondary)]">
-                            Start a new study session to see your progress here.
+                          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">No sessions this month</h3>
+                          <p className="text-[var(--text-secondary)] max-w-md mx-auto">
+                            Start a new study session to see your progress here. Keep tracking your study habits to build your learning streak!
                           </p>
                         </div>
                       )}
