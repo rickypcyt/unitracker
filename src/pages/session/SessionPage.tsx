@@ -148,16 +148,16 @@ const SessionPage = memo(() => {
 
         {/* Grid con Timer ocupando toda la primera fila en mobile/tablet, tres columnas en lg */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 w-full mb-3">
+          {/* Pomo */}
+          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+            <Pomodoro />
+          </div>
+
           {/* Study Timer - ocupa toda la primera fila en mobile/tablet, una columna en lg */}
           <div className="col-span-2 lg:col-span-1 maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <StudyTimer
               isSynced={isSynced}
             />
-          </div>
-
-          {/* Pomo */}
-          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
-            <Pomodoro />
           </div>
 
           {/* Countdown */}
