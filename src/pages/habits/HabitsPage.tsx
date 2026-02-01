@@ -424,9 +424,9 @@ const HabitsPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/habits" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/habits" />
       </Helmet>
-      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 overflow-hidden">
+      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 overflow-hidden">
       {/* Toolbar */}
-      <div className="maincard flex items-center justify-between mb-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+      <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
         <div className="text-sm font-medium text-[var(--text-secondary)]">
           {currentYear} - All Months
         </div>
