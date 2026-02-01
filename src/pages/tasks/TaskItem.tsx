@@ -151,7 +151,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 </span>
                 {/* Priority, assignment, date */}
                 <div className={`flex items-center gap-2 w-full`}>
-                    {/* Date on the left */}
+                    {/* Assignment on the left when assignmentLeftOfDate is true */}
+                    {assignmentLeftOfDate && showAssignment && task.assignment && (
+                        <div className="text-[var(--accent-primary)] text-sm font-semibold capitalize">
+                            {task.assignment}
+                        </div>
+                    )}
+                    
+                    {/* Date */}
                     <div className="text-sm" style={{ color: 'var(--muted-strong)' }}>
                         {task.deadline && task.deadline !== '' ? (
                             <>
@@ -168,7 +175,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     
                     <div className="flex-1" />
                     
-                    {/* Assignment on the right */}
+                    {/* Assignment on the right when assignmentLeftOfDate is false */}
                     {!assignmentLeftOfDate && showAssignment && task.assignment && (
                         <div className="text-[var(--accent-primary)] text-md font-semibold capitalize">
                             {task.assignment}
