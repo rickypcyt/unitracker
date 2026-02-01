@@ -188,13 +188,19 @@ const HabitsPage = memo(() => {
     for (let month = 0; month <= 11; month++) {
       const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
       const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+      
+      // Add ghost days to make all months have 31 days
+      const ghostDays = Array.from({ length: 31 - daysInMonth }, (_, i) => daysInMonth + i + 1);
+      const allDays = [...monthDays, ...ghostDays];
+      
       const monthDate = new Date(currentYear, month);
       const isCurrentMonth = month === currentMonth;
       
       months.push({
         year: currentYear,
         month: month,
-        days: monthDays,
+        days: allDays,
+        realDays: daysInMonth, // Track real days count
         title: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         isCurrent: isCurrentMonth
       });
@@ -210,6 +216,7 @@ const HabitsPage = memo(() => {
     year: number,
     month: number,
     daysArray: number[],
+    realDaysCount: number,
     monthTitle: string
   ) => {
     const isThisMonthCurrent = today.getMonth() === month && today.getFullYear() === year;
@@ -217,15 +224,15 @@ const HabitsPage = memo(() => {
 
     return (
       <div className="mt-4">
-        <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
+        <div className="bg-[var(--bg-secondary)] border border-1 border-[var(--border-primary)] rounded-lg overflow-hidden">
           {/* Month title header */}
           <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center">
             <div className="text-lg font-semibold text-[var(--accent-primary)]">
               {monthTitle}
             </div>
           </div>
-          {/* Table with fixed height for consistency */}
-          <div className="overflow-hidden" style={{ height: 'calc(31 * 3.5rem + 3rem)' }}>
+          {/* Table with natural height */}
+          <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead className="bg-[var(--bg-tertiary)] sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-primary)]">
@@ -250,12 +257,17 @@ const HabitsPage = memo(() => {
               </thead>
               <tbody>
                 {daysArray.map((day) => {
-                  const isFutureDay = isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
+                  const isGhostDay = day > realDaysCount;
+                  const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
 
                   return (
                     <tr
                       key={`${year}-${month}-${day}`}
-                      className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors bg-[var(--bg-primary)]`}
+                      className={`border-b border-[var(--border-primary)] transition-colors ${
+                        isGhostDay 
+                          ? 'bg-transparent opacity-20' 
+                          : 'bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]'
+                      }`}
                     >
                       {/* Day number column */}
                       <td
@@ -264,72 +276,82 @@ const HabitsPage = memo(() => {
                         onClick={() => setTooltipContent(null)}
                       >
                         <span
-                          className={`font-bold text-sm cursor-pointer ${
-                            day === todayDayForMonth
+                          className={`font-bold text-sm ${
+                            isGhostDay
+                              ? 'text-[var(--text-tertiary)]'
+                              : day === todayDayForMonth
                               ? 'text-[var(--accent-primary)]'
                               : isFutureDay
-                              ? 'text-white'
-                              : 'text-gray-400'
+                              ? 'text-[var(--text-tertiary)]'
+                              : 'text-[var(--text-primary)]'
                           }`}
-                          onMouseEnter={() => {
-                            const date = new Date(year, month, day);
-                            const tasks = getTasksWithDeadline(date);
-                            if (tasks.length > 0) {
-                              setTooltipContent({ date, tasks });
-                            }
-                          }}
                         >
-                          {day}
+                          {isGhostDay ? '' : day}
                         </span>
-                        {/* Task indicator */}
-                        {(() => {
+                        
+                        {/* Task indicator - only for real days */}
+                        {!isGhostDay && (() => {
                           const date = new Date(year, month, day);
                           const tasks = getTasksWithDeadline(date);
                           return tasks.length > 0 && (
                             <div
                               className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[var(--accent-primary)] opacity-90 z-10 cursor-pointer"
-                              onMouseEnter={() => setTooltipContent({ date, tasks })}
+                              onMouseEnter={() => {
+                                if (tasks.length > 0) {
+                                  setTooltipContent({ date, tasks });
+                                }
+                              }}
                             ></div>
                           );
                         })()}
 
-                        {/* Day name */}
-                        <div className="text-xs text-[var(--text-secondary)] mt-1 text-center">
-                          {(() => {
-                            const date = new Date(year, month, day);
-                            return date.toLocaleDateString('en-US', { weekday: 'short' });
-                          })()}
-                        </div>
+                        {/* Day name - only for real days */}
+                        {!isGhostDay && (
+                          <div className="text-xs text-[var(--text-secondary)] mt-1 text-center">
+                            {(() => {
+                              const date = new Date(year, month, day);
+                              return date.toLocaleDateString('en-US', { weekday: 'short' });
+                            })()}
+                          </div>
+                        )}
                       </td>
 
                       {/* Notes column */}
-                      <td className="px-4 py-3 border-r border-[var(--border-primary)]">
-                        <input
-                          type="text"
-                          value={(pendingNoteSaves[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`] ?? journalNotes[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`]) || ''}
-                          onChange={(e) => handleNoteChangeForMonth(year, month, day, e.target.value)}
-                          onKeyDown={(e) => handleNoteKeyDownForMonth(year, month, day, e)}
-                          onBlur={() => handleNoteBlurForMonth(year, month, day)}
-                          placeholder="Note..."
-                          className="w-full px-3 py-2 bg-transparent border border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] text-sm"
-                        />
+                      <td className="px-4 py-3 border-r border-[var(--border-primary)] min-w-32">
+                        {!isGhostDay ? (
+                          <input
+                            type="text"
+                            placeholder="Add notes..."
+                            className="w-full px-2 py-1 text-sm bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
+                            defaultValue={journalNotes[`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`] || ''}
+                            onChange={(e) => handleNoteChangeForMonth(year, month, day, e.target.value)}
+                            onKeyDown={(e) => handleNoteKeyDownForMonth(year, month, day, e)}
+                            onBlur={() => handleNoteBlurForMonth(year, month, day)}
+                          />
+                        ) : (
+                          <div className="w-full h-11"></div>
+                        )}
                       </td>
 
                       {/* Habit columns */}
                       {habits.map(habit => {
                         const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const isCompleted = habit.completions[dateKey] || false;
+                        const isCompleted = !isGhostDay && (habit.completions[dateKey] || false);
                         return (
                           <td key={`${habit.id}-${year}-${month}-${day}`} className="px-2 py-3 text-center border-r border-[var(--border-primary)] w-12">
-                            <button
-                              onClick={() => handleToggleHabitForMonth(habit.id, year, month, day)}
-                              className={`w-6 h-6 rounded-full border-2 transition-colors ${
-                                isCompleted
-                                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
-                                  : 'border-white hover:border-[var(--accent-primary)]'
-                              }`}
-                              title={isCompleted ? 'Completed' : 'Not completed'}
-                            />
+                            {!isGhostDay ? (
+                              <button
+                                onClick={() => handleToggleHabitForMonth(habit.id, year, month, day)}
+                                className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                                  isCompleted
+                                    ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                                    : 'border-white hover:border-[var(--accent-primary)]'
+                                }`}
+                                title={isCompleted ? 'Completed' : 'Not completed'}
+                              />
+                            ) : (
+                              <div className="w-6 h-6 mx-auto mt-3"></div>
+                            )}
                           </td>
                         );
                       })}
@@ -426,7 +448,7 @@ const HabitsPage = memo(() => {
       </Helmet>
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 overflow-hidden">
       {/* Toolbar */}
-      <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+      <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none border-1">
         <div className="text-sm font-medium text-[var(--text-secondary)]">
           {currentYear} - All Months
         </div>
@@ -442,13 +464,14 @@ const HabitsPage = memo(() => {
       
       <div className="space-y-8 mb-4">
         {/* Months Grid - 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {months.map((monthData) => (
             <div key={`${monthData.year}-${monthData.month}`}>
               {renderHabitsTable(
                 monthData.year,
                 monthData.month,
                 monthData.days,
+                monthData.realDays,
                 monthData.title
               )}
             </div>
