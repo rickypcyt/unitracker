@@ -1,8 +1,8 @@
 import { Info, Plus, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { Helmet } from "react-helmet-async";
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
+import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import TaskForm from '@/pages/tasks/TaskForm';
@@ -189,7 +189,7 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/tasks" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/tasks" />
       </Helmet>
-      <div className="w-full px-6 lg:px-16 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
+      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
       <KanbanBoard />
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (
