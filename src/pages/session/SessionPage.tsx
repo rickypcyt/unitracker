@@ -146,22 +146,22 @@ const SessionPage = memo(() => {
           <GlobalTimerControls />
         </div>
 
-        {/* Grid con Timer ocupando toda la primera fila en mobile/tablet, tres columnas en lg */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 w-full mb-3">
+        {/* Grid con timers en filas en sm, 3 columnas en md+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-2 w-full mb-2">
           {/* Pomo */}
-          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+          <div className="maincard p-2 sm:p-3 w-full space-y-2 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <Pomodoro />
           </div>
 
-          {/* Study Timer - ocupa toda la primera fila en mobile/tablet, una columna en lg */}
-          <div className="col-span-2 lg:col-span-1 maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+          {/* Study Timer */}
+          <div className="maincard p-2 sm:p-3 w-full space-y-2 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <StudyTimer
               isSynced={isSynced}
             />
           </div>
 
           {/* Countdown */}
-          <div className="maincard p-2 sm:p-3 w-full space-y-3 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+          <div className="maincard p-2 sm:p-3 w-full space-y-2 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
             <Countdown
               isSynced={isSynced}
               isRunning={isRunning}

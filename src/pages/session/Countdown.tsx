@@ -795,7 +795,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
         </button>
       </div>
 
-      <div className="flex items-center justify-center mb-4">
+      <div className="flex items-center justify-center mb-2 sm:mb-3">
         {fields.map((field, idx) => {
           // Derivar el valor mostrado desde la fuente de verdad
           let value;
@@ -835,12 +835,12 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
                 onBlur={e => handleBlur(field, e)}
                 onChange={e => handleInputChange(field, e.target.value)}
                 onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-12 md:w-14 text-center text-3xl md:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+                className={`w-8 sm:w-10 md:w-12 lg:w-14 text-center text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
                 tabIndex={idx + 1}
                 style={{ letterSpacing: '0.05em' }}
                 disabled={isCountdownRunning} // Opcional: deshabilita edición durante cuenta regresiva
               />
-              {field !== 'seconds' && <span className="text-3xl md:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
+              {field !== 'seconds' && <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
             </React.Fragment>
           );
         })}
@@ -848,7 +848,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
 
       {/* Time adjustment buttons - only show when not synced */}
       {!(isSynced || syncCountdownWithTimer) && (
-        <div className="flex gap-1 mb-3 md:mb-3 lg:mb-3">
+        <div className="flex gap-1 mb-1 sm:mb-2">
           <button
             onClick={() => handleTimeAdjustment(-1800)}
             className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
@@ -881,7 +881,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
       )}
 
       {!(isSynced || syncCountdownWithTimer) && (
-        <div className="flex justify-center items-center gap-3 xl:mb-0">
+        <div className="flex justify-center items-center gap-2 sm:gap-3">
           <button
             onClick={() => handleReset()}
             className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20"

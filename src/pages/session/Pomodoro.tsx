@@ -1352,7 +1352,7 @@ const Pomodoro: React.FC = () => {
 
       {/* Timer Display */}
       <div
-        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-3 text-center text-[var(--text-primary)]"
+        className="relative group text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-mono mb-2 sm:mb-3 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current pomodoro time"
       >
@@ -1403,7 +1403,7 @@ const Pomodoro: React.FC = () => {
 
       {/* Time adjustment buttons - only show when not synced */}
       {!syncPomodoroWithTimer && (
-        <div className="flex gap-1 mb-4 md:mb-4 lg:mb-4">
+        <div className="flex gap-1 mb-1 sm:mb-2">
           {[-600, -300, 300, 600].map((adj) => (
             <button
               key={adj}
@@ -1418,7 +1418,7 @@ const Pomodoro: React.FC = () => {
       )}
 
       {/* Timer Controls */}
-      <div className="timer-controls flex justify-center items-center gap-3 xl:mb-0 mb-4">
+      <div className="timer-controls flex justify-center items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
         {!syncPomodoroWithTimer && (
           <>
             <button

@@ -1696,7 +1696,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
 
       {/* Timer display con tooltip para Session Title */}
       <div
-        className="relative group text-3xl md:text-4xl xl:text-5xl font-mono mb-4 lg:mb-4 text-center text-[var(--text-primary)]"
+        className="relative group text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-mono mb-2 sm:mb-3 text-center text-[var(--text-primary)]"
         role="timer"
         aria-label="Current session time"
       >
@@ -1721,14 +1721,14 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       </div>
 
       {/* Time adjustment buttons */}
-      <div className="flex gap-1 mb-6 md:mb-6 lg:mb-6">
+      <div className="flex gap-1 mb-2 sm:mb-3">
         {timeAdjustmentButtons.map(({ adjustment, label }) =>
           createAdjustButton(adjustment, label)
         )}
       </div>
 
       {/* Timer controls */}
-      <div className="timer-controls flex justify-center items-center gap-1 lg:mb-0">
+      <div className="timer-controls flex justify-center items-center gap-1 sm:gap-2">
         {!isSynced && (
           <>
             <button

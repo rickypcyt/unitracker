@@ -90,6 +90,7 @@
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9.32.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
