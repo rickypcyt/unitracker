@@ -1,10 +1,10 @@
 import { memo, useEffect, useState } from 'react';
-import { Helmet } from "react-helmet-async";
 
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
 import HabitEditModal from '../../modals/HabitEditModal';
-import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Helmet } from "react-helmet-async";
+import { Plus } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
 import { useAuth } from '../../hooks/useAuth';
 import { useCalendarData } from '../calendar/hooks/useCalendarData';
@@ -22,11 +22,6 @@ const HabitsPage = memo(() => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [pendingNoteSaves, setPendingNoteSaves] = useState<Record<string, string>>({}); // Track pending saves
   const [tooltipContent, setTooltipContent] = useState<{ date: Date; tasks: any[] } | null>(null);
-  const [showPastDays, setShowPastDays] = useState(() => {
-    // Load from localStorage with default false
-    const saved = localStorage.getItem('habits-show-past-days');
-    return saved ? JSON.parse(saved) : false;
-  });
 
   const {
     habits,
@@ -40,20 +35,11 @@ const HabitsPage = memo(() => {
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-  // Next month calculations
-  const nextMonthDate = new Date(currentYear, currentMonth + 1);
-  const nextMonth = nextMonthDate.getMonth();
-  const nextMonthYear = nextMonthDate.getFullYear();
-  const daysInNextMonth = new Date(nextMonthYear, nextMonth + 1, 0).getDate();
-
   const today = new Date();
-  const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
-  const isNextMonth = today.getMonth() === nextMonth && today.getFullYear() === nextMonthYear;
-  const todayDay = isCurrentMonth ? today.getDate() : (isNextMonth ? today.getDate() : null);
 
 
+  // Note: These handlers are kept for compatibility but may not be used with the new 12-month view
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleNoteChange = (day: number, note: string) => {
     const date = new Date(currentYear, currentMonth, day);
     const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -65,6 +51,7 @@ const HabitsPage = memo(() => {
     }));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleNoteKeyDown = async (day: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       // Save immediately on Enter
@@ -83,6 +70,7 @@ const HabitsPage = memo(() => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleNoteBlur = async (day: number) => {
     // Save when user leaves the input field
     const date = new Date(currentYear, currentMonth, day);
@@ -102,6 +90,7 @@ const HabitsPage = memo(() => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleToggleHabit = async (habitId: string, day: number) => {
     const date = new Date(currentYear, currentMonth, day);
     await toggleHabitCompletion(habitId, date);
@@ -191,16 +180,37 @@ const HabitsPage = memo(() => {
     await toggleHabitCompletion(habitId, date);
   };
 
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const nextMonthDays = Array.from({ length: daysInNextMonth }, (_, i) => i + 1);
+  // Generate months to display (all months of current year)
+  const generateMonths = () => {
+    const months = [];
+    
+    // Add all 12 months of current year
+    for (let month = 0; month <= 11; month++) {
+      const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+      const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+      const monthDate = new Date(currentYear, month);
+      const isCurrentMonth = month === currentMonth;
+      
+      months.push({
+        year: currentYear,
+        month: month,
+        days: monthDays,
+        title: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        isCurrent: isCurrentMonth
+      });
+    }
+    
+    return months;
+  };
+  
+  const months = generateMonths();
 
   // Function to render habits table for a specific month
   const renderHabitsTable = (
     year: number,
     month: number,
     daysArray: number[],
-    monthTitle: string,
-    showToggle: boolean = true
+    monthTitle: string
   ) => {
     const isThisMonthCurrent = today.getMonth() === month && today.getFullYear() === year;
     const todayDayForMonth = isThisMonthCurrent ? today.getDate() : null;
@@ -208,31 +218,14 @@ const HabitsPage = memo(() => {
     return (
       <div className="mt-4">
         <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
-          {showToggle && (
-            <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-between">
-              <button
-                onClick={() => setShowPastDays(!showPastDays)}
-                className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
-              >
-                {showPastDays ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                {showPastDays ? 'Hide past days' : 'Show past days'}
-              </button>
-
-              <div className="text-lg font-semibold text-[var(--accent-primary)]">
-                {monthTitle}
-              </div>
-
-              <div className="w-24"></div> {/* Spacer for balance */}
+          {/* Month title header */}
+          <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center">
+            <div className="text-lg font-semibold text-[var(--accent-primary)]">
+              {monthTitle}
             </div>
-          )}
-          {!showToggle && (
-            <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center">
-              <div className="text-lg font-semibold text-[var(--accent-primary)]">
-                {monthTitle}
-              </div>
-            </div>
-          )}
-          <div>
+          </div>
+          {/* Table with fixed height for consistency */}
+          <div className="overflow-hidden" style={{ height: 'calc(31 * 3.5rem + 3rem)' }}>
             <table className="w-full border-collapse">
               <thead className="bg-[var(--bg-tertiary)] sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-primary)]">
@@ -253,54 +246,16 @@ const HabitsPage = memo(() => {
                       </span>
                     </th>
                   ))}
-                  <th className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] w-12">
-                    <button
-                      onClick={() => setIsCreateModalOpen(true)}
-                      className="p-1 rounded-md hover:bg-[var(--bg-tertiary)] text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
-                      title="Add new habit"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </th>
                 </tr>
               </thead>
               <tbody>
-                {daysArray.filter(day => {
-                  if (!isThisMonthCurrent) return true; // Show all days for past/future months
-                  if (showPastDays) return true; // Show all days when toggle is on
-
-                  // For current month, show from Sunday of current week onwards
-                  if (todayDayForMonth === null) return true;
-
-                  // Calculate Sunday of current week
-                  const today = new Date();
-                  const sundayOfWeek = new Date(today);
-                  sundayOfWeek.setDate(today.getDate() - today.getDay()); // Sunday of current week
-                  const sundayDayOfMonth = sundayOfWeek.getDate();
-
-                  return day >= sundayDayOfMonth; // Show from Sunday of current week
-                }).map((day, index) => {
-                  const isPastDay = isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
+                {daysArray.map((day) => {
                   const isFutureDay = isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
-
-                  // Calculate if day is before Sunday of current week
-                  let isBeforeCurrentWeek = false;
-                  if (isThisMonthCurrent && todayDayForMonth !== null) {
-                    const today = new Date();
-                    const sundayOfWeek = new Date(today);
-                    sundayOfWeek.setDate(today.getDate() - today.getDay());
-                    const sundayDayOfMonth = sundayOfWeek.getDate();
-                    isBeforeCurrentWeek = day < sundayDayOfMonth;
-                  }
 
                   return (
                     <tr
                       key={`${year}-${month}-${day}`}
-                      className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors ${
-                        isBeforeCurrentWeek
-                          ? (index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]')
-                          : 'bg-[var(--bg-primary)]'
-                      } ${isBeforeCurrentWeek ? 'opacity-75' : ''}`}
+                      className={`border-b border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors bg-[var(--bg-primary)]`}
                     >
                       {/* Day number column */}
                       <td
@@ -378,9 +333,6 @@ const HabitsPage = memo(() => {
                           </td>
                         );
                       })}
-
-                      {/* Empty cell for the + button column */}
-                      <td className="px-2 py-3 text-center w-12"></td>
                     </tr>
                   );
                 })}
@@ -391,11 +343,6 @@ const HabitsPage = memo(() => {
       </div>
     );
   };
-
-  // Save showPastDays to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('habits-show-past-days', JSON.stringify(showPastDays));
-  }, [showPastDays]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -477,25 +424,36 @@ const HabitsPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/habits" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/habits" />
       </Helmet>
-      <div className="w-full px-0 overflow-hidden">
-      <div className="space-y-8 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6 lg:max-w-1/2 lg:mx-auto lg:px-8">
-        {/* Current Month */}
-        {renderHabitsTable(
-          currentYear,
-          currentMonth,
-          days,
-          new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          true
-        )}
-
-        {/* Next Month */}
-        {renderHabitsTable(
-          nextMonthYear,
-          nextMonth,
-          nextMonthDays,
-          new Date(nextMonthYear, nextMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          false
-        )}
+      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 overflow-hidden">
+      {/* Toolbar */}
+      <div className="maincard flex items-center justify-between mb-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none">
+        <div className="text-sm font-medium text-[var(--text-secondary)]">
+          {currentYear} - All Months
+        </div>
+        
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center gap-2 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)]/10 transition-colors"
+        >
+          <Plus size={16} />
+          Create Habit
+        </button>
+      </div>
+      
+      <div className="space-y-8 mb-4">
+        {/* Months Grid - 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {months.map((monthData) => (
+            <div key={`${monthData.year}-${monthData.month}`}>
+              {renderHabitsTable(
+                monthData.year,
+                monthData.month,
+                monthData.days,
+                monthData.title
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <HabitCreateModal
