@@ -14,7 +14,7 @@ import { useNavigation } from '@/navbar/NavigationContext';
 
 const Navbar = () => {
   const { isLoggedIn, loginWithGoogle, logout, user } = useAuth();
-  const { activePage, navigateTo } = useNavigation();
+  const { activePage, navigateTo, navOrder, setNavOrder } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { tasks } = useTasks();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
@@ -24,6 +24,9 @@ const Navbar = () => {
   const [sentRequests, setSentRequests] = useState<any[]>([]);
   const [friends, setFriends] = useState<any[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<any>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -310,14 +313,60 @@ const Navbar = () => {
   const navLinkClass = (page: any) =>
     `px-4 py-2 rounded-md ${isActive(page) ? 'text-[var(--accent-primary)] ' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'}`;
 
-  const navIcons = [
-    { page: 'calendar', icon: Calendar, label: 'Calendar' },
-    { page: 'tasks', icon: ListTodo, label: 'Tasks' },
-    { page: 'session', icon: Timer, label: 'Session' },
-    { page: 'habits', icon: CircleCheckBig, label: 'Habits' },
-    { page: 'notes', icon: BookOpen, label: 'Notes' },
-    { page: 'stats', icon: BarChart3, label: 'Stats' },
-  ];
+  // Icon mapping
+  const iconMap = {
+    calendar: Calendar,
+    tasks: ListTodo,
+    session: Timer,
+    habits: CircleCheckBig,
+    notes: BookOpen,
+    stats: BarChart3,
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    setIsDragging(true);
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    const draggedIndex = navOrder.findIndex(item => item.page === draggedItem.page);
+    if (draggedIndex === dropIndex) {
+      setIsDragging(false);
+      setDraggedItem(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newOrder = [...navOrder];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(dropIndex, 0, draggedItem);
+    
+    setNavOrder(newOrder);
+    setIsDragging(false);
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDraggedItem(null);
+    setDragOverIndex(null);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden">
@@ -335,32 +384,56 @@ const Navbar = () => {
           {/* Botones de páginas al centro */}
           <div className="flex-1 flex justify-center items-center">
             <div className="hidden lg:flex space-x-4 lg:space-x-4 items-center justify-center">
-              {navIcons.map(({ page, icon: Icon, label }) => (
-                <button
-                  key={page}
-                  onClick={() => navigateTo(page as any)}
-                  className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
-                  title={label}
-                  data-page={page}
-                >
-                  <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'} mr-1`} />
-                  <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
-                </button>
-              ))}
+              {navOrder.map(({ page, label }, index) => {
+                const Icon = iconMap[page as keyof typeof iconMap];
+                return (
+                  <div
+                    key={page}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, { page, label })}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative ${dragOverIndex === index ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--accent-primary)]' : ''} ${isDragging ? 'cursor-move' : ''} hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200`}
+                  >
+                    <button
+                      onClick={() => navigateTo(page as any)}
+                      className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1 cursor-grab active:cursor-grabbing'}
+                      data-page={page}
+                    >
+                      <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'} mr-1`} />
+                      <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1 items-center justify-center">
-              {navIcons.map(({ page, icon: Icon, label }) => (
-                <button
-                  key={page}
-                  onClick={() => navigateTo(page as any)}
-                  className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
-                  title={label}
-                  data-page={page}
-                >
-                  <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'}`} />
-                  <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">{label}</span>
-                </button>
-              ))}
+              {navOrder.map(({ page, label }, index) => {
+                const Icon = iconMap[page as keyof typeof iconMap];
+                return (
+                  <div
+                    key={page}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, { page, label })}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`relative ${dragOverIndex === index ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--accent-primary)]' : ''} ${isDragging ? 'cursor-move' : ''} hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200`}
+                  >
+                    <button
+                      onClick={() => navigateTo(page as any)}
+                      className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 cursor-grab active:cursor-grabbing ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
+                      data-page={page}
+                    >
+                      <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'}`} />
+                      <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">{label}</span>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
           {/* Workspace, GitHub y Settings a la derecha */}
