@@ -124,13 +124,13 @@ const CalendarPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/calendar" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/calendar" />
       </Helmet>
-      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page mt-2 sm:mt-4">
-      <div className="w-full flex flex-col lg:flex-row gap-6 h-[calc(100vh-8rem)]">
-        <div className="order-1 md:order-1 lg:order-1 flex-1">
+      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
+      <div className="w-full flex flex-col lg:flex-row gap-4 h-[calc(100vh-8rem)]">
+        <div className="order-1 md:order-1 lg:order-1 flex-1 min-w-0">
           <AllTasks filteredTasks={filteredTasks} title={getFilterLabel(selectedFilter)} />
         </div>
-        <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center">
-          <div className="w-full max-w-auto">
+        <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center lg:max-w-4xl mx-auto">
+          <div className="w-full">
             <Calendar view={view} onViewChange={handleViewChange} onTooltipShow={handleTooltipShow} />
           </div>
         </div>

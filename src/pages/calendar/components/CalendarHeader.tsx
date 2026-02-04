@@ -1,5 +1,6 @@
-import React from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+
+import React from 'react';
 
 type ViewType = 'month' | 'week' | 'day';
 
@@ -82,37 +83,19 @@ const CalendarHeader = ({
   );
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-3 sm:mb-4 relative px-2 flex-shrink-0 gap-3 sm:gap-0">
-      <div className="flex items-center justify-center gap-4 px-2 py-1 rounded-lg text-[var(--text-primary)] order-1">
-        {view === 'day' ? (
-          <>
-            <button onClick={goToPreviousDay}>
-              <FaChevronLeft size={16} />
-            </button>
-            {renderDayHeader()}
-            <button onClick={goToNextDay}>
-              <FaChevronRight size={16} />
-            </button>
-            <button
-              onClick={goToToday}
-              className="text-sm px-2 py-1 bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 rounded-md transition-colors"
-            >
-              Today
-            </button>
-          </>
-        ) : (
-          <>
-            <button onClick={view === 'week' ? goToPreviousWeek : goToPreviousMonth}>
-              <FaChevronLeft size={16} />
-            </button>
-            {view === 'week' ? renderWeekHeader() : renderMonthHeader()}
-            <button onClick={view === 'week' ? goToNextWeek : goToNextMonth}>
-              <FaChevronRight size={16} />
-            </button>
-          </>
-        )}
+    <div className="flex flex-row items-center justify-between py-4 px-12">
+      <div className="flex items-center gap-4">
+        <button onClick={view === 'day' ? goToPreviousDay : (view === 'week' ? goToPreviousWeek : goToPreviousMonth)}>
+          <FaChevronLeft size={16} />
+        </button>
+        {view === 'day' && renderDayHeader()}
+        {view === 'week' && renderWeekHeader()}
+        {view === 'month' && renderMonthHeader()}
+        <button onClick={view === 'day' ? goToNextDay : (view === 'week' ? goToNextWeek : goToNextMonth)}>
+          <FaChevronRight size={16} />
+        </button>
       </div>
-      <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] order-2 mx-auto w-full max-w-xs">
+      <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)]">
         <button
           className={`flex-1 px-4 py-1.5 text-base font-medium transition-colors relative whitespace-nowrap ${
             view === 'month'

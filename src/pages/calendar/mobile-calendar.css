@@ -1,14 +1,30 @@
 /* Mobile Calendar Improvements */
 
-/* Custom breakpoint for extra small devices */
-@media (max-width: 320px) {
-  .calendar-view {
-    max-width: 280px !important;
-  }
+/* Base calendar view styles */
+.calendar-view {
+  padding: 0 8px;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+/* Calendar header fixes */
+.calendar-view .flex-shrink-0 {
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 10;
+  padding: 8px 0;
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Better touch targets for mobile */
 @media (max-width: 640px) {
+  .calendar-view {
+    padding: 0 12px;
+  }
+
   .calendar-view .touch-manipulation {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     -webkit-touch-callout: none;
@@ -18,23 +34,40 @@
   
   /* Improve button touch targets */
   .calendar-view button {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 40px;
+    min-width: 40px;
+    padding: 0 8px;
   }
   
   /* Better spacing for small screens */
   .calendar-view .grid-cols-7 {
-    gap: 1px;
+    gap: 2px;
+    margin-top: 4px;
   }
   
-  /* Smaller text on very small screens */
+  /* Text adjustments */
   .calendar-view .text-xs {
     font-size: 10px;
   }
   
-  /* Optimize calendar cells for touch */
+  .calendar-view .text-sm {
+    font-size: 13px;
+  }
+  
+  /* Calendar cells */
   .calendar-view .grid-cols-7 > div {
-    min-height: 44px;
+    min-height: 48px;
+    padding: 4px 2px;
+  }
+  
+  /* Fix header layout */
+  .calendar-view .flex-col {
+    gap: 8px;
+  }
+  
+  /* Navigation buttons */
+  .calendar-view .gap-4 {
+    gap: 8px;
   }
 }
 
