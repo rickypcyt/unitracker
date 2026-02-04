@@ -1,6 +1,6 @@
 import { BarChart3, BookOpen, Calendar, CircleCheckBig, Github, ListTodo, Timer } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import Settings from './Settings';
 import SettingsButton from './SettingsButton';
@@ -18,6 +18,7 @@ const Navbar = () => {
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { tasks } = useTasks();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
+  const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
   const [sentRequests, setSentRequests] = useState<any[]>([]);
@@ -197,6 +198,12 @@ const Navbar = () => {
     }
   };
 
+  const refreshWorkspaces = () => {
+    // This will trigger a re-calculation of task counts
+    // The workspacesWithTaskCount will be recalculated with fresh task data
+    fetchTasks(undefined, true); // Fetch ALL tasks (no workspace filter) with force refresh
+  };
+
   // Send friend request logic
   const handleSendRequest = async (username: any, { onSuccess, onError }: { onSuccess: any; onError: any }) => {
     try {
@@ -367,6 +374,7 @@ const Navbar = () => {
                 onCreateWorkspace={handleCreateWorkspace}
                 onEditWorkspace={handleEditWorkspace}
                 onDeleteWorkspace={handleDeleteWorkspace}
+                onRefreshWorkspaces={refreshWorkspaces}
               />
               <a
                 href="https://github.com/rickypcyt/unitracker"

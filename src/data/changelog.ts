@@ -18,6 +18,26 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.1.7",
+    date: "February 5, 2026",
+    time: "12:15 AM",
+    type: "minor",
+    changes: {
+      improved: [
+        "Migrated pinned columns system from localStorage to Supabase database",
+        "Added Row Level Security (RLS) policies for pinned columns data protection",
+        "Enhanced data persistence and synchronization across devices for column preferences"
+      ],
+      added: [
+        "New pinned_columns table in Supabase for robust column preference storage",
+        "Dedicated usePinnedColumns hook for managing column pinning with Supabase integration"
+      ],
+      fixed: [
+        "Column pinning preferences now persist properly across browser sessions and devices"
+      ]
+    }
+  },
+  {
     version: "1.1.6",
     date: "January 19, 2026",
     time: "6:30 PM",

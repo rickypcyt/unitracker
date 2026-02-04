@@ -20,6 +20,7 @@ interface WorkspaceModalProps {
   currentUserId?: string;
   friends?: any[];
   onAddFriend?: () => void;
+  onRefreshWorkspaces?: () => void;
 }
 
 const iconOptions: { [key: string]: React.ComponentType<any> } = {
@@ -57,6 +58,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   currentUserId,
   friends = [],
   onAddFriend,
+  onRefreshWorkspaces,
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
@@ -64,9 +66,16 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
+  // Refresh workspace data when modal opens
+  useEffect(() => {
+    if (isOpen && onRefreshWorkspaces) {
+      onRefreshWorkspaces();
+    }
+  }, [isOpen, onRefreshWorkspaces]);
+
+  // Use the taskCount from props since it's calculated in the parent component
   const getTaskCountByWorkspace = (ws: Workspace & { taskCount?: number }) => {
-    const count = ws.taskCount || 0;
-    return count;
+    return ws.taskCount || 0;
   };
 
   const handleShareWorkspace = async (
