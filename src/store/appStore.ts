@@ -762,8 +762,7 @@ export const useAppStore = create<AppState>()(
         sessionsTodayCount: state.sessionsTodayCount,
         syncSettings: state.syncSettings,
         sessionSyncSettings: state.sessionSyncSettings,
-        // Persistir pinnings de columnas
-        pinnedColumns: state.pinnedColumns,
+        // Pinned columns are now managed by Supabase, not localStorage
         // Persistir workspace actual para mantener selección al hacer refresh
         workspace: state.workspace,
         // Persistir pomodoro settings
@@ -858,9 +857,16 @@ export const useAuth = () => useAppStore((state) => state.auth);
 export const useLayout = () => useAppStore((state) => state.layout);
 export const useWorkspace = () => useAppStore((state) => state.workspace);
 export const useUi = () => useAppStore((state) => state.ui);
-export const usePinnedColumns = () => useAppStore((state) => state.pinnedColumns);
-export const useIsPinned = (workspaceId: string, assignment: string) => 
-  useAppStore((state) => state.pinnedColumns[workspaceId]?.[assignment] ?? false); // Default to false (not pinned)
+export const usePinnedColumns = () => {
+  // This selector is kept for backwards compatibility but now returns empty state
+  // The actual pinned columns are managed by usePinnedColumns hook
+  return {};
+};
+export const useIsPinned = (_workspaceId: string, _assignment: string) => {
+  // This selector is kept for backwards compatibility but now returns false
+  // The actual pin state is managed by usePinnedColumns hook
+  return false;
+};
 export const useTimerActions = () => useAppStore((state) => ({
   // Pomodoro
   setPomodoroState: state.setPomodoroState,
@@ -961,16 +967,12 @@ export const useWorkspaceActions = () => {
 };
 
 export const usePinnedColumnsActions = () => {
-  const setPinnedColumns = useAppStore((state) => state.setPinnedColumns);
-  const togglePin = useAppStore((state) => state.togglePin);
-  
+  // These actions are kept for backwards compatibility but now do nothing
+  // The actual pin actions are managed by usePinnedColumns hook
   return {
-    setPinnedColumns,
-    togglePin,
-    isPinned: (workspaceId: string, assignment: string) => {
-      const state = useAppStore.getState();
-      return state.pinnedColumns[workspaceId]?.[assignment] ?? true; // Default to true (pinned)
-    },
+    setPinnedColumns: () => {},
+    togglePin: () => {},
+    isPinned: () => false,
   };
 };
 

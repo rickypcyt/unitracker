@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePinnedColumns, usePinnedColumnsActions } from '@/store/appStore';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
 import { ClipboardCheck } from 'lucide-react';
@@ -15,6 +14,8 @@ import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
+import { usePinnedColumns } from '@/hooks/usePinnedColumns';
+import { usePinnedColumnsActions } from '@/store/appStore';
 import { useTaskBoard } from '@/hooks/useTaskBoard';
 
 interface ColumnMenuState {
@@ -69,33 +70,27 @@ export const KanbanBoard = () => {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Zustand store hooks
-  const pinnedColumns = usePinnedColumns();
-  const { togglePin } = usePinnedColumnsActions();
-  const [showCompleted] = useState(false);
+  // Supabase pinned columns hook
+  const { pinnedColumns, togglePin, loading: pinsLoading } = usePinnedColumns(activeWorkspace?.id || null);
   
-  // Get pinned columns for current workspace (con por defecto no pinnado)
+  const [showCompleted] = useState(false);
+  // Get pinned columns for current workspace
   const currentWorkspacePins = useMemo(() => {
-    if (!activeWorkspace) return {};
-
-    const workspacePins = pinnedColumns[activeWorkspace.id] || {};
-
-    // Obtener todas las asignaciones actuales y marcar como no pinnadas por defecto
+    // Obtener todas las asignaciones actuales y asegurar que todas tengan un estado de pineo
     const allAssignments = new Set<string>();
     filteredTasks.forEach((task: any) => {
       const assignment = task.assignment || "No assignment";
       allAssignments.add(assignment);
     });
 
-    // Crear objeto de pinnings con false por defecto para asignaciones sin registro explícito
+    // Crear objeto de pinnings con el estado de Supabase o false por defecto
     const pinsWithDefaults: Record<string, boolean> = {};
     allAssignments.forEach(assignment => {
-      // Si hay un registro explícito, usarlo, si no, asumir false (no pinnado)
-      pinsWithDefaults[assignment] = workspacePins[assignment] ?? false;
+      pinsWithDefaults[assignment] = pinnedColumns[assignment] ?? false;
     });
 
     return pinsWithDefaults;
-  }, [pinnedColumns, activeWorkspace, filteredTasks]);
+  }, [pinnedColumns, filteredTasks]);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
@@ -309,8 +304,7 @@ export const KanbanBoard = () => {
   }, [incompletedTasks, assignmentSortConfig, columnOrder, taskOrder, activeWorkspace, currentWorkspacePins]);
 
   const handleTogglePin = (assignment: string) => {
-    if (!activeWorkspace?.id) return;
-    togglePin(activeWorkspace.id, assignment);
+    togglePin(assignment);
   };
 
   const handleTaskContextMenu = (e: React.MouseEvent, task: any) => {
