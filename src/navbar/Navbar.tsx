@@ -78,7 +78,7 @@ const Navbar = () => {
       try {
         const { data: allTasks, error } = await supabase
           .from('tasks')
-          .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id')
+          .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, recurrence_type, recurrence_weekdays, start_time, end_time')
           .eq('user_id', user.id)
           .order('assignment');
 

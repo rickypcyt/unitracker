@@ -18,6 +18,33 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.2.0",
+    date: "February 5, 2026",
+    time: "11:30 PM",
+    type: "major",
+    changes: {
+      added: [
+        "Recurring tasks with weekly scheduling options",
+        "Task time slots with start/end time selection",
+        "New task view modal for detailed task information",
+        "Support for recurring events in calendar views",
+        "Time-based task blocks in day and week views",
+        "Task recurrence settings in task form"
+      ],
+      improved: [
+        "Enhanced task form with time picker controls",
+        "Better task display in calendar with duration visualization",
+        "Task item layout and information hierarchy",
+        "Database schema to support recurring tasks"
+      ],
+      fixed: [
+        "Fixed task time handling and timezone consistency",
+        "Improved form validation for time inputs",
+        "Fixed task display in calendar day view"
+      ]
+    }
+  },
+  {
     version: "1.1.7",
     date: "February 5, 2026",
     time: "12:35 AM",

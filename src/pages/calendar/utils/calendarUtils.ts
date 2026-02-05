@@ -36,12 +36,18 @@ export const handleAddTask = (
   setSelectedDate: (date: Date) => void,
   setFocusedDate: (date: Date) => void,
   setShowTaskForm: (show: boolean) => void,
-  setIsLoginPromptOpen: (open: boolean) => void
+  setIsLoginPromptOpen: (open: boolean) => void,
+  setSelectedTask?: (task: null) => void
 ) => {
   e.stopPropagation();
   if (!isLoggedIn) {
     setIsLoginPromptOpen(true);
     return;
+  }
+
+  // Clear any selected task when creating a new task
+  if (setSelectedTask) {
+    setSelectedTask(null);
   }
 
   // Create new date with the clicked day and hour

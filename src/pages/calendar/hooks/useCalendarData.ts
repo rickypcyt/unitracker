@@ -1,6 +1,16 @@
-import { useCallback, useMemo } from 'react';
+import {
+  getOccurrenceForDate,
+  getOccurrenceForDayAndHour,
+  isRecurringTask,
+} from '@/utils/recurrenceUtils';
 import { isSameDay, parseISO } from 'date-fns';
+import { useCallback, useMemo } from 'react';
+
+import type { Task } from '@/types/taskStorage';
 import { useAppStore } from '@/store/appStore';
+
+/** Task with optional occurrence range for calendar slots (recurring or one-off with duration) */
+export type CalendarTask = Task & { occurrenceStart?: string; occurrenceEnd?: string };
 
 interface UseCalendarDataProps {
   currentDate: Date;
@@ -40,8 +50,12 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
 
-      // Show tasks with deadline on this date OR tasks completed on this date
       return tasks.filter(task => {
+        // Recurring weekly: show on days that match recurrence_weekdays
+        if (isRecurringTask(task) && !task.completed) {
+          if (getOccurrenceForDate(task, targetDate)) return true;
+        }
+
         // Tasks with deadline on this date
         if (task.deadline) {
           const taskDate = new Date(task.deadline);
@@ -95,6 +109,8 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
       targetDate.setHours(0, 0, 0, 0);
 
       return tasks.some(task => {
+        if (isRecurringTask(task) && !task.completed && getOccurrenceForDate(task, targetDate))
+          return true;
         if (!task.deadline) return false;
         const taskDeadline = new Date(task.deadline);
         taskDeadline.setHours(0, 0, 0, 0);
@@ -109,48 +125,114 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
 
-      return tasks.filter(task => {
-        if (!task.deadline || task.completed) return false;
+      const withDeadline = tasks.filter(task => {
+        if (task.completed) return false;
+        if (isRecurringTask(task) && getOccurrenceForDate(task, targetDate)) return true;
+        
+        // Include tasks with start_time and end_time
+        if (task.start_time && task.end_time) {
+          // For now, we'll show tasks with start/end times on their deadline date
+          // This could be enhanced to show them on multiple days if needed
+          if (task.deadline) {
+            const taskDate = new Date(task.deadline);
+            taskDate.setHours(0, 0, 0, 0);
+            return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
+          }
+          // If no deadline, we could show on today or selected date
+          return isSameDay(targetDate, new Date());
+        }
+        
+        // Legacy deadline behavior
+        if (!task.deadline) return false;
         const taskDate = new Date(task.deadline);
         taskDate.setHours(0, 0, 0, 0);
         return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
       });
+      return withDeadline;
     },
     [tasks]
   );
 
   const getTasksForDayAndHour = useCallback(
-    (day: Date, hour: number) => {
+    (day: Date, hour: number): CalendarTask[] => {
       const targetDate = new Date(day);
       targetDate.setHours(0, 0, 0, 0);
 
-      return tasks.filter(task => {
-        if (!task.deadline || task.completed) return false;
+      const result: CalendarTask[] = [];
+
+      for (const task of tasks) {
+        if (task.completed) continue;
+
+        if (isRecurringTask(task)) {
+          const occ = getOccurrenceForDayAndHour(task, targetDate, hour);
+          if (occ) {
+            result.push({
+              ...task,
+              occurrenceStart: occ.occurrenceStart,
+              occurrenceEnd: occ.occurrenceEnd,
+            });
+          }
+          continue;
+        }
+
+        // Handle tasks with start_time and end_time (no deadline needed)
+        if (task.start_time && task.end_time) {
+          const startT = task.start_time.split(':').map(Number);
+          const endT = task.end_time.split(':').map(Number);
+          
+          if (startT.length >= 2 && endT.length >= 2) {
+            const startHour = startT[0] ?? 0;
+            const endHour = endT[0] ?? 0;
+            
+            // Check if this task spans the current hour
+            if (hour >= startHour && hour < endHour) {
+              const start = new Date(targetDate);
+              start.setHours(startHour, startT[1] ?? 0, 0, 0);
+              const end = new Date(targetDate);
+              end.setHours(endHour, endT[1] ?? 0, 0, 0);
+              
+              result.push({
+                ...task,
+                occurrenceStart: start.toISOString(),
+                occurrenceEnd: end.toISOString(),
+              });
+            }
+          }
+          continue;
+        }
+
+        // Handle tasks with only deadline (legacy behavior)
+        if (!task.deadline) continue;
         const taskDate = new Date(task.deadline);
         const taskHour = taskDate.getHours();
         const taskDay = new Date(taskDate);
         taskDay.setHours(0, 0, 0, 0);
 
-        // Match day first
-        if (!isSameDay(parseISO(taskDay.toISOString()), parseISO(targetDate.toISOString()))) {
-          return false;
+        if (!isSameDay(parseISO(taskDay.toISOString()), parseISO(targetDate.toISOString())))
+          continue;
+        if (taskHour === hour || ((taskHour === 0 || taskHour === 9) && hour === 9)) {
+          const start = new Date(task.deadline);
+          const end = new Date(task.deadline);
+          const timeStr = (t: string | null | undefined) => (t && typeof t === 'string' ? t : '');
+          const startT = timeStr(task.start_time).split(':').map(Number);
+          const endT = timeStr(task.end_time).split(':').map(Number);
+          if (startT.length >= 2 && endT.length >= 2 && (endT[0] ?? 0) > (startT[0] ?? 0)) {
+            start.setHours(startT[0] ?? 0, startT[1] ?? 0, 0, 0);
+            end.setHours(endT[0] ?? 0, endT[1] ?? 0, 0, 0);
+          } else {
+            end.setHours(end.getHours() + 1, 0, 0, 0);
+          }
+          result.push({
+            ...task,
+            occurrenceStart: start.toISOString(),
+            occurrenceEnd: end.toISOString(),
+          });
         }
+      }
 
-        // Match hour: tasks show in the hour they're scheduled for
-        if (taskHour === hour) {
-          return true;
-        }
-
-        // If task is at midnight (00:00) or 9 AM (default), show it at 9 AM
-        if ((taskHour === 0 || taskHour === 9) && hour === 9) {
-          return true;
-        }
-
-        return false;
-      }).sort((a, b) => {
-        // Sort by deadline time
-        const timeA = new Date(a.deadline || 0).getTime();
-        const timeB = new Date(b.deadline || 0).getTime();
+      return result.sort((a, b) => {
+        const timeA = (a.occurrenceStart ? new Date(a.occurrenceStart) : new Date(a.deadline || 0)).getTime();
+        const timeB = (b.occurrenceStart ? new Date(b.occurrenceStart) : new Date(b.deadline || 0)).getTime();
         return timeA - timeB;
       });
     },

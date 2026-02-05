@@ -7,13 +7,16 @@ import DayInfoModal from "./DayInfoModal";
 import DayView from "./components/DayView";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import MonthView from "./components/MonthView";
+import type { Task } from "@/types/taskStorage";
 import TaskForm from "@/pages/tasks/TaskForm";
+import TaskViewModal from "@/modals/TaskViewModal";
 import WeekView from "./components/WeekView";
 import { useAuth } from "@/hooks/useAuth";
 import { useCalendarData } from "./hooks/useCalendarData";
 import { useCalendarKeyboard } from "./hooks/useCalendarKeyboard";
 import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
 import { useCalendarState } from "./hooks/useCalendarState";
+import { useDeleteTaskSuccess } from "@/store/appStore";
 
 export interface TooltipContent {
   date: Date;
@@ -47,6 +50,10 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
     setIsInfoModalOpen,
     lastTap,
     setLastTap,
+    selectedTask,
+    setSelectedTask,
+    viewingTask,
+    setViewingTask,
   } = useCalendarState();
 
   // Data management
@@ -99,6 +106,26 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
     onTooltipShow?.(content);
   };
 
+  const handleEditTask = (task: Task) => {
+    setViewingTask(null);
+    setSelectedTask(task);
+    setShowTaskForm(true);
+  };
+
+  const deleteTaskSuccess = useDeleteTaskSuccess();
+
+  const handleDeleteTask = (task: Task) => {
+    // Eliminar la tarea del estado local inmediatamente
+    deleteTaskSuccess(task.id);
+    
+    // Cerrar el modal
+    setViewingTask(null);
+    
+    // TODO: También eliminar de la base de datos si es necesario
+    // Por ahora, solo eliminamos del estado local
+    console.log('Task deleted:', task.title);
+  };
+
   return (
     <div className="w-full h-full flex flex-col">
       <div
@@ -136,6 +163,8 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
               setIsLoginPromptOpen={setIsLoginPromptOpen}
               setIsInfoModalOpen={setIsInfoModalOpen}
               setTooltipContent={setTooltipContent}
+              setSelectedTask={setSelectedTask}
+              setViewingTask={setViewingTask}
             />
           ) : view === 'day' ? (
             <DayView
@@ -177,12 +206,18 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
         {/* Modals */}
         {showTaskForm && (
           <TaskForm
+            initialTask={selectedTask}
             initialAssignment=""
             initialDeadline={selectedDate}
-            onClose={() => setShowTaskForm(false)}
+            onClose={() => {
+              setShowTaskForm(false);
+              setSelectedTask(null);
+            }}
             onTaskCreated={(newTaskId: string) => {
               if (newTaskId)
                 window.dispatchEvent(new CustomEvent("refreshTaskList"));
+              setShowTaskForm(false);
+              setSelectedTask(null);
             }}
           />
         )}
@@ -197,6 +232,16 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
           isOpen={isLoginPromptOpen}
           onClose={() => setIsLoginPromptOpen(false)}
         />
+        {/* Task View Modal */}
+        {viewingTask && (
+          <TaskViewModal
+            isOpen={!!viewingTask}
+            onClose={() => setViewingTask(null)}
+            task={viewingTask}
+            onEdit={handleEditTask}
+            onDelete={handleDeleteTask}
+          />
+        )}
       </div>
     </div>
   );

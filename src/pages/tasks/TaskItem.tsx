@@ -66,6 +66,7 @@ interface TaskItemProps {
     onToggleCompletion: (id: string) => void;
     onDelete?: (id: string) => void;
     onEditTask: (task: Task) => void;
+    onViewTask?: (task: Task) => void; // New: for viewing task details
     onContextMenu: (e: React.MouseEvent, task: Task) => void;
     showAssignment?: boolean;
     assignmentLeftOfDate?: boolean;
@@ -76,6 +77,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     task,
     onToggleCompletion,
     onEditTask,
+    onViewTask,
     onContextMenu,
     showAssignment = false,
     assignmentLeftOfDate = false,
@@ -111,7 +113,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
 
     const handleDoubleClick = () => {
-        onEditTask(task);
+        // If onViewTask is provided, use it; otherwise fallback to onEditTask for backward compatibility
+        if (onViewTask) {
+            onViewTask(task);
+        } else {
+            onEditTask(task);
+        }
     };
 
     // Helper para el label de hoy/mañana
@@ -139,6 +146,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         >
             {/* Contenido principal */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
+                {/* Assignment above title when showAssignment is true (calendar view) */}
+                {showAssignment && task.assignment && (
+                    <div className="text-[var(--accent-primary)] text-sm font-semibold capitalize mb-0.5">
+                        {task.assignment}
+                    </div>
+                )}
+                
                 <span
                     className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
                         task.completed
@@ -149,38 +163,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 >
                     {task.title}
                 </span>
-                {/* Priority, assignment, date */}
-                <div className={`flex items-center gap-2 w-full`}>
-                    {/* Assignment on the left when assignmentLeftOfDate is true */}
-                    {assignmentLeftOfDate && showAssignment && task.assignment && (
-                        <div className="text-[var(--accent-primary)] text-sm font-semibold capitalize">
-                            {task.assignment}
-                        </div>
-                    )}
-                    
-                    {/* Date */}
-                    <div className="text-sm" style={{ color: 'var(--muted-strong)' }}>
-                        {task.deadline && task.deadline !== '' ? (
-                            <>
-                                <span className={getDeadlineColor(task.deadline)}>
-                                    {formatDateShort(task.deadline)}
-                                    {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
-                                        <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
-                                    )}
-                                </span>
-                                {renderDateLabel(task.deadline)}
-                            </>
-                        ) : 'No Deadline'}
-                    </div>
-                    
-                    <div className="flex-1" />
-                    
-                    {/* Assignment on the right when assignmentLeftOfDate is false */}
-                    {!assignmentLeftOfDate && showAssignment && task.assignment && (
-                        <div className="text-[var(--accent-primary)] text-md font-semibold capitalize">
-                            {task.assignment}
-                        </div>
-                    )}
+                
+                {/* Date */}
+                <div className="text-sm mt-0.5" style={{ color: 'var(--muted-strong)' }}>
+                    {task.deadline && task.deadline !== '' ? (
+                        <>
+                            <span className={getDeadlineColor(task.deadline)}>
+                                {formatDateShort(task.deadline)}
+                                {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                                    <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
+                                )}
+                            </span>
+                            {renderDateLabel(task.deadline)}
+                        </>
+                    ) : 'No Deadline'}
                 </div>
             </div>
             

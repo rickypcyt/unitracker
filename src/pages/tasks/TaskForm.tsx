@@ -4,7 +4,7 @@ import '@/pages/calendar/datepicker-overrides.css';
 import { Calendar, CheckCircle2, Circle } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { useAuth, useWorkspace } from '@/store/appStore';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AIPreviewModal from './AIPreviewModal';
 import AutocompleteInput from '@/modals/AutocompleteInput';
@@ -49,6 +49,12 @@ const TaskForm = ({
 
   const typedUser = user as any;
 
+  const getInitialRecurrence = () => {
+    if (initialTask?.recurrence_type === 'weekly' && Array.isArray(initialTask?.recurrence_weekdays))
+      return initialTask.recurrence_weekdays;
+    return [];
+  };
+
   // Form State
   const initialFormState = {
     title: initialTask?.title || '',
@@ -56,7 +62,11 @@ const TaskForm = ({
     deadline: getInitialDeadline(),
     time: getInitialTime(),
     difficulty: initialTask?.difficulty || 'medium',
-    assignment: initialTask?.assignment || initialAssignment || ''
+    assignment: initialTask?.assignment || initialAssignment || '',
+    isRecurring: !!(initialTask?.recurrence_type === 'weekly'),
+    recurrence_weekdays: getInitialRecurrence(),
+    start_time: initialTask?.start_time ?? '10:00:00',
+    end_time: initialTask?.end_time ?? '11:00:00',
   };
 
   const validationRules = {
@@ -64,20 +74,15 @@ const TaskForm = ({
     assignment: { required: true },
     difficulty: { required: true },
     description: { maxLength: 500 },
-    deadline: {
-      required: false,
-      validate: validateDeadline
-    },
-    time: {
-      required: false,
-      validate: validateTime
-    }
+    deadline: { required: false, validate: validateDeadline },
+    time: { required: false, validate: validateTime },
   };
 
   const { formData, errors, handleChange, validateForm } = useFormState(
     initialFormState as any, 
     validationRules as any
   ) as any;
+  const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
 
   // AI Hook
   const {
@@ -117,9 +122,44 @@ const TaskForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      console.warn('Validation errors:', errors);
-      return;
+    if (formData.isRecurring) {
+      setRecurrenceError(null);
+      if (!formData.recurrence_weekdays?.length) {
+        setRecurrenceError('Select at least one day');
+        return;
+      }
+      if (!formData.start_time) {
+        setRecurrenceError('Start time is required');
+        return;
+      }
+      if (!formData.end_time) {
+        setRecurrenceError('End time is required');
+        return;
+      }
+      console.log('Validating times - start_time:', JSON.stringify(formData.start_time), 'end_time:', JSON.stringify(formData.end_time));
+      const start24 = to24Hour(formData.start_time);
+      const end24 = to24Hour(formData.end_time);
+      console.log('Converted times - start24:', start24, 'end24:', end24);
+      if (!start24) {
+        console.log('Start time validation failed');
+        setRecurrenceError('Invalid start time format');
+        return;
+      }
+      if (!end24) {
+        setRecurrenceError('Invalid end time format');
+        return;
+      }
+      const [sh, sm] = start24.split(':').map(Number);
+      const [eh, em] = end24.split(':').map(Number);
+      if ((eh ?? 0) * 60 + (em ?? 0) <= (sh ?? 0) * 60 + (sm ?? 0)) {
+        setRecurrenceError('End time must be after start time');
+        return;
+      }
+    } else {
+      if (!validateForm()) {
+        console.warn('Validation errors:', errors);
+        return;
+      }
     }
 
     try {
@@ -140,8 +180,8 @@ const TaskForm = ({
           const [day, month, year] = date.split('/');
           if (day && month && year) {
             const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            const timeStr = formData.time || '00:00';
-            return `${dateStr}T${timeStr}:00`;
+            const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
+            return `${dateStr}T${time24}:00`;
           }
           return null;
         },
@@ -258,31 +298,91 @@ const TaskForm = ({
     return '';
   }
 
+  // Convert 24h format (HH:MM) to 12h AM/PM format
+  function to12Hour(time24: string): string {
+    if (!time24 || !time24.includes(':')) return '';
+    const [h, m] = time24.split(':').map(Number);
+    const hours = h ?? 0;
+    const minutes = m ?? 0;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+    return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+  }
+
+  // Convert 12h AM/PM format to 24h format (HH:MM)
+  function to24Hour(time12: string): string {
+    console.log('to24Hour input:', JSON.stringify(time12));
+    
+    if (!time12) {
+      console.log('to24Hour: empty input');
+      return '';
+    }
+    
+    // Remove seconds if present (e.g., "10:00:00" -> "10:00")
+    const timeWithoutSeconds = time12.replace(/:\d{2}$/, '');
+    console.log('to24Hour: time without seconds:', JSON.stringify(timeWithoutSeconds));
+    
+    // Try 12h format first
+    const match = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    console.log('to24Hour: 12h match:', match);
+    
+    if (match) {
+      let hours = parseInt(match[1] ?? '0', 10);
+      const minutes = parseInt(match[2] ?? '0', 10);
+      const period = (match[3] ?? '').toUpperCase();
+      console.log('to24Hour: parsed 12h - hours:', hours, 'minutes:', minutes, 'period:', period);
+      
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      const result = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      console.log('to24Hour: 12h result:', result);
+      return result;
+    }
+    
+    // If already in 24h format, validate and return as is
+    const is24hFormat = /^\d{1,2}:\d{2}$/.test(timeWithoutSeconds);
+    console.log('to24Hour: is 24h format?', is24hFormat);
+    
+    if (is24hFormat) {
+      const [hours, minutes] = timeWithoutSeconds.split(':').map(Number);
+      console.log('to24Hour: parsed 24h - hours:', hours, 'minutes:', minutes);
+      
+      if ((hours ?? 0) >= 0 && (hours ?? 0) <= 23 && (minutes ?? 0) >= 0 && (minutes ?? 0) <= 59) {
+        const result = `${String(hours ?? 0).padStart(2, '0')}:${String(minutes ?? 0).padStart(2, '0')}`;
+        console.log('to24Hour: 24h result:', result);
+        return result;
+      } else {
+        console.log('to24Hour: 24h validation failed - hours out of range or minutes out of range');
+      }
+    }
+    
+    console.log('to24Hour: no valid format found, returning empty string');
+    return '';
+  }
+
   function getInitialTime(): string {
+    let time24 = '';
     if (initialDeadline) {
       if (typeof initialDeadline === 'string') {
-        // If it's already a string with time info
         if (initialDeadline.includes('T')) {
           const date = new Date(initialDeadline);
           const hours = String(date.getHours()).padStart(2, '0');
           const minutes = String(date.getMinutes()).padStart(2, '0');
-          return `${hours}:${minutes}`;
+          time24 = `${hours}:${minutes}`;
         }
-        return '';
       } else {
-        // If it's a Date object
         const hours = String(initialDeadline.getHours()).padStart(2, '0');
         const minutes = String(initialDeadline.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes}`;
+        time24 = `${hours}:${minutes}`;
       }
-    }
-    if (initialTask?.deadline) {
+    } else if (initialTask?.deadline) {
       const taskDeadline = new Date(initialTask.deadline);
       const hours = String(taskDeadline.getHours()).padStart(2, '0');
       const minutes = String(taskDeadline.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
+      time24 = `${hours}:${minutes}`;
     }
-    return '';
+    return time24 ? to12Hour(time24) : '';
   }
 
   function validateDeadline(value: string): true | string {
@@ -307,9 +407,12 @@ const TaskForm = ({
   function validateTime(value: string): true | string {
     if (!value) return true;
 
-    // Validate HH:MM format
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return timeRegex.test(value) ? true : 'Please enter a valid time in HH:MM format';
+    // Validate 12h AM/PM format (HH:MM AM/PM) or 24h format (HH:MM)
+    const time12Regex = /^(\d{1,2}):([0-5][0-9])\s*(AM|PM)$/i;
+    const time24Regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return (time12Regex.test(value) || time24Regex.test(value))
+      ? true
+      : 'Please enter a valid time (e.g., 10:30 AM or 14:30)';
   }
 
   
@@ -938,28 +1041,36 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   const renderTimeInput = () => {
     const incrementTime = () => {
-      const [hours, minutes] = (formData.time || '00:00').split(':').map(Number);
-      const newMinutes = (minutes + 15) % 60;
-      const newHours = hours + Math.floor((minutes + 15) / 60);
+      const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      const newMinutes = ((minutes ?? 0) + 15) % 60;
+      const newHours = (hours ?? 0) + Math.floor(((minutes ?? 0) + 15) / 60);
       const finalHours = newHours % 24;
-      const newTime = `${String(finalHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-      handleChange('time', newTime);
+      const newTime24 = `${String(finalHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+      handleChange('time', to12Hour(newTime24));
     };
 
     const decrementTime = () => {
-      const [hours, minutes] = (formData.time || '00:00').split(':').map(Number);
-      let newMinutes = minutes - 15;
-      let newHours = hours;
+      const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      let newMinutes = (minutes ?? 0) - 15;
+      let newHours = hours ?? 0;
+      
       if (newMinutes < 0) {
-        newMinutes = 60 + newMinutes;
-        newHours = hours - 1;
-        if (newHours < 0) newHours = 23;
+        newMinutes += 60;
+        newHours -= 1;
       }
-      const newTime = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-      handleChange('time', newTime);
+      
+      if (newHours < 0) {
+        newHours = 23;
+      }
+      
+      const newTime24 = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+      handleChange('time', to12Hour(newTime24));
     };
 
     const isDisabled = !formData.deadline;
+    const displayTime = formData.time || '';
 
     return (
       <div className="w-full">
@@ -967,15 +1078,28 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           <input
             id="time"
             type="text"
-            value={formData.time}
-            onChange={(e) => handleChange('time', e.target.value)}
+            value={displayTime}
+            onChange={(e) => {
+              const val = e.target.value;
+              // Allow typing, but convert to 12h format on blur or when complete
+              handleChange('time', val);
+            }}
+            onBlur={(e) => {
+              const val = e.target.value.trim();
+              if (val) {
+                const time24 = to24Hour(val);
+                if (time24) {
+                  handleChange('time', to12Hour(time24));
+                }
+              }
+            }}
             disabled={isDisabled}
             className={`w-full pl-3 pr-12 py-2 bg-[var(--bg-primary)] border-2 ${
               errors.time ? 'border-red-500' : 'border-[var(--border-primary)]'
             } rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] ${
               isDisabled ? 'opacity-50 cursor-not-allowed' : ''
             }`}
-            placeholder={isDisabled ? 'Add a date first' : 'HH:MM AM/PM'}
+            placeholder={isDisabled ? 'Add a date first' : '10:30 AM'}
           />
           <div className="absolute right-2 flex flex-col">
             <button
@@ -1003,6 +1127,239 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         {errors.time && (
           <p className="mt-1 text-base text-red-500">{errors.time}</p>
         )}
+      </div>
+    );
+  };
+
+  const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0 (JS getDay())
+
+  const renderRecurrenceSection = () => (
+    <div className="mb-4">
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={formData.isRecurring}
+          onChange={(e) => {
+            setRecurrenceError(null);
+            handleChange('isRecurring', e.target.checked);
+          }}
+          className="rounded border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
+        />
+        <span className="text-[var(--text-primary)] font-medium">Repeat weekly (e.g. classes)</span>
+      </label>
+      {recurrenceError && (
+        <p className="mt-2 text-base text-red-500">{recurrenceError}</p>
+      )}
+      {formData.isRecurring && (
+        <div className="mt-3 pl-6">
+          <p className="text-sm text-[var(--text-secondary)] mb-2">Repeat on:</p>
+          <div className="flex flex-wrap gap-2">
+            {WEEKDAY_VALUES.map((d, i) => (
+              <label
+                key={d}
+                className={`inline-flex items-center px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${
+                  (formData.recurrence_weekdays || []).includes(d)
+                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
+                    : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={(formData.recurrence_weekdays || []).includes(d)}
+                  onChange={(e) => {
+                    setRecurrenceError(null);
+                    const current = (formData.recurrence_weekdays || []) as number[];
+                    const next = e.target.checked
+                      ? [...current, d].sort((a, b) => a - b)
+                      : current.filter((x) => x !== d);
+                    handleChange('recurrence_weekdays', next);
+                  }}
+                />
+                {WEEKDAY_LABELS[i]}
+              </label>
+            ))}
+          </div>
+          {errors.recurrence_weekdays && (
+            <p className="mt-1 text-base text-red-500">{errors.recurrence_weekdays}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // Local state for time inputs (12h format for display)
+  const [displayStartTime, setDisplayStartTime] = useState(() => {
+    const time24 = initialTask?.start_time ? initialTask.start_time.slice(0, 5) : '10:00';
+    return to12Hour(time24);
+  });
+  const [displayEndTime, setDisplayEndTime] = useState(() => {
+    const time24 = initialTask?.end_time ? initialTask.end_time.slice(0, 5) : '11:00';
+    return to12Hour(time24);
+  });
+
+  // Sync display times when formData changes externally
+  useEffect(() => {
+    if (formData.start_time) {
+      const time24 = formData.start_time.slice(0, 5);
+      setDisplayStartTime(to12Hour(time24));
+    }
+  }, [formData.start_time]);
+
+  useEffect(() => {
+    if (formData.end_time) {
+      const time24 = formData.end_time.slice(0, 5);
+      setDisplayEndTime(to12Hour(time24));
+    }
+  }, [formData.end_time]);
+
+  const renderStartTimeInput = () => {
+    const incrementStartTime = () => {
+      const time24 = to24Hour(displayStartTime) || '10:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      const newHours = ((hours ?? 0) + 1) % 24;
+      const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
+      setDisplayStartTime(to12Hour(newTime24));
+      handleChange('start_time', `${newTime24}:00`);
+    };
+
+    const decrementStartTime = () => {
+      const time24 = to24Hour(displayStartTime) || '10:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      const newHours = (hours ?? 0) - 1;
+      const finalHours = newHours < 0 ? 23 : newHours;
+      const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;
+      setDisplayStartTime(to12Hour(newTime24));
+      handleChange('start_time', `${newTime24}:00`);
+    };
+
+    return (
+      <div className="w-full">
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Start time</label>
+        <div className="relative flex items-center w-full">
+          <input
+            type="text"
+            value={displayStartTime}
+            onChange={(e) => {
+              setRecurrenceError(null);
+              setDisplayStartTime(e.target.value);
+            }}
+            onBlur={(e) => {
+              const val = e.target.value.trim();
+              console.log('Start time onBlur - input value:', JSON.stringify(val));
+              if (val) {
+                const time24 = to24Hour(val);
+                console.log('Start time onBlur - converted to 24h:', time24);
+                if (time24) {
+                  handleChange('start_time', `${time24}:00`);
+                  console.log('Start time onBlur - saved to formData:', `${time24}:00`);
+                } else {
+                  console.log('Start time onBlur - invalid format, restoring previous value');
+                  // If invalid, restore previous value
+                  const prev24 = formData.start_time ? formData.start_time.slice(0, 5) : '10:00';
+                  setDisplayStartTime(to12Hour(prev24));
+                }
+              }
+            }}
+            className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-8"
+            placeholder="10:00 AM"
+          />
+          <div className="absolute right-2 flex flex-col gap-0">
+            <button
+              type="button"
+              onClick={incrementStartTime}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs"
+              title="Increase time"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              onClick={decrementStartTime}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs"
+              title="Decrease time"
+            >
+              ▼
+            </button>
+          </div>
+        </div>
+        {errors.start_time && <p className="mt-1 text-base text-red-500">{errors.start_time}</p>}
+      </div>
+    );
+  };
+
+  const renderEndTimeInput = () => {
+    const incrementEndTime = () => {
+      const time24 = to24Hour(displayEndTime) || '11:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      const newHours = ((hours ?? 0) + 1) % 24;
+      const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
+      setDisplayEndTime(to12Hour(newTime24));
+      handleChange('end_time', `${newTime24}:00`);
+    };
+
+    const decrementEndTime = () => {
+      const time24 = to24Hour(displayEndTime) || '11:00';
+      const [hours, minutes] = time24.split(':').map(Number);
+      const newHours = (hours ?? 0) - 1;
+      const finalHours = newHours < 0 ? 23 : newHours;
+      const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;
+      setDisplayEndTime(to12Hour(newTime24));
+      handleChange('end_time', `${newTime24}:00`);
+    };
+
+    return (
+      <div className="w-full">
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">End time</label>
+        <div className="relative flex items-center w-full">
+          <input
+            type="text"
+            value={displayEndTime}
+            onChange={(e) => {
+              setRecurrenceError(null);
+              setDisplayEndTime(e.target.value);
+            }}
+            onBlur={(e) => {
+              const val = e.target.value.trim();
+              console.log('End time onBlur - input value:', JSON.stringify(val));
+              if (val) {
+                const time24 = to24Hour(val);
+                console.log('End time onBlur - converted to 24h:', time24);
+                if (time24) {
+                  handleChange('end_time', `${time24}:00`);
+                  console.log('End time onBlur - saved to formData:', `${time24}:00`);
+                } else {
+                  console.log('End time onBlur - invalid format, restoring previous value');
+                  // If invalid, restore previous value
+                  const prev24 = formData.end_time ? formData.end_time.slice(0, 5) : '11:00';
+                  setDisplayEndTime(to12Hour(prev24));
+                }
+              }
+            }}
+            className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-8"
+            placeholder="11:00 AM"
+          />
+          <div className="absolute right-2 flex flex-col gap-0">
+            <button
+              type="button"
+              onClick={incrementEndTime}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs"
+              title="Increase time"
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              onClick={decrementEndTime}
+              className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs"
+              title="Decrease time"
+            >
+              ▼
+            </button>
+          </div>
+        </div>
+        {errors.end_time && <p className="mt-1 text-base text-red-500">{errors.end_time}</p>}
       </div>
     );
   };
@@ -1047,15 +1404,34 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       )}
 
       <div className="pb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div className="flex justify-center">
-            {renderDatePicker()}
-          </div>
-          <div className="flex justify-center">
-            {renderTimeInput()}
+        {renderRecurrenceSection()}
+      </div>
+
+      {!formData.isRecurring && (
+        <div className="pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="flex justify-center">
+              {renderDatePicker()}
+            </div>
+            <div className="flex justify-center">
+              {renderTimeInput()}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {formData.isRecurring && (
+        <div className="pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="flex justify-center">
+              {renderStartTimeInput()}
+            </div>
+            <div className="flex justify-center">
+              {renderEndTimeInput()}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-center pb-4">
         {renderDifficultySelector()}

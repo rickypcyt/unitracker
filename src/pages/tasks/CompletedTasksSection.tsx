@@ -1,6 +1,6 @@
-import { Trash2 } from 'lucide-react';
 import React from 'react';
 import { TaskList } from './TaskList';
+import { Trash2 } from 'lucide-react';
 
 interface CompletedTasksSectionProps {
   showCompleted: boolean;
@@ -9,6 +9,7 @@ interface CompletedTasksSectionProps {
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
+  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 
@@ -19,6 +20,7 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
+  onViewTask,
   onTaskContextMenu,
 }) => {
   if (!showCompleted || completedTasks.length === 0) {
@@ -48,6 +50,7 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
           onTaskToggle={onTaskToggle}
           onTaskDelete={onTaskDelete}
           onEditTask={onEditTask}
+          onViewTask={onViewTask}
           onTaskContextMenu={onTaskContextMenu}
         />
       </div>

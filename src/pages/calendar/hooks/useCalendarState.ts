@@ -1,3 +1,4 @@
+import type { Task } from '@/types/taskStorage';
 import { useState } from 'react';
 
 export const useCalendarState = () => {
@@ -8,6 +9,8 @@ export const useCalendarState = () => {
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [lastTap, setLastTap] = useState(0);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   return {
     currentDate,
@@ -24,5 +27,9 @@ export const useCalendarState = () => {
     setIsInfoModalOpen,
     lastTap,
     setLastTap,
+    selectedTask,
+    setSelectedTask,
+    viewingTask,
+    setViewingTask,
   };
 };

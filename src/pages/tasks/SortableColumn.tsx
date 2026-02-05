@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronUp, Pin, PinOff, Plus, Save, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
-import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 
 interface SortableColumnProps {
   id?: string;
@@ -15,6 +15,7 @@ interface SortableColumnProps {
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
+  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
   onSortClick: (assignmentId: string, position: { x: number; y: number }) => void;
   columnMenu: any;
@@ -33,6 +34,7 @@ export const SortableColumn = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
+  onViewTask,
   onTaskContextMenu,
   onSortClick,
   columnMenu,
@@ -214,6 +216,7 @@ export const SortableColumn = ({
             onToggleCompletion={onTaskToggle}
             onTaskDelete={onTaskDelete}
             onEditTask={onEditTask}
+            onViewTask={onViewTask}
             onTaskContextMenu={onTaskContextMenu}
           />
         ))}

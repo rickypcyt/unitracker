@@ -6,6 +6,7 @@ import type { Task } from '@/types/taskStorage';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
 import { TaskListMenu } from '@/modals/TaskListMenu';
+import TaskViewModal from '@/modals/TaskViewModal';
 import type { UnknownAction } from '@reduxjs/toolkit';
 import { fetchTasks } from '@/store/TaskActions';
 import useDemoMode from '@/utils/useDemoMode';
@@ -46,6 +47,7 @@ const UpcomingTasks = () => {
   const { isDemo, demoTasks } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<ExpandedGroups>({
     today: true,
@@ -212,6 +214,7 @@ const UpcomingTasks = () => {
                 onToggleCompletion={handleToggleCompletion}
                 onDelete={handleDeleteTask}
                 onEditTask={handleEditTask}
+                onViewTask={handleViewTask}
                 onContextMenu={handleTaskContextMenu}
                 showAssignment={true}
                 assignmentLeftOfDate={true}
@@ -255,6 +258,19 @@ const UpcomingTasks = () => {
 
         {/* Past Tasks moved to separate component/card */}
       </div>
+
+      {/* Task View Modal */}
+      {viewingTask && (
+        <TaskViewModal
+          isOpen={!!viewingTask}
+          onClose={() => setViewingTask(null)}
+          task={viewingTask}
+          onEdit={(task) => {
+            setViewingTask(null);
+            handleEditTask(task);
+          }}
+        />
+      )}
 
       {/* Task Form Modal */}
       {showTaskForm && (

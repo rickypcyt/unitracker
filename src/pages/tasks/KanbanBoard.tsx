@@ -10,6 +10,7 @@ import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskListMenu } from '@/modals/TaskListMenu';
+import TaskViewModal from '@/modals/TaskViewModal';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,7 @@ export const KanbanBoard = () => {
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
+  const [viewingTask, setViewingTask] = useState<any>(null);
   const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
   const [showDeleteAssignmentModal, setShowDeleteAssignmentModal] = useState(false);
@@ -334,6 +336,14 @@ export const KanbanBoard = () => {
   };
 
 
+  const handleViewTask = (task: any) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
+    setViewingTask(task);
+  };
+
   const handleEditTask = (task: any) => {
     if (isDemo) {
       showLoginPrompt();
@@ -454,6 +464,7 @@ export const KanbanBoard = () => {
           onTaskToggle={handleToggleCompletion}
           onTaskDelete={handleConfirmDeleteTask}
           onEditTask={handleEditTask}
+          onViewTask={handleViewTask}
           onTaskContextMenu={handleTaskContextMenu}
           onSortClick={handleSortClick}
           columnMenu={columnMenu}
@@ -473,6 +484,7 @@ export const KanbanBoard = () => {
           onTaskToggle={handleToggleCompletion}
           onTaskDelete={handleConfirmDeleteTask}
           onEditTask={handleEditTask}
+          onViewTask={handleViewTask}
           onTaskContextMenu={handleTaskContextMenu}
         />
 
@@ -484,6 +496,19 @@ export const KanbanBoard = () => {
           onEditTask={handleEditTask}
           onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleConfirmDeleteTask}
+        />
+      )}
+
+      {/* Task View Modal */}
+      {viewingTask && (
+        <TaskViewModal
+          isOpen={!!viewingTask}
+          onClose={() => setViewingTask(null)}
+          task={viewingTask}
+          onEdit={(task) => {
+            setViewingTask(null);
+            handleEditTask(task);
+          }}
         />
       )}
 

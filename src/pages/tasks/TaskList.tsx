@@ -7,6 +7,7 @@ interface TaskListProps {
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
+  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 
@@ -28,6 +29,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           onToggleCompletion={onTaskToggle}
           onTaskDelete={onTaskDelete}
           onEditTask={onEditTask}
+          onViewTask={onViewTask}
           onTaskContextMenu={onTaskContextMenu}
         />
       ))}

@@ -42,7 +42,7 @@ const DayView = ({
                   {format12Hour(hour)}
                 </div>
                 <div
-                  className="col-span-4 border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-visible"
+                  className="col-span-4 border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden"
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const y = e.clientY - rect.top;
@@ -69,26 +69,29 @@ const DayView = ({
                     </div>
                   )}
                   {dayTasks.length > 0 && (
-                    <div className="absolute inset-0 flex flex-col gap-1 p-1 overflow-visible z-5 pointer-events-none">
+                    <div className="absolute inset-0 flex flex-col gap-1 p-1 overflow-hidden z-5 pointer-events-none">
                       {dayTasks.map((task, taskIndex) => {
-                        const taskDate = new Date(task.deadline || '');
-                        const taskMinute = taskDate.getMinutes();
+                        const occurrenceStart = task.occurrenceStart ? new Date(task.occurrenceStart) : new Date(task.deadline || selectedDate);
+                        const occurrenceEnd = task.occurrenceEnd ? new Date(task.occurrenceEnd) : new Date(occurrenceStart.getTime() + 60 * 60 * 1000);
+                        const taskMinute = occurrenceStart.getMinutes();
                         const topPosition = taskMinute > 0 ? (taskMinute / 60) * 60 : (taskIndex * 25);
+                        const durationHours = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
+                        const blockHeight = Math.max(28, Math.round(durationHours * 60) - 2);
 
                         return (
                           <div
                             key={task.id}
-                            className="bg-[var(--accent-primary)]/85 text-white text-xs sm:text-sm px-1.5 py-1 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30"
+                            className="bg-[var(--accent-primary)]/85 text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30"
                             style={{
                               top: `${topPosition}px`,
-                              maxHeight: '28px'
+                              minHeight: `${blockHeight}px`,
+                              maxHeight: `${blockHeight}px`
                             }}
                             onClick={() => {
-                              const taskDeadline = new Date(task.deadline || selectedDate);
-                              setSelectedDate(taskDeadline);
+                              setSelectedDate(occurrenceStart);
                               setShowTaskForm(true);
                             }}
-                            title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} - ${taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                            title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                           >
                             <div className="font-medium truncate">{task.title}</div>
                           </div>

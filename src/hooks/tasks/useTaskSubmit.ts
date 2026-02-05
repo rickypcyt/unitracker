@@ -17,11 +17,22 @@ export function useTaskSubmit() {
   const { currentWorkspace: activeWorkspace } = useWorkspace();
 
   const saveTask = useCallback(async ({ formData, userId, initialTask, activeWorkspaceId, parseDateForDB }: SaveArgs) => {
-    // Exclude 'time' field since it's not a database column - time is combined into deadline
-    const { time, ...formDataWithoutTime } = formData;
+    const isRecurring = !!formData.isRecurring;
+    const { time, isRecurring: _ir, ...rest } = formData;
+    const deadline = isRecurring ? null : (formData.deadline ? parseDateForDB(formData.deadline) : null);
+    const recurrence_type = isRecurring ? 'weekly' : 'none';
+    const recurrence_weekdays = isRecurring && Array.isArray(formData.recurrence_weekdays) ? formData.recurrence_weekdays : null;
+    const toTime = (t: string) => (t && /^\d{1,2}:\d{2}/.test(t) ? (t.length >= 8 ? t.slice(0, 8) : `${t.replace(/^(\d{1,2}):(\d{2}).*/, '$1:$2')}:00`) : null);
+    const start_time = isRecurring && formData.start_time ? toTime(String(formData.start_time)) : null;
+    const end_time = isRecurring && formData.end_time ? toTime(String(formData.end_time)) : null;
+
     const taskData = {
-      ...formDataWithoutTime,
-      deadline: formData.deadline ? parseDateForDB(formData.deadline) : null,
+      ...rest,
+      deadline,
+      recurrence_type,
+      recurrence_weekdays,
+      start_time,
+      end_time,
       user_id: userId,
       completed: initialTask?.completed || false,
       activetask: initialTask?.activetask || false,

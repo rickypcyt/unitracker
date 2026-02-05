@@ -16,6 +16,14 @@ export interface Task {
   difficulty?: string;
   assignment?: string;
   status?: string; // Añadido para el nuevo sistema de estados
+  /** Recurrence: 'none' | 'weekly'. Weekly = repeats on recurrence_weekdays */
+  recurrence_type?: 'none' | 'weekly' | null;
+  /** 0=Sun, 1=Mon, ... 6=Sat (JS getDay()) */
+  recurrence_weekdays?: number[] | null;
+  /** Start time for slot e.g. "10:00" (recurring or one-off) */
+  start_time?: string | null;
+  /** End time for slot e.g. "11:00" (recurring or one-off) */
+  end_time?: string | null;
 }
 
 export interface TaskStorage {

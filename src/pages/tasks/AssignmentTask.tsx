@@ -7,6 +7,7 @@ interface AssignmentTaskProps {
   onToggleCompletion: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
+  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 
@@ -16,6 +17,7 @@ export const AssignmentTask: React.FC<AssignmentTaskProps> = ({
   onToggleCompletion,
   onTaskDelete,
   onEditTask,
+  onViewTask,
   onTaskContextMenu,
 }) => {
   return (
@@ -25,6 +27,7 @@ export const AssignmentTask: React.FC<AssignmentTaskProps> = ({
       onToggleCompletion={onToggleCompletion}
       onDelete={onTaskDelete}
       onEditTask={onEditTask}
+      onViewTask={onViewTask}
       onContextMenu={(e) => onTaskContextMenu(e, task)}
       active={!!task.activetask}
     />

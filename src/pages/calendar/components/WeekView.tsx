@@ -1,6 +1,6 @@
 import React from 'react';
-import { isSameDay } from 'date-fns';
 import { handleAddTask } from '../utils/calendarUtils';
+import { isSameDay } from 'date-fns';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -14,6 +14,8 @@ interface WeekViewProps {
   setIsLoginPromptOpen: (open: boolean) => void;
   setIsInfoModalOpen: (open: boolean) => void;
   setTooltipContent: (content: { date: Date; tasks: any[] } | null) => void;
+  setSelectedTask: (task: any) => void;
+  setViewingTask: (task: any) => void;
 }
 
 const WeekView = ({
@@ -28,6 +30,8 @@ const WeekView = ({
   setIsLoginPromptOpen,
   setIsInfoModalOpen,
   setTooltipContent,
+  setSelectedTask,
+  setViewingTask,
 }: WeekViewProps) => {
   const startOfWeek = new Date(currentDate);
   const day = startOfWeek.getDay();
@@ -88,10 +92,13 @@ const WeekView = ({
                 return (
                   <div
                     key={i}
-                    className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-visible ${
+                    className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
                       isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
                     }`}
-                    onClick={(e) => handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen)}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
+                      handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
+                    }}
                     onMouseEnter={() =>
                       allDayTasks.length > 0 &&
                       setTooltipContent({
@@ -114,36 +121,52 @@ const WeekView = ({
                       </div>
                     )}
                     {dayTasks.length > 0 && (
-                      <div className="absolute inset-0 flex flex-col gap-1 p-1 overflow-visible z-5 pointer-events-none">
+                      <div className="absolute inset-0 flex flex-col gap-1 p-1 overflow-hidden z-5 pointer-events-none">
                         {dayTasks.slice(0, 2).map((task, taskIndex) => {
-                          const taskDate = new Date(task.deadline || '');
-                          const taskMinute = taskDate.getMinutes();
-                          // Position tasks within the hour based on minutes, or stack them if same time
+                          console.log('Rendering task:', task);
+                          const occurrenceStart = task.occurrenceStart ? new Date(task.occurrenceStart) : new Date(task.deadline || day);
+                          const occurrenceEnd = task.occurrenceEnd ? new Date(task.occurrenceEnd) : new Date(occurrenceStart.getTime() + 60 * 60 * 1000);
+                          const taskMinute = occurrenceStart.getMinutes();
                           const topPosition = taskMinute > 0 ? (taskMinute / 60) * 60 : (taskIndex * 25);
+                          const durationHours = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
+                          const blockHeight = Math.max(28, Math.round(durationHours * 60) - 2);
 
                           return (
                             <div
-                              key={task.id}
-                              className="bg-[var(--accent-primary)]/85 text-white text-xs sm:text-sm px-1.5 py-1 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30"
+                              data-calendar-task
+                              key={`${task.id}-${i}-${hour}`}
+                              className="bg-[var(--accent-primary)]/85 text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30"
                               style={{
                                 top: `${topPosition}px`,
-                                maxHeight: '28px'
+                                minHeight: `${blockHeight}px`,
+                                maxHeight: `${blockHeight}px`
                               }}
-                              onClick={() => {
-                                const taskDeadline = new Date(task.deadline || day);
-                                setSelectedDate(taskDeadline);
-                                setFocusedDate(taskDeadline);
-                                setShowTaskForm(true);
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setViewingTask(task);
                               }}
-                              title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} - ${taskDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                              onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                setViewingTask(task);
+                              }}
+                              title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                             >
-                              <div className="font-medium truncate">{task.title}</div>
+                              <div className="font-medium truncate">{task.title || 'Sin título'}</div>
                             </div>
                           );
                         })}
                         {dayTasks.length > 2 && (
-                          <div className="bg-[var(--bg-secondary)]/95 border border-[var(--border-primary)] text-[var(--text-secondary)] text-xs sm:text-sm px-1.5 py-1 rounded text-center pointer-events-auto cursor-pointer transition-colors mt-auto"
-                            onClick={() => {
+                          <div
+                            data-calendar-task
+                            className="bg-[var(--bg-secondary)]/95 border border-[var(--border-primary)] text-[var(--text-secondary)] text-xs sm:text-sm px-1.5 py-1 rounded text-center pointer-events-auto cursor-pointer transition-colors mt-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDate(day);
+                              setFocusedDate(day);
+                              setIsInfoModalOpen(true);
+                            }}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
                               setSelectedDate(day);
                               setFocusedDate(day);
                               setIsInfoModalOpen(true);
