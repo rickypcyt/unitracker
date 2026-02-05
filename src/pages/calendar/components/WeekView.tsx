@@ -1,3 +1,5 @@
+import { getOccurrenceForDate, isRecurringTask } from '@/utils/recurrenceUtils';
+
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
 
@@ -11,7 +13,6 @@ interface WeekViewProps {
   setFocusedDate: (date: Date) => void;
   setShowTaskForm: (show: boolean) => void;
   setIsLoginPromptOpen: (open: boolean) => void;
-  setIsInfoModalOpen: (open: boolean) => void;
   setTooltipContent: (content: { date: Date; tasks: any[] } | null) => void;
   setSelectedTask: (task: any) => void;
   setViewingTask: (task: any) => void;
@@ -26,7 +27,6 @@ isLoggedIn,
   setFocusedDate,
   setShowTaskForm,
   setIsLoginPromptOpen,
-  setIsInfoModalOpen,
   setTooltipContent,
   setSelectedTask,
   setViewingTask,
@@ -75,112 +75,214 @@ isLoggedIn,
       {/* Time grid */}
       <div className="flex-1 overflow-auto min-h-0">
         <div className="relative">
-        {hours.map((hour) => {
-          return (
-            <div key={hour} className="grid grid-cols-8 gap-1 border-t border-[var(--border-primary)]/30 relative">
-              <div className="text-sm text-[var(--text-secondary)] p-1 text-left">
-                {format12Hour(hour)}
-              </div>
-              {weekDays.map((day, i) => {
-                const isCurrentDay = isSameDay(day, new Date());
-                const dayTasks = getTasksForDayAndHour(day, hour);
-                // Get all tasks for this day for the tooltip (not just this hour)
-                const allDayTasks = getTasksWithDeadline(day);
-
-                return (
-                  <div
-                    key={i}
-                    className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
-                      isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
-                    }`}
-                    onClick={(e) => {
-                      if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
-                      handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
-                    }}
-                    onMouseEnter={() =>
-                      allDayTasks.length > 0 &&
-                      setTooltipContent({
-                        date: day,
-                        tasks: allDayTasks,
-                      })
+          {/* Render all tasks that span multiple hours */}
+          {(() => {
+            const allSpanningTasks: Array<{
+              task: any;
+              day: Date;
+              dayIndex: number;
+              startHour: number;
+              endHour: number;
+              duration: number;
+              occurrenceStart: Date;
+              occurrenceEnd: Date;
+            }> = [];
+            
+            weekDays.forEach((day, dayIndex) => {
+              const tasksForDay = getTasksWithDeadline(day);
+              tasksForDay.forEach(task => {
+                if (task.completed) return;
+                
+                let occurrenceStart, occurrenceEnd;
+                
+                if (isRecurringTask(task)) {
+                  const occ = getOccurrenceForDate(task, day);
+                  if (occ) {
+                    occurrenceStart = new Date(occ.occurrenceStart);
+                    occurrenceEnd = new Date(occ.occurrenceEnd);
+                  }
+                } else if (task.start_time && task.end_time) {
+                  const startT = task.start_time.split(':').map(Number);
+                  const endT = task.end_time.split(':').map(Number);
+                  
+                  if (startT.length >= 2 && endT.length >= 2) {
+                    occurrenceStart = new Date(day);
+                    occurrenceStart.setHours(startT[0], startT[1], 0, 0);
+                    occurrenceEnd = new Date(day);
+                    occurrenceEnd.setHours(endT[0], endT[1], 0, 0);
+                  }
+                }
+                
+                if (occurrenceStart && occurrenceEnd) {
+                  const startHour = occurrenceStart.getHours();
+                  const endHour = occurrenceEnd.getHours();
+                  const duration = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
+                  
+                  // Only include tasks that span more than 1 hour
+                  if (duration > 1) {
+                    allSpanningTasks.push({
+                      task,
+                      day,
+                      dayIndex,
+                      startHour,
+                      endHour,
+                      duration,
+                      occurrenceStart,
+                      occurrenceEnd
+                    });
+                  }
+                }
+              });
+            });
+            
+            return allSpanningTasks.map(({task, dayIndex, startHour, duration, occurrenceStart, occurrenceEnd}) => {
+              const topPosition = startHour * 60 + 8; // 60px per hour + 8px offset
+              const blockHeight = duration * 60 - 20; // Subtract 20px for top and bottom margins
+              
+              return (
+                <div
+                  key={`spanning-task-${task.id}-${dayIndex}`}
+                  data-calendar-task
+                  className="bg-[var(--accent-primary)] text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30 absolute z-10"
+                  style={{
+                    left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
+                    top: `${topPosition}px`,
+                    width: `11.5%`,
+                    height: `${blockHeight}px`
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewingTask(task);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setViewingTask(task);
+                  }}
+                  title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                >
+                  <div className="font-medium truncate">{task.title || 'Sin título'}</div>
+                </div>
+              );
+            });
+          })()}
+          
+          {hours.map((hour) => {
+            return (
+              <div key={hour} className="grid grid-cols-8 gap-1 border-t border-[var(--border-primary)]/30 relative">
+                <div className="text-sm text-[var(--text-secondary)] p-1 text-left">
+                  {format12Hour(hour)}
+                </div>
+                {weekDays.map((day, i) => {
+                  const isCurrentDay = isSameDay(day, new Date());
+                  // Get all tasks for this day for the tooltip (not just this hour)
+                  const allDayTasks = getTasksWithDeadline(day);
+                  
+                  // Check if there's a task that starts at this hour and is only 1 hour long
+                  const singleHourTask = (() => {
+                    const tasksForDay = getTasksWithDeadline(day);
+                    for (const task of tasksForDay) {
+                      if (task.completed) continue;
+                      
+                      let occurrenceStart, occurrenceEnd;
+                      
+                      if (isRecurringTask(task)) {
+                        const occ = getOccurrenceForDate(task, day);
+                        if (occ) {
+                          occurrenceStart = new Date(occ.occurrenceStart);
+                          occurrenceEnd = new Date(occ.occurrenceEnd);
+                        }
+                      } else if (task.start_time && task.end_time) {
+                        const startT = task.start_time.split(':').map(Number);
+                        const endT = task.end_time.split(':').map(Number);
+                        
+                        if (startT.length >= 2 && endT.length >= 2) {
+                          occurrenceStart = new Date(day);
+                          occurrenceStart.setHours(startT[0], startT[1], 0, 0);
+                          occurrenceEnd = new Date(day);
+                          occurrenceEnd.setHours(endT[0], endT[1], 0, 0);
+                        }
+                      }
+                      
+                      if (occurrenceStart && occurrenceEnd) {
+                        const startHour = occurrenceStart.getHours();
+                        const endHour = occurrenceEnd.getHours();
+                        const duration = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
+                        
+                        // Only show single hour tasks here
+                        if (startHour === hour && duration <= 1) {
+                          return {
+                            task,
+                            occurrenceStart,
+                            occurrenceEnd
+                          };
+                        }
+                      }
                     }
-                    onMouseLeave={() => setTooltipContent(null)}
-                  >
-                    {isCurrentDay && hour === currentHour && (
-                      <div
-                        className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-10 flex items-center"
-                        style={{
-                          top: `${(currentMinute / 60) * 60}px`,
-                        }}
-                      >
-                        <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1">
-                          {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    )}
-                    {dayTasks.length > 0 && (
-                      <div className="absolute inset-0 flex flex-col gap-1 p-1 overflow-hidden z-5 pointer-events-none">
-                        {dayTasks.slice(0, 2).map((task, taskIndex) => {
-                          console.log('Rendering task:', task);
-                          const occurrenceStart = task.occurrenceStart ? new Date(task.occurrenceStart) : new Date(task.deadline || day);
-                          const occurrenceEnd = task.occurrenceEnd ? new Date(task.occurrenceEnd) : new Date(occurrenceStart.getTime() + 60 * 60 * 1000);
-                          const taskMinute = occurrenceStart.getMinutes();
-                          const topPosition = taskMinute > 0 ? (taskMinute / 60) * 60 : (taskIndex * 25);
-                          const durationHours = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
-                          const blockHeight = Math.max(28, Math.round(durationHours * 60) - 2);
+                    return null;
+                  })();
 
-                          return (
-                            <div
-                              data-calendar-task
-                              key={`${task.id}-${i}-${hour}`}
-                              className="bg-[var(--accent-primary)]/85 text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30"
-                              style={{
-                                top: `${topPosition}px`,
-                                minHeight: `${blockHeight}px`,
-                                maxHeight: `${blockHeight}px`
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setViewingTask(task);
-                              }}
-                              onDoubleClick={(e) => {
-                                e.stopPropagation();
-                                setViewingTask(task);
-                              }}
-                              title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                            >
-                              <div className="font-medium truncate">{task.title || 'Sin título'}</div>
-                            </div>
-                          );
-                        })}
-                        {dayTasks.length > 2 && (
-                          <div
-                            data-calendar-task
-                            className="bg-[var(--bg-secondary)]/95 border border-[var(--border-primary)] text-[var(--text-secondary)] text-xs sm:text-sm px-1.5 py-1 rounded text-center pointer-events-auto cursor-pointer transition-colors mt-auto"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedDate(day);
-                              setFocusedDate(day);
-                              setIsInfoModalOpen(true);
-                            }}
-                            onDoubleClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedDate(day);
-                              setFocusedDate(day);
-                              setIsInfoModalOpen(true);
-                            }}
-                          >
-                            +{dayTasks.length - 2} more
+                  return (
+                    <div
+                      key={i}
+                      className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
+                        isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
+                      }`}
+                      onClick={(e) => {
+                        if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
+                        handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
+                      }}
+                      onMouseEnter={() =>
+                        allDayTasks.length > 0 &&
+                        setTooltipContent({
+                          date: day,
+                          tasks: allDayTasks,
+                        })
+                      }
+                      onMouseLeave={() => setTooltipContent(null)}
+                    >
+                      {isCurrentDay && hour === currentHour && (
+                        <div
+                          className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-10 flex items-center"
+                          style={{
+                            top: `${(currentMinute / 60) * 60}px`,
+                          }}
+                        >
+                          <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1">
+                            {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+                        </div>
+                      )}
+                      
+                      {/* Render single hour task if this is its hour */}
+                      {singleHourTask && (
+                        <div
+                          data-calendar-task
+                          className="bg-[var(--accent-primary)] text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30 absolute z-10"
+                          style={{
+                            left: '2px',
+                            top: '2px',
+                            right: '2px',
+                            bottom: '2px'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewingTask(singleHourTask.task);
+                          }}
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setViewingTask(singleHourTask.task);
+                          }}
+                          title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                        >
+                          <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

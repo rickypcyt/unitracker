@@ -1135,32 +1135,45 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   const renderRecurrenceSection = () => (
     <div className="mb-4">
-      <label className="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={formData.isRecurring}
-          onChange={(e) => {
-            setRecurrenceError(null);
-            handleChange('isRecurring', e.target.checked);
-          }}
-          className="rounded border-[var(--border-primary)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)]"
-        />
+      <label className="flex items-center gap-3 cursor-pointer group">
+        <div className="relative">
+          <input 
+            type="checkbox" 
+            checked={formData.isRecurring}
+            onChange={(e) => {
+              setRecurrenceError(null);
+              handleChange('isRecurring', e.target.checked);
+            }}
+            className="opacity-0 absolute h-5 w-5"
+          />
+          <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors duration-200
+            ${formData.isRecurring 
+              ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]' 
+              : 'bg-transparent border-[var(--border-primary)] group-hover:border-[var(--accent-primary)]'}`}
+          >
+            {formData.isRecurring && (
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        </div>
         <span className="text-[var(--text-primary)] font-medium">Repeat weekly (e.g. classes)</span>
       </label>
       {recurrenceError && (
         <p className="mt-2 text-base text-red-500">{recurrenceError}</p>
       )}
       {formData.isRecurring && (
-        <div className="mt-3 pl-6">
+        <div className="mt-3">
           <p className="text-sm text-[var(--text-secondary)] mb-2">Repeat on:</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1">
             {WEEKDAY_VALUES.map((d, i) => (
               <label
                 key={d}
-                className={`inline-flex items-center px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${
+                className={`inline-flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${
                   (formData.recurrence_weekdays || []).includes(d)
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
-                    : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                    ? 'border-2 border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] font-medium'
+                    : 'border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
                 }`}
               >
                 <input
@@ -1364,76 +1377,96 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   };
 
   const renderManualForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-1">
-      <div>
-        <FormInput
-          id="title"
-          value={formData.title}
-          onChange={(value) => handleChange('title', value)}
-          error={errors.title}
-          required
-          placeholder="Enter task title"
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Title, Assignment, Description */}
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Title
+            </label>
+            <FormInput
+              id="title"
+              value={formData.title}
+              onChange={(value) => handleChange('title', value)}
+              error={errors.title}
+              required
+              placeholder="Enter task title"
+            />
+          </div>
 
-      {!initialAssignment && (
-        <div className="mb-2">
-          <AutocompleteInput
-            id="assignment"
-            value={formData.assignment}
-            onChange={(value) => handleChange('assignment', value)}
-            error={errors.assignment}
-            required
-            placeholder="Enter subject name"
-            suggestions={uniqueAssignments}
-          />
-        </div>
-      )}
-
-      <MarkdownWysiwyg
-        initialTitle={formData.title}
-        initialBody={formData.description}
-        onChange={({ body }) => handleChange('description', body)}
-        showTitleInput={false}
-        variant="tasks"
-        className="pb-4"
-      />
-      {errors.description && (
-        <p className="mt-1 text-base text-red-500">{errors.description}</p>
-      )}
-
-      <div className="pb-4">
-        {renderRecurrenceSection()}
-      </div>
-
-      {!formData.isRecurring && (
-        <div className="pb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex justify-center">
-              {renderDatePicker()}
+          {!initialAssignment && (
+            <div>
+              <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                Subject
+              </label>
+              <AutocompleteInput
+                id="assignment"
+                value={formData.assignment}
+                onChange={(value) => handleChange('assignment', value)}
+                error={errors.assignment}
+                required
+                placeholder="Enter subject name"
+                suggestions={uniqueAssignments}
+              />
             </div>
+          )}
+
+          <div className="h-full">
+            <MarkdownWysiwyg
+              initialTitle={formData.title}
+              initialBody={formData.description}
+              onChange={({ body }) => handleChange('description', body)}
+              showTitleInput={false}
+              variant="tasks"
+              className="h-full min-h-[200px]"
+            />
+            {errors.description && (
+              <p className="mt-1 text-base text-red-500">{errors.description}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: All other fields */}
+        <div className="space-y-4">
+          <div className="space-y-4">
+            {!formData.isRecurring ? (
+              <div>
+                <div className="grid grid-cols-2 gap-4 mb-1">
+                  <div className="text-sm font-medium text-[var(--text-secondary)]">Date</div>
+                  <div className="text-sm font-medium text-[var(--text-secondary)]">Time</div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    {renderDatePicker()}
+                  </div>
+                  <div>
+                    {renderTimeInput()}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  {renderStartTimeInput()}
+                </div>
+                <div>
+                  {renderEndTimeInput()}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div>
+            {renderRecurrenceSection()}
+          </div>
+          
+          <div className="pt-2">
             <div className="flex justify-center">
-              {renderTimeInput()}
+              {renderDifficultySelector()}
             </div>
           </div>
         </div>
-      )}
-
-      {formData.isRecurring && (
-        <div className="pb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex justify-center">
-              {renderStartTimeInput()}
-            </div>
-            <div className="flex justify-center">
-              {renderEndTimeInput()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-center pb-4">
-        {renderDifficultySelector()}
       </div>
 
       <FormActions className="mt-6">
@@ -1497,7 +1530,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       isOpen={true}
       onClose={onClose}
       title={modalTitle}
-      maxWidth="max-w-lg"
+      maxWidth="max-w-4xl"
       showCloseButton={true}
     >
       {activeTab !== 'ai' && renderTabSelector(false)}
