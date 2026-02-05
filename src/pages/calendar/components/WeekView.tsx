@@ -1,4 +1,3 @@
-import React from 'react';
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
 
@@ -20,8 +19,7 @@ interface WeekViewProps {
 
 const WeekView = ({
   currentDate,
-  selectedDate,
-  isLoggedIn,
+isLoggedIn,
   getTasksForDayAndHour,
   getTasksWithDeadline,
   setSelectedDate,

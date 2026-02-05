@@ -1,4 +1,4 @@
-import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2, X } from "lucide-react";
+import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
 
 import BaseModal from "@/modals/BaseModal";
 import Markdown from "react-markdown";
@@ -206,8 +206,8 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           {task.description && (
             <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
-              <div className="prose prose-invert max-w-none">
-                <Markdown className="text-[var(--text-primary)]">{task.description}</Markdown>
+              <div className="prose prose-invert max-w-none text-[var(--text-primary)]">
+                <Markdown>{task.description}</Markdown>
               </div>
             </div>
           )}

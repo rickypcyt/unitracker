@@ -1042,19 +1042,18 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   const renderTimeInput = () => {
     const incrementTime = () => {
       const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
-      const [hours, minutes] = time24.split(':').map(Number);
-      const newMinutes = ((minutes ?? 0) + 15) % 60;
-      const newHours = (hours ?? 0) + Math.floor(((minutes ?? 0) + 15) / 60);
-      const finalHours = newHours % 24;
-      const newTime24 = `${String(finalHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+      const [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      const newMinutes = (minutes + 15) % 60;
+      const newHours = (hours + Math.floor((minutes + 15) / 60)) % 24;
+      const newTime24 = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
       handleChange('time', to12Hour(newTime24));
     };
 
     const decrementTime = () => {
       const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
-      const [hours, minutes] = time24.split(':').map(Number);
-      let newMinutes = (minutes ?? 0) - 15;
-      let newHours = hours ?? 0;
+      const [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      let newMinutes = minutes - 15;
+      let newHours = hours;
       
       if (newMinutes < 0) {
         newMinutes += 60;
@@ -1217,7 +1216,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   const renderStartTimeInput = () => {
     const incrementStartTime = () => {
       const time24 = to24Hour(displayStartTime) || '10:00';
-      const [hours, minutes] = time24.split(':').map(Number);
+      const [hours] = time24.split(':').map(Number);
       const newHours = ((hours ?? 0) + 1) % 24;
       const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
       setDisplayStartTime(to12Hour(newTime24));
@@ -1226,7 +1225,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
     const decrementStartTime = () => {
       const time24 = to24Hour(displayStartTime) || '10:00';
-      const [hours, minutes] = time24.split(':').map(Number);
+      const [hours] = time24.split(':').map(Number);
       const newHours = (hours ?? 0) - 1;
       const finalHours = newHours < 0 ? 23 : newHours;
       const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;
@@ -1292,7 +1291,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   const renderEndTimeInput = () => {
     const incrementEndTime = () => {
       const time24 = to24Hour(displayEndTime) || '11:00';
-      const [hours, minutes] = time24.split(':').map(Number);
+      const [hours] = time24.split(':').map(Number);
       const newHours = ((hours ?? 0) + 1) % 24;
       const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
       setDisplayEndTime(to12Hour(newTime24));
@@ -1301,7 +1300,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
     const decrementEndTime = () => {
       const time24 = to24Hour(displayEndTime) || '11:00';
-      const [hours, minutes] = time24.split(':').map(Number);
+      const [hours] = time24.split(':').map(Number);
       const newHours = (hours ?? 0) - 1;
       const finalHours = newHours < 0 ? 23 : newHours;
       const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;

@@ -1,7 +1,5 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
-import React from 'react';
-
 type ViewType = 'month' | 'week' | 'day';
 
 interface CalendarHeaderProps {
@@ -29,7 +27,6 @@ const CalendarHeader = ({
   goToNextWeek,
   goToPreviousDay,
   goToNextDay,
-  goToToday,
 }: CalendarHeaderProps) => {
   const renderDayHeader = () => {
     const isCurrentDay = new Date().toDateString() === selectedDate.toDateString();
