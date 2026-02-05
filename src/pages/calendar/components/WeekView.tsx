@@ -13,6 +13,7 @@ interface WeekViewProps {
   setFocusedDate: (date: Date) => void;
   setShowTaskForm: (show: boolean) => void;
   setIsLoginPromptOpen: (open: boolean) => void;
+  setIsInfoModalOpen: (open: boolean) => void;
   setTooltipContent: (content: { date: Date; tasks: any[] } | null) => void;
   setSelectedTask: (task: any) => void;
   setViewingTask: (task: any) => void;
@@ -20,13 +21,14 @@ interface WeekViewProps {
 
 const WeekView = ({
   currentDate,
-isLoggedIn,
+  isLoggedIn,
   getTasksForDayAndHour,
   getTasksWithDeadline,
   setSelectedDate,
   setFocusedDate,
   setShowTaskForm,
   setIsLoginPromptOpen,
+  setIsInfoModalOpen,
   setTooltipContent,
   setSelectedTask,
   setViewingTask,

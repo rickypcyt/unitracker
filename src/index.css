@@ -1,3 +1,6 @@
+/* stylelint-disable at-rule-no-unknown */
+/* The above line disables stylelint for unknown at-rules */
+
 /* src/index.css */
 
 /* Import highlight.js styles for syntax highlighting */
@@ -10,6 +13,209 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* DayFlow Calendar Custom CSS Variables */
+:root {
+  /* Light mode variables for DayFlow */
+  --dayflow-bg-primary: #ffffff;
+  --dayflow-bg-secondary: #f5f5f5;
+  --dayflow-text-primary: #000000;
+  --dayflow-text-secondary: #666666;
+  --dayflow-border: #e5e5e5;
+  --dayflow-hover: #f3f4f6;
+  --dayflow-accent: #1e90ff;
+}
+
+.dark {
+  /* Dark mode variables for DayFlow */
+  --dayflow-bg-primary: #000000;
+  --dayflow-bg-secondary: #1a1a1a;
+  --dayflow-text-primary: #ffffff;
+  --dayflow-text-secondary: #b5b5b5;
+  --dayflow-border: #252525;
+  --dayflow-hover: #1a1a1a;
+  --dayflow-accent: #4da6ff;
+}
+
+/* Override DayFlow hardcoded colors */
+.bg-white {
+  background-color: var(--dayflow-bg-primary) !important;
+}
+
+.dark .bg-white {
+  background-color: var(--dayflow-bg-primary) !important;
+}
+
+.bg-gray-900 {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+.dark .bg-gray-900 {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+.bg-gray-100 {
+  background-color: var(--dayflow-hover) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--dayflow-hover) !important;
+}
+
+.bg-gray-800 {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+.dark .bg-gray-800 {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+/* Override text colors */
+.text-gray-500 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.dark .text-gray-500 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.text-gray-600 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.dark .text-gray-600 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.text-gray-400 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.dark .text-gray-400 {
+  color: var(--dayflow-text-secondary) !important;
+}
+
+.text-gray-900 {
+  color: var(--dayflow-text-primary) !important;
+}
+
+.dark .text-gray-900 {
+  color: var(--dayflow-text-primary) !important;
+}
+
+.text-gray-100 {
+  color: var(--dayflow-text-primary) !important;
+}
+
+.dark .text-gray-100 {
+  color: var(--dayflow-text-primary) !important;
+}
+
+/* Override hover states */
+.hover\:bg-gray-50:hover {
+  background-color: var(--dayflow-hover) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: var(--dayflow-hover) !important;
+}
+
+.hover\:bg-slate-800:hover {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+.dark .hover\:bg-slate-800:hover {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+/* Override border colors */
+.border-slate-200 {
+  border-color: var(--dayflow-border) !important;
+}
+
+.dark .border-slate-200 {
+  border-color: var(--dayflow-border) !important;
+}
+
+.border-gray-600 {
+  border-color: var(--dayflow-border) !important;
+}
+
+.dark .border-gray-600 {
+  border-color: var(--dayflow-border) !important;
+}
+
+/* DayFlow customizations */
+.df-event {
+  border-radius: 6px !important;
+  border-left: 3px solid var(--dayflow-accent) !important;
+}
+
+.df-current-time-line {
+  z-index: 100;
+}
+
+.df-current-time-bar {
+  height: 2px !important;
+  background-color: var(--dayflow-accent) !important;
+}
+
+/* Calendar container */
+.calendar-container {
+  --calendar-bg: var(--dayflow-bg-primary);
+  --calendar-border: var(--dayflow-border);
+}
+
+/* Event styles */
+.calendar-event {
+  --event-hover-opacity: 0.9;
+  --event-shadow: rgba(0, 0, 0, 0.1);
+}
+
+.dark .calendar-event {
+  --event-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Time grid */
+.time-grid {
+  --grid-line-color: var(--dayflow-border);
+  --grid-line-width: 1px;
+}
+
+/* Customize specific view */
+.df-day-view .df-event {
+  border-left: 4px solid var(--dayflow-accent) !important;
+}
+
+/* Style the sidebar */
+.df-sidebar {
+  background-color: var(--dayflow-bg-secondary) !important;
+}
+
+/* Style mini calendar */
+.df-mini-calendar-day:hover {
+  background-color: var(--dayflow-hover);
+}
+
+/* Dark mode overrides */
+.dark .df-calendar {
+  background-color: var(--dayflow-bg-primary);
+}
+
+/* Style event detail panel */
+.df-event-detail-panel {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .df-event-title { 
+    font-size: 10px; 
+  }
+  .df-time-label { 
+    font-size: 10px; 
+  }
+}
 
 /* CSS for minimized columns */
 .minimized-column {
@@ -120,7 +326,7 @@
       "Helvetica Neue", sans-serif;
     min-height: 100vh;
     height: 100%;
-    @apply text-base;
+    font-size: 1rem; /* text-base equivalent */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;

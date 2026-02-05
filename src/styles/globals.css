@@ -1,0 +1,29 @@
+/* Import external CSS first */
+@import '@dayflow/core/dist/styles.css';
+
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Your custom styles with proper nesting */
+:root {
+  --primary: #2563eb;
+}
+
+/* Regular CSS nesting syntax */
+.btn-padding-1 {
+  padding: 0.25rem;
+}
+
+/* OR with @apply - but note: @apply should be used carefully */
+.some-class {
+  @apply p-1;
+}
+
+/* Nested styles will work now */
+.container {
+  .nested-element {
+    color: blue;
+  }
+}

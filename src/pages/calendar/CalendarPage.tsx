@@ -2,6 +2,7 @@ import Calendar, { TooltipContent } from '@/pages/calendar/Calendar';
 import { memo, useCallback, useEffect, useState } from 'react';
 
 import AllTasks from '@/pages/calendar/AllTasks';
+import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
 import { Helmet } from "react-helmet-async";
 import { Task } from '@/types/taskStorage';
 import TaskFilter from '@/pages/calendar/TaskFilter';
@@ -19,6 +20,12 @@ const CalendarPage = memo(() => {
   const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
     const savedView = localStorage.getItem('calendar-view') as 'month' | 'week' | 'day' | null;
     return savedView && ['month', 'week', 'day'].includes(savedView) ? savedView : 'month';
+  });
+  
+  // Load calendar type from localStorage or default to 'original'
+  const [calendarType, setCalendarType] = useState<'original' | 'dayflow'>(() => {
+    const savedType = localStorage.getItem('calendar-type') as 'original' | 'dayflow' | null;
+    return savedType && ['original', 'dayflow'].includes(savedType) ? savedType : 'original';
   });
   
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
@@ -85,10 +92,15 @@ const CalendarPage = memo(() => {
     setSelectedFilter(filter);
   };
 
-  const handleViewChange = (newView: 'month' | 'week' | 'day') => {
+  const handleViewChange = useCallback((newView: 'month' | 'week' | 'day') => {
     setView(newView);
     localStorage.setItem('calendar-view', newView);
-  };
+  }, []);
+
+  const handleCalendarTypeChange = useCallback((newType: 'original' | 'dayflow') => {
+    setCalendarType(newType);
+    localStorage.setItem('calendar-type', newType);
+  }, []);
 
   const getFilterLabel = (filter: string) => {
     switch (filter) {
@@ -125,71 +137,119 @@ const CalendarPage = memo(() => {
         <link rel="canonical" href="https://uni-tracker.vercel.app/calendar" />
       </Helmet>
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
-      <div className="w-full flex flex-col lg:flex-row gap-4 h-[calc(100vh-8rem)]">
-        <div className="order-1 md:order-1 lg:order-1 flex-1 min-w-0">
-          <AllTasks filteredTasks={filteredTasks} title={getFilterLabel(selectedFilter)} />
-        </div>
-        <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center lg:max-w-4xl mx-auto">
-          <div className="w-full">
-            <Calendar view={view} onViewChange={handleViewChange} onTooltipShow={handleTooltipShow} />
+      {calendarType === 'dayflow' ? (
+        // Full page layout for DayFlow calendar
+        <div className="w-full h-[calc(100vh-8rem)]">
+          {/* Calendar Type Toggle */}
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-1">
+              <button
+                onClick={() => handleCalendarTypeChange('original')}
+                className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
+              >
+                Original Calendar
+              </button>
+              <button
+                onClick={() => handleCalendarTypeChange('dayflow')}
+                className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-primary)]"
+              >
+                DayFlow Calendar
+              </button>
+            </div>
+          </div>
+          
+          {/* Full width DayFlow Calendar */}
+          <div className="h-full">
+            <DayFlowCalendarComponent />
           </div>
         </div>
-        <div className="order-3 md:order-3 lg:order-3 flex-1">
-          <TaskFilter 
-            tasks={tasks} 
-            onFilteredTasksChange={setFilteredTasks}
-            selectedFilter={selectedFilter}
-            onFilterChange={handleFilterChange}
-          />
-          {tooltipContent && (
-            <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
-              <div className="px-3 py-2 border-b border-[var(--border-primary)]">
-                <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
-                  {formatDate(tooltipContent.date.toISOString())}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
-                  {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
-                </div>
-              </div>
-              <div className="p-2 max-h-[200px] overflow-y-auto">
-                {tooltipContent.tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
+      ) : (
+        // Original layout with sidebar for original calendar
+        <div className="w-full flex flex-col lg:flex-row gap-4 h-[calc(100vh-8rem)]">
+          <div className="order-1 md:order-1 lg:order-1 flex-1 min-w-0">
+            <AllTasks filteredTasks={filteredTasks} title={getFilterLabel(selectedFilter)} />
+          </div>
+          <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center lg:max-w-4xl mx-auto">
+            <div className="w-full">
+              {/* Calendar Type Toggle */}
+              <div className="flex justify-center mb-4">
+                <div className="inline-flex rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-1">
+                  <button
+                    onClick={() => handleCalendarTypeChange('original')}
+                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-primary)] text-[var(--accent-primary)]"
                   >
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        task.completed
-                          ? "bg-green-500"
-                          : "bg-[var(--accent-primary)]"
-                      }`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className={`text-sm font-medium break-words ${
-                          task.completed
-                            ? "line-through text-[var(--text-secondary)]"
-                            : "text-[var(--text-primary)]"
-                        }`}
-                      >
-                        {task.title}
-                      </div>
-                      {task.assignment && (
-                        <div className="text-xs text-[var(--text-secondary)] break-words">
-                          {task.assignment}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
-                      {task.completed ? "✓" : "○"}
-                    </div>
-                  </div>
-                ))}
+                    Original Calendar
+                  </button>
+                  <button
+                    onClick={() => handleCalendarTypeChange('dayflow')}
+                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
+                  >
+                    DayFlow Calendar
+                  </button>
+                </div>
               </div>
+              
+              {/* Render the appropriate calendar */}
+              <Calendar view={view} onViewChange={handleViewChange} onTooltipShow={handleTooltipShow} />
             </div>
-          )}
+          </div>
+          <div className="order-3 md:order-3 lg:order-3 flex-1">
+            <TaskFilter 
+              tasks={tasks} 
+              onFilteredTasksChange={setFilteredTasks}
+              selectedFilter={selectedFilter}
+              onFilterChange={handleFilterChange}
+            />
+            {tooltipContent && (
+              <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
+                <div className="px-3 py-2 border-b border-[var(--border-primary)]">
+                  <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
+                    {formatDate(tooltipContent.date.toISOString())}
+                  </div>
+                  <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
+                    {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
+                  </div>
+                </div>
+                <div className="p-2 max-h-[200px] overflow-y-auto">
+                  {tooltipContent.tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          task.completed
+                            ? "bg-green-500"
+                            : "bg-[var(--accent-primary)]"
+                        }`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={`text-sm font-medium break-words ${
+                            task.completed
+                              ? "line-through text-[var(--text-secondary)]"
+                              : "text-[var(--text-primary)]"
+                          }`}
+                        >
+                          {task.title}
+                        </div>
+                        {task.assignment && (
+                          <div className="text-xs text-[var(--text-secondary)] break-words">
+                            {task.assignment}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                        {task.completed ? "✓" : "○"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
     </>
   );

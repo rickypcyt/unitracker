@@ -3,7 +3,6 @@ import { FC, Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
 
 import Navbar from "@/navbar/Navbar";
-import NewFeaturesModal from "@/modals/NewFeaturesModal";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
 import TourManager from "./components/TourManager";
@@ -19,23 +18,6 @@ const Notes = lazy(() => import("@/pages/notes/Notes"));
 const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
 const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
 const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
-
-// -------------------------
-// Types
-// -------------------------
-interface ChangelogEntry {
-  version: string;
-  date: string;
-  time: string;
-  type: 'major' | 'minor' | 'patch';
-  changes: {
-    added?: string[];
-    improved?: string[];
-    fixed?: string[];
-    removed?: string[];
-    soon?: string[];
-  };
-}
 
 // -------------------------
 // Pages mapping
@@ -135,109 +117,6 @@ const UserModalGate: FC = () => {
 
   return (
     <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />
-  );
-};
-
-// -------------------------
-// Changelog utilities
-// -------------------------
-
-// Generate hash from changelog content to detect changes
-const generateChangelogHash = (changelog: ChangelogEntry[]): string => {
-  const content = JSON.stringify(changelog);
-  let hash = 0;
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return hash.toString();
-};
-
-// -------------------------
-// New Features modal gate
-// -------------------------
-const NewFeaturesGate: FC = () => {
-  const { user, isLoggedIn } = useAuth() as {
-    user: any;
-    isLoggedIn: boolean;
-  };
-  const [showNewFeaturesModal, setShowNewFeaturesModal] = useState(false);
-
-  // Current changelog data (this should match the data in NewFeaturesModal)
-  const currentChangelog: ChangelogEntry[] = [
-    {
-      version: "1.1.2",
-      date: "December 21, 2025",
-      time: "5:17 PM",
-      type: "patch",
-      changes: {
-        fixed: [
-          "Fixed Pomodoro timer synchronization issues"
-        ],
-        improved: [
-          "New workspace switching mode with sideways scroll",
-          "Share workspace with friends feature is now fully functional",
-          "Task status system for better task organization"
-        ],
-        soon: [
-          "Timeblocks page - Assign time blocks to tasks",
-          "Leaderboard system - Compete with friends"
-        ]
-      }
-    },
-    {
-      version: "1.1.1",
-      date: "December 21, 2025",
-      time: "5:00 PM",
-      type: "patch",
-      changes: {
-        added: [
-          "Hello world!",
-          "First use of the Uni Tracker changelog system"
-        ],
-        improved: [
-          "Here you will see the upcoming changes and improvements we will be implementing in the application"
-        ],
-        fixed: [],
-        removed: []
-      }
-    }
-  ];
-
-  useEffect(() => {
-    if (!isLoggedIn || !user?.id) {
-      setShowNewFeaturesModal(false);
-      return;
-    }
-
-    // Generate hash for current changelog content
-    const currentHash = generateChangelogHash(currentChangelog);
-    const lastSeenHash = localStorage.getItem('newFeaturesSeenHash');
-    
-    // Show modal if content has changed or hasn't been shown
-    if (lastSeenHash !== currentHash) {
-      // Add a small delay to show after login
-      const timer = setTimeout(() => {
-        setShowNewFeaturesModal(true);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-    
-    // Explicit return for the case where modal should not be shown
-    return;
-  }, [isLoggedIn, user, currentChangelog]);
-
-  const handleClose = () => {
-    setShowNewFeaturesModal(false);
-    // Mark current changelog content as seen
-    const currentHash = generateChangelogHash(currentChangelog);
-    localStorage.setItem('newFeaturesSeenHash', currentHash);
-  };
-
-  return (
-    <NewFeaturesModal isOpen={showNewFeaturesModal} onClose={handleClose} />
   );
 };
 

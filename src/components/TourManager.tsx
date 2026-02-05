@@ -1,9 +1,8 @@
-import { ReactNode, useCallback } from 'react';
+import React, { ReactNode } from 'react';
 
 import AccentColorModal from '@/modals/AccentColorModal';
 import EnhancedLoginModal from '@/modals/EnhancedLoginModal';
 import ThemeManager from '@/components/ThemeManager';
-import ThemeSelectionModal from '@/modals/ThemeSelectionModal';
 import WelcomeModal from '@/modals/WelcomeModal';
 import useTheme from '@/hooks/useTheme';
 
@@ -11,25 +10,17 @@ interface TourManagerProps {
   children: ReactNode;
 }
 
-const TourManager = ({ children }: TourManagerProps) => {
+const TourManager: React.FC<TourManagerProps> = ({ children }) => {
   const { 
     showWelcomeModal, 
-    showThemeSelectionModal, 
-    showAccentColorModal,
+    showAccentColorModal, 
     showLoginModal,
-    handleCloseWelcome, 
-    handleCloseThemeSelection, 
+    handleCloseWelcome,
     handleCloseAccentColor,
     handleCloseLogin,
-    handleThemeSelection, 
     handleAccentColorSelection,
     handleLogin
   } = useTheme();
-
-  // Handle closing welcome modal
-  const handleCloseWelcomeAndMaybeLogin = useCallback(() => {
-    handleCloseWelcome();
-  }, [handleCloseWelcome]);
 
   return (
     <>
@@ -37,28 +28,17 @@ const TourManager = ({ children }: TourManagerProps) => {
       {children}
       {showWelcomeModal && (
         <WelcomeModal 
-          onClose={handleCloseWelcomeAndMaybeLogin} 
+          onClose={handleCloseWelcome} 
         />
       )}
-      {/* Theme Selection Modal */}
-      {showThemeSelectionModal && (
-        <ThemeSelectionModal
-          onClose={handleCloseThemeSelection}
-          onThemeSelect={handleThemeSelection}
-        />
-      )}
-
-      {/* Accent Color Modal */}
       {showAccentColorModal && (
-        <AccentColorModal
+        <AccentColorModal 
           onClose={handleCloseAccentColor}
           onAccentColorSelect={handleAccentColorSelection}
         />
       )}
-
-      {/* Enhanced Login Modal */}
       {showLoginModal && (
-        <EnhancedLoginModal
+        <EnhancedLoginModal 
           onClose={handleCloseLogin}
           onLogin={handleLogin}
         />

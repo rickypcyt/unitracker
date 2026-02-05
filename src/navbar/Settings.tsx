@@ -1,4 +1,4 @@
-import { BookOpen, LogIn, LogOut, Settings as SettingsIcon, Trash2 } from 'lucide-react';
+import { BookOpen, LogIn, LogOut, Monitor, Moon, Settings as SettingsIcon, Sun, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { ACCENT_COLORS } from '@/utils/theme';
@@ -18,8 +18,12 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
-  const { accentPalette, setAccentPalette } = useTheme();
-  // Note: currentTheme and handleThemeChange are not used in this component
+  const { 
+    accentPalette, 
+    setAccentPalette,
+    themePreference,
+    handleThemeChange,
+  } = useTheme();
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
@@ -67,22 +71,111 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             {/* Theme Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">Theme</h3>
-              <div className="grid grid-cols-6 gap-2">
-                {ACCENT_COLORS.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => setAccentPalette(color.value)}
-                    className={`relative aspect-square rounded-lg transition-all ${
-                      accentPalette === color.value
-                        ? 'ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]'
-                        : 'hover:opacity-80'
-                    } ${color.class}`}
-                    aria-label={`Select ${color.name} accent color`}
-                    title={color.name}
-                  >
-                    <span className="sr-only">{color.name}</span>
-                  </button>
-                ))}
+              
+              {/* Three-position theme selector */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sun size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Light</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Monitor size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">System</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Moon size={16} className="text-[var(--text-primary)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Dark</span>
+                  </div>
+                </div>
+
+                {/* Custom three-position slider */}
+                <div className="relative">
+                  <div className="w-full h-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
+                    {/* Slider track background */}
+                    <div
+                      className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
+                      style={{
+                        backgroundColor: accentPalette,
+                        width: "calc(33.333% - 4px)",
+                        left:
+                          themePreference === "light"
+                            ? "2px"
+                            : themePreference === "auto"
+                            ? "calc(33.333% + 1px)"
+                            : "calc(66.666% + 0px)",
+                      }}
+                    />
+
+                    {/* Three clickable workspaces */}
+                    <button
+                      onClick={() => handleThemeChange("light")}
+                      className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="Light theme"
+                    >
+                      <Sun
+                        size={16}
+                        className={`${
+                          themePreference === "light"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
+                    </button>
+
+                    <button
+                      onClick={() => handleThemeChange("auto")}
+                      className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="System theme"
+                    >
+                      <Monitor
+                        size={16}
+                        className={`${
+                          themePreference === "auto"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
+                    </button>
+
+                    <button
+                      onClick={() => handleThemeChange("dark")}
+                      className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center transition-colors"
+                      aria-label="Dark theme"
+                    >
+                      <Moon
+                        size={16}
+                        className={`${
+                          themePreference === "dark"
+                            ? "text-white"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Accent Color Section */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                <h4 className="text-sm font-medium mb-3 text-[var(--text-primary)]">Accent Color</h4>
+                <div className="grid grid-cols-6 gap-2">
+                  {ACCENT_COLORS.map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => setAccentPalette(color.value)}
+                      className={`relative aspect-square rounded-lg transition-all ${
+                        accentPalette === color.value
+                          ? 'ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]'
+                          : 'hover:opacity-80'
+                      } ${color.class}`}
+                      aria-label={`Select ${color.name} accent color`}
+                      title={color.name}
+                    >
+                      <span className="sr-only">{color.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
