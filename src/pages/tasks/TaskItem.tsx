@@ -3,6 +3,30 @@ import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/
 
 import React from 'react';
 
+// Helper para formatear días de recurrencia
+const formatRecurrenceText = (weekdays: number[]) => {
+    const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const selectedDays = weekdays.map(day => weekdayNames[day]);
+    
+    if (selectedDays.length === 0) return '';
+    if (selectedDays.length === 1) return `Every ${selectedDays[0]}`;
+    if (selectedDays.length === 7) return 'Every day';
+    
+    // Para múltiples días, mostrarlos separados por comas
+    return `Every ${selectedDays.join(', ')}`;
+};
+
+// Helper para formatear tiempo
+const formatTime = (timeStr: string | undefined) => {
+    if (!timeStr) return '';
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const minute = parseInt(minutes);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+};
+
 // Extended Task interface to include deadline field
 interface Task {
     id: string;
@@ -21,6 +45,10 @@ interface Task {
     difficulty?: string;
     assignment?: string;
     deadline?: string;
+    recurrence_type?: string;
+    recurrence_weekdays?: number[];
+    start_time?: string;
+    end_time?: string;
 }
 
 // Helper para determinar el color del deadline
@@ -164,9 +192,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     {task.title}
                 </span>
                 
-                {/* Date */}
+                {/* Date/Recurrence */}
                 <div className="text-sm mt-0.5" style={{ color: 'var(--muted-strong)' }}>
-                    {task.deadline && task.deadline !== '' ? (
+                    {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
+                        <span className="text-[var(--text-secondary)]">
+                            {formatRecurrenceText(task.recurrence_weekdays)}
+                            {task.start_time && (
+                                <span className="ml-1">
+                                    {formatTime(task.start_time)}
+                                    {task.end_time && ` - ${formatTime(task.end_time)}`}
+                                </span>
+                            )}
+                        </span>
+                    ) : task.deadline && task.deadline !== '' ? (
                         <>
                             <span className={getDeadlineColor(task.deadline)}>
                                 {formatDateShort(task.deadline)}

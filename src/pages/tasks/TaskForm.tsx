@@ -1,7 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, CheckCircle2, Circle } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronDown } from 'lucide-react';
 import { FormActions, FormButton, FormInput } from '@/modals/FormElements';
 import { useAuth, useWorkspace } from '@/store/appStore';
 import { useEffect, useRef, useState } from 'react';
@@ -60,13 +60,12 @@ const TaskForm = ({
     title: initialTask?.title || '',
     description: initialTask?.description || '',
     deadline: getInitialDeadline(),
-    time: getInitialTime(),
+    start_time: getInitialStartTime(),
+    end_time: getInitialEndTime(),
     difficulty: initialTask?.difficulty || 'medium',
     assignment: initialTask?.assignment || initialAssignment || '',
     isRecurring: !!(initialTask?.recurrence_type === 'weekly'),
     recurrence_weekdays: getInitialRecurrence(),
-    start_time: initialTask?.start_time ?? '10:00:00',
-    end_time: initialTask?.end_time ?? '11:00:00',
   };
 
   const validationRules = {
@@ -75,7 +74,8 @@ const TaskForm = ({
     difficulty: { required: true },
     description: { maxLength: 500 },
     deadline: { required: false, validate: validateDeadline },
-    time: { required: false, validate: validateTime },
+    start_time: { required: false, validate: validateTime },
+    end_time: { required: false, validate: validateTime },
   };
 
   const { formData, errors, handleChange, validateForm } = useFormState(
@@ -83,6 +83,7 @@ const TaskForm = ({
     validationRules as any
   ) as any;
   const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
+  const [isDifficultyDropdownOpen, setIsDifficultyDropdownOpen] = useState(false);
 
   // AI Hook
   const {
@@ -180,8 +181,9 @@ const TaskForm = ({
           const [day, month, year] = date.split('/');
           if (day && month && year) {
             const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
-            return `${dateStr}T${time24}:00`;
+            
+            // Always use midnight for deadline (date only)
+            return `${dateStr}T00:00:00`;
           }
           return null;
         },
@@ -266,6 +268,14 @@ const TaskForm = ({
     
     await Promise.all(mappedTasks.map(addTask));
     setShowAIPreview(false);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    // Blur any active editor to prevent focus issues
+    if (document.activeElement instanceof HTMLElement && 'blur' in document.activeElement) {
+      document.activeElement.blur();
+    }
     onClose();
   };
 
@@ -361,28 +371,28 @@ const TaskForm = ({
     return '';
   }
 
-  function getInitialTime(): string {
-    let time24 = '';
-    if (initialDeadline) {
-      if (typeof initialDeadline === 'string') {
-        if (initialDeadline.includes('T')) {
-          const date = new Date(initialDeadline);
-          const hours = String(date.getHours()).padStart(2, '0');
-          const minutes = String(date.getMinutes()).padStart(2, '0');
-          time24 = `${hours}:${minutes}`;
-        }
-      } else {
-        const hours = String(initialDeadline.getHours()).padStart(2, '0');
-        const minutes = String(initialDeadline.getMinutes()).padStart(2, '0');
-        time24 = `${hours}:${minutes}`;
-      }
-    } else if (initialTask?.deadline) {
-      const taskDeadline = new Date(initialTask.deadline);
-      const hours = String(taskDeadline.getHours()).padStart(2, '0');
-      const minutes = String(taskDeadline.getMinutes()).padStart(2, '0');
-      time24 = `${hours}:${minutes}`;
+  function getInitialStartTime(): string {
+    // For normal tasks, check if there's a start_time
+    if (initialTask?.start_time) {
+      // Convert from 24h to 12h
+      const time24 = initialTask.start_time.slice(0, 5); // Remove seconds if present
+      return to12Hour(time24);
     }
-    return time24 ? to12Hour(time24) : '';
+    
+    // Default to 10:00 AM for new tasks
+    return '10:00 AM';
+  }
+
+  function getInitialEndTime(): string {
+    // For normal tasks, check if there's an end_time
+    if (initialTask?.end_time) {
+      // Convert from 24h to 12h
+      const time24 = initialTask.end_time.slice(0, 5); // Remove seconds if present
+      return to12Hour(time24);
+    }
+    
+    // Default to 11:00 AM for new tasks (1 hour after start)
+    return '11:00 AM';
   }
 
   function validateDeadline(value: string): true | string {
@@ -863,15 +873,13 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     ? 'Edit Task' 
     : (initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task');
 
-  function formatDateTimeForDisplay(datetime: string): string {
+  function formatDateOnlyForDisplay(datetime: string): string {
     if (!datetime) return '';
     const date = new Date(datetime);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${day}/${month}/${year}`;
   }
 
   function getSelectedDate() {
@@ -936,46 +944,63 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     </div>
   );
 
-  const renderDifficultySelector = () => (
-    <div>
-      <div className="flex items-center gap-8">
-        {DIFFICULTY_OPTIONS.map((option) => (
-          <div key={option.value} className="flex flex-col items-center gap-1">
-            <button
-              type="button"
-              onClick={() => handleChange('difficulty', option.value)}
-              className="p-1 rounded-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleChange('difficulty', option.value);
-                }
-              }}
-            >
-                {formData.difficulty === option.value ? (
-                  <CheckCircle2 size={28} className={option.color} />
-                ) : (
-                  <Circle size={28} className={option.color} />
-                )}
-            </button>
-            <span className="text-base font-medium text-[var(--text-primary)]">{option.label}</span>
-          </div>
-        ))}
+  const renderDifficultySelector = () => {
+    const selectedOption = DIFFICULTY_OPTIONS.find(option => option.value === formData.difficulty) || DIFFICULTY_OPTIONS[1];
+
+    return (
+      <div className="relative">
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Difficulty</label>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsDifficultyDropdownOpen(!isDifficultyDropdownOpen)}
+            className="w-full px-4 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] flex items-center justify-between"
+          >
+            <span className={selectedOption.color}>{selectedOption.label}</span>
+            <ChevronDown 
+              size={20} 
+              className={`text-[var(--text-secondary)] transition-transform duration-200 ${isDifficultyDropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          
+          {isDifficultyDropdownOpen && (
+            <div className="absolute z-10 w-full mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg">
+              {DIFFICULTY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    handleChange('difficulty', option.value);
+                    setIsDifficultyDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-[var(--bg-secondary)] transition-colors ${
+                    option.value === formData.difficulty ? 'bg-[var(--bg-secondary)]' : ''
+                  } first:rounded-t-lg last:rounded-b-lg`}
+                >
+                  <span className={option.color}>{option.label}</span>
+                  {option.value === formData.difficulty && (
+                    <CheckCircle2 size={16} className={option.color} />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {errors.difficulty && (
+          <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
+        )}
       </div>
-      {errors.difficulty && (
-        <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
-      )}
-    </div>
-  );
+    );
+  };
 
   const renderDatePicker = () => (
-    <div>
-      <div className="relative flex items-center">
+    <div className="w-full">
+      <div className="relative flex items-center w-full">
         <DatePicker
           id="deadline"
           ref={datePickerRef}
           selected={getSelectedDate()}
-          onChange={(date) => {
+          onChange={(date: Date | null) => {
             if (date) {
               // Convert to DD/MM/YYYY format for display
               const day = String(date.getDate()).padStart(2, '0');
@@ -989,31 +1014,37 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           }}
           dateFormat="dd/MM/yyyy"
           placeholderText="DD/MM/YYYY"
+          wrapperClassName="w-full"
+          className="w-full"
           customInput={
             <input
               type="text"
               readOnly
-              value={formData.deadline ? formatDateTimeForDisplay(formData.deadline) : 'None'}
+              value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'}
               className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${
                 errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
               } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
+              style={{ width: '100%' }}
             />
           }
           popperPlacement="bottom-start"
           calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]"
-          dayClassName={(date) =>
+          dayClassName={(date: Date) =>
             date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
           }
         />
         <button
           type="button"
-          onClick={() => handleChange('deadline', '')}
-          className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer"
+          onClick={() => {
+            handleChange('deadline', '');
+            handleChange('time', ''); // Also clear time when clearing date
+          }}
+          className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors"
           tabIndex={-1}
           title="Clear deadline"
           style={{ zIndex: 2 }}
         >
-          <span className="text-xl font-bold">×</span>
+          <span className="text-xl font-bold leading-none">×</span>
         </button>
         <button
           type="button"
@@ -1039,97 +1070,6 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     </div>
   );
 
-  const renderTimeInput = () => {
-    const incrementTime = () => {
-      const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
-      const [hours = 0, minutes = 0] = time24.split(':').map(Number);
-      const newMinutes = (minutes + 15) % 60;
-      const newHours = (hours + Math.floor((minutes + 15) / 60)) % 24;
-      const newTime24 = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-      handleChange('time', to12Hour(newTime24));
-    };
-
-    const decrementTime = () => {
-      const time24 = to24Hour(formData.time || '12:00 AM') || '00:00';
-      const [hours = 0, minutes = 0] = time24.split(':').map(Number);
-      let newMinutes = minutes - 15;
-      let newHours = hours;
-      
-      if (newMinutes < 0) {
-        newMinutes += 60;
-        newHours -= 1;
-      }
-      
-      if (newHours < 0) {
-        newHours = 23;
-      }
-      
-      const newTime24 = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
-      handleChange('time', to12Hour(newTime24));
-    };
-
-    const isDisabled = !formData.deadline;
-    const displayTime = formData.time || '';
-
-    return (
-      <div className="w-full">
-        <div className="relative flex items-center w-full">
-          <input
-            id="time"
-            type="text"
-            value={displayTime}
-            onChange={(e) => {
-              const val = e.target.value;
-              // Allow typing, but convert to 12h format on blur or when complete
-              handleChange('time', val);
-            }}
-            onBlur={(e) => {
-              const val = e.target.value.trim();
-              if (val) {
-                const time24 = to24Hour(val);
-                if (time24) {
-                  handleChange('time', to12Hour(time24));
-                }
-              }
-            }}
-            disabled={isDisabled}
-            className={`w-full pl-3 pr-12 py-2 bg-[var(--bg-primary)] border-2 ${
-              errors.time ? 'border-red-500' : 'border-[var(--border-primary)]'
-            } rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] ${
-              isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            placeholder={isDisabled ? 'Add a date first' : '10:30 AM'}
-          />
-          <div className="absolute right-2 flex flex-col">
-            <button
-              type="button"
-              onClick={incrementTime}
-              disabled={isDisabled}
-              className={`p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] ${
-                isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <span className="text-xs font-bold">▲</span>
-            </button>
-            <button
-              type="button"
-              onClick={decrementTime}
-              disabled={isDisabled}
-              className={`p-0 h-3 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] ${
-                isDisabled ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <span className="text-xs font-bold">▼</span>
-            </button>
-          </div>
-        </div>
-        {errors.time && (
-          <p className="mt-1 text-base text-red-500">{errors.time}</p>
-        )}
-      </div>
-    );
-  };
-
   const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0 (JS getDay())
 
@@ -1148,11 +1088,10 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           />
           <div className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-colors duration-200
             ${formData.isRecurring 
-              ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]' 
-              : 'bg-transparent border-[var(--border-primary)] group-hover:border-[var(--accent-primary)]'}`}
-          >
+              ? 'bg-transparent border-[var(--accent-primary)]' 
+              : 'bg-transparent border-[var(--border-primary)]'}`}>
             {formData.isRecurring && (
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-3.5 h-3.5 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             )}
@@ -1412,14 +1351,14 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </div>
           )}
 
-          <div className="h-full">
+          <div className="h-[200px] max-h-[200px]">
             <MarkdownWysiwyg
               initialTitle={formData.title}
               initialBody={formData.description}
               onChange={({ body }) => handleChange('description', body)}
               showTitleInput={false}
               variant="tasks"
-              className="h-full min-h-[200px]"
+              className="h-full max-h-full"
             />
             {errors.description && (
               <p className="mt-1 text-base text-red-500">{errors.description}</p>
@@ -1431,21 +1370,22 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         <div className="space-y-4">
           <div className="space-y-4">
             {!formData.isRecurring ? (
-              <div>
-                <div className="grid grid-cols-2 gap-4 mb-1">
-                  <div className="text-sm font-medium text-[var(--text-secondary)]">Date</div>
-                  <div className="text-sm font-medium text-[var(--text-secondary)]">Time</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  {renderDifficultySelector()}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    {renderDatePicker()}
-                  </div>
-                  <div>
-                    {renderTimeInput()}
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Date</label>
+                  {renderDatePicker()}
                 </div>
               </div>
             ) : (
+              <div>
+                {renderDifficultySelector()}
+              </div>
+            )}
+            
+            <div className="mb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   {renderStartTimeInput()}
@@ -1454,23 +1394,17 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
                   {renderEndTimeInput()}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           <div>
             {renderRecurrenceSection()}
           </div>
-          
-          <div className="pt-2">
-            <div className="flex justify-center">
-              {renderDifficultySelector()}
-            </div>
-          </div>
         </div>
       </div>
 
       <FormActions className="mt-6">
-        <FormButton type="button" variant="secondary" onClick={onClose}>
+        <FormButton type="button" variant="secondary" onClick={handleCancel}>
           Cancel
         </FormButton>
         <FormButton

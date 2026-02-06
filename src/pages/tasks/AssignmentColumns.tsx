@@ -38,31 +38,51 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   onDeleteAssignment,
   onUpdateAssignment,
 }) => {
+  // Create a column for each assignment (show all assignments)
+  const assignmentList = Object.keys(incompletedByAssignment);
+  
+  // Sort assignments by number of tasks (most tasks first)
+  const sortedAssignments = assignmentList.sort((a, b) => {
+    const tasksA = incompletedByAssignment[a]?.length || 0;
+    const tasksB = incompletedByAssignment[b]?.length || 0;
+    return tasksB - tasksA; // Descending order (most tasks first)
+  });
+  
+  const fixedColumns = sortedAssignments.map((assignment, index) => ({
+    id: `column${index + 1}`,
+    title: assignment,
+    tasks: incompletedByAssignment[assignment] || []
+  }));
+
   return (
     <div className="flex justify-center w-full mb-4 px-2 sm:px-8 lg:px-24">
-      <div className="w-full space-y-6">
-        {assignments.map((assignment) => (
+      <div className={`w-full gap-4 ${
+        fixedColumns.length <= 2 ? 'grid grid-cols-2' : 
+        fixedColumns.length <= 4 ? 'grid grid-cols-2' : 
+        'grid grid-cols-3'
+      }`}>
+        {fixedColumns.map((column) => (
           <div
-            key={assignment}
+            key={column.id}
             className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-4 shadow-sm"
           >
             <SortableColumn
-              id={assignment}
-              assignment={assignment}
-              tasks={incompletedByAssignment[assignment] || []}
-              pinned={currentWorkspacePins[assignment] === true}
-              onTogglePin={() => onTogglePin(assignment)}
-              onAddTask={() => onAddTask(assignment)}
+              id={column.id}
+              assignment={column.title}
+              tasks={column.tasks}
+              pinned={false}
+              onTogglePin={() => {}}
+              onAddTask={() => onAddTask(null)}
               onTaskToggle={onTaskToggle}
               onTaskDelete={onTaskDelete}
               onEditTask={onEditTask}
               onViewTask={onViewTask || (() => {})}
               onTaskContextMenu={onTaskContextMenu}
               onSortClick={onSortClick}
-              columnMenu={columnMenu?.assignmentId === assignment ? columnMenu : null}
+              columnMenu={columnMenu?.assignmentId === column.id ? columnMenu : null}
               onCloseColumnMenu={onCloseColumnMenu}
-              onMoveToWorkspace={onMoveToWorkspace}
-              onDeleteAssignment={() => onDeleteAssignment(assignment)}
+              onMoveToWorkspace={() => onMoveToWorkspace(column.title)}
+              onDeleteAssignment={() => {}}
               onUpdateAssignment={onUpdateAssignment}
             />
           </div>

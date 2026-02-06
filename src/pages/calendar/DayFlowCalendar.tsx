@@ -2,7 +2,8 @@
 // import '@/utils/dayflowHMRClient';
 
 import { Suspense, lazy, memo, useEffect, useMemo, useState } from 'react';
-import { ViewType, createAllDayEvent, createDayView, createDragPlugin, createEvent, createMonthView, createWeekView, createYearView, useCalendarApp } from '@dayflow/core';
+import { ViewType, createDayView, createDragPlugin, createMonthView, createWeekView, createYearView, useCalendarApp } from '@dayflow/core';
+import { filterTasksForCalendar, tasksToEvents } from '@/utils/taskToEventMapper';
 
 import { fetchTasks } from '@/store/TaskActions';
 // Importar para conexión con base de datos
@@ -325,229 +326,116 @@ const DayFlowCalendarComponent = memo(() => {
     });
   }, [currentTheme]);
 
-  // Convert tasks to DayFlow events
+  // Convert tasks to DayFlow events using the new mapper
   const events = useMemo(() => {
-    const convertedEvents: any[] = [];
-    
     console.log('DEBUG: Total tasks available:', tasks.length);
-    console.log('DEBUG: Sample tasks:', tasks.slice(0, 3).map(t => ({
+    console.log('DEBUG: Sample tasks:', tasks.slice(0, 5).map(t => ({
       id: t.id,
       title: t.title,
       completed: t.completed,
       deadline: t.deadline,
-      hasDeadline: !!t.deadline
+      hasDeadline: !!t.deadline,
+      recurrence_type: t.recurrence_type,
+      recurrence_weekdays: t.recurrence_weekdays,
+      start_time: t.start_time,
+      end_time: t.end_time
     })));
     
-    // Enhanced debugging: Show all tasks with their completion status
-    const completedTasks = tasks.filter(task => task.completed);
-    const incompleteTasks = tasks.filter(task => !task.completed);
-    const incompleteTasksWithDeadlines = tasks.filter(task => !task.completed && task.deadline);
-    
-    console.log('DEBUG: Task breakdown:');
-    console.log('- Total tasks:', tasks.length);
-    console.log('- Completed tasks:', completedTasks.length);
-    console.log('- Incomplete tasks:', incompleteTasks.length);
-    console.log('- Incomplete tasks with deadlines:', incompleteTasksWithDeadlines.length);
-    
-    // Show details of incomplete tasks
-    if (incompleteTasks.length > 0) {
-      console.log('DEBUG: Incomplete task details:', incompleteTasks.slice(0, 5).map(t => ({
-        id: t.id,
-        title: t.title,
-        completed: t.completed,
-        deadline: t.deadline,
-        hasDeadline: !!t.deadline
-      })));
+    // DEBUG: Buscar específicamente la tarea "Recu POO"
+    const recuPooTask = tasks.find(t => t.title === 'Recu POO');
+    if (recuPooTask) {
+      console.log('DEBUG: Found Recu POO task:', {
+        id: recuPooTask.id,
+        title: recuPooTask.title,
+        completed: recuPooTask.completed,
+        deadline: recuPooTask.deadline,
+        hasDeadline: !!recuPooTask.deadline,
+        recurrence_type: recuPooTask.recurrence_type,
+        recurrence_weekdays: recuPooTask.recurrence_weekdays,
+        start_time: recuPooTask.start_time,
+        end_time: recuPooTask.end_time,
+        assignment: recuPooTask.assignment,
+        difficulty: recuPooTask.difficulty
+      });
+    } else {
+      console.log('DEBUG: Recu POO task NOT found in tasks array');
     }
     
-    // Show details of tasks with deadlines
-    const tasksWithDeadlines = tasks.filter(task => task.deadline);
-    console.log('DEBUG: Tasks with deadlines (any completion status):', tasksWithDeadlines.length);
-    if (tasksWithDeadlines.length > 0) {
-      console.log('DEBUG: Tasks with deadlines details:', tasksWithDeadlines.slice(0, 5).map(t => ({
-        id: t.id,
-        title: t.title,
-        completed: t.completed,
-        deadline: t.deadline
-      })));
-    }
+    // Filter tasks for calendar display
+    const tasksForCalendar = filterTasksForCalendar(tasks, {
+      includeCompleted: false, // Don't show completed tasks by default
+      includeWithoutDeadlines: false, // Only show tasks with deadlines
+    });
     
-    // Process incomplete tasks with deadlines (primary target for calendar)
-    const tasksToProcess = incompleteTasksWithDeadlines.length > 0 ? incompleteTasksWithDeadlines : [];
+    console.log('DEBUG: Tasks filtered for calendar:', tasksForCalendar.length);
     
-    // If no incomplete tasks with deadlines, check if we should show test tasks or completed tasks
-    if (tasksToProcess.length === 0) {
-      console.log('DEBUG: No incomplete tasks with deadlines found');
-      
-      // For demo purposes, create test tasks if in demo mode
-      if (isDemo) {
-        console.log('DEBUG: Demo mode - adding test tasks');
-        tasksToProcess.push(
-          ...[
-            {
-              id: 'test-1',
-              title: 'Test Task 1 - Today',
-              completed: false,
-              deadline: new Date().toISOString(),
-              start_time: '10:00',
-              end_time: '11:00',
-              assignment: 'Test Assignment'
-            },
-            {
-              id: 'test-2', 
-              title: 'Test Task 2 - Tomorrow',
-              completed: false,
-              deadline: new Date(Date.now() + 86400000).toISOString(),
-              start_time: '14:00',
-              end_time: '15:00',
-              assignment: 'Test Assignment'
-            },
-            {
-              id: 'test-3',
-              title: 'Test Task 3 - All Day',
-              completed: false,
-              deadline: new Date(Date.now() + 172800000).toISOString(),
-              assignment: 'Test Assignment'
-            }
-          ]
-        );
-      } else {
-        // In production, show all tasks with deadlines (including completed ones) but mark them appropriately
-        console.log('DEBUG: Production mode - showing all tasks with deadlines (including completed)');
-        tasksToProcess.push(...tasksWithDeadlines);
+    // DEBUG: Verificar si Recu POO pasó el filtro
+    const recuPooAfterFilter = tasksForCalendar.find(t => t.title === 'Recu POO');
+    if (recuPooAfterFilter) {
+      console.log('DEBUG: Recu POO passed filter - will be converted to event');
+    } else {
+      console.log('DEBUG: Recu POO was filtered out - checking why...');
+      if (recuPooTask) {
+        console.log('DEBUG: Recu POO filter analysis:', {
+          completed: recuPooTask.completed, // Should be false
+          hasDeadline: !!recuPooTask.deadline, // Should be true
+          deadline: recuPooTask.deadline
+        });
       }
     }
     
-    tasksToProcess
-      .forEach(task => {
-        try {
-          // Use deadline field (matches database schema)
-          const deadline = new Date(task.deadline);
-          
-          // Validar que la fecha sea válida
-          if (isNaN(deadline.getTime())) {
-            console.warn('Invalid deadline for task:', task.id, task.deadline);
-            return;
-          }
-          
-          // Add visual distinction for completed tasks
-          const isCompleted = task.completed === true;
-          const eventTitle = isCompleted ? `✓ ${task.title || 'Untitled'}` : task.title || 'Untitled';
-          
-          // Handle recurring tasks
-          if ((task.isRecurring || task.recurrence_type === 'weekly') && task.recurrence_weekdays && task.recurrence_weekdays.length > 0) {
-            // For recurring tasks, create events for this week
-            const today = new Date();
-            const startOfWeek = new Date(today);
-            const day = startOfWeek.getDay();
-            const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-            startOfWeek.setDate(diff);
-            
-            task.recurrence_weekdays.forEach((weekday: number) => {
-              const eventDate = new Date(startOfWeek);
-              eventDate.setDate(startOfWeek.getDate() + (weekday === 0 ? 6 : weekday - 1));
-              
-              if (task.start_time && task.end_time) {
-                const [startHour, startMin] = task.start_time.split(':').map(Number);
-                const [endHour, endMin] = task.end_time.split(':').map(Number);
-                
-                const startDate = new Date(eventDate);
-                startDate.setHours(startHour || 10, startMin || 0, 0, 0);
-                
-                const endDate = new Date(eventDate);
-                endDate.setHours(endHour || 11, endMin || 0, 0, 0);
-                
-                convertedEvents.push(createEvent({
-                  id: `${task.id}-${weekday}`,
-                  title: eventTitle,
-                  start: startDate,
-                  end: endDate,
-                  // Add metadata with original task information
-                  meta: {
-                    taskId: task.id,
-                    assignment: task.assignment,
-                    priority: task.priority,
-                    isRecurring: true,
-                    weekday: weekday,
-                    originalDeadline: task.deadline,
-                    isCompleted: isCompleted,
-                  }
-                }));
-              } else {
-                // All day event for tasks without specific times
-                convertedEvents.push(createAllDayEvent(
-                  `${task.id}-${weekday}`,
-                  eventTitle,
-                  eventDate
-                ));
-              }
-            });
-          } else {
-            // Handle one-time tasks with start/end times
-            if (task.start_time && task.end_time) {
-              const [startHour, startMin] = task.start_time.split(':').map(Number);
-              const [endHour, endMin] = task.end_time.split(':').map(Number);
-              
-              const startDate = new Date(deadline);
-              startDate.setHours(startHour || 10, startMin || 0, 0, 0);
-              
-              const endDate = new Date(deadline);
-              endDate.setHours(endHour || 11, endMin || 0, 0, 0);
-              
-              convertedEvents.push(createEvent({
-                id: task.id,
-                title: eventTitle,
-                start: startDate,
-                end: endDate,
-                // Add metadata with original task information
-                meta: {
-                  taskId: task.id,
-                  assignment: task.assignment,
-                  priority: task.priority,
-                  isRecurring: false,
-                  originalDeadline: task.deadline,
-                  isCompleted: isCompleted,
-                }
-              }));
-            } else {
-              // All day event for tasks without specific times
-              convertedEvents.push(createAllDayEvent(
-                task.id, 
-                eventTitle, 
-                deadline
-              ));
-            }
-          }
-        } catch (error) {
-          console.error('Error processing task for calendar:', task.id, error);
+    // If no tasks to show, add demo tasks if in demo mode
+    let tasksToProcess = tasksForCalendar;
+    if (tasksToProcess.length === 0 && isDemo) {
+      console.log('DEBUG: Demo mode - adding test tasks');
+      tasksToProcess = [
+        {
+          id: 'test-1',
+          title: 'Test Task 1 - Today',
+          completed: false,
+          deadline: new Date().toISOString(),
+          start_time: '10:00',
+          end_time: '11:00',
+          assignment: 'Test Assignment',
+          difficulty: 'easy'
+        },
+        {
+          id: 'test-2', 
+          title: 'Test Task 2 - Tomorrow',
+          completed: false,
+          deadline: new Date(Date.now() + 86400000).toISOString(),
+          start_time: '14:00',
+          end_time: '15:00',
+          assignment: 'Test Assignment',
+          difficulty: 'medium'
+        },
+        {
+          id: 'test-3',
+          title: 'Test Task 3 - All Day',
+          completed: false,
+          deadline: new Date(Date.now() + 172800000).toISOString(),
+          assignment: 'Test Assignment',
+          difficulty: 'hard'
         }
-      });
+      ];
+    }
+    
+    // Convert tasks to events using the mapper
+    const convertedEvents = tasksToEvents(tasksToProcess);
     
     console.log(`Converted ${tasksToProcess.length} tasks to ${convertedEvents.length} calendar events`);
     
-    // Enhanced debugging: Show what types of tasks were converted
-    const completedEvents = convertedEvents.filter(event => event.title?.startsWith('✓'));
-    const incompleteEvents = convertedEvents.filter(event => !event.title?.startsWith('✓'));
-    
-    console.log(`Event breakdown: ${completedEvents.length} completed, ${incompleteEvents.length} incomplete`);
-    
-    // Debug: Show why tasks failed to convert
-    if (tasksToProcess.length > 0 && convertedEvents.length === 0) {
-      console.log('DEBUG: Tasks that failed to convert:');
-      tasksToProcess.slice(0, 5).forEach(task => {
-        console.log('Task:', {
-          id: task.id,
-          title: task.title,
-          completed: task.completed,
-          deadline: task.deadline,
-          hasDeadline: !!task.deadline,
-          isValidDeadline: task.deadline ? !isNaN(new Date(task.deadline).getTime()) : false
-        });
-      });
-    }
+    // DEBUG: Verificar eventos creados
+    console.log('DEBUG: Created events:', convertedEvents.map(e => ({
+      id: e.id,
+      title: e.title,
+      start: e.start,
+      end: e.end,
+      meta: e.meta
+    })));
     
     return convertedEvents;
-  }, [tasks]);
+  }, [tasks, isDemo]);
 
   // Memoize views with optimized configuration
   const views = useMemo(() => [

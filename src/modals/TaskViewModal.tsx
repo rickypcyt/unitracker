@@ -1,9 +1,9 @@
 import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
+import { formatDate, formatDateTimeWithAmPm } from "@/utils/dateUtils";
 
 import BaseModal from "@/modals/BaseModal";
 import Markdown from "react-markdown";
 import React from "react";
-import { formatDateTimeWithAmPm } from "@/utils/dateUtils";
 import moment from "moment";
 
 interface Task {
@@ -241,9 +241,16 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
                   <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Deadline</label>
                   <p className="text-[var(--text-primary)]">
                     {task.deadline || task.due_date 
-                      ? formatDateTimeWithAmPm(task.deadline || task.due_date)
+                      ? formatDate(task.deadline || task.due_date)
                       : 'No deadline'}
                   </p>
+                  {/* Show time if available */}
+                  {task.start_time && (
+                    <p className="text-[var(--text-secondary)] text-sm mt-1">
+                      Time: {to12Hour(task.start_time)}
+                      {task.end_time && ` - ${to12Hour(task.end_time)}`}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

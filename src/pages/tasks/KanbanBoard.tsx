@@ -454,39 +454,45 @@ export const KanbanBoard = () => {
   }
 
   return (
-      <div className="flex flex-col h-full kanban-board">
-        <AssignmentColumns
-          assignments={sortedIncompletedAssignments}
-          incompletedByAssignment={incompletedByAssignment}
-          currentWorkspacePins={currentWorkspacePins}
-          onTogglePin={handleTogglePin}
-          onAddTask={handleAddTask}
-          onTaskToggle={handleToggleCompletion}
-          onTaskDelete={handleConfirmDeleteTask}
-          onEditTask={handleEditTask}
-          onViewTask={handleViewTask}
-          onTaskContextMenu={handleTaskContextMenu}
-          onSortClick={handleSortClick}
-          columnMenu={columnMenu}
-          onCloseColumnMenu={handleCloseColumnMenu}
-          onMoveToWorkspace={handleMoveToWorkspace}
-          onDeleteAssignment={(assignment) => {
-            setAssignmentToDelete(assignment);
-            setShowDeleteAssignmentModal(true);
-          }}
-          onUpdateAssignment={handleUpdateAssignment}
-        />
+      <div className="flex flex-col lg:flex-row gap-4 h-full kanban-board">
+        {/* Left Column - Active Tasks */}
+        <div className="flex-1 min-h-0">
+          <AssignmentColumns
+            assignments={sortedIncompletedAssignments}
+            incompletedByAssignment={incompletedByAssignment}
+            currentWorkspacePins={currentWorkspacePins}
+            onTogglePin={handleTogglePin}
+            onAddTask={handleAddTask}
+            onTaskToggle={handleToggleCompletion}
+            onTaskDelete={handleConfirmDeleteTask}
+            onEditTask={handleEditTask}
+            onViewTask={handleViewTask}
+            onTaskContextMenu={handleTaskContextMenu}
+            onSortClick={handleSortClick}
+            columnMenu={columnMenu}
+            onCloseColumnMenu={handleCloseColumnMenu}
+            onMoveToWorkspace={handleMoveToWorkspace}
+            onDeleteAssignment={(assignment) => {
+              setAssignmentToDelete(assignment);
+              setShowDeleteAssignmentModal(true);
+            }}
+            onUpdateAssignment={handleUpdateAssignment}
+          />
+        </div>
 
-        <CompletedTasksSection
-          showCompleted={showCompleted}
-          completedTasks={completedTasks}
-          onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
-          onTaskToggle={handleToggleCompletion}
-          onTaskDelete={handleConfirmDeleteTask}
-          onEditTask={handleEditTask}
-          onViewTask={handleViewTask}
-          onTaskContextMenu={handleTaskContextMenu}
-        />
+        {/* Right Column - Completed Tasks */}
+        {completedTasks && completedTasks.length > 0 && (
+          <CompletedTasksSection
+            showCompleted={showCompleted}
+            completedTasks={completedTasks}
+            onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
+            onTaskToggle={handleToggleCompletion}
+            onTaskDelete={handleConfirmDeleteTask}
+            onEditTask={handleEditTask}
+            onViewTask={handleViewTask}
+            onTaskContextMenu={handleTaskContextMenu}
+          />
+        )}
 
       {/* Context Menu */}
       {contextMenu && (
