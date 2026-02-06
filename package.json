@@ -35,7 +35,7 @@
     "@capacitor/core": "^7",
     "@capacitor/status-bar": "^7.0.3",
     "@chakra-ui/react": "^3.24.2",
-    "@dayflow/core": "^2.0.4",
+    "@dayflow/core": "github:rickypcyt/calendar#custom/unitracker-integration",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@eslint/eslintrc": "^3.3.1",
