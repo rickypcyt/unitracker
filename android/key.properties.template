@@ -1,7 +1,0 @@
-# Copia este archivo como key.properties y completa con tus datos reales
-# NO subas el archivo key.properties a git (ya está en .gitignore)
-
-storePassword=TU_PASSWORD_DEL_KEYSTORE
-keyPassword=TU_PASSWORD_DE_LA_KEY
-keyAlias=unitracker
-storeFile=keystores/unitracker-release.keystore

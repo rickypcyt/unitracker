@@ -123,6 +123,10 @@ export default defineConfig(({ command, mode }) => {
     watch: {
       usePolling: false,
       interval: 100
+    },
+    hmr: {
+      port: 5173,
+      host: 'localhost'
     }
   },
   preview: {
