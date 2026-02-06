@@ -6,9 +6,6 @@
 /* Import highlight.js styles for syntax highlighting */
 @import 'highlight.js/styles/github.css';
 
-/* Import dayflow styles */
-@import '@dayflow/core/dist/styles.css';
-
 /* Importa las capas base, componentes y utilidades de Tailwind */
 @tailwind base;
 @tailwind components;

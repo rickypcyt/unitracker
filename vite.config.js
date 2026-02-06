@@ -10,6 +10,10 @@ export default defineConfig(({ command, mode }) => {
                                   process.env.CAPACITOR_PLATFORM ||
                                   process.argv.some(arg => arg.includes('cap'));
   
+  // Optimizaciones para desarrollo rápido
+  const isDev = command === 'serve';
+  const isFastDev = process.env.FAST_DEV === 'true';
+  
   return {
     plugins: [
       react(),
@@ -23,7 +27,7 @@ export default defineConfig(({ command, mode }) => {
         })
       ] : []),
       // Only enable compression for web builds, not mobile builds
-      ...(!shouldDisableCompression ? [
+      ...(!shouldDisableCompression && !isFastDev ? [
         compression({
           algorithm: 'gzip',
           exclude: [/\.(br)$/, /\.(gz)$/],
@@ -34,49 +38,52 @@ export default defineConfig(({ command, mode }) => {
         }),
       ] : []),
     ],
-  optimizeDeps: {
-    include: [
-      '@chakra-ui/react',
-      '@emotion/react',
-      '@emotion/styled',
-      'react',
-      'react-dom',
-      'react-dom/client',
-      'react-redux',
-      '@reduxjs/toolkit',
-      'framer-motion',
-      'react-toastify',
-      'lucide-react',
-      '@supabase/supabase-js',
-      '@supabase/postgrest-js',
-      '@tiptap/react',
-      '@tiptap/starter-kit',
-      '@tiptap/extension-placeholder',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime'
-    ],
-    exclude: [
-      'chart.js'
-    ],
-    esbuildOptions: {
-      target: 'es2020',
-      // This helps with circular dependencies
-      define: {
-        global: 'globalThis',
+    // Optimizaciones críticas para desarrollo
+    optimizeDeps: {
+      include: [
+        '@chakra-ui/react',
+        '@emotion/react',
+        '@emotion/styled',
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react-redux',
+        '@reduxjs/toolkit',
+        'framer-motion',
+        'react-toastify',
+        'lucide-react',
+        '@supabase/supabase-js',
+        '@supabase/postgrest-js',
+        '@tiptap/react',
+        '@tiptap/starter-kit',
+        '@tiptap/extension-placeholder',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        // @dayflow/core oficial v2.0.5 - ahora debería funcionar correctamente
+        '@dayflow/core'
+      ],
+      exclude: [
+        'chart.js'
+        // @dayflow/core removido de exclude - versión oficial funciona
+      ],
+      // Optimizaciones para desarrollo
+      ...(isDev && !isFastDev && {
+        esbuildOptions: {
+          target: 'es2020',
+          define: {
+            global: 'globalThis',
+          },
+        },
+      }),
+    },
+    build: {
+      target: ['es2020', 'firefox91'],
+      chunkSizeWarningLimit: 600,
+      commonjsOptions: {
+        transformMixedEsModules: true,
+        include: [/node_modules/],
       },
-    },
-    force: false // Remove force optimization to prevent initialization issues
-  },
-  // Cache configuration
-  cacheDir: 'node_modules/.vite',
-  build: {
-    target: ['es2020', 'firefox91'],
-    chunkSizeWarningLimit: 600,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-      include: [/node_modules/],
-    },
-    rollupOptions: {
+      rollupOptions: {
       output: {
         manualChunks: (id) => {
           // Ensure React, React DOM, and JSX runtimes live together for stable exports
@@ -120,13 +127,21 @@ export default defineConfig(({ command, mode }) => {
     port: 5173,
     strictPort: true,
     allowedHosts: ['.ngrok-free.app'],
+    // 🚀 Optimizaciones para HMR en tiempo real
     watch: {
       usePolling: false,
-      interval: 100
+      interval: 50, // Más rápido para cambios instantáneos
+      ignored: ['**/node_modules/**', '**/dist/**']
     },
     hmr: {
       port: 5173,
-      host: 'localhost'
+      host: 'localhost',
+      // 🔄 HMR optimizado para DayFlow
+      overlay: false,
+    },
+    // 🚀 Configuración para cambios instantáneos
+    fs: {
+      strict: false, // Permite cambios sin reiniciar
     }
   },
   preview: {

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"bun vite\"",
+    "dev:fast": "FAST_DEV=true bun vite",
+    "dev:ultra": "FAST_DEV=true bun vite --force",
     "build": "vite build",
     "build:fast": "vite build --mode development",
     "build:mobile": "DISABLE_COMPRESSION=true vite build",
@@ -33,7 +35,7 @@
     "@capacitor/core": "^7",
     "@capacitor/status-bar": "^7.0.3",
     "@chakra-ui/react": "^3.24.2",
-    "@dayflow/core": "link:@dayflow/core",
+    "@dayflow/core": "^2.0.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@eslint/eslintrc": "^3.3.1",

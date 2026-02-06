@@ -1,9 +1,137 @@
-import { DayFlowCalendar, ViewType, createAllDayEvent, createDayView, createDragPlugin, createEvent, createMonthView, createWeekView, useCalendarApp } from '@dayflow/core';
-import { memo, useEffect, useMemo } from 'react';
+// Importar cliente HMR para cambios en tiempo real - REMOVIDO TEMPORALMENTE
+// import '@/utils/dayflowHMRClient';
 
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from 'react';
+import { ViewType, createAllDayEvent, createDayView, createDragPlugin, createEvent, createMonthView, createWeekView, createYearView, useCalendarApp } from '@dayflow/core';
+
+import { fetchTasks } from '@/store/TaskActions';
+// Importar para conexión con base de datos
 import { useAppStore } from '@/store/appStore';
 import useDemoMode from '@/utils/useDemoMode';
 import useTheme from '@/hooks/useTheme';
+
+// Lazy load DayFlowCalendar to reduce initial bundle size
+const DayFlowCalendar = lazy(() => import('@dayflow/core').then(module => ({ 
+  default: module.DayFlowCalendar 
+})));
+
+// Memoized sidebar component to prevent infinite re-renders
+const CalendarSidebar = memo(({ app, calendars, toggleCalendarVisibility, toggleAll, isCollapsed, setCollapsed, selectedView }: any) => {
+  // 🎨 Obtener colores de UniTracker
+  const root = document.documentElement;
+  const computedStyle = getComputedStyle(root);
+  const colors = {
+    bgPrimary: computedStyle.getPropertyValue('--bg-primary').trim(),
+    bgSecondary: computedStyle.getPropertyValue('--bg-secondary').trim(),
+    textPrimary: computedStyle.getPropertyValue('--text-primary').trim(),
+    textSecondary: computedStyle.getPropertyValue('--text-secondary').trim(),
+    borderPrimary: computedStyle.getPropertyValue('--border-primary').trim(),
+    accentPrimary: computedStyle.getPropertyValue('--accent-primary').trim(),
+  };
+
+  if (isCollapsed) {
+    return (
+      <div className="h-full flex items-center justify-center p-2" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.borderPrimary }}>
+        <button 
+          onClick={() => setCollapsed(false)}
+          className="p-2 rounded-lg hover:bg-opacity-10 hover:bg-[var(--accent-primary)] transition-colors"
+          style={{ color: colors.textPrimary }}
+          title="Expand Sidebar"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <aside className="flex h-full flex-col" style={{ backgroundColor: colors.bgSecondary, borderRight: `1px solid ${colors.borderPrimary}` }}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: colors.borderPrimary }}>
+        <h3 className="text-sm font-semibold" style={{ color: colors.textPrimary }}>Calendars</h3>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => toggleAll(true)}
+            className="text-xs px-2 py-1 rounded hover:bg-opacity-10 hover:bg-[var(--accent-primary)] transition-colors"
+            style={{ color: colors.textSecondary }}
+          >
+            All
+          </button>
+          <button 
+            onClick={() => toggleAll(false)}
+            className="text-xs px-2 py-1 rounded hover:bg-opacity-10 hover:bg-[var(--accent-primary)] transition-colors"
+            style={{ color: colors.textSecondary }}
+          >
+            None
+          </button>
+          <button 
+            onClick={() => setCollapsed(true)}
+            className="p-1 rounded hover:bg-opacity-10 hover:bg-[var(--accent-primary)] transition-colors"
+            style={{ color: colors.textSecondary }}
+            title="Collapse Sidebar"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Calendar List */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-3">
+          {calendars.map((calendar: any) => (
+            <div key={calendar.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-opacity-5 hover:bg-[var(--accent-primary)] transition-colors">
+              <input
+                type="checkbox"
+                checked={calendar.isVisible}
+                onChange={() => toggleCalendarVisibility(calendar.id, !calendar.isVisible)}
+                className="rounded"
+                style={{ accentColor: colors.accentPrimary }}
+              />
+              <div 
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: calendar.colors?.eventColor || colors.accentPrimary }}
+              />
+              <span className="text-sm flex-1" style={{ color: colors.textPrimary }}>
+                {calendar.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer Info */}
+      <div className="p-4 border-t" style={{ borderColor: colors.borderPrimary }}>
+        <div className="space-y-2 text-xs" style={{ color: colors.textSecondary }}>
+          <div className="flex justify-between">
+            <span>Current Date:</span>
+            <span style={{ color: colors.textPrimary }}>
+              {app.getCurrentDate().toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Total Events:</span>
+            <span style={{ color: colors.textPrimary }}>
+              {app.getEvents().length}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span>Current View:</span>
+            <span style={{ color: colors.textPrimary }}>
+              {selectedView || 'week'}
+            </span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+});
+
+CalendarSidebar.displayName = 'CalendarSidebar';
+
 
 const DayFlowCalendarComponent = memo(() => {
   const realTasks = useAppStore((state) => state.tasks.tasks);
@@ -13,32 +141,187 @@ const DayFlowCalendarComponent = memo(() => {
   // Use the same theme system as the rest of the app
   const { currentTheme } = useTheme();
 
+  // Estado para la vista seleccionada con persistencia en localStorage
+  const [selectedView, setSelectedView] = useState<'day' | 'week' | 'month' | 'year'>(() => {
+    const savedView = localStorage.getItem('dayflow-calendar-view');
+    return (savedView as 'day' | 'week' | 'month' | 'year') || 'week';
+  });
+
+  // Guardar la vista seleccionada en localStorage cuando cambie
+  useEffect(() => {
+    localStorage.setItem('dayflow-calendar-view', selectedView);
+  }, [selectedView]);
+
+  // Cargar tareas desde la base de datos al montar el componente
+  useEffect(() => {
+    if (!isDemo) {
+      const loadTasks = async () => {
+        try {
+          await fetchTasks();
+        } catch (error) {
+          console.error('Error loading tasks for calendar:', error);
+        }
+      };
+      loadTasks();
+    }
+  }, [isDemo]);
+
+  // Refrescar tareas periódicamente para mantener el calendario actualizado
+  useEffect(() => {
+    if (!isDemo) {
+      const interval = setInterval(() => {
+        fetchTasks(undefined, true); // Forzar refresh cada 5 minutos
+      }, 5 * 60 * 1000);
+
+      return () => clearInterval(interval);
+    }
+    return undefined;
+  }, [isDemo]);
+
+  // Escuchar eventos de actualización de tareas
+  useEffect(() => {
+    const handleTaskUpdate = () => {
+      if (!isDemo) {
+        fetchTasks(undefined, true);
+      }
+    };
+
+    window.addEventListener('refreshCalendar', handleTaskUpdate);
+    return () => window.removeEventListener('refreshCalendar', handleTaskUpdate);
+  }, [isDemo]);
+
+  //  La persistencia de vista ahora se maneja con el callback oficial de DayFlow
+  useEffect(() => {
+    const handleViewChange = (event: CustomEvent) => {
+      if (event.detail?.view) {
+        setSelectedView(event.detail.view);
+      }
+    };
+
+    window.addEventListener('dayflow-view-change', handleViewChange as EventListener);
+    return () => window.removeEventListener('dayflow-view-change', handleViewChange as EventListener);
+  }, []);
+
+  //  HMR para cambios en tiempo real en DayFlow
+  useEffect(() => {
+    const handleDayFlowHMR = (event: CustomEvent) => {
+      console.log(' DayFlow HMR: Recibido evento de actualización', event.detail);
+      
+      // Forzar actualización del componente si es necesario
+      const dayflowElement = document.querySelector('[data-dayflow-calendar]') as HTMLElement;
+      if (dayflowElement) {
+        // Limpiar estado de React para forzar re-render
+        const reactKeys = Object.keys(dayflowElement).filter(key => 
+          key.startsWith('__reactFiber') || 
+          key.startsWith('_reactInternal') || 
+          key.startsWith('__reactProps')
+        );
+        
+        reactKeys.forEach(key => {
+          delete (dayflowElement as any)[key];
+        });
+        
+        console.log(' DayFlow HMR: Forzando re-render del componente');
+      }
+    };
+
+    window.addEventListener('dayflow-hmr-update', handleDayFlowHMR as EventListener);
+    return () => window.removeEventListener('dayflow-hmr-update', handleDayFlowHMR as EventListener);
+  }, []);
+
   // Create drag plugin for DayFlow
   const dragPlugin = createDragPlugin({
     enableDrag: true,
     enableResize: true,
     enableCreate: true,
     enableAllDayCreate: true,
-    supportedViews: [ViewType.DAY, ViewType.WEEK, ViewType.MONTH],
+    supportedViews: [ViewType.DAY, ViewType.WEEK, ViewType.MONTH, ViewType.YEAR],
   });
 
-  // Fix DayFlow theme override by removing conflicting attributes
+  // 🎨 Sincronizar DayFlow con el sistema de temas de UniTracker (arreglado para evitar bucle infinito)
   useEffect(() => {
     const root = document.documentElement;
     
-    // Remove DayFlow's theme override attributes
+    // Remover atributos de DayFlow que puedan interferir
     root.removeAttribute('data-dayflow-theme-override');
     root.removeAttribute('data-theme');
     
-    // Ensure our theme system takes precedence
+    // Aplicar el tema de UniTracker a DayFlow
     root.classList.remove('light', 'dark');
     root.classList.add(currentTheme);
     root.style.colorScheme = currentTheme;
     
-    console.log('DayFlow Calendar - Fixed theme override:', {
+    // 🎨 Obtener colores de UniTracker UNA VEZ
+    const computedStyle = getComputedStyle(root);
+    const accentColor = computedStyle.getPropertyValue('--accent-primary').trim();
+    const bgPrimary = computedStyle.getPropertyValue('--bg-primary').trim();
+    const bgSecondary = computedStyle.getPropertyValue('--bg-secondary').trim();
+    const bgTertiary = computedStyle.getPropertyValue('--bg-tertiary').trim();
+    const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
+    const textSecondary = computedStyle.getPropertyValue('--text-secondary').trim();
+    const borderPrimary = computedStyle.getPropertyValue('--border-primary').trim();
+    
+    // Aplicar colores de UniTracker a los elementos de DayFlow
+    const dayflowStyles = `
+      .df-calendar {
+        --df-bg-primary: ${bgPrimary};
+        --df-bg-secondary: ${bgSecondary};
+        --df-bg-tertiary: ${bgTertiary};
+        --df-text-primary: ${textPrimary};
+        --df-text-secondary: ${textSecondary};
+        --df-border-primary: ${borderPrimary};
+        --df-accent-primary: ${accentColor};
+        --df-accent-hover: ${accentColor}20;
+        --df-accent-active: ${accentColor}30;
+      }
+      
+      /* Estilos para eventos de DayFlow que coincidan con UniTracker */
+      .calendar-event {
+        background-color: ${accentColor} !important;
+        border-color: ${accentColor} !important;
+        color: white !important;
+      }
+      
+      .calendar-event:hover {
+        background-color: ${accentColor}dd !important;
+      }
+      
+      /* Header de DayFlow */
+      .df-header {
+        background-color: ${bgSecondary} !important;
+        border-color: ${borderPrimary} !important;
+      }
+      
+      /* Celdas del calendario */
+      .df-time-grid-cell {
+        border-color: ${borderPrimary} !important;
+        background-color: ${bgPrimary} !important;
+      }
+      
+      .df-time-grid-cell:hover {
+        background-color: ${bgSecondary} !important;
+      }
+      
+      /* Eventos de todo el día */
+      .df-all-day-content {
+        background-color: ${bgPrimary} !important;
+      }
+    `;
+    
+    // Crear o actualizar el style tag para DayFlow
+    let styleTag = document.getElementById('dayflow-theme-sync') as HTMLStyleElement;
+    if (!styleTag) {
+      styleTag = document.createElement('style') as HTMLStyleElement;
+      styleTag.id = 'dayflow-theme-sync';
+      styleTag.type = 'text/css';
+      document.head.appendChild(styleTag);
+    }
+    styleTag.textContent = dayflowStyles;
+    
+    console.log('🎨 DayFlow Calendar - Synchronized with UniTracker theme:', {
       currentTheme,
-      documentClasses: root.className,
-      colorScheme: root.style.colorScheme
+      accentColor,
+      hasStyleTag: !!styleTag
     });
   }, [currentTheme]);
 
@@ -46,14 +329,113 @@ const DayFlowCalendarComponent = memo(() => {
   const events = useMemo(() => {
     const convertedEvents: any[] = [];
     
-    tasks
-      .filter(task => !task.completed)
+    console.log('DEBUG: Total tasks available:', tasks.length);
+    console.log('DEBUG: Sample tasks:', tasks.slice(0, 3).map(t => ({
+      id: t.id,
+      title: t.title,
+      completed: t.completed,
+      deadline: t.deadline,
+      hasDeadline: !!t.deadline
+    })));
+    
+    // Enhanced debugging: Show all tasks with their completion status
+    const completedTasks = tasks.filter(task => task.completed);
+    const incompleteTasks = tasks.filter(task => !task.completed);
+    const incompleteTasksWithDeadlines = tasks.filter(task => !task.completed && task.deadline);
+    
+    console.log('DEBUG: Task breakdown:');
+    console.log('- Total tasks:', tasks.length);
+    console.log('- Completed tasks:', completedTasks.length);
+    console.log('- Incomplete tasks:', incompleteTasks.length);
+    console.log('- Incomplete tasks with deadlines:', incompleteTasksWithDeadlines.length);
+    
+    // Show details of incomplete tasks
+    if (incompleteTasks.length > 0) {
+      console.log('DEBUG: Incomplete task details:', incompleteTasks.slice(0, 5).map(t => ({
+        id: t.id,
+        title: t.title,
+        completed: t.completed,
+        deadline: t.deadline,
+        hasDeadline: !!t.deadline
+      })));
+    }
+    
+    // Show details of tasks with deadlines
+    const tasksWithDeadlines = tasks.filter(task => task.deadline);
+    console.log('DEBUG: Tasks with deadlines (any completion status):', tasksWithDeadlines.length);
+    if (tasksWithDeadlines.length > 0) {
+      console.log('DEBUG: Tasks with deadlines details:', tasksWithDeadlines.slice(0, 5).map(t => ({
+        id: t.id,
+        title: t.title,
+        completed: t.completed,
+        deadline: t.deadline
+      })));
+    }
+    
+    // Process incomplete tasks with deadlines (primary target for calendar)
+    const tasksToProcess = incompleteTasksWithDeadlines.length > 0 ? incompleteTasksWithDeadlines : [];
+    
+    // If no incomplete tasks with deadlines, check if we should show test tasks or completed tasks
+    if (tasksToProcess.length === 0) {
+      console.log('DEBUG: No incomplete tasks with deadlines found');
+      
+      // For demo purposes, create test tasks if in demo mode
+      if (isDemo) {
+        console.log('DEBUG: Demo mode - adding test tasks');
+        tasksToProcess.push(
+          ...[
+            {
+              id: 'test-1',
+              title: 'Test Task 1 - Today',
+              completed: false,
+              deadline: new Date().toISOString(),
+              start_time: '10:00',
+              end_time: '11:00',
+              assignment: 'Test Assignment'
+            },
+            {
+              id: 'test-2', 
+              title: 'Test Task 2 - Tomorrow',
+              completed: false,
+              deadline: new Date(Date.now() + 86400000).toISOString(),
+              start_time: '14:00',
+              end_time: '15:00',
+              assignment: 'Test Assignment'
+            },
+            {
+              id: 'test-3',
+              title: 'Test Task 3 - All Day',
+              completed: false,
+              deadline: new Date(Date.now() + 172800000).toISOString(),
+              assignment: 'Test Assignment'
+            }
+          ]
+        );
+      } else {
+        // In production, show all tasks with deadlines (including completed ones) but mark them appropriately
+        console.log('DEBUG: Production mode - showing all tasks with deadlines (including completed)');
+        tasksToProcess.push(...tasksWithDeadlines);
+      }
+    }
+    
+    tasksToProcess
       .forEach(task => {
-        if (task.deadline) {
+        try {
+          // Use deadline field (matches database schema)
           const deadline = new Date(task.deadline);
           
+          // Validar que la fecha sea válida
+          if (isNaN(deadline.getTime())) {
+            console.warn('Invalid deadline for task:', task.id, task.deadline);
+            return;
+          }
+          
+          // Add visual distinction for completed tasks
+          const isCompleted = task.completed === true;
+          const eventTitle = isCompleted ? `✓ ${task.title || 'Untitled'}` : task.title || 'Untitled';
+          
           // Handle recurring tasks
-          if (task.isRecurring && task.recurrence_weekdays && task.recurrence_weekdays.length > 0) {
+          if ((task.isRecurring || task.recurrence_type === 'weekly') && task.recurrence_weekdays && task.recurrence_weekdays.length > 0) {
             // For recurring tasks, create events for this week
             const today = new Date();
             const startOfWeek = new Date(today);
@@ -77,15 +459,25 @@ const DayFlowCalendarComponent = memo(() => {
                 
                 convertedEvents.push(createEvent({
                   id: `${task.id}-${weekday}`,
-                  title: task.title || 'Untitled',
+                  title: eventTitle,
                   start: startDate,
                   end: endDate,
+                  // Add metadata with original task information
+                  meta: {
+                    taskId: task.id,
+                    assignment: task.assignment,
+                    priority: task.priority,
+                    isRecurring: true,
+                    weekday: weekday,
+                    originalDeadline: task.deadline,
+                    isCompleted: isCompleted,
+                  }
                 }));
               } else {
                 // All day event for tasks without specific times
                 convertedEvents.push(createAllDayEvent(
                   `${task.id}-${weekday}`,
-                  task.title || 'Untitled',
+                  eventTitle,
                   eventDate
                 ));
               }
@@ -104,35 +496,212 @@ const DayFlowCalendarComponent = memo(() => {
               
               convertedEvents.push(createEvent({
                 id: task.id,
-                title: task.title || 'Untitled',
+                title: eventTitle,
                 start: startDate,
                 end: endDate,
+                // Add metadata with original task information
+                meta: {
+                  taskId: task.id,
+                  assignment: task.assignment,
+                  priority: task.priority,
+                  isRecurring: false,
+                  originalDeadline: task.deadline,
+                  isCompleted: isCompleted,
+                }
               }));
             } else {
               // All day event for tasks without specific times
-              convertedEvents.push(createAllDayEvent(task.id, task.title || 'Untitled', deadline));
+              convertedEvents.push(createAllDayEvent(
+                task.id, 
+                eventTitle, 
+                deadline
+              ));
             }
           }
+        } catch (error) {
+          console.error('Error processing task for calendar:', task.id, error);
         }
       });
+    
+    console.log(`Converted ${tasksToProcess.length} tasks to ${convertedEvents.length} calendar events`);
+    
+    // Enhanced debugging: Show what types of tasks were converted
+    const completedEvents = convertedEvents.filter(event => event.title?.startsWith('✓'));
+    const incompleteEvents = convertedEvents.filter(event => !event.title?.startsWith('✓'));
+    
+    console.log(`Event breakdown: ${completedEvents.length} completed, ${incompleteEvents.length} incomplete`);
+    
+    // Debug: Show why tasks failed to convert
+    if (tasksToProcess.length > 0 && convertedEvents.length === 0) {
+      console.log('DEBUG: Tasks that failed to convert:');
+      tasksToProcess.slice(0, 5).forEach(task => {
+        console.log('Task:', {
+          id: task.id,
+          title: task.title,
+          completed: task.completed,
+          deadline: task.deadline,
+          hasDeadline: !!task.deadline,
+          isValidDeadline: task.deadline ? !isNaN(new Date(task.deadline).getTime()) : false
+        });
+      });
+    }
     
     return convertedEvents;
   }, [tasks]);
 
+  // Memoize views with optimized configuration
+  const views = useMemo(() => [
+    createDayView(), // Vista diaria con mini calendar y event list
+    createWeekView(), // Vista semanal con time slots y current time indicator  
+    createMonthView(), // Vista mensual con virtual scrolling
+    createYearView({
+      showTimedEventsInYearView: true, // Show timed events in year view
+    }), 
+  ], []);
+
+  // Memoized callback functions to prevent infinite re-renders
+  const handleViewChange = useMemo(() => (view: any) => {
+    console.log(' DayFlow: View changed to:', view);
+    // Guardar la vista seleccionada en localStorage
+    if (view?.type) {
+      setSelectedView(view.type);
+    }
+  }, []);
+
+  const handleEventCreate = useMemo(() => async (event: any) => {
+    console.log(' DayFlow: Event created:', event);
+    // Aquí puedes sincronizar con tu base de datos si es necesario
+    // Por ahora, los eventos se crean desde las tareas existentes
+  }, []);
+
+  const handleEventUpdate = useMemo(() => async (event: any) => {
+    console.log(' DayFlow: Event updated:', event);
+    // Sincronizar actualización con tu base de datos
+    // Puedes actualizar la tarea correspondiente en Supabase
+  }, []);
+
+  const handleEventDelete = useMemo(() => async (eventId: string) => {
+    console.log(' DayFlow: Event deleted:', eventId);
+    // Sincronizar eliminación con tu base de datos
+    // Puedes eliminar o marcar como completada la tarea correspondiente
+  }, []);
+
+  // Memoized sidebar render function
+  const sidebarRender = useMemo(() => (props: any) => {
+    return <CalendarSidebar {...props} selectedView={selectedView} />;
+  }, [selectedView]);
+
   const calendar = useCalendarApp({
-    views: [createDayView(), createWeekView(), createMonthView()],
+    views,
     events,
     initialDate: new Date(),
+    defaultView: selectedView as any, // Initial view from localStorage
     theme: { 
       mode: currentTheme as 'light' | 'dark' 
     }, // Pass the current theme to DayFlow
     plugins: [dragPlugin], // Add drag plugin
+    // SIDEBAR ALWAYS VISIBLE - UniTracker Configuration
+    useSidebar: {
+      enabled: true,
+      width: 280,
+      initialCollapsed: false, // ALWAYS EXPANDED
+      createCalendarMode: 'inline',
+      // Custom sidebar with UniTracker styling
+      render: sidebarRender
+    },
+    //  CALLBACKS OFICIALES DE DAYFLOW PARA SINCRONIZACIÓN CON BASE DE DATOS
+    callbacks: {
+      //  Callback para cambios de vista (oficial DayFlow)
+      onViewChange: handleViewChange,
+      //  Callbacks para eventos
+      onEventCreate: handleEventCreate,
+      onEventUpdate: handleEventUpdate,
+      onEventDelete: handleEventDelete,
+    },
   });
+
+
+  useEffect(() => {
+    // Añadir CSS para mejorar la UX del calendario
+    const style = document.createElement('style');
+    style.textContent = `
+      .df-time-grid-cell {
+        cursor: pointer !important;
+      }
+      .df-time-grid-cell:hover {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+      }
+      .df-all-day-cell {
+        cursor: pointer !important;
+      }
+      .df-all-day-cell:hover {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        console.log(' ESC PRESSED - CANCELLING EVENT CREATION - CRITICAL UX FEATURE');
+        
+        //  Método 1: Simular clic fuera para cancelar el modo de creación
+        const outsideClick = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 0,
+          clientY: 0,
+        });
+        document.body.dispatchEvent(outsideClick);
+        
+        setTimeout(() => {
+          // Buscar cualquier modal/dialogo visible
+          const dialogs = document.querySelectorAll('[role="dialog"], .modal, .overlay');
+          dialogs.forEach(dialog => {
+            const dialogElement = dialog as HTMLElement;
+            if (dialogElement.style && dialogElement.style.display !== 'none') {
+              dialogElement.style.display = 'none';
+              console.log(' Closed modal/dialog via ESC');
+            }
+          });
+          
+          const closeButtons = document.querySelectorAll(
+            '[aria-label*="Close"], [aria-label*="close"], .close, [data-action="close"], button[title*="Close"]'
+          );
+          closeButtons.forEach(btn => {
+            (btn as HTMLElement).click();
+            console.log(' Pressed close button via ESC');
+          });
+          
+          const tempElements = document.querySelectorAll('[data-creating], .event-creating, .temp-event');
+          tempElements.forEach(element => {
+            element.remove();
+            console.log(' Removed temporary event element via ESC');
+          });
+        }, 50); // Reducido a 50ms para respuesta más rápida
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true);
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+      console.log(' Cleaned up ESC handler and styles');
+    };
+  }, []);
 
   return (
     <div className="w-full h-full">
-      <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg overflow-hidden h-full">
-        <DayFlowCalendar calendar={calendar} />
+      <div className="bg-[var(--bg-primary)] rounded-lg overflow-hidden h-full">
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-[var(--text-secondary)]">Loading calendar...</div>
+          </div>
+        }>
+          <DayFlowCalendar calendar={calendar} />
+        </Suspense>
       </div>
     </div>
   );

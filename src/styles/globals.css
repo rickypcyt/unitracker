@@ -1,5 +1,5 @@
 /* Import external CSS first */
-@import '@dayflow/core/dist/styles.css';
+/* @dayflow/core CSS import removed - using npm version without separate CSS file */
 
 /* Tailwind directives */
 @tailwind base;
