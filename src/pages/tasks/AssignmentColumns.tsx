@@ -51,7 +51,8 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   const fixedColumns = sortedAssignments.map((assignment, index) => ({
     id: `column${index + 1}`,
     title: assignment,
-    tasks: incompletedByAssignment[assignment] || []
+    tasks: incompletedByAssignment[assignment] || [],
+    assignmentName: assignment // Keep the original assignment name for pin functionality
   }));
 
   return (
@@ -70,19 +71,19 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
               id={column.id}
               assignment={column.title}
               tasks={column.tasks}
-              pinned={false}
-              onTogglePin={() => {}}
-              onAddTask={() => onAddTask(null)}
+              pinned={currentWorkspacePins[column.assignmentName] === true}
+              onTogglePin={() => onTogglePin(column.assignmentName)}
+              onAddTask={() => onAddTask(column.assignmentName)}
               onTaskToggle={onTaskToggle}
               onTaskDelete={onTaskDelete}
               onEditTask={onEditTask}
               onViewTask={onViewTask || (() => {})}
               onTaskContextMenu={onTaskContextMenu}
               onSortClick={onSortClick}
-              columnMenu={columnMenu?.assignmentId === column.id ? columnMenu : null}
+              columnMenu={columnMenu?.assignmentId === column.assignmentName ? columnMenu : null}
               onCloseColumnMenu={onCloseColumnMenu}
-              onMoveToWorkspace={() => onMoveToWorkspace(column.title)}
-              onDeleteAssignment={() => {}}
+              onMoveToWorkspace={() => onMoveToWorkspace(column.assignmentName)}
+              onDeleteAssignment={() => onDeleteAssignment(column.assignmentName)}
               onUpdateAssignment={onUpdateAssignment}
             />
           </div>

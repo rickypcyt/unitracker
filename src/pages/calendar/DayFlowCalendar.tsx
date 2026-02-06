@@ -236,7 +236,7 @@ const DayFlowCalendarComponent = memo(() => {
     enableResize: true,
     enableCreate: true,
     enableAllDayCreate: true,
-    supportedViews: [ViewType.DAY, ViewType.WEEK, ViewType.MONTH, ViewType.YEAR],
+    supportedViews: [ViewType.YEAR, ViewType.MONTH, ViewType.WEEK, ViewType.DAY],
   });
 
   // 🎨 Sincronizar DayFlow con el sistema de temas de UniTracker (arreglado para evitar bucle infinito)
@@ -488,14 +488,9 @@ const DayFlowCalendarComponent = memo(() => {
       mode: currentTheme as 'light' | 'dark' 
     }, // Pass the current theme to DayFlow
     plugins: [dragPlugin], // Add drag plugin
-    // SIDEBAR ALWAYS VISIBLE - UniTracker Configuration
+    // SIDEBAR DISABLED - UniTracker Configuration
     useSidebar: {
-      enabled: true,
-      width: 280,
-      initialCollapsed: false, // ALWAYS EXPANDED
-      createCalendarMode: 'inline',
-      // Custom sidebar with UniTracker styling
-      render: sidebarRender
+      enabled: false
     },
     //  CALLBACKS OFICIALES DE DAYFLOW PARA SINCRONIZACIÓN CON BASE DE DATOS
     callbacks: {

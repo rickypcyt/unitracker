@@ -1,5 +1,6 @@
-import React from 'react';
 import { isAfter, isSameDay } from 'date-fns';
+
+import React from 'react';
 
 interface MonthViewProps {
   calendarDays: Array<{

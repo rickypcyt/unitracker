@@ -140,24 +140,6 @@ const CalendarPage = memo(() => {
       {calendarType === 'dayflow' ? (
         // Full page layout for DayFlow calendar
         <div className="w-full h-[calc(100vh-8rem)]">
-          {/* Calendar Type Toggle */}
-          <div className="flex justify-center mb-4">
-            <div className="inline-flex rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-1">
-              <button
-                onClick={() => handleCalendarTypeChange('original')}
-                className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
-              >
-                Original Calendar
-              </button>
-              <button
-                onClick={() => handleCalendarTypeChange('dayflow')}
-                className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-primary)]"
-              >
-                DayFlow Calendar
-              </button>
-            </div>
-          </div>
-          
           {/* Full width DayFlow Calendar */}
           <div className="h-full">
             <DayFlowCalendarComponent />
@@ -171,24 +153,6 @@ const CalendarPage = memo(() => {
           </div>
           <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center lg:max-w-4xl mx-auto">
             <div className="w-full">
-              {/* Calendar Type Toggle */}
-              <div className="flex justify-center mb-4">
-                <div className="inline-flex rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-1">
-                  <button
-                    onClick={() => handleCalendarTypeChange('original')}
-                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-primary)] text-[var(--accent-primary)]"
-                  >
-                    Original Calendar
-                  </button>
-                  <button
-                    onClick={() => handleCalendarTypeChange('dayflow')}
-                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
-                  >
-                    DayFlow Calendar
-                  </button>
-                </div>
-              </div>
-              
               {/* Render the appropriate calendar */}
               <Calendar view={view} onViewChange={handleViewChange} onTooltipShow={handleTooltipShow} />
             </div>

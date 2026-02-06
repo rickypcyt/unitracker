@@ -46,6 +46,8 @@ interface DayFlowEvent {
 function setTimeOnDate(date: Date, timeString: string): Date {
   const [hours, minutes] = timeString.split(':').map(Number);
   const result = new Date(date);
+  
+  // Set the time in local timezone
   result.setHours(hours || 10, minutes || 0, 0, 0);
   return result;
 }
@@ -85,7 +87,9 @@ export function taskToEvent(task: Task): DayFlowEvent[] {
       recurrence_type: task.recurrence_type,
       recurrence_weekdays: task.recurrence_weekdays,
       hasDeadline: !!task.deadline,
-      hasTimes: !!(task.start_time && task.end_time)
+      hasTimes: !!(task.start_time && task.end_time),
+      isRecurring: task.isRecurring,
+      fullTask: task
     });
     
     // Create events for multiple weeks (past 2 weeks to future 8 weeks)
@@ -111,6 +115,12 @@ export function taskToEvent(task: Task): DayFlowEvent[] {
           
           if (task.start_time && task.end_time) {
             // Timed recurring event (with or without deadline)
+            console.log('DEBUG: Time conversion - original times:', {
+              start_time: task.start_time,
+              end_time: task.end_time,
+              eventDate: eventDate.toISOString()
+            });
+            
             const startDate = setTimeOnDate(eventDate, task.start_time);
             const endDate = setTimeOnDate(eventDate, task.end_time);
             
@@ -118,7 +128,14 @@ export function taskToEvent(task: Task): DayFlowEvent[] {
               id: `${task.id}-${weekday}-${eventDate.toISOString().split('T')[0]}`,
               title: eventTitle,
               start: startDate,
-              end: endDate
+              end: endDate,
+              startLocal: startDate.toLocaleString(),
+              endLocal: endDate.toLocaleString(),
+              startUTC: startDate.toISOString(),
+              endUTC: endDate.toISOString(),
+              eventDate: eventDate.toISOString(),
+              weekday: weekday,
+              originalTimes: { start: task.start_time, end: task.end_time }
             });
             
             events.push(createEvent({
@@ -171,55 +188,22 @@ export function taskToEvent(task: Task): DayFlowEvent[] {
       return events;
     }
     
-    // Check if task has specific times (start_time/end_time for normal tasks)
-    if (task.start_time && task.end_time) {
-      // Timed event - use deadline date + start_time/end_time
-      const [startHour, startMin] = task.start_time.split(':').map(Number);
-      const [endHour, endMin] = task.end_time.split(':').map(Number);
-      
-      const startDate = new Date(deadline);
-      startDate.setHours(startHour || 10, startMin || 0, 0, 0);
-      
-      const endDate = new Date(deadline);
-      endDate.setHours(endHour || 11, endMin || 0, 0, 0);
-      
-      console.log('DEBUG: Creating timed event:', {
-        id: task.id,
-        title: eventTitle,
-        start: startDate,
-        end: endDate,
-        start_time: task.start_time,
-        end_time: task.end_time
-      });
-      
-      events.push(createEvent({
-        id: task.id.toString(),
-        title: eventTitle,
-        description: task.description || '',
-        start: startDate,
-        end: endDate,
-        ...(task.workspace_id && { calendarId: task.workspace_id }),
-        meta: {
-          ...baseMeta,
-          isRecurring: false,
-        }
-      }));
-    } else {
-      // All-day event (no start_time/end_time)
-      console.log('DEBUG: Creating all-day event:', {
-        id: task.id,
-        title: eventTitle,
-        date: deadline,
-        hasStartTime: !!task.start_time,
-        hasEndTime: !!task.end_time
-      });
-      
-      events.push(createAllDayEvent(
-        task.id.toString(),
-        eventTitle,
-        deadline
-      ));
-    }
+    // Always create all-day events for non-recurring tasks
+    console.log('DEBUG: Creating all-day event for non-recurring task:', {
+      id: task.id,
+      title: eventTitle,
+      date: deadline,
+      hasStartTime: !!task.start_time,
+      hasEndTime: !!task.end_time,
+      startTime: task.start_time,
+      endTime: task.end_time
+    });
+    
+    events.push(createAllDayEvent(
+      task.id.toString(),
+      eventTitle,
+      deadline
+    ));
   }
   
   return events;
@@ -230,6 +214,16 @@ export function taskToEvent(task: Task): DayFlowEvent[] {
  */
 export function tasksToEvents(tasks: Task[]): DayFlowEvent[] {
   const allEvents: DayFlowEvent[] = [];
+  
+  console.log('DEBUG: Processing all tasks:', tasks.map(t => ({
+    id: t.id,
+    title: t.title,
+    recurrence_type: t.recurrence_type,
+    isRecurring: t.isRecurring,
+    recurrence_weekdays: t.recurrence_weekdays,
+    start_time: t.start_time,
+    end_time: t.end_time
+  })));
   
   tasks.forEach(task => {
     try {
