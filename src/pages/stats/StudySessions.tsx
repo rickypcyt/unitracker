@@ -36,8 +36,8 @@ interface Lap {
     subject_name: string;
     subject_color: string;
     user_id: string;
-    start_time: string;
-    end_time: string;
+    start_at: string;
+    end_at: string;
     notes: string;
     created_at_ts: number;
     updated_at: string;
@@ -142,8 +142,8 @@ const StudySessions: React.FC = () => {
                     subject_name: "",
                     subject_color: "",
                     user_id: "",
-                    start_time: date.toISOString(),
-                    end_time: new Date(date.getTime() + durMin * 60000).toISOString(),
+                    start_at: date.toISOString(),
+                    end_at: new Date(date.getTime() + durMin * 60000).toISOString(),
                     notes: "",
                     created_at_ts: date.getTime(),
                     updated_at: date.toISOString(),

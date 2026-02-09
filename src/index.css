@@ -3,6 +3,9 @@
 
 /* src/index.css */
 
+/* Import @dayflow/core styles */
+@import '@dayflow/core/dist/styles.css';
+
 /* Import highlight.js styles for syntax highlighting */
 @import 'highlight.js/styles/github.css';
 

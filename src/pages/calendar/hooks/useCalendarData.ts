@@ -129,8 +129,8 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
         if (task.completed) return false;
         if (isRecurringTask(task) && getOccurrenceForDate(task, targetDate)) return true;
         
-        // Include tasks with start_time and end_time
-        if (task.start_time && task.end_time) {
+        // Include tasks with start_at and end_at
+        if (task.start_at && task.end_at) {
           // For now, we'll show tasks with start/end times on their deadline date
           // This could be enhanced to show them on multiple days if needed
           if (task.deadline) {
@@ -175,10 +175,10 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
           continue;
         }
 
-        // Handle tasks with start_time and end_time (no deadline needed)
-        if (task.start_time && task.end_time) {
-          const startT = task.start_time.split(':').map(Number);
-          const endT = task.end_time.split(':').map(Number);
+        // Handle tasks with start_at and end_at (no deadline needed)
+        if (task.start_at && task.end_at) {
+          const startT = task.start_at.split(':').map(Number);
+          const endT = task.end_at.split(':').map(Number);
           
           if (startT.length >= 2 && endT.length >= 2) {
             const startHour = startT[0] ?? 0;
@@ -214,8 +214,8 @@ export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataPr
           const start = new Date(task.deadline);
           const end = new Date(task.deadline);
           const timeStr = (t: string | null | undefined) => (t && typeof t === 'string' ? t : '');
-          const startT = timeStr(task.start_time).split(':').map(Number);
-          const endT = timeStr(task.end_time).split(':').map(Number);
+          const startT = timeStr(task.start_at).split(':').map(Number);
+          const endT = timeStr(task.end_at).split(':').map(Number);
           if (startT.length >= 2 && endT.length >= 2 && (endT[0] ?? 0) > (startT[0] ?? 0)) {
             start.setHours(startT[0] ?? 0, startT[1] ?? 0, 0, 0);
             end.setHours(endT[0] ?? 0, endT[1] ?? 0, 0, 0);

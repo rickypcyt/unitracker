@@ -127,10 +127,10 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
   };
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full min-h-full flex flex-col">
       <div
         className={`maincard p-0 pt-4 relative w-full transition-all duration-300 calendar-view flex flex-col ${
-          view === 'month' ? 'min-h-[600px] lg:min-h-[650px] overflow-hidden' : 'flex-1 min-h-0 lg:min-h-[500px]'
+          view === 'month' ? 'min-h-[600px] lg:min-h-[700px]' : 'flex-1 min-h-[500px] lg:min-h-[600px]'
         }`}
       >
         {/* Calendar Header with navigation and view switcher */}
@@ -149,7 +149,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
         />
 
         {/* View Content */}
-        <div className={`flex-1 min-h-0 relative ${view === 'month' ? 'overflow-hidden' : ''}`}>
+        <div className={`flex-1 min-h-[400px] relative ${view === 'month' ? '' : ''}`}>
           {view === 'week' ? (
             <WeekView
               currentDate={currentDate}

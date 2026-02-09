@@ -8,8 +8,8 @@ export type TaskWithRecurrence = {
   deadline?: string | null;
   recurrence_type?: string | null;
   recurrence_weekdays?: number[] | null;
-  start_time?: string | null;
-  end_time?: string | null;
+  start_at?: string | null;
+  end_at?: string | null;
   completed?: boolean;
   [key: string]: unknown;
 };
@@ -28,19 +28,77 @@ export function isRecurringTask(task: TaskWithRecurrence): boolean {
   );
 }
 
-/** Parse "HH:MM" or "HH:MM:SS" to minutes since midnight */
+/** Parse timestamptz or "HH:MM" or "HH:MM:SS" to minutes since midnight */
 export function timeToMinutes(t: string | null | undefined): number {
   if (!t || typeof t !== 'string') return 0;
-  const parts = t.trim().split(':').map(Number);
-  const h = parts[0] ?? 0;
-  const m = parts[1] ?? 0;
-  return h * 60 + m;
+  
+  try {
+    // Handle ISO date format: '2026-02-09T17:00:00+00:00'
+    if (t.includes('T')) {
+      const timePart = t.split('T')[1]; // '17:00:00+00:00'
+      if (!timePart) return 0;
+      
+      // Remove timezone info if present
+      const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+      if (!cleanTimePart) return 0;
+      
+      const parts = cleanTimePart.split(':').map(Number);
+      const h = parts[0] ?? 0;
+      const m = parts[1] ?? 0;
+      
+      // Validate hours and minutes
+      if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+        console.warn('Invalid time values in ISO date:', t, { h, m });
+        return 0;
+      }
+      
+      return h * 60 + m;
+    }
+    
+    // Handle timestamptz format: '2026-02-09 10:00:00+00'
+    if (t.includes(' ')) {
+      const timePart = t.split(' ')[1]; // '10:00:00+00'
+      if (!timePart) return 0;
+      
+      // Remove timezone info if present
+      const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+      if (!cleanTimePart) return 0;
+      
+      const parts = cleanTimePart.split(':').map(Number);
+      const h = parts[0] ?? 0;
+      const m = parts[1] ?? 0;
+      
+      // Validate hours and minutes
+      if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+        console.warn('Invalid time values in timestamptz:', t, { h, m });
+        return 0;
+      }
+      
+      return h * 60 + m;
+    }
+    
+    // Handle old format: "HH:MM" or "HH:MM:SS"
+    const parts = t.trim().split(':').map(Number);
+    const h = parts[0] ?? 0;
+    const m = parts[1] ?? 0;
+    
+    // Validate hours and minutes
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+      console.warn('Invalid time values in time string:', t, { h, m });
+      return 0;
+    }
+    
+    return h * 60 + m;
+  } catch (error) {
+    console.warn('Error parsing time:', t, error);
+    return 0;
+  }
 }
 
-/** Minutes between start_time and end_time (duration in minutes) */
+/** Minutes between start_at and end_at (duration in minutes) */
 export function getDurationMinutes(task: TaskWithRecurrence): number {
-  const start = timeToMinutes(task.start_time);
-  const end = timeToMinutes(task.end_time);
+  const start = timeToMinutes(task.start_at);
+  const end = timeToMinutes(task.end_at);
   if (end <= start) return 60; // default 1 hour
   return end - start;
 }
@@ -66,18 +124,29 @@ export function getOccurrenceForDate(
   date: Date
 ): CalendarOccurrence | null {
   if (!dateMatchesRecurrence(task, date)) return null;
+  
+  // Validate date before using it
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date provided to getOccurrenceForDate:', date);
+    return null;
+  }
 
-  const startM = timeToMinutes(task.start_time);
-  const endM = timeToMinutes(task.end_time);
+  const startM = timeToMinutes(task.start_at);
+  const endM = timeToMinutes(task.end_at);
   const endMinutes = endM > startM ? endM : startM + 60;
 
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
+  // Create new date instances properly to avoid mutation issues
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   start.setHours(Math.floor(startM / 60), startM % 60, 0, 0);
 
-  const end = new Date(date);
-  end.setHours(0, 0, 0, 0);
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   end.setHours(Math.floor(endMinutes / 60), endMinutes % 60, 0, 0);
+
+  // Validate the created dates
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    console.warn('Invalid dates created in getOccurrenceForDate:', { start, end, originalDate: date, startM, endM });
+    return null;
+  }
 
   return {
     occurrenceStart: start.toISOString(),
@@ -98,6 +167,13 @@ export function getOccurrenceForDayAndHour(
   if (!occ) return null;
 
   const startDate = new Date(occ.occurrenceStart);
+  
+  // Validate the parsed date
+  if (isNaN(startDate.getTime())) {
+    console.warn('Invalid startDate in getOccurrenceForDayAndHour:', occ.occurrenceStart);
+    return null;
+  }
+  
   const startHour = startDate.getHours();
   // Show task in the row for its start hour
   if (hour === startHour) return occ;

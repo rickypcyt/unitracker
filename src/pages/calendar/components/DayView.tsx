@@ -57,12 +57,14 @@ const DayView = ({
                 >
                   {isCurrentHour && (
                     <div
-                      className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-10 flex items-center"
+                      className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center"
                       style={{
                         top: `${(currentMinute / 60) * 60}px`,
+                        width: 'calc(100% + 8px)',
+                        left: '-4px'
                       }}
                     >
-                      <div className="absolute left-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1">
+                      <div className="absolute left-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1 ml-2">
                         {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
@@ -73,7 +75,7 @@ const DayView = ({
                         const occurrenceStart = task.occurrenceStart ? new Date(task.occurrenceStart) : new Date(task.deadline || selectedDate);
                         const occurrenceEnd = task.occurrenceEnd ? new Date(task.occurrenceEnd) : new Date(occurrenceStart.getTime() + 60 * 60 * 1000);
                         const taskMinute = occurrenceStart.getMinutes();
-                        const topPosition = taskMinute > 0 ? (taskMinute / 60) * 60 : (taskIndex * 25);
+                        const topPosition = taskMinute > 0 ? (taskMinute / 60) * 60 + 12 : (taskIndex * 25); // Added 12px offset for tasks with minutes
                         const durationHours = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
                         const blockHeight = Math.max(28, Math.round(durationHours * 60) - 2);
 
@@ -93,6 +95,9 @@ const DayView = ({
                             title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                           >
                             <div className="font-medium truncate">{task.title}</div>
+                            <div className="text-xs opacity-90 truncate">
+                              {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
                           </div>
                         );
                       })}

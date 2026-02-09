@@ -21,8 +21,8 @@ interface Task {
   status?: string;
   recurrence_type?: 'none' | 'weekly' | null;
   recurrence_weekdays?: number[] | null;
-  start_time?: string | null;
-  end_time?: string | null;
+  start_at?: string | null;
+  end_at?: string | null;
   activetask?: boolean;
 }
 
@@ -95,13 +95,58 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
 
   const to12Hour = (time24: string | null | undefined): string => {
     if (!time24) return '';
-    const time = time24.slice(0, 5);
-    const [h, m] = time.split(':').map(Number);
-    const hours = h ?? 0;
-    const minutes = m ?? 0;
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
-    return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    
+    try {
+      let hours = 0;
+      let minutes = 0;
+      
+      // Handle ISO date format: '2026-02-09T17:00:00+00:00'
+      if (time24.includes('T')) {
+        const timePart = time24.split('T')[1]; // '17:00:00+00:00'
+        if (!timePart) return '';
+        
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle timestamptz format: '2026-02-09 10:00:00+00'
+      else if (time24.includes(' ')) {
+        const timePart = time24.split(' ')[1]; // '10:00:00+00'
+        if (!timePart) return '';
+        
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle simple time format: "HH:MM" or "HH:MM:SS"
+      else {
+        const time = time24.slice(0, 5);
+        const [h, m] = time.split(':').map(Number);
+        hours = h ?? 0;
+        minutes = m ?? 0;
+      }
+      
+      // Validate hours and minutes
+      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        console.warn('Invalid time values in to12Hour:', time24, { hours, minutes });
+        return '';
+      }
+      
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+      return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    } catch (error) {
+      console.warn('Error in to12Hour:', time24, error);
+      return '';
+    }
   };
 
   const isRecurring = task.recurrence_type === 'weekly' && Array.isArray(task.recurrence_weekdays) && task.recurrence_weekdays.length > 0;
@@ -227,11 +272,11 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
                       Every {task.recurrence_weekdays?.map(d => WEEKDAY_LABELS[d ?? 0]).join(', ')}
                     </p>
                   </div>
-                  {task.start_time && task.end_time && (
+                  {task.start_at && task.end_at && (
                     <div>
                       <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Time</label>
                       <p className="text-[var(--text-primary)]">
-                        {to12Hour(task.start_time)} - {to12Hour(task.end_time)}
+                        {to12Hour(task.start_at)} - {to12Hour(task.end_at)}
                       </p>
                     </div>
                   )}
@@ -245,10 +290,10 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
                       : 'No deadline'}
                   </p>
                   {/* Show time if available */}
-                  {task.start_time && (
+                  {task.start_at && (
                     <p className="text-[var(--text-secondary)] text-sm mt-1">
-                      Time: {to12Hour(task.start_time)}
-                      {task.end_time && ` - ${to12Hour(task.end_time)}`}
+                      Time: {to12Hour(task.start_at)}
+                      {task.end_at && ` - ${to12Hour(task.end_at)}`}
                     </p>
                   )}
                 </div>

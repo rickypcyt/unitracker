@@ -53,7 +53,7 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
       // Filter by workspace if provided, otherwise get all tasks
       let query = supabase
         .from('tasks')
-        .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_time, end_time')
+        .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_at, end_at')
         .eq('user_id', user.id);
 
       // Add workspace filter if workspaceId is provided
@@ -261,8 +261,8 @@ export const updateTaskAction = async (task: any) => {
       status: task.status,
       recurrence_type: task.recurrence_type ?? 'none',
       recurrence_weekdays: task.recurrence_weekdays ?? null,
-      start_time: task.start_time ?? null,
-      end_time: task.end_time ?? null,
+      start_at: task.start_at ?? null,
+      end_at: task.end_at ?? null,
     };
 
     const { data, error } = await supabase

@@ -58,11 +58,74 @@ const useTheme = () => {
   // Función para aplicar el tema
   const applyTheme = useCallback((theme) => {
     const root = document.documentElement;
+    
+    // Remover atributos de DayFlow que puedan interferir
+    root.removeAttribute('data-dayflow-theme-override');
+    root.removeAttribute('data-theme');
+    
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
+    root.style.colorScheme = theme;
     
-    // Actualizar el color-scheme meta tag
-    document.documentElement.style.colorScheme = theme;
+    // Aplicar colores CSS a DayFlow
+    const computedStyle = getComputedStyle(root);
+    const accentColor = computedStyle.getPropertyValue('--accent-primary').trim();
+    const bgPrimary = computedStyle.getPropertyValue('--bg-primary').trim();
+    const bgSecondary = computedStyle.getPropertyValue('--bg-secondary').trim();
+    const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
+    const textSecondary = computedStyle.getPropertyValue('--text-secondary').trim();
+    const border = computedStyle.getPropertyValue('--border').trim();
+    
+    // Crear estilos personalizados para DayFlow
+    const dayflowStyles = `
+      .df-calendar {
+        --df-bg-primary: ${bgPrimary};
+        --df-bg-secondary: ${bgSecondary};
+        --df-text-primary: ${textPrimary};
+        --df-text-secondary: ${textSecondary};
+        --df-accent: ${accentColor};
+        --df-border: ${border};
+        background: ${bgPrimary} !important;
+        color: ${textPrimary} !important;
+      }
+      .df-event {
+        background: ${accentColor} !important;
+        color: white !important;
+        border: none !important;
+      }
+      .df-header {
+        background: ${bgSecondary} !important;
+        color: ${textPrimary} !important;
+      }
+      .df-day {
+        background: ${bgPrimary} !important;
+        color: ${textPrimary} !important;
+        border-color: ${border} !important;
+      }
+      .df-day:hover {
+        background: ${bgSecondary} !important;
+      }
+      .df-today {
+        background: ${accentColor}20 !important;
+        border-color: ${accentColor} !important;
+      }
+      .df-selected {
+        background: ${accentColor}40 !important;
+        border-color: ${accentColor} !important;
+      }
+    `;
+    
+    // Eliminar estilos anteriores de DayFlow si existen
+    const existingStyle = document.getElementById('dayflow-custom-styles');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    // Crear y añadir nuevos estilos
+    const styleTag = document.createElement('style');
+    styleTag.id = 'dayflow-custom-styles';
+    styleTag.textContent = dayflowStyles;
+    document.head.appendChild(styleTag);
     
     // Para Capacitor: actualizar la barra de estado si está disponible
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {

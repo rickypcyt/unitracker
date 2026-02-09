@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect, useState } from 'react';
 
 import AllTasks from '@/pages/calendar/AllTasks';
 import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
-import { Helmet } from "react-helmet-async";
+import { Helmet } from 'react-helmet-async';
 import { Task } from '@/types/taskStorage';
 import TaskFilter from '@/pages/calendar/TaskFilter';
 import { formatDate } from '@/utils/dateUtils';
@@ -11,114 +11,275 @@ import { useAppStore } from '@/store/appStore';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLocation } from 'react-router-dom';
 
+// Constants for localStorage keys
+const STORAGE_KEYS = {
+  VIEW: 'calendar-view',
+  TYPE: 'calendar-type',
+  FILTER: 'calendar-filter',
+} as const;
+
+// Filter options mapping
+const FILTER_LABELS: Record<string, string> = {
+  all: 'All Tasks',
+  today: 'Today',
+  thisweek: 'This Week',
+  thismonth: 'This Month',
+  nextmonth: 'Next Month',
+  overdue: 'Overdue',
+  nodeadline: 'No Deadline',
+} as const;
+
 const CalendarPage = memo(() => {
   const location = useLocation();
-  const isVisible = location.pathname === '/calendar';
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
-  
-  // Load view from localStorage or default to 'month'
-  const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
-    const savedView = localStorage.getItem('calendar-view') as 'month' | 'week' | 'day' | null;
-    return savedView && ['month', 'week', 'day'].includes(savedView) ? savedView : 'month';
-  });
-  
-  // Load calendar type from localStorage or default to 'original'
-  const [calendarType, setCalendarType] = useState<'original' | 'dayflow'>(() => {
-    const savedType = localStorage.getItem('calendar-type') as 'original' | 'dayflow' | null;
-    return savedType && ['original', 'dayflow'].includes(savedType) ? savedType : 'original';
-  });
-  
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
-  
-  const realTasks = useAppStore((state) => state.tasks.tasks);
   const { isDemo, demoTasks } = useDemoMode();
+  const realTasks = useAppStore((state) => state.tasks.tasks);
+
+  const isVisible = location.pathname === '/calendar';
   const tasks = isDemo ? demoTasks : realTasks;
 
+  // State
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<string>(() => {
+  const savedFilter = localStorage.getItem(STORAGE_KEYS.FILTER);
+  return savedFilter && Object.keys(FILTER_LABELS).includes(savedFilter)
+    ? savedFilter
+    : 'all';
+});
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
+
+  // View and calendar type with localStorage persistence
+  const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
+    const savedView = localStorage.getItem(STORAGE_KEYS.VIEW);
+    return savedView && ['month', 'week', 'day'].includes(savedView)
+      ? (savedView as 'month' | 'week' | 'day')
+      : 'month';
+  });
+
+  const [calendarType, setCalendarType] = useState<'original' | 'dayflow'>(() => {
+    const savedType = localStorage.getItem(STORAGE_KEYS.TYPE);
+    return savedType && ['original', 'dayflow'].includes(savedType)
+      ? (savedType as 'original' | 'dayflow')
+      : 'original';
+  });
+
+  // Handlers
   const handleTooltipShow = useCallback((content: TooltipContent | null) => {
     setTooltipContent(content);
   }, []);
 
-  // Initialize filtered tasks with all tasks
-  useEffect(() => {
-    setFilteredTasks(tasks);
-  }, [tasks]);
+  const handleFilterChange = (filter: string) => {
+    setSelectedFilter(filter);
+    localStorage.setItem(STORAGE_KEYS.FILTER, filter);
+  };
 
-  // Update filtered tasks when filter changes
-  useEffect(() => {
-    const filtered = tasks.filter(task => {
-      switch (selectedFilter) {
-        case 'all': return true;
+  const handleViewChange = useCallback((newView: 'month' | 'week' | 'day') => {
+    setView(newView);
+    localStorage.setItem(STORAGE_KEYS.VIEW, newView);
+  }, []);
+
+  const handleCalendarTypeChange = useCallback((newType: 'original' | 'dayflow') => {
+    setCalendarType(newType);
+    localStorage.setItem(STORAGE_KEYS.TYPE, newType);
+  }, []);
+
+  const getFilterLabel = (filter: string) => FILTER_LABELS[filter] || 'All Tasks';
+
+  // Filter tasks based on selected filter
+  const filterTasks = useCallback((tasksList: Task[], filter: string): Task[] => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return tasksList.filter(task => {
+      if (!task.deadline) {
+        return filter === 'all' || filter === 'nodeadline';
+      }
+
+      const taskDeadline = new Date(task.deadline);
+
+      switch (filter) {
+        case 'all':
+          // Show ALL tasks including completed ones
+          return true;
         case 'today':
-          if (!task.deadline) return false;
-          const taskDeadlineToday = new Date(task.deadline);
-          return taskDeadlineToday.toDateString() === new Date().toDateString();
-        case 'thisweek':
-          if (!task.deadline) return false;
-          const taskDeadlineWeek = new Date(task.deadline);
-          const today = new Date();
-          const weekFromNow = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
-          return taskDeadlineWeek >= weekFromNow && taskDeadlineWeek < new Date(weekFromNow.getTime() + 7 * 24 * 60 * 60 * 1000);
+          return taskDeadline.toDateString() === today.toDateString();
+        case 'thisweek': {
+          const startOfWeek = new Date(today);
+          startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 7);
+          return taskDeadline >= startOfWeek && taskDeadline < endOfWeek;
+        }
         case 'thismonth':
-          if (!task.deadline) return false;
-          const taskDeadlineMonth = new Date(task.deadline);
-          return taskDeadlineMonth.getMonth() === new Date().getMonth() && taskDeadlineMonth.getFullYear() === new Date().getFullYear();
-        case 'nextmonth':
-          if (!task.deadline) return false;
-          const taskDeadlineNextMonth = new Date(task.deadline);
-          const nextMonth = new Date().getMonth() === 11 ? 0 : new Date().getMonth() + 1;
-          return taskDeadlineNextMonth.getMonth() === nextMonth && taskDeadlineNextMonth.getFullYear() === new Date().getFullYear();
+          return taskDeadline.getMonth() === today.getMonth() &&
+                 taskDeadline.getFullYear() === today.getFullYear();
+        case 'nextmonth': {
+          const nextMonth = today.getMonth() === 11 ? 0 : today.getMonth() + 1;
+          const nextMonthYear = today.getMonth() === 11 ? today.getFullYear() + 1 : today.getFullYear();
+          return taskDeadline.getMonth() === nextMonth &&
+                 taskDeadline.getFullYear() === nextMonthYear;
+        }
         case 'overdue':
-          if (!task.deadline) return false;
-          const taskDeadlineOverdue = new Date(task.deadline);
-          return taskDeadlineOverdue < new Date();
+          return taskDeadline < today;
         case 'nodeadline':
-          return !task.deadline || task.deadline === "";
+          return !task.deadline || task.deadline === '';
         default:
           return true;
       }
     });
-    setFilteredTasks(filtered);
-  }, [selectedFilter, tasks]);
+  }, []);
 
-  // Update calendar when the page becomes visible
+  // Effects
+  // Initialize filtered tasks
+  useEffect(() => {
+    setFilteredTasks(tasks);
+  }, [tasks]);
+
+  // Apply filter when selectedFilter or tasks change
+  useEffect(() => {
+    const filtered = filterTasks(tasks, selectedFilter);
+    setFilteredTasks(filtered);
+  }, [selectedFilter, tasks, filterTasks]);
+
+  // Refresh calendar when page becomes visible
   useEffect(() => {
     if (isVisible) {
       window.dispatchEvent(new CustomEvent('refreshCalendar'));
     }
   }, [isVisible]);
 
-  const handleFilterChange = (filter: string) => {
-    setSelectedFilter(filter);
+  // Render tooltip content
+  const renderTooltip = () => {
+    if (!tooltipContent) return null;
+
+    return (
+      <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
+        <div className="px-3 py-2 border-b border-[var(--border-primary)]">
+          <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
+            {formatDate(tooltipContent.date.toISOString())}
+          </div>
+          <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
+            {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
+          </div>
+        </div>
+        <div className="p-2 max-h-[200px] overflow-y-auto">
+          {tooltipContent.tasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
+            >
+              <div
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  task.completed ? 'bg-green-500' : 'bg-[var(--accent-primary)]'
+                }`}
+              />
+              <div className="flex-1 min-w-0">
+                <div
+                  className={`text-sm font-medium break-words ${
+                    task.completed
+                      ? 'line-through text-[var(--text-secondary)]'
+                      : 'text-[var(--text-primary)]'
+                  }`}
+                >
+                  {task.title}
+                </div>
+                {task.assignment && (
+                  <div className="text-xs text-[var(--text-secondary)] break-words">
+                    {task.assignment}
+                  </div>
+                )}
+              </div>
+              <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                {task.completed ? '✓' : '○'}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
-  const handleViewChange = useCallback((newView: 'month' | 'week' | 'day') => {
-    setView(newView);
-    localStorage.setItem('calendar-view', newView);
-  }, []);
-
-  const handleCalendarTypeChange = useCallback((newType: 'original' | 'dayflow') => {
-    setCalendarType(newType);
-    localStorage.setItem('calendar-type', newType);
-  }, []);
-
-  const getFilterLabel = (filter: string) => {
-    switch (filter) {
-      case 'all': return 'All Tasks';
-      case 'today': return 'Today';
-      case 'thisweek': return 'This Week';
-      case 'thismonth': return 'This Month';
-      case 'nextmonth': return 'Next Month';
-      case 'overdue': return 'Overdue';
-      case 'nodeadline': return 'No Deadline';
-      default: return 'All Tasks';
+  // Render calendar based on type
+  const renderCalendarContent = () => {
+    if (calendarType === 'dayflow') {
+      return (
+        <div className="w-full min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]">
+          <DayFlowCalendarComponent />
+        </div>
+      );
     }
+
+    return (
+      <div className="w-full flex flex-col gap-4 min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]">
+        <div className="flex flex-col lg:flex-row gap-4 flex-1">
+          {/* Left Column - All Tasks and Filter (Desktop) */}
+          <div className="hidden lg:flex flex-col gap-4 w-80 flex-shrink-0">
+            {/* Filter Dropdown */}
+            <div className="w-full">
+              <TaskFilter 
+                tasks={tasks} 
+                onFilteredTasksChange={setFilteredTasks}
+                selectedFilter={selectedFilter}
+                onFilterChange={handleFilterChange}
+              />
+            </div>
+            
+            {/* All Tasks */}
+            <div className="flex-1 min-h-0">
+              <AllTasks 
+                filteredTasks={filteredTasks} 
+                title={getFilterLabel(selectedFilter)}
+                showCompleted={false}
+              />
+              {renderTooltip()}
+            </div>
+          </div>
+
+          {/* Calendar Panel */}
+          <div className="flex-1 min-w-0">
+            <div className="w-full">
+              <Calendar 
+                view={view} 
+                onViewChange={handleViewChange} 
+                onTooltipShow={handleTooltipShow} 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Filter and All Tasks - Below Calendar */}
+        <div className="lg:hidden w-full space-y-4">
+          {/* Filter Dropdown - Mobile */}
+          <div className="w-full">
+            <TaskFilter 
+              tasks={tasks} 
+              onFilteredTasksChange={setFilteredTasks}
+              selectedFilter={selectedFilter}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+
+          {/* Mobile All Tasks */}
+          <div className="w-full h-96 overflow-hidden">
+            <AllTasks 
+              filteredTasks={filteredTasks} 
+              title={getFilterLabel(selectedFilter)}
+              showCompleted={false}
+            />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <>
       <Helmet>
-        <title>Calendar & Schedule Management | Uni Tracker 2026</title>
+        <title>
+          {calendarType === 'dayflow' 
+            ? 'DayFlow Calendar | Uni Tracker 2026' 
+            : 'UniTracker Calendar | Uni Tracker 2026'
+          }
+        </title>
         <meta
           name="description"
           content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
@@ -127,7 +288,7 @@ const CalendarPage = memo(() => {
           name="keywords"
           content="academic calendar, study planner, assignment deadlines, schedule management, student calendar, deadline tracker"
         />
-        <meta property="og:title" content="Calendar & Schedule Management | Uni Tracker 2026" />
+        <meta property="og:title" content={`Calendar & Schedule Management | Uni Tracker 2026 - ${calendarType === 'dayflow' ? 'DayFlow' : 'UniTracker'} Calendar`} />
         <meta
           property="og:description"
           content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
@@ -136,85 +297,36 @@ const CalendarPage = memo(() => {
         <meta property="og:url" content="https://uni-tracker.vercel.app/calendar" />
         <link rel="canonical" href="https://uni-tracker.vercel.app/calendar" />
       </Helmet>
+      
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
-      {calendarType === 'dayflow' ? (
-        // Full page layout for DayFlow calendar
-        <div className="w-full h-[calc(100vh-8rem)]">
-          {/* Full width DayFlow Calendar */}
-          <div className="h-full">
-            <DayFlowCalendarComponent />
+        {/* Calendar Type Switcher */}
+        <div className="flex justify-center mb-4">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-1 flex gap-1">
+            <button
+              onClick={() => handleCalendarTypeChange('original')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                calendarType === 'original'
+                  ? 'bg-[var(--accent-primary)] text-white shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+              }`}
+            >
+              UniTracker Calendar
+            </button>
+            <button
+              onClick={() => handleCalendarTypeChange('dayflow')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                calendarType === 'dayflow'
+                  ? 'bg-[var(--accent-primary)] text-white shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+              }`}
+            >
+              DayFlow Calendar
+            </button>
           </div>
         </div>
-      ) : (
-        // Original layout with sidebar for original calendar
-        <div className="w-full flex flex-col lg:flex-row gap-4 h-[calc(100vh-8rem)]">
-          <div className="order-1 md:order-1 lg:order-1 flex-1 min-w-0">
-            <AllTasks filteredTasks={filteredTasks} title={getFilterLabel(selectedFilter)} />
-          </div>
-          <div className="w-full order-2 md:order-2 lg:order-2 flex justify-center lg:max-w-4xl mx-auto">
-            <div className="w-full">
-              {/* Render the appropriate calendar */}
-              <Calendar view={view} onViewChange={handleViewChange} onTooltipShow={handleTooltipShow} />
-            </div>
-          </div>
-          <div className="order-3 md:order-3 lg:order-3 flex-1">
-            <TaskFilter 
-              tasks={tasks} 
-              onFilteredTasksChange={setFilteredTasks}
-              selectedFilter={selectedFilter}
-              onFilterChange={handleFilterChange}
-            />
-            {tooltipContent && (
-              <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
-                <div className="px-3 py-2 border-b border-[var(--border-primary)]">
-                  <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
-                    {formatDate(tooltipContent.date.toISOString())}
-                  </div>
-                  <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
-                    {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
-                  </div>
-                </div>
-                <div className="p-2 max-h-[200px] overflow-y-auto">
-                  {tooltipContent.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
-                    >
-                      <div
-                        className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                          task.completed
-                            ? "bg-green-500"
-                            : "bg-[var(--accent-primary)]"
-                        }`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div
-                          className={`text-sm font-medium break-words ${
-                            task.completed
-                              ? "line-through text-[var(--text-secondary)]"
-                              : "text-[var(--text-primary)]"
-                          }`}
-                        >
-                          {task.title}
-                        </div>
-                        {task.assignment && (
-                          <div className="text-xs text-[var(--text-secondary)] break-words">
-                            {task.assignment}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
-                        {task.completed ? "✓" : "○"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        
+        {renderCalendarContent()}
+      </div>
     </>
   );
 });

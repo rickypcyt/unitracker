@@ -60,8 +60,8 @@ const TaskForm = ({
     title: initialTask?.title || '',
     description: initialTask?.description || '',
     deadline: getInitialDeadline(),
-    start_time: getInitialStartTime(),
-    end_time: getInitialEndTime(),
+    start_at: getInitialStartTimeForForm(),
+    end_at: getInitialEndTimeForForm(),
     difficulty: initialTask?.difficulty || 'medium',
     assignment: initialTask?.assignment || initialAssignment || '',
     isRecurring: !!(initialTask?.recurrence_type === 'weekly'),
@@ -74,8 +74,8 @@ const TaskForm = ({
     difficulty: { required: true },
     description: { maxLength: 500 },
     deadline: { required: false, validate: validateDeadline },
-    start_time: { required: false, validate: validateTime },
-    end_time: { required: false, validate: validateTime },
+    start_at: { required: false, validate: validateTime },
+    end_at: { required: false, validate: validateTime },
   };
 
   const { formData, errors, handleChange, validateForm } = useFormState(
@@ -96,6 +96,8 @@ const TaskForm = ({
     setAiLoading,
     aiError, 
     setAiError,
+    aiSuccess,
+    setAiSuccess,
     showAIPreview, 
     setShowAIPreview,
     aiParsedTasks, 
@@ -129,17 +131,17 @@ const TaskForm = ({
         setRecurrenceError('Select at least one day');
         return;
       }
-      if (!formData.start_time) {
+      if (!formData.start_at) {
         setRecurrenceError('Start time is required');
         return;
       }
-      if (!formData.end_time) {
+      if (!formData.end_at) {
         setRecurrenceError('End time is required');
         return;
       }
-      console.log('Validating times - start_time:', JSON.stringify(formData.start_time), 'end_time:', JSON.stringify(formData.end_time));
-      const start24 = to24Hour(formData.start_time);
-      const end24 = to24Hour(formData.end_time);
+      console.log('Validating times - start_at:', JSON.stringify(formData.start_at), 'end_at:', JSON.stringify(formData.end_at));
+      const start24 = to24Hour(formData.start_at);
+      const end24 = to24Hour(formData.end_at);
       console.log('Converted times - start24:', start24, 'end24:', end24);
       if (!start24) {
         console.log('Start time validation failed');
@@ -203,63 +205,23 @@ const TaskForm = ({
     }
   };
 
-  const handleAISubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!aiPrompt.trim()) {
-      setAiError('Prompt required');
-      return;
-    }
+  function mapAITaskToFormData(task: any) {
+    const normalizedDate = task.date && task.date !== 'null' 
+      ? normalizeNaturalOrYMDDate(task.date) 
+      : null;
 
-    setAiError('');
-    setAiLoading(true);
-    aiCancelledRef.current = false;
-
-    const controller = new AbortController();
-    setAiAbortController(controller);
-
-    const tStart = performance.now();
-    let debugInterval: number | null = null;
-
-    if (AI_DEBUG) {
-      debugInterval = window.setInterval(() => {
-        const elapsed = (performance.now() - tStart) / 1000;
-        console.info(`[AI][elapsed] ${elapsed.toFixed(1)}s`);
-      }, 1000);
-    }
-
-    const safetyTimeoutId = window.setTimeout(() => {
-      controller.abort();
-    }, 45000);
-
-    try {
-      const result = await callAIAPI(controller);
-      
-      if (aiCancelledRef.current) return;
-      
-      if (!result?.success) {
-        setAiError(result?.error || 'AI request failed');
-        return;
-      }
-
-      const tasksArr = Array.isArray(result.data) ? result.data : [result.data];
-      
-      if (AI_DEBUG) {
-        console.log('[AI][parsed-tasks-count]', tasksArr.length);
-        console.debug('[AI][parsed-tasks]', tasksArr);
-      }
-
-      setAiParsedTasks(tasksArr);
-      setShowAIPreview(true);
-    } catch (err) {
-      setAiError('Error: ' + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      if (debugInterval) clearInterval(debugInterval);
-      clearTimeout(safetyTimeoutId);
-      setAiLoading(false);
-      setAiAbortController(null);
-    }
-  };
+    return {
+      title: task.task || '',
+      description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),
+      assignment: task.subject || '',
+      deadline: normalizedDate,
+      difficulty: task.difficulty?.toLowerCase() || 'medium',
+      isRecurring: false,
+      recurrence_weekdays: null,
+      start_at: null,
+      end_at: null,
+    };
+  }
 
   
   const handleAIAcceptAll = async (tasks: any[]) => {
@@ -308,18 +270,94 @@ const TaskForm = ({
     return '';
   }
 
-  // Convert 24h format (HH:MM) to 12h AM/PM format
+  // Convert 24h format (HH:MM) or timestamptz to 12h AM/PM format
   function to12Hour(time24: string): string {
-    if (!time24 || !time24.includes(':')) return '';
-    const [h, m] = time24.split(':').map(Number);
-    const hours = h ?? 0;
-    const minutes = m ?? 0;
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
-    return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    if (!time24) return '';
+    
+    try {
+      let hours = 0;
+      let minutes = 0;
+      
+      // Handle ISO date format: '2026-02-09T17:00:00+00:00'
+      if (time24.includes('T')) {
+        const timePart = time24.split('T')[1]; // '17:00:00+00:00'
+        if (!timePart) return '';
+        
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle timestamptz format: '2026-02-09 09:00:00+00'
+      else if (time24.includes(' ')) {
+        const timePart = time24.split(' ')[1]; // '09:00:00+00'
+        if (!timePart) return '';
+        
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle simple time format: "HH:MM" or "HH:MM:SS"
+      else if (time24.includes(':')) {
+        const [h, m] = time24.split(':').map(Number);
+        hours = h ?? 0;
+        minutes = m ?? 0;
+      }
+      else {
+        return '';
+      }
+      
+      // Validate hours and minutes
+      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        console.warn('Invalid time values in to12Hour (TaskForm):', time24, { hours, minutes });
+        return '';
+      }
+      
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+      return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    } catch (error) {
+      console.warn('Error in to12Hour (TaskForm):', time24, error);
+      return '';
+    }
   }
 
-  // Convert 12h AM/PM format to 24h format (HH:MM)
+  function getInitialStartTime(): string {
+    // For normal tasks, check if there's a start_at
+    if (initialTask?.start_at) {
+      return to12Hour(initialTask.start_at);
+    }
+    // Default for recurring tasks
+    return '10:00 AM';
+  }
+
+  function getInitialEndTime(): string {
+    // For normal tasks, check if there's an end_at
+    if (initialTask?.end_at) {
+      return to12Hour(initialTask.end_at);
+    }
+    // Default for recurring tasks
+    return '11:00 AM';
+  }
+
+  function getInitialStartTimeForForm(): string {
+    // Return the original timestamptz format for formData
+    return initialTask?.start_at || '10:00:00';
+  }
+
+  function getInitialEndTimeForForm(): string {
+    // Return the original timestamptz format for formData
+    return initialTask?.end_at || '11:00:00';
+  }
+
+  // Convert 12h AM/PM format or ISO timestamp to 24h format (HH:MM)
   function to24Hour(time12: string): string {
     console.log('to24Hour input:', JSON.stringify(time12));
     
@@ -328,11 +366,46 @@ const TaskForm = ({
       return '';
     }
     
+    let timeToProcess = time12;
+    
+    // Handle ISO date format: '2026-02-09T10:00:00+00:00'
+    if (time12.includes('T')) {
+      const timePart = time12.split('T')[1]; // '10:00:00+00:00'
+      if (timePart) {
+        // Remove timezone info if present (handles +00:00 format)
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
+        if (cleanTimePart) {
+          timeToProcess = cleanTimePart;
+        }
+      }
+    }
+    // Handle timestamptz format: '2026-02-09 10:00:00+00'
+    else if (time12.includes(' ')) {
+      const timePart = time12.split(' ')[1]; // '10:00:00+00'
+      if (timePart) {
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
+        if (cleanTimePart) {
+          timeToProcess = cleanTimePart;
+        }
+      }
+    }
+    
     // Remove seconds if present (e.g., "10:00:00" -> "10:00")
-    const timeWithoutSeconds = time12.replace(/:\d{2}$/, '');
+    // This regex only removes :SS where SS are digits, not :SS AM/PM
+    const timeWithoutSeconds = timeToProcess.replace(/:\d{2}(?=\s|$)/, '');
     console.log('to24Hour: time without seconds:', JSON.stringify(timeWithoutSeconds));
     
-    // Try 12h format first
+    // Check if it's already in 24h format (HH:MM)
+    const is24hFormat = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeWithoutSeconds);
+    console.log('to24Hour: is 24h format?', is24hFormat);
+    
+    if (is24hFormat) {
+      console.log('to24Hour: already 24h, returning as-is');
+      return timeWithoutSeconds;
+    }
+    
+    // Try 12h format
     const match = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
     console.log('to24Hour: 12h match:', match);
     
@@ -350,49 +423,8 @@ const TaskForm = ({
       return result;
     }
     
-    // If already in 24h format, validate and return as is
-    const is24hFormat = /^\d{1,2}:\d{2}$/.test(timeWithoutSeconds);
-    console.log('to24Hour: is 24h format?', is24hFormat);
-    
-    if (is24hFormat) {
-      const [hours, minutes] = timeWithoutSeconds.split(':').map(Number);
-      console.log('to24Hour: parsed 24h - hours:', hours, 'minutes:', minutes);
-      
-      if ((hours ?? 0) >= 0 && (hours ?? 0) <= 23 && (minutes ?? 0) >= 0 && (minutes ?? 0) <= 59) {
-        const result = `${String(hours ?? 0).padStart(2, '0')}:${String(minutes ?? 0).padStart(2, '0')}`;
-        console.log('to24Hour: 24h result:', result);
-        return result;
-      } else {
-        console.log('to24Hour: 24h validation failed - hours out of range or minutes out of range');
-      }
-    }
-    
     console.log('to24Hour: no valid format found, returning empty string');
     return '';
-  }
-
-  function getInitialStartTime(): string {
-    // For normal tasks, check if there's a start_time
-    if (initialTask?.start_time) {
-      // Convert from 24h to 12h
-      const time24 = initialTask.start_time.slice(0, 5); // Remove seconds if present
-      return to12Hour(time24);
-    }
-    
-    // Default to 10:00 AM for new tasks
-    return '10:00 AM';
-  }
-
-  function getInitialEndTime(): string {
-    // For normal tasks, check if there's an end_time
-    if (initialTask?.end_time) {
-      // Convert from 24h to 12h
-      const time24 = initialTask.end_time.slice(0, 5); // Remove seconds if present
-      return to12Hour(time24);
-    }
-    
-    // Default to 11:00 AM for new tasks (1 hour after start)
-    return '11:00 AM';
   }
 
   function validateDeadline(value: string): true | string {
@@ -425,20 +457,81 @@ const TaskForm = ({
       : 'Please enter a valid time (e.g., 10:30 AM or 14:30)';
   }
 
-  
-  function mapAITaskToFormData(task: any) {
-    const normalizedDate = task.date && task.date !== 'null' 
-      ? normalizeNaturalOrYMDDate(task.date) 
-      : null;
+  const handleAISubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!aiPrompt.trim()) {
+      setAiError('Prompt required');
+      return;
+    }
 
-    return {
-      title: task.task || '',
-      description: task.description || (task.subject ? `Asignatura: ${task.subject}` : ''),
-      assignment: task.subject || '',
-      deadline: normalizedDate,
-      difficulty: task.difficulty || 'medium',
-    };
-  }
+    setAiError('');
+    setAiLoading(true);
+    aiCancelledRef.current = false;
+
+    const controller = new AbortController();
+    setAiAbortController(controller);
+
+    const tStart = performance.now();
+    let debugInterval: number | null = null;
+
+    if (AI_DEBUG) {
+      debugInterval = window.setInterval(() => {
+        const elapsed = (performance.now() - tStart) / 1000;
+        console.info(`[AI][elapsed] ${elapsed.toFixed(1)}s`);
+      }, 1000);
+    }
+
+    try {
+      const result = await callAIAPI(controller);
+      
+      if (aiCancelledRef.current) {
+        console.log('[AI] Request was cancelled');
+        return;
+      }
+
+      if (debugInterval) clearInterval(debugInterval);
+
+      if (!result.success || !result.data) {
+        setAiError(result.error || 'Failed to generate task');
+        return;
+      }
+
+      const aiTask = result.data;
+      console.log('[AI] Generated task:', aiTask);
+
+      const mappedData = mapAITaskToFormData(aiTask);
+      console.log('[AI] Mapped data:', mappedData);
+
+      // Update form with AI-generated data
+      Object.entries(mappedData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          handleChange(key, value);
+        }
+      });
+
+      // Switch to manual tab
+      setActiveTab('manual');
+      setAiPrompt('');
+      setAiSuccess('Task generated successfully!');
+      
+      setTimeout(() => setAiSuccess(''), 3000);
+
+    } catch (error: any) {
+      if (debugInterval) clearInterval(debugInterval);
+      
+      if (aiCancelledRef.current) {
+        console.log('[AI] Request was cancelled by user');
+        return;
+      }
+      
+      console.error('[AI] Error:', error);
+      setAiError(error.message || 'Failed to generate task');
+    } finally {
+      setAiLoading(false);
+      setAiAbortController(null);
+    }
+  };
 
   // Simple cache to avoid repeated requests
   const aiCache = useRef<Map<string, any>>(new Map());
@@ -949,7 +1042,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
     return (
       <div className="relative">
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Difficulty</label>
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Difficulty</label>
         <div className="relative">
           <button
             type="button"
@@ -1142,47 +1235,52 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   // Local state for time inputs (12h format for display)
   const [displayStartTime, setDisplayStartTime] = useState(() => {
-    const time24 = initialTask?.start_time ? initialTask.start_time.slice(0, 5) : '10:00';
-    return to12Hour(time24);
+    if (initialTask?.start_at) {
+      return to12Hour(initialTask.start_at);
+    }
+    return '10:00 AM';
   });
+  
   const [displayEndTime, setDisplayEndTime] = useState(() => {
-    const time24 = initialTask?.end_time ? initialTask.end_time.slice(0, 5) : '11:00';
-    return to12Hour(time24);
+    if (initialTask?.end_at) {
+      return to12Hour(initialTask.end_at);
+    }
+    return '11:00 AM';
   });
 
-  // Sync display times when formData changes externally
+  // Flag to prevent useEffect from overriding manual adjustments
+  const [isManualTimeUpdate, setIsManualTimeUpdate] = useState(false);
+
+  // Sync display times when formData changes externally (but not during manual updates)
   useEffect(() => {
-    if (formData.start_time) {
-      const time24 = formData.start_time.slice(0, 5);
-      setDisplayStartTime(to12Hour(time24));
+    if (formData.start_at && !isManualTimeUpdate) {
+      setDisplayStartTime(to12Hour(formData.start_at));
     }
-  }, [formData.start_time]);
+  }, [formData.start_at, isManualTimeUpdate]);
 
   useEffect(() => {
-    if (formData.end_time) {
-      const time24 = formData.end_time.slice(0, 5);
-      setDisplayEndTime(to12Hour(time24));
+    if (formData.end_at && !isManualTimeUpdate) {
+      setDisplayEndTime(to12Hour(formData.end_at));
     }
-  }, [formData.end_time]);
+  }, [formData.end_at, isManualTimeUpdate]);
 
   const renderStartTimeInput = () => {
     const incrementStartTime = () => {
-      const time24 = to24Hour(displayStartTime) || '10:00';
-      const [hours] = time24.split(':').map(Number);
-      const newHours = ((hours ?? 0) + 1) % 24;
-      const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
-      setDisplayStartTime(to12Hour(newTime24));
-      handleChange('start_time', `${newTime24}:00`);
+      const timeParts = displayStartTime.split(':');
+      const currentHours = parseInt(timeParts[0] || '0') || 0;
+      const newHours = (currentHours + 1) % 24;
+      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      setDisplayStartTime(newTime);
+      handleChange('start_at', `${newHours.toString().padStart(2, '0')}:00:00`);
     };
 
     const decrementStartTime = () => {
-      const time24 = to24Hour(displayStartTime) || '10:00';
-      const [hours] = time24.split(':').map(Number);
-      const newHours = (hours ?? 0) - 1;
-      const finalHours = newHours < 0 ? 23 : newHours;
-      const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;
-      setDisplayStartTime(to12Hour(newTime24));
-      handleChange('start_time', `${newTime24}:00`);
+      const timeParts = displayStartTime.split(':');
+      const currentHours = parseInt(timeParts[0] || '0') || 0;
+      const newHours = currentHours - 1 < 0 ? 23 : currentHours - 1;
+      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      setDisplayStartTime(newTime);
+      handleChange('start_at', `${newHours.toString().padStart(2, '0')}:00:00`);
     };
 
     return (
@@ -1203,12 +1301,12 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
                 const time24 = to24Hour(val);
                 console.log('Start time onBlur - converted to 24h:', time24);
                 if (time24) {
-                  handleChange('start_time', `${time24}:00`);
+                  handleChange('start_at', `${time24}:00`);
                   console.log('Start time onBlur - saved to formData:', `${time24}:00`);
                 } else {
                   console.log('Start time onBlur - invalid format, restoring previous value');
                   // If invalid, restore previous value
-                  const prev24 = formData.start_time ? formData.start_time.slice(0, 5) : '10:00';
+                  const prev24 = formData.start_at ? formData.start_at.slice(0, 5) : '10:00';
                   setDisplayStartTime(to12Hour(prev24));
                 }
               }
@@ -1235,29 +1333,28 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </button>
           </div>
         </div>
-        {errors.start_time && <p className="mt-1 text-base text-red-500">{errors.start_time}</p>}
+        {errors.start_at && <p className="mt-1 text-base text-red-500">{errors.start_at}</p>}
       </div>
     );
   };
 
   const renderEndTimeInput = () => {
     const incrementEndTime = () => {
-      const time24 = to24Hour(displayEndTime) || '11:00';
-      const [hours] = time24.split(':').map(Number);
-      const newHours = ((hours ?? 0) + 1) % 24;
-      const newTime24 = `${String(newHours).padStart(2, '0')}:00`;
-      setDisplayEndTime(to12Hour(newTime24));
-      handleChange('end_time', `${newTime24}:00`);
+      const timeParts = displayEndTime.split(':');
+      const currentHours = parseInt(timeParts[0] || '0') || 0;
+      const newHours = (currentHours + 1) % 24;
+      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      setDisplayEndTime(newTime);
+      handleChange('end_at', `${newHours.toString().padStart(2, '0')}:00:00`);
     };
 
     const decrementEndTime = () => {
-      const time24 = to24Hour(displayEndTime) || '11:00';
-      const [hours] = time24.split(':').map(Number);
-      const newHours = (hours ?? 0) - 1;
-      const finalHours = newHours < 0 ? 23 : newHours;
-      const newTime24 = `${String(finalHours).padStart(2, '0')}:00`;
-      setDisplayEndTime(to12Hour(newTime24));
-      handleChange('end_time', `${newTime24}:00`);
+      const timeParts = displayEndTime.split(':');
+      const currentHours = parseInt(timeParts[0] || '0') || 0;
+      const newHours = currentHours - 1 < 0 ? 23 : currentHours - 1;
+      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      setDisplayEndTime(newTime);
+      handleChange('end_at', `${newHours.toString().padStart(2, '0')}:00:00`);
     };
 
     return (
@@ -1278,12 +1375,12 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
                 const time24 = to24Hour(val);
                 console.log('End time onBlur - converted to 24h:', time24);
                 if (time24) {
-                  handleChange('end_time', `${time24}:00`);
+                  handleChange('end_at', `${time24}:00`);
                   console.log('End time onBlur - saved to formData:', `${time24}:00`);
                 } else {
                   console.log('End time onBlur - invalid format, restoring previous value');
                   // If invalid, restore previous value
-                  const prev24 = formData.end_time ? formData.end_time.slice(0, 5) : '11:00';
+                  const prev24 = formData.end_at ? formData.end_at.slice(0, 5) : '11:00';
                   setDisplayEndTime(to12Hour(prev24));
                 }
               }
@@ -1310,7 +1407,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </button>
           </div>
         </div>
-        {errors.end_time && <p className="mt-1 text-base text-red-500">{errors.end_time}</p>}
+        {errors.end_at && <p className="mt-1 text-base text-red-500">{errors.end_at}</p>}
       </div>
     );
   };

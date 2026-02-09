@@ -2,6 +2,7 @@ import { CheckCircle2, Circle } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/utils/dateUtils';
 
 import React from 'react';
+import { Task } from '@/types/taskStorage';
 
 // Helper para formatear días de recurrencia
 const formatRecurrenceText = (weekdays: number[]) => {
@@ -16,40 +17,32 @@ const formatRecurrenceText = (weekdays: number[]) => {
     return `Every ${selectedDays.join(', ')}`;
 };
 
-// Helper para formatear tiempo
+// Helper para formatear tiempo - ahora maneja timestamptz
 const formatTime = (timeStr: string | undefined) => {
     if (!timeStr) return '';
-    const [hours, minutes] = timeStr.split(':');
-    const hour = parseInt(hours);
-    const minute = parseInt(minutes);
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+    
+    // Si es timestamptz, extraer solo la hora
+    if (timeStr.includes(' ')) {
+        // Formato: '2026-02-09 10:00:00+00'
+        const timePart = timeStr.split(' ')[1]; // '10:00:00+00'
+        if (!timePart) return '';
+        
+        const [hours, minutes] = timePart.split(':');
+        const hour = parseInt(hours || '0');
+        const minute = parseInt(minutes || '0');
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+    } else {
+        // Formato antiguo: '10:00'
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours || '0');
+        const minute = parseInt(minutes || '0');
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+        return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+    }
 };
-
-// Extended Task interface to include deadline field
-interface Task {
-    id: string;
-    title: string;
-    description?: string;
-    completed: boolean;
-    completed_at: string | null;
-    created_at?: string;
-    updated_at?: string;
-    due_date?: string;
-    priority?: number;
-    tags?: string[];
-    user_id?: string;
-    workspace_id?: string;
-    activetask?: boolean;
-    difficulty?: string;
-    assignment?: string;
-    deadline?: string;
-    recurrence_type?: string;
-    recurrence_weekdays?: number[];
-    start_time?: string;
-    end_time?: string;
-}
 
 // Helper para determinar el color del deadline
 const getDeadlineColor = (dateStr: string) => {
@@ -197,10 +190,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
                         <span className="text-[var(--text-secondary)]">
                             {formatRecurrenceText(task.recurrence_weekdays)}
-                            {task.start_time && (
+                            {task.start_at && (
                                 <span className="ml-1">
-                                    {formatTime(task.start_time)}
-                                    {task.end_time && ` - ${formatTime(task.end_time)}`}
+                                    {formatTime(task.start_at)}
+                                    {task.end_at && ` - ${formatTime(task.end_at)}`}
                                 </span>
                             )}
                         </span>

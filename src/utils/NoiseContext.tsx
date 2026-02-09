@@ -495,6 +495,27 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Add global user interaction listener to initialize audio
+  useEffect(() => {
+    const handleUserInteraction = async () => {
+      if (!isInitialized) {
+        await initializeAudio();
+      }
+    };
+
+    // Add event listeners for user interaction
+    const events = ['click', 'keydown', 'touchstart', 'mousedown'];
+    events.forEach(event => {
+      document.addEventListener(event, handleUserInteraction, { once: true });
+    });
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserInteraction);
+      });
+    };
+  }, [isInitialized]);
+
   // -------------------------
   // Start / Stop / Volume
   // -------------------------

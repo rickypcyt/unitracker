@@ -14,6 +14,7 @@ export function useTaskAI(initialTab: 'manual' | 'ai' = 'ai') {
   const [aiPrompt, setAiPrompt] = useState<string>(() => localStorage.getItem('aiPromptDraft') || '');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [aiSuccess, setAiSuccess] = useState('');
   const [showAIPreview, setShowAIPreview] = useState(false);
   const [aiParsedTasks, setAiParsedTasks] = useState<AiParsedTask[] | null>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -51,18 +52,15 @@ export function useTaskAI(initialTab: 'manual' | 'ai' = 'ai') {
     setAiLoading,
     aiError,
     setAiError,
+    aiSuccess,
+    setAiSuccess,
     showAIPreview,
     setShowAIPreview,
     aiParsedTasks,
     setAiParsedTasks,
     aiTextareaRef,
-    aiCancelHover,
-    setAiCancelHover,
-    aiAbortController,
     setAiAbortController,
     aiCancelledRef,
     handleCancelAI,
   };
 }
-
-

@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Database, List, Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
+import { CheckCircle, Clock, Database, Globe, List, Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
@@ -8,6 +8,7 @@ import FriendsModal from "@/modals/FriendsModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
+import TimezoneSelector from "@/components/TimezoneSelector";
 import UserModal from "@/modals/UserModal";
 import useTheme from "@/hooks/useTheme";
 
@@ -72,8 +73,27 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column - Theme and Colors */}
+            {/* Left Column - Timezone and Theme */}
             <div className="space-y-4">
+              {/* Timezone Section */}
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
+                <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                  <Globe size={18} />
+                  Calendar Timezone
+                </h3>
+                <div className="space-y-3">
+                  <div className="bg-[var(--bg-primary)] p-4 rounded-lg">
+                    <p className="text-sm text-[var(--text-secondary)] mb-3">
+                      Select the timezone for displaying calendar events and deadlines.
+                    </p>
+                    <TimezoneSelector 
+                      showCurrentTime={true}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Theme Section */}
               <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
                 <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">

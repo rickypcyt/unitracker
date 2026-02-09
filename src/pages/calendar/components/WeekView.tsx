@@ -103,9 +103,9 @@ const WeekView = ({
                     occurrenceStart = new Date(occ.occurrenceStart);
                     occurrenceEnd = new Date(occ.occurrenceEnd);
                   }
-                } else if (task.start_time && task.end_time) {
-                  const startT = task.start_time.split(':').map(Number);
-                  const endT = task.end_time.split(':').map(Number);
+                } else if (task.start_at && task.end_at) {
+                  const startT = task.start_at.split(':').map(Number);
+                  const endT = task.end_at.split(':').map(Number);
                   
                   if (startT.length >= 2 && endT.length >= 2) {
                     occurrenceStart = new Date(day);
@@ -138,7 +138,7 @@ const WeekView = ({
             });
             
             return allSpanningTasks.map(({task, dayIndex, startHour, duration, occurrenceStart, occurrenceEnd}) => {
-              const topPosition = startHour * 60 + 8; // 60px per hour + 8px offset
+              const topPosition = startHour * 60 + 20; // 60px per hour + 20px offset (increased from 8px)
               const blockHeight = duration * 60 - 20; // Subtract 20px for top and bottom margins
               
               return (
@@ -163,6 +163,9 @@ const WeekView = ({
                   title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                 >
                   <div className="font-medium truncate">{task.title || 'Sin título'}</div>
+                  <div className="text-xs opacity-90 truncate">
+                    {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               );
             });
@@ -193,9 +196,9 @@ const WeekView = ({
                           occurrenceStart = new Date(occ.occurrenceStart);
                           occurrenceEnd = new Date(occ.occurrenceEnd);
                         }
-                      } else if (task.start_time && task.end_time) {
-                        const startT = task.start_time.split(':').map(Number);
-                        const endT = task.end_time.split(':').map(Number);
+                      } else if (task.start_at && task.end_at) {
+                        const startT = task.start_at.split(':').map(Number);
+                        const endT = task.end_at.split(':').map(Number);
                         
                         if (startT.length >= 2 && endT.length >= 2) {
                           occurrenceStart = new Date(day);
@@ -244,12 +247,14 @@ const WeekView = ({
                     >
                       {isCurrentDay && hour === currentHour && (
                         <div
-                          className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-10 flex items-center"
+                          className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center"
                           style={{
                             top: `${(currentMinute / 60) * 60}px`,
+                            width: 'calc(100% + 8px)',
+                            left: '-4px'
                           }}
                         >
-                          <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1">
+                          <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1 mr-2">
                             {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
@@ -277,6 +282,9 @@ const WeekView = ({
                           title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
                           <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
+                          <div className="text-xs opacity-90 truncate">
+                            {singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
                       )}
                     </div>

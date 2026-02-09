@@ -16,9 +16,10 @@ interface ContextMenuState {
 interface AllTasksProps {
   filteredTasks?: Task[];
   title?: string;
+  showCompleted?: boolean; // Add prop to control whether to show completed tasks
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted = false }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -47,7 +48,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
       return false;
     const taskDate = new Date(task.deadline);
     taskDate.setHours(0, 0, 0, 0);
-    return taskDate < today && !task.completed;
+    return taskDate < today && (showCompleted ? true : !task.completed);
   });
 
   // Upcoming tasks
@@ -56,7 +57,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
       return false;
     const taskDate = new Date(task.deadline);
     taskDate.setHours(0, 0, 0, 0);
-    return taskDate >= today && !task.completed;
+    return taskDate >= today && (showCompleted ? true : !task.completed);
   });
 
   // Group upcoming tasks by time periods
@@ -111,6 +112,9 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
     (task) => !task.deadline || task.deadline === "" || task.deadline === null
   );
 
+  // Completed tasks section (only show when showCompleted is true)
+  const completedTasks = showCompleted ? allTasks.filter(task => task.completed) : [];
+
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setShowTaskForm(true);
@@ -119,6 +123,16 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setEditingTask(null);
+  };
+
+  // Wrapper para handleToggleCompletion - firma (id: string) => void
+  const handleToggleCompletionWrapper = (id: string) => {
+    handleToggleCompletion(id);
+  };
+
+  // Wrapper para handleDeleteTask - firma (id: string) => void
+  const handleDeleteTaskWrapper = (id: string) => {
+    handleDeleteTask(id);
   };
 
   const handleTaskContextMenu = (
@@ -134,8 +148,8 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
   };
 
   // Wrapper para compatibilidad con TaskItem
-  const handleTaskContextMenuWrapper = (e: any, task: Task) => {
-    handleTaskContextMenu(e, task);
+  const handleTaskContextMenuWrapper = (e: React.MouseEvent, task: Task) => {
+    handleTaskContextMenu(e as React.MouseEvent<HTMLDivElement>, task);
   };
 
   return (
@@ -145,9 +159,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
       }`}
     >
       <div
-        className={`relative w-full h-full calendar-view flex flex-col border-0 lg:min-h-[400px] ${
-          isCollapsed ? "lg:min-w-[48px]" : "lg:mr-4 lg:min-w-[300px] lg:ml-4"
-        } overflow-y-auto ${
+        className={`relative w-full h-full calendar-view flex flex-col border-0 overflow-hidden ${
           isCollapsed ? "border-r border-[var(--border-primary)]" : ""
         }`}
       >
@@ -172,10 +184,10 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
 
         {/* Collapsible Content */}
         {!isCollapsed && (
-          <div className="p-0 space-y-2 md:space-y-0 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-x-4">
+          <div className="flex-1 overflow-y-auto p-0 space-y-1">
             {/* Empty State */}
             {allTasks.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2
                     size={32}
@@ -192,90 +204,132 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
             )}
 
             {/* Today's Tasks */}
-            {todayTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
+            {todayTasks.length > 0 && (
+              <div className="space-y-1">
+                {todayTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* This Month */}
-            {thisMonthTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
+            {thisMonthTasks.length > 0 && (
+              <div className="space-y-1">
+                {thisMonthTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Next Month */}
-            {nextMonthTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
+            {nextMonthTasks.length > 0 && (
+              <div className="space-y-1">
+                {nextMonthTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Future */}
-            {futureTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
+            {futureTasks.length > 0 && (
+              <div className="space-y-1">
+                {futureTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Past Due */}
-            {pastTasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                onToggleCompletion={handleToggleCompletion}
-                onDelete={handleDeleteTask}
-                onEditTask={() => handleEditTask(task)}
-                onContextMenu={handleTaskContextMenuWrapper}
-                showAssignment={true}
-                assignmentLeftOfDate={true}
-              />
-            ))}
+            {pastTasks.length > 0 && (
+              <div className="space-y-1">
+                {pastTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* No Deadline */}
-            {noDeadlineTasks
-              .filter((task) => !task.completed)
-              .map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onToggleCompletion={handleToggleCompletion}
-                  onDelete={handleDeleteTask}
-                  onEditTask={() => handleEditTask(task)}
-                  onContextMenu={handleTaskContextMenuWrapper}
-                  showAssignment={true}
-                  assignmentLeftOfDate={true}
-                />
-              ))}
+            {noDeadlineTasks.length > 0 && (
+              <div className="space-y-1">
+                {noDeadlineTasks
+                  .filter((task) => showCompleted ? true : !task.completed)
+                  .map((task) => (
+                    <TaskItem
+                      key={task.id}
+                      task={task}
+                      onToggleCompletion={handleToggleCompletionWrapper}
+                      onDelete={handleDeleteTaskWrapper}
+                      onEditTask={() => handleEditTask(task)}
+                      onContextMenu={handleTaskContextMenuWrapper}
+                      showAssignment={true}
+                      assignmentLeftOfDate={true}
+                    />
+                  ))}
+              </div>
+            )}
+
+            {/* Completed Tasks */}
+            {completedTasks.length > 0 && (
+              <div className="space-y-1">
+                {completedTasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    onToggleCompletion={handleToggleCompletionWrapper}
+                    onDelete={handleDeleteTaskWrapper}
+                    onEditTask={() => handleEditTask(task)}
+                    onContextMenu={handleTaskContextMenuWrapper}
+                    showAssignment={true}
+                    assignmentLeftOfDate={true}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

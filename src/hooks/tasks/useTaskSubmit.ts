@@ -3,14 +3,46 @@ import { useAddTaskSuccess, useUpdateTaskSuccess, useWorkspace } from '@/store/a
 import { supabase } from '@/utils/supabaseClient';
 import { useCallback } from 'react';
 
-// Helper function to convert 12h AM/PM format to 24h format (HH:MM)
+// Helper function to convert 12h AM/PM format or ISO timestamp to 24h format (HH:MM)
 function to24Hour(time12: string): string {
   if (!time12) return '';
   
-  // Remove seconds if present (e.g., "10:00:00" -> "10:00")
-  const timeWithoutSeconds = time12.replace(/:\d{2}$/, '');
+  let timeToProcess = time12;
   
-  // Try 12h format first
+  // Handle ISO date format: '2026-02-09T10:00:00+00:00'
+  if (time12.includes('T')) {
+    const timePart = time12.split('T')[1]; // '10:00:00+00:00'
+    if (timePart) {
+      // Remove timezone info if present (handles +00:00 format)
+      const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
+      if (cleanTimePart) {
+        timeToProcess = cleanTimePart;
+      }
+    }
+  }
+  // Handle timestamptz format: '2026-02-09 10:00:00+00'
+  else if (time12.includes(' ')) {
+    const timePart = time12.split(' ')[1]; // '10:00:00+00'
+    if (timePart) {
+      // Remove timezone info if present
+      const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
+      if (cleanTimePart) {
+        timeToProcess = cleanTimePart;
+      }
+    }
+  }
+  
+  // Remove seconds if present (e.g., "10:00:00" -> "10:00")
+  // This regex only removes :SS where SS are digits, not :SS AM/PM
+  const timeWithoutSeconds = timeToProcess.replace(/:\d{2}(?=\s|$)/, '');
+  
+  // Check if it's already in 24h format (HH:MM)
+  const is24hFormat = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeWithoutSeconds);
+  if (is24hFormat) {
+    return timeWithoutSeconds;
+  }
+  
+  // Try 12h format
   const match = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
   
   if (match) {
@@ -21,14 +53,6 @@ function to24Hour(time12: string): string {
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
     
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  }
-  
-  // Try 24h format
-  const match24 = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})$/);
-  if (match24) {
-    const hours = parseInt(match24[1] ?? '0', 10);
-    const minutes = parseInt(match24[2] ?? '0', 10);
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
   
@@ -63,62 +87,74 @@ export function useTaskSubmit() {
     const recurrence_type = isRecurring ? 'weekly' : 'none';
     const recurrence_weekdays = isRecurring && Array.isArray(formData.recurrence_weekdays) ? formData.recurrence_weekdays : null;
     
-    // Helper function to convert 12h AM/PM format to 24h format (HH:MM:SS)
-    const toTime = (t: string | null | undefined) => {
-      if (!t || t.trim() === '') return null;
-      if (/^\d{1,2}:\d{2}/.test(t)) {
-        return t.length >= 8 ? t.slice(0, 8) : `${t.replace(/^(\d{1,2}):(\d{2}).*/, '$1:$2')}:00`;
-      }
-      return null;
-    };
-    
-    // Helper function to convert 12h AM/PM format to 24h format (HH:MM:SS)
-    function to24Hour(time12: string): string {
-      if (!time12) return '';
-      
-      // Remove seconds if present (e.g., "10:00:00" -> "10:00")
-      const timeWithoutSeconds = time12.replace(/:\d{2}$/, '');
-      
-      // Try 12h format first
-      const match = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-      
-      if (match) {
-        let hours = parseInt(match[1] ?? '0', 10);
-        const minutes = parseInt(match[2] ?? '0', 10);
-        const period = (match[3] ?? '').toUpperCase();
-        
-        if (period === 'PM' && hours !== 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      }
-      
-      // Try 24h format
-      const match24 = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})$/);
-      if (match24) {
-        const hours = parseInt(match24[1] ?? '0', 10);
-        const minutes = parseInt(match24[2] ?? '0', 10);
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      }
-      
-      return '';
-    }
-    
-    // Handle time fields
-    let start_time = null;
-    let end_time = null;
+    // Handle time fields - convert to timestamptz format
+    let start_at = null;
+    let end_at = null;
     
     if (isRecurring) {
-      // For recurring tasks, use the dedicated time fields
-      start_time = toTime(formData.start_time);
-      end_time = toTime(formData.end_time);
-    } else {
-      // For normal tasks, always use start_time and end_time from form
-      if (formData.start_time && formData.start_time.trim()) {
-        start_time = to24Hour(formData.start_time) + ':00';
+      // For recurring tasks, convert time to timestamptz using today's date
+      if (formData.start_at && formData.start_at.trim()) {
+        const time24 = to24Hour(formData.start_at);
+        if (time24) {
+          // Create timestamp for today with the specified time in UTC
+          const today = new Date();
+          const timeParts = time24.split(':');
+          const hours = timeParts[0] || '0';
+          const minutes = timeParts[1] || '0';
+          
+          // Create UTC date and format as timestamptz
+          const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 
+                                          parseInt(hours), parseInt(minutes), 0, 0));
+          start_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+        }
       }
-      if (formData.end_time && formData.end_time.trim()) {
-        end_time = to24Hour(formData.end_time) + ':00';
+      if (formData.end_at && formData.end_at.trim()) {
+        const time24 = to24Hour(formData.end_at);
+        if (time24) {
+          // Create timestamp for today with the specified time in UTC
+          const today = new Date();
+          const timeParts = time24.split(':');
+          const hours = timeParts[0] || '0';
+          const minutes = timeParts[1] || '0';
+          
+          // Create UTC date and format as timestamptz
+          const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 
+                                          parseInt(hours), parseInt(minutes), 0, 0));
+          end_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+        }
+      }
+    } else {
+      // For normal tasks, convert time to timestamptz using deadline date or today
+      let baseDate = new Date();
+      if (formData.deadline) {
+        baseDate = new Date(formData.deadline);
+      }
+      
+      if (formData.start_at && formData.start_at.trim()) {
+        const time24 = to24Hour(formData.start_at);
+        if (time24) {
+          const timeParts = time24.split(':');
+          const hours = timeParts[0] || '0';
+          const minutes = timeParts[1] || '0';
+          
+          // Create UTC date and format as timestamptz
+          const utcDate = new Date(Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 
+                                          parseInt(hours), parseInt(minutes), 0, 0));
+          start_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+        }
+      }
+      if (formData.end_at && formData.end_at.trim()) {
+        const time24 = to24Hour(formData.end_at);
+        if (time24) {
+          const timeParts = time24.split(':');
+          const hours = timeParts[0] || '0';
+          const minutes = timeParts[1] || '0';
+          
+          // Create UTC date and format as timestamptz
+          const utcDate = new Date(Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 
+                                          parseInt(hours), parseInt(minutes), 0, 0));
+          end_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+        }
       }
     }
     
@@ -136,8 +172,8 @@ export function useTaskSubmit() {
       deadline,
       recurrence_type,
       recurrence_weekdays,
-      start_time,
-      end_time,
+      start_at,
+      end_at,
       user_id: userId,
       completed: initialTask?.completed || false,
       activetask: initialTask?.activetask || false,
@@ -146,13 +182,13 @@ export function useTaskSubmit() {
 
     console.log('DEBUG: Task data being saved:', {
       deadline,
-      start_time,
-      end_time,
+      start_at,
+      end_at,
       isRecurring,
-      hasStartTime: !!formData.start_time,
-      hasEndTime: !!formData.end_time,
-      originalFormDataStartTime: formData.start_time,
-      originalFormDataEndTime: formData.end_time,
+      hasStartTime: !!formData.start_at,
+      hasEndTime: !!formData.end_at,
+      originalFormDataStartTime: formData.start_at,
+      originalFormDataEndTime: formData.end_at,
       formDataKeys: Object.keys(formData)
     });
 
