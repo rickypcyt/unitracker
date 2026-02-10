@@ -65,17 +65,21 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     if (!showSuggestions || filtered.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      e.stopPropagation();
       setActiveIndex((prev) => (prev + 1) % filtered.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      e.stopPropagation();
       setActiveIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
     } else if (e.key === 'Enter' || e.key === 'Tab') {
       if (activeIndex >= 0 && filtered[activeIndex]) {
         e.preventDefault();
+        e.stopPropagation();
         onChange(filtered[activeIndex]);
         setShowSuggestions(false);
       }
     } else if (e.key === 'Escape') {
+      e.stopPropagation();
       setShowSuggestions(false);
     }
   };
@@ -109,7 +113,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
               key={suggestion}
               className={`px-4 py-2 cursor-pointer select-none ${
                 idx === activeIndex
-                  ? 'bg-[var(--accent-primary)] text-white'
+                  ? 'text-[var(--accent-primary)] border-l-2 border-[var(--accent-primary)]'
                   : 'text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
               }`}
               onMouseDown={() => handleSuggestionClick(suggestion)}

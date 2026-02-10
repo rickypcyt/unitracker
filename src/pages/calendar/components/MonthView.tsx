@@ -15,7 +15,6 @@ interface MonthViewProps {
   handleDateClick: (date: Date) => void;
   handleDateDoubleClick: (date: Date) => void;
   handleTouchEnd: (e: React.TouchEvent, date: Date) => void;
-  setTooltipContent: (content: { date: Date; tasks: any[] } | null) => void;
 }
 
 const MonthView = ({
@@ -26,7 +25,6 @@ const MonthView = ({
   handleDateClick,
   handleDateDoubleClick,
   handleTouchEnd,
-  setTooltipContent,
 }: MonthViewProps) => {
   const weekdays = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -62,14 +60,6 @@ const MonthView = ({
                 onTouchEnd={(e) =>
                   dayObj.currentMonth && handleTouchEnd(e, dayObj.date)
                 }
-                onMouseEnter={() =>
-                  tasksWithDeadline.length > 0 &&
-                  setTooltipContent({
-                    date: dayObj.date,
-                    tasks: tasksWithDeadline,
-                  })
-                }
-                onMouseLeave={() => setTooltipContent(null)}
                 className={`select-none cursor-pointer text-base w-auto relative group transition-all duration-200 min-h-[60px] sm:min-h-[70px] flex flex-col ${
                   dayObj.currentMonth
                     ? dayObj.isToday

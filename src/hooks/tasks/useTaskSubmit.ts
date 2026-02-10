@@ -167,8 +167,11 @@ export function useTaskSubmit() {
       }
     }
 
+    // Explicitly exclude the 'time' field from rest
+    const { time: _, ...restWithoutTime } = rest;
+    
     const taskData = {
-      ...rest,
+      ...restWithoutTime,  // Use restWithoutTime instead of rest to exclude the time field
       deadline,
       recurrence_type,
       recurrence_weekdays,

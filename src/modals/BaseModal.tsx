@@ -166,12 +166,12 @@ const BaseModal = ({
 
   const headerClasses = `
     relative bg-[var(--bg-primary)] flex items-center 
-    justify-end p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
+    justify-between p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
   `.trim();
 
   const titleClasses = `
-    absolute left-1/2 -translate-x-1/2 text-lg font-semibold 
-    text-[var(--text-primary)] truncate
+    text-lg font-semibold 
+    text-[var(--text-primary)] truncate flex-1 text-center
   `.trim();
 
   const closeButtonClasses = `
@@ -195,6 +195,7 @@ const BaseModal = ({
       >
         {showHeader && (
           <header className={headerClasses}>
+            <div className="shrink-0 w-9"></div>
             {title && (
               <h2 id="modal-title" className={titleClasses}>
                 {title}

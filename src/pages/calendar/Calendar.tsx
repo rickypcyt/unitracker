@@ -3,7 +3,6 @@ import "./mobile-calendar.css";
 import { handleDateDoubleClick, handleTouchEnd } from "./utils/calendarUtils";
 
 import CalendarHeader from "./components/CalendarHeader";
-import DayInfoModal from "./DayInfoModal";
 import DayView from "./components/DayView";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import MonthView from "./components/MonthView";
@@ -18,20 +17,14 @@ import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
 import { useCalendarState } from "./hooks/useCalendarState";
 import { useDeleteTaskSuccess } from "@/store/appStore";
 
-export interface TooltipContent {
-  date: Date;
-  tasks: any[];
-}
-
 interface CalendarProps {
   view?: 'month' | 'week' | 'day';
   onViewChange?: (view: 'month' | 'week' | 'day') => void;
-  onTooltipShow?: (content: TooltipContent | null) => void;
 }
 
 type ViewType = 'month' | 'week' | 'day';
 
-const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: CalendarProps) => {
+const Calendar = ({ view = 'month' as ViewType, onViewChange }: CalendarProps) => {
   const { isLoggedIn } = useAuth();
 
   // State management
@@ -46,8 +39,6 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
     setShowTaskForm,
     isLoginPromptOpen,
     setIsLoginPromptOpen,
-    isInfoModalOpen,
-    setIsInfoModalOpen,
     lastTap,
     setLastTap,
     selectedTask,
@@ -58,11 +49,10 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
 
   // Data management
   const {
-    getTasksForDate,
+    getTasksForDayAndHour,
+    getTasksWithDeadline,
     getStudiedHoursForDate,
     hasTasksWithDeadline,
-    getTasksWithDeadline,
-    getTasksForDayAndHour,
     calendarDays,
   } = useCalendarData({ currentDate, selectedDate });
 
@@ -97,14 +87,9 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
       isLoggedIn,
       setSelectedDate,
       setIsLoginPromptOpen,
-      setShowTaskForm,
-      setIsInfoModalOpen
+      setShowTaskForm
     ),
   });
-
-  const setTooltipContent = (content: TooltipContent | null) => {
-    onTooltipShow?.(content);
-  };
 
   const handleEditTask = (task: Task) => {
     setViewingTask(null);
@@ -161,10 +146,14 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
               setFocusedDate={setFocusedDate}
               setShowTaskForm={setShowTaskForm}
               setIsLoginPromptOpen={setIsLoginPromptOpen}
-              setIsInfoModalOpen={setIsInfoModalOpen}
-              setTooltipContent={setTooltipContent}
               setSelectedTask={setSelectedTask}
               setViewingTask={setViewingTask}
+              handleEditTask={handleEditTask}
+              onTaskContextMenu={(e, task) => {
+                e.preventDefault();
+                // Context menu logic here - for now just show task details
+                setViewingTask(task);
+              }}
             />
           ) : view === 'day' ? (
             <DayView
@@ -187,18 +176,15 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
                 isLoggedIn,
                 setSelectedDate,
                 setIsLoginPromptOpen,
-                setShowTaskForm,
-                setIsInfoModalOpen
+                setShowTaskForm
               )}
               handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, (date) => handleDateDoubleClick(
                 date,
                 isLoggedIn,
                 setSelectedDate,
                 setIsLoginPromptOpen,
-                setShowTaskForm,
-                setIsInfoModalOpen
+                setShowTaskForm
               ))}
-              setTooltipContent={setTooltipContent}
             />
           )}
         </div>
@@ -221,13 +207,6 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, onTooltipShow }: C
             }}
           />
         )}
-        <DayInfoModal
-          isOpen={isInfoModalOpen}
-          onClose={() => setIsInfoModalOpen(false)}
-          date={selectedDate}
-          tasks={getTasksForDate(selectedDate)}
-          studiedHours={getStudiedHoursForDate(selectedDate)}
-        />
         <LoginPromptModal
           isOpen={isLoginPromptOpen}
           onClose={() => setIsLoginPromptOpen(false)}

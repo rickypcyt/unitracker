@@ -56,6 +56,10 @@ export const handleAddTask = (
 
   setSelectedDate(newDate);
   setFocusedDate(newDate);
+  
+  // Store the hour in sessionStorage for TaskForm to use
+  sessionStorage.setItem('calendarTaskHour', hour.toString());
+  
   setShowTaskForm(true);
 };
 
@@ -65,14 +69,13 @@ export const handleDateDoubleClick = (
   isLoggedIn: boolean,
   setSelectedDate: (date: Date) => void,
   setIsLoginPromptOpen: (open: boolean) => void,
-  setShowTaskForm: (show: boolean) => void,
-  setIsInfoModalOpen: (open: boolean) => void
+  setShowTaskForm: (show: boolean) => void
 ) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);
   setSelectedDate(date);
-  if (date < today) return setIsInfoModalOpen(true);
+  if (date < today) return;
   if (!isLoggedIn) return setIsLoginPromptOpen(true);
   setShowTaskForm(true);
 };

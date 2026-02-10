@@ -7,7 +7,6 @@ export const useCalendarState = () => {
   const [focusedDate, setFocusedDate] = useState(new Date());
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [lastTap, setLastTap] = useState(0);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
@@ -23,8 +22,6 @@ export const useCalendarState = () => {
     setShowTaskForm,
     isLoginPromptOpen,
     setIsLoginPromptOpen,
-    isInfoModalOpen,
-    setIsInfoModalOpen,
     lastTap,
     setLastTap,
     selectedTask,

@@ -52,6 +52,14 @@ const TaskForm = ({
   const getInitialRecurrence = () => {
     if (initialTask?.recurrence_type === 'weekly' && Array.isArray(initialTask?.recurrence_weekdays))
       return initialTask.recurrence_weekdays;
+    
+    // For new recurring tasks, pre-select the current day
+    if (!initialTask && initialDeadline) {
+      const deadlineDate = new Date(initialDeadline);
+      const dayOfWeek = deadlineDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      return [dayOfWeek];
+    }
+    
     return [];
   };
 
@@ -199,6 +207,9 @@ const TaskForm = ({
         window.dispatchEvent(new CustomEvent('refreshTaskList'));
       }
       
+      // Clear calendar hour after successful save
+      sessionStorage.removeItem('calendarTaskHour');
+      
       onClose();
     } catch (error) {
       console.error('Error saving task:', error);
@@ -238,6 +249,10 @@ const TaskForm = ({
     if (document.activeElement instanceof HTMLElement && 'blur' in document.activeElement) {
       document.activeElement.blur();
     }
+    
+    // Clear calendar hour when closing
+    sessionStorage.removeItem('calendarTaskHour');
+    
     onClose();
   };
 
@@ -330,6 +345,15 @@ const TaskForm = ({
   }
 
   function getInitialStartTime(): string {
+    // Check if there's a calendar hour set
+    const calendarHour = sessionStorage.getItem('calendarTaskHour');
+    if (calendarHour && !initialTask) {
+      const hour = parseInt(calendarHour);
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      return `${displayHour}:00 ${period}`;
+    }
+    
     // For normal tasks, check if there's a start_at
     if (initialTask?.start_at) {
       return to12Hour(initialTask.start_at);
@@ -339,6 +363,15 @@ const TaskForm = ({
   }
 
   function getInitialEndTime(): string {
+    // Check if there's a calendar hour set
+    const calendarHour = sessionStorage.getItem('calendarTaskHour');
+    if (calendarHour && !initialTask) {
+      const hour = parseInt(calendarHour) + 1; // End time 1 hour later
+      const period = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      return `${displayHour}:00 ${period}`;
+    }
+    
     // For normal tasks, check if there's an end_at
     if (initialTask?.end_at) {
       return to12Hour(initialTask.end_at);
@@ -348,11 +381,25 @@ const TaskForm = ({
   }
 
   function getInitialStartTimeForForm(): string {
+    // Check if there's a calendar hour set
+    const calendarHour = sessionStorage.getItem('calendarTaskHour');
+    if (calendarHour && !initialTask) {
+      const hour = parseInt(calendarHour);
+      return `${hour.toString().padStart(2, '0')}:00:00`;
+    }
+    
     // Return the original timestamptz format for formData
     return initialTask?.start_at || '10:00:00';
   }
 
   function getInitialEndTimeForForm(): string {
+    // Check if there's a calendar hour set
+    const calendarHour = sessionStorage.getItem('calendarTaskHour');
+    if (calendarHour && !initialTask) {
+      const hour = parseInt(calendarHour) + 1; // End time 1 hour later
+      return `${hour.toString().padStart(2, '0')}:00:00`;
+    }
+    
     // Return the original timestamptz format for formData
     return initialTask?.end_at || '11:00:00';
   }
@@ -366,11 +413,12 @@ const TaskForm = ({
       return '';
     }
     
-    let timeToProcess = time12;
+    const trimmed = time12.trim();
+    let timeToProcess = trimmed;
     
     // Handle ISO date format: '2026-02-09T10:00:00+00:00'
-    if (time12.includes('T')) {
-      const timePart = time12.split('T')[1]; // '10:00:00+00:00'
+    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+      const timePart = trimmed.split('T')[1]; // '10:00:00+00:00'
       if (timePart) {
         // Remove timezone info if present (handles +00:00 format)
         const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
@@ -379,9 +427,9 @@ const TaskForm = ({
         }
       }
     }
-    // Handle timestamptz format: '2026-02-09 10:00:00+00'
-    else if (time12.includes(' ')) {
-      const timePart = time12.split(' ')[1]; // '10:00:00+00'
+    // Handle timestamptz format starting with a full date: '2026-02-09 10:00:00+00'
+    else if (/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)) {
+      const timePart = trimmed.split(' ')[1]; // '10:00:00+00'
       if (timePart) {
         // Remove timezone info if present
         const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
@@ -391,22 +439,24 @@ const TaskForm = ({
       }
     }
     
-    // Remove seconds if present (e.g., "10:00:00" -> "10:00")
-    // This regex only removes :SS where SS are digits, not :SS AM/PM
-    const timeWithoutSeconds = timeToProcess.replace(/:\d{2}(?=\s|$)/, '');
-    console.log('to24Hour: time without seconds:', JSON.stringify(timeWithoutSeconds));
+    // Remove seconds ONLY if they exist (hh:mm:ss or hh:mm:ss AM)
+    const noSeconds = timeToProcess.replace(
+      /^(\d{1,2}:\d{2})(:\d{2})(\s?[AP]M)?$/i,
+      '$1$3'
+    ).trim();
+    console.log('to24Hour: after removing seconds:', JSON.stringify(noSeconds));
     
     // Check if it's already in 24h format (HH:MM)
-    const is24hFormat = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeWithoutSeconds);
+    const is24hFormat = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(noSeconds);
     console.log('to24Hour: is 24h format?', is24hFormat);
     
     if (is24hFormat) {
       console.log('to24Hour: already 24h, returning as-is');
-      return timeWithoutSeconds;
+      return noSeconds;
     }
     
     // Try 12h format
-    const match = timeWithoutSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    const match = noSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
     console.log('to24Hour: 12h match:', match);
     
     if (match) {
@@ -993,8 +1043,10 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       return null;
     }
 
-    if (formData.time && formData.time.includes(':')) {
-      const [hours, minutes] = formData.time.split(':');
+    // Use start_at for time if available, otherwise default to 9:00 AM
+    const timeString = formData.start_at || '09:00';
+    if (timeString.includes(':')) {
+      const [hours, minutes] = timeString.split(':');
       const hoursNum = parseInt(hours);
       const minutesNum = parseInt(minutes);
       if (!isNaN(hoursNum) && !isNaN(minutesNum) && hoursNum >= 0 && hoursNum <= 23 && minutesNum >= 0 && minutesNum <= 59) {
@@ -1266,21 +1318,39 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   const renderStartTimeInput = () => {
     const incrementStartTime = () => {
-      const timeParts = displayStartTime.split(':');
-      const currentHours = parseInt(timeParts[0] || '0') || 0;
-      const newHours = (currentHours + 1) % 24;
-      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      // Parse current 12-hour time to get 24-hour format
+      const time24 = to24Hour(displayStartTime);
+      if (!time24) return;
+      
+      let [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      minutes += 30;
+      if (minutes >= 60) {
+        minutes -= 60;
+        hours = (hours + 1) % 24;
+      }
+      const newTime = to12Hour(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
       setDisplayStartTime(newTime);
-      handleChange('start_at', `${newHours.toString().padStart(2, '0')}:00:00`);
+      setIsManualTimeUpdate(true);
+      handleChange('start_at', `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`);
+      setTimeout(() => setIsManualTimeUpdate(false), 100);
     };
 
     const decrementStartTime = () => {
-      const timeParts = displayStartTime.split(':');
-      const currentHours = parseInt(timeParts[0] || '0') || 0;
-      const newHours = currentHours - 1 < 0 ? 23 : currentHours - 1;
-      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      // Parse current 12-hour time to get 24-hour format
+      const time24 = to24Hour(displayStartTime);
+      if (!time24) return;
+      
+      let [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      minutes -= 30;
+      if (minutes < 0) {
+        minutes += 60;
+        hours = hours - 1 < 0 ? 23 : hours - 1;
+      }
+      const newTime = to12Hour(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
       setDisplayStartTime(newTime);
-      handleChange('start_at', `${newHours.toString().padStart(2, '0')}:00:00`);
+      setIsManualTimeUpdate(true);
+      handleChange('start_at', `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`);
+      setTimeout(() => setIsManualTimeUpdate(false), 100);
     };
 
     return (
@@ -1340,21 +1410,39 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
   const renderEndTimeInput = () => {
     const incrementEndTime = () => {
-      const timeParts = displayEndTime.split(':');
-      const currentHours = parseInt(timeParts[0] || '0') || 0;
-      const newHours = (currentHours + 1) % 24;
-      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      // Parse current 12-hour time to get 24-hour format
+      const time24 = to24Hour(displayEndTime);
+      if (!time24) return;
+      
+      let [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      minutes += 30;
+      if (minutes >= 60) {
+        minutes -= 60;
+        hours = (hours + 1) % 24;
+      }
+      const newTime = to12Hour(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
       setDisplayEndTime(newTime);
-      handleChange('end_at', `${newHours.toString().padStart(2, '0')}:00:00`);
+      setIsManualTimeUpdate(true);
+      handleChange('end_at', `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`);
+      setTimeout(() => setIsManualTimeUpdate(false), 100);
     };
 
     const decrementEndTime = () => {
-      const timeParts = displayEndTime.split(':');
-      const currentHours = parseInt(timeParts[0] || '0') || 0;
-      const newHours = currentHours - 1 < 0 ? 23 : currentHours - 1;
-      const newTime = `${newHours.toString().padStart(2, '0')}:00 AM`;
+      // Parse current 12-hour time to get 24-hour format
+      const time24 = to24Hour(displayEndTime);
+      if (!time24) return;
+      
+      let [hours = 0, minutes = 0] = time24.split(':').map(Number);
+      minutes -= 30;
+      if (minutes < 0) {
+        minutes += 60;
+        hours = hours - 1 < 0 ? 23 : hours - 1;
+      }
+      const newTime = to12Hour(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`);
       setDisplayEndTime(newTime);
-      handleChange('end_at', `${newHours.toString().padStart(2, '0')}:00:00`);
+      setIsManualTimeUpdate(true);
+      handleChange('end_at', `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`);
+      setTimeout(() => setIsManualTimeUpdate(false), 100);
     };
 
     return (
@@ -1413,7 +1501,14 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   };
 
   const renderManualForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" onKeyDown={(e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !(e.target as HTMLElement).tagName?.includes('TEXTAREA')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const formEvent = new Event('submit', { cancelable: true });
+        e.currentTarget.dispatchEvent(formEvent);
+      }
+    }}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Title, Assignment, Description */}
         <div className="space-y-4">
@@ -1547,7 +1642,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           className={`w-full px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 text-base sm:text-lg shadow-none ${
             aiLoading 
               ? 'border-red-500 bg-transparent text-red-500 hover:text-red-600 focus:text-red-600' 
-              : 'border-green-500 bg-transparent text-green-500 hover:bg-transparent hover:text-green-600 focus:bg-transparent focus:text-green-600 disabled:opacity-70'
+              : 'border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-70'
           }`}
         >
           {aiLoading ? 'Cancel' : 'Send'}

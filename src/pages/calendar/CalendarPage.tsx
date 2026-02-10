@@ -1,12 +1,11 @@
-import Calendar, { TooltipContent } from '@/pages/calendar/Calendar';
 import { memo, useCallback, useEffect, useState } from 'react';
 
 import AllTasks from '@/pages/calendar/AllTasks';
+import Calendar, { } from '@/pages/calendar/Calendar';
 import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
 import { Helmet } from 'react-helmet-async';
 import { Task } from '@/types/taskStorage';
 import TaskFilter from '@/pages/calendar/TaskFilter';
-import { formatDate } from '@/utils/dateUtils';
 import { useAppStore } from '@/store/appStore';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLocation } from 'react-router-dom';
@@ -45,7 +44,6 @@ const CalendarPage = memo(() => {
     ? savedFilter
     : 'all';
 });
-  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
 
   // View and calendar type with localStorage persistence
   const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
@@ -63,13 +61,9 @@ const CalendarPage = memo(() => {
   });
 
   // Handlers
-  const handleTooltipShow = useCallback((content: TooltipContent | null) => {
-    setTooltipContent(content);
-  }, []);
-
   const handleFilterChange = (filter: string) => {
     setSelectedFilter(filter);
-    localStorage.setItem(STORAGE_KEYS.FILTER, filter);
+    localStorage.setItem('calendarFilter', filter);
   };
 
   const handleViewChange = useCallback((newView: 'month' | 'week' | 'day') => {
@@ -147,56 +141,6 @@ const CalendarPage = memo(() => {
     }
   }, [isVisible]);
 
-  // Render tooltip content
-  const renderTooltip = () => {
-    if (!tooltipContent) return null;
-
-    return (
-      <div className="-mt-44 mb-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200">
-        <div className="px-3 py-2 border-b border-[var(--border-primary)]">
-          <div className="text-sm font-semibold text-[var(--accent-primary)] text-center">
-            {formatDate(tooltipContent.date.toISOString())}
-          </div>
-          <div className="text-xs text-[var(--text-secondary)] text-center mt-1">
-            {tooltipContent.tasks.length} task{tooltipContent.tasks.length !== 1 ? 's' : ''} due
-          </div>
-        </div>
-        <div className="p-2 max-h-[200px] overflow-y-auto">
-          {tooltipContent.tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group"
-            >
-              <div
-                className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  task.completed ? 'bg-green-500' : 'bg-[var(--accent-primary)]'
-                }`}
-              />
-              <div className="flex-1 min-w-0">
-                <div
-                  className={`text-sm font-medium break-words ${
-                    task.completed
-                      ? 'line-through text-[var(--text-secondary)]'
-                      : 'text-[var(--text-primary)]'
-                  }`}
-                >
-                  {task.title}
-                </div>
-                {task.assignment && (
-                  <div className="text-xs text-[var(--text-secondary)] break-words">
-                    {task.assignment}
-                  </div>
-                )}
-              </div>
-              <div className="text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity">
-                {task.completed ? '✓' : '○'}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   // Render calendar based on type
   const renderCalendarContent = () => {
@@ -210,7 +154,7 @@ const CalendarPage = memo(() => {
 
     return (
       <div className="w-full flex flex-col gap-4 min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]">
-        <div className="flex flex-col lg:flex-row gap-4 flex-1">
+        <div className="flex flex-col lg:flex-row gap-4 flex-1 mb-6">
           {/* Left Column - All Tasks and Filter (Desktop) */}
           <div className="hidden lg:flex flex-col gap-4 w-80 flex-shrink-0">
             {/* Filter Dropdown */}
@@ -230,7 +174,6 @@ const CalendarPage = memo(() => {
                 title={getFilterLabel(selectedFilter)}
                 showCompleted={false}
               />
-              {renderTooltip()}
             </div>
           </div>
 
@@ -240,7 +183,6 @@ const CalendarPage = memo(() => {
               <Calendar 
                 view={view} 
                 onViewChange={handleViewChange} 
-                onTooltipShow={handleTooltipShow} 
               />
             </div>
           </div>

@@ -13,10 +13,10 @@ interface WeekViewProps {
   setFocusedDate: (date: Date) => void;
   setShowTaskForm: (show: boolean) => void;
   setIsLoginPromptOpen: (open: boolean) => void;
-  setIsInfoModalOpen: (open: boolean) => void;
-  setTooltipContent: (content: { date: Date; tasks: any[] } | null) => void;
   setSelectedTask: (task: any) => void;
   setViewingTask: (task: any) => void;
+  handleEditTask: (task: any) => void;
+  onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 
 const WeekView = ({
@@ -28,10 +28,10 @@ const WeekView = ({
   setFocusedDate,
   setShowTaskForm,
   setIsLoginPromptOpen,
-  setIsInfoModalOpen,
-  setTooltipContent,
   setSelectedTask,
   setViewingTask,
+  handleEditTask,
+  onTaskContextMenu,
 }: WeekViewProps) => {
   const startOfWeek = new Date(currentDate);
   const day = startOfWeek.getDay();
@@ -145,7 +145,7 @@ const WeekView = ({
                 <div
                   key={`spanning-task-${task.id}-${dayIndex}`}
                   data-calendar-task
-                  className="bg-[var(--accent-primary)] text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30 absolute z-10"
+                  className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10"
                   style={{
                     left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
                     top: `${topPosition}px`,
@@ -158,11 +158,20 @@ const WeekView = ({
                   }}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
-                    setViewingTask(task);
+                    handleEditTask(task);
+                  }}
+                  onContextMenu={(e) => {
+                    e.stopPropagation();
+                    onTaskContextMenu(e, task);
                   }}
                   title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                 >
                   <div className="font-medium truncate">{task.title || 'Sin título'}</div>
+                  {task.assignment && (
+                    <div className="text-xs text-white truncate">
+                      {task.assignment}
+                    </div>
+                  )}
                   <div className="text-xs opacity-90 truncate">
                     {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
@@ -179,8 +188,6 @@ const WeekView = ({
                 </div>
                 {weekDays.map((day, i) => {
                   const isCurrentDay = isSameDay(day, new Date());
-                  // Get all tasks for this day for the tooltip (not just this hour)
-                  const allDayTasks = getTasksWithDeadline(day);
                   
                   // Check if there's a task that starts at this hour and is only 1 hour long
                   const singleHourTask = (() => {
@@ -232,18 +239,10 @@ const WeekView = ({
                       className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
                         isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
                       }`}
-                      onClick={(e) => {
+                      onDoubleClick={(e) => {
                         if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
                         handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
                       }}
-                      onMouseEnter={() =>
-                        allDayTasks.length > 0 &&
-                        setTooltipContent({
-                          date: day,
-                          tasks: allDayTasks,
-                        })
-                      }
-                      onMouseLeave={() => setTooltipContent(null)}
                     >
                       {isCurrentDay && hour === currentHour && (
                         <div
@@ -264,7 +263,7 @@ const WeekView = ({
                       {singleHourTask && (
                         <div
                           data-calendar-task
-                          className="bg-[var(--accent-primary)] text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)]/30 absolute z-10"
+                          className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10"
                           style={{
                             left: '2px',
                             top: '2px',
@@ -277,11 +276,20 @@ const WeekView = ({
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
-                            setViewingTask(singleHourTask.task);
+                            handleEditTask(singleHourTask.task);
+                          }}
+                          onContextMenu={(e) => {
+                            e.stopPropagation();
+                            onTaskContextMenu(e, singleHourTask.task);
                           }}
                           title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
                           <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
+                          {singleHourTask.task.assignment && (
+                            <div className="text-xs text-white truncate">
+                              {singleHourTask.task.assignment}
+                            </div>
+                          )}
                           <div className="text-xs opacity-90 truncate">
                             {singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
