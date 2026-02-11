@@ -1,14 +1,16 @@
+import React, { useMemo } from 'react';
+
 import { AssignmentTask } from './AssignmentTask';
-import React from 'react';
+import { Task } from '@/types/taskStorage';
 
 interface TaskListProps {
-  tasks: any[];
+  tasks: Task[];
   assignment?: string;
-  onTaskToggle: (task: any) => void;
+  onTaskToggle: (task: Task) => void;
   onTaskDelete: (taskId: string) => void;
-  onEditTask: (task: any) => void;
-  onViewTask?: (task: any) => void;
-  onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
+  onEditTask: (task: Task) => void;
+  onViewTask?: (task: Task) => void;
+  onTaskContextMenu: (e: React.MouseEvent, task: Task) => void;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
@@ -19,9 +21,19 @@ export const TaskList: React.FC<TaskListProps> = ({
   onEditTask,
   onTaskContextMenu,
 }) => {
+  // Remove duplicate tasks by ID
+  const uniqueTasks = useMemo(() => {
+    const seen = new Set<string>();
+    return tasks.filter((task: Task) => {
+      if (seen.has(task.id)) return false;
+      seen.add(task.id);
+      return true;
+    });
+  }, [tasks]);
+
   return (
     <div className="relative space-y-1.5 transition-all duration-200 hide-scrollbar pb-2">
-      {tasks.map((task) => (
+      {uniqueTasks.map((task) => (
         <AssignmentTask
           key={task.id}
           task={task}

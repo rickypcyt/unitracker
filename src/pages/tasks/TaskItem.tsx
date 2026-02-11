@@ -17,30 +17,33 @@ const formatRecurrenceText = (weekdays: number[]) => {
     return `Every ${selectedDays.join(', ')}`;
 };
 
-// Helper para formatear tiempo - ahora maneja timestamptz
+// Helper para formatear tiempo - ahora maneja timestamptz correctamente
 const formatTime = (timeStr: string | undefined) => {
     if (!timeStr) return '';
     
-    // Si es timestamptz, extraer solo la hora
-    if (timeStr.includes(' ')) {
-        // Formato: '2026-02-09 10:00:00+00'
-        const timePart = timeStr.split(' ')[1]; // '10:00:00+00'
-        if (!timePart) return '';
+    try {
+        // Crear un objeto Date desde el string, que manejará automáticamente la zona horaria
+        const date = new Date(timeStr);
         
-        const [hours, minutes] = timePart.split(':');
-        const hour = parseInt(hours || '0');
-        const minute = parseInt(minutes || '0');
-        const period = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-        return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
-    } else {
-        // Formato antiguo: '10:00'
-        const [hours, minutes] = timeStr.split(':');
-        const hour = parseInt(hours || '0');
-        const minute = parseInt(minutes || '0');
-        const period = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-        return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+        // Verificar si la fecha es válida
+        if (isNaN(date.getTime())) {
+            console.error('Fecha inválida:', timeStr);
+            return '';
+        }
+        
+        // Obtener horas y minutos en la zona horaria local
+        let hours = date.getHours();
+        const minutes = date.getMinutes();
+        
+        // Convertir a formato 12 horas
+        const period = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours || 12; // Convertir 0 a 12 para medianoche
+        
+        return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    } catch (error) {
+        console.error('Error formateando la hora:', error);
+        return '';
     }
 };
 
@@ -145,12 +148,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     // Helper para el label de hoy/mañana
     const renderDateLabel = (deadline: string) => {
         if (isToday(deadline)) {
-            return <span className="text-yellow-500 ml-1">(Today)</span>;
+            return <span className="text-green-500 ml-1">(Today)</span>;
         }
         if (isTomorrow(deadline)) {
             return <span className="text-yellow-500 ml-1">(Tomorrow)</span>;
         }
         return null;
+    };
+    
+    // Helper para verificar si la tarea es para hoy (sin importar la hora)
+    const isTaskForToday = (dateStr: string) => {
+        if (!dateStr) return false;
+        const taskDate = new Date(dateStr);
+        const today = new Date();
+        return (
+            taskDate.getDate() === today.getDate() &&
+            taskDate.getMonth() === today.getMonth() &&
+            taskDate.getFullYear() === today.getFullYear()
+        );
     };
 
     
@@ -199,8 +214,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         </span>
                     ) : task.deadline && task.deadline !== '' ? (
                         <>
-                            <span className={getDeadlineColor(task.deadline)}>
-                                {formatDateShort(task.deadline)}
+                            <span className={isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}>
+                                {isTaskForToday(task.deadline) ? 'Today' : formatDateShort(task.deadline)}
+                                {task.start_at && (
+                                    <span className="ml-1">
+                                        {formatTime(task.start_at)}
+                                        {task.end_at && ` - ${formatTime(task.end_at)}`}
+                                    </span>
+                                )}
                                 {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
                                     <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
                                 )}

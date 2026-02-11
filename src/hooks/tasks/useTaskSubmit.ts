@@ -127,7 +127,20 @@ export function useTaskSubmit() {
       // For normal tasks, convert time to timestamptz using deadline date or today
       let baseDate = new Date();
       if (formData.deadline) {
-        baseDate = new Date(formData.deadline);
+        // Handle DD/MM/YYYY format
+        const dateParts = formData.deadline.split('/');
+        if (dateParts.length === 3) {
+          const [day, month, year] = dateParts;
+          baseDate = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`);
+        } else {
+          // Fall back to standard date parsing
+          const parsedDate = new Date(formData.deadline);
+          if (isNaN(parsedDate.getTime())) {
+            console.error('Invalid deadline date format:', formData.deadline);
+            throw new Error('Invalid deadline date format. Please use DD/MM/YYYY format.');
+          }
+          baseDate = parsedDate;
+        }
       }
       
       if (formData.start_at && formData.start_at.trim()) {
@@ -137,12 +150,20 @@ export function useTaskSubmit() {
           const hours = timeParts[0] || '0';
           const minutes = timeParts[1] || '0';
           
-          // Create UTC date and format as timestamptz
-          const utcDate = new Date(Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 
-                                          parseInt(hours), parseInt(minutes), 0, 0));
-          start_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+          // Create date with local timezone, then convert to UTC
+          const localDate = new Date(
+            baseDate.getFullYear(),
+            baseDate.getMonth(),
+            baseDate.getDate(),
+            parseInt(hours),
+            parseInt(minutes)
+          );
+          
+          // Format as ISO string and replace T with space, remove Z and add +00
+          start_at = localDate.toISOString().replace('T', ' ').replace('Z', '+00');
         }
       }
+      
       if (formData.end_at && formData.end_at.trim()) {
         const time24 = to24Hour(formData.end_at);
         if (time24) {
@@ -150,10 +171,15 @@ export function useTaskSubmit() {
           const hours = timeParts[0] || '0';
           const minutes = timeParts[1] || '0';
           
-          // Create UTC date and format as timestamptz
-          const utcDate = new Date(Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 
-                                          parseInt(hours), parseInt(minutes), 0, 0));
-          end_at = utcDate.toISOString().replace('T', ' ').replace('Z', '+00');
+          const localDate = new Date(
+            baseDate.getFullYear(),
+            baseDate.getMonth(),
+            baseDate.getDate(),
+            parseInt(hours),
+            parseInt(minutes)
+          );
+          
+          end_at = localDate.toISOString().replace('T', ' ').replace('Z', '+00');
         }
       }
     }

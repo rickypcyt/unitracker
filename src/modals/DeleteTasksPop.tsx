@@ -1,6 +1,6 @@
+import { AlertTriangle } from "lucide-react";
 import BaseModal from './BaseModal';
 import React from "react";
-import { AlertTriangle } from "lucide-react";
 
 interface DeleteCompletedModalProps {
   onClose: () => void;
@@ -21,7 +21,7 @@ const DeleteCompletedModal: React.FC<DeleteCompletedModalProps> = ({
       onClose={onClose}
       title="Delete Confirmation"
       maxWidth="max-w-md"
-      className="!p-0"
+      className="!p-0 !pt-4"
     >
       <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">
