@@ -1,5 +1,5 @@
 import { BookOpen, Briefcase, Check, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
@@ -7,6 +7,9 @@ import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
 import { Workspace } from '@/types/workspace';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { supabase } from '@/utils/supabaseClient';
+
+// Constant for the "All" workspace
+const ALL_WORKSPACE_ID = 'all';
 
 interface WorkspaceModalProps {
   isOpen: boolean;
@@ -165,7 +168,18 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     }
   }, [isOpen]);
 
-  const sortedWorkspaces = [...workspaces].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedWorkspaces = useMemo(() => {
+    // Create the "All" workspace
+    const allWorkspace = {
+      id: ALL_WORKSPACE_ID,
+      name: 'All',
+      icon: 'Workflow', // Using Workflow icon for "All"
+      taskCount: workspaces.reduce((sum, ws) => sum + (ws.taskCount || 0), 0)
+    };
+    
+    // Return "All" workspace first, then sorted workspaces
+    return [allWorkspace, ...workspaces.sort((a, b) => a.name.localeCompare(b.name))];
+  }, [workspaces]);
 
   return (
     <>
@@ -176,7 +190,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
         maxWidth="max-w-md"
       >
         <div className="space-y-2" onKeyDown={handleKeyDown}>
-          {sortedWorkspaces.map((ws, i) => (
+          {sortedWorkspaces.map((ws: any, i: number) => (
             <button
               key={ws.id}
               ref={el => { itemRefs.current[i] = el; }}

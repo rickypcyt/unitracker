@@ -3,6 +3,9 @@ import { useFetchTasks, useTasksLoading, useUpdateTaskSuccess, useWorkspace, use
 
 import { useTaskManager } from '@/hooks/useTaskManager';
 
+// Constant for the "All" workspace
+export const ALL_WORKSPACE_ID = 'all';
+
 export const useTaskBoard = () => {
   const tasksLoading = useTasksLoading();
   const updateTaskSuccess = useUpdateTaskSuccess();
@@ -25,12 +28,29 @@ export const useTaskBoard = () => {
   const showLoginPrompt = useCallback(() => setLoginPromptOpen(true), []);
   const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
 
+  // Create workspaces with "All" option
+  const workspacesWithAll = useMemo(() => {
+    const allWorkspace = {
+      id: ALL_WORKSPACE_ID,
+      name: 'All',
+      icon: '📊',
+      isAll: true
+    };
+    return [allWorkspace, ...(workspaces || [])];
+  }, [workspaces]);
+
   // Use tasks demo si isDemo
   const tasks = isDemo
     ? demoTasks.filter(task => task.workspace_id === activeWorkspace?.id)
     : realTasks;
 
-  const filteredTasks = tasks;
+  // Update filteredTasks to handle "All" workspace
+  const filteredTasks = useMemo(() => {
+    if (!activeWorkspace || activeWorkspace.id === ALL_WORKSPACE_ID) {
+      return tasks; // Show all tasks for "All" workspace
+    }
+    return tasks.filter(task => task.workspace_id === activeWorkspace.id);
+  }, [tasks, activeWorkspace]);
 
   // Memoize completed and incompleted tasks
   const completedTasks = useMemo(() => filteredTasks.filter((task) => task.completed), [filteredTasks]);
@@ -75,7 +95,7 @@ export const useTaskBoard = () => {
     // State
     tasksLoading,
     activeWorkspace,
-    workspaces,
+    workspaces: workspacesWithAll,
     tasks,
     filteredTasks,
     completedTasks,

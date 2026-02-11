@@ -5,6 +5,9 @@ import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { toggleTaskStatus } from "@/store/TaskActions";
 
+// Constant for the "All" workspace
+const ALL_WORKSPACE_ID = 'all';
+
 export const useTaskManager = (activeWorkspace) => {
   const addTaskSuccess = useAddTaskSuccess();
   const updateTaskSuccess = useUpdateTaskSuccess();
@@ -42,10 +45,16 @@ export const useTaskManager = (activeWorkspace) => {
 
   // Fetch tasks when user or workspace changes
   useEffect(() => {
-    if (!userId || !activeWorkspaceId) return;
+    if (!userId) return;
     
-    console.log('useTaskManager - Fetching tasks for workspace:', activeWorkspaceId);
-    fetchTasksRef.current(activeWorkspaceId, true);
+    // For "All" workspace, fetch all tasks without workspace filter
+    if (activeWorkspaceId === ALL_WORKSPACE_ID) {
+      console.log('useTaskManager - Fetching all tasks for "All" workspace');
+      fetchTasksRef.current(null, true); // Pass null to fetch all tasks
+    } else if (activeWorkspaceId) {
+      console.log('useTaskManager - Fetching tasks for workspace:', activeWorkspaceId);
+      fetchTasksRef.current(activeWorkspaceId, true);
+    }
   }, [userId, activeWorkspaceId]);
 
   const handleToggleCompletion = async (taskId) => {
@@ -144,9 +153,11 @@ export const useTaskManager = (activeWorkspace) => {
 
   return {
     user,
-    tasks: activeWorkspace 
-      ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
-      : tasks,
+    tasks: activeWorkspaceId === ALL_WORKSPACE_ID 
+      ? tasks // Return all tasks for "All" workspace
+      : activeWorkspace 
+        ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
+        : tasks,
     handleToggleCompletion,
     handleDeleteTask,
     handleUpdateTask,

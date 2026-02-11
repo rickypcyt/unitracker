@@ -1,3 +1,4 @@
+import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
@@ -17,7 +18,6 @@ import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { usePinnedColumns } from '@/hooks/usePinnedColumns';
 import { usePinnedColumnsActions } from '@/store/appStore';
-import { useTaskBoard } from '@/hooks/useTaskBoard';
 
 interface ColumnMenuState {
   assignmentId: string;
@@ -92,6 +92,21 @@ export const KanbanBoard = () => {
 
     return pinsWithDefaults;
   }, [pinnedColumns, filteredTasks]);
+
+  // Create a modified incompletedByAssignment for "All" workspace
+  const incompletedByAssignmentForAll = useMemo(() => {
+    if (activeWorkspace?.id === ALL_WORKSPACE_ID) {
+      // When "All" workspace is selected, group all tasks by assignment
+      const grouped: Record<string, any[]> = {};
+      incompletedTasks.forEach((task: any) => {
+        const assignment = task.assignment || "No assignment";
+        if (!grouped[assignment]) grouped[assignment] = [];
+        grouped[assignment].push(task);
+      });
+      return grouped;
+    }
+    return incompletedByAssignment;
+  }, [activeWorkspace?.id, incompletedTasks, incompletedByAssignment]);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
@@ -248,24 +263,22 @@ export const KanbanBoard = () => {
       if (!grouped[assignment]) grouped[assignment] = [];
       grouped[assignment].push(task);
     });
-    
-    Object.keys(grouped).forEach((assignment: string) => {
-      const sortConfig = assignmentSortConfig[assignment];
-      if (sortConfig && grouped[assignment]) {
-        const savedOrder = taskOrder[assignment];
-        if (savedOrder && savedOrder.length > 0) {
-          const taskMap = new Map(grouped[assignment].map((task: any) => [task.id, task]));
-          const sortedTasks: any[] = [];
-          savedOrder.forEach((taskId: string) => {
-            const task = taskMap.get(taskId);
-            if (task) {
-              sortedTasks.push(task);
-              taskMap.delete(taskId);
-            }
-          });
-          taskMap.forEach((task: any) => sortedTasks.push(task));
-          grouped[assignment] = sortedTasks;
-        }
+
+    // Apply task ordering within each assignment if configured
+    Object.keys(grouped).forEach(assignment => {
+      const savedOrder = taskOrder[assignment];
+      if (savedOrder && savedOrder.length > 0) {
+        const taskMap = new Map(grouped[assignment]?.map((task: any) => [task.id, task]) || []);
+        const sortedTasks: any[] = [];
+        savedOrder.forEach((taskId: string) => {
+          const task = taskMap.get(taskId);
+          if (task) {
+            sortedTasks.push(task);
+            taskMap.delete(taskId);
+          }
+        });
+        taskMap.forEach((task: any) => sortedTasks.push(task));
+        grouped[assignment] = sortedTasks;
       }
     });
 
@@ -303,12 +316,13 @@ export const KanbanBoard = () => {
     }
 
     return sortedAssignments;
-  }, [incompletedTasks, assignmentSortConfig, columnOrder, taskOrder, activeWorkspace, currentWorkspacePins]);
+  }, [incompletedTasks, assignmentSortConfig, incompletedByAssignmentForAll, taskOrder, columnOrder, currentWorkspacePins, activeWorkspace]);
 
   const handleTogglePin = (assignment: string) => {
     togglePin(assignment);
   };
 
+// ...
   const handleTaskContextMenu = (e: React.MouseEvent, task: any) => {
     e.preventDefault();
     e.stopPropagation();
@@ -459,7 +473,7 @@ export const KanbanBoard = () => {
         <div className="flex-1 min-h-0">
           <AssignmentColumns
             assignments={sortedIncompletedAssignments}
-            incompletedByAssignment={incompletedByAssignment}
+            incompletedByAssignment={incompletedByAssignmentForAll}
             currentWorkspacePins={currentWorkspacePins}
             onTogglePin={handleTogglePin}
             onAddTask={handleAddTask}

@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
+
+// Constant for the "All" workspace
+const ALL_WORKSPACE_ID = 'all';
 
 export interface PinnedColumn {
   id: number;
@@ -23,6 +27,38 @@ export const usePinnedColumns = (workspaceId: string | null) => {
     if (!user || !workspaceId) {
       setPinnedColumns({});
       setLoading(false);
+      return;
+    }
+
+    // For "All" workspace, fetch all pinned columns across all workspaces
+    if (workspaceId === ALL_WORKSPACE_ID) {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase
+          .from('pinned_columns')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        // For "All" workspace, show an assignment as pinned if it's pinned in ANY workspace
+        const pinsRecord: Record<string, boolean> = {};
+        data?.forEach((pin: PinnedColumn) => {
+          // If assignment is pinned in any workspace, mark it as pinned
+          if (pin.is_pinned) {
+            pinsRecord[pin.assignment] = true;
+          }
+        });
+
+        setPinnedColumns(pinsRecord);
+      } catch (err) {
+        console.error('Error fetching pinned columns for "All" workspace:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch pinned columns');
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -62,38 +98,87 @@ export const usePinnedColumns = (workspaceId: string | null) => {
       const currentPinState = pinnedColumns[assignment] ?? false;
       const newPinState = !currentPinState;
 
-      // Check if record exists
-      const { data: existingRecord } = await supabase
-        .from('pinned_columns')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('workspace_id', workspaceId)
-        .eq('assignment', assignment)
-        .single();
+      // For "All" workspace, toggle pin in ALL workspaces where this assignment exists
+      if (workspaceId === ALL_WORKSPACE_ID) {
+        // First, get all tasks to find which workspaces contain this assignment
+        const { data: tasks, error: tasksError } = await supabase
+          .from('tasks')
+          .select('workspace_id')
+          .eq('user_id', user.id)
+          .eq('assignment', assignment)
+          .not('workspace_id', 'is', null);
 
-      if (existingRecord) {
-        // Update existing record
-        const { error } = await supabase
-          .from('pinned_columns')
-          .update({ 
-            is_pinned: newPinState,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingRecord.id);
+        if (tasksError) throw tasksError;
 
-        if (error) throw error;
+        // Get unique workspace IDs
+        const workspaceIds = [...new Set(tasks?.map(t => t.workspace_id))];
+
+        // Update pin status in each workspace
+        for (const wsId of workspaceIds) {
+          // Check if record exists for this workspace
+          const { data: existingRecord } = await supabase
+            .from('pinned_columns')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('workspace_id', wsId)
+            .eq('assignment', assignment)
+            .single();
+
+          if (existingRecord) {
+            // Update existing record
+            await supabase
+              .from('pinned_columns')
+              .update({ 
+                is_pinned: newPinState,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingRecord.id);
+          } else {
+            // Insert new record
+            await supabase
+              .from('pinned_columns')
+              .insert({
+                user_id: user.id,
+                workspace_id: wsId,
+                assignment: assignment,
+                is_pinned: newPinState
+              });
+          }
+        }
       } else {
-        // Insert new record
-        const { error } = await supabase
+        // Normal workspace - toggle pin only in this workspace
+        const { data: existingRecord } = await supabase
           .from('pinned_columns')
-          .insert({
-            user_id: user.id,
-            workspace_id: workspaceId,
-            assignment: assignment,
-            is_pinned: newPinState
-          });
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('workspace_id', workspaceId)
+          .eq('assignment', assignment)
+          .single();
 
-        if (error) throw error;
+        if (existingRecord) {
+          // Update existing record
+          const { error } = await supabase
+            .from('pinned_columns')
+            .update({ 
+              is_pinned: newPinState,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingRecord.id);
+
+          if (error) throw error;
+        } else {
+          // Insert new record
+          const { error } = await supabase
+            .from('pinned_columns')
+            .insert({
+              user_id: user.id,
+              workspace_id: workspaceId,
+              assignment: assignment,
+              is_pinned: newPinState
+            });
+
+          if (error) throw error;
+        }
       }
 
       // Update local state
@@ -130,33 +215,80 @@ export const usePinnedColumns = (workspaceId: string | null) => {
 
       if (operations.length === 0) return;
 
-      // Process operations in batches
-      for (const operation of operations) {
-        const { data: existingRecord } = await supabase
-          .from('pinned_columns')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('workspace_id', workspaceId)
-          .eq('assignment', operation.assignment)
-          .single();
+      // For "All" workspace, update pins in all relevant workspaces
+      if (workspaceId === ALL_WORKSPACE_ID) {
+        for (const operation of operations) {
+          // Get all workspaces that contain this assignment
+          const { data: tasks, error: tasksError } = await supabase
+            .from('tasks')
+            .select('workspace_id')
+            .eq('user_id', user.id)
+            .eq('assignment', operation.assignment)
+            .not('workspace_id', 'is', null);
 
-        if (existingRecord) {
-          await supabase
+          if (tasksError) throw tasksError;
+
+          const workspaceIds = [...new Set(tasks?.map(t => t.workspace_id))];
+
+          // Update in each workspace
+          for (const wsId of workspaceIds) {
+            const { data: existingRecord } = await supabase
+              .from('pinned_columns')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('workspace_id', wsId)
+              .eq('assignment', operation.assignment)
+              .single();
+
+            if (existingRecord) {
+              await supabase
+                .from('pinned_columns')
+                .update({ 
+                  is_pinned: operation.isPinned,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingRecord.id);
+            } else {
+              await supabase
+                .from('pinned_columns')
+                .insert({
+                  user_id: user.id,
+                  workspace_id: wsId,
+                  assignment: operation.assignment,
+                  is_pinned: operation.isPinned
+                });
+            }
+          }
+        }
+      } else {
+        // Normal workspace - process operations in batches
+        for (const operation of operations) {
+          const { data: existingRecord } = await supabase
             .from('pinned_columns')
-            .update({ 
-              is_pinned: operation.isPinned,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existingRecord.id);
-        } else {
-          await supabase
-            .from('pinned_columns')
-            .insert({
-              user_id: user.id,
-              workspace_id: workspaceId,
-              assignment: operation.assignment,
-              is_pinned: operation.isPinned
-            });
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('workspace_id', workspaceId)
+            .eq('assignment', operation.assignment)
+            .single();
+
+          if (existingRecord) {
+            await supabase
+              .from('pinned_columns')
+              .update({ 
+                is_pinned: operation.isPinned,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingRecord.id);
+          } else {
+            await supabase
+              .from('pinned_columns')
+              .insert({
+                user_id: user.id,
+                workspace_id: workspaceId,
+                assignment: operation.assignment,
+                is_pinned: operation.isPinned
+              });
+          }
         }
       }
 

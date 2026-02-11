@@ -127,7 +127,7 @@ const SessionPage = memo(() => {
           onClick={() => {
             navigateTo('focusWidget');
           }}
-          className="w-full text-center py-2 px-4 bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 rounded-lg border border-[var(--accent-primary)]/30 transition-colors duration-200 cursor-pointer"
+          className="w-full text-center py-2 px-4 bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 rounded-lg border border-[var(--border-primary)] transition-colors duration-200 cursor-pointer"
         >
           <span className="text-[var(--accent-primary)] font-medium">Go to focus widget mode</span>
         </button>
