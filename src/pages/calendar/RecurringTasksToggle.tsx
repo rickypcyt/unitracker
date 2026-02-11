@@ -26,12 +26,12 @@ const RecurringTasksToggle: React.FC<RecurringTasksToggleProps> = ({ className =
         className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
         onClick={handleToggle}
       >
-        <div className={`w-5 h-5 rounded border-2 ${
+        <div className={`w-4 h-4 rounded border flex items-center justify-center ${
           showRecurring 
-            ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white' 
-            : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)]'
-        } flex items-center justify-center`}>
-          {showRecurring && <Check className="w-3 h-3" />}
+            ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]' 
+            : 'border-[var(--border-primary)] text-[var(--text-secondary)]'
+        }`}>
+          {showRecurring && <Check className="w-2.5 h-2.5" />}
         </div>
         <span className={`text-sm font-medium transition-colors ${
           showRecurring ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'

@@ -35,85 +35,20 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Filter and sort all tasks
-  const allTasks = [...tasks].sort((a, b) => {
-    const dateA = a.deadline ? new Date(a.deadline).getTime() : 0;
-    const dateB = b.deadline ? new Date(b.deadline).getTime() : 0;
-    return dateA - dateB;
-  });
+  // Group tasks by assignment (only non-completed tasks)
+  const tasksByAssignment = tasks
+    .filter(task => !task.completed)
+    .reduce((groups: { [key: string]: Task[] }, task: Task) => {
+      const assignment = task.assignment || 'No Assignment';
+      if (!groups[assignment]) {
+        groups[assignment] = [];
+      }
+      groups[assignment].push(task);
+      return groups;
+    }, {});
 
-  // Past tasks: deadline < today and not completed (only if deadline exists)
-  const pastTasks = allTasks.filter((task) => {
-    if (!task.deadline || task.deadline === "" || task.deadline === null)
-      return false;
-    const taskDate = new Date(task.deadline);
-    taskDate.setHours(0, 0, 0, 0);
-    return taskDate < today && (showCompleted ? true : !task.completed);
-  });
-
-  // Upcoming tasks
-  const upcomingTasks = allTasks.filter((task) => {
-    if (!task.deadline || task.deadline === "" || task.deadline === null)
-      return false;
-    const taskDate = new Date(task.deadline);
-    taskDate.setHours(0, 0, 0, 0);
-    return taskDate >= today && (showCompleted ? true : !task.completed);
-  });
-
-  // Group upcoming tasks by time periods
-  const todayTasks = upcomingTasks.filter((task) => {
-    if (!task.deadline) return false;
-    const taskDate = new Date(task.deadline);
-    return taskDate.toDateString() === today.toDateString();
-  });
-
-  // This month tasks (excluding today)
-  const thisMonthTasks = upcomingTasks.filter((task) => {
-    if (!task.deadline) return false;
-    const taskDate = new Date(task.deadline);
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    return (
-      taskDate.getMonth() === currentMonth &&
-      taskDate.getFullYear() === currentYear &&
-      taskDate.toDateString() !== today.toDateString()
-    );
-  });
-
-  // Next month tasks
-  const nextMonthTasks = upcomingTasks.filter((task) => {
-    if (!task.deadline) return false;
-    const taskDate = new Date(task.deadline);
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-    return (
-      taskDate.getMonth() === nextMonth && taskDate.getFullYear() === nextYear
-    );
-  });
-
-  // Future tasks (beyond next month)
-  const futureTasks = upcomingTasks.filter((task) => {
-    if (!task.deadline) return false;
-    const taskDate = new Date(task.deadline);
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-    return (
-      taskDate.getFullYear() > nextYear ||
-      (taskDate.getFullYear() === nextYear && taskDate.getMonth() > nextMonth)
-    );
-  });
-
-  // Tasks without deadlines
-  const noDeadlineTasks = allTasks.filter(
-    (task) => !task.deadline || task.deadline === "" || task.deadline === null
-  );
-
-  // Completed tasks section (only show when showCompleted is true)
-  const completedTasks = showCompleted ? allTasks.filter(task => task.completed) : [];
+  // Sort assignments alphabetically
+  const sortedAssignments = Object.keys(tasksByAssignment).sort();
 
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
@@ -186,7 +121,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted
         {!isCollapsed && (
           <div className="flex-1 overflow-y-auto p-0 space-y-1">
             {/* Empty State */}
-            {allTasks.length === 0 && (
+            {tasks.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2
@@ -203,133 +138,39 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted
               </div>
             )}
 
-            {/* Today's Tasks */}
-            {todayTasks.length > 0 && (
-              <div className="space-y-1">
-                {todayTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
+            {/* Tasks grouped by assignment */}
+            {sortedAssignments.map((assignment) => (
+              <div key={assignment} className="mb-4">
+                {/* Assignment Container */}
+                <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
+                  {/* Assignment Header */}
+                  <div className="px-4 py-3 bg-gradient-to-r from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5 border-l-4 border-[var(--accent-primary)]">
+                    <h4 className="text-base font-bold text-[var(--accent-primary)]">
+                      {assignment}
+                    </h4>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      {tasksByAssignment[assignment]?.length || 0} task{(tasksByAssignment[assignment]?.length || 0) !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  
+                  {/* Tasks Container */}
+                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1">
+                    {tasksByAssignment[assignment].map((task) => (
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onToggleCompletion={handleToggleCompletionWrapper}
+                        onDelete={handleDeleteTaskWrapper}
+                        onEditTask={() => handleEditTask(task)}
+                        onContextMenu={handleTaskContextMenuWrapper}
+                        showAssignment={false} // Hide assignment since we're grouping by it
+                        assignmentLeftOfDate={false}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
-            )}
-
-            {/* This Month */}
-            {thisMonthTasks.length > 0 && (
-              <div className="space-y-1">
-                {thisMonthTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Next Month */}
-            {nextMonthTasks.length > 0 && (
-              <div className="space-y-1">
-                {nextMonthTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Future */}
-            {futureTasks.length > 0 && (
-              <div className="space-y-1">
-                {futureTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Past Due */}
-            {pastTasks.length > 0 && (
-              <div className="space-y-1">
-                {pastTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* No Deadline */}
-            {noDeadlineTasks.length > 0 && (
-              <div className="space-y-1">
-                {noDeadlineTasks
-                  .filter((task) => showCompleted ? true : !task.completed)
-                  .map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onToggleCompletion={handleToggleCompletionWrapper}
-                      onDelete={handleDeleteTaskWrapper}
-                      onEditTask={() => handleEditTask(task)}
-                      onContextMenu={handleTaskContextMenuWrapper}
-                      showAssignment={true}
-                      assignmentLeftOfDate={true}
-                    />
-                  ))}
-              </div>
-            )}
-
-            {/* Completed Tasks */}
-            {completedTasks.length > 0 && (
-              <div className="space-y-1">
-                {completedTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggleCompletion={handleToggleCompletionWrapper}
-                    onDelete={handleDeleteTaskWrapper}
-                    onEditTask={() => handleEditTask(task)}
-                    onContextMenu={handleTaskContextMenuWrapper}
-                    showAssignment={true}
-                    assignmentLeftOfDate={true}
-                  />
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         )}
       </div>
