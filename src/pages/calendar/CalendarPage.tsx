@@ -286,8 +286,8 @@ const CalendarPage = memo(() => {
               onClick={() => handleCalendarTypeChange('original')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 calendarType === 'original'
-                  ? 'bg-[var(--accent-primary)] text-white shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                  ? 'text-[var(--accent-primary)] border border-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
               }`}
             >
               UniTracker Calendar
@@ -296,8 +296,8 @@ const CalendarPage = memo(() => {
               onClick={() => handleCalendarTypeChange('dayflow')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 calendarType === 'dayflow'
-                  ? 'bg-[var(--accent-primary)] text-white shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                  ? 'text-[var(--accent-primary)] border border-[var(--accent-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
               }`}
             >
               DayFlow Calendar
