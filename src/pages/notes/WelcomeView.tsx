@@ -2,7 +2,6 @@ import { Calendar, FileText, Folder, Plus } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
-import ReactMarkdown from 'react-markdown';
 
 interface WelcomeViewProps {
   onCreateNote: (assignment?: string) => void;
@@ -13,6 +12,36 @@ interface WelcomeViewProps {
   selectedNoteId?: string | undefined;
   onDelete?: (note: any) => void;
 }
+
+// Simple markdown renderer for preview
+const renderMarkdownPreview = (text: string, maxLength: number = 200): string => {
+  if (!text) return 'No description';
+  
+  // Remove HTML tags first
+  let cleanText = text.replace(/<[^>]*>/g, '');
+  
+  // Simple markdown replacements
+  cleanText = cleanText
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove **bold** but keep text
+    .replace(/\*(.*?)\*/g, '$1')     // Remove *italic* but keep text  
+    .replace(/`(.*?)`/g, '$1')      // Remove `code` but keep text
+    .replace(/^•\s+/gm, '• ')        // Ensure bullet points have proper spacing
+    .replace(/^\d+\.\s+/gm, '• ')    // Convert numbered lists to bullets
+    .replace(/\n\n+/g, ' • ')       // Convert paragraph breaks to bullet separation
+    .replace(/\n+/g, ' ')           // Convert single line breaks to spaces
+    .replace(/\s+/g, ' ')           // Remove extra spaces
+    .trim();
+  
+  // Add spacing between bullet points
+  cleanText = cleanText.replace(/•\s+/g, ' • ');
+  
+  // Truncate if too long
+  if (cleanText.length > maxLength) {
+    return cleanText.substring(0, maxLength) + '...';
+  }
+  
+  return cleanText;
+};
 
 const WelcomeView: React.FC<WelcomeViewProps> = ({ 
   onCreateNote, 
@@ -278,7 +307,7 @@ Start creating your first note!`;
             <div className="flex-1 overflow-y-auto p-3 sm:p-6">
               <div className="max-w-none sm:max-w-4xl mx-auto">
                 <div className="prose prose-sm sm:prose-lg max-w-none dark:prose-invert text-center text-[var(--text-primary)]">
-                  <ReactMarkdown>{description}</ReactMarkdown>
+                  <div>{description}</div>
                 </div>
                 
                 <div className="mt-8 text-center space-y-4">
@@ -326,7 +355,7 @@ Start creating your first note!`;
                 </div>
 
                 {/* Notes grid */}
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                   {notes
                     .filter(note => (note.assignment || 'Unassigned') === selectedAssignment)
                     .map((note) => {
@@ -335,14 +364,22 @@ Start creating your first note!`;
                         <div
                           key={noteKey}
                           onClick={() => onNoteSelect?.(note.id || noteKey)}
-                          className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group"
+                          className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group flex items-start gap-2 aspect-square"
                         >
-                          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 truncate">
-                            {note.title}
-                          </h3>
-                          <div className="flex items-center gap-1 text-sm text-[var(--text-secondary)]">
-                            <Calendar size={14} />
-                            <span>{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <div className="flex-shrink-0">
+                            <FileText size={28} className="text-[var(--accent-primary)]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate mb-1">
+                              {note.title}
+                            </h3>
+                            <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)] mb-2">
+                              <Calendar size={10} />
+                              <span>{new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            </div>
+                            <div className="text-xs text-[var(--text-secondary)] line-clamp-3">
+                              {renderMarkdownPreview(note.description, 80)}
+                            </div>
                           </div>
                         </div>
                       );
@@ -351,7 +388,7 @@ Start creating your first note!`;
               </div>
             ) : (
               // Show assignments boxes
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {(() => {
                   const notesByAssignment: Record<string, any[]> = {};
                   notes.forEach(note => {
@@ -372,18 +409,30 @@ Start creating your first note!`;
                           setSelectedAssignment(assignment);
                         }
                       }}
-                      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:shadow-md hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group flex items-center gap-4"
+                      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4 hover:shadow-md hover:border-[var(--accent-primary)]/70 transition-all duration-200 cursor-pointer group flex items-start gap-3 aspect-square"
                     >
                       <div className="flex-shrink-0">
                         <Folder size={32} className="text-[var(--accent-primary)]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                        <h3 className="text-base font-semibold text-[var(--text-primary)] truncate mb-1">
                           {assignment}
                         </h3>
                         <p className="text-sm text-[var(--text-secondary)]">
                           {assignmentNotes.length} {assignmentNotes.length === 1 ? 'note' : 'notes'}
                         </p>
+                        <div className="mt-2 space-y-1">
+                          {assignmentNotes.slice(0, 2).map((note, index) => (
+                            <div key={note.id || index} className="text-xs text-[var(--text-secondary)] truncate">
+                              • {note.title}
+                            </div>
+                          ))}
+                          {assignmentNotes.length > 2 && (
+                            <div className="text-xs text-[var(--text-secondary)] italic">
+                              +{assignmentNotes.length - 2} more...
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ));
@@ -392,13 +441,13 @@ Start creating your first note!`;
                 {/* Create new note item */}
                 <div
                   onClick={() => onCreateNote()}
-                  className="bg-[var(--bg-secondary)] border-2 border-dashed border-[var(--border-primary)] rounded-lg p-4 hover:border-[var(--accent-primary)]/50 transition-all duration-200 cursor-pointer group flex items-center gap-4"
+                  className="bg-[var(--bg-secondary)] border-2 border-dashed border-[var(--border-primary)] rounded-lg p-4 hover:border-[var(--accent-primary)]/50 transition-all duration-200 cursor-pointer group flex items-start gap-3 aspect-square"
                 >
                   <div className="flex-shrink-0 opacity-50 group-hover:opacity-70 transition-opacity">
                     <Plus size={32} className="text-[var(--text-secondary)]" />
                   </div>
                   <div className="flex-1 min-w-0 opacity-50 group-hover:opacity-70 transition-opacity">
-                    <h3 className="text-lg font-medium text-[var(--text-secondary)]">
+                    <h3 className="text-base font-medium text-[var(--text-secondary)] mb-1">
                       Create New Note
                     </h3>
                     <p className="text-sm text-[var(--text-secondary)]">
