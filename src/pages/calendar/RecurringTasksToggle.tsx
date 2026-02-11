@@ -1,0 +1,51 @@
+import { Check } from 'lucide-react';
+import { useAppStore } from '@/store/appStore';
+import { useRecurringTasks } from './RecurringTasksContext';
+import { useState } from 'react';
+
+interface RecurringTasksToggleProps {
+  className?: string;
+}
+
+const RecurringTasksToggle: React.FC<RecurringTasksToggleProps> = ({ className = '' }) => {
+  const { tasks } = useAppStore((state) => state.tasks);
+  const { showRecurring, setShowRecurring } = useRecurringTasks();
+  
+  // Count recurring tasks
+  const recurringCount = tasks.filter((task: any) => {
+    return task.recurrence_type && task.recurrence_type !== 'none';
+  }).length;
+
+  const handleToggle = () => {
+    setShowRecurring(!showRecurring);
+  };
+
+  return (
+    <div className={`relative ${className}`}>
+      <label 
+        className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
+        onClick={handleToggle}
+      >
+        <div className={`w-5 h-5 rounded border-2 ${
+          showRecurring 
+            ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white' 
+            : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)]'
+        } flex items-center justify-center`}>
+          {showRecurring && <Check className="w-3 h-3" />}
+        </div>
+        <span className={`text-sm font-medium transition-colors ${
+          showRecurring ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'
+        }`}>
+          Show Recurring Tasks
+          {recurringCount > 0 && (
+            <span className="text-xs text-[var(--text-secondary)] ml-2">
+              ({recurringCount})
+            </span>
+          )}
+        </span>
+      </label>
+    </div>
+  );
+};
+
+export default RecurringTasksToggle;

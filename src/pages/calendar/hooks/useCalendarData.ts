@@ -15,11 +15,15 @@ export type CalendarTask = Task & { occurrenceStart?: string; occurrenceEnd?: st
 interface UseCalendarDataProps {
   currentDate: Date;
   selectedDate: Date;
+  tasks?: Task[]; // Optional filtered tasks
 }
 
-export const useCalendarData = ({ currentDate, selectedDate }: UseCalendarDataProps) => {
-  const { tasks } = useAppStore((state) => state.tasks);
+export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTasks }: UseCalendarDataProps) => {
+  const storeTasks = useAppStore((state) => state.tasks.tasks);
   const laps = useAppStore((state) => state.laps.laps);
+  
+  // Use filtered tasks if provided, otherwise use store tasks
+  const tasks = filteredTasks || storeTasks;
 
   const getDaysInMonth = useCallback((year: number, month: number) =>
     new Date(year, month + 1, 0).getDate(), []);

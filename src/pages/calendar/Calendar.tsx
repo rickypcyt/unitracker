@@ -20,11 +20,12 @@ import { useDeleteTaskSuccess } from "@/store/appStore";
 interface CalendarProps {
   view?: 'month' | 'week' | 'day';
   onViewChange?: (view: 'month' | 'week' | 'day') => void;
+  tasks?: Task[]; // Optional filtered tasks
 }
 
 type ViewType = 'month' | 'week' | 'day';
 
-const Calendar = ({ view = 'month' as ViewType, onViewChange }: CalendarProps) => {
+const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTasks }: CalendarProps) => {
   const { isLoggedIn } = useAuth();
 
   // State management
@@ -54,7 +55,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange }: CalendarProps) =
     getStudiedHoursForDate,
     hasTasksWithDeadline,
     calendarDays,
-  } = useCalendarData({ currentDate, selectedDate });
+  } = useCalendarData({ currentDate, selectedDate, ...(filteredTasks && { tasks: filteredTasks }) });
 
   // Navigation functions
   const {
