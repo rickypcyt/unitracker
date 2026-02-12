@@ -1,8 +1,6 @@
 import { FormActions, FormButton, FormInput } from "../../modals/FormElements";
 import React, { useEffect, useMemo, useState } from "react";
 
-import MarkdownWysiwyg from "../../MarkdownWysiwyg";
-
 interface Note {
   id?: string;
   title: string;
@@ -41,52 +39,49 @@ const NotesForm: React.FC<NotesFormProps> = ({
     [initialValues]
   );
 
-  const [form, setForm] = useState<{ assignment: string }>({
-    assignment: (safeInitialValues.assignment ?? "") as string,
-  });
-
-  const [wysiwyg, setWysiwyg] = useState<{ title: string; body: string }>({
+  const [form, setForm] = useState<{ title: string; assignment: string }>({
     title: safeInitialValues.title,
-    body: safeInitialValues.description,
+    assignment: safeInitialValues.assignment || "",
   });
 
   // Update form when initialValues change
   useEffect(() => {
     setForm({
-      assignment: (safeInitialValues.assignment ?? "") as string,
-    });
-    setWysiwyg({
       title: safeInitialValues.title,
-      body: safeInitialValues.description,
+      assignment: safeInitialValues.assignment || "",
     });
   }, [safeInitialValues]);
+
+  const handleTitleChange = (value: string) => {
+    setForm({ ...form, title: value });
+  };
 
   const handleAssignmentChange = (value: string) => {
     setForm({ ...form, assignment: value });
   };
 
-  const handleWysiwygChange = (data: { title: string; body: string }) => {
-    setWysiwyg(data);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const title = wysiwyg.title.trim();
+    const title = form.title.trim();
     if (!title) return;
 
     const today = getToday();
     const trimmedAssign = form.assignment.trim();
+    
+    console.log('Form data being saved:', { title, assignment: trimmedAssign });
+    
     const noteData: Omit<Note, "id"> = {
       title,
       assignment: trimmedAssign ? trimmedAssign : null,
-      description: wysiwyg.body || "",
+      description: "",
       date: today,
     };
 
+    console.log('Note data being sent:', noteData);
+
     try {
       await onAdd(noteData);
-      setForm({ assignment: "" });
-      setWysiwyg({ title: "", body: "" });
+      setForm({ title: "", assignment: "" });
     } catch (error) {
       console.error("Error saving note:", error);
     }
@@ -96,20 +91,23 @@ const NotesForm: React.FC<NotesFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-0">
       <div className="space-y-2">
         <div className="overflow-hidden">
-          <MarkdownWysiwyg
-            initialTitle={wysiwyg.title}
-            initialBody={wysiwyg.body}
-            onChange={handleWysiwygChange}
-            variant="notes"
-            className="min-h-[300px]"
-          />
           <FormInput
-            id="assignment"
-            label="Assignment (optional)"
-            value={form.assignment}
-            onChange={handleAssignmentChange}
-            placeholder="Enter assignment name..."
+            id="title"
+            label="Title"
+            value={form.title}
+            onChange={handleTitleChange}
+            placeholder="Enter note title..."
+            required
           />
+          <div className="mt-4">
+            <FormInput
+              id="assignment"
+              label="Assignment (optional)"
+              value={form.assignment}
+              onChange={handleAssignmentChange}
+              placeholder="Enter assignment name..."
+            />
+          </div>
         </div>
       </div>
 

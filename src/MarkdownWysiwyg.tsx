@@ -13,6 +13,7 @@ interface MarkdownWysiwygProps {
   placeholder?: string;
   variant?: 'notes' | 'tasks' | 'default';
   ref?: React.Ref<{ getCurrentContent: () => string }>;
+  showPlaceholder?: boolean;
 }
 
 const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, MarkdownWysiwygProps>(({
@@ -23,6 +24,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
   className = "",
   placeholder = "Enter task description...",
   variant = 'default',
+  showPlaceholder = true,
 }, ref) => {
   const [title, setTitle] = useState(initialTitle);
 
@@ -31,10 +33,12 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
     switch (variant) {
       case 'notes':
         return {
-          placeholder: placeholder || "Start writing your note...",
+          placeholder: showPlaceholder ? (placeholder || "Start writing your note...") : "",
           minHeight: "min-h-[200px] sm:min-h-[250px]",
           border: "",
-          extensions: [StarterKit, Placeholder.configure({ placeholder: placeholder || "Start writing your note..." })]
+          extensions: showPlaceholder ? 
+            [StarterKit, Placeholder.configure({ placeholder: placeholder || "Start writing your note..." })] :
+            [StarterKit]
         };
       case 'tasks':
         return {
@@ -100,7 +104,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
       {/* Editor Content - With proper borders and styling */}
       <div className="flex-1 flex flex-col">
         <div className="relative flex-1">
-          <div className={`relative p-4 bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus-within:outline-none ${config.minHeight} ${config.border || ''} cursor-text`}>
+          <div className={`relative p-4 bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus-within:outline-none ${config.minHeight} ${config.border || ''} cursor-text ${!showPlaceholder ? '[&_.ProseMirror_p.is-empty]:hidden [&_.ProseMirror_p.is-editor-empty]:hidden' : ''}`}>
             <EditorContent
               editor={editor}
               className="text-[var(--text-primary)] focus:outline-none h-full cursor-text"
@@ -115,7 +119,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
                 </span>
               </div>
             )}
-            {!editor?.getText()?.trim() && variant === 'notes' && (
+            {!editor?.getText()?.trim() && variant === 'notes' && showPlaceholder && (
               <div
                 className="absolute inset-0 flex items-center justify-center cursor-text select-none"
                 onClick={() => editor?.commands.focus()}

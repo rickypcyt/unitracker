@@ -2,6 +2,7 @@ import { Calendar, FileText, Folder, Plus } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 
 import DatePicker from 'react-datepicker';
+import NotesCreateModal from '../../modals/NotesCreateModal';
 
 interface WelcomeViewProps {
   onCreateNote: (assignment?: string) => void;
@@ -56,6 +57,8 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   const [tempTitle, setTempTitle] = useState('Welcome to Notes');
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0] || '');
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [modalAssignment, setModalAssignment] = useState<string>('');
   const datePickerRef = useRef<any>(null);
   
   const originalTitle = 'Welcome to Notes';
@@ -88,6 +91,21 @@ Start creating your first note!`;
     }
   };
 
+  const handleOpenCreateModal = (assignment?: string) => {
+    setModalAssignment(assignment || '');
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+    setModalAssignment('');
+  };
+
+  const handleCreateNoteInModal = async (noteData: any) => {
+    await onCreateNote(noteData);
+    handleCloseCreateModal();
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Mobile: Show notes list directly */}
@@ -98,7 +116,7 @@ Start creating your first note!`;
             Notes ({notes.length})
           </h2>
           <button
-            onClick={() => onCreateNote()}
+            onClick={() => handleOpenCreateModal()}
             className="inline-flex items-center justify-center gap-2 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)] hover:text-white transition-colors text-sm"
           >
             New
@@ -136,7 +154,7 @@ Start creating your first note!`;
                   Start organizing your thoughts and ideas. Create your first note to get started.
                 </p>
                 <button
-                  onClick={() => onCreateNote()}
+                  onClick={() => handleOpenCreateModal()}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
                 >
                   <Plus size={18} className="w-5 h-5" />
@@ -170,7 +188,7 @@ Start creating your first note!`;
                           </span>
                         </h3>
                         <button
-                          onClick={() => onCreateNote(assignment)}
+                          onClick={() => handleOpenCreateModal(assignment)}
                           className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-all duration-200 hover:scale-110"
                           title={`Create new note in ${assignment}`}
                         >
@@ -313,7 +331,7 @@ Start creating your first note!`;
                 <div className="mt-8 text-center space-y-4">
                   {/* Create Note Button - Always visible */}
                   <button
-                    onClick={() => onCreateNote()}
+                    onClick={() => handleOpenCreateModal()}
                     className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm sm:text-base"
                   >
                     Create New Note
@@ -404,7 +422,7 @@ Start creating your first note!`;
                       key={assignment}
                       onClick={() => {
                         if (assignmentNotes.length === 0) {
-                          onCreateNote(assignment);
+                          handleOpenCreateModal(assignment);
                         } else {
                           setSelectedAssignment(assignment);
                         }
@@ -440,19 +458,14 @@ Start creating your first note!`;
                 
                 {/* Create new note item */}
                 <div
-                  onClick={() => onCreateNote()}
-                  className="bg-[var(--bg-secondary)] border-2 border-dashed border-[var(--border-primary)] rounded-lg p-4 hover:border-[var(--accent-primary)]/50 transition-all duration-200 cursor-pointer group flex items-start gap-3 aspect-square"
+                  onClick={() => handleOpenCreateModal()}
+                  className="bg-[var(--bg-secondary)] border-2 border-dashed border-[var(--border-primary)] rounded-lg p-4 hover:border-[var(--accent-primary)]/50 transition-all duration-200 cursor-pointer group flex flex-col items-center justify-center aspect-square"
                 >
-                  <div className="flex-shrink-0 opacity-50 group-hover:opacity-70 transition-opacity">
-                    <Plus size={32} className="text-[var(--text-secondary)]" />
-                  </div>
-                  <div className="flex-1 min-w-0 opacity-50 group-hover:opacity-70 transition-opacity">
-                    <h3 className="text-base font-medium text-[var(--text-secondary)] mb-1">
+                  <div className="flex flex-col items-center justify-center gap-2 opacity-50 group-hover:opacity-70 transition-opacity">
+                    <h3 className="text-base font-medium text-[var(--text-secondary)]">
                       Create New Note
                     </h3>
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      Click to create
-                    </p>
+                    <Plus size={32} className="text-[var(--text-secondary)]" />
                   </div>
                 </div>
               </div>
@@ -460,6 +473,21 @@ Start creating your first note!`;
           </div>
         )}
       </div>
+      
+      {/* Create Note Modal */}
+      <NotesCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseCreateModal}
+        onAdd={handleCreateNoteInModal}
+        loading={loading}
+        initialValues={{
+          title: '',
+          assignment: modalAssignment,
+          description: '',
+          date: new Date().toISOString().split('T')[0] || ''
+        }}
+        isEdit={false}
+      />
     </div>
   );
 };
