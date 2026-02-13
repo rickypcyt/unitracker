@@ -37,65 +37,6 @@ const HabitsPage = memo(() => {
   const currentYear = currentDate.getFullYear();
   const today = new Date();
 
-
-  // Note: These handlers are kept for compatibility but may not be used with the new 12-month view
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleNoteChange = (day: number, note: string) => {
-    const date = new Date(currentYear, currentMonth, day);
-    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-    // Update pending saves
-    setPendingNoteSaves(prev => ({
-      ...prev,
-      [dateString]: note
-    }));
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleNoteKeyDown = async (day: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      // Save immediately on Enter
-      const date = new Date(currentYear, currentMonth, day);
-      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      const noteValue = (e.target as HTMLInputElement).value;
-
-      // Remove from pending saves and save immediately
-      setPendingNoteSaves(prev => {
-        const newPending = { ...prev };
-        delete newPending[dateString];
-        return newPending;
-      });
-
-      await saveJournalNote(date, noteValue);
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleNoteBlur = async (day: number) => {
-    // Save when user leaves the input field
-    const date = new Date(currentYear, currentMonth, day);
-    const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const noteValue = pendingNoteSaves[dateString] ?? journalNotes[dateString] ?? '';
-
-    // Only save if there are unsaved changes
-    if (pendingNoteSaves[dateString] !== undefined) {
-      // Remove from pending saves and save
-      setPendingNoteSaves(prev => {
-        const newPending = { ...prev };
-        delete newPending[dateString];
-        return newPending;
-      });
-
-      await saveJournalNote(date, noteValue);
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleToggleHabit = async (habitId: string, day: number) => {
-    const date = new Date(currentYear, currentMonth, day);
-    await toggleHabitCompletion(habitId, date);
-  };
-
   const handleStartEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
     setIsEditModalOpen(true);
@@ -182,7 +123,15 @@ const HabitsPage = memo(() => {
 
   // Generate months to display (previous, current, and next month)
   const generateMonths = () => {
-    const months = [];
+    const months: Array<{
+      year: number;
+      month: number;
+      days: number[];
+      realDays: number;
+      title: string;
+      isCurrent: boolean;
+      opacity: string;
+    }> = [];
     
     // Calculate previous, current, and next months
     const prevMonth = new Date(currentYear, currentMonth - 1);
