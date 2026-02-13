@@ -19,7 +19,7 @@ interface AllTasksProps {
   showCompleted?: boolean; // Add prop to control whether to show completed tasks
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted = false }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -155,7 +155,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, showCompleted
                   
                   {/* Tasks Container */}
                   <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1">
-                    {tasksByAssignment[assignment].map((task) => (
+                    {tasksByAssignment[assignment]?.map((task) => (
                       <TaskItem
                         key={task.id}
                         task={task}

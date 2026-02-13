@@ -19,6 +19,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
+  onViewTask,
   onTaskContextMenu,
 }) => {
   // Remove duplicate tasks by ID
@@ -41,7 +42,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           onToggleCompletion={onTaskToggle}
           onTaskDelete={onTaskDelete}
           onEditTask={onEditTask}
-          onViewTask={onViewTask}
+          {...(onViewTask && { onViewTask })}
           onTaskContextMenu={onTaskContextMenu}
         />
       ))}

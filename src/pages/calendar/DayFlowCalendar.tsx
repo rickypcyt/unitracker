@@ -1,9 +1,7 @@
 import {
   DayFlowCalendar,
-  createAllDayEvent,
   createDayView,
   createDragPlugin,
-  createEvent,
   createMonthView,
   createWeekView,
   useCalendarApp,
@@ -11,7 +9,6 @@ import {
 import { useAppStore, useWorkspace } from '../../store/appStore';
 
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
-import { Task } from '@/types/taskStorage';
 import { tasksToEvents } from '../../utils/taskToEventMapper';
 import useDemoMode from '../../utils/useDemoMode';
 import { useMemo } from 'react';

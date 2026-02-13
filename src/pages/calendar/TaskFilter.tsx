@@ -177,11 +177,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ tasks, onFilteredTasksChange, s
     // Filter application is now handled by useEffect above
   };
 
-  // Get count for each filter
-  const getFilterCount = (filter: string, includeCompleted: boolean) => {
-    return getFilteredTasks(filter, includeCompleted).length;
-  };
-
+  
   const filterOptions = [
     { id: "all", label: "All Tasks", icon: <Calendar size={16} /> },
     { id: "today", label: "Today", icon: <Clock size={16} /> },

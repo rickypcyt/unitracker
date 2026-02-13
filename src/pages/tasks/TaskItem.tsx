@@ -104,7 +104,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     onViewTask,
     onContextMenu,
     showAssignment = false,
-    assignmentLeftOfDate = false,
     active = false
 }) => {
     const getDifficultyColor = (difficulty: string, type: 'text' | 'bg' | 'border' = 'text') => {

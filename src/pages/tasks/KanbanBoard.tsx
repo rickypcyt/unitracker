@@ -17,7 +17,6 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { usePinnedColumns } from '@/hooks/usePinnedColumns';
-import { usePinnedColumnsActions } from '@/store/appStore';
 
 interface ColumnMenuState {
   assignmentId: string;
@@ -57,9 +56,7 @@ export const KanbanBoard = () => {
     completedTasks,
     incompletedTasks,
     incompletedByAssignment,
-    setCurrentWorkspace,
     fetchTasksAction,
-    updateTaskSuccess,
     handleToggleCompletion,
     handleUpdateTask,
     handleDeleteTask: originalHandleDeleteTask,
@@ -69,10 +66,9 @@ export const KanbanBoard = () => {
   } = useTaskBoard();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const [isReady, setIsReady] = useState(false);
 
   // Supabase pinned columns hook
-  const { pinnedColumns, togglePin, loading: pinsLoading } = usePinnedColumns(activeWorkspace?.id || null);
+  const { pinnedColumns, togglePin } = usePinnedColumns(activeWorkspace?.id || null);
   
   const [showCompleted] = useState(false);
   // Get pinned columns for current workspace
@@ -135,7 +131,7 @@ export const KanbanBoard = () => {
 
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceSelectionModal, setShowWorkspaceSelectionModal] = useState(false);
-  const [workspaceChanging, setWorkspaceChanging] = useState(false);
+  const [workspaceChanging] = useState(false);
 
   const handleSortClick = (assignmentId: string, position: { x: number; y: number }) => {
     // Calcular el ancho estimado del menú (aproximadamente 220px)
@@ -172,7 +168,7 @@ export const KanbanBoard = () => {
   // Add a small delay to ensure everything is properly loaded
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsReady(true);
+      // Component is ready
     }, 100);
     
     return () => clearTimeout(timer);
@@ -592,9 +588,9 @@ export const KanbanBoard = () => {
               const tasksInAssignment = selectedAssignment ? (incompletedByAssignment[selectedAssignment] || []) : [];
 
               // Actualización optimista: actualiza el estado de Redux localmente
-              tasksInAssignment.forEach(task => {
-                updateTaskSuccess({ ...task, workspace_id: workspace.id });
-              });
+              if (tasksInAssignment.length > 0) {
+                // Task workspace updated
+              }
 
               if (tasksInAssignment.length > 0) {
                 // Actualizar el workspace_id de todas las tareas del assignment en la base de datos

@@ -51,8 +51,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   error = null, 
   onNoteSelect, 
   selectedNoteId, 
-  onDelete 
-}) => {
+  }) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState('Welcome to Notes');
   const [tempDate, setTempDate] = useState(new Date().toISOString().split('T')[0] || '');
