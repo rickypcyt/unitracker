@@ -43,7 +43,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
       case 'tasks':
         return {
           placeholder: placeholder || "Describe your task in detail (supports markdown formatting)",
-          minHeight: "min-h-[120px] sm:min-h-[150px]",
+          minHeight: "min-h-[80px] sm:min-h-[100px]",
           border: "border-2 border-[var(--border-primary)] rounded-lg",
           extensions: [StarterKit, Placeholder.configure({ placeholder: placeholder || "Describe your task in detail (supports markdown formatting)" })]
         };

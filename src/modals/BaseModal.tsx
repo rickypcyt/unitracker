@@ -154,10 +154,10 @@ const BaseModal = ({
     backdrop-blur-md w-full px-3 sm:px-4 overflow-hidden
   `.trim();
 
-  const dialogClasses = `
+  const modalClasses = `
     bg-[var(--bg-primary)] border border-[var(--border-primary)] 
     sm:border-2 rounded-lg sm:rounded-xl p-4 sm:p-5 
-    w-full ${maxWidth} mx-2 sm:mx-4 ${className} 
+    w-full ${maxWidth} mx-auto ${className} 
     shadow-xl max-h-[90vh] h-auto overflow-y-auto 
     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] 
     flex flex-col
@@ -190,7 +190,7 @@ const BaseModal = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? "modal-title" : undefined}
-        className={dialogClasses}
+        className={modalClasses}
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (

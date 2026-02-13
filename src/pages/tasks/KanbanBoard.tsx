@@ -10,7 +10,7 @@ import LoginPromptModal from '@/modals/LoginPromptModal';
 import { QuickDatePicker } from '@/modals/QuickDatePicker';
 import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
-import TaskForm from '@/pages/tasks/TaskForm';
+import TaskFormManager from '@/pages/tasks/TaskFormManager';
 import { TaskListMenu } from '@/modals/TaskListMenu';
 import TaskViewModal from '@/modals/TaskViewModal';
 import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
@@ -115,10 +115,6 @@ export const KanbanBoard = () => {
   const [quickDateTask, setQuickDateTask] = useState<any>(null);
   const [showDeleteAssignmentModal, setShowDeleteAssignmentModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
-  const [columnOrder] = useState<string[]>(() => {
-    const savedOrder = localStorage.getItem('kanbanColumnOrder');
-    return savedOrder ? JSON.parse(savedOrder) : [];
-  });
 
   const [taskOrder, setTaskOrder] = useState<Record<string, string[]>>(() => {
     const savedTaskOrder = localStorage.getItem('kanbanTaskOrder');
@@ -485,7 +481,7 @@ export const KanbanBoard = () => {
 
       {/* Task Form Modal */}
       {showTaskForm && (
-        <TaskForm
+        <TaskFormManager
           onClose={handleCloseTaskForm}
           initialAssignment={selectedAssignment}
           initialTask={editingTask}

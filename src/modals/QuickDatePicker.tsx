@@ -30,25 +30,13 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
     return null;
   });
   
-  const [startTime, setStartTime] = useState(() => {
-    if (task.start_at) {
-      // Convert 24h to 12h format
-      const [hours, minutes] = task.start_at.split(':');
-      const h = parseInt(hours);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
-      return `${displayHour}:${minutes} ${period}`;
-    }
-    return '10:00 AM';
-  });
-  
   const [endTime, setEndTime] = useState(() => {
     if (task.end_at) {
       // Convert 24h to 12h format
       const [hours, minutes] = task.end_at.split(':');
-      const h = parseInt(hours);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const displayHour = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+      const hoursNum = parseInt(hours);
+      const period = hoursNum >= 12 ? 'PM' : 'AM';
+      const displayHour = hoursNum === 0 ? 12 : (hoursNum > 12 ? hoursNum - 12 : hoursNum);
       return `${displayHour}:${minutes} ${period}`;
     }
     return '11:00 AM';
@@ -112,7 +100,6 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
 
   const handleClearDate = () => {
     setSelectedDate(null);
-    setStartTime('10:00 AM');
     setEndTime('11:00 AM');
   };
 

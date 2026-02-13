@@ -5,7 +5,7 @@ import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appSto
 import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
-import TaskForm from '@/pages/tasks/TaskForm';
+import TaskFormManager from '@/pages/tasks/TaskFormManager';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import WorkspaceSelector from '@/pages/calendar/WorkspaceSelector';
 import { useAuth } from '@/hooks/useAuth';
@@ -227,7 +227,7 @@ const TasksPage = memo(() => {
       </button>
       {/* Task Form Modal */}
       {showTaskForm && (
-        <TaskForm
+        <TaskFormManager
           onClose={handleCloseTaskForm}
           onTaskCreated={() => {
             fetchTasks(activeWorkspace?.id);
