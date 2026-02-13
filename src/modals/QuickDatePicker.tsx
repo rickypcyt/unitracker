@@ -2,6 +2,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import { Calendar, Clock, X } from 'lucide-react';
 import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
+import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUtils';
 
 import DatePicker from 'react-datepicker';
 
@@ -9,12 +10,14 @@ interface QuickDatePickerProps {
   task: any;
   onClose: () => void;
   onSave: (task: any) => void;
+  position?: { x: number; y: number };
 }
 
 export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   task,
   onClose,
-  onSave
+  onSave,
+  position
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
@@ -22,9 +25,25 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
       // Handle DD/MM/YYYY format
       if (task.deadline.includes('/')) {
         const [day, month, year] = task.deadline.split('/');
-        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        const dayNum = parseInt(day);
+        const monthNum = parseInt(month);
+        const yearNum = parseInt(year);
+        
+        // Validate date components
+        if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
+          if (monthNum >= 1 && monthNum <= 12 && yearNum >= 1900 && yearNum <= 2100) {
+            const date = new Date(yearNum, monthNum - 1, dayNum);
+            // Check if date is valid (day exists in month)
+            if (!isNaN(date.getTime()) && date.getDate() === dayNum) {
+              return date;
+            }
+          }
+        }
+        console.error('Invalid date in task.deadline:', task.deadline);
+        return null;
       } else {
-        return new Date(task.deadline);
+        const date = new Date(task.deadline);
+        return isNaN(date.getTime()) ? null : date;
       }
     }
     return null;
@@ -32,17 +51,46 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   
   const [endTime, setEndTime] = useState(() => {
     if (task.end_at) {
-      // Convert 24h to 12h format
-      const [hours, minutes] = task.end_at.split(':');
-      const hoursNum = parseInt(hours);
-      const period = hoursNum >= 12 ? 'PM' : 'AM';
-      const displayHour = hoursNum === 0 ? 12 : (hoursNum > 12 ? hoursNum - 12 : hoursNum);
-      return `${displayHour}:${minutes} ${period}`;
+      return to12Hour(task.end_at);
     }
     return '11:00 AM';
   });
 
-  // Close on click outside and Escape
+  // Calculate position based on click location or fallback to right side
+  const getPosition = () => {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    if (position) {
+      const menuWidth = 320; // min-w-[320px]
+      const menuHeight = 400; // estimated height
+      
+      let x = position.x;
+      let y = position.y - 200; // Move 200px up from click
+      
+      // Adjust horizontal position if menu would go off screen
+      if (x + menuWidth > windowWidth) {
+        x = Math.max(10, windowWidth - menuWidth - 10);
+      }
+      
+      // Adjust vertical position if menu would go off screen
+      if (y + menuHeight > windowHeight) {
+        y = Math.max(10, windowHeight - menuHeight - 10);
+      }
+      
+      // Ensure menu doesn't go above top of screen
+      if (y < 10) {
+        y = position.y + 20; // Show below if no space above
+      }
+      
+      return { x, y };
+    }
+    
+    // Fallback to right side center
+    return { x: windowWidth - 340, y: windowHeight / 2 - 200 };
+  };
+
+  const pos = getPosition();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -74,19 +122,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
       const year = selectedDate.getFullYear();
       updatedTask.deadline = `${day}/${month}/${year}`;
       
-      // Convert time limit to 24h format and set as end_at (deadline time)
-      const convertTo24h = (time12h: string) => {
-        const [timeStr = '', period = ''] = time12h.split(' ');
-        const [hoursStr = '0', minutesStr = '0'] = timeStr.split(':');
-        const hours = parseInt(hoursStr);
-        const minutes = parseInt(minutesStr);
-        let h = hours;
-        if (period === 'PM' && h !== 12) h += 12;
-        if (period === 'AM' && h === 12) h = 0;
-        return `${h.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
-      };
-      
-      updatedTask.end_at = convertTo24h(endTime); // Time limit as deadline
+      updatedTask.end_at = to24Hour(endTime) + ':00'; // Time limit as deadline
       updatedTask.start_at = null; // No start time needed for deadline
     } else {
       updatedTask.deadline = '';
@@ -103,61 +139,14 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
     setEndTime('11:00 AM');
   };
 
-  const incrementTime = (time: string) => {
-    const [timeStr = '', period = ''] = time.split(' ');
-    const [hoursStr = '0', minutesStr = '0'] = timeStr.split(':');
-    const hours = parseInt(hoursStr);
-    const minutes = parseInt(minutesStr);
-    let newMinutes = minutes + 30;
-    let newHours = hours;
-    
-    if (newMinutes >= 60) {
-      newMinutes -= 60;
-      newHours = (newHours + 1) % 12;
-      if (newHours === 0 && period === 'PM' && hours === 11) {
-        // Switch from PM to AM
-        return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} AM`;
-      } else if (newHours === 0 && period === 'AM' && hours === 11) {
-        // Switch from AM to PM
-        return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} PM`;
-      }
-    }
-    
-    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} ${period}`;
-  };
-
-  const decrementTime = (time: string) => {
-    const [timeStr = '', period = ''] = time.split(' ');
-    const [hoursStr = '0', minutesStr = '0'] = timeStr.split(':');
-    const hours = parseInt(hoursStr);
-    const minutes = parseInt(minutesStr);
-    let newMinutes = minutes - 30;
-    let newHours = hours;
-    
-    if (newMinutes < 0) {
-      newMinutes += 60;
-      newHours = newHours - 1 < 0 ? 11 : newHours - 1;
-      if (newHours === 11 && period === 'AM' && hours === 0) {
-        // Switch from AM to PM
-        return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} PM`;
-      } else if (newHours === 11 && period === 'PM' && hours === 0) {
-        // Switch from PM to AM
-        return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} AM`;
-      }
-    }
-    
-    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} ${period}`;
-  };
-
   return (
     <div
       ref={menuRef}
       className="fixed z-50 min-w-[320px] rounded-lg bg-[var(--bg-primary)] p-4 shadow-xl"
       style={{
         position: 'fixed',
-        right: '20px',
-        top: '50%',
-        transform: 'translateY(-50%)',
+        left: `${pos.x}px`,
+        top: `${pos.y}px`,
         border: '2px solid var(--border-primary)',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         maxHeight: '80vh',

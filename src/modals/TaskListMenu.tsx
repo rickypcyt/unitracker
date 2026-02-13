@@ -16,7 +16,7 @@ interface TaskListMenuProps {
   onSetTaskStatus: (task: Task & { status?: string }) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
-  onSetDate?: (task: Task) => void; // New prop for setting date
+  onSetDate?: (task: Task, position: { x: number; y: number }) => void; // New prop for setting date with position
 }
 
 const TASK_STATUSES = [
@@ -79,15 +79,15 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
   // Initialize and adjust main menu position to avoid viewport overflow
   useEffect(() => {
     if (!contextMenu) return;
-    // Initialize with raw pointer position
-    setMenuPosition({ x: contextMenu.x, y: contextMenu.y });
+    // Initialize with position moved up from click
+    setMenuPosition({ x: contextMenu.x, y: contextMenu.y - 150 });
 
     const adjust = () => {
       const el = menuRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
       let x = contextMenu.x;
-      let y = contextMenu.y;
+      let y = contextMenu.y - 150; // Start 150px above click
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       // If overflowing right, shift left
@@ -97,6 +97,10 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
       // If overflowing bottom, open upwards
       if (y + rect.height > vh - 8) {
         y = Math.max(8, vh - rect.height - 8);
+      }
+      // If overflowing top, show below click
+      if (y < 8) {
+        y = contextMenu.y + 20; // Show below if no space above
       }
       setMenuPosition({ x, y });
     };
@@ -192,7 +196,8 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           {onSetDate && (
             <button
               onClick={() => {
-                onSetDate(contextMenu.task);
+                const position = menuPosition || { x: contextMenu.x, y: contextMenu.y };
+                onSetDate(contextMenu.task, position);
                 onClose();
               }}
               className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50"

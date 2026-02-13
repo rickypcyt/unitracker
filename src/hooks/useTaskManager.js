@@ -1,9 +1,11 @@
 import { useAddTaskSuccess, useDeleteTaskSuccess, useFetchTasks, useTasks, useToggleTaskStatus, useUpdateTaskSuccess } from '@/store/appStore';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
+import { parseDateForDB } from '@/utils/timeUtils';
 import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { toggleTaskStatus } from "@/store/TaskActions";
+import { useAuth } from '@/hooks/useAuth';
 
 // Constant for the "All" workspace
 const ALL_WORKSPACE_ID = 'all';
@@ -123,6 +125,11 @@ export const useTaskManager = (activeWorkspace) => {
     if (!userId) return;
 
     try {
+      // Convert deadline to proper format for database
+      console.log('Original deadline from task:', updatedTask.deadline);
+      const deadlineForDB = parseDateForDB(updatedTask.deadline);
+      console.log('Converted deadline for DB:', deadlineForDB);
+
       // Actualizar el estado local inmediatamente
       updateTaskSuccess(updatedTask);
 
@@ -132,7 +139,7 @@ export const useTaskManager = (activeWorkspace) => {
         .update({
           title: updatedTask.title,
           description: updatedTask.description,
-          deadline: updatedTask.deadline,
+          deadline: deadlineForDB,
           completed: updatedTask.completed,
           difficulty: updatedTask.difficulty,
           assignment: updatedTask.assignment,
@@ -142,6 +149,7 @@ export const useTaskManager = (activeWorkspace) => {
         .eq('id', updatedTask.id);
 
       if (error) {
+        console.error('Database error:', error);
         // Si hay error, revertir el estado local
         fetchTasksAction(activeWorkspace?.id);
         throw error;

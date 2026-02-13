@@ -1,5 +1,5 @@
 import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
 import { ClipboardCheck } from 'lucide-react';
@@ -79,6 +79,13 @@ export const KanbanBoard = () => {
     filteredTasks.forEach((task: any) => {
       const assignment = task.assignment || "No assignment";
       allAssignments.add(assignment);
+    });
+
+    // Add pinned assignments that might not have tasks
+    Object.keys(pinnedColumns).forEach(assignment => {
+      if (pinnedColumns[assignment]) {
+        allAssignments.add(assignment);
+      }
     });
 
     // Crear objeto de pinnings con el estado de Supabase o false por defecto
@@ -299,12 +306,12 @@ export const KanbanBoard = () => {
     setShowTaskForm(true);
   };
 
-  const handleSetDate = (task: any) => {
+  const handleSetDate = (task: any, position: { x: number; y: number }) => {
     if (isDemo) {
       showLoginPrompt();
       return;
     }
-    setQuickDateTask(task);
+    setQuickDateTask({ ...task, position });
   };
 
   const handleQuickDateSave = (updatedTask: any) => {
@@ -337,6 +344,10 @@ export const KanbanBoard = () => {
   const handleMoveToWorkspace = (assignment: string) => {
     setSelectedAssignment(assignment);
     setShowWorkspaceSelectionModal(true);
+  };
+
+  const handleAssignmentDoubleClick = (assignment: string) => {
+    handleAddTask(assignment);
   };
 
   const confirmDeleteAssignment = useCallback(() => {
@@ -437,6 +448,7 @@ export const KanbanBoard = () => {
               setShowDeleteAssignmentModal(true);
             }}
             onUpdateAssignment={handleUpdateAssignment}
+            onAssignmentDoubleClick={handleAssignmentDoubleClick}
           />
         </div>
 
@@ -610,6 +622,7 @@ export const KanbanBoard = () => {
       {quickDateTask && (
         <QuickDatePicker
           task={quickDateTask}
+          position={quickDateTask.position}
           onClose={() => setQuickDateTask(null)}
           onSave={handleQuickDateSave}
         />

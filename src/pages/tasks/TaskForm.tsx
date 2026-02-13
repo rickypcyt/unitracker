@@ -3,6 +3,7 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, ChevronDown } from 'lucide-react';
 import { FormActions, FormButton } from '@/modals/FormElements';
+import { decrementTime, incrementTime, parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useAuth, useWorkspace } from '@/store/appStore';
 import { useEffect, useRef, useState } from 'react';
 
@@ -203,22 +204,7 @@ const TaskForm = ({
         userId: typedUser.id,
         initialTask,
         activeWorkspaceId: selectedWorkspace?.id ?? null,
-        parseDateForDB: (date: string | null | undefined) => {
-          if (!date) return null;
-
-          // If it's already in ISO format, return as is
-          if (date.match(/^\d{4}-\d{2}-\d{2}/)) return date;
-
-          // Handle DD/MM/YYYY format and combine with time
-          const [day, month, year] = date.split('/');
-          if (day && month && year) {
-            const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-
-            // Always use midnight for deadline (date only)
-            return `${dateStr}T00:00:00`;
-          }
-          return null;
-        },
+        parseDateForDB: parseDateForDB,
       });
 
       if (!initialTask && saved?.id && onTaskCreated) {
@@ -279,65 +265,6 @@ const TaskForm = ({
     return '';
   }
 
-  // Convert 24h format (HH:MM) or timestamptz to 12h AM/PM format
-  function to12Hour(time24: string): string {
-    if (!time24) return '';
-
-    try {
-      let hours = 0;
-      let minutes = 0;
-
-      // Handle ISO date format: '2026-02-09T17:00:00+00:00'
-      if (time24.includes('T')) {
-        const timePart = time24.split('T')[1]; // '17:00:00+00:00'
-        if (!timePart) return '';
-
-        // Remove timezone info if present
-        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
-        if (!cleanTimePart) return '';
-
-        const parts = cleanTimePart.split(':').map(Number);
-        hours = parts[0] ?? 0;
-        minutes = parts[1] ?? 0;
-      }
-      // Handle timestamptz format: '2026-02-09 09:00:00+00'
-      else if (time24.includes(' ')) {
-        const timePart = time24.split(' ')[1]; // '09:00:00+00'
-        if (!timePart) return '';
-
-        // Remove timezone info if present
-        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
-        if (!cleanTimePart) return '';
-
-        const parts = cleanTimePart.split(':').map(Number);
-        hours = parts[0] ?? 0;
-        minutes = parts[1] ?? 0;
-      }
-      // Handle simple time format: "HH:MM" or "HH:MM:SS"
-      else if (time24.includes(':')) {
-        const [h, m] = time24.split(':').map(Number);
-        hours = h ?? 0;
-        minutes = m ?? 0;
-      }
-      else {
-        return '';
-      }
-
-      // Validate hours and minutes
-      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        console.warn('Invalid time values in to12Hour (TaskForm):', time24, { hours, minutes });
-        return '';
-      }
-
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
-      return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
-    } catch (error) {
-      console.warn('Error in to12Hour (TaskForm):', time24, error);
-      return '';
-    }
-  }
-
   function getInitialStartTimeForForm(): string | null {
     // If there's no deadline, return null
     if (!getInitialDeadline()) {
@@ -370,79 +297,6 @@ const TaskForm = ({
 
     // Return the original timestamptz format for formData
     return initialTask?.end_at || '11:00:00';
-  }
-
-  // Convert 12h AM/PM format or ISO timestamp to 24h format (HH:MM)
-  function to24Hour(time12: string): string {
-    console.log('to24Hour input:', JSON.stringify(time12));
-
-    if (!time12) {
-      console.log('to24Hour: empty input');
-      return '';
-    }
-
-    const trimmed = time12.trim();
-    let timeToProcess = trimmed;
-
-    // Handle ISO date format: '2026-02-09T10:00:00+00:00'
-    if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
-      const timePart = trimmed.split('T')[1]; // '10:00:00+00:00'
-      if (timePart) {
-        // Remove timezone info if present (handles +00:00 format)
-        const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
-        if (cleanTimePart) {
-          timeToProcess = cleanTimePart;
-        }
-      }
-    }
-    // Handle timestamptz format starting with a full date: '2026-02-09 10:00:00+00'
-    else if (/^\d{4}-\d{2}-\d{2}\s/.test(trimmed)) {
-      const timePart = trimmed.split(' ')[1]; // '10:00:00+00'
-      if (timePart) {
-        // Remove timezone info if present
-        const cleanTimePart = timePart.split('+')[0]?.split('-')[0]?.split('Z')[0];
-        if (cleanTimePart) {
-          timeToProcess = cleanTimePart;
-        }
-      }
-    }
-
-    // Remove seconds ONLY if they exist (hh:mm:ss or hh:mm:ss AM)
-    const noSeconds = timeToProcess.replace(
-      /^(\d{1,2}:\d{2})(:\d{2})(\s?[AP]M)?$/i,
-      '$1$3'
-    ).trim();
-    console.log('to24Hour: after removing seconds:', JSON.stringify(noSeconds));
-
-    // Check if it's already in 24h format (HH:MM)
-    const is24hFormat = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(noSeconds);
-    console.log('to24Hour: is 24h format?', is24hFormat);
-
-    if (is24hFormat) {
-      console.log('to24Hour: already 24h, returning as-is');
-      return noSeconds;
-    }
-
-    // Try 12h format
-    const match = noSeconds.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    console.log('to24Hour: 12h match:', match);
-
-    if (match) {
-      let hours = parseInt(match[1] ?? '0', 10);
-      const minutes = parseInt(match[2] ?? '0', 10);
-      const period = (match[3] ?? '').toUpperCase();
-      console.log('to24Hour: parsed 12h - hours:', hours, 'minutes:', minutes, 'period:', period);
-
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
-
-      const result = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      console.log('to24Hour: 12h result:', result);
-      return result;
-    }
-
-    console.log('to24Hour: no valid format found, returning empty string');
-    return '';
   }
 
   function validateDeadline(value: string): true | string {
@@ -1061,8 +915,8 @@ const TaskForm = ({
         {/* Main Content - Single Column */}
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Title and Subject */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
+          <div className={`${initialAssignment ? '' : 'grid grid-cols-1 lg:grid-cols-2 gap-4'}`}>
+            <div className={initialAssignment ? '' : ''}>
               <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Title
               </label>

@@ -17,6 +17,7 @@ interface AssignmentColumnsProps {
   onMoveToWorkspace: (assignment: string) => void;
   onDeleteAssignment: (assignment: string) => void;
   onUpdateAssignment: (oldName: string, newName: string) => void;
+  onAssignmentDoubleClick?: (assignment: string) => void;
 }
 
 export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
@@ -35,15 +36,39 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   onMoveToWorkspace,
   onDeleteAssignment,
   onUpdateAssignment,
+  onAssignmentDoubleClick,
 }) => {
   // Create a column for each assignment (show all assignments)
   const assignmentList = Object.keys(incompletedByAssignment);
   
-  // Sort assignments by number of tasks (most tasks first)
-  const sortedAssignments = assignmentList.sort((a, b) => {
+  // Add pinned assignments that might not have tasks
+  const pinnedAssignments = Object.keys(currentWorkspacePins).filter(
+    assignment => currentWorkspacePins[assignment] === true && !assignmentList.includes(assignment)
+  );
+  
+  // Combine all assignments
+  const allAssignments = [...new Set([...assignmentList, ...pinnedAssignments])];
+  
+  // Sort assignments: pinned assignments first, then by number of tasks (most tasks first)
+  const sortedAssignments = allAssignments.sort((a, b) => {
+    // Both pinned, sort by task count
+    if (currentWorkspacePins[a] && currentWorkspacePins[b]) {
+      const tasksA = incompletedByAssignment[a]?.length || 0;
+      const tasksB = incompletedByAssignment[b]?.length || 0;
+      return tasksB - tasksA;
+    }
+    // A is pinned, B is not - A comes first
+    if (currentWorkspacePins[a] && !currentWorkspacePins[b]) {
+      return -1;
+    }
+    // B is pinned, A is not - B comes first
+    if (!currentWorkspacePins[a] && currentWorkspacePins[b]) {
+      return 1;
+    }
+    // Neither pinned, sort by task count
     const tasksA = incompletedByAssignment[a]?.length || 0;
     const tasksB = incompletedByAssignment[b]?.length || 0;
-    return tasksB - tasksA; // Descending order (most tasks first)
+    return tasksB - tasksA;
   });
   
   const fixedColumns = sortedAssignments.map((assignment, index) => ({
@@ -64,6 +89,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
           <div
             key={column.id}
             className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-2 shadow-sm"
+            onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <SortableColumn
               id={column.id}
