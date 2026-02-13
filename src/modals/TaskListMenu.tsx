@@ -1,4 +1,4 @@
-import { Clipboard, Info, Trash2 } from "lucide-react";
+import { Calendar, Clipboard, Info, Trash2 } from "lucide-react";
 import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from "react";
 
 import { Task } from "@/types/taskStorage";
@@ -16,6 +16,7 @@ interface TaskListMenuProps {
   onSetTaskStatus: (task: Task & { status?: string }) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
+  onSetDate?: (task: Task) => void; // New prop for setting date
 }
 
 const TASK_STATUSES = [
@@ -31,6 +32,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
   onSetTaskStatus,
   onDeleteTask,
   onEditTask,
+  onSetDate,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const statusMenuRef = useRef<HTMLDivElement>(null);
@@ -186,6 +188,19 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
             <Info size={16} />
             Edit Task
           </button>
+          
+          {onSetDate && (
+            <button
+              onClick={() => {
+                onSetDate(contextMenu.task);
+                onClose();
+              }}
+              className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50"
+            >
+              <Calendar size={16} />
+              Date
+            </button>
+          )}
           
           <button
             onClick={() => {

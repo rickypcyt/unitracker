@@ -7,6 +7,7 @@ import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
+import { QuickDatePicker } from '@/modals/QuickDatePicker';
 import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
 import TaskForm from '@/pages/tasks/TaskForm';
@@ -110,6 +111,8 @@ export const KanbanBoard = () => {
   const [viewingTask, setViewingTask] = useState<any>(null);
   const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
+  const [focusOnDate, setFocusOnDate] = useState(false);
+  const [quickDateTask, setQuickDateTask] = useState<any>(null);
   const [showDeleteAssignmentModal, setShowDeleteAssignmentModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState<string | null>(null);
   const [columnOrder] = useState<string[]>(() => {
@@ -251,69 +254,6 @@ export const KanbanBoard = () => {
     }));
   }, [assignmentSortConfig, incompletedByAssignment, taskOrder]);
 
-  const sortedIncompletedAssignments = useMemo(() => {
-    // Group tasks and apply per-assignment task sort if configured
-    const grouped: Record<string, any[]> = {};
-    incompletedTasks.forEach((task: any) => {
-      const assignment = task.assignment || "No assignment";
-      if (!grouped[assignment]) grouped[assignment] = [];
-      grouped[assignment].push(task);
-    });
-
-    // Apply task ordering within each assignment if configured
-    Object.keys(grouped).forEach(assignment => {
-      const savedOrder = taskOrder[assignment];
-      if (savedOrder && savedOrder.length > 0) {
-        const taskMap = new Map(grouped[assignment]?.map((task: any) => [task.id, task]) || []);
-        const sortedTasks: any[] = [];
-        savedOrder.forEach((taskId: string) => {
-          const task = taskMap.get(taskId);
-          if (task) {
-            sortedTasks.push(task);
-            taskMap.delete(taskId);
-          }
-        });
-        taskMap.forEach((task: any) => sortedTasks.push(task));
-        grouped[assignment] = sortedTasks;
-      }
-    });
-
-    // Build list of assignments that have tasks OR are pinned
-    const assignmentsWithTasks = Object.keys(grouped).filter(
-      (assignment) => grouped[assignment] && grouped[assignment].length > 0
-    );
-    
-    // Get pinned assignments for current workspace that might not have tasks
-    const pinnedAssignments = activeWorkspace 
-      ? Object.keys(currentWorkspacePins).filter(
-          (assignment) => currentWorkspacePins[assignment] === true
-        )
-      : [];
-    
-    // Combine both: assignments with tasks + pinned assignments (deduplicate)
-    const allAssignments = [...new Set([...assignmentsWithTasks, ...pinnedAssignments])];
-
-    // Sort assignments by task count (highest to lowest)
-    const sortedAssignments = allAssignments.sort((a, b) => {
-      const aTaskCount = grouped[a]?.length || 0;
-      const bTaskCount = grouped[b]?.length || 0;
-      return bTaskCount - aTaskCount; // Highest to lowest
-    });
-
-    // Respect saved column order if present, but include any new assignments at the end
-    if (columnOrder.length > 0) {
-      const orderedAssignments = [...columnOrder];
-      sortedAssignments.forEach(assignment => {
-        if (!orderedAssignments.includes(assignment)) {
-          orderedAssignments.push(assignment);
-        }
-      });
-      return orderedAssignments.filter(a => allAssignments.includes(a));
-    }
-
-    return sortedAssignments;
-  }, [incompletedTasks, assignmentSortConfig, incompletedByAssignmentForAll, taskOrder, columnOrder, currentWorkspacePins, activeWorkspace]);
-
   const handleTogglePin = (assignment: string) => {
     togglePin(assignment);
   };
@@ -363,10 +303,25 @@ export const KanbanBoard = () => {
     setShowTaskForm(true);
   };
 
+  const handleSetDate = (task: any) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
+    setQuickDateTask(task);
+  };
+
+  const handleQuickDateSave = (updatedTask: any) => {
+    // Update the task using the existing handleUpdateTask function
+    handleUpdateTask(updatedTask);
+    setQuickDateTask(null);
+  };
+
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setSelectedAssignment(null);
     setEditingTask(null);
+    setFocusOnDate(false);
   };
 
   const handleConfirmDeleteTask = (taskId: string) => {
@@ -468,7 +423,6 @@ export const KanbanBoard = () => {
         {/* Left Column - Active Tasks */}
         <div className="flex-1 min-h-0">
           <AssignmentColumns
-            assignments={sortedIncompletedAssignments}
             incompletedByAssignment={incompletedByAssignmentForAll}
             currentWorkspacePins={currentWorkspacePins}
             onTogglePin={handleTogglePin}
@@ -512,6 +466,7 @@ export const KanbanBoard = () => {
           onEditTask={handleEditTask}
           onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleConfirmDeleteTask}
+          onSetDate={handleSetDate}
         />
       )}
 
@@ -534,6 +489,7 @@ export const KanbanBoard = () => {
           onClose={handleCloseTaskForm}
           initialAssignment={selectedAssignment}
           initialTask={editingTask}
+          focusOnDate={focusOnDate}
           onTaskCreated={() => {
             fetchTasksAction(activeWorkspace?.id);
             handleCloseTaskForm();
@@ -651,6 +607,15 @@ export const KanbanBoard = () => {
           onConfirm={confirmDeleteAssignment}
           message={`Are you sure you want to delete the assignment "${assignmentToDelete}"? All tasks associated with this assignment will be deleted.`}
           confirmButtonText="Delete Assignment"
+        />
+      )}
+
+      {/* Quick Date Picker */}
+      {quickDateTask && (
+        <QuickDatePicker
+          task={quickDateTask}
+          onClose={() => setQuickDateTask(null)}
+          onSave={handleQuickDateSave}
         />
       )}
     </div>

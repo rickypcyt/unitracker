@@ -24,6 +24,7 @@ type TaskFormProps = {
   initialTask?: any | null;
   initialDeadline?: string | Date | null;
   initialActiveTab?: 'ai' | 'manual';
+  focusOnDate?: boolean;
   onClose: () => void;
   onTaskCreated?: (id: string) => void;
 };
@@ -38,6 +39,8 @@ const TaskForm = ({
   initialAssignment = null, 
   initialTask = null, 
   initialDeadline = null, 
+  initialActiveTab = 'manual',
+  focusOnDate = false,
   onClose, 
   onTaskCreated 
 }: TaskFormProps) => {
@@ -201,8 +204,14 @@ const TaskForm = ({
     try {
       if (!typedUser) return;
       
+      // For non-recurring tasks, set start_at to null and use end_at as time limit
+      const updatedFormData = { ...formData };
+      if (!formData.isRecurring) {
+        updatedFormData.start_at = null;
+      }
+      
       const saved = await saveTask({
-        formData,
+        formData: updatedFormData,
         userId: typedUser.id,
         initialTask,
         activeWorkspaceId: selectedWorkspace?.id ?? null,
@@ -369,7 +378,12 @@ const TaskForm = ({
     }
   }
 
-  function getInitialStartTimeForForm(): string {
+  function getInitialStartTimeForForm(): string | null {
+    // If there's no deadline, return null
+    if (!getInitialDeadline()) {
+      return null;
+    }
+    
     // Check if there's a calendar hour set
     const calendarHour = sessionStorage.getItem('calendarTaskHour');
     if (calendarHour && !initialTask) {
@@ -381,7 +395,12 @@ const TaskForm = ({
     return initialTask?.start_at || '10:00:00';
   }
 
-  function getInitialEndTimeForForm(): string {
+  function getInitialEndTimeForForm(): string | null {
+    // If there's no deadline, return null
+    if (!getInitialDeadline()) {
+      return null;
+    }
+    
     // Check if there's a calendar hour set
     const calendarHour = sessionStorage.getItem('calendarTaskHour');
     if (calendarHour && !initialTask) {
@@ -1140,7 +1159,10 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               handleChange('deadline', `${day}/${month}/${year}`);
             } else {
               handleChange('deadline', '');
-              handleChange('time', ''); // Clear time when date is cleared
+              handleChange('start_at', null);
+              handleChange('end_at', null);
+              setDisplayStartTime('');
+              setDisplayEndTime('');
             }
           }}
           dateFormat="dd/MM/yyyy"
@@ -1168,7 +1190,10 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           type="button"
           onClick={() => {
             handleChange('deadline', '');
-            handleChange('time', ''); // Also clear time when clearing date
+            handleChange('start_at', null);
+            handleChange('end_at', null);
+            setDisplayStartTime('');
+            setDisplayEndTime('');
           }}
           className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors"
           tabIndex={-1}
@@ -1186,7 +1211,10 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             const year = today.getFullYear();
             handleChange('deadline', `${day}/${month}/${year}`);
             // Clear time when setting to today to avoid invalid time combinations
-            handleChange('time', '');
+            handleChange('start_at', null);
+            handleChange('end_at', null);
+            setDisplayStartTime('');
+            setDisplayEndTime('');
           }}
           className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
           tabIndex={-1}
@@ -1276,12 +1304,20 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     if (initialTask?.start_at) {
       return to12Hour(initialTask.start_at);
     }
+    // If no deadline, return empty string
+    if (!getInitialDeadline()) {
+      return '';
+    }
     return '10:00 AM';
   });
   
   const [displayEndTime, setDisplayEndTime] = useState(() => {
     if (initialTask?.end_at) {
       return to12Hour(initialTask.end_at);
+    }
+    // If no deadline, return empty string
+    if (!getInitialDeadline()) {
+      return '';
     }
     return '11:00 AM';
   });
@@ -1293,14 +1329,54 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
   useEffect(() => {
     if (formData.start_at && !isManualTimeUpdate) {
       setDisplayStartTime(to12Hour(formData.start_at));
+    } else if (!formData.start_at && !isManualTimeUpdate) {
+      setDisplayStartTime('');
     }
   }, [formData.start_at, isManualTimeUpdate]);
 
   useEffect(() => {
     if (formData.end_at && !isManualTimeUpdate) {
       setDisplayEndTime(to12Hour(formData.end_at));
+    } else if (!formData.end_at && !isManualTimeUpdate) {
+      setDisplayEndTime('');
     }
   }, [formData.end_at, isManualTimeUpdate]);
+
+  // Update times when deadline changes
+  useEffect(() => {
+    if (formData.deadline) {
+      // If deadline is set, ensure times are set
+      if (!formData.start_at) {
+        handleChange('start_at', '10:00:00');
+        setDisplayStartTime('10:00 AM');
+      }
+      if (!formData.end_at) {
+        handleChange('end_at', '11:00:00');
+        setDisplayEndTime('11:00 AM');
+      }
+    } else {
+      // If deadline is cleared, clear times
+      handleChange('start_at', null);
+      handleChange('end_at', null);
+      setDisplayStartTime('');
+      setDisplayEndTime('');
+    }
+  }, [formData.deadline]);
+
+  // Focus on date field when focusOnDate is true
+  useEffect(() => {
+    if (focusOnDate && datePickerRef.current) {
+      // Focus on the date picker input
+      const input = datePickerRef.current.input;
+      if (input) {
+        input.focus();
+        // Open the date picker calendar
+        if (datePickerRef.current.setOpen) {
+          datePickerRef.current.setOpen(true);
+        }
+      }
+    }
+  }, [focusOnDate]);
 
   const renderStartTimeInput = () => {
     const incrementStartTime = () => {
@@ -1433,7 +1509,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
 
     return (
       <div className="w-full">
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">End time</label>
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">End time (Time Limit/Deadline)</label>
         <div className="relative flex items-center w-full">
           <input
             type="text"
@@ -1504,40 +1580,55 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Title, Assignment, Description */}
+        {/* Left Column: Title, Assignment */}
         <div className="space-y-4">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-              Title
-            </label>
-            <FormInput
-              id="title"
-              value={formData.title}
-              onChange={(value) => handleChange('title', value)}
-              error={displayErrors.title}
-              required
-              placeholder="Enter task title"
-            />
-          </div>
-
-          {!initialAssignment && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
-                Subject
+              <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                Title
               </label>
-              <AutocompleteInput
-                id="assignment"
-                value={formData.assignment}
-                onChange={(value) => handleChange('assignment', value)}
-                error={displayErrors.assignment}
+              <input
+                id="title"
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleChange('title', e.target.value)}
+                className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
+                  displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'
+                } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
                 required
-                placeholder="Enter subject name"
-                suggestions={uniqueAssignments}
+                placeholder="Enter task title"
               />
+              {displayErrors.title && (
+                <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>
+              )}
             </div>
-          )}
 
+            {!initialAssignment && (
+              <div>
+                <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                  Subject
+                </label>
+                <AutocompleteInput
+                  id="assignment"
+                  value={formData.assignment}
+                  onChange={(value) => handleChange('assignment', value)}
+                  error={displayErrors.assignment}
+                  required
+                  placeholder="Enter subject name"
+                  suggestions={uniqueAssignments}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Description, Difficulty, Date */}
+        <div className="space-y-4">
+          {/* Description */}
           <div className="h-[200px] max-h-[200px]">
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              Description
+            </label>
             <MarkdownWysiwyg
               initialTitle={formData.title}
               initialBody={formData.description}
@@ -1550,10 +1641,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               <p className="mt-1 text-base text-red-500">{displayErrors.description}</p>
             )}
           </div>
-        </div>
 
-        {/* Right Column: All other fields */}
-        <div className="space-y-4">
+          {/* Difficulty and Date */}
           <div className="space-y-4">
             {!formData.isRecurring ? (
               <div className="grid grid-cols-2 gap-4">
@@ -1571,18 +1660,15 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               </div>
             )}
             
-            <div className="mb-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  {renderStartTimeInput()}
-                </div>
-                <div>
-                  {renderEndTimeInput()}
-                </div>
+            {/* Time Limit - Only show if date is selected */}
+            {formData.deadline && (
+              <div className="mb-4">
+                {renderEndTimeInput()}
               </div>
-            </div>
+            )}
           </div>
 
+          {/* Recurrence Section */}
           <div>
             {renderRecurrenceSection()}
           </div>

@@ -58,7 +58,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
       <div className={`w-full gap-4 ${
         fixedColumns.length <= 2 ? 'grid grid-cols-1 sm:grid-cols-2' : 
         fixedColumns.length <= 4 ? 'grid grid-cols-1 sm:grid-cols-2' : 
-        'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+        'grid grid-cols-1 sm:grid-cols-2'
       }`}>
         {fixedColumns.map((column) => (
           <div
