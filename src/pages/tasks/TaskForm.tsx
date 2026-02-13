@@ -1660,11 +1660,24 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               </div>
             )}
             
-            {/* Time Limit - Only show if date is selected */}
-            {formData.deadline && (
-              <div className="mb-4">
-                {renderEndTimeInput()}
+            {/* Time fields */}
+            {formData.isRecurring ? (
+              // For recurring tasks, always show both start and end time
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  {renderStartTimeInput()}
+                </div>
+                <div>
+                  {renderEndTimeInput()}
+                </div>
               </div>
+            ) : (
+              // For non-recurring tasks, only show time limit if date is selected
+              formData.deadline && (
+                <div className="mb-4">
+                  {renderEndTimeInput()}
+                </div>
+              )
             )}
           </div>
 
