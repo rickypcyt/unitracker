@@ -18,6 +18,42 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.3.0",
+    date: "February 13, 2026",
+    time: "6:40 PM",
+    type: "major",
+    changes: {
+      added: [
+        "Refactored TaskForm with separated AI functionality for better modularity",
+        "New dropdown menu section for task items allowing date modification without entering task form",
+        "Workspace selector in task page for mobile devices",
+        "Workspace switching in calendar view for multiple calendar support per workspace",
+        "Integrated DayFlow calendar view (partial implementation)",
+        "Notes view for managing personal notes and documentation",
+        "Task types system (Info, Weekly Reminder, and more coming soon)"
+      ],
+      improved: [
+        "Updated database models to support new task management features",
+        "Enhanced start and end time controls with better UX",
+        "Fixed calendar display in mobile view for better responsiveness",
+        "Enter key behavior in TaskForm - submits when in title/subject inputs, creates line breaks in description",
+        "Better workspace management across different views and components",
+        "Updated TaskForm layout to allow dynamic description field growth"
+      ],
+      fixed: [
+        "Fixed Enter key bug in TaskForm that was causing modal to close unexpectedly",
+        "Calendar mobile view layout issues resolved",
+        "Task form validation and submission flow improved"
+      ],
+      soon: [
+        "Full DayFlow calendar view implementation",
+        "Additional task types and categories",
+        "Advanced workspace sharing features",
+        "Time block scheduling integration"
+      ]
+    }
+  },
+  {
     version: "1.2.0",
     date: "February 5, 2026",
     time: "11:30 PM",

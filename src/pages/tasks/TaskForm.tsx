@@ -1027,11 +1027,27 @@ const TaskForm = ({
       {renderTabSelector()}
 
       <form onSubmit={handleSubmit} className="space-y-4" onKeyDown={(e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !(e.target as HTMLElement).tagName?.includes('TEXTAREA')) {
-          e.preventDefault();
-          e.stopPropagation();
-          const formEvent = new Event('submit', { cancelable: true });
-          e.currentTarget.dispatchEvent(formEvent);
+        if (e.key === 'Enter' && !e.shiftKey) {
+          const activeElement = document.activeElement;
+          
+          // Check if focused on title input
+          const isTitleInput = activeElement?.id === 'title';
+          
+          // Check if focused on subject autocomplete input
+          const isSubjectInput = activeElement?.id === 'assignment';
+          
+          // Check if focused in description editor (TipTap/ProseMirror)
+          const isInDescription = 
+            activeElement?.classList?.contains('ProseMirror') ||
+            activeElement?.closest('.ProseMirror') !== null;
+          
+          // Submit form only if in title or subject inputs, not in description
+          if ((isTitleInput || isSubjectInput) && !isInDescription) {
+            e.preventDefault();
+            e.stopPropagation();
+            const formEvent = new Event('submit', { cancelable: true });
+            e.currentTarget.dispatchEvent(formEvent);
+          }
         }
       }}>
         {/* Workspace Selector */}
@@ -1084,7 +1100,7 @@ const TaskForm = ({
           </div>
 
           {/* Description */}
-          <div className="h-[120px] max-h-[120px]">
+          <div className="min-h-[120px]">
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Description (Supports Markdown)
             </label>
@@ -1094,7 +1110,7 @@ const TaskForm = ({
               onChange={({ body }) => handleChange('description', body)}
               showTitleInput={false}
               variant="tasks"
-              className="h-full max-h-full"
+              className="min-h-full"
             />
             {displayErrors.description && (
               <p className="mt-1 text-base text-red-500">{displayErrors.description}</p>
