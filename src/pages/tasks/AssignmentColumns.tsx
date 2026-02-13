@@ -54,16 +54,16 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   }));
 
   return (
-    <div className="flex justify-center w-full mb-4 px-2 sm:px-8 lg:px-24">
+    <div className="flex justify-center w-full mb-4">
       <div className={`w-full gap-4 ${
-        fixedColumns.length <= 2 ? 'grid grid-cols-1 sm:grid-cols-2' : 
-        fixedColumns.length <= 4 ? 'grid grid-cols-1 sm:grid-cols-2' : 
-        'grid grid-cols-1 sm:grid-cols-2'
+        fixedColumns.length <= 2 ? 'grid grid-cols-1 lg:grid-cols-2' : 
+        fixedColumns.length <= 4 ? 'grid grid-cols-1 lg:grid-cols-2' : 
+        'grid grid-cols-1 lg:grid-cols-2'
       }`}>
         {fixedColumns.map((column) => (
           <div
             key={column.id}
-            className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-4 shadow-sm"
+            className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-2 shadow-sm"
           >
             <SortableColumn
               id={column.id}
