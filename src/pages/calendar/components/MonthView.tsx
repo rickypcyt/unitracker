@@ -30,15 +30,16 @@ const MonthView = ({
 
   return (
     <div className="w-full mt-2 sm:mt-4 relative flex-1 min-h-0">
-      <div className="block border-[var(--border-primary)] p-0 sm:p-1 md:p-2 rounded-lg bg-[var(--bg-primary)]/90 h-full flex flex-col min-h-[500px]">
+      <div className="block border-[var(--border-primary)] p-0 sm:p-1 md:p-2 rounded-lg bg-[var(--bg-primary)]/90 h-full flex flex-col min-h-[400px] sm:min-h-[500px]">
         {/* Weekdays */}
         <div className="grid grid-cols-7 gap-0.5 mb-2 flex-shrink-0">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-[var(--text-primary)] text-sm sm:text-base font-medium flex items-center justify-center h-10 sm:h-12"
+              className="text-[var(--text-primary)] text-xs sm:text-sm md:text-base font-medium flex items-center justify-center h-8 sm:h-10 md:h-12"
             >
-              {day}
+              <span className="hidden xs:inline">{day}</span>
+              <span className="xs:hidden">{day[0]}</span>
             </div>
           ))}
         </div>
@@ -60,7 +61,7 @@ const MonthView = ({
                 onTouchEnd={(e) =>
                   dayObj.currentMonth && handleTouchEnd(e, dayObj.date)
                 }
-                className={`select-none cursor-pointer text-base w-auto relative group transition-all duration-200 min-h-[60px] sm:min-h-[70px] flex flex-col ${
+                className={`select-none cursor-pointer text-sm sm:text-base w-auto relative group transition-all duration-200 min-h-[45px] xs:min-h-[50px] sm:min-h-[60px] md:min-h-[70px] flex flex-col touch-manipulation ${
                   dayObj.currentMonth
                     ? dayObj.isToday
                       ? "text-[var(--accent-primary)] font-bold bg-[var(--accent-primary)]/5"
@@ -73,20 +74,21 @@ const MonthView = ({
                 } rounded-md border border-transparent hover:border-[var(--border-primary)]/50`}
               >
                 {tasksWithDeadline.length > 0 && (
-                  <div className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-[var(--accent-primary)] opacity-90 z-10"></div>
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[var(--accent-primary)] opacity-90 z-10"></div>
                 )}
-                <div className="flex flex-col items-center justify-center w-full h-full p-2 sm:p-3 transition-all duration-200 flex-grow">
-                  <div className="flex flex-col items-center justify-center gap-1 w-full">
-                    <div className="text-base sm:text-lg font-semibold">
+                <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-2 md:p-3 transition-all duration-200 flex-grow">
+                  <div className="flex flex-col items-center justify-center gap-0.5 sm:gap-1 w-full">
+                    <div className="text-xs sm:text-sm md:text-base font-semibold">
                       {dayObj.date.getDate()}
                     </div>
                     {dayObj.currentMonth && (
-                      <div className={`text-xs sm:text-sm font-medium ${
+                      <div className={`text-xs sm:text-xs md:text-sm font-medium ${
                         isSameDay(dayObj.date, new Date()) || isAfter(dayObj.date, new Date())
                           ? 'text-[var(--accent-green)]'
                           : 'text-[var(--text-secondary)]'
                       }`}>
-                        {getStudiedHoursForDate(dayObj.date)}h
+                        <span className="hidden sm:inline">{getStudiedHoursForDate(dayObj.date)}h</span>
+                        <span className="sm:hidden">{getStudiedHoursForDate(dayObj.date)}</span>
                       </div>
                     )}
                   </div>

@@ -50,7 +50,7 @@ function DayFlowCalendarComponent() {
   });
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div className="w-full h-[calc(100vh-8rem)] sm:h-[calc(100vh-6rem)] md:h-[calc(100vh-5rem)] lg:h-[calc(100vh-4rem)]">
       <DayFlowCalendar calendar={calendar} />
     </div>
   );

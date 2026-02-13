@@ -1,4 +1,5 @@
 import { getOccurrenceForDate, isRecurringTask } from '@/utils/recurrenceUtils';
+import { useEffect, useState } from 'react';
 
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
@@ -33,6 +34,18 @@ const WeekView = ({
   handleEditTask,
   onTaskContextMenu,
 }: WeekViewProps) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const startOfWeek = new Date(currentDate);
   const day = startOfWeek.getDay();
   const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
@@ -167,14 +180,16 @@ const WeekView = ({
                   title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                 >
                   <div className="font-medium truncate">{task.title || 'Sin título'}</div>
-                  {task.assignment && (
+                  {!isMobile && task.assignment && (
                     <div className="text-xs text-white truncate">
                       {task.assignment}
                     </div>
                   )}
-                  <div className="text-xs opacity-90 truncate">
-                    {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
+                  {!isMobile && (
+                    <div className="text-xs opacity-90 truncate">
+                      {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  )}
                 </div>
               );
             });
@@ -285,14 +300,16 @@ const WeekView = ({
                           title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
                           <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
-                          {singleHourTask.task.assignment && (
+                          {!isMobile && singleHourTask.task.assignment && (
                             <div className="text-xs text-white truncate">
                               {singleHourTask.task.assignment}
                             </div>
                           )}
-                          <div className="text-xs opacity-90 truncate">
-                            {singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
+                          {!isMobile && (
+                            <div className="text-xs opacity-90 truncate">
+                              {singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

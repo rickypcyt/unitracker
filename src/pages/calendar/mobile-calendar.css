@@ -2,7 +2,7 @@
 
 /* Base calendar view styles */
 .calendar-view {
-  padding: 0 8px;
+  padding: 0 4px;
   margin: 0 auto;
   max-width: 100%;
 }
@@ -13,16 +13,30 @@
   top: 0;
   background: var(--bg-primary);
   z-index: 10;
-  padding: 8px 0;
-  margin: 0 -8px;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding: 4px 0;
+  margin: 0 -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+/* Extra small screens (320px and up) */
+@media (min-width: 320px) {
+  .calendar-view {
+    padding: 0 8px;
+  }
+}
+
+/* Small screens (375px and up) */
+@media (min-width: 375px) {
+  .calendar-view {
+    padding: 0 12px;
+  }
 }
 
 /* Better touch targets for mobile */
 @media (max-width: 640px) {
   .calendar-view {
-    padding: 0 12px;
+    padding: 0 8px;
   }
 
   .calendar-view .touch-manipulation {
@@ -34,15 +48,15 @@
   
   /* Improve button touch targets */
   .calendar-view button {
-    min-height: 40px;
-    min-width: 40px;
+    min-height: 44px;
+    min-width: 44px;
     padding: 0 8px;
   }
   
   /* Better spacing for small screens */
   .calendar-view .grid-cols-7 {
-    gap: 2px;
-    margin-top: 4px;
+    gap: 1px;
+    margin-top: 2px;
   }
   
   /* Text adjustments */
@@ -51,23 +65,39 @@
   }
   
   .calendar-view .text-sm {
-    font-size: 13px;
+    font-size: 12px;
   }
   
   /* Calendar cells */
   .calendar-view .grid-cols-7 > div {
-    min-height: 48px;
-    padding: 4px 2px;
+    min-height: 44px;
+    padding: 2px 1px;
   }
   
   /* Fix header layout */
   .calendar-view .flex-col {
-    gap: 8px;
+    gap: 4px;
   }
   
   /* Navigation buttons */
   .calendar-view .gap-4 {
-    gap: 8px;
+    gap: 4px;
+  }
+}
+
+/* Medium screens (641px and up) */
+@media (min-width: 641px) {
+  .calendar-view {
+    padding: 0 16px;
+  }
+  
+  .calendar-view .grid-cols-7 {
+    gap: 2px;
+  }
+  
+  .calendar-view .grid-cols-7 > div {
+    min-height: 50px;
+    padding: 4px 2px;
   }
 }
 
@@ -85,7 +115,7 @@
 /* Improve readability on mobile */
 @media (max-width: 480px) {
   .calendar-view {
-    font-size: 14px;
+    font-size: 13px;
   }
   
   .calendar-view .font-medium {
@@ -97,6 +127,21 @@
   }
 }
 
+/* Extra small screens optimization */
+@media (max-width: 360px) {
+  .calendar-view {
+    font-size: 12px;
+  }
+  
+  .calendar-view .text-xs {
+    font-size: 9px;
+  }
+  
+  .calendar-view .text-sm {
+    font-size: 11px;
+  }
+}
+
 /* Better modal positioning on mobile */
 @media (max-width: 640px) {
   .calendar-modal {
@@ -104,7 +149,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    max-height: 80vh;
+    max-height: 85vh;
     border-radius: 1rem 1rem 0 0;
     transform: translateY(0);
   }
@@ -114,15 +159,15 @@
   }
 }
 
-/* Hide task indicators on mobile for cleaner UI */
-@media (max-width: 640px) {
+/* Hide task indicators on very small screens for cleaner UI */
+@media (max-width: 400px) {
   .calendar-view .task-indicators {
     display: none;
   }
 }
 
 /* Optimize task indicators for small screens */
-@media (max-width: 400px) {
+@media (max-width: 360px) {
   .calendar-view .w-1 {
     width: 2px;
     height: 2px;
@@ -143,5 +188,36 @@
   
   .calendar-view .border-\[var\(--border-primary\)\] {
     border-width: 2px;
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 640px) and (orientation: landscape) {
+  .calendar-view .grid-cols-7 > div {
+    min-height: 36px;
+  }
+  
+  .calendar-view {
+    padding: 0 4px;
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .calendar-view .touch-manipulation {
+    cursor: pointer;
+  }
+  
+  .calendar-view button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .calendar-view {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

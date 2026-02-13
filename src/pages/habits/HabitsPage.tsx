@@ -180,31 +180,41 @@ const HabitsPage = memo(() => {
     await toggleHabitCompletion(habitId, date);
   };
 
-  // Generate months to display (all months of current year)
+  // Generate months to display (previous, current, and next month)
   const generateMonths = () => {
     const months = [];
     
-    // Add all 12 months of current year
-    for (let month = 0; month <= 11; month++) {
-      const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+    // Calculate previous, current, and next months
+    const prevMonth = new Date(currentYear, currentMonth - 1);
+    const currMonth = new Date(currentYear, currentMonth);
+    const nextMonth = new Date(currentYear, currentMonth + 1);
+    
+    const monthsToShow = [
+      { date: prevMonth, isCurrent: false, opacity: 'opacity-60' },
+      { date: currMonth, isCurrent: true, opacity: 'opacity-100' },
+      { date: nextMonth, isCurrent: false, opacity: 'opacity-80' }
+    ];
+    
+    monthsToShow.forEach(({ date, isCurrent, opacity }) => {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
       const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
       
       // Add ghost days to make all months have 31 days
       const ghostDays = Array.from({ length: 31 - daysInMonth }, (_, i) => daysInMonth + i + 1);
       const allDays = [...monthDays, ...ghostDays];
       
-      const monthDate = new Date(currentYear, month);
-      const isCurrentMonth = month === currentMonth;
-      
       months.push({
-        year: currentYear,
+        year: year,
         month: month,
         days: allDays,
         realDays: daysInMonth, // Track real days count
-        title: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        isCurrent: isCurrentMonth
+        title: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        isCurrent: isCurrent,
+        opacity: opacity
       });
-    }
+    });
     
     return months;
   };
@@ -217,13 +227,14 @@ const HabitsPage = memo(() => {
     month: number,
     daysArray: number[],
     realDaysCount: number,
-    monthTitle: string
+    monthTitle: string,
+    opacity: string
   ) => {
     const isThisMonthCurrent = today.getMonth() === month && today.getFullYear() === year;
     const todayDayForMonth = isThisMonthCurrent ? today.getDate() : null;
 
     return (
-      <div className="mt-4">
+      <div className={`mt-4 ${opacity}`}>
         <div className="bg-[var(--bg-secondary)] border border-1 border-[var(--border-primary)] rounded-lg overflow-hidden">
           {/* Month title header */}
           <div className="px-4 py-2 border-b border-[var(--border-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center">
@@ -259,6 +270,7 @@ const HabitsPage = memo(() => {
                 {daysArray.map((day) => {
                   const isGhostDay = day > realDaysCount;
                   const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
+                  const isPastDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
 
                   return (
                     <tr
@@ -266,6 +278,8 @@ const HabitsPage = memo(() => {
                       className={`border-b border-[var(--border-primary)] transition-colors ${
                         isGhostDay 
                           ? 'bg-transparent opacity-20' 
+                          : isPastDay
+                          ? 'bg-[var(--bg-primary)] opacity-60 hover:bg-[var(--bg-tertiary)]/60'
                           : 'bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]'
                       }`}
                     >
@@ -281,6 +295,8 @@ const HabitsPage = memo(() => {
                               ? 'text-[var(--text-tertiary)]'
                               : day === todayDayForMonth
                               ? 'text-[var(--accent-primary)]'
+                              : isPastDay
+                              ? 'text-[var(--text-secondary)]'
                               : isFutureDay
                               ? 'text-[var(--text-tertiary)]'
                               : 'text-[var(--text-primary)]'
@@ -343,7 +359,11 @@ const HabitsPage = memo(() => {
                               <button
                                 onClick={() => handleToggleHabitForMonth(habit.id, year, month, day)}
                                 className={`w-6 h-6 rounded-full border-2 transition-colors ${
-                                  isCompleted
+                                  isPastDay
+                                    ? isCompleted
+                                      ? 'bg-[var(--accent-primary)]/60 border-[var(--accent-primary)]/60'
+                                      : 'border-white/60 hover:border-[var(--accent-primary)]/60'
+                                    : isCompleted
                                     ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
                                     : 'border-white hover:border-[var(--accent-primary)]'
                                 }`}
@@ -450,7 +470,7 @@ const HabitsPage = memo(() => {
       {/* Toolbar */}
       <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none border-1">
         <div className="text-sm font-medium text-[var(--text-secondary)]">
-          {currentYear} - All Months
+          {currentYear} - 3 Months View
         </div>
         
         <button
@@ -472,7 +492,8 @@ const HabitsPage = memo(() => {
                 monthData.month,
                 monthData.days,
                 monthData.realDays,
-                monthData.title
+                monthData.title,
+                monthData.opacity
               )}
             </div>
           ))}

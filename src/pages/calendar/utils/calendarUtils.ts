@@ -17,14 +17,118 @@ export const handleTouchEnd = (
   const currentTime = new Date().getTime();
   const tapLength = currentTime - lastTap;
 
-  if (tapLength < 500 && tapLength > 0) {
-    // Double tap detected
+  if (tapLength < 300 && tapLength > 0) {
+    // Double tap detected - reduced threshold for better mobile experience
     if (date) {
       handleDateDoubleClick(date);
+    }
+  } else {
+    // Single tap - provide haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
     }
   }
 
   setLastTap(currentTime);
+};
+
+// Handle long press for context menu on mobile
+export const handleLongPress = (
+  e: React.TouchEvent,
+  date: Date,
+  onLongPress: (date: Date) => void
+) => {
+  const touchDuration = 500; // 500ms for long press
+  let timeoutId: NodeJS.Timeout;
+
+  const handleTouchStart = () => {
+    timeoutId = setTimeout(() => {
+      if (navigator.vibrate) {
+        navigator.vibrate(50); // Longer vibration for long press
+      }
+      onLongPress(date);
+    }, touchDuration);
+  };
+
+  const handleTouchMove = () => {
+    clearTimeout(timeoutId);
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(timeoutId);
+  };
+
+  // Add event listeners for this specific touch
+  const element = e.currentTarget;
+  element.addEventListener('touchstart', handleTouchStart, { once: true });
+  element.addEventListener('touchmove', handleTouchMove, { once: true });
+  element.addEventListener('touchend', handleTouchEnd, { once: true });
+};
+
+// Improved swipe detection for calendar navigation
+export const handleSwipe = (
+  e: React.TouchEvent,
+  onSwipeLeft?: () => void,
+  onSwipeRight?: () => void,
+  onSwipeUp?: () => void,
+  onSwipeDown?: () => void
+) => {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+
+  const minSwipeDistance = 50; // Minimum distance for swipe
+
+  const handleTouchStart = (event: Event) => {
+    const touchEvent = event as TouchEvent;
+    const touch = touchEvent.changedTouches?.[0];
+    if (touch) {
+      touchStartX = touch.screenX;
+      touchStartY = touch.screenY;
+    }
+  };
+
+  const handleTouchEnd = (event: Event) => {
+    const touchEvent = event as TouchEvent;
+    const touch = touchEvent.changedTouches?.[0];
+    if (touch) {
+      touchEndX = touch.screenX;
+      touchEndY = touch.screenY;
+      handleSwipeGesture();
+    }
+  };
+
+  const handleSwipeGesture = () => {
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    // Check if swipe is horizontal or vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (Math.abs(deltaX) > minSwipeDistance) {
+        if (deltaX > 0 && onSwipeRight) {
+          onSwipeRight();
+        } else if (deltaX < 0 && onSwipeLeft) {
+          onSwipeLeft();
+        }
+      }
+    } else {
+      // Vertical swipe
+      if (Math.abs(deltaY) > minSwipeDistance) {
+        if (deltaY > 0 && onSwipeDown) {
+          onSwipeDown();
+        } else if (deltaY < 0 && onSwipeUp) {
+          onSwipeUp();
+        }
+      }
+    }
+  };
+
+  // Add event listeners
+  const element = e.currentTarget;
+  element.addEventListener('touchstart', handleTouchStart, { once: true });
+  element.addEventListener('touchend', handleTouchEnd, { once: true });
 };
 
 // Handle adding task with authentication check
