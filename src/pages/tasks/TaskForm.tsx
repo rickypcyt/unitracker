@@ -10,6 +10,7 @@ import AIPreviewModal from './AIPreviewModal';
 import AutocompleteInput from '@/modals/AutocompleteInput';
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
+import LocalWorkspaceSelector from './LocalWorkspaceSelector';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { addTask } from '@/store/TaskActions';
 import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
@@ -44,8 +45,17 @@ const TaskForm = ({
   const workspace = useWorkspace();
   const { user } = useAuth();
   const { tasks } = useTasks();
-  const activeWorkspace = workspace.currentWorkspace;
+  const { workspaces, currentWorkspace: activeWorkspace } = workspace;
   const datePickerRef = useRef<any>(null);
+
+  // Local workspace state for this task only
+  const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
+    // If current workspace is "All", select the first available workspace instead
+    if (activeWorkspace?.id === 'all' && workspaces && workspaces.length > 0) {
+      return workspaces[0];
+    }
+    return activeWorkspace;
+  });
 
   const typedUser = user as any;
 
@@ -86,12 +96,29 @@ const TaskForm = ({
     end_at: { required: false, validate: validateTime },
   };
 
-  const { formData, errors, handleChange, validateForm } = useFormState(
+  const { formData, errors, handleChange, validateForm, hasInteracted } = useFormState(
     initialFormState as any, 
     validationRules as any
   ) as any;
   const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
   const [isDifficultyDropdownOpen, setIsDifficultyDropdownOpen] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  console.log('TaskForm Initial State:', { initialAssignment, initialTask, hasSubmitted });
+
+  // Force hasSubmitted to be false initially (debug)
+  useEffect(() => {
+    if (hasSubmitted) {
+      console.warn('hasSubmitted was true initially, forcing to false');
+      setHasSubmitted(false);
+    }
+  }, []);
+
+  // Only show errors after user has interacted with form or attempted to submit
+  const displayErrors = (hasInteracted || hasSubmitted) ? errors : {};
+  
+  // Debug: Log the states to understand what's happening
+  console.log('TaskForm Debug:', { hasInteracted, hasSubmitted, errors, displayErrors });
 
   // AI Hook
   const {
@@ -104,12 +131,9 @@ const TaskForm = ({
     setAiLoading,
     aiError, 
     setAiError,
-    aiSuccess,
-    setAiSuccess,
     showAIPreview, 
     setShowAIPreview,
     aiParsedTasks, 
-    setAiParsedTasks,
     aiTextareaRef,
     setAiAbortController,
     aiCancelledRef,
@@ -118,6 +142,7 @@ const TaskForm = ({
 
   // Effects
   useEffect(() => {
+    console.log('useEffect initialAssignment:', initialAssignment);
     if (initialAssignment) {
       handleChange('assignment', initialAssignment);
     }
@@ -132,6 +157,7 @@ const TaskForm = ({
   // Handlers
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasSubmitted(true); // Mark that user has attempted to submit
 
     if (formData.isRecurring) {
       setRecurrenceError(null);
@@ -168,7 +194,6 @@ const TaskForm = ({
       }
     } else {
       if (!validateForm()) {
-        console.warn('Validation errors:', errors);
         return;
       }
     }
@@ -180,7 +205,7 @@ const TaskForm = ({
         formData,
         userId: typedUser.id,
         initialTask,
-        activeWorkspaceId: activeWorkspace?.id ?? null,
+        activeWorkspaceId: selectedWorkspace?.id ?? null,
         parseDateForDB: (date: string | null | undefined) => {
           if (!date) return null;
 
@@ -342,42 +367,6 @@ const TaskForm = ({
       console.warn('Error in to12Hour (TaskForm):', time24, error);
       return '';
     }
-  }
-
-  function getInitialStartTime(): string {
-    // Check if there's a calendar hour set
-    const calendarHour = sessionStorage.getItem('calendarTaskHour');
-    if (calendarHour && !initialTask) {
-      const hour = parseInt(calendarHour);
-      const period = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-      return `${displayHour}:00 ${period}`;
-    }
-    
-    // For normal tasks, check if there's a start_at
-    if (initialTask?.start_at) {
-      return to12Hour(initialTask.start_at);
-    }
-    // Default for recurring tasks
-    return '10:00 AM';
-  }
-
-  function getInitialEndTime(): string {
-    // Check if there's a calendar hour set
-    const calendarHour = sessionStorage.getItem('calendarTaskHour');
-    if (calendarHour && !initialTask) {
-      const hour = parseInt(calendarHour) + 1; // End time 1 hour later
-      const period = hour >= 12 ? 'PM' : 'AM';
-      const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-      return `${displayHour}:00 ${period}`;
-    }
-    
-    // For normal tasks, check if there's an end_at
-    if (initialTask?.end_at) {
-      return to12Hour(initialTask.end_at);
-    }
-    // Default for recurring tasks
-    return '11:00 AM';
   }
 
   function getInitialStartTimeForForm(): string {
@@ -563,9 +552,6 @@ const TaskForm = ({
       // Switch to manual tab
       setActiveTab('manual');
       setAiPrompt('');
-      setAiSuccess('Task generated successfully!');
-      
-      setTimeout(() => setAiSuccess(''), 3000);
 
     } catch (error: any) {
       if (debugInterval) clearInterval(debugInterval);
@@ -1131,8 +1117,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </div>
           )}
         </div>
-        {errors.difficulty && (
-          <p className="mt-1 text-base text-red-500">{errors.difficulty}</p>
+        {displayErrors.difficulty && (
+          <p className="mt-1 text-base text-red-500">{displayErrors.difficulty}</p>
         )}
       </div>
     );
@@ -1167,7 +1153,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               readOnly
               value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'}
               className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${
-                errors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
+                displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'
               } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
               style={{ width: '100%' }}
             />
@@ -1209,8 +1195,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
           <Calendar size={20} />
         </button>
       </div>
-      {errors.deadline && (
-        <p className="mt-1 text-base text-red-500">{errors.deadline}</p>
+      {displayErrors.deadline && (
+        <p className="mt-1 text-base text-red-500">{displayErrors.deadline}</p>
       )}
     </div>
   );
@@ -1277,8 +1263,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               </label>
             ))}
           </div>
-          {errors.recurrence_weekdays && (
-            <p className="mt-1 text-base text-red-500">{errors.recurrence_weekdays}</p>
+          {displayErrors.recurrence_weekdays && (
+            <p className="mt-1 text-base text-red-500">{displayErrors.recurrence_weekdays}</p>
           )}
         </div>
       )}
@@ -1403,7 +1389,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </button>
           </div>
         </div>
-        {errors.start_at && <p className="mt-1 text-base text-red-500">{errors.start_at}</p>}
+        {displayErrors.start_at && <p className="mt-1 text-base text-red-500">{displayErrors.start_at}</p>}
       </div>
     );
   };
@@ -1495,7 +1481,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             </button>
           </div>
         </div>
-        {errors.end_at && <p className="mt-1 text-base text-red-500">{errors.end_at}</p>}
+        {displayErrors.end_at && <p className="mt-1 text-base text-red-500">{displayErrors.end_at}</p>}
       </div>
     );
   };
@@ -1509,6 +1495,14 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         e.currentTarget.dispatchEvent(formEvent);
       }
     }}>
+      {/* Workspace Selector */}
+      <div className="w-full">
+        <LocalWorkspaceSelector 
+          selectedWorkspace={selectedWorkspace}
+          onWorkspaceChange={setSelectedWorkspace}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Title, Assignment, Description */}
         <div className="space-y-4">
@@ -1520,7 +1514,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               id="title"
               value={formData.title}
               onChange={(value) => handleChange('title', value)}
-              error={errors.title}
+              error={displayErrors.title}
               required
               placeholder="Enter task title"
             />
@@ -1535,7 +1529,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
                 id="assignment"
                 value={formData.assignment}
                 onChange={(value) => handleChange('assignment', value)}
-                error={errors.assignment}
+                error={displayErrors.assignment}
                 required
                 placeholder="Enter subject name"
                 suggestions={uniqueAssignments}
@@ -1552,8 +1546,8 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
               variant="tasks"
               className="h-full max-h-full"
             />
-            {errors.description && (
-              <p className="mt-1 text-base text-red-500">{errors.description}</p>
+            {displayErrors.description && (
+              <p className="mt-1 text-base text-red-500">{displayErrors.description}</p>
             )}
           </div>
         </div>

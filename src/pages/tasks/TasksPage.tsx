@@ -1,12 +1,13 @@
 import { Info, Plus, X } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import TaskForm from '@/pages/tasks/TaskForm';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
+import WorkspaceSelector from '@/pages/calendar/WorkspaceSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
 
@@ -29,7 +30,6 @@ const TasksPage = memo(() => {
   // Use Zustand selectors
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { setCurrentWorkspace } = useWorkspaceActions();
-  const { loading } = useTasks();
   const fetchTasks = useFetchTasks();
   const lastWheelSwitchRef = useRef(0);
 
@@ -190,6 +190,11 @@ const TasksPage = memo(() => {
         <link rel="canonical" href="https://uni-tracker.vercel.app/tasks" />
       </Helmet>
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
+      {/* Mobile Workspace Selector */}
+      <div className="lg:hidden w-full mb-4">
+        <WorkspaceSelector />
+      </div>
+      
       <KanbanBoard />
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (

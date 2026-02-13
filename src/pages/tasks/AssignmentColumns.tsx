@@ -2,7 +2,6 @@ import React from 'react';
 import { SortableColumn } from './SortableColumn';
 
 interface AssignmentColumnsProps {
-  assignments: string[];
   incompletedByAssignment: Record<string, any[]>;
   currentWorkspacePins: Record<string, boolean>;
   onTogglePin: (assignment: string) => void;
@@ -21,7 +20,6 @@ interface AssignmentColumnsProps {
 }
 
 export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
-  assignments,
   incompletedByAssignment,
   currentWorkspacePins,
   onTogglePin,
@@ -58,9 +56,9 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   return (
     <div className="flex justify-center w-full mb-4 px-2 sm:px-8 lg:px-24">
       <div className={`w-full gap-4 ${
-        fixedColumns.length <= 2 ? 'grid grid-cols-2' : 
-        fixedColumns.length <= 4 ? 'grid grid-cols-2' : 
-        'grid grid-cols-3'
+        fixedColumns.length <= 2 ? 'grid grid-cols-1 sm:grid-cols-2' : 
+        fixedColumns.length <= 4 ? 'grid grid-cols-1 sm:grid-cols-2' : 
+        'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
       }`}>
         {fixedColumns.map((column) => (
           <div

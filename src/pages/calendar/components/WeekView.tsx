@@ -6,10 +6,8 @@ import { isSameDay } from 'date-fns';
 
 interface WeekViewProps {
   currentDate: Date;
-  selectedDate: Date;
   isLoggedIn: boolean;
-  getTasksForDayAndHour: (day: Date, hour: number) => any[];
-  getTasksWithDeadline: (date: Date) => any[];
+  getTasksWithDeadline: (day?: Date) => any[];
   setSelectedDate: (date: Date) => void;
   setFocusedDate: (date: Date) => void;
   setShowTaskForm: (show: boolean) => void;
@@ -23,7 +21,6 @@ interface WeekViewProps {
 const WeekView = ({
   currentDate,
   isLoggedIn,
-  getTasksForDayAndHour,
   getTasksWithDeadline,
   setSelectedDate,
   setFocusedDate,
@@ -232,7 +229,6 @@ const WeekView = ({
                       
                       if (occurrenceStart && occurrenceEnd) {
                         const startHour = occurrenceStart.getHours();
-                        const endHour = occurrenceEnd.getHours();
                         const duration = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
                         
                         // Only show single hour tasks here

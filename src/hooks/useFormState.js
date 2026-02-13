@@ -9,6 +9,7 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
   const [formData, setFormData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const [isDirty, setIsDirty] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const prevInitialStateRef = useRef(initialState);
 
   // Reset form when initial state changes, but only if the actual values are different
@@ -17,6 +18,7 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
       setFormData(initialState);
       setErrors({});
       setIsDirty(false);
+      setHasInteracted(false);
       prevInitialStateRef.current = initialState;
     }
   }, [initialState]);
@@ -28,8 +30,9 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
       [field]: value
     }));
     
-    // Mark form as dirty
+    // Mark form as dirty and as interacted
     setIsDirty(prev => prev || true);
+    setHasInteracted(true);
 
     // Clear error for this field if it exists
     setErrors(prev => {
@@ -83,12 +86,14 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     setFormData(initialState);
     setErrors({});
     setIsDirty(false);
+    setHasInteracted(false);
   };
 
   return {
     formData,
     errors,
     isDirty,
+    hasInteracted,
     handleChange,
     validateForm,
     resetForm,
