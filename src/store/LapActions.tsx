@@ -21,9 +21,9 @@ export const fetchLaps = async () => {
       throw new Error(errorMsg);
     }
 
-    const { data, error, count } = await supabase
+    const { data, error } = await supabase
       .from('study_laps')
-      .select('*', { count: 'exact' })
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -45,7 +45,7 @@ export const fetchLaps = async () => {
   }
 };
 
-export const createLap = async (lapData) => {
+export const createLap = async (lapData: any) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
@@ -58,11 +58,12 @@ export const createLap = async (lapData) => {
     if (error) throw error;
     useAppStore.getState().addLap(data[0]);
   } catch (error) {
-    useAppStore.getState().lapError(error.message);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    useAppStore.getState().lapError(errorMsg);
   }
 };
 
-export const updateLap = async (id, updates) => {
+export const updateLap = async (id: string, updates: any) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
@@ -77,11 +78,12 @@ export const updateLap = async (id, updates) => {
     if (error) throw error;
     useAppStore.getState().updateLap(id, data[0]);
   } catch (error) {
-    useAppStore.getState().lapError(error.message);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    useAppStore.getState().lapError(errorMsg);
   }
 };
 
-export const deleteLap = async (id) => {
+export const deleteLap = async (id: string) => {
   try {
     // 1. Verificar autenticación
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -114,7 +116,7 @@ export const deleteLap = async (id) => {
     }
 
     // 4. Eliminar la sesión
-    const { error: deleteError, count } = await supabase
+    const { error: deleteError } = await supabase
       .from('study_laps')
       .delete()
       .eq('id', id)
@@ -144,7 +146,8 @@ export const deleteLap = async (id) => {
     
   } catch (error) {
     console.error('[DEBUG] Error en deleteLap:', error);
-    useAppStore.getState().lapError(error.message);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    useAppStore.getState().lapError(errorMsg);
     throw error;
   }
 };

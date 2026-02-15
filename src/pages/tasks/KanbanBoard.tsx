@@ -1,5 +1,5 @@
 import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
 import { ClipboardCheck } from 'lucide-react';

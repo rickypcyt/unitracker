@@ -2,7 +2,6 @@ import {
   CheckCircle,
   Clock,
   Database,
-  Globe,
   List,
   Monitor,
   Moon,

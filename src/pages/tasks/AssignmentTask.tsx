@@ -7,7 +7,7 @@ interface AssignmentTaskProps {
   onToggleCompletion: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
-  onViewTask?: (task: any) => void;
+  onViewTask: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 

@@ -1,7 +1,6 @@
 import { memo, useEffect, useState } from "react";
 
 import Countdown from "./Countdown";
-import GlobalTimerControls from "@/components/GlobalTimerControls";
 import { Helmet } from "react-helmet-async";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import Pomodoro from "@/pages/session/Pomodoro";

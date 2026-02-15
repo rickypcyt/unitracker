@@ -298,14 +298,5 @@ export const forceTaskRefresh = async (workspaceId?: string) => {
   return fetchTasks(workspaceId);
 };
 
-// Helper para obtener tasks actuales
-// async function getTasksFromStoreOrLocalStorage() {
-//   try {
-//     const local = localStorage.getItem('tasksHydrated');
-//     if (local) return JSON.parse(local);
-//   } catch {
-//     // no-op
-//   }
-//   return [];
-// }
+
 

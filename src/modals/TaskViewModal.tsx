@@ -1,9 +1,8 @@
 import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
-import { formatDate, formatDateTimeWithAmPm } from "@/utils/dateUtils";
 
 import BaseModal from "@/modals/BaseModal";
-import Markdown from "react-markdown";
 import React from "react";
+import { formatDate } from "@/utils/dateUtils";
 import moment from "moment";
 
 interface Task {
@@ -256,9 +255,10 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           {task.description && (
             <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
-              <div className="prose prose-invert max-w-none text-[var(--text-primary)]">
-                <Markdown>{task.description}</Markdown>
-              </div>
+              <div 
+                className="prose prose-invert max-w-none text-[var(--text-primary)]"
+                dangerouslySetInnerHTML={{ __html: task.description }}
+              />
             </div>
           )}
 

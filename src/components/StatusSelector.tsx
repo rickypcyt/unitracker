@@ -39,6 +39,10 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
     setIsOpen(false);
   };
 
+  // Ensure we always have valid values
+  const statusColor = currentStatus?.color ?? STATUS_OPTIONS[0]?.color ?? 'text-gray-400';
+  const statusLabel = currentStatus?.label ?? STATUS_OPTIONS[0]?.label ?? 'Unknown';
+
   return (
     <div className="relative" ref={menuRef}>
       {/* Trigger Button */}
@@ -47,9 +51,9 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
         className="w-full flex items-center justify-between p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className={`w-4 h-4 rounded-full ${currentStatus.color.replace('text', 'bg')} opacity-60`}></div>
+          <div className={`w-4 h-4 rounded-full ${statusColor.replace('text', 'bg')} opacity-60`}></div>
           <span className="text-sm font-medium text-[var(--text-primary)]">
-            Status: {currentStatus.label}
+            Status: {statusLabel}
           </span>
         </div>
         <ChevronDown className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />

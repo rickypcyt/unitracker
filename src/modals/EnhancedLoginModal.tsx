@@ -1,4 +1,4 @@
-import { Cloud, Database, Globe, Lock, Rocket, Users, X, Zap } from "lucide-react";
+import { Cloud, Database, Lock, Rocket, Users, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAuth } from '@/hooks/useAuth';

@@ -1,4 +1,4 @@
-import { Calendar, Clipboard, Info, Trash2 } from "lucide-react";
+import { Calendar, Info, Trash2 } from "lucide-react";
 import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from "react";
 
 import { Task } from "@/types/taskStorage";
@@ -195,8 +195,8 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           
           <button
             onClick={() => {
-              const position = menuPosition || { x: contextMenu.x, y: contextMenu.y };
-              onSetDate(contextMenu.task, position);
+              const position = menuPosition ?? { x: contextMenu.x, y: contextMenu.y };
+              onSetDate?.(contextMenu.task, position);
               onClose();
             }}
             className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50"
