@@ -256,8 +256,8 @@ const CalendarPage = memo(() => {
       <Helmet>
         <title>
           {calendarType === 'dayflow' 
-            ? 'DayFlow Calendar | Uni Tracker 2026' 
-            : 'UniTracker Calendar | Uni Tracker 2026'
+            ? 'DayFlow Calendar | UniTracker 2026' 
+            : 'UniTracker Calendar | UniTracker 2026'
           }
         </title>
         <meta
@@ -268,14 +268,14 @@ const CalendarPage = memo(() => {
           name="keywords"
           content="academic calendar, study planner, assignment deadlines, schedule management, student calendar, deadline tracker"
         />
-        <meta property="og:title" content={`Calendar & Schedule Management | Uni Tracker 2026 - ${calendarType === 'dayflow' ? 'DayFlow' : 'UniTracker'} Calendar`} />
+        <meta property="og:title" content={`Calendar & Schedule Management | UniTracker 2026 - ${calendarType === 'dayflow' ? 'DayFlow' : 'UniTracker'} Calendar`} />
         <meta
           property="og:description"
           content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/calendar" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/calendar" />
+        <meta property="og:url" content="https://unitracker.me/calendar" />
+        <link rel="canonical" href="https://unitracker.me/calendar" />
       </Helmet>
       
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">

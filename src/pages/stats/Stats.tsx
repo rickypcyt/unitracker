@@ -296,34 +296,19 @@ const Statistics = (): ReactElement => {
   // Si es demo, usar demoStats
   if (isDemo) {
     return (
-      <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 mx-4 rounded-lg sticky top-0 z-50">
-        <div className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-2">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2 w-full">
-            {statCards.slice(0, 4).map((card, i) => (
-              <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
-                <div className="flex-shrink-0">{card.icon}</div>
-                <div className="flex flex-col min-w-0">
-                  <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
-                  <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
-                  <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
-                </div>
+      <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 mt-4 rounded-lg sticky top-0 z-50">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-2 w-full">
+          {statCards.map((card, i) => (
+            <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
+              <div className="flex-shrink-0">{card.icon}</div>
+              <div className="flex flex-col min-w-0">
+                <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
+                <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
+                <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
               </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-2 w-full">
-            {statCards.slice(4).map((card, i) => (
-              <div key={i + 4} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
-                <div className="flex-shrink-0">{card.icon}</div>
-                <div className="flex flex-col min-w-0">
-                  <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
-                  <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
-                  <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-        
       </div>
     );
   }

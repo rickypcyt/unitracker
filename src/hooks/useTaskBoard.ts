@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useFetchTasks, useTasksLoading, useUpdateTaskSuccess, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
+import useDemoMode from '@/utils/useDemoMode';
 import { useTaskManager } from '@/hooks/useTaskManager';
 
 // Constant for the "All" workspace
@@ -13,20 +14,15 @@ export const useTaskBoard = () => {
   const { currentWorkspace: activeWorkspace, workspaces } = useWorkspace();
   const { setCurrentWorkspace } = useWorkspaceActions();
 
+  // Use demo mode hook instead of local state
+  const { isDemo, demoTasks, loginPromptOpen, showLoginPrompt, closeLoginPrompt } = useDemoMode();
+
   const {
     tasks: realTasks,
     handleToggleCompletion,
     handleUpdateTask,
     handleDeleteTask: originalHandleDeleteTask,
   } = useTaskManager(activeWorkspace);
-
-  // Demo mode logic
-  const [demoTasks, setDemoTasks] = useState<any[]>([]);
-  const [isDemo, setIsDemo] = useState(false);
-  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
-
-  const showLoginPrompt = useCallback(() => setLoginPromptOpen(true), []);
-  const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
 
   // Create workspaces with "All" option
   const workspacesWithAll = useMemo(() => {
@@ -107,8 +103,6 @@ export const useTaskBoard = () => {
 
     // Actions
     setCurrentWorkspace,
-    setDemoTasks,
-    setIsDemo,
     showLoginPrompt,
     closeLoginPrompt,
     fetchTasksAction,

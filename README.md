@@ -6,7 +6,7 @@ Your modern, visual, and productive companion for university life!
 
 ## What is UniTracker?
 
-Uni Tracker is an all-in-one app for students who want to organize their time, tasks, and academic progress in a visual, intuitive, and motivating way.
+UniTracker is an all-in-one app for students who want to organize their time, tasks, and academic progress in a visual, intuitive, and motivating way.
 
 ---
 

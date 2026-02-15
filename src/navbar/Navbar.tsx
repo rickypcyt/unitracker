@@ -369,7 +369,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden">
+    <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden" data-tour="navbar">
       <div className="w-full px-2 overflow-x-hidden">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo a la izquierda */}
@@ -448,6 +448,7 @@ const Navbar = () => {
                 onEditWorkspace={handleEditWorkspace}
                 onDeleteWorkspace={handleDeleteWorkspace}
                 onRefreshWorkspaces={refreshWorkspaces}
+                data-tour="workspace-selector"
               />
               <a
                 href="https://github.com/rickypcyt/unitracker"

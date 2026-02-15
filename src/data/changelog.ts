@@ -219,7 +219,7 @@ export const changelogData: ChangelogEntry[] = [
     changes: {
       added: [
         "Hello world!",
-        "First use of the Uni Tracker changelog system"
+        "First use of the UniTracker changelog system"
       ],
       improved: [
         "Here you will see the upcoming changes and improvements we will be implementing in the application"

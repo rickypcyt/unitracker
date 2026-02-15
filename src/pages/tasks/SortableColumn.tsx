@@ -164,6 +164,7 @@ export const SortableColumn = ({
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-2">
             <button
+              data-tour="add-task"
               onClick={onAddTask}
               className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
               title="Add task"
@@ -208,18 +209,20 @@ export const SortableColumn = ({
           display: isMinimized ? 'none' : 'block',
         }}
       >
-        {sortedTasks.map((task) => (
-          <AssignmentTask
-            key={task.id}
-            task={task}
-            assignment={assignment}
-            onToggleCompletion={onTaskToggle}
-            onTaskDelete={onTaskDelete}
-            onEditTask={onEditTask}
-            onViewTask={onViewTask}
-            onTaskContextMenu={onTaskContextMenu}
-          />
-        ))}
+        <div className="flex-1 min-h-0">
+          {sortedTasks.map((task) => (
+            <AssignmentTask
+              key={task.id}
+              task={task}
+              assignment={assignment}
+              onToggleCompletion={onTaskToggle}
+              onTaskDelete={onTaskDelete}
+              onEditTask={onEditTask}
+              onViewTask={onViewTask || (() => {})}
+              onTaskContextMenu={onTaskContextMenu}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Column Menu - Mantenemos el menú original para compatibilidad */}

@@ -10,21 +10,21 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="About Uni Tracker"
+      title="About UniTracker"
       maxWidth="max-w-lg"
     >
       <div className="space-y-6">
         <div>
           <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">The Story</h3>
           <p className="text-base text-[var(--text-secondary)]">
-            Uni Tracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.
+            UniTracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.
           </p>
         </div>
         
         <div>
           <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">About Me</h3>
           <p className="text-base text-[var(--text-secondary)]">
-            Hi! I'm Ricky, the creator of Uni Tracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.
+            Hi! I'm Ricky, the creator of UniTracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.
           </p>
         </div>
         
@@ -45,7 +45,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
         </div>
         
         <div className="border-t border-[var(--border-primary)] pt-4 text-center text-[var(--text-secondary)] pb-2">
-            Thank you for using Uni Tracker! Your support and feedback help make this app better!
+            Thank you for using UniTracker! Your support and feedback help make this app better!
         </div>
       </div>
     </BaseModal>

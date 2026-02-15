@@ -1,7 +1,7 @@
 import { memo, useEffect } from 'react';
-import { Helmet } from "react-helmet-async";
 import { useAuth, useFetchTasks, useWorkspace } from '@/store/appStore';
 
+import { Helmet } from "react-helmet-async";
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import { fetchLaps } from '@/store/LapActions';
@@ -48,7 +48,7 @@ const StatsPage = memo(() => {
   return (
     <>
       <Helmet>
-        <title>Study Statistics & Analytics | Uni Tracker 2026</title>
+        <title>Study Statistics & Analytics | UniTracker 2026</title>
         <meta
           name="description"
           content="Track your study progress with detailed analytics. View study time statistics, productivity charts, and performance insights."
@@ -57,14 +57,14 @@ const StatsPage = memo(() => {
           name="keywords"
           content="study statistics, productivity analytics, study time tracking, performance charts, study insights, academic analytics"
         />
-        <meta property="og:title" content="Study Statistics & Analytics | Uni Tracker 2026" />
+        <meta property="og:title" content="Study Statistics & Analytics | UniTracker 2026" />
         <meta
           property="og:description"
           content="Track your study progress with detailed analytics. View study time statistics, productivity charts, and performance insights."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/stats" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/stats" />
+        <meta property="og:url" content="https://unitracker.me/stats" />
+        <link rel="canonical" href="https://unitracker.me/stats" />
       </Helmet>
       <div className="w-full px-0 overflow-hidden">
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">

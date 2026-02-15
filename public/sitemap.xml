@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://uni-tracker.vercel.app/</loc>
+    <loc>https://unitracker.me/</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/tasks</loc>
+    <loc>https://unitracker.me/tasks</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/calendar</loc>
+    <loc>https://unitracker.me/calendar</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/session</loc>
+    <loc>https://unitracker.me/session</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/notes</loc>
+    <loc>https://unitracker.me/notes</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/stats</loc>
+    <loc>https://unitracker.me/stats</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://uni-tracker.vercel.app/habits</loc>
+    <loc>https://unitracker.me/habits</loc>
     <lastmod>2025-01-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

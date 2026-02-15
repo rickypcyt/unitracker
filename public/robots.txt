@@ -12,4 +12,4 @@ Disallow: /*.log
 Disallow: /*.tmp
 
 # Sitemap
-Sitemap: https://uni-tracker.vercel.app/sitemap.xml
+Sitemap: https://unitracker.me/sitemap.xml

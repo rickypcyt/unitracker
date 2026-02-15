@@ -1,17 +1,19 @@
+import { Eye, EyeOff, Plus } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
 import HabitEditModal from '../../modals/HabitEditModal';
 import { Helmet } from "react-helmet-async";
-import { Plus } from 'lucide-react';
 import { formatDate } from '@/utils/dateUtils';
 import { useAuth } from '../../hooks/useAuth';
 import { useCalendarData } from '../calendar/hooks/useCalendarData';
+import useDemoMode from '@/utils/useDemoMode';
 import { useHabits } from '../../hooks/useHabits';
 
 const HabitsPage = memo(() => {
   const { isLoggedIn } = useAuth();
+  const { demoHabits } = useDemoMode();
   const currentDate = new Date(); // Use current date directly instead of state
   const { getTasksWithDeadline } = useCalendarData({
     currentDate,
@@ -22,7 +24,27 @@ const HabitsPage = memo(() => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [pendingNoteSaves, setPendingNoteSaves] = useState<Record<string, string>>({}); // Track pending saves
   const [tooltipContent, setTooltipContent] = useState<{ date: Date; tasks: any[] } | null>(null);
+  
+  // Load preferences from localStorage
+  const [showPastMonths, setShowPastMonths] = useState(() => {
+    const saved = localStorage.getItem('habits-showPastMonths');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [showPastDays, setShowPastDays] = useState(() => {
+    const saved = localStorage.getItem('habits-showPastDays');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
+  // Save preferences to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem('habits-showPastMonths', JSON.stringify(showPastMonths));
+  }, [showPastMonths]);
+
+  useEffect(() => {
+    localStorage.setItem('habits-showPastDays', JSON.stringify(showPastDays));
+  }, [showPastDays]);
+
+  // Use demo habits when in demo mode, otherwise use real habits
   const {
     habits,
     journalNotes,
@@ -32,6 +54,9 @@ const HabitsPage = memo(() => {
     toggleHabitCompletion,
     saveJournalNote
   } = useHabits();
+
+  // Combine real habits with demo habits for demo mode
+  const displayHabits = isLoggedIn ? habits : demoHabits;
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -177,7 +202,8 @@ const HabitsPage = memo(() => {
     daysArray: number[],
     realDaysCount: number,
     monthTitle: string,
-    opacity: string
+    opacity: string,
+    showPastDays: boolean = true
   ) => {
     const isThisMonthCurrent = today.getMonth() === month && today.getFullYear() === year;
     const todayDayForMonth = isThisMonthCurrent ? today.getDate() : null;
@@ -202,7 +228,7 @@ const HabitsPage = memo(() => {
                   <th className="px-4 py-3 text-left text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] min-w-[200px]">
                     Notes
                   </th>
-                  {habits.map(habit => (
+                  {displayHabits.map(habit => (
                     <th key={`${habit.id}-${year}-${month}`} className="px-2 py-3 text-center text-sm font-bold text-[var(--text-primary)] border-r border-[var(--border-primary)] w-12">
                       <span
                         className="truncate cursor-pointer hover:text-[var(--accent-primary)] transition-colors"
@@ -216,22 +242,32 @@ const HabitsPage = memo(() => {
                 </tr>
               </thead>
               <tbody>
-                {daysArray.map((day) => {
-                  const isGhostDay = day > realDaysCount;
-                  const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
-                  const isPastDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
+                {daysArray
+                  .filter((day) => {
+                    // Always show current and future days
+                    // Show past days only if showPastDays is true
+                    const isGhostDay = day > realDaysCount;
+                    const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
+                    const isPastDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
+                    
+                    return !isPastDay || showPastDays;
+                  })
+                  .map((day) => {
+                    const isGhostDay = day > realDaysCount;
+                    const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
+                    const isPastDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
 
-                  return (
-                    <tr
-                      key={`${year}-${month}-${day}`}
-                      className={`border-b border-[var(--border-primary)] transition-colors ${
-                        isGhostDay 
-                          ? 'bg-transparent opacity-20' 
-                          : isPastDay
-                          ? 'bg-[var(--bg-primary)] opacity-60 hover:bg-[var(--bg-tertiary)]/60'
-                          : 'bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]'
-                      }`}
-                    >
+                    return (
+                      <tr
+                        key={`${year}-${month}-${day}`}
+                        className={`border-b border-[var(--border-primary)] transition-colors ${
+                          isGhostDay 
+                            ? 'bg-transparent opacity-20' 
+                            : isPastDay
+                            ? 'bg-[var(--bg-primary)] opacity-60 hover:bg-[var(--bg-tertiary)]/60'
+                            : 'bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)]'
+                        }`}
+                      >
                       {/* Day number column */}
                       <td
                         className="px-4 py-3 text-center border-r border-[var(--border-primary)] relative"
@@ -299,9 +335,9 @@ const HabitsPage = memo(() => {
                       </td>
 
                       {/* Habit columns */}
-                      {habits.map(habit => {
+                      {displayHabits.map(habit => {
                         const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const isCompleted = !isGhostDay && (habit.completions[dateKey] || false);
+                        const isCompleted = !isGhostDay && ((habit.completions as Record<string, boolean>)?.[dateKey] || false);
                         return (
                           <td key={`${habit.id}-${year}-${month}-${day}`} className="px-2 py-3 text-center border-r border-[var(--border-primary)] w-12">
                             {!isGhostDay ? (
@@ -375,8 +411,8 @@ const HabitsPage = memo(() => {
     };
   }, [pendingNoteSaves, saveJournalNote]);
 
-  // Show message if user is not authenticated
-  if (!isLoggedIn) {
+  // Show message if user is not authenticated AND no demo habits available
+  if (!isLoggedIn && demoHabits.length === 0) {
     return (
       <div className="w-full px-0 overflow-hidden">
         <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
@@ -397,7 +433,7 @@ const HabitsPage = memo(() => {
   return (
     <>
       <Helmet>
-        <title>Habit Tracking & Daily Goals | Uni Tracker 2026</title>
+        <title>Habit Tracking & Daily Goals | UniTracker 2026</title>
         <meta
           name="description"
           content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
@@ -406,35 +442,77 @@ const HabitsPage = memo(() => {
           name="keywords"
           content="habit tracker, daily goals, study habits, routine builder, habit formation, productivity habits, study consistency"
         />
-        <meta property="og:title" content="Habit Tracking & Daily Goals | Uni Tracker 2026" />
+        <meta property="og:title" content="Habit Tracking & Daily Goals | UniTracker 2026" />
         <meta
           property="og:description"
           content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
         />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/habits" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/habits" />
+
       </Helmet>
-      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 overflow-hidden">
+      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 overflow-hidden">
       {/* Toolbar */}
       <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none border-1">
         <div className="text-sm font-medium text-[var(--text-secondary)]">
           {currentYear} - 3 Months View
         </div>
         
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)]/10 transition-colors"
-        >
-          <Plus size={16} />
-          Create Habit
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPastMonths(!showPastMonths)}
+            className={`flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 rounded-md transition-colors text-sm md:text-xs lg:text-sm ${
+              showPastMonths 
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10' 
+                : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <EyeOff size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
+            <span className="hidden sm:inline">Hide Past Months</span>
+            <span className="sm:hidden">Hide Months</span>
+          </button>
+          
+          <button
+            onClick={() => setShowPastDays(!showPastDays)}
+            className={`flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 rounded-md transition-colors text-sm md:text-xs lg:text-sm ${
+              showPastDays 
+                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10' 
+                : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <EyeOff size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
+            <span className="hidden sm:inline">Hide Past Days</span>
+            <span className="sm:hidden">Hide Days</span>
+          </button>
+          
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)]/10 transition-colors text-sm md:text-xs lg:text-sm"
+          >
+            <Plus size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
+            <span className="hidden sm:inline">Create Habit</span>
+            <span className="sm:hidden">Create</span>
+          </button>
+        </div>
       </div>
       
       <div className="space-y-8 mb-4">
-        {/* Months Grid - 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {months.map((monthData) => (
+        {/* Months Grid - Single column */}
+        <div className="grid grid-cols-1 gap-6">
+          {months
+            .filter(monthData => {
+              // Always show current month
+              if (monthData.isCurrent) {
+                return true;
+              }
+              // Calculate if month is future or past
+              const monthDate = new Date(monthData.year, monthData.month, 1);
+              const today = new Date();
+              const isFutureMonth = monthDate > today;
+              const isPastMonth = monthDate < today;
+              
+              // Show future months always, past months only if showPastMonths is true
+              return isFutureMonth || (showPastMonths && isPastMonth);
+            })
+            .map((monthData) => (
             <div key={`${monthData.year}-${monthData.month}`}>
               {renderHabitsTable(
                 monthData.year,
@@ -442,7 +520,8 @@ const HabitsPage = memo(() => {
                 monthData.days,
                 monthData.realDays,
                 monthData.title,
-                monthData.opacity
+                monthData.opacity,
+                showPastDays
               )}
             </div>
           ))}

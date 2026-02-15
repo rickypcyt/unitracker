@@ -1,5 +1,6 @@
 import {
   demoAssignments,
+  demoHabits,
   demoNotes,
   demoSessions,
   demoStats,
@@ -56,6 +57,7 @@ export default function useDemoMode() {
     demoWorkspaces,
     demoAssignments,
     demoTasks,
+    demoHabits,
     demoNotes,
     demoSessions,
     demoStats,

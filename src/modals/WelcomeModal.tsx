@@ -77,9 +77,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* Header Section */}
         <div className="flex flex-col items-center mb-6 sm:mb-8 md:mb-10 relative z-10">
           {/* Logo with animation */}
-          <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
-            <span className="text-[var(--text-primary)] font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Uni</span>
-            <span className="text-[var(--accent-primary)] font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Tracker</span>
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
+            <span className="text-[var(--text-primary)] font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Uni</span>
+            <span className="text-[var(--accent-primary)] font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Tracker</span>
           </div>
           
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[var(--text-primary)] mb-2 sm:mb-3 text-center bg-gradient-to-r from-[var(--text-primary)] to-[var(--accent-primary)] bg-clip-text text-transparent px-2">
@@ -93,9 +93,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         
         {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8 relative z-10">
-          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
               </div>
               <div>
@@ -105,9 +105,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
               </div>
               <div className="flex-1">
@@ -117,9 +117,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
               </div>
               <div>
@@ -129,9 +129,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="group flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98]">
+          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
               </div>
               <div>

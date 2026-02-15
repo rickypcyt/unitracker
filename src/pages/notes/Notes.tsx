@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Helmet } from "react-helmet-async";
 
 import DeleteNoteModal from '../../modals/DeleteNoteModal';
 import { FileText } from 'lucide-react';
 import Footer from '../../components/Footer';
+import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteView from './NoteView';
 import NotesSidepanel from './NotesSidepanel';
@@ -232,7 +232,7 @@ const Notes: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Study Notes & Note Taking | Uni Tracker 2026</title>
+        <title>Study Notes & Note Taking | UniTracker 2026</title>
         <meta
           name="description"
           content="Take and organize study notes digitally. Create rich text notes, organize by assignments, and access your study materials anywhere."
@@ -241,14 +241,14 @@ const Notes: React.FC = () => {
           name="keywords"
           content="study notes, note taking, digital notes, assignment notes, study materials, note organization, rich text notes"
         />
-        <meta property="og:title" content="Study Notes & Note Taking | Uni Tracker 2026" />
+        <meta property="og:title" content="Study Notes & Note Taking | UniTracker 2026" />
         <meta
           property="og:description"
           content="Take and organize study notes digitally. Create rich text notes, organize by assignments, and access your study materials anywhere."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/notes" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/notes" />
+        <meta property="og:url" content="https://unitracker.me/notes" />
+        <link rel="canonical" href="https://unitracker.me/notes" />
       </Helmet>
       <React.Fragment>
         <div className="w-full min-h-screen relative pb-16">

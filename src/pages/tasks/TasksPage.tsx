@@ -171,7 +171,7 @@ const TasksPage = memo(() => {
   return (
     <>
       <Helmet>
-        <title>Task Management & Kanban Board | Uni Tracker 2026</title>
+        <title>Task Management & Kanban Board | UniTracker 2026</title>
         <meta
           name="description"
           content="Free task management app for students. Organize assignments, track progress with Kanban boards, and manage study tasks efficiently."
@@ -180,14 +180,14 @@ const TasksPage = memo(() => {
           name="keywords"
           content="task management, kanban board, assignment tracker, study tasks, project management, student planner, todo list"
         />
-        <meta property="og:title" content="Task Management & Kanban Board | Uni Tracker 2026" />
+        <meta property="og:title" content="Task Management & Kanban Board | UniTracker 2026" />
         <meta
           property="og:description"
           content="Free task management app for students. Organize assignments, track progress with Kanban boards, and manage study tasks efficiently."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/tasks" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/tasks" />
+        <meta property="og:url" content="https://unitracker.me/tasks" />
+        <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector */}

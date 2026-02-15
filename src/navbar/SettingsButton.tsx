@@ -10,8 +10,8 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
 import WorkspaceModal from '@/modals/WorkspaceModal';
-import { useState } from 'react';
 import { useChangelog } from '@/hooks/useChangelog';
+import { useState } from 'react';
 
 const SettingsButton = ({
   isLoggedIn,
@@ -145,6 +145,7 @@ const SettingsButton = ({
               </DropdownMenu.Item>
             ) : (
               <DropdownMenu.Item
+                data-tour="login-button"
                 onClick={loginWithGoogle}
                 className="flex items-center gap-2 px-3 py-2.5 text-sm sm:text-sm md:text-sm lg:text-base text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors"
               >

@@ -64,15 +64,6 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
     }
   ];
 
-  const companies = [
-    { name: "Netflix", logo: "🎬" },
-    { name: "Spotify", logo: "🎵" },
-    { name: "GitHub", logo: "💻" },
-    { name: "Shopify", logo: "🛒" },
-    { name: "Figma", logo: "🎨" },
-    { name: "Vercel", logo: "⚡" }
-  ];
-
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
@@ -87,9 +78,9 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 text-[var(--text-secondary)]"
         >
-          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-200" />
+          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
         </button>
         
         {/* Header Section */}
@@ -108,9 +99,9 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 transition-all duration-300 group"
+              className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30"
             >
-              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <benefit.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" />
               </div>
               <div className="flex-1">
@@ -137,37 +128,6 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
                 <p className="text-sm text-[var(--text-secondary)]">Enterprise-grade authentication trusted by thousands</p>
               </div>
             </div>
-            
-            <div className="flex flex-wrap gap-2 mb-3">
-              <div className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-primary)]/50 rounded-full border border-[var(--border-primary)]/30">
-                <Lock className="w-3 h-3 text-[var(--accent-primary)]" />
-                <span className="text-xs text-[var(--text-primary)]">Secure</span>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-primary)]/50 rounded-full border border-[var(--border-primary)]/30">
-                <Zap className="w-3 h-3 text-[var(--accent-primary)]" />
-                <span className="text-xs text-[var(--text-primary)]">Fast</span>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-primary)]/50 rounded-full border border-[var(--border-primary)]/30">
-                <Globe className="w-3 h-3 text-[var(--accent-primary)]" />
-                <span className="text-xs text-[var(--text-primary)]">Global</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <p className="text-xs text-[var(--text-secondary)] mb-2">Trusted by leading companies worldwide:</p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {companies.map((company, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-primary)]/50 rounded-lg border border-[var(--border-primary)]/30"
-                    title={company.name}
-                  >
-                    <span className="text-sm">{company.logo}</span>
-                    <span className="text-xs text-[var(--text-secondary)]">{company.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
         
@@ -175,14 +135,14 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         <div className="flex flex-col gap-3 sm:gap-4 relative z-10">
           <button
             onClick={handleLogin}
-            className="w-full group px-4 sm:px-6 py-3 sm:py-4 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/90 text-white font-semibold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl"
+            className="w-full group px-4 sm:px-6 py-3 sm:py-4 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3"
           >
             Sign in with Google
           </button>
           
           <button
             onClick={onClose}
-            className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 hover:bg-[var(--bg-secondary)]/50 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--border-primary)]/30 hover:border-[var(--border-primary)]/50 transition-all duration-300 font-medium"
+            className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--border-primary)]/30 font-medium"
           >
             Let me look around first
           </button>

@@ -102,7 +102,7 @@ const SessionPage = memo(() => {
   return (
     <>
       <Helmet>
-        <title>Pomodoro Timer & Study Sessions | Uni Tracker 2026</title>
+        <title>Pomodoro Timer & Study Sessions | UniTracker 2026</title>
         <meta
           name="description"
           content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app. No ads, no subscriptions."
@@ -111,14 +111,14 @@ const SessionPage = memo(() => {
           name="keywords"
           content="pomodoro timer, study timer, productivity timer, focus timer, study sessions, break timer, time management, student productivity"
         />
-        <meta property="og:title" content="Pomodoro Timer & Study Sessions | Uni Tracker 2026" />
+        <meta property="og:title" content="Pomodoro Timer & Study Sessions | UniTracker 2026" />
         <meta
           property="og:description"
           content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://uni-tracker.vercel.app/session" />
-        <link rel="canonical" href="https://uni-tracker.vercel.app/session" />
+        <meta property="og:url" content="https://unitracker.me/session" />
+        <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
       <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
       {/* Focus widget mode header */}
@@ -144,7 +144,7 @@ const SessionPage = memo(() => {
 
 
         {/* Grid con timers en filas en sm, 3 columnas en md+ */}
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-2 w-full mb-2">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-2 w-full mb-2" data-tour="session-timer">
           {/* Pomo */}
           <div className="maincard p-2 sm:p-3 w-full space-y-2 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none mb-2">
             <Pomodoro />

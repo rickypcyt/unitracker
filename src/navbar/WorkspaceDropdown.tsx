@@ -62,6 +62,7 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
       {/* Desktop Button */}
       <div className="hidden lg:block">
         <button 
+          data-tour="workspace-selector"
           onClick={() => setShowWorkspaceModal(true)}
           className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] relative"
           aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Click to open workspace selector.`}

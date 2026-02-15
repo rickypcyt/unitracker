@@ -542,7 +542,7 @@ const TaskForm = ({
   const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0]; // Mon=1 ... Sun=0 (JS getDay())
 
   const renderRecurrenceSection = () => (
-    <div className="mb-4">
+    <div className="my-6">
       <label className="flex items-center gap-3 cursor-pointer group">
         <div className="relative">
           <input

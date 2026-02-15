@@ -201,12 +201,12 @@ const App: FC = () => {
       />
       <NoiseProvider>
         <AuthProvider>
-          <TourManager>
-            <UserModalGate />
+          <UserModalGate />
             <NavigationProvider>
-              <PageContent />
+              <TourManager>
+                <PageContent />
+              </TourManager>
             </NavigationProvider>
-          </TourManager>
         </AuthProvider>
       </NoiseProvider>
     </>

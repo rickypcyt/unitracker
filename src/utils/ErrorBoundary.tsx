@@ -1,5 +1,4 @@
 import { ReactNode, Component, ErrorInfo } from 'react';
-import { logger } from '@/utils/logger';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -40,7 +39,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       errors: [...prevState.errors, newError]
     }));
 
-    logger.error('Error caught by ErrorBoundary', {
+    // Log error to console as fallback
+    console.error('Error caught by ErrorBoundary', {
       error: error.toString(),
       componentStack: errorInfo.componentStack,
       timestamp: newError.timestamp
@@ -201,7 +201,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             {/* Footer */}
             <div className="mt-12 text-center text-xs text-gray-400 animate-fade-in animation-delay-700">
               <p>Error ID: {this.state.errors.map(e => e.id).join(', ')}</p>
-              <p className="mt-1">UniTracker v1.0 • Made with ❤️ for students</p>
+              <p className="mt-1">UniTracker</p>
             </div>
           </div>
 

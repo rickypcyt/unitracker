@@ -14,10 +14,14 @@ declare const useTheme: () => {
   showThemeSelectionModal: boolean;
   showAccentColorModal: boolean;
   showLoginModal: boolean;
+  showTour: boolean;
   handleCloseWelcome: () => void;
   handleCloseThemeSelection: () => void;
   handleCloseAccentColor: () => void;
   handleCloseLogin: () => void;
+  handleCloseTour: () => void;
+  handleTourComplete: () => void;
+  resetTour: () => void;
   handleThemeSelection: (theme: ThemePreference) => void;
   handleAccentColorSelection: (color: string) => void;
   handleLogin: () => void;

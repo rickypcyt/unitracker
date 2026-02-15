@@ -42,16 +42,35 @@ const useTheme = () => {
   const [showThemeSelectionModal, setShowThemeSelectionModal] = useState(false);
   const [showAccentColorModal, setShowAccentColorModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   const [accentPalette, setAccentPalette] = useState(
     localStorage.getItem("accentPalette") || "#0A84FF"
   );
+
+  // Show tour for demo users after welcome modal closes
+  useEffect(() => {
+    if (!isLoggedIn && !showWelcomeModal && !localStorage.getItem("hasSeenTour")) {
+      console.log('Activating tour for demo user');
+      setTimeout(() => {
+        setShowTour(true);
+      }, 300);
+    }
+  }, [isLoggedIn, showWelcomeModal]);
 
   // Update login modal state when authentication changes
   useEffect(() => {
     if (isLoggedIn) {
       setShowLoginModal(false);
       localStorage.setItem("hasSeenLoginModal", "true");
+      
+      // Show tour for logged in users who haven't seen it
+      setTimeout(() => {
+        if (!localStorage.getItem("hasSeenTour")) {
+          console.log('Activating tour for logged in user');
+          setShowTour(true);
+        }
+      }, 500);
     }
   }, [isLoggedIn]);
 
@@ -182,11 +201,23 @@ const useTheme = () => {
   const handleCloseLogin = () => {
     setShowLoginModal(false);
     localStorage.setItem("hasSeenLoginModal", "true");
+    // Show tour after login modal closes (or immediately if user is already logged in)
+    setTimeout(() => {
+      if (!localStorage.getItem("hasSeenTour")) {
+        setShowTour(true);
+      }
+    }, 200);
   };
 
   const handleLogin = () => {
     setShowLoginModal(false);
     localStorage.setItem("hasSeenLoginModal", "true");
+    // Show tour after successful login
+    setTimeout(() => {
+      if (!localStorage.getItem("hasSeenTour")) {
+        setShowTour(true);
+      }
+    }, 200);
   };
 
   const handleAccentColorSelection = (color) => {
@@ -216,6 +247,26 @@ const useTheme = () => {
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) handleCloseWelcome();
+  };
+
+  const handleCloseTour = () => {
+    setShowTour(false);
+    localStorage.setItem("hasSeenTour", "true");
+  };
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+    localStorage.setItem("hasSeenTour", "true");
+    
+    // Open login modal after tour completes
+    setTimeout(() => {
+      setShowLoginModal(true);
+    }, 500);
+  };
+
+  const resetTour = () => {
+    localStorage.removeItem("hasSeenTour");
+    setShowTour(true);
   };
 
   // Función para cambiar la preferencia de tema
@@ -293,10 +344,14 @@ const useTheme = () => {
     showThemeSelectionModal,
     showAccentColorModal,
     showLoginModal,
+    showTour,
     handleCloseWelcome,
     handleCloseThemeSelection,
     handleCloseAccentColor,
     handleCloseLogin,
+    handleCloseTour,
+    handleTourComplete,
+    resetTour,
     handleThemeSelection,
     handleAccentColorSelection,
     handleLogin,
