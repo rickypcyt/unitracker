@@ -12,6 +12,7 @@ import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
 import LocalWorkspaceSelector from './LocalWorkspaceSelector';
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
+import { StatusSelector } from '@/components/StatusSelector';
 import { useFormState } from '@/hooks/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 import { useTasks } from '@/store/appStore';
@@ -56,6 +57,9 @@ const TaskForm = ({
     }
     return activeWorkspace;
   });
+
+  // Status state
+  const [selectedStatus, setSelectedStatus] = useState(initialTask?.status || 'not_started');
 
   const typedUser = user as any;
 
@@ -200,7 +204,10 @@ const TaskForm = ({
       }
 
       const saved = await saveTask({
-        formData: updatedFormData,
+        formData: {
+          ...updatedFormData,
+          status: selectedStatus,
+        },
         userId: typedUser.id,
         initialTask,
         activeWorkspaceId: selectedWorkspace?.id ?? null,
@@ -278,8 +285,8 @@ const TaskForm = ({
       return `${hour.toString().padStart(2, '0')}:00:00`;
     }
 
-    // Return the original timestamptz format for formData
-    return initialTask?.start_at || '10:00:00';
+    // Return null by default instead of '10:00:00'
+    return initialTask?.start_at || null;
   }
 
   function getInitialEndTimeForForm(): string | null {
@@ -295,8 +302,8 @@ const TaskForm = ({
       return `${hour.toString().padStart(2, '0')}:00:00`;
     }
 
-    // Return the original timestamptz format for formData
-    return initialTask?.end_at || '11:00:00';
+    // Return null by default instead of '11:00:00'
+    return initialTask?.end_at || null;
   }
 
   function validateDeadline(value: string): true | string {
@@ -904,12 +911,20 @@ const TaskForm = ({
           }
         }
       }}>
-        {/* Workspace Selector */}
-        <div className="w-full">
-          <LocalWorkspaceSelector
-            selectedWorkspace={selectedWorkspace}
-            onWorkspaceChange={setSelectedWorkspace}
-          />
+        {/* Workspace and Status Selectors */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <LocalWorkspaceSelector
+              selectedWorkspace={selectedWorkspace}
+              onWorkspaceChange={setSelectedWorkspace}
+            />
+          </div>
+          <div>
+            <StatusSelector
+              selectedStatus={selectedStatus}
+              onStatusChange={setSelectedStatus}
+            />
+          </div>
         </div>
 
         {/* Main Content - Single Column */}

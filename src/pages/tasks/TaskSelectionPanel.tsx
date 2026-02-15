@@ -135,13 +135,24 @@ const TaskSelectionPanel = ({
     }`;
 
     let borderColor = "";
-    if (isActive && task.difficulty) {
-      if (task.difficulty.toLowerCase() === "easy")
-        borderColor = "border-green-500";
-      else if (task.difficulty.toLowerCase() === "medium")
+    // Use status-based border color instead of difficulty
+    const status = (task as any).status?.toLowerCase();
+    switch (status) {
+      case 'in_progress':
+        borderColor = "border-yellow-500";
+        break;
+      case 'on_hold':
         borderColor = "border-blue-500";
-      else if (task.difficulty.toLowerCase() === "hard")
-        borderColor = "border-red-500";
+        break;
+      case 'active':
+        borderColor = "border-green-500";
+        break;
+      case 'not_started':
+        borderColor = "border-[var(--border-primary)]";
+        break;
+      default:
+        borderColor = "border-[var(--border-primary)]";
+        break;
     }
 
     // Compacto y con assignment en active tasks

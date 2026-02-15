@@ -1,7 +1,6 @@
-import { ChevronDown, Globe, Clock } from 'lucide-react';
-import React, { useState, useEffect, useRef } from 'react';
-
-import { COMMON_TIMEZONES, getTimezoneLabel, getPreferredTimezone, setPreferredTimezone, getUserTimezone, filterTimezones } from '@/utils/timezoneUtils';
+import { COMMON_TIMEZONES, filterTimezones, getPreferredTimezone, getTimezoneLabel, getUserTimezone, setPreferredTimezone } from '@/utils/timezoneUtils';
+import { ChevronDown, Clock, Globe } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface TimezoneSelectorProps {
   selectedTimezone?: string;
@@ -54,6 +53,19 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Get dropdown position for fixed positioning
+  const getDropdownPosition = () => {
+    if (!dropdownRef.current) return { top: 0, left: 0 };
+    
+    const rect = dropdownRef.current.getBoundingClientRect();
+    const dropdownHeight = 384; // max-h-96 = 24rem = 384px
+    
+    return {
+      top: rect.top + window.scrollY - dropdownHeight - 4, // Position above with 4px gap
+      left: rect.left + window.scrollX
+    };
+  };
+
   const handleTimezoneSelect = (timezone: string) => {
     setPreferredTimezone(timezone);
     onTimezoneChange?.(timezone);
@@ -102,83 +114,101 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-80 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg shadow-lg z-50 max-h-96 overflow-hidden">
-          {/* Search Input */}
-          <div className="p-3 border-b border-[var(--border-primary)]">
-            <input
-              type="text"
-              placeholder="Search timezone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-md text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
-              autoFocus
-            />
-          </div>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => {
+              setIsOpen(false);
+              setSearchTerm('');
+            }}
+          />
+          
+          {/* Dropdown Content */}
+          <div 
+            className="fixed z-50 w-80 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-hidden"
+            style={{
+              top: `${getDropdownPosition().top}px`,
+              left: `${getDropdownPosition().left}px`,
+            }}
+          >
+            {/* Search Input */}
+            <div className="p-3 border-b border-[var(--border-primary)]">
+              <input
+                type="text"
+                placeholder="Search timezone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-md text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                autoFocus
+              />
+            </div>
 
-          {/* System Timezone Option */}
-          <div className="border-b border-[var(--border-primary)]">
-            <button
-              onClick={() => handleTimezoneSelect(userTz)}
-              className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left ${
-                currentTz === userTz ? 'bg-[var(--accent-primary)]10' : ''
-              }`}
-            >
-              <Clock size={16} className="text-[var(--text-secondary)]" />
-              <div className="flex-1">
-                <div className="text-sm text-[var(--text-primary)] font-medium">
-                  System Timezone
-                </div>
-                <div className="text-xs text-[var(--text-secondary)]">
-                  {getTimezoneLabel(userTz)}
-                </div>
-              </div>
-              {currentTz === userTz && (
-                <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
-              )}
-            </button>
-          </div>
-
-          {/* Timezone List */}
-          <div className="overflow-y-auto max-h-64">
-            {filteredTimezones.map((timezone) => (
+            {/* System Timezone Option */}
+            <div className="border-b border-[var(--border-primary)]">
               <button
-                key={timezone.value}
-                onClick={() => handleTimezoneSelect(timezone.value)}
+                onClick={() => handleTimezoneSelect(userTz)}
                 className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left ${
-                  currentTz === timezone.value ? 'bg-[var(--accent-primary)]10' : ''
+                  currentTz === userTz ? 'bg-[var(--accent-primary)]10' : ''
                 }`}
               >
+                <Clock size={16} className="text-[var(--text-secondary)]" />
                 <div className="flex-1">
-                  <div className="text-sm text-[var(--text-primary)]">
-                    {timezone.label}
+                  <div className="text-sm text-[var(--text-primary)] font-medium">
+                    System Timezone
                   </div>
                   <div className="text-xs text-[var(--text-secondary)]">
-                    {timezone.value}
+                    {getTimezoneLabel(userTz)}
                   </div>
                 </div>
-                {currentTz === timezone.value && (
+                {currentTz === userTz && (
                   <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
                 )}
               </button>
-            ))}
+            </div>
 
-            {filteredTimezones.length === 0 && (
-              <div className="px-3 py-4 text-center text-sm text-[var(--text-secondary)]">
-                No timezones found matching "{searchTerm}"
+            {/* Timezone List */}
+            <div className="overflow-y-auto max-h-64">
+              {filteredTimezones.map((timezone) => (
+                <button
+                  key={timezone.value}
+                  onClick={() => handleTimezoneSelect(timezone.value)}
+                  className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left ${
+                    currentTz === timezone.value ? 'bg-[var(--accent-primary)]10' : ''
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="text-sm text-[var(--text-primary)]">
+                      {timezone.label}
+                    </div>
+                    <div className="text-xs text-[var(--text-secondary)]">
+                      {timezone.value}
+                    </div>
+                  </div>
+                  {currentTz === timezone.value && (
+                    <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
+                  )}
+                </button>
+              ))}
+
+              {filteredTimezones.length === 0 && (
+                <div className="px-3 py-4 text-center text-sm text-[var(--text-secondary)]">
+                  No timezones found matching "{searchTerm}"
+                </div>
+              )}
+            </div>
+
+            {/* Current Time Display */}
+            {showCurrentTime && (
+              <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]">
+                <div className="text-xs text-[var(--text-secondary)] mb-1">Current time in selected timezone:</div>
+                <div className="text-sm font-mono text-[var(--text-primary)]">
+                  {formatCurrentTime(currentTz)}
+                </div>
               </div>
             )}
           </div>
-
-          {/* Current Time Display */}
-          {showCurrentTime && (
-            <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]">
-              <div className="text-xs text-[var(--text-secondary)] mb-1">Current time in selected timezone:</div>
-              <div className="text-sm font-mono text-[var(--text-primary)]">
-                {formatCurrentTime(currentTz)}
-              </div>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

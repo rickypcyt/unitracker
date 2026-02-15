@@ -131,6 +131,8 @@ export const useTaskManager = (activeWorkspace) => {
       console.log('Converted deadline for DB:', deadlineForDB);
 
       // Actualizar el estado local inmediatamente
+      console.log('DEBUG: Calling updateTaskSuccess with:', updatedTask);
+      console.log('DEBUG: Task status specifically:', updatedTask.status);
       updateTaskSuccess(updatedTask);
 
       // Actualizar en la base de datos

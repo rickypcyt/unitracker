@@ -21,15 +21,17 @@ export const AssignmentTask: React.FC<AssignmentTaskProps> = ({
   onTaskContextMenu,
 }) => {
   return (
-    <TaskItem
-      key={task.id}
-      task={task}
-      onToggleCompletion={onToggleCompletion}
-      onDelete={onTaskDelete}
-      onEditTask={onEditTask}
-      onViewTask={onViewTask}
-      onContextMenu={(e) => onTaskContextMenu(e, task)}
-      active={!!task.activetask}
-    />
+    <div className="mb-2">
+      <TaskItem
+        key={task.id}
+        task={task}
+        onToggleCompletion={onToggleCompletion}
+        onDelete={onTaskDelete}
+        onEditTask={onEditTask}
+        onViewTask={onViewTask}
+        onContextMenu={(e) => onTaskContextMenu(e, task)}
+        active={!!task.activetask}
+      />
+    </div>
   );
 };

@@ -1,4 +1,17 @@
-import { CheckCircle, Clock, Database, Globe, List, Monitor, Moon, Palette, Sun, User, Users, X } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Database,
+  Globe,
+  List,
+  Monitor,
+  Moon,
+  Palette,
+  Sun,
+  User,
+  Users,
+  X,
+} from "lucide-react";
 import React, { useState } from "react";
 
 import { ACCENT_COLORS } from "@/utils/theme";
@@ -37,7 +50,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
-  const [showManageAssignmentsModal, setShowManageAssignmentsModal] = useState(false);
+  const [showManageAssignmentsModal, setShowManageAssignmentsModal] =
+    useState(false);
   const [showSessionsModal, setShowSessionsModal] = useState(false);
   const [showCompletedTasksModal, setShowCompletedTasksModal] = useState(false);
 
@@ -73,27 +87,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column - Timezone and Theme */}
+            {/* Left Column - Theme and Timezone */}
             <div className="space-y-4">
-              {/* Timezone Section */}
-              <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
-                <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-                  <Globe size={18} />
-                  Calendar Timezone
-                </h3>
-                <div className="space-y-3">
-                  <div className="bg-[var(--bg-primary)] p-4 rounded-lg">
-                    <p className="text-sm text-[var(--text-secondary)] mb-3">
-                      Select the timezone for displaying calendar events and deadlines.
-                    </p>
-                    <TimezoneSelector 
-                      showCurrentTime={true}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-
               {/* Theme Section */}
               <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
                 <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
@@ -117,13 +112,19 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Monitor size={16} className="text-[var(--text-primary)]" />
+                        <Monitor
+                          size={16}
+                          className="text-[var(--text-primary)]"
+                        />
                         <span className="text-sm text-[var(--text-primary)]">
                           System
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Moon size={16} className="text-[var(--text-primary)]" />
+                        <Moon
+                          size={16}
+                          className="text-[var(--text-primary)]"
+                        />
                         <span className="text-sm text-[var(--text-primary)]">
                           Dark
                         </span>
@@ -143,8 +144,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                               themePreference === "light"
                                 ? "2px"
                                 : themePreference === "auto"
-                                ? "calc(33.333% + 1px)"
-                                : "calc(66.666% + 0px)",
+                                  ? "calc(33.333% + 1px)"
+                                  : "calc(66.666% + 0px)",
                           }}
                         />
 
@@ -220,6 +221,12 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                         </button>
                       ))}
                     </div>
+                    <div className="mt-4">
+                      <TimezoneSelector
+                        showCurrentTime={true}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -257,7 +264,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
               </div>
-              
+
               {/* Data Management Section */}
               <div className="bg-[var(--bg-secondary)] p-4 rounded-xl">
                 <h3 className="text-base font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">

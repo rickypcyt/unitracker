@@ -59,12 +59,17 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
   const getStatusInfo = (status?: string) => {
     console.log('Task status:', status); // Debug para ver qué estado tiene la tarea
     switch (status?.toLowerCase()) {
+      case 'not_started':
+      case 'not-started':
+        return { label: 'Not Started', color: 'text-gray-400 bg-gray-400/10 border-gray-400' };
       case 'in_progress':
       case 'in-progress':
         return { label: 'In Progress', color: 'text-blue-500 bg-blue-500/10 border-blue-500' };
       case 'on_hold':
       case 'on-hold':
-        return { label: 'On Hold', color: 'text-yellow-500 bg-yellow-500/10 border-yellow-500' };
+        return { label: 'On Hold', color: 'text-blue-500 bg-blue-500/10 border-blue-500' };
+      case 'active':
+        return { label: 'Active', color: 'text-green-500 bg-green-500/10 border-green-500' };
       case 'completed':
         return { label: 'Completed', color: 'text-green-500 bg-green-500/10 border-green-500' };
       case 'cancelled':

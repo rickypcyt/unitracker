@@ -40,6 +40,8 @@ export const useTaskBoard = () => {
     ? demoTasks.filter(task => task.workspace_id === activeWorkspace?.id)
     : realTasks;
 
+  console.log('DEBUG: useTaskBoard tasks:', tasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+
   // Update filteredTasks to handle "All" workspace
   const filteredTasks = useMemo(() => {
     if (!activeWorkspace || activeWorkspace.id === ALL_WORKSPACE_ID) {

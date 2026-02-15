@@ -77,8 +77,8 @@ const getDeadlineColor = (dateStr: string) => {
         // This week (Monday-Sunday) - Yellow
         return 'text-yellow-500';
     } else if (date >= startOfNextWeek) {
-        // Next week or later - Blue
-        return 'text-[#00BFFF]';
+        // Next week or later - Secondary text color
+        return 'text-[var(--text-secondary)]';
     } else {
         // Between end of this week and start of next week (shouldn't happen but fallback)
         return 'text-[var(--text-secondary)]';
@@ -128,6 +128,21 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         }
     };
 
+    const getStatusBorderColor = (status?: string) => {
+        switch (status?.toLowerCase()) {
+            case 'in_progress':
+                return 'border-yellow-500';
+            case 'on_hold':
+                return 'border-blue-500';
+            case 'active':
+                return 'border-green-500';
+            case 'not_started':
+                return 'border-[var(--border-primary)]';
+            default:
+                return 'border-[var(--border-primary)]';
+        }
+    };
+
     const handleToggleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
@@ -135,7 +150,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
 
-    const handleDoubleClick = () => {
+    const handleDoubleClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent event from bubbling to parent
         // If onViewTask is provided, use it; otherwise fallback to onEditTask for backward compatibility
         if (onViewTask) {
             onViewTask(task);
@@ -172,7 +188,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         <div
             className={`relative flex p-2 rounded-lg transition-colors cursor-pointer gap-2 items-center
                 bg-[var(--bg-secondary)] 
-                ${active ? `${getDifficultyColor(task.difficulty || 'medium', 'border')} border` : 'border border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444]'}
+                ${getStatusBorderColor(task.status)} border
             `}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
@@ -221,7 +237,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                         {task.end_at && ` - ${formatTime(task.end_at)}`}
                                     </span>
                                 )}
-                                {new Date(task.deadline) < new Date(new Date().setHours(0, 0, 0, 0)) && (
+                                {!isTaskForToday(task.deadline) && (
                                     <span className="ml-1">({getTimeRemainingString(task.deadline)})</span>
                                 )}
                             </span>

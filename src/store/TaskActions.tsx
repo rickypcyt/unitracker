@@ -67,6 +67,8 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
 
       if (error) throw error;
 
+      console.log('DEBUG: Tasks fetched from DB:', data.map(t => ({ id: t.id, title: t.title, status: t.status })));
+
       useAppStore.setState((state) => ({
         tasks: { ...state.tasks, loading: false, tasks: data, error: null, isCached: true, lastFetch: Date.now() }
       }));

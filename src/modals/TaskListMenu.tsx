@@ -20,10 +20,10 @@ interface TaskListMenuProps {
 }
 
 const TASK_STATUSES = [
-  { id: 'not_started', label: 'Not Started', textColor: 'text-[var(--text-primary)]', bgColor: 'bg-[var(--text-primary)]' },
-  { id: 'in_progress', label: 'In Progress', textColor: 'text-green-500', bgColor: 'bg-green-500' },
+  { id: 'not_started', label: 'Not Started', textColor: 'text-gray-400', bgColor: 'bg-gray-400' },
   { id: 'on_hold', label: 'On Hold', textColor: 'text-blue-500', bgColor: 'bg-blue-500' },
-  { id: 'active', label: 'Active', textColor: 'text-yellow-500', bgColor: 'bg-yellow-500' },
+  { id: 'in_progress', label: 'In Progress', textColor: 'text-yellow-500', bgColor: 'bg-yellow-500' },
+  { id: 'active', label: 'Active', textColor: 'text-green-500', bgColor: 'bg-green-500' },
 ];
 
 export const TaskListMenu: React.FC<TaskListMenuProps> = ({
@@ -193,31 +193,16 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
             Edit Task
           </button>
           
-          {onSetDate && (
-            <button
-              onClick={() => {
-                const position = menuPosition || { x: contextMenu.x, y: contextMenu.y };
-                onSetDate(contextMenu.task, position);
-                onClose();
-              }}
-              className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50"
-            >
-              <Calendar size={16} />
-              Date
-            </button>
-          )}
-          
           <button
             onClick={() => {
-              const t = contextMenu.task;
-              const text = `Title: ${t.title || ''}\nDescription: ${t.description || ''}\nAssignment: ${t.assignment || ''}\nDate: ${t.deadline || t.due_date || ''}`;
-              navigator.clipboard.writeText(text);
+              const position = menuPosition || { x: contextMenu.x, y: contextMenu.y };
+              onSetDate(contextMenu.task, position);
               onClose();
             }}
             className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50"
           >
-            <Clipboard size={16} />
-            Copy Task
+            <Calendar size={16} />
+            Date
           </button>
           
           <button

@@ -701,16 +701,19 @@ export const useAppStore = create<AppState>()(
       addTaskSuccess: (task) => set((prevState) => ({
         tasks: { ...prevState.tasks, tasks: [...prevState.tasks.tasks, task] }
       })),
-      updateTaskSuccess: (task) => set((prevState) => ({
-        tasks: {
-          ...prevState.tasks,
-          tasks: prevState.tasks.tasks.map(t => 
-            t.id === task.id ? { ...t, ...task } : t
-          ),
-          isCached: false, // Invalidate cache when task is updated
-          lastFetch: 0
-        }
-      })),
+      updateTaskSuccess: (task) => {
+        console.log('DEBUG: updateTaskSuccess received:', { id: task.id, status: task.status });
+        set((prevState) => ({
+          tasks: {
+            ...prevState.tasks,
+            tasks: prevState.tasks.tasks.map(t => 
+              t.id === task.id ? { ...t, ...task } : t
+            ),
+            isCached: false, // Invalidate cache when task is updated
+            lastFetch: 0
+          }
+        }));
+      },
       deleteTaskSuccess: (id) => set((prevState) => ({
         tasks: {
           ...prevState.tasks,
