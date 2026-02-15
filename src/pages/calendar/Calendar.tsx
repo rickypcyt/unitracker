@@ -116,7 +116,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
     <div className="w-full min-h-full flex flex-col">
       <div
         className={`maincard p-0 pt-4 relative w-full transition-all duration-300 calendar-view flex flex-col ${
-          view === 'month' ? 'min-h-[600px] lg:min-h-[700px]' : 'flex-1 min-h-[500px] lg:min-h-[600px]'
+          view === 'month' ? 'min-h-[800px] lg:min-h-[900px]' : 'flex-1 min-h-[700px] lg:min-h-[800px]'
         }`}
       >
         {/* Calendar Header with navigation and view switcher */}
@@ -135,7 +135,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
         />
 
         {/* View Content */}
-        <div className={`flex-1 min-h-[400px] relative ${view === 'month' ? '' : ''}`}>
+        <div className={`flex-1 min-h-[600px] relative ${view === 'month' ? '' : ''}`}>
           {view === 'week' ? (
             <WeekView
               currentDate={currentDate}

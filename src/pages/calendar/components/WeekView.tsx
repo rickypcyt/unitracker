@@ -1,8 +1,19 @@
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { getOccurrenceForDate, isRecurringTask } from '@/utils/recurrenceUtils';
 import { useEffect, useState } from 'react';
 
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
+import { restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { useAppStore } from '@/store/appStore';
 
 interface WeekViewProps {
   currentDate: Date;
@@ -32,6 +43,18 @@ const WeekView = ({
   onTaskContextMenu,
 }: WeekViewProps) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [activeTask, setActiveTask] = useState<any>(null);
+  const [draggedTaskData, setDraggedTaskData] = useState<any>(null);
+  
+  const updateTaskSuccess = useAppStore((state) => state.updateTaskSuccess);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     const checkMobile = () => {
@@ -55,15 +78,129 @@ const WeekView = ({
     return d;
   });
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // Mathematical model for precise time positioning
+  const PIXELS_PER_MINUTE = 1; // 1px por minuto = 60px por hora
+  const MINUTES_PER_HOUR = 60;
+  
+  // CALENDAR CONFIGURATION - Adjust these values to change visible hours
+  const VISIBLE_START_HOUR = 8;  // Calendar starts at 8:00 AM
+  const VISIBLE_END_HOUR = 20;   // Calendar ends at 8:00 PM
+  const VISIBLE_START_MINUTES = VISIBLE_START_HOUR * MINUTES_PER_HOUR; // 480 minutes
+  const VISIBLE_END_MINUTES = VISIBLE_END_HOUR * MINUTES_PER_HOUR;     // 1200 minutes
+  const VISIBLE_DURATION_MINUTES = VISIBLE_END_MINUTES - VISIBLE_START_MINUTES; // 720 minutes
+  const CONTAINER_HEIGHT_PX = VISIBLE_DURATION_MINUTES * PIXELS_PER_MINUTE; // 720px
+
+  const hours = Array.from({ length: VISIBLE_END_HOUR - VISIBLE_START_HOUR }, (_, i) => VISIBLE_START_HOUR + i);
+
+  // Calculate minutes from start of day (00:00) - normalized to avoid timezone issues
+  const getMinutesFromStartOfDay = (date: Date): number => {
+    // Normalize to local timezone to avoid UTC mixing
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes());
+    return normalizedDate.getHours() * MINUTES_PER_HOUR + normalizedDate.getMinutes();
+  };
+
+  // Normalize date to start of day (00:00:00) in local timezone
+  const normalizeToStartOfDay = (date: Date): Date => {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+  };
+
+  // Calculate top position based on VISIBLE start time (not midnight!)
+  const getTopPosition = (minutesFromMidnight: number): number => {
+    // CRITICAL: Subtract visible start time to align with grid
+    const minutesFromVisibleStart = minutesFromMidnight - VISIBLE_START_MINUTES;
+    return minutesFromVisibleStart * PIXELS_PER_MINUTE;
+  };
+
+  // Calculate height based on duration in minutes
+  const getHeight = (durationInMinutes: number): number => {
+    return durationInMinutes * PIXELS_PER_MINUTE;
+  };
 
   // Calculate current time position for today column
   const now = new Date();
   const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
+  const currentMinutesFromStart = getMinutesFromStartOfDay(now);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const taskId = active.id as string;
+    
+    // Find the task in any day
+    for (const day of weekDays) {
+      const tasksForDay = getTasksWithDeadline(day);
+      const task = tasksForDay.find(t => t.id.toString() === taskId);
+      if (task) {
+        setActiveTask(task);
+        setDraggedTaskData(task);
+        break;
+      }
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { over } = event;
+    
+    if (!over || !draggedTaskData) {
+      setActiveTask(null);
+      setDraggedTaskData(null);
+      return;
+    }
+
+    // Parse the drop zone data (format: "day-hour")
+    const dropZoneId = over.id as string;
+    const [dayIndex, hour] = dropZoneId.split('-').map(Number);
+    
+    if (typeof dayIndex === 'number' && typeof hour === 'number' && dayIndex >= 0 && dayIndex < weekDays.length) {
+      const targetDay = weekDays[dayIndex];
+      
+      if (targetDay) {
+        // Calculate new start and end times
+        const newStartTime = new Date(targetDay);
+        newStartTime.setHours(hour, 0, 0, 0);
+        
+        // Calculate duration from original task
+        let duration = 1; // Default 1 hour
+        if (draggedTaskData.start_at && draggedTaskData.end_at) {
+          const startT = draggedTaskData.start_at.split(':').map(Number);
+          const endT = draggedTaskData.end_at.split(':').map(Number);
+          if (startT.length >= 2 && endT.length >= 2) {
+            duration = endT[0] - startT[0] + (endT[1] - startT[1]) / 60;
+          }
+        }
+        
+        const newEndTime = new Date(newStartTime);
+        newEndTime.setHours(newStartTime.getHours() + duration);
+        
+        // Format times for the task
+        const formatTime = (date: Date) => {
+          return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        };
+        
+        // Update the task with new times and deadline
+        const updatedTask = {
+          ...draggedTaskData,
+          start_at: formatTime(newStartTime),
+          end_at: formatTime(newEndTime),
+          deadline: targetDay.toISOString().split('T')[0],
+        };
+        
+        // Update task in store
+        updateTaskSuccess(updatedTask);
+      }
+    }
+    
+    setActiveTask(null);
+    setDraggedTaskData(null);
+  };
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative min-h-0 h-full">
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      modifiers={[restrictToWindowEdges]}
+    >
+      <div className="flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative overflow-hidden h-full">
       {/* Header with days - Sticky header */}
       <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm pb-1 border-b border-[var(--border-primary)]/30 flex-shrink-0">
         <div className="grid grid-cols-8 gap-1">
@@ -147,15 +284,21 @@ const WeekView = ({
               });
             });
             
-            return allSpanningTasks.map(({task, dayIndex, startHour, duration, occurrenceStart, occurrenceEnd}) => {
-              const topPosition = startHour * 60 + 20; // 60px per hour + 20px offset (increased from 8px)
-              const blockHeight = duration * 60 - 20; // Subtract 20px for top and bottom margins
+            return allSpanningTasks.map(({task, dayIndex, occurrenceStart, occurrenceEnd}) => {
+              // Calculate precise positioning using mathematical model
+              const startMinutesFromStart = getMinutesFromStartOfDay(occurrenceStart);
+              const durationInMinutes = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (1000 * 60);
+              
+              const topPosition = getTopPosition(startMinutesFromStart);
+              const blockHeight = getHeight(durationInMinutes);
               
               return (
                 <div
                   key={`spanning-task-${task.id}-${dayIndex}`}
                   data-calendar-task
-                  className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10"
+                  draggable
+                  id={task.id.toString()}
+                  className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                   style={{
                     left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
                     top: `${topPosition}px`,
@@ -201,7 +344,7 @@ const WeekView = ({
                 {weekDays.map((day, i) => {
                   const isCurrentDay = isSameDay(day, new Date());
                   
-                  // Check if there's a task that starts at this hour and is only 1 hour long
+                  // Check if there's a task that starts at this hour (regardless of minutes)
                   const singleHourTask = (() => {
                     const tasksForDay = getTasksWithDeadline(day);
                     for (const task of tasksForDay) {
@@ -220,23 +363,29 @@ const WeekView = ({
                         const endT = task.end_at.split(':').map(Number);
                         
                         if (startT.length >= 2 && endT.length >= 2) {
-                          occurrenceStart = new Date(day);
+                          // Normalize to start of day to avoid timezone issues
+                          const dayStart = normalizeToStartOfDay(day);
+                          occurrenceStart = new Date(dayStart);
                           occurrenceStart.setHours(startT[0], startT[1], 0, 0);
-                          occurrenceEnd = new Date(day);
+                          occurrenceEnd = new Date(dayStart);
                           occurrenceEnd.setHours(endT[0], endT[1], 0, 0);
                         }
                       }
                       
                       if (occurrenceStart && occurrenceEnd) {
                         const startHour = occurrenceStart.getHours();
-                        const duration = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (60 * 60 * 1000);
+                        const startMinute = occurrenceStart.getMinutes();
+                        // Calculate duration in minutes (not hours) to avoid rounding
+                        const durationInMinutes = Math.round((occurrenceEnd.getTime() - occurrenceStart.getTime()) / (1000 * 60));
                         
-                        // Only show single hour tasks here
-                        if (startHour === hour && duration <= 1) {
+                        // Show task if it starts within this hour block (8:00-8:59 shows in 8:00 block)
+                        if (startHour === hour && durationInMinutes <= 60) {
                           return {
                             task,
                             occurrenceStart,
-                            occurrenceEnd
+                            occurrenceEnd,
+                            startMinute,
+                            durationInMinutes // Use minutes instead of hours
                           };
                         }
                       }
@@ -247,6 +396,7 @@ const WeekView = ({
                   return (
                     <div
                       key={i}
+                      id={`${i}-${hour}`}
                       className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
                         isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
                       }`}
@@ -259,7 +409,7 @@ const WeekView = ({
                         <div
                           className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center"
                           style={{
-                            top: `${(currentMinute / 60) * 60}px`,
+                            top: `${getTopPosition(currentMinutesFromStart)}px`,
                             width: 'calc(100% + 8px)',
                             left: '-4px'
                           }}
@@ -270,16 +420,28 @@ const WeekView = ({
                         </div>
                       )}
                       
-                      {/* Render single hour task if this is its hour */}
+                      {/* Half-hour divider line */}
+                      <div 
+                        className="absolute left-0 right-0 border-t border-[var(--border-primary)]/20 pointer-events-none"
+                        style={{
+                          top: '30px', // Middle of the 60px hour cell
+                          zIndex: 1
+                        }}
+                      />
+                      
+                      {/* Render task if this is its hour block */}
                       {singleHourTask && (
                         <div
                           data-calendar-task
-                          className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10"
+                          draggable
+                          id={singleHourTask.task.id.toString()}
+                          className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                           style={{
                             left: '2px',
-                            top: '2px',
                             right: '2px',
-                            bottom: '2px'
+                            // Use consistent mathematical model for positioning
+                            top: `${getTopPosition(getMinutesFromStartOfDay(singleHourTask.occurrenceStart))}px`,
+                            height: `${getHeight(singleHourTask.durationInMinutes)}px`
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -316,7 +478,21 @@ const WeekView = ({
           })}
         </div>
       </div>
-    </div>
+      </div>
+      
+      <DragOverlay>
+        {activeTask ? (
+          <div className="text-white text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
+            <div className="font-medium truncate">{activeTask.title || 'Sin título'}</div>
+            {activeTask.assignment && (
+              <div className="text-xs text-white truncate">
+                {activeTask.assignment}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 };
 

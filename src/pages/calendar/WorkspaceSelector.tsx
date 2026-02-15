@@ -25,6 +25,12 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({ className = '' })
 
   const handleSelectWorkspace = (workspace: any) => {
     setCurrentWorkspace(workspace);
+    // Save to localStorage to match Navbar behavior
+    if (workspace.id === 'all') {
+      localStorage.removeItem('activeWorkspaceId');
+    } else {
+      localStorage.setItem('activeWorkspaceId', workspace.id);
+    }
     setIsOpen(false);
   };
 

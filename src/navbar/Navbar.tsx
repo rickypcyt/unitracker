@@ -57,8 +57,8 @@ const Navbar = () => {
         if (savedId) {
           const found = data.find((ws: any) => ws.id === savedId);
           if (found) setCurrentWorkspace(found);
-        } else if (data.length > 0) {
-          // If no saved workspace but workspaces exist, set the first one as active
+        } else if (data.length > 0 && !activeWorkspace) {
+          // Only set first workspace as active if no workspace is currently selected
           setCurrentWorkspace(data[0]);
           localStorage.setItem('activeWorkspaceId', data[0].id);
         }
@@ -67,7 +67,7 @@ const Navbar = () => {
       }
     };
     fetchWorkspaces();
-  }, [setWorkspaces, setCurrentWorkspace]);
+  }, [setWorkspaces, setCurrentWorkspace, activeWorkspace]);
 
   // Fetch tasks for all workspaces to get accurate counts
   useEffect(() => {

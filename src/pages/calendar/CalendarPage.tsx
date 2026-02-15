@@ -3,6 +3,7 @@ import { useAppStore, useWorkspace } from '@/store/appStore';
 
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
 import AllTasks from '@/pages/calendar/AllTasks';
+import { AssignmentSortMenu } from '@/components/AssignmentSortMenu';
 import Calendar, { } from '@/pages/calendar/Calendar';
 import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
 import { Helmet } from 'react-helmet-async';
@@ -61,6 +62,7 @@ const CalendarPage = memo(() => {
     ? savedFilter
     : 'all';
 });
+  const [taskSortBy, setTaskSortBy] = useState<'name-asc' | 'name-desc' | 'count-asc' | 'count-desc'>('count-desc');
 
   // View and calendar type with localStorage persistence
   const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
@@ -174,6 +176,19 @@ const CalendarPage = memo(() => {
         <div className="flex flex-col lg:flex-row gap-4 flex-1 mb-6">
           {/* Left Column - All Tasks and Filter (Desktop) */}
           <div className="hidden lg:flex flex-col gap-4 w-80 flex-shrink-0">
+            {/* Sort By - Above everything */}
+            <div className="w-full">
+              <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                  All Tasks
+                </h3>
+                <AssignmentSortMenu 
+                  currentSort={taskSortBy} 
+                  onSortChange={setTaskSortBy} 
+                />
+              </div>
+            </div>
+            
             {/* Workspace Selector */}
             <div className="w-full">
               <WorkspaceSelector />
@@ -195,11 +210,13 @@ const CalendarPage = memo(() => {
             </div>
             
             {/* All Tasks */}
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <AllTasks 
                 filteredTasks={filteredTasks} 
                 title={getFilterLabel(selectedFilter)}
                 showCompleted={false}
+                sortBy={taskSortBy}
+                hideSortMenu={true}
               />
             </div>
           </div>
@@ -218,6 +235,19 @@ const CalendarPage = memo(() => {
 
         {/* Mobile Filter and All Tasks - Below Calendar */}
         <div className="lg:hidden w-full space-y-4">
+          {/* Sort By - Above everything */}
+          <div className="w-full">
+            <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                All Tasks
+              </h3>
+              <AssignmentSortMenu 
+                currentSort={taskSortBy} 
+                onSortChange={setTaskSortBy} 
+              />
+            </div>
+          </div>
+          
           {/* Workspace Selector - Mobile */}
           <div className="w-full">
             <WorkspaceSelector />
@@ -239,11 +269,13 @@ const CalendarPage = memo(() => {
           </div>
 
           {/* Mobile All Tasks */}
-          <div className="w-full h-96 overflow-hidden">
+          <div className="w-full h-96 overflow-auto">
             <AllTasks 
               filteredTasks={filteredTasks} 
               title={getFilterLabel(selectedFilter)}
               showCompleted={false}
+              sortBy={taskSortBy}
+              hideSortMenu={true}
             />
           </div>
         </div>

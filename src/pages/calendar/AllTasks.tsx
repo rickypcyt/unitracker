@@ -20,15 +20,16 @@ interface AllTasksProps {
   filteredTasks?: Task[];
   title?: string;
   showCompleted?: boolean; // Add prop to control whether to show completed tasks
+  sortBy?: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc';
+  hideSortMenu?: boolean;
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, sortBy = 'count-desc', hideSortMenu = false }) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   
-  // Load collapsed assignments from localStorage
   const [collapsedAssignments, setCollapsedAssignments] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(`collapsedAssignments_${title || 'all'}`);
@@ -39,14 +40,17 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
   });
 
   // Load sort preference from localStorage
-  const [sortBy, setSortBy] = useState<SortOption>(() => {
+  const [localSortBy, setLocalSortBy] = useState<'name-asc' | 'name-desc' | 'count-asc' | 'count-desc'>(() => {
     try {
-      const saved = localStorage.getItem(`assignmentSort_${title || 'all'}`);
-      return (saved as SortOption) || 'count-desc';
+      const saved = localStorage.getItem(`taskSort_${title || 'all'}`);
+      return (saved as any) || sortBy;
     } catch {
-      return 'count-desc';
+      return sortBy;
     }
   });
+
+  // Use local sort if hideSortMenu is true, otherwise use prop
+  const effectiveSortBy = hideSortMenu ? localSortBy : sortBy;
 
   const tasks = filteredTasks || [];
 
@@ -89,7 +93,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
 
   // Sort assignments based on selected option
   const sortedAssignments = Object.keys(tasksByAssignment).sort((a, b) => {
-    switch (sortBy) {
+    switch (effectiveSortBy) {
       case 'name-asc':
         return a.localeCompare(b);
       case 'name-desc':
@@ -156,15 +160,17 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
     <div className="w-full h-full">
       <div className="w-full h-full flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-[var(--border-primary)]">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-            {title || "All Tasks"}
-          </h3>
-          <AssignmentSortMenu 
-            currentSort={sortBy} 
-            onSortChange={setSortBy} 
-          />
-        </div>
+        {!hideSortMenu && (
+          <div className="flex items-center justify-between p-3 border-[var(--border-primary)]">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+              {title || "All Tasks"}
+            </h3>
+            <AssignmentSortMenu 
+              currentSort={effectiveSortBy} 
+              onSortChange={hideSortMenu ? setLocalSortBy : () => {}} 
+            />
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-0 py-2 space-y-2">
@@ -214,7 +220,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title }) => {
                 
                 {/* Tasks Container - Hidden when collapsed */}
                 {!isAssignmentCollapsed && (
-                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1">
+                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1 max-h-48 overflow-y-auto">
                     {tasksByAssignment[assignment]?.map((task) => (
                       <TaskItem
                         key={task.id}
