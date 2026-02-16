@@ -18,6 +18,34 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.3.1",
+    date: "February 16, 2026",
+    time: "7:05 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "ICS export functionality for Google Calendar and Apple Calendar",
+        "Support for weekly recurring tasks with RRULE generation",
+        "All-day event export for tasks without specific times",
+        "Difficulty-based reminder system (hard=1h, medium=1d, easy=1w)",
+        "Enhanced drag and drop with 30-minute precision in WeekView",
+        "Visual drop zone highlighting during task dragging",
+        "Comprehensive debugging for drag and drop operations"
+      ],
+      improved: [
+        "Fixed ICS timezone format to use proper UTC Z notation",
+        "Enhanced task time handling with start_at/end_at/deadline priority",
+        "Better calendar event compatibility across platforms",
+        "Improved visual feedback for calendar interactions"
+      ],
+      fixed: [
+        "Fixed double Z timezone issue in ICS export",
+        "Corrected all-day event DTEND to follow ICS standard (next day)",
+        "Resolved drag and drop detection issues in WeekView"
+      ]
+    }
+  },
+  {
     version: "1.3.0",
     date: "February 13, 2026",
     time: "6:40 PM",

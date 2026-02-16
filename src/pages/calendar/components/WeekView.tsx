@@ -84,10 +84,10 @@ const WeekView = ({
   const PIXELS_PER_MINUTE = 1; // 1px por minuto = 60px por hora
   const MINUTES_PER_HOUR = 60;
   
-  // CALENDAR CONFIGURATION - Adjust these values to change visible hours
-  const VISIBLE_START_HOUR = 8;  // Calendar starts at 8:00 AM
-  const VISIBLE_END_HOUR = 20;   // Calendar ends at 8:00 PM
-  const VISIBLE_START_MINUTES = VISIBLE_START_HOUR * MINUTES_PER_HOUR; // 480 minutes
+  // CALENDAR CONFIGURATION - Show all 24 hours
+  const VISIBLE_START_HOUR = 0;  // Calendar starts at 12:00 AM
+  const VISIBLE_END_HOUR = 24;   // Calendar ends at 11:59 PM
+  const VISIBLE_START_MINUTES = VISIBLE_START_HOUR * MINUTES_PER_HOUR; // 0 minutes
 
   const hours = Array.from({ length: VISIBLE_END_HOUR - VISIBLE_START_HOUR }, (_, i) => VISIBLE_START_HOUR + i);
 
@@ -389,12 +389,12 @@ const WeekView = ({
                   data-calendar-task
                   draggable
                   id={task.id.toString()}
-                  className="text-black text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
+                  className="text-[var(--text-primary)] text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                   style={{
                     left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
-                    top: `${topPosition+2}px`,
+                    top: `${topPosition+9}px`,
                     width: `11.5%`,
-                    height: `${blockHeight-2}px`
+                    height: `${blockHeight}px`
                   }}
                   onClick={(e) => {
                     console.log('🖱️ Task clicked:', task.id);
@@ -418,7 +418,7 @@ const WeekView = ({
                   title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                 >
                   {!isMobile && task.assignment && (
-                    <div className="text-xs text-black truncate">
+                    <div className="text-xs text-[var(--text-primary)] truncate">
                       {task.assignment}
                     </div>
                   )}
@@ -555,7 +555,7 @@ const WeekView = ({
                           data-calendar-task
                           draggable
                           id={singleHourTask.task.id.toString()}
-                          className="text-black text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
+                          className="text-[var(--text-primary)] text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                           style={{
                             left: '2px',
                             right: '2px',
@@ -585,7 +585,7 @@ const WeekView = ({
                           title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
                           {!isMobile && singleHourTask.task.assignment && (
-                            <div className="text-xs text-black truncate">
+                            <div className="text-xs text-[var(--text-primary)] truncate">
                               {singleHourTask.task.assignment}
                             </div>
                           )}
@@ -609,10 +609,10 @@ const WeekView = ({
       
       <DragOverlay>
         {activeTask ? (
-          <div className="text-black text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
+          <div className="text-[var(--text-primary)] text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
             <div className="font-medium line-clamp-2">{activeTask.title || 'Sin título'}</div>
             {activeTask.assignment && (
-              <div className="text-xs text-black truncate">
+              <div className="text-xs text-[var(--text-primary)] truncate">
                 {activeTask.assignment}
               </div>
             )}
