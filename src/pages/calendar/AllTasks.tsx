@@ -8,8 +8,6 @@ import { TaskItem } from "@/pages/tasks/TaskItem";
 import { TaskListMenu } from "@/modals/TaskListMenu";
 import { useTaskManager } from "@/hooks/useTaskManager";
 
-type SortOption = 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc';
-
 interface ContextMenuState {
   x: number;
   y: number;

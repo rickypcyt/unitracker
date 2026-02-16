@@ -3,7 +3,7 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, CheckCircle2, ChevronDown } from 'lucide-react';
 import { FormActions, FormButton } from '@/modals/FormElements';
-import { decrementTime, incrementTime, parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
+import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useAuth, useWorkspace } from '@/store/appStore';
 import { useEffect, useRef, useState } from 'react';
 

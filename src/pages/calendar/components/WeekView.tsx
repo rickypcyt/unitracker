@@ -86,9 +86,6 @@ const WeekView = ({
   const VISIBLE_START_HOUR = 8;  // Calendar starts at 8:00 AM
   const VISIBLE_END_HOUR = 20;   // Calendar ends at 8:00 PM
   const VISIBLE_START_MINUTES = VISIBLE_START_HOUR * MINUTES_PER_HOUR; // 480 minutes
-  const VISIBLE_END_MINUTES = VISIBLE_END_HOUR * MINUTES_PER_HOUR;     // 1200 minutes
-  const VISIBLE_DURATION_MINUTES = VISIBLE_END_MINUTES - VISIBLE_START_MINUTES; // 720 minutes
-  const CONTAINER_HEIGHT_PX = VISIBLE_DURATION_MINUTES * PIXELS_PER_MINUTE; // 720px
 
   const hours = Array.from({ length: VISIBLE_END_HOUR - VISIBLE_START_HOUR }, (_, i) => VISIBLE_START_HOUR + i);
 

@@ -125,7 +125,8 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
   );
 
   const getTasksWithDeadline = useCallback(
-    (date: Date) => {
+    (date?: Date) => {
+      if (!date) return [];
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
 

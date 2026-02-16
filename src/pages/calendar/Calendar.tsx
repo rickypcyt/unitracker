@@ -139,9 +139,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
           {view === 'week' ? (
             <WeekView
               currentDate={currentDate}
-              selectedDate={selectedDate}
               isLoggedIn={isLoggedIn}
-              getTasksForDayAndHour={getTasksForDayAndHour}
               getTasksWithDeadline={getTasksWithDeadline}
               setSelectedDate={setSelectedDate}
               setFocusedDate={setFocusedDate}
