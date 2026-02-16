@@ -35,20 +35,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setIsLoggedIn(!!session);
       if (session?.user) ensureProfile(session.user);
       
-      if (session) {
-        // Dismiss any existing toasts first
-        toast.dismiss();
-        // Show new toast
-        toast.success('🔑 You have successfully logged in!', {
-          containerId: 'main-toast-container',
-          position: 'top-center',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-      }
+
     });
 
     return () => subscription.unsubscribe();
@@ -80,10 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Clear all caches and local storage
       clearAllCaches();
       
-      toast.success('Successfully logged out', {
-        containerId: 'main-toast-container',
-        position: 'top-center'
-      });
+
     } catch (error) {
       console.error('Error logging out:', error instanceof Error ? error.message : 'Unknown error');
       toast.error('Error logging out', {

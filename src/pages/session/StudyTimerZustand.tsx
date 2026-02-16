@@ -166,7 +166,6 @@ const StudyTimerZustand = () => {
       studyControls.start();
       updateModal('start', false);
       
-      toast.success('Study session started!');
     } catch (error) {
       console.error('Error starting session:', error);
       toast.error('Failed to start session');
@@ -205,7 +204,6 @@ const StudyTimerZustand = () => {
       emitSyncEvent(SYNC_EVENTS.RESET_COUNTDOWN, emitTs);
 
       updateModal('finish', false);
-      toast.success('Session completed successfully!');
     } catch (error) {
       console.error('Error finishing session:', error);
       toast.error('An error occurred while finishing the session.');

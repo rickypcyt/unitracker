@@ -1345,7 +1345,6 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       });
 
       await Promise.all(updates);
-      toast.success("All unfinished sessions finished");
     } catch (error) {
       console.error("Error finishing all sessions:", error);
       toast.error("Error finishing sessions");

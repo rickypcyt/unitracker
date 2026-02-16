@@ -80,7 +80,6 @@ const StudySessions: React.FC = () => {
         if (sessionToDelete) {
             try {
                 await deleteLap(sessionToDelete);
-                toast.success("Session deleted successfully");
             } catch (error) {
                 toast.error("Failed to delete session");
                 console.error("Error deleting session:", error);

@@ -244,13 +244,7 @@ const showNotification = (title: string, options: NotificationOptions) => {
   }
 };
 
-const showToast = (message: string, emoji = '') => {
-  toast.success(`${message} ${emoji}`.trim(), {
-    duration: 3000,
-    position: 'top-right',
-    style: { backgroundColor: '#000', color: '#fff', border: '2px solid var(--border-primary)' },
-  });
-};
+
 
 // ============================================================================
 // CUSTOM HOOKS
@@ -888,7 +882,6 @@ const Pomodoro: React.FC = () => {
     });
     
     setIsSettingsModalOpen(false);
-    toast.success('Custom mode saved and activated!');
   }, [modes, updatePomodoroMode]);
 
   const handleTimeAdjustment = useCallback(async (adjustment: number) => {

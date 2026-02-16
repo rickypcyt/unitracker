@@ -188,10 +188,7 @@ const Countdown: React.FC<CountdownProps> = ({ isSynced = false, isRunning = fal
     if (alarmEnabled) {
       try { new Audio('/sounds/countdownend.mp3').play(); } catch {}
     }
-    toast.success('Countdown finished! Session complete.', {
-      position: 'top-center',
-      style: { backgroundColor: '#000', color: '#fff', border: '2px solid var(--border-primary)' }
-    });
+
     // Request notification permission if not already determined
     if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'granted') {

@@ -115,7 +115,6 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({ isOpen, onClo
         const refreshResult = await forceLapRefresh();
         console.log('[DEBUG] Resultado de forceLapRefresh:', refreshResult);
         
-        toast.success('Session deleted successfully');
       } catch (error) {
         toast.error('Failed to delete session');
         console.error('Error deleting session:', error);

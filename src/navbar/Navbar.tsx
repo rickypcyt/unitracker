@@ -278,7 +278,6 @@ const Navbar = () => {
       await fetchRequests();
       await fetchFriends();
       console.warn('[ACCEPT] Solicitudes y amigos refrescados');
-      toast.success('Friend request accepted!');
     } catch (error) {
       toast.error('Unexpected error: ' + (error as any).message);
       console.error('[ACCEPT] Error inesperado:', error);
@@ -300,7 +299,6 @@ const Navbar = () => {
       // 2. Refresca solicitudes
       await fetchRequests();
       console.warn('[REJECT] Solicitudes refrescadas');
-      toast.success('Friend request rejected!');
     } catch (error) {
       toast.error('Unexpected error: ' + (error as any).message);
       console.error('[REJECT] Error inesperado:', error);

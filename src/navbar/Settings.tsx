@@ -48,15 +48,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     try {
       if (typeof logout === 'function') {
         await logout();
-        toast.success('You have been logged out.', {
-          containerId: 'main-toast-container',
-          position: 'top-center',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+
       }
     } catch (error) {
       console.error('Logout failed:', error);

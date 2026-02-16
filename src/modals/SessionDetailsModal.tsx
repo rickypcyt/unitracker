@@ -49,7 +49,6 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
             };
             await updateLap(editedSession.id, updateData);
             setIsEditing(false);
-            toast.success("Session updated successfully");
         } catch (error) {
             console.error("Error updating session:", error);
             toast.error("Failed to update session");
@@ -59,7 +58,6 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
     const handleDelete = async () => {
         try {
             await deleteLap(session.id);
-            toast.success("Session deleted successfully");
             onClose();
         } catch (error) {
             console.error("Error deleting session:", error);

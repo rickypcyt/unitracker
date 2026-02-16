@@ -307,7 +307,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
         onSessionDetailsUpdated();
       }
 
-      toast.success('Session finished successfully!');
       console.log('[FinishSessionModal] ✅ Finish flow completed, closing modal');
       onFinish(selectedTasks);
       onClose();
