@@ -1,6 +1,7 @@
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -45,7 +46,7 @@ const WeekView = ({
   const [isMobile, setIsMobile] = useState(false);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [draggedTaskData, setDraggedTaskData] = useState<any>(null);
-  const [hoveredDropZone, setHoveredDropZone] = useState<string | null>(null);
+  const [hoveredSlot, setHoveredSlot] = useState<{ key: string; minute: number } | null>(null);
   
   const updateTaskSuccess = useAppStore((state) => state.updateTaskSuccess);
   
@@ -119,6 +120,44 @@ const WeekView = ({
   const currentHour = now.getHours();
   const currentMinutesFromStart = getMinutesFromStartOfDay(now);
 
+  const resolveDropSlot = (event: DragEndEvent | DragOverEvent) => {
+    const { over, active, delta } = event as DragEndEvent;
+
+    if (!over) return null;
+
+    const dropZoneId = over.id as string;
+    const [dayIndexStr, hourStr] = dropZoneId.split('-');
+    const dayIndex = Number(dayIndexStr);
+    const hour = Number(hourStr);
+
+    if (Number.isNaN(dayIndex) || Number.isNaN(hour)) {
+      return null;
+    }
+
+    let minute = 0;
+    const overRect = over?.rect;
+    const activeRect = active?.rect?.current;
+    const initialRect = activeRect?.initial ?? null;
+
+    if (overRect && activeRect && initialRect) {
+      const translated = activeRect.translated ?? {
+        top: initialRect.top + (delta?.y ?? 0),
+        bottom: initialRect.bottom + (delta?.y ?? 0),
+        height: initialRect.height,
+      };
+
+      const activeHeight = translated.height ?? initialRect.height ?? overRect.height;
+      const activeCenter = translated.top + (activeHeight ?? 0) / 2;
+      const relativeY = activeCenter - overRect.top;
+
+      if (relativeY >= overRect.height / 2) {
+        minute = 30;
+      }
+    }
+
+    return { dayIndex, hour, minute, key: dropZoneId };
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     console.log('🔥 DndContext DRAG START triggered:', event);
     const { active } = event;
@@ -164,20 +203,26 @@ const WeekView = ({
     }
 
     // Parse the drop zone data (format: "day-hour")
-    const dropZoneId = over.id as string;
-    console.log('📍 Drop Zone ID:', dropZoneId);
-    
-    const [dayIndex, hour] = dropZoneId.split('-').map(Number);
-    console.log('📅 Parsed - Day Index:', dayIndex, 'Hour:', hour);
-    
-    if (typeof dayIndex === 'number' && typeof hour === 'number' && dayIndex >= 0 && dayIndex < weekDays.length) {
+    const slot = resolveDropSlot(event);
+
+    if (!slot) {
+      console.log('❌ Could not resolve drop slot');
+      setHoveredSlot(null);
+      return;
+    }
+
+    console.log('� Drop Slot:', slot);
+
+    const { dayIndex, hour, minute } = slot;
+
+    if (dayIndex >= 0 && dayIndex < weekDays.length) {
       const targetDay = weekDays[dayIndex];
       console.log('🎯 Target Day:', targetDay);
       
       if (targetDay) {
         // Calculate new start and end times
         const newStartTime = new Date(targetDay);
-        newStartTime.setHours(hour, 0, 0, 0);
+        newStartTime.setHours(hour, minute, 0, 0);
         console.log('⏰ New Start Time:', newStartTime);
         
         // Calculate duration from original task
@@ -222,18 +267,19 @@ const WeekView = ({
         // Clear drag state
         setActiveTask(null);
         setDraggedTaskData(null);
-        setHoveredDropZone(null);
+        setHoveredSlot(null);
       }
     } else {
       console.log('❌ Invalid drop zone - Day Index:', dayIndex, 'Hour:', hour);
     }
   };
 
-  const handleDragOver = (event: any) => {
-    if (event?.over?.id) {
-      setHoveredDropZone(event.over.id as string);
+  const handleDragOver = (event: DragOverEvent) => {
+    const slot = resolveDropSlot(event);
+    if (slot) {
+      setHoveredSlot(slot);
     } else {
-      setHoveredDropZone(null);
+      setHoveredSlot(null);
     }
   };
 
@@ -452,11 +498,11 @@ const WeekView = ({
                       key={i}
                       id={dropZoneKey}
                       className={`border-l border-[var(--border-primary)]/20 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
-                        hoveredDropZone === dropZoneKey
-                          ? 'bg-[var(--accent-primary)]/15 border-[var(--accent-primary)]/50'
+                        hoveredSlot?.key === dropZoneKey
+                          ? 'border-[var(--accent-primary)]/40'
                           : 'hover:bg-[var(--border-primary)]/30'
                       } ${
-                        isCurrentDay && hoveredDropZone !== dropZoneKey ? 'bg-[var(--accent-primary)]/5' : ''
+                        isCurrentDay && hoveredSlot?.key !== dropZoneKey ? 'bg-[var(--accent-primary)]/5' : ''
                       }`}
                       onDoubleClick={(e) => {
                         if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
@@ -466,6 +512,19 @@ const WeekView = ({
                         console.log(`🎯 Drop Zone Hover - ID: ${dropZoneKey}, Day: ${day.toLocaleDateString()}, Hour: ${hour}`);
                       }}
                     >
+                      {hoveredSlot?.key === dropZoneKey && (
+                        <div
+                          className="absolute left-0 right-0 pointer-events-none bg-[var(--accent-primary)]/15"
+                          style={{
+                            top: hoveredSlot.minute === 0 ? 0 : '50%',
+                            height: '50%',
+                            borderTop: hoveredSlot.minute === 0 ? '1px solid var(--accent-primary)' : 'none',
+                            borderBottom: hoveredSlot.minute === 30 ? '1px solid var(--accent-primary)' : 'none',
+                            borderColor: 'var(--accent-primary)',
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
                       {isCurrentDay && hour === currentHour && (
                         <div
                           className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center"
