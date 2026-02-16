@@ -350,18 +350,24 @@ const StudySessions: React.FC = () => {
                         // Sort and group months by year
                         Object.entries(groupedLaps)
                             .sort(([aMonthYear], [bMonthYear]) => {
-                                const [aMonth, aYear] = aMonthYear.split(" ");
-                                const [bMonth, bYear] = bMonthYear.split(" ");
+                                const aParts = aMonthYear.split(" ");
+                                const bParts = bMonthYear.split(" ");
+                                const aMonth = aParts[0] || '';
+                                const aYear = aParts[1] || '';
+                                const bMonth = bParts[0] || '';
+                                const bYear = bParts[1] || '';
                                 const aDate = new Date(`${aMonth} 1, ${aYear}`);
                                 const bDate = new Date(`${bMonth} 1, ${bYear}`);
                                 return bDate.getTime() - aDate.getTime();
                             })
                             .forEach(([monthYear, lapsOfMonth]) => {
-                                const [month, year] = monthYear.split(" ");
+                                const parts = monthYear.split(" ");
+                                const month = parts[0] || '';
+                                const year = parts[1] || '';
                                 if (!monthsByYear[year]) {
                                     monthsByYear[year] = [];
                                 }
-                                monthsByYear[year].push({ month: month || '', monthYear: monthYear || '', lapsOfMonth });
+                                monthsByYear[year].push({ month, monthYear, lapsOfMonth });
                             });
 
                         const monthOrder = [

@@ -701,11 +701,13 @@ const Pomodoro: React.FC = () => {
 
     console.log('[Pomodoro] 📱 Showing notification:', { notifTitle, notifBody });
 
-    showToast(
+    toast(
       isWork
         ? (willTakeLongBreak ? 'Work session complete! Time for a long break.' : 'Work session complete! Time for a break.')
         : "Break is over! Let's get back to work!",
-      isWork ? '🎉' : '💪'
+      {
+        icon: isWork ? '🎉' : '💪'
+      }
     );
 
     showNotification(notifTitle, {

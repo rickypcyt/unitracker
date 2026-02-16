@@ -2,7 +2,6 @@ import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from '
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/SectionTitle';
-import toast from 'react-hot-toast';
 import { useAppStore } from '@/store/appStore';
 import useEventListener from '@/hooks/useEventListener';
 

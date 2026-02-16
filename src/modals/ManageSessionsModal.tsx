@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Calendar, CheckCircle2, Clock, Info, Trash2, X, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, Clock, Info, Trash2, X, Zap } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { deleteLap, forceLapRefresh } from '@/store/LapActions';
 
