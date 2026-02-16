@@ -131,7 +131,6 @@ const AITaskForm = ({ onClose, onSwitchToManual }: AITaskFormProps) => {
   };
 
   async function callAIAPI(controller: AbortController): Promise<{ success: boolean; data?: any; error?: string }> {
-    const apiKey = import.meta.env['VITE_OPENROUTER_API_KEY'];
     const now = new Date();
     const currentDate = now.toISOString().slice(0, 10);
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -179,15 +178,11 @@ const AITaskForm = ({ onClose, onSwitchToManual }: AITaskFormProps) => {
         }
 
         const fetchStart = performance.now();
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch('/api/openrouter', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': window.location.origin,
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
-          signal: controller.signal,
+          signal: controller.signal
         });
         const fetchEnd = performance.now();
         const fetchDuration = fetchEnd - fetchStart;
@@ -201,88 +196,75 @@ const AITaskForm = ({ onClose, onSwitchToManual }: AITaskFormProps) => {
           console.log(`[AI][${model}] Response status: ${response.status} ${response.statusText}`);
         }
 
-        if (response.ok) {
-          const parseStart = performance.now();
-          const data = await response.json();
-          const parseEnd = performance.now();
-          const parseDuration = parseEnd - parseStart;
-
-          if (AI_DEBUG) {
-            console.log(`[AI][${model}] JSON parse time: ${parseDuration.toFixed(0)}ms`);
-            console.log(`[AI][${model}] Raw response:`, JSON.stringify(data, null, 2));
-
-            // Log token usage if available
-            if (data.usage) {
-              console.log(`[AI][${model}] Token usage:`, {
-                prompt_tokens: data.usage.prompt_tokens,
-                completion_tokens: data.usage.completion_tokens,
-                total_tokens: data.usage.total_tokens
-              });
-            }
-
-            // Log model info
-            console.log(`[AI][${model}] Model used:`, data.model || 'Not specified');
-
-            // Log finish reason
-            if (data.choices?.[0]?.finish_reason) {
-              console.log(`[AI][${model}] Finish reason:`, data.choices[0].finish_reason);
-            }
-          }
-
-          const parsed = parseAIResponse(data);
-          const parseAIEnd = performance.now();
-          const parseAIDuration = parseAIEnd - parseEnd;
-
-          if (AI_DEBUG) {
-            console.log(`[AI][${model}] AI parsing time: ${parseAIDuration.toFixed(0)}ms`);
-            console.log(`[AI][${model}] Parsed result:`, JSON.stringify(parsed, null, 2));
-          }
-
-          if (!parsed) {
-            if (AI_DEBUG) console.log(`[AI][${model}] Failed to parse response`);
-            continue;
-          }
-
-          const modelEnd = performance.now();
-          const duration = modelEnd - modelStart;
-
-          if (AI_DEBUG) {
-            console.log(`[AI][${model}] Total success time: ${duration.toFixed(0)}ms`);
-            console.log(`[AI][${model}] Time breakdown - Fetch: ${fetchDuration.toFixed(0)}ms, Parse: ${parseDuration.toFixed(0)}ms, AI: ${parseAIDuration.toFixed(0)}ms`);
-
-            // Calculate tokens per second if usage data available
-            if (data.usage?.total_tokens) {
-              const tokensPerSec = (data.usage.total_tokens / (fetchDuration / 1000)).toFixed(1);
-              console.log(`[AI][${model}] Performance: ${tokensPerSec} tokens/second`);
-            }
-          }
-
-          // Cache the successful result
-          aiCache.current.set(cacheKey, parsed);
-          if (AI_DEBUG) console.log('[AI][CACHE] Cached result for:', cacheKey);
-
-          return { success: true, data: parsed };
-        } else {
-          // Handle different HTTP error codes with specific debugging
-          const errorData = await response.text();
-
+        if (!response.ok) {
+          const errorText = await response.text();
           if (AI_DEBUG) {
             console.error(`[AI][${model}] HTTP ${response.status}:`, response.statusText);
-            console.error(`[AI][${model}] Response:`, errorData);
+            console.error(`[AI][${model}] Response:`, errorText);
+          }
+          continue;
+        }
 
-            if (response.status === 404) {
-              console.error(`[AI][${model}] Model not found in OpenRouter`);
-            } else if (response.status === 401) {
-              console.error(`[AI][${model}] Authentication failed - check API key`);
-            } else if (response.status === 429) {
-              console.error(`[AI][${model}] Rate limit exceeded`);
-            } else if (response.status === 403) {
-              console.error(`[AI][${model}] Access forbidden - model may not be available`);
-            } else if (response.status >= 500) {
-              console.error(`[AI][${model}] OpenRouter server error`);
-            }
+        const parseStart = performance.now();
+        const data = await response.json();
+        const parseEnd = performance.now();
+        const parseDuration = parseEnd - parseStart;
+
+        if (AI_DEBUG) {
+          console.log(`[AI][${model}] JSON parse time: ${parseDuration.toFixed(0)}ms`);
+          console.log(`[AI][${model}] Raw response:`, JSON.stringify(data, null, 2));
+
+          // Log token usage if available
+          if (data.usage) {
+            console.log(`[AI][${model}] Token usage:`, {
+              prompt_tokens: data.usage.prompt_tokens,
+              completion_tokens: data.usage.completion_tokens,
+              total_tokens: data.usage.total_tokens
+            });
+          }
+
+          // Log model info
+          console.log(`[AI][${model}] Model used:`, data.model || 'Not specified');
+
+          // Log finish reason
+          if (data.choices?.[0]?.finish_reason) {
+            console.log(`[AI][${model}] Finish reason:`, data.choices[0].finish_reason);
           }
         }
+
+        const parsed = parseAIResponse(data);
+        const parseAIEnd = performance.now();
+        const parseAIDuration = parseAIEnd - parseEnd;
+
+        if (AI_DEBUG) {
+          console.log(`[AI][${model}] AI parsing time: ${parseAIDuration.toFixed(0)}ms`);
+          console.log(`[AI][${model}] Parsed result:`, JSON.stringify(parsed, null, 2));
+        }
+
+        if (!parsed) {
+          if (AI_DEBUG) console.log(`[AI][${model}] Failed to parse response`);
+          continue;
+        }
+
+        const modelEnd = performance.now();
+        const duration = modelEnd - modelStart;
+
+        if (AI_DEBUG) {
+          console.log(`[AI][${model}] Total success time: ${duration.toFixed(0)}ms`);
+          console.log(`[AI][${model}] Time breakdown - Fetch: ${fetchDuration.toFixed(0)}ms, Parse: ${parseDuration.toFixed(0)}ms, AI: ${parseAIDuration.toFixed(0)}ms`);
+
+          // Calculate tokens per second if usage data available
+          if (data.usage?.total_tokens) {
+            const tokensPerSec = (data.usage.total_tokens / (fetchDuration / 1000)).toFixed(1);
+            console.log(`[AI][${model}] Performance: ${tokensPerSec} tokens/second`);
+          }
+        }
+
+        // Cache the successful result
+        aiCache.current.set(cacheKey, parsed);
+        if (AI_DEBUG) console.log('[AI][CACHE] Cached result for:', cacheKey);
+
+        return { success: true, data: parsed };
       } catch (err: any) {
         if (err?.name === 'AbortError') {
           if (AI_DEBUG) console.log('[AI] request aborted');
@@ -298,7 +280,7 @@ const AITaskForm = ({ onClose, onSwitchToManual }: AITaskFormProps) => {
           } else if (err.message.includes('timeout')) {
             console.error(`[AI][${model}] Request timeout - model may be slow`);
           } else if (err.message.includes('CORS')) {
-            console.error(`[AI][${model}] CORS issue - check OpenRouter configuration`);
+            console.error(`[AI][${model}] CORS issue - check backend configuration`);
           } else {
             console.error(`[AI][${model}] Unexpected error:`, err);
           }
@@ -311,10 +293,11 @@ const AITaskForm = ({ onClose, onSwitchToManual }: AITaskFormProps) => {
       console.error('[AI] All models failed. Summary:');
       console.error('[AI] Models attempted:', modelCandidates.join(', '));
       console.error('[AI] Check the following:');
-      console.error('[AI] 1. API Key is valid and active');
-      console.error('[AI] 2. Models are available in your OpenRouter plan');
-      console.error('[AI] 3. Network connectivity to openrouter.ai');
-      console.error('[AI] 4. Rate limits not exceeded');
+      console.error('[AI] 1. Backend API is deployed and accessible');
+      console.error('[AI] 2. OPENROUTER_API_KEY is configured in server environment');
+      console.error('[AI] 3. Models are available in your OpenRouter plan');
+      console.error('[AI] 4. Network connectivity to backend API');
+      console.error('[AI] 5. Rate limits not exceeded');
     }
 
     return { success: false, error: 'All AI models failed' };

@@ -12,7 +12,6 @@ import ReactDOM from "react-dom/client";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Toaster } from "react-hot-toast";
 import { createPortal } from "react-dom";
-import { logger } from "@/utils/logger";
 
 // -------------------------
 // Polyfill Notification
@@ -55,6 +54,7 @@ createPortal(
         padding: "16px",
         borderRadius: "8px",
         border: "2px solid var(--border-primary)",
+        marginTop: "64px", // Add top margin to avoid navbar
       },
     }}
   />,

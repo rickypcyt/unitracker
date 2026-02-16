@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 
 import { AssignmentSortMenu } from "@/components/AssignmentSortMenu";
 import { CheckCircle2 } from "lucide-react";
+import RecurringTasksToggle from "@/pages/calendar/RecurringTasksToggle";
 import { Task } from "@/types/taskStorage";
+import TaskFilter from "@/pages/calendar/TaskFilter";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { TaskItem } from "@/pages/tasks/TaskItem";
 import { TaskListMenu } from "@/modals/TaskListMenu";
+import WorkspaceSelector from "@/pages/calendar/WorkspaceSelector";
 import { useTaskManager } from "@/hooks/useTaskManager";
 
 interface ContextMenuState {
@@ -20,9 +23,24 @@ interface AllTasksProps {
   showCompleted?: boolean; // Add prop to control whether to show completed tasks
   sortBy?: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc';
   hideSortMenu?: boolean;
+  allTasks?: Task[]; // All tasks for filtering
+  onFilteredTasksChange?: (tasks: Task[]) => void;
+  selectedFilter?: string;
+  onFilterChange?: (filter: string) => void;
+  onSortChange?: (sort: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc') => void;
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, sortBy = 'count-desc', hideSortMenu = false }) => {
+const AllTasks: React.FC<AllTasksProps> = ({ 
+  filteredTasks, 
+  title, 
+  sortBy = 'count-desc', 
+  hideSortMenu = false,
+  allTasks,
+  onFilteredTasksChange,
+  selectedFilter,
+  onFilterChange,
+  onSortChange
+}) => {
   const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -157,18 +175,42 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, sortBy = 'cou
   return (
     <div className="w-full h-full">
       <div className="w-full h-full flex flex-col overflow-hidden">
-        {/* Header */}
+        {/* Sort By - Above everything */}
         {!hideSortMenu && (
-          <div className="flex items-center justify-between p-3 border-[var(--border-primary)]">
+          <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">
               {title || "All Tasks"}
             </h3>
             <AssignmentSortMenu 
               currentSort={effectiveSortBy} 
-              onSortChange={hideSortMenu ? setLocalSortBy : () => {}} 
+              onSortChange={onSortChange || (hideSortMenu ? setLocalSortBy : () => {})} 
             />
           </div>
         )}
+        
+        {/* Workspace Selector */}
+        {allTasks && (
+          <div className="w-full">
+            <WorkspaceSelector />
+          </div>
+        )}
+        
+        {/* Filter Dropdown */}
+        {allTasks && onFilteredTasksChange && selectedFilter && (
+          <div className="w-full mt-2">
+            <TaskFilter 
+              tasks={allTasks} 
+              onFilteredTasksChange={onFilteredTasksChange}
+              selectedFilter={selectedFilter}
+              onFilterChange={onFilterChange || (() => {})}
+            />
+          </div>
+        )}
+        
+        {/* Recurring Tasks Toggle */}
+        <div className="w-full mt-2 mb-2">
+          <RecurringTasksToggle />
+        </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-0 py-2 space-y-2">
@@ -218,7 +260,7 @@ const AllTasks: React.FC<AllTasksProps> = ({ filteredTasks, title, sortBy = 'cou
                 
                 {/* Tasks Container - Hidden when collapsed */}
                 {!isAssignmentCollapsed && (
-                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1 max-h-48 overflow-y-auto">
+                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1 overflow-y-auto">
                     {tasksByAssignment[assignment]?.map((task) => (
                       <TaskItem
                         key={task.id}

@@ -3,15 +3,11 @@ import { useAppStore, useWorkspace } from '@/store/appStore';
 
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
 import AllTasks from '@/pages/calendar/AllTasks';
-import { AssignmentSortMenu } from '@/components/AssignmentSortMenu';
 import Calendar, { } from '@/pages/calendar/Calendar';
 import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
 import { Helmet } from 'react-helmet-async';
 import { RecurringTasksProvider } from '@/pages/calendar/RecurringTasksContext';
-import RecurringTasksToggle from '@/pages/calendar/RecurringTasksToggle';
 import { Task } from '@/types/taskStorage';
-import TaskFilter from '@/pages/calendar/TaskFilter';
-import WorkspaceSelector from '@/pages/calendar/WorkspaceSelector';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLocation } from 'react-router-dom';
 
@@ -172,58 +168,27 @@ const CalendarPage = memo(() => {
     }
 
     return (
-      <div className="w-full flex flex-col gap-4 min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]">
-        <div className="flex flex-col lg:flex-row gap-4 flex-1 mb-6">
+      <div className="w-full flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 flex-1">
           {/* Left Column - All Tasks and Filter (Desktop) */}
           <div className="hidden lg:flex flex-col gap-4 w-80 flex-shrink-0">
-            {/* Sort By - Above everything */}
-            <div className="w-full">
-              <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
-                <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-                  All Tasks
-                </h3>
-                <AssignmentSortMenu 
-                  currentSort={taskSortBy} 
-                  onSortChange={setTaskSortBy} 
-                />
-              </div>
-            </div>
-            
-            {/* Workspace Selector */}
-            <div className="w-full">
-              <WorkspaceSelector />
-            </div>
-            
-            {/* Filter Dropdown */}
-            <div className="w-full">
-              <TaskFilter 
-                tasks={tasks} 
-                onFilteredTasksChange={setFilteredTasks}
-                selectedFilter={selectedFilter}
-                onFilterChange={handleFilterChange}
-              />
-            </div>
-            
-            {/* Recurring Tasks Toggle */}
-            <div className="w-full">
-              <RecurringTasksToggle />
-            </div>
-            
-            {/* All Tasks */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <AllTasks 
-                filteredTasks={filteredTasks} 
-                title={getFilterLabel(selectedFilter)}
-                showCompleted={false}
-                sortBy={taskSortBy}
-                hideSortMenu={true}
-              />
-            </div>
+            <AllTasks 
+              filteredTasks={filteredTasks} 
+              title={getFilterLabel(selectedFilter)}
+              showCompleted={false}
+              sortBy={taskSortBy}
+              hideSortMenu={false}
+              allTasks={tasks}
+              onFilteredTasksChange={setFilteredTasks}
+              selectedFilter={selectedFilter}
+              onFilterChange={handleFilterChange}
+              onSortChange={setTaskSortBy}
+            />
           </div>
 
           {/* Calendar Panel */}
           <div className="flex-1 min-w-0">
-            <div className="w-full">
+            <div className="w-full h-full">
               <Calendar 
                 view={view} 
                 onViewChange={handleViewChange}
@@ -235,49 +200,18 @@ const CalendarPage = memo(() => {
 
         {/* Mobile Filter and All Tasks - Below Calendar */}
         <div className="lg:hidden w-full space-y-4">
-          {/* Sort By - Above everything */}
-          <div className="w-full">
-            <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-                All Tasks
-              </h3>
-              <AssignmentSortMenu 
-                currentSort={taskSortBy} 
-                onSortChange={setTaskSortBy} 
-              />
-            </div>
-          </div>
-          
-          {/* Workspace Selector - Mobile */}
-          <div className="w-full">
-            <WorkspaceSelector />
-          </div>
-          
-          {/* Filter Dropdown - Mobile */}
-          <div className="w-full">
-            <TaskFilter 
-              tasks={tasks} 
-              onFilteredTasksChange={setFilteredTasks}
-              selectedFilter={selectedFilter}
-              onFilterChange={handleFilterChange}
-            />
-          </div>
-          
-          {/* Recurring Tasks Toggle - Mobile */}
-          <div className="w-full">
-            <RecurringTasksToggle />
-          </div>
-
-          {/* Mobile All Tasks */}
-          <div className="w-full h-96 overflow-auto">
-            <AllTasks 
-              filteredTasks={filteredTasks} 
-              title={getFilterLabel(selectedFilter)}
-              showCompleted={false}
-              sortBy={taskSortBy}
-              hideSortMenu={true}
-            />
-          </div>
+          <AllTasks 
+            filteredTasks={filteredTasks} 
+            title={getFilterLabel(selectedFilter)}
+            showCompleted={false}
+            sortBy={taskSortBy}
+            hideSortMenu={false}
+            allTasks={tasks}
+            onFilteredTasksChange={setFilteredTasks}
+            selectedFilter={selectedFilter}
+            onFilterChange={handleFilterChange}
+            onSortChange={setTaskSortBy}
+          />
         </div>
       </div>
     );

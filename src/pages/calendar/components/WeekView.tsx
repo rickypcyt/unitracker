@@ -45,6 +45,7 @@ const WeekView = ({
   const [isMobile, setIsMobile] = useState(false);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [draggedTaskData, setDraggedTaskData] = useState<any>(null);
+  const [hoveredDropZone, setHoveredDropZone] = useState<string | null>(null);
   
   const updateTaskSuccess = useAppStore((state) => state.updateTaskSuccess);
   
@@ -119,25 +120,44 @@ const WeekView = ({
   const currentMinutesFromStart = getMinutesFromStartOfDay(now);
 
   const handleDragStart = (event: DragStartEvent) => {
+    console.log('🔥 DndContext DRAG START triggered:', event);
     const { active } = event;
     const taskId = active.id as string;
+    
+    console.log('🚀 Drag Start - Task ID:', taskId);
     
     // Find the task in any day
     for (const day of weekDays) {
       const tasksForDay = getTasksWithDeadline(day);
       const task = tasksForDay.find(t => t.id.toString() === taskId);
       if (task) {
+        console.log('📋 Found task:', {
+          id: task.id,
+          title: task.title,
+          start_at: task.start_at,
+          end_at: task.end_at,
+          deadline: task.deadline
+        });
         setActiveTask(task);
         setDraggedTaskData(task);
         break;
       }
     }
+    
+    if (!draggedTaskData) {
+      console.log('❌ Task not found for ID:', taskId);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    console.log('🔥 DndContext DRAG END triggered:', event);
     const { over } = event;
     
+    console.log('🎯 Drag End - Over:', over);
+    console.log('📦 Dragged Task Data:', draggedTaskData);
+    
     if (!over || !draggedTaskData) {
+      console.log('❌ No over element or no dragged task data');
       setActiveTask(null);
       setDraggedTaskData(null);
       return;
@@ -145,15 +165,20 @@ const WeekView = ({
 
     // Parse the drop zone data (format: "day-hour")
     const dropZoneId = over.id as string;
+    console.log('📍 Drop Zone ID:', dropZoneId);
+    
     const [dayIndex, hour] = dropZoneId.split('-').map(Number);
+    console.log('📅 Parsed - Day Index:', dayIndex, 'Hour:', hour);
     
     if (typeof dayIndex === 'number' && typeof hour === 'number' && dayIndex >= 0 && dayIndex < weekDays.length) {
       const targetDay = weekDays[dayIndex];
+      console.log('🎯 Target Day:', targetDay);
       
       if (targetDay) {
         // Calculate new start and end times
         const newStartTime = new Date(targetDay);
         newStartTime.setHours(hour, 0, 0, 0);
+        console.log('⏰ New Start Time:', newStartTime);
         
         // Calculate duration from original task
         let duration = 1; // Default 1 hour
@@ -164,13 +189,20 @@ const WeekView = ({
             duration = endT[0] - startT[0] + (endT[1] - startT[1]) / 60;
           }
         }
+        console.log('⏱️ Duration (hours):', duration);
         
         const newEndTime = new Date(newStartTime);
         newEndTime.setHours(newStartTime.getHours() + duration);
+        console.log('⏰ New End Time:', newEndTime);
         
         // Format times for the task
         const formatTime = (date: Date) => {
           return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        };
+        
+        // Format date for deadline
+        const formatDate = (date: Date) => {
+          return date.toISOString().split('T')[0];
         };
         
         // Update the task with new times and deadline
@@ -178,16 +210,31 @@ const WeekView = ({
           ...draggedTaskData,
           start_at: formatTime(newStartTime),
           end_at: formatTime(newEndTime),
-          deadline: targetDay.toISOString().split('T')[0],
+          deadline: formatDate(targetDay),
         };
+        
+        console.log('🔄 Updated Task:', updatedTask);
         
         // Update task in store
         updateTaskSuccess(updatedTask);
+        console.log('✅ Task updated in store');
+        
+        // Clear drag state
+        setActiveTask(null);
+        setDraggedTaskData(null);
+        setHoveredDropZone(null);
       }
+    } else {
+      console.log('❌ Invalid drop zone - Day Index:', dayIndex, 'Hour:', hour);
     }
-    
-    setActiveTask(null);
-    setDraggedTaskData(null);
+  };
+
+  const handleDragOver = (event: any) => {
+    if (event?.over?.id) {
+      setHoveredDropZone(event.over.id as string);
+    } else {
+      setHoveredDropZone(null);
+    }
   };
 
   return (
@@ -195,6 +242,7 @@ const WeekView = ({
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
       modifiers={[restrictToWindowEdges]}
     >
       <div className="flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative overflow-hidden h-full">
@@ -219,7 +267,7 @@ const WeekView = ({
       </div>
 
       {/* Time grid */}
-      <div className="flex-1 overflow-auto min-h-0">
+      <div className="flex-1 overflow-auto">
         <div className="relative">
           {/* Render all tasks that span multiple hours */}
           {(() => {
@@ -295,16 +343,23 @@ const WeekView = ({
                   data-calendar-task
                   draggable
                   id={task.id.toString()}
-                  className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
+                  className="text-black text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                   style={{
                     left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
-                    top: `${topPosition}px`,
+                    top: `${topPosition+2}px`,
                     width: `11.5%`,
-                    height: `${blockHeight}px`
+                    height: `${blockHeight-2}px`
                   }}
                   onClick={(e) => {
+                    console.log('🖱️ Task clicked:', task.id);
                     e.stopPropagation();
                     setViewingTask(task);
+                  }}
+                  onDragStart={() => {
+                    console.log('🚀 Native drag start triggered:', task.id);
+                  }}
+                  onDragEnd={() => {
+                    console.log('🎯 Native drag end triggered:', task.id);
                   }}
                   onDoubleClick={(e) => {
                     e.stopPropagation();
@@ -316,12 +371,12 @@ const WeekView = ({
                   }}
                   title={`${task.title}${task.assignment ? ` - ${task.assignment}` : ''} ${occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                 >
-                  <div className="font-medium truncate">{task.title || 'Sin título'}</div>
                   {!isMobile && task.assignment && (
-                    <div className="text-xs text-white truncate">
+                    <div className="text-xs text-black truncate">
                       {task.assignment}
                     </div>
                   )}
+                  <div className="font-medium line-clamp-2">{task.title || 'Sin título'}</div>
                   {!isMobile && (
                     <div className="text-xs opacity-90 truncate">
                       {occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -390,16 +445,25 @@ const WeekView = ({
                     return null;
                   })();
 
+                  const dropZoneKey = `${i}-${hour}`;
+
                   return (
                     <div
                       key={i}
-                      id={`${i}-${hour}`}
-                      className={`border-l border-[var(--border-primary)]/20 hover:bg-[var(--bg-secondary)]/30 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
-                        isCurrentDay ? 'bg-[var(--accent-primary)]/5' : ''
+                      id={dropZoneKey}
+                      className={`border-l border-[var(--border-primary)]/20 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${
+                        hoveredDropZone === dropZoneKey
+                          ? 'bg-[var(--accent-primary)]/15 border-[var(--accent-primary)]/50'
+                          : 'hover:bg-[var(--border-primary)]/30'
+                      } ${
+                        isCurrentDay && hoveredDropZone !== dropZoneKey ? 'bg-[var(--accent-primary)]/5' : ''
                       }`}
                       onDoubleClick={(e) => {
                         if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
                         handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
+                      }}
+                      onMouseEnter={() => {
+                        console.log(`🎯 Drop Zone Hover - ID: ${dropZoneKey}, Day: ${day.toLocaleDateString()}, Hour: ${hour}`);
                       }}
                     >
                       {isCurrentDay && hour === currentHour && (
@@ -432,7 +496,7 @@ const WeekView = ({
                           data-calendar-task
                           draggable
                           id={singleHourTask.task.id.toString()}
-                          className="text-white text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
+                          className="text-black text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing"
                           style={{
                             left: '2px',
                             right: '2px',
@@ -441,8 +505,15 @@ const WeekView = ({
                             height: `${getHeight(singleHourTask.durationInMinutes)}px`
                           }}
                           onClick={(e) => {
+                            console.log('🖱️ SingleHourTask clicked:', singleHourTask.task.id);
                             e.stopPropagation();
                             setViewingTask(singleHourTask.task);
+                          }}
+                          onDragStart={() => {
+                            console.log('🚀 SingleHourTask native drag start triggered:', singleHourTask.task.id);
+                          }}
+                          onDragEnd={() => {
+                            console.log('🎯 SingleHourTask native drag end triggered:', singleHourTask.task.id);
                           }}
                           onDoubleClick={(e) => {
                             e.stopPropagation();
@@ -454,12 +525,12 @@ const WeekView = ({
                           }}
                           title={`${singleHourTask.task.title}${singleHourTask.task.assignment ? ` - ${singleHourTask.task.assignment}` : ''} ${singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                         >
-                          <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
                           {!isMobile && singleHourTask.task.assignment && (
-                            <div className="text-xs text-white truncate">
+                            <div className="text-xs text-black truncate">
                               {singleHourTask.task.assignment}
                             </div>
                           )}
+                          <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
                           {!isMobile && (
                             <div className="text-xs opacity-90 truncate">
                               {singleHourTask.occurrenceStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {singleHourTask.occurrenceEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -479,10 +550,10 @@ const WeekView = ({
       
       <DragOverlay>
         {activeTask ? (
-          <div className="text-white text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
-            <div className="font-medium truncate">{activeTask.title || 'Sin título'}</div>
+          <div className="text-black text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
+            <div className="font-medium line-clamp-2">{activeTask.title || 'Sin título'}</div>
             {activeTask.assignment && (
-              <div className="text-xs text-white truncate">
+              <div className="text-xs text-black truncate">
                 {activeTask.assignment}
               </div>
             )}

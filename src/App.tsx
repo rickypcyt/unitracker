@@ -196,6 +196,7 @@ const App: FC = () => {
             padding: "16px",
             borderRadius: "8px",
             border: "2px solid var(--border-primary)",
+            marginTop: "64px", // Add top margin to avoid navbar
           },
         }}
       />

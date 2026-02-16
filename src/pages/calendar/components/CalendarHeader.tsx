@@ -1,5 +1,8 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
+import CalendarExport from '@/components/CalendarExport';
+import type { Task } from '@/types/taskStorage';
+
 type ViewType = 'month' | 'week' | 'day';
 
 interface CalendarHeaderProps {
@@ -14,6 +17,7 @@ interface CalendarHeaderProps {
   goToPreviousDay: () => void;
   goToNextDay: () => void;
   goToToday: () => void;
+  tasks?: Task[] | undefined;
 }
 
 const CalendarHeader = ({
@@ -27,6 +31,7 @@ const CalendarHeader = ({
   goToNextWeek,
   goToPreviousDay,
   goToNextDay,
+  tasks,
 }: CalendarHeaderProps) => {
   const renderDayHeader = () => {
     const isCurrentDay = new Date().toDateString() === selectedDate.toDateString();
@@ -118,49 +123,58 @@ const CalendarHeader = ({
           <FaChevronRight size={16} className="sm:size-base" />
         </button>
       </div>
-      <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] text-xs sm:text-base">
-        <button
-          className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
-            view === 'month'
-              ? 'text-[var(--accent-primary)]'
-              : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
-          }`}
-          onClick={() => onViewChange('month')}
-        >
-          <span className="hidden sm:inline">Month</span>
-          <span className="sm:hidden">M</span>
-          {view === 'month' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
-          )}
-        </button>
-        <button
-          className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
-            view === 'week'
-              ? 'text-[var(--accent-primary)]'
-              : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
-          }`}
-          onClick={() => onViewChange('week')}
-        >
-          <span className="hidden sm:inline">Week</span>
-          <span className="sm:hidden">W</span>
-          {view === 'week' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
-          )}
-        </button>
-        <button
-          className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
-            view === 'day'
-              ? 'text-[var(--accent-primary)]'
-              : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
-          }`}
-          onClick={() => onViewChange('day')}
-        >
-          <span className="hidden sm:inline">Day</span>
-          <span className="sm:hidden">D</span>
-          {view === 'day' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
-          )}
-        </button>
+      
+      {/* Center - Calendar Export Button */}
+      <div className="flex items-center justify-center">
+        {tasks && <CalendarExport tasks={tasks} className="hidden sm:block" />}
+      </div>
+      
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* View Switcher */}
+        <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] text-xs sm:text-base">
+          <button
+            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
+              view === 'month'
+                ? 'text-[var(--accent-primary)]'
+                : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
+            }`}
+            onClick={() => onViewChange('month')}
+          >
+            <span className="hidden sm:inline">Month</span>
+            <span className="sm:hidden">M</span>
+            {view === 'month' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
+            )}
+          </button>
+          <button
+            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
+              view === 'week'
+                ? 'text-[var(--accent-primary)]'
+                : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
+            }`}
+            onClick={() => onViewChange('week')}
+          >
+            <span className="hidden sm:inline">Week</span>
+            <span className="sm:hidden">W</span>
+            {view === 'week' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
+            )}
+          </button>
+          <button
+            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
+              view === 'day'
+                ? 'text-[var(--accent-primary)]'
+                : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
+            }`}
+            onClick={() => onViewChange('day')}
+          >
+            <span className="hidden sm:inline">Day</span>
+            <span className="sm:hidden">D</span>
+            {view === 'day' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

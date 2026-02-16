@@ -29,7 +29,7 @@ const DayView = ({
       <div className="sticky top-0 z-20 h-1 bg-[var(--bg-primary)]/95 backdrop-blur-sm flex-shrink-0"></div>
       
       {/* Time grid */}
-      <div className="flex-1 overflow-auto min-h-0">
+      <div className="flex-1 overflow-auto">
         <div className="relative">
           {hours.map((hour) => {
             const isCurrentHour = isCurrentDay && hour === currentHour;
