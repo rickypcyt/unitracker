@@ -107,6 +107,7 @@ const TaskForm = ({
   const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
   const [isDifficultyDropdownOpen, setIsDifficultyDropdownOpen] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const isEditingExistingTask = Boolean(initialTask);
 
   console.log('TaskForm Initial State:', { initialAssignment, initialTask, hasSubmitted });
 
@@ -161,11 +162,11 @@ const TaskForm = ({
         setRecurrenceError('Select at least one day');
         return;
       }
-      if (!formData.start_at) {
+      if (!formData.start_at || !formData.start_at.trim()) {
         setRecurrenceError('Start time is required');
         return;
       }
-      if (!formData.end_at) {
+      if (!formData.end_at || !formData.end_at.trim()) {
         setRecurrenceError('End time is required');
         return;
       }
@@ -197,11 +198,8 @@ const TaskForm = ({
     try {
       if (!typedUser) return;
 
-      // For non-recurring tasks, set start_at to null and use end_at as time limit
+      // Preserve provided times; convert later during saveTask
       const updatedFormData = { ...formData };
-      if (!formData.isRecurring) {
-        updatedFormData.start_at = null;
-      }
 
       const saved = await saveTask({
         formData: {
@@ -272,10 +270,48 @@ const TaskForm = ({
     return '';
   }
 
+  function normalizeTaskTime(value: string | null | undefined): string | null {
+    if (!value) return null;
+
+    const trimmed = value.trim();
+
+    let timePortion = trimmed;
+    const isoMatch = trimmed.match(/^\d{4}-\d{2}-\d{2}T(.+)/);
+    if (isoMatch?.[1]) {
+      timePortion = isoMatch[1];
+    } else {
+      const spaceMatch = trimmed.match(/^\d{4}-\d{2}-\d{2}\s(.+)/);
+      if (spaceMatch?.[1]) {
+        timePortion = spaceMatch[1];
+      }
+    }
+
+    // Remove timezone suffixes (+00, +00:00, -05, Z, etc.)
+    timePortion = timePortion
+      .replace(/[zZ]$/, '')
+      .split('+')[0]!
+      .split('-')[0]!;
+
+    const normalized = to24Hour(timePortion);
+    if (normalized) {
+      return `${normalized}:00`;
+    }
+
+    const parts = timePortion.split(':');
+    if (parts.length >= 2) {
+      const hours = parts[0];
+      const minutes = parts[1];
+      if (!Number.isNaN(Number(hours)) && !Number.isNaN(Number(minutes))) {
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+      }
+    }
+
+    return null;
+  }
+
   function getInitialStartTimeForForm(): string | null {
-    // If there's no deadline, return null
-    if (!getInitialDeadline()) {
-      return null;
+    if (initialTask?.start_at) {
+      return normalizeTaskTime(initialTask.start_at);
     }
 
     // Check if there's a calendar hour set
@@ -285,14 +321,17 @@ const TaskForm = ({
       return `${hour.toString().padStart(2, '0')}:00:00`;
     }
 
-    // Return null by default instead of '10:00:00'
-    return initialTask?.start_at || null;
+    // If there's no deadline, return null for new tasks
+    if (!getInitialDeadline()) {
+      return null;
+    }
+
+    return null;
   }
 
   function getInitialEndTimeForForm(): string | null {
-    // If there's no deadline, return null
-    if (!getInitialDeadline()) {
-      return null;
+    if (initialTask?.end_at) {
+      return normalizeTaskTime(initialTask.end_at);
     }
 
     // Check if there's a calendar hour set
@@ -302,8 +341,12 @@ const TaskForm = ({
       return `${hour.toString().padStart(2, '0')}:00:00`;
     }
 
-    // Return null by default instead of '11:00:00'
-    return initialTask?.end_at || null;
+    // If there's no deadline, return null for new tasks
+    if (!getInitialDeadline()) {
+      return null;
+    }
+
+    return null;
   }
 
   function validateDeadline(value: string): true | string {
@@ -616,25 +659,17 @@ const TaskForm = ({
 
   // Local state for time inputs (12h format for display)
   const [displayStartTime, setDisplayStartTime] = useState(() => {
-    if (initialTask?.start_at) {
-      return to12Hour(initialTask.start_at);
+    if (initialFormState.start_at) {
+      return to12Hour(initialFormState.start_at);
     }
-    // If no deadline, return empty string
-    if (!getInitialDeadline()) {
-      return '';
-    }
-    return '10:00 AM';
+    return '';
   });
 
   const [displayEndTime, setDisplayEndTime] = useState(() => {
-    if (initialTask?.end_at) {
-      return to12Hour(initialTask.end_at);
+    if (initialFormState.end_at) {
+      return to12Hour(initialFormState.end_at);
     }
-    // If no deadline, return empty string
-    if (!getInitialDeadline()) {
-      return '';
-    }
-    return '11:00 AM';
+    return '';
   });
 
   // Flag to prevent useEffect from overriding manual adjustments
@@ -659,6 +694,8 @@ const TaskForm = ({
 
   // Update times when deadline changes
   useEffect(() => {
+    if (isEditingExistingTask) return;
+
     if (formData.deadline) {
       // If deadline is set, ensure times are set
       if (!formData.start_at) {
@@ -676,7 +713,7 @@ const TaskForm = ({
       setDisplayStartTime('');
       setDisplayEndTime('');
     }
-  }, [formData.deadline]);
+  }, [formData.deadline, handleChange, isEditingExistingTask]);
 
   // Focus on date field when focusOnDate is true
   useEffect(() => {
@@ -694,10 +731,16 @@ const TaskForm = ({
   }, [focusOnDate]);
 
   const renderStartTimeInput = () => {
+    const getStartTimeBase = () => {
+      const normalized = to24Hour(displayStartTime);
+      if (normalized) return normalized;
+      if (formData.start_at) return formData.start_at.slice(0, 5);
+      return '10:00';
+    };
+
     const incrementStartTime = () => {
       // Parse current 12-hour time to get 24-hour format
-      const time24 = to24Hour(displayStartTime);
-      if (!time24) return;
+      const time24 = getStartTimeBase();
 
       let [hours = 0, minutes = 0] = time24.split(':').map(Number);
       minutes += 30;
@@ -714,8 +757,7 @@ const TaskForm = ({
 
     const decrementStartTime = () => {
       // Parse current 12-hour time to get 24-hour format
-      const time24 = to24Hour(displayStartTime);
-      if (!time24) return;
+      const time24 = getStartTimeBase();
 
       let [hours = 0, minutes = 0] = time24.split(':').map(Number);
       minutes -= 30;
@@ -786,10 +828,16 @@ const TaskForm = ({
   };
 
   const renderEndTimeInput = () => {
+    const getEndTimeBase = () => {
+      const normalized = to24Hour(displayEndTime);
+      if (normalized) return normalized;
+      if (formData.end_at) return formData.end_at.slice(0, 5);
+      return '11:00';
+    };
+
     const incrementEndTime = () => {
       // Parse current 12-hour time to get 24-hour format
-      const time24 = to24Hour(displayEndTime);
-      if (!time24) return;
+      const time24 = getEndTimeBase();
 
       let [hours = 0, minutes = 0] = time24.split(':').map(Number);
       minutes += 30;
@@ -806,8 +854,7 @@ const TaskForm = ({
 
     const decrementEndTime = () => {
       // Parse current 12-hour time to get 24-hour format
-      const time24 = to24Hour(displayEndTime);
-      if (!time24) return;
+      const time24 = getEndTimeBase();
 
       let [hours = 0, minutes = 0] = time24.split(':').map(Number);
       minutes -= 30;

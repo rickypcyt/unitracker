@@ -35,16 +35,19 @@ const CalendarHeader = ({
 }: CalendarHeaderProps) => {
   const renderDayHeader = () => {
     const isCurrentDay = new Date().toDateString() === selectedDate.toDateString();
+    const weekdayLong = selectedDate.toLocaleDateString('en', { weekday: 'long' });
+    const weekdayShort = selectedDate.toLocaleDateString('en', { weekday: 'short' });
+    const dayOfMonth = selectedDate.getDate();
 
     return (
       <div className={`text-sm sm:text-lg font-semibold mx-2 ${
         isCurrentDay ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
       }`}>
         <span className="sm:hidden">
-          {selectedDate.toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+          {`${weekdayShort} ${dayOfMonth}`}
         </span>
         <span className="hidden sm:inline">
-          {selectedDate.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          {`${weekdayLong} ${dayOfMonth}`}
         </span>
       </div>
     );

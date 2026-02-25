@@ -3,6 +3,7 @@ import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/
 
 import React from 'react';
 import { Task } from '@/types/taskStorage';
+import { to12Hour } from '@/utils/timeUtils';
 
 // Helper para formatear días de recurrencia
 const formatRecurrenceText = (weekdays: number[]) => {
@@ -17,34 +18,10 @@ const formatRecurrenceText = (weekdays: number[]) => {
     return `Every ${selectedDays.join(', ')}`;
 };
 
-// Helper para formatear tiempo - ahora maneja timestamptz correctamente
-const formatTime = (timeStr: string | undefined) => {
+// Helper para formatear tiempo reutilizando la lógica del formulario
+const formatTime = (timeStr: string | undefined | null) => {
     if (!timeStr) return '';
-    
-    try {
-        // Crear un objeto Date desde el string, que manejará automáticamente la zona horaria
-        const date = new Date(timeStr);
-        
-        // Verificar si la fecha es válida
-        if (isNaN(date.getTime())) {
-            console.error('Fecha inválida:', timeStr);
-            return '';
-        }
-        
-        // Obtener horas y minutos en la zona horaria local
-        let hours = date.getHours();
-        const minutes = date.getMinutes();
-        
-        // Convertir a formato 12 horas
-        const period = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours || 12; // Convertir 0 a 12 para medianoche
-        
-        return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
-    } catch (error) {
-        console.error('Error formateando la hora:', error);
-        return '';
-    }
+    return to12Hour(timeStr);
 };
 
 // Helper para determinar el color del deadline

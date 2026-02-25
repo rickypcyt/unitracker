@@ -4,7 +4,6 @@ import { useAppStore, useWorkspace } from '@/store/appStore';
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
 import AllTasks from '@/pages/calendar/AllTasks';
 import Calendar, { } from '@/pages/calendar/Calendar';
-import DayFlowCalendarComponent from '@/pages/calendar/DayFlowCalendar';
 import { Helmet } from 'react-helmet-async';
 import { RecurringTasksProvider } from '@/pages/calendar/RecurringTasksContext';
 import { Task } from '@/types/taskStorage';
@@ -68,13 +67,7 @@ const CalendarPage = memo(() => {
       : 'month';
   });
 
-  const [calendarType, setCalendarType] = useState<'original' | 'dayflow'>(() => {
-    const savedType = localStorage.getItem(STORAGE_KEYS.TYPE);
-    return savedType && ['original', 'dayflow'].includes(savedType)
-      ? (savedType as 'original' | 'dayflow')
-      : 'original';
-  });
-
+  
   // Handlers
   const handleFilterChange = (filter: string) => {
     setSelectedFilter(filter);
@@ -84,11 +77,6 @@ const CalendarPage = memo(() => {
   const handleViewChange = useCallback((newView: 'month' | 'week' | 'day') => {
     setView(newView);
     localStorage.setItem(STORAGE_KEYS.VIEW, newView);
-  }, []);
-
-  const handleCalendarTypeChange = useCallback((newType: 'original' | 'dayflow') => {
-    setCalendarType(newType);
-    localStorage.setItem(STORAGE_KEYS.TYPE, newType);
   }, []);
 
   const getFilterLabel = (filter: string) => FILTER_LABELS[filter] || 'All Tasks';
@@ -157,16 +145,8 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
 
-  // Render calendar based on type
+  // Render calendar content
   const renderCalendarContent = () => {
-    if (calendarType === 'dayflow') {
-      return (
-        <div className="w-full min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]">
-          <DayFlowCalendarComponent />
-        </div>
-      );
-    }
-
     return (
       <div className="w-full flex flex-col gap-4">
         <div className="flex flex-col lg:flex-row gap-4 flex-1">
@@ -220,12 +200,7 @@ const CalendarPage = memo(() => {
   return (
     <RecurringTasksProvider>
       <Helmet>
-        <title>
-          {calendarType === 'dayflow' 
-            ? 'DayFlow Calendar | UniTracker 2026' 
-            : 'UniTracker Calendar | UniTracker 2026'
-          }
-        </title>
+        <title>UniTracker Calendar | UniTracker 2026</title>
         <meta
           name="description"
           content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
@@ -234,7 +209,7 @@ const CalendarPage = memo(() => {
           name="keywords"
           content="academic calendar, study planner, assignment deadlines, schedule management, student calendar, deadline tracker"
         />
-        <meta property="og:title" content={`Calendar & Schedule Management | UniTracker 2026 - ${calendarType === 'dayflow' ? 'DayFlow' : 'UniTracker'} Calendar`} />
+        <meta property="og:title" content="Calendar & Schedule Management | UniTracker 2026" />
         <meta
           property="og:description"
           content="Academic calendar for students. Plan assignments, track deadlines, and manage your study schedule with our interactive calendar."
@@ -245,32 +220,6 @@ const CalendarPage = memo(() => {
       </Helmet>
       
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
-        {/* Calendar Type Switcher */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-1 flex gap-1">
-            <button
-              onClick={() => handleCalendarTypeChange('original')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                calendarType === 'original'
-                  ? 'text-[var(--accent-primary)] border border-[var(--accent-primary)]'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
-              }`}
-            >
-              UniTracker Calendar
-            </button>
-            <button
-              onClick={() => handleCalendarTypeChange('dayflow')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                calendarType === 'dayflow'
-                  ? 'text-[var(--accent-primary)] border border-[var(--accent-primary)]'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
-              }`}
-            >
-              DayFlow Calendar
-            </button>
-          </div>
-        </div>
-        
         {renderCalendarContent()}
       </div>
     </RecurringTasksProvider>
