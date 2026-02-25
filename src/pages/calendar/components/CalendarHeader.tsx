@@ -71,8 +71,7 @@ const CalendarHeader = ({
       <div className={`text-sm sm:text-lg font-semibold mx-2 ${
         isCurrentWeekVisible ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
       }`}>
-        <span className="sm:hidden">W{weekNumber}</span>
-        <span className="hidden sm:inline">Week {weekNumber}</span>
+        Week {weekNumber}
       </div>
     );
   };
@@ -101,8 +100,8 @@ const CalendarHeader = ({
 };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between py-2 sm:py-4 px-2 sm:px-12 gap-2 sm:gap-0">
-      <div className="flex items-center gap-2 sm:gap-4">
+    <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto items-stretch md:items-center gap-3 md:gap-8 py-2 md:py-4 px-2 md:px-6">
+      <div className="order-1 flex w-full md:w-1/3 items-center justify-between md:justify-start gap-2 md:gap-4">
         <button 
           onClick={view === 'day' ? goToPreviousDay : (view === 'week' ? goToPreviousWeek : goToPreviousMonth)}
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
@@ -110,7 +109,7 @@ const CalendarHeader = ({
         >
           <FaChevronLeft size={16} className="sm:size-base" />
         </button>
-        <div className="text-center sm:text-left px-2 sm:px-0">
+        <div className="flex-1 md:flex-none text-center md:text-left px-2 md:px-0">
           {view === 'day' && renderDayHeader()}
           {view === 'week' && renderWeekHeader()}
           {view === 'month' && renderMonthHeader()}
@@ -124,12 +123,7 @@ const CalendarHeader = ({
         </button>
       </div>
       
-      {/* Center - Calendar Export Button */}
-      <div className="flex items-center justify-center">
-        {tasks && <CalendarExport tasks={tasks} className="hidden sm:block" />}
-      </div>
-      
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="order-2 flex w-full md:w-1/3 justify-center">
         {/* View Switcher */}
         <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] text-xs sm:text-base">
           <button
@@ -140,8 +134,7 @@ const CalendarHeader = ({
             }`}
             onClick={() => onViewChange('month')}
           >
-            <span className="hidden sm:inline">Month</span>
-            <span className="sm:hidden">M</span>
+            Month
             {view === 'month' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
             )}
@@ -154,8 +147,7 @@ const CalendarHeader = ({
             }`}
             onClick={() => onViewChange('week')}
           >
-            <span className="hidden sm:inline">Week</span>
-            <span className="sm:hidden">W</span>
+            Week
             {view === 'week' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
             )}
@@ -168,13 +160,17 @@ const CalendarHeader = ({
             }`}
             onClick={() => onViewChange('day')}
           >
-            <span className="hidden sm:inline">Day</span>
-            <span className="sm:hidden">D</span>
+            Day
             {view === 'day' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
             )}
           </button>
         </div>
+      </div>
+      
+      {/* Export Button */}
+      <div className="order-3 flex w-full md:w-1/3 justify-center">
+        {tasks && <CalendarExport tasks={tasks} className="w-full md:w-auto md:mx-auto" />}
       </div>
     </div>
   );

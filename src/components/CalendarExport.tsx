@@ -62,7 +62,7 @@ const CalendarExport: React.FC<CalendarExportProps> = ({
         <button
           onClick={exportToICS}
           disabled={isLoading || activeTasks.length === 0}
-          className="inline-flex items-center justify-center px-3 py-1.5 text-blue-600 text-sm rounded-lg border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="inline-flex items-center justify-center px-3 py-1.5 text-[var(--accent-primary)] text-sm rounded-lg border border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary-transparent)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
