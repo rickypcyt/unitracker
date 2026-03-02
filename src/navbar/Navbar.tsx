@@ -126,7 +126,7 @@ const Navbar = () => {
       .eq('status', 'pending');
     setReceivedRequests(rec || []);
     setSentRequests(sent || []);
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
@@ -160,7 +160,7 @@ const Navbar = () => {
       return;
     }
     setFriends(profiles);
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   useEffect(() => {
     fetchFriends();

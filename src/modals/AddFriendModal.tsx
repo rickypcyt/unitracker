@@ -36,7 +36,40 @@ interface AddFriendModalProps {
   onRefreshRequests?: () => Promise<void>;
 }
 
-const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests = [], onAccept, onReject, onRefreshRequests }: AddFriendModalProps) => {
+const normalizeProfile = (raw: any): FriendRequest['from_user'] | undefined => {
+  const profile = Array.isArray(raw) ? raw[0] : raw;
+  if (!profile) {
+    return undefined;
+  }
+
+  return {
+    id: String(profile.id),
+    username: typeof profile.username === 'string' ? profile.username : undefined,
+  };
+};
+
+const haveRequestsChanged = (prev: FriendRequest[], next: FriendRequest[]): boolean => {
+  if (prev === next) {
+    return false;
+  }
+
+  if (prev.length !== next.length) {
+    return true;
+  }
+
+  const prevMap = new Map(prev.map((req) => [req.id, `${req.status}|${req.to_user?.username ?? ''}|${req.from_user?.username ?? ''}`]));
+
+  for (const req of next) {
+    const signature = `${req.status}|${req.to_user?.username ?? ''}|${req.from_user?.username ?? ''}`;
+    if (prevMap.get(req.id) !== signature) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests, onAccept, onReject, onRefreshRequests }: AddFriendModalProps) => {
   const [tab, setTab] = useState('send');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
@@ -44,7 +77,10 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
   const [userExists, setUserExists] = useState<boolean | undefined>(undefined); // undefined: not checked, true: exists, false: not found
   const [checkingUser, setCheckingUser] = useState(false);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
-  const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(sentRequests);
+  const hasExternalSentRequests = sentRequests !== undefined;
+  const externalSentRequests = sentRequests ?? [];
+  const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(externalSentRequests);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   // Get friends from Zustand store if available
   const friends: Friend[] = []; // TODO: Replace with actual friends data from Zustand store
@@ -78,30 +114,205 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
 
   // Keep visibleSentRequests in sync with sentRequests from parent
   useEffect(() => {
-    setVisibleSentRequests(sentRequests);
-  }, [sentRequests]);
+    if (!hasExternalSentRequests) {
+      return;
+    }
 
-  const handleSend = () => {
-    if (!username.trim()) {
+    setVisibleSentRequests((prev) => {
+      if (!haveRequestsChanged(prev, externalSentRequests)) {
+        return prev;
+      }
+
+      return externalSentRequests;
+    });
+  }, [externalSentRequests, hasExternalSentRequests]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    if (hasExternalSentRequests) {
+      return;
+    }
+    if (!user?.id) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchSentRequests = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('friend_requests')
+          .select('id, from_user_id, to_user_id, status, created_at, to_user:profiles!friend_requests_to_user_id_fkey(id, username)')
+          .eq('from_user_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          console.error('AddFriendModal: error fetching sent requests', error);
+          return;
+        }
+
+        const normalized: FriendRequest[] = (data ?? []).map((row: any) => {
+          const base: FriendRequest = {
+            id: String(row.id),
+            from_user_id: String(row.from_user_id),
+            to_user_id: String(row.to_user_id),
+            status: row.status as FriendRequest['status'],
+          };
+
+          const toProfile = normalizeProfile((row as any).to_user);
+          if (toProfile) {
+            base.to_user = toProfile;
+          }
+
+          return base;
+        });
+
+        setVisibleSentRequests((prev) => {
+          if (!haveRequestsChanged(prev, normalized)) {
+            return prev;
+          }
+          return normalized;
+        });
+      } catch (fetchError) {
+        if (!cancelled) {
+          console.error('AddFriendModal: unexpected error fetching sent requests', fetchError);
+        }
+      }
+    };
+
+    fetchSentRequests();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasExternalSentRequests, isOpen, user?.id]);
+
+  const handleRequestSuccess = (newRequest?: FriendRequest) => {
+    setUsername('');
+    setRequestSent(true);
+    setError('');
+    if (newRequest) {
+      setVisibleSentRequests((prev) => {
+        if (prev.some((req) => req.id === newRequest.id)) {
+          return prev;
+        }
+        return [...prev, newRequest];
+      });
+    }
+    setTimeout(() => setRequestSent(false), 2000);
+  };
+
+  const handleSend = async () => {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       setError('Enter a username');
       return;
     }
     // Check if already a friend (case-insensitive)
-    const alreadyFriend = friends.some((f) => (f.username || '').toLowerCase() === username.trim().toLowerCase());
+    const alreadyFriend = friends.some((f) => (f.username || '').toLowerCase() === trimmedUsername.toLowerCase());
     if (alreadyFriend) {
       setError('This user is already your friend.');
       return;
     }
     setError('');
     if (onSendRequest) {
-      onSendRequest(username.trim(), {
+      setIsSubmitting(true);
+      onSendRequest(trimmedUsername, {
         onSuccess: () => {
-          setUsername('');
-          setRequestSent(true);
-          setTimeout(() => setRequestSent(false), 2000);
+          setIsSubmitting(false);
+          handleRequestSuccess();
         },
-        onError: (msg?: string) => setError(msg || 'Error sending request'),
+        onError: (msg?: string) => {
+          setIsSubmitting(false);
+          setError(msg || 'Error sending request');
+        },
       });
+      return;
+    }
+
+    if (!user) {
+      setIsSubmitting(false);
+      setError('You must be logged in to send a friend request.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data: toUser, error: userError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .eq('username', trimmedUsername)
+        .maybeSingle();
+
+      if (userError || !toUser) {
+        setIsSubmitting(false);
+        setError('User not found.');
+        return;
+      }
+
+      if (toUser.id === user.id) {
+        setIsSubmitting(false);
+        setError('You cannot send a friend request to yourself.');
+        return;
+      }
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('friend_requests')
+        .insert({ from_user_id: user.id, to_user_id: toUser.id, status: 'pending' })
+        .select('id, from_user_id, to_user_id, status, from_user:profiles!friend_requests_from_user_id_fkey(id, username), to_user:profiles!friend_requests_to_user_id_fkey(id, username)')
+        .maybeSingle();
+
+      if (insertError) {
+        if (insertError.message?.toLowerCase().includes('duplicate')) {
+          setError('Friend request already sent.');
+        } else {
+          setError('Error sending friend request: ' + insertError.message);
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      const normalizeProfile = (raw: any) => {
+        const profile = Array.isArray(raw) ? raw[0] : raw;
+        if (!profile) {
+          return undefined;
+        }
+        return {
+          id: String(profile.id),
+          username: typeof profile.username === 'string' ? profile.username : undefined,
+        } satisfies Friend['username'] extends never ? never : { id: string; username?: string };
+      };
+
+      const fromProfile = inserted ? normalizeProfile((inserted as any).from_user) : undefined;
+      const toProfile = inserted ? normalizeProfile((inserted as any).to_user) : undefined;
+
+      const newRequest: FriendRequest | undefined = inserted
+        ? {
+            id: String(inserted.id),
+            from_user_id: String(inserted.from_user_id),
+            to_user_id: String(inserted.to_user_id),
+            status: inserted.status as FriendRequest['status'],
+            ...(fromProfile ? { from_user: fromProfile } : {}),
+            ...(toProfile ? { to_user: toProfile } : {}),
+          }
+        : undefined;
+
+      handleRequestSuccess(newRequest);
+      if (onRefreshRequests) {
+        await onRefreshRequests();
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError('Unexpected error: ' + message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,11 +393,11 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
             <div className="text-sm text-red-600 mt-1">No user found with that username.</div>
           )}
           <button
-            className="mt-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white font-semibold hover:bg-[var(--accent-primary)]/90 w-full disabled:opacity-60"
+            className="mt-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60 disabled:hover:bg-transparent"
             onClick={handleSend}
-            disabled={requestSent || userExists === false || isSelfRequest}
+            disabled={requestSent || userExists === false || isSelfRequest || isSubmitting}
           >
-            {requestSent ? 'Request Sent!' : 'Send Request'}
+            {requestSent ? 'Request Sent!' : isSubmitting ? 'Sending...' : 'Send Request'}
           </button>
           {isSelfRequest && (
             <div className="text-sm text-red-600 mt-1">You cannot send a friend request to yourself.</div>
