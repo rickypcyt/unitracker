@@ -23,6 +23,7 @@ interface FriendRequest {
 interface Friend {
   id: string;
   username?: string;
+  email?: string;
 }
 
 interface AddFriendModalProps {
@@ -69,21 +70,113 @@ const haveRequestsChanged = (prev: FriendRequest[], next: FriendRequest[]): bool
   return false;
 };
 
-const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [], sentRequests, onAccept, onReject, onRefreshRequests }: AddFriendModalProps) => {
-  const [tab, setTab] = useState('send');
+const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sentRequests, onAccept, onReject, onRefreshRequests }: AddFriendModalProps) => {
+  const [tab, setTab] = useState('received');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [requestSent, setRequestSent] = useState(false);
   const [userExists, setUserExists] = useState<boolean | undefined>(undefined); // undefined: not checked, true: exists, false: not found
   const [checkingUser, setCheckingUser] = useState(false);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
+  const hasExternalReceivedRequests = receivedRequests !== undefined;
+  const externalReceivedRequests = receivedRequests ?? [];
+  const [internalReceivedRequests, setInternalReceivedRequests] = useState<FriendRequest[]>(externalReceivedRequests);
   const hasExternalSentRequests = sentRequests !== undefined;
   const externalSentRequests = sentRequests ?? [];
   const [visibleSentRequests, setVisibleSentRequests] = useState<FriendRequest[]>(externalSentRequests);
+  const [processingIds, setProcessingIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
-  // Get friends from Zustand store if available
-  const friends: Friend[] = []; // TODO: Replace with actual friends data from Zustand store
+
+  const displayedReceivedRequests = hasExternalReceivedRequests ? externalReceivedRequests : internalReceivedRequests;
+  const receivedCount = displayedReceivedRequests.length;
+
+  const finishProcessing = (requestId: string) => {
+    setProcessingIds((prev) => prev.filter((id) => id !== requestId));
+  };
+
+  const handleAcceptInternal = async (request: FriendRequest) => {
+    if (!user) {
+      return;
+    }
+
+    setProcessingIds((prev) => (prev.includes(request.id) ? prev : [...prev, request.id]));
+    try {
+      const { error: updateError } = await supabase
+        .from('friend_requests')
+        .update({ status: 'accepted' })
+        .eq('id', request.id);
+      if (updateError) {
+        console.error('AddFriendModal: error updating request', updateError);
+        return;
+      }
+
+      const [user1, user2] = [request.from_user_id, request.to_user_id].sort();
+      const { error: insertError } = await supabase
+        .from('friends')
+        .insert([{ user1, user2 }]);
+      if (insertError && !insertError.message?.toLowerCase().includes('duplicate')) {
+        console.error('AddFriendModal: error creating friendship', insertError);
+        return;
+      }
+
+      setInternalReceivedRequests((prev) => prev.filter((req) => req.id !== request.id));
+
+      if (onRefreshRequests) {
+        await onRefreshRequests();
+      }
+    } catch (err) {
+      console.error('AddFriendModal: unexpected error accepting request', err);
+    } finally {
+      finishProcessing(request.id);
+    }
+  };
+
+  const handleRejectInternal = async (request: FriendRequest) => {
+    if (!user) {
+      return;
+    }
+
+    setProcessingIds((prev) => (prev.includes(request.id) ? prev : [...prev, request.id]));
+    try {
+      const { error: updateError } = await supabase
+        .from('friend_requests')
+        .update({ status: 'rejected' })
+        .eq('id', request.id);
+      if (updateError) {
+        console.error('AddFriendModal: error rejecting request', updateError);
+        return;
+      }
+
+      setInternalReceivedRequests((prev) => prev.filter((req) => req.id !== request.id));
+
+      if (onRefreshRequests) {
+        await onRefreshRequests();
+      }
+    } catch (err) {
+      console.error('AddFriendModal: unexpected error rejecting request', err);
+    } finally {
+      finishProcessing(request.id);
+    }
+  };
+
+  const handleAcceptClick = (request: FriendRequest) => {
+    if (onAccept) {
+      onAccept(request);
+      return;
+    }
+
+    void handleAcceptInternal(request);
+  };
+
+  const handleRejectClick = (request: FriendRequest) => {
+    if (onReject) {
+      onReject(request);
+      return;
+    }
+
+    void handleRejectInternal(request);
+  };
 
   // Check if user exists in DB when username changes
   useEffect(() => {
@@ -112,6 +205,14 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
     return () => { cancelled = true; };
   }, [username]);
 
+  useEffect(() => {
+    if (!hasExternalReceivedRequests) {
+      return;
+    }
+
+    setInternalReceivedRequests(externalReceivedRequests);
+  }, [externalReceivedRequests, hasExternalReceivedRequests]);
+
   // Keep visibleSentRequests in sync with sentRequests from parent
   useEffect(() => {
     if (!hasExternalSentRequests) {
@@ -126,6 +227,73 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       return externalSentRequests;
     });
   }, [externalSentRequests, hasExternalSentRequests]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    if (hasExternalReceivedRequests) {
+      return;
+    }
+    if (!user?.id) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchReceivedRequests = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('friend_requests')
+          .select('id, from_user_id, to_user_id, status, created_at, from_user:profiles!friend_requests_from_user_id_fkey(id, username)')
+          .eq('to_user_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          console.error('AddFriendModal: error fetching received requests', error);
+          return;
+        }
+
+        const normalized: FriendRequest[] = (data ?? []).map((row: any) => {
+          const base: FriendRequest = {
+            id: String(row.id),
+            from_user_id: String(row.from_user_id),
+            to_user_id: String(row.to_user_id),
+            status: row.status as FriendRequest['status'],
+          };
+
+          const fromProfile = normalizeProfile((row as any).from_user);
+          if (fromProfile) {
+            base.from_user = fromProfile;
+          }
+
+          return base;
+        });
+
+        setInternalReceivedRequests((prev) => {
+          if (!haveRequestsChanged(prev, normalized)) {
+            return prev;
+          }
+          return normalized;
+        });
+      } catch (fetchError) {
+        if (!cancelled) {
+          console.error('AddFriendModal: unexpected error fetching received requests', fetchError);
+        }
+      }
+    };
+
+    fetchReceivedRequests();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasExternalReceivedRequests, isOpen, user?.id]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -215,12 +383,12 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       setError('Enter a username');
       return;
     }
-    // Check if already a friend (case-insensitive)
-    const alreadyFriend = friends.some((f) => (f.username || '').toLowerCase() === trimmedUsername.toLowerCase());
-    if (alreadyFriend) {
-      setError('This user is already your friend.');
-      return;
-    }
+    // Check if already a friend (case-insensitive) - temporarily disabled since friends list is not available
+    // const alreadyFriend = friends.some((f) => (f.username || '').toLowerCase() === trimmedUsername.toLowerCase());
+    // if (alreadyFriend) {
+    //   setError('This user is already your friend.');
+    //   return;
+    // }
     setError('');
     if (onSendRequest) {
       setIsSubmitting(true);
@@ -362,15 +530,15 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
         >
           <span className="relative inline-block">
             Received
-            {receivedRequests.length > 0 && (
+            {receivedCount > 0 && (
               <span className="absolute -top-2 -right-4 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)]"></span>
             )}
           </span>
         </button>
         <span className="text-[var(--border-primary)] font-bold">|</span>
         <button
-          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'pending' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
-          onClick={() => setTab('pending')}
+          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'sent' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          onClick={() => setTab('sent')}
         >
           Sent{visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length > 0 ? ` (${visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length})` : ''}
         </button>
@@ -407,24 +575,26 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
       )}
       {tab === 'received' && (
         <div className="w-full flex flex-col gap-2 py-4">
-          {receivedRequests.length === 0 ? (
+          {displayedReceivedRequests.length === 0 ? (
             <div className="text-[var(--text-secondary)] text-center">No received requests</div>
           ) : (
-            receivedRequests.map((req, i) => (
+            displayedReceivedRequests.map((req, i) => (
               <div key={i} className="flex items-center justify-between bg-[var(--bg-secondary)] rounded-lg px-3 py-2">
                 <span className="text-[var(--text-primary)] font-medium">{req.from_user?.username || req.from_user_id}</span>
                 <div className="flex gap-2">
                   <button
                     className="px-2 py-1 rounded bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
-                    onClick={() => onAccept && onAccept(req)}
+                    onClick={() => handleAcceptClick(req)}
+                    disabled={processingIds.includes(req.id)}
                   >
-                    Accept
+                    {processingIds.includes(req.id) ? 'Processing...' : 'Accept'}
                   </button>
                   <button
                     className="px-2 py-1 rounded bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
-                    onClick={() => onReject && onReject(req)}
+                    onClick={() => handleRejectClick(req)}
+                    disabled={processingIds.includes(req.id)}
                   >
-                    Reject
+                    {processingIds.includes(req.id) ? 'Processing...' : 'Reject'}
                   </button>
                 </div>
               </div>
@@ -432,13 +602,13 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
           )}
         </div>
       )}
-      {tab === 'pending' && (
+      {tab === 'sent' && (
         <div className="w-full flex flex-col gap-2 py-4">
           {visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length === 0 ? (
             <div className="text-[var(--text-secondary)] text-center">No pending requests</div>
           ) : (
             visibleSentRequests.filter(req => !deletingIds.includes(req.id)).map((req, i) => (
-              <div key={i} className="flex flex-row items-center bg-[var(--bg-secondary)] rounded-lg px-3 py-2 min-h-[2.5rem]">
+              <div key={`req-${i}`} className="flex flex-row items-center bg-[var(--bg-secondary)] rounded-lg px-3 py-2 min-h-[2.5rem]">
                 <div className="flex-1 flex items-center min-w-0">
                   <span className="text-[var(--text-primary)] font-medium whitespace-nowrap">{req.to_user?.username || req.to_user_id}</span>
                 </div>
@@ -448,13 +618,9 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests = [],
                     className="p-1 rounded-full hover:bg-red-500/20 text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                     onClick={() => handleDeletePending(req)}
                     disabled={deletingIds.includes(req.id)}
-                    title="Delete request"
+                    title="Cancel request"
                   >
-                    {deletingIds.includes(req.id) ? (
-                      <span className="w-4 h-4 animate-spin border-2 border-red-500 border-t-transparent rounded-full inline-block"></span>
-                    ) : (
-                      <X size={16} />
-                    )}
+                    <X size={16} />
                   </button>
                 </div>
               </div>

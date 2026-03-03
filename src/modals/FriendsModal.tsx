@@ -1,7 +1,11 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import BaseModal from './BaseModal';
+import FriendDetailModal from './FriendDetailModal';
+import ShareWorkspaceModal from './ShareWorkspaceModal';
 import { Trash2 } from 'lucide-react';
 import { Workspace } from '@/types/workspace';
-import { useState } from 'react';
+import { supabase } from '@/utils/supabaseClient';
 
 // Friend interface with additional properties used in this component
 interface Friend {
@@ -9,40 +13,6 @@ interface Friend {
   username?: string;
   email?: string;
   avatar_url?: string;
-}
-
-interface FriendDetailModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  friend: Friend;
-  sharedWorkspaces: Workspace[];
-}
-
-const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, friend, sharedWorkspaces }) => {
-  if (!friend) return null;
-  return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title={friend.username || friend.email || 'Friend'} maxWidth="max-w-sm">
-      <div className="flex flex-col items-center gap-4 py-4">
-        <img
-          src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
-          alt={friend.username || friend.email || 'Avatar'}
-          className="w-20 h-20 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
-        />
-        <div className="text-lg font-semibold text-[var(--text-primary)]">{friend.username || friend.email || friend.id}</div>
-        <div className="text-sm text-[var(--text-secondary)]">{friend.email}</div>
-        <div className="w-full mt-4">
-          <span className="font-semibold text-[var(--accent-primary)]">Shared Workspaces:</span>
-          <ul className="list-disc ml-5 mt-2">
-            {(sharedWorkspaces?.length > 0)
-              ? sharedWorkspaces.map((ws: Workspace) => (
-                  <li key={ws.id} className="text-[var(--text-primary)]">{ws.name}</li>
-                ))
-              : <li className="text-[var(--text-secondary)]">No shared workspaces</li>}
-          </ul>
-        </div>
-      </div>
-    </BaseModal>
-  );
 };
 
 interface FriendsModalProps {
@@ -51,10 +21,142 @@ interface FriendsModalProps {
   friends?: Friend[];
   onRemoveFriend?: (friend: Friend) => void;
   sharedWorkspaces?: Record<string, Workspace[]>;
+  availableWorkspaces?: Workspace[];
+  currentUserId?: string;
 }
 
-const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWorkspaces = {} }) => {
+const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = [], onRemoveFriend, sharedWorkspaces = {}, availableWorkspaces = [], currentUserId }) => {
   const [selected, setSelected] = useState<Friend | null>(null); // amigo seleccionado para modal
+  const [sharedByUser, setSharedByUser] = useState<any[]>([]);
+  const [sharedWithUser, setSharedWithUser] = useState<any[]>([]);
+  const [sharedLoading, setSharedLoading] = useState(false);
+  const [sharedError, setSharedError] = useState<string | null>(null);
+  const friendsRef = useRef(friends);
+
+  useEffect(() => {
+    friendsRef.current = friends;
+  }, [friends]);
+
+  const fetchSharedWorkspaces = useCallback(async () => {
+    if (!currentUserId) {
+      setSharedByUser([]);
+      setSharedWithUser([]);
+      return;
+    }
+
+    try {
+      setSharedLoading(true);
+      setSharedError(null);
+
+      // Backfill legacy rows where user_id was not set but the workspace was received by the current user
+      const { error: updateError } = await supabase
+        .from('shared_workspaces')
+        .update({ user_id: currentUserId })
+        .is('user_id', null)
+        .eq('received_by', currentUserId);
+
+      if (updateError) {
+        console.warn('Error backfilling user_id:', updateError);
+        // Continue anyway, don't block the fetch
+      }
+
+      const { data, error } = await supabase
+        .from('shared_workspaces')
+        .select('id, workspace_id, shared_by, received_by, user_id, created_at, workspace_name, workspace_icon')
+        .or(`shared_by.eq.${currentUserId},received_by.eq.${currentUserId},user_id.eq.${currentUserId}`);
+
+      if (error) {
+        throw error;
+      }
+
+      const partnerIds = Array.from(
+        new Set(
+          (data || [])
+            .map(row => (row.shared_by === currentUserId ? row.received_by : row.shared_by))
+            .filter((id): id is string => !!id)
+        )
+      );
+
+      let partnerProfiles: Record<string, any> = {};
+
+      if (partnerIds.length > 0) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username, email, avatar_url')
+          .in('id', partnerIds);
+
+        if (!profileError && profileData) {
+          partnerProfiles = profileData.reduce<Record<string, any>>((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {});
+        }
+      }
+
+      friendsRef.current.forEach(friend => {
+        if (friend?.id && !partnerProfiles[friend.id]) {
+          partnerProfiles[friend.id] = friend;
+        }
+      });
+
+      const outgoing: any[] = [];
+      const incoming: any[] = [];
+
+      (data || []).forEach(row => {
+        const workspace = {
+          id: row.workspace_id,
+          name: row.workspace_name || 'Shared workspace',
+          icon: row.workspace_icon || 'Briefcase'
+        };
+        const partnerId = row.shared_by === currentUserId ? row.received_by : row.shared_by || row.user_id;
+        const partner = partnerId ? partnerProfiles[partnerId] : null;
+        const entry = {
+          id: row.id,
+          workspace,
+          partner,
+          created_at: row.created_at,
+        };
+
+        if (row.shared_by === currentUserId) {
+          outgoing.push(entry);
+        } else {
+          incoming.push(entry);
+        }
+      });
+
+      setSharedByUser(outgoing);
+      setSharedWithUser(incoming);
+    } catch (err) {
+      console.error('FriendsModal: error fetching shared workspaces', err);
+      setSharedError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSharedLoading(false);
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      void fetchSharedWorkspaces();
+    }
+  }, [isOpen, fetchSharedWorkspaces]);
+
+  const handleUnshareWorkspace = async (shareId: string) => {
+    try {
+      const { error } = await supabase
+        .from('shared_workspaces')
+        .delete()
+        .eq('id', shareId);
+      
+      if (error) {
+        console.error('Error unsharing workspace:', error);
+      } else {
+        console.log('Workspace unshared successfully');
+      }
+      await fetchSharedWorkspaces();
+    } catch (error) {
+      console.error('Error unsharing workspace:', error);
+    }
+  };
 
   return (
     <>
@@ -102,6 +204,8 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = 
             </ul>
           )}
         </div>
+        
+
       </BaseModal>
       {/* Modal de detalle de amigo */}
       <FriendDetailModal
@@ -109,9 +213,13 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = 
         onClose={() => setSelected(null)}
         friend={selected!}
         sharedWorkspaces={selected ? (sharedWorkspaces[selected.id] || []) : []}
+        availableWorkspaces={availableWorkspaces}
+        allFriends={friends}
+        {...(currentUserId && { currentUserId })}
+        {...(onRemoveFriend && { onRemoveFriend })}
       />
     </>
   );
 };
 
-export default FriendsModal; 
+export default FriendsModal;

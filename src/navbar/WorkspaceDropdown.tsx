@@ -12,6 +12,8 @@ interface WorkspaceDropdownProps {
   onEditWorkspace: (workspace: Workspace & { taskCount?: number }) => void;
   onDeleteWorkspace: (workspaceId: string | number) => void;
   onRefreshWorkspaces?: () => void;
+  friends?: any[];
+  currentUserId?: string;
 }
 
 const iconOptions: { [key: string]: React.ComponentType<any> } = {
@@ -45,6 +47,8 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
   onEditWorkspace,
   onDeleteWorkspace,
   onRefreshWorkspaces,
+  friends = [],
+  currentUserId,
 }) => {
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
 
@@ -101,6 +105,8 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
         onEditWorkspace={onEditWorkspace}
         onDeleteWorkspace={onDeleteWorkspace}
         {...(onRefreshWorkspaces && { onRefreshWorkspaces })}
+        friends={friends}
+        {...(currentUserId && { currentUserId })}
       />
     </>
   );

@@ -43,12 +43,18 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
 
     setError('');
     if (onShare) {
-      const recipient = selectedFriend.username || selectedFriend.email || selectedFriend.id;
-      onShare(selectedWorkspace.id.toString(), recipient, {
+      const recipientId = selectedFriend.id || selectedFriend.user_id || selectedFriend.received_by;
+      if (!recipientId) {
+        setError('Selected friend is missing an id.');
+        return;
+      }
+
+      onShare(selectedWorkspace.id.toString(), recipientId, {
         onSuccess: () => {
           setSuccess('Workspace shared successfully!');
           setSelectedWorkspace(null);
           setSelectedFriend(null);
+          setError('');
         },
         onError: (msg?: string) => setError(msg || 'Error sharing workspace'),
       });

@@ -1,12 +1,12 @@
 import { BarChart3, BookOpen, Calendar, CircleCheckBig, Github, ListTodo, Timer } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
-import Settings from './Settings';
 import SettingsButton from './SettingsButton';
+import SettingsPanel from '@/modals/Settings';
 import WorkspaceDropdown from './WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-hot-toast';
 import useAppStore from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -27,6 +27,7 @@ const Navbar = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const initialRequestsFetchedRef = useRef(false);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -124,8 +125,26 @@ const Navbar = () => {
       .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
       .eq('from_user_id', user.id)
       .eq('status', 'pending');
-    setReceivedRequests(rec || []);
+    let newlyReceived: any[] = [];
+    setReceivedRequests(prev => {
+      const previousIds = new Set(prev.map((request: any) => request.id));
+      newlyReceived = (rec || []).filter((request: any) => !previousIds.has(request.id));
+      return rec || [];
+    });
     setSentRequests(sent || []);
+
+    if (initialRequestsFetchedRef.current && newlyReceived.length > 0) {
+      if (newlyReceived.length === 1) {
+        const senderName = newlyReceived[0]?.from_user?.username || 'Someone';
+        toast.success(`New friend request from ${senderName}`);
+      } else {
+        toast.success(`${newlyReceived.length} new friend requests`);
+      }
+    }
+
+    if (!initialRequestsFetchedRef.current) {
+      initialRequestsFetchedRef.current = true;
+    }
   }, [user?.id]); // Only depend on user.id, not the entire user object
   useEffect(() => {
     fetchRequests();
@@ -368,6 +387,14 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden" data-tour="navbar">
+      <ToastContainer
+        position="top-center"
+        autoClose={4000}
+        theme="dark"
+        pauseOnHover={false}
+        hideProgressBar
+        toastClassName="!bg-[var(--bg-secondary)] !text-[var(--text-primary)] !border !border-[var(--border-primary)] !text-sm"
+      />
       <div className="w-full px-2 overflow-x-hidden">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo a la izquierda */}
@@ -445,14 +472,14 @@ const Navbar = () => {
                 onCreateWorkspace={handleCreateWorkspace}
                 onEditWorkspace={handleEditWorkspace}
                 onDeleteWorkspace={handleDeleteWorkspace}
-                onRefreshWorkspaces={refreshWorkspaces}
-                data-tour="workspace-selector"
+                friends={friends}
+                {...(user?.id && { currentUserId: user.id })}
               />
               <a
                 href="https://github.com/rickypcyt/unitracker"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)]"
                 title="View on GitHub"
               >
                 <Github className="w-5 h-5" />
@@ -480,9 +507,11 @@ const Navbar = () => {
         </div>
       </div>
       {showSettings && (
-        <Settings
+        <SettingsPanel
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
+          friends={friends}
+          workspaces={workspacesWithTaskCount}
         />
       )}
     </nav>

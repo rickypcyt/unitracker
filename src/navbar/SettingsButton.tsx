@@ -10,6 +10,7 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import SettingsModal from '@/modals/Settings';
 import UserModal from '@/modals/UserModal';
 import WorkspaceModal from '@/modals/WorkspaceModal';
+import { useAuth } from '@/hooks/useAuth';
 import { useChangelog } from '@/hooks/useChangelog';
 import { useState } from 'react';
 
@@ -53,6 +54,7 @@ const SettingsButton = ({
   githubUrl?: string;
 }) => {
   const { hasNewChanges, markAsSeen } = useChangelog();
+  const { user } = useAuth();
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -171,10 +173,14 @@ const SettingsButton = ({
         isOpen={showFriendsModal}
         onClose={() => setShowFriendsModal(false)}
         friends={friends}
+        availableWorkspaces={workspaces}
+        {...(user?.id && { currentUserId: user.id })}
       />
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
+        friends={friends}
+        workspaces={workspaces}
       />
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
       <WorkspaceModal
@@ -186,6 +192,8 @@ const SettingsButton = ({
         onCreateWorkspace={onCreateWorkspace || (() => {})}
         onEditWorkspace={onEditWorkspace || (() => {})}
         onDeleteWorkspace={onDeleteWorkspace || (() => {})}
+        friends={friends}
+        {...(user?.id && { currentUserId: user.id })}
       />
       <NewFeaturesModal
         isOpen={showNewFeaturesModal}

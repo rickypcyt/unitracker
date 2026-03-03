@@ -1,4 +1,4 @@
-import { BookOpen, Briefcase, Check, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Music, Plane, Plus, Share, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { BookOpen, Briefcase, Check, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Loader2, Music, Plane, Plus, Share, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
@@ -68,6 +68,120 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [sharedByUser, setSharedByUser] = useState<any[]>([]);
+  const [sharedWithUser, setSharedWithUser] = useState<any[]>([]);
+  const [sharedLoading, setSharedLoading] = useState(false);
+  const [sharedError, setSharedError] = useState<string | null>(null);
+  const friendsRef = useRef(friends);
+  const workspacesRef = useRef(workspaces);
+
+  useEffect(() => {
+    friendsRef.current = friends;
+  }, [friends]);
+
+  useEffect(() => {
+    workspacesRef.current = workspaces;
+  }, [workspaces]);
+
+  const fetchSharedWorkspaces = useCallback(async () => {
+    if (!currentUserId) {
+      setSharedByUser([]);
+      setSharedWithUser([]);
+      return;
+    }
+
+    try {
+      setSharedLoading(true);
+      setSharedError(null);
+
+      // Backfill legacy rows where user_id was not set but the workspace was received by the current user
+      const { error: updateError } = await supabase
+        .from('shared_workspaces')
+        .update({ user_id: currentUserId })
+        .is('user_id', null)
+        .eq('received_by', currentUserId);
+
+      if (updateError) {
+        console.warn('Error backfilling user_id:', updateError);
+        // Continue anyway, don't block the fetch
+      }
+
+      const currentWorkspaces = workspacesRef.current ?? [];
+      const currentFriends = friendsRef.current ?? [];
+
+      const { data, error } = await supabase
+        .from('shared_workspaces')
+        .select('id, workspace_id, shared_by, received_by, user_id, created_at, workspace_name, workspace_icon')
+        .or(`shared_by.eq.${currentUserId},received_by.eq.${currentUserId},user_id.eq.${currentUserId}`);
+
+      if (error) {
+        throw error;
+      }
+
+      const partnerIds = Array.from(
+        new Set(
+          (data || [])
+            .map(row => (row.shared_by === currentUserId ? row.received_by : row.shared_by))
+            .filter((id): id is string => !!id)
+        )
+      );
+
+      let partnerProfiles: Record<string, any> = {};
+
+      if (partnerIds.length > 0) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username, email, avatar_url')
+          .in('id', partnerIds);
+
+        if (!profileError && profileData) {
+          partnerProfiles = profileData.reduce<Record<string, any>>((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {});
+        }
+      }
+
+      currentFriends.forEach(friend => {
+        if (friend?.id && !partnerProfiles[friend.id]) {
+          partnerProfiles[friend.id] = friend;
+        }
+      });
+
+      const outgoing: any[] = [];
+      const incoming: any[] = [];
+
+      (data || []).forEach(row => {
+        const workspace = {
+          id: row.workspace_id,
+          name: row.workspace_name || 'Shared workspace',
+          icon: row.workspace_icon || 'Briefcase'
+        };
+        const partnerId = row.shared_by === currentUserId ? row.received_by : row.shared_by || row.user_id;
+        const partner = partnerId ? partnerProfiles[partnerId] : null;
+        const entry = {
+          id: row.id,
+          workspace,
+          partner,
+          created_at: row.created_at,
+        };
+
+        if (row.shared_by === currentUserId) {
+          outgoing.push(entry);
+        } else {
+          incoming.push(entry);
+        }
+      });
+
+      setSharedByUser(outgoing);
+      setSharedWithUser(incoming);
+    } catch (err) {
+      console.error('WorkspaceModal: error fetching shared workspaces', err);
+      setSharedError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSharedLoading(false);
+    }
+  }, [currentUserId]);
 
   // Refresh workspace data when modal opens
   useEffect(() => {
@@ -81,20 +195,55 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     return ws.taskCount || 0;
   };
 
+  const handleUnshareWorkspace = async (shareId: string) => {
+    try {
+      const { error } = await supabase
+        .from('shared_workspaces')
+        .delete()
+        .eq('id', shareId);
+      
+      if (error) {
+        console.error('Error unsharing workspace:', error);
+        // Could add toast notification here
+      } else {
+        console.log('Workspace unshared successfully');
+        // Could add success toast here
+      }
+      await fetchSharedWorkspaces();
+    } catch (error) {
+      console.error('Error unsharing workspace:', error);
+    }
+  };
+
   const handleShareWorkspace = async (
     workspaceId: string,
     recipient: string,
     { onSuccess, onError }: { onSuccess?: () => void; onError?: (message: string) => void }
   ) => {
     try {
+      // Find the workspace to get its name and icon
+      const workspace = workspacesRef.current.find(ws => String(ws.id) === workspaceId);
+      
       const { error } = await supabase
         .from('shared_workspaces')
-        .insert([{ workspace_id: workspaceId, shared_by: currentUserId || '', received_by: recipient }]);
+        .insert([{ 
+          workspace_id: workspaceId, 
+          shared_by: currentUserId || '', 
+          received_by: recipient,
+          user_id: recipient,
+          workspace_name: workspace?.name || 'Shared workspace',
+          workspace_icon: workspace?.icon || 'Briefcase'
+        }]);
       if (error) {
-        onError && onError(error.message);
+        if (error.message?.toLowerCase().includes('duplicate')) {
+          onError && onError('This workspace is already shared with that user.');
+        } else {
+          onError && onError(error.message);
+        }
         return;
       }
       onSuccess && onSuccess();
+      await fetchSharedWorkspaces();
     } catch (err) {
       const error = err as Error;
       onError?.(error.message);
@@ -163,10 +312,11 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
           firstItem.focus();
         }
       }, 100);
+      void fetchSharedWorkspaces();
     } else {
       setFocusedIndex(-1);
     }
-  }, [isOpen]);
+  }, [isOpen, fetchSharedWorkspaces]);
 
   const sortedWorkspaces = useMemo(() => {
     // Create the "All" workspace
@@ -223,6 +373,86 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
             </button>
           ))}
           
+          <div className="border-t border-[var(--border-primary)] pt-4 mt-4 space-y-3">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Shared Workspaces</h3>
+            {sharedLoading ? (
+              <div className="flex items-center gap-2 text-[var(--text-secondary)] text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading shared workspaces...
+              </div>
+            ) : (
+              <>
+                {sharedError && (
+                  <div className="text-sm text-red-500">{sharedError}</div>
+                )}
+
+                {sharedByUser.length === 0 && sharedWithUser.length === 0 && !sharedError ? (
+                  <div className="text-sm text-[var(--text-secondary)]">You haven&apos;t shared or received any workspaces yet.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {sharedByUser.length > 0 && (
+                      <div className="space-y-2">
+                        <ul className="space-y-2">
+                          {sharedByUser.map(entry => (
+                            <li key={entry.id} className="flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
+                                <div className="text-xs text-[var(--text-secondary)] truncate">
+                                  Shared with {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-xs text-[var(--text-secondary)]">
+                                  {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                </div>
+                                <button
+                                  onClick={() => handleUnshareWorkspace(entry.id)}
+                                  className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors"
+                                  title="Stop sharing"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {sharedWithUser.length > 0 && (
+                      <div className="space-y-2">
+                        <ul className="space-y-2">
+                          {sharedWithUser.map(entry => (
+                            <li key={entry.id} className="flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
+                                <div className="text-xs text-[var(--text-secondary)] truncate">
+                                  Shared by {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-xs text-[var(--text-secondary)]">
+                                  {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                </div>
+                                <button
+                                  onClick={() => handleUnshareWorkspace(entry.id)}
+                                  className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors"
+                                  title="Remove from shared workspaces"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
           <div className="border-t border-[var(--border-primary)] pt-4 mt-4 space-y-2">
             <button
               onClick={() => setShowCreateModal(true)}

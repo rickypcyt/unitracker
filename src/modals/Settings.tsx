@@ -36,9 +36,11 @@ interface AccentColor {
 interface SettingsProps {
   isOpen: boolean;
   onClose: () => void;
+  friends?: any[];
+  workspaces?: any[];
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], workspaces = [] }) => {
   const {
     accentPalette,
     setAccentPalette,
@@ -319,6 +321,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
       <FriendsModal
         isOpen={showFriendsModal}
         onClose={() => setShowFriendsModal(false)}
+        friends={friends}
+        availableWorkspaces={workspaces}
       />
       <ManageCompletedTasksModal
         isOpen={showCompletedTasksModal}
