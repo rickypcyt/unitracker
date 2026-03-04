@@ -938,23 +938,20 @@ const TaskForm = ({
         if (e.key === 'Enter' && !e.shiftKey) {
           const activeElement = document.activeElement;
           
-          // Check if focused on title input
-          const isTitleInput = activeElement?.id === 'title';
-          
-          // Check if focused on subject autocomplete input
-          const isSubjectInput = activeElement?.id === 'assignment';
+          // Check if focused on text inputs (title, assignment, time inputs)
+          const isTextInput = activeElement?.tagName === 'INPUT' && 
+            (activeElement?.type === 'text' || activeElement?.type === 'time');
           
           // Check if focused in description editor (TipTap/ProseMirror)
           const isInDescription = 
             activeElement?.classList?.contains('ProseMirror') ||
             activeElement?.closest('.ProseMirror') !== null;
           
-          // Submit form only if in title or subject inputs, not in description
-          if ((isTitleInput || isSubjectInput) && !isInDescription) {
+          // Submit form only if in text inputs, not in description editor
+          if (isTextInput && !isInDescription) {
             e.preventDefault();
             e.stopPropagation();
-            const formEvent = new Event('submit', { cancelable: true });
-            e.currentTarget.dispatchEvent(formEvent);
+            handleSubmit(e as any);
           }
         }
       }}>
