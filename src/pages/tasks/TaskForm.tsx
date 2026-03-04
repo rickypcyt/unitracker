@@ -939,13 +939,15 @@ const TaskForm = ({
           const activeElement = document.activeElement;
           
           // Check if focused on text inputs (title, assignment, time inputs)
-          const isTextInput = activeElement?.tagName === 'INPUT' && 
-            (activeElement?.type === 'text' || activeElement?.type === 'time');
+          const isTextInput = activeElement instanceof HTMLInputElement && 
+            (activeElement.type === 'text' || activeElement.type === 'time');
           
           // Check if focused in description editor (TipTap/ProseMirror)
           const isInDescription = 
-            activeElement?.classList?.contains('ProseMirror') ||
-            activeElement?.closest('.ProseMirror') !== null;
+            activeElement instanceof HTMLElement && (
+              activeElement.classList?.contains('ProseMirror') ||
+              activeElement.closest('.ProseMirror') !== null
+            );
           
           // Submit form only if in text inputs, not in description editor
           if (isTextInput && !isInDescription) {
