@@ -3,6 +3,7 @@ import { FormInput, FormTextarea } from "@/modals/FormElements";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -44,12 +45,33 @@ const StartSessionModal = ({
   const [titleError, setTitleError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [assignment, setAssignment] = useState("");
-  const [assignments] = useState<string[]>([]);
-  const [includeTasks, setIncludeTasks] = useState(false);
+  const assignmentSuggestions = useMemo(() => (
+    [...new Set(
+      tasks
+        .map((task) => (task.assignment ?? "").trim())
+        .filter((value) => value.length > 0)
+    )].sort((a, b) => a.localeCompare(b))
+  ), [tasks]);
   
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const groupedTasks = useMemo(() => {
+    const groups = new Map<string, Task[]>();
+
+    tasks.forEach((task) => {
+      const key = task.assignment?.trim() || "No Assignment";
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(task);
+    });
+
+    return Array.from(groups.entries()).sort(([a], [b]) =>
+      a === "No Assignment" ? 1 : b === "No Assignment" ? -1 : a.localeCompare(b)
+    );
+  }, [tasks]);
   
   const fetchSessionTasks = useCallback(async () => {
     try {
@@ -270,231 +292,231 @@ const StartSessionModal = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Start Study Session"
-      className="w-full max-w-5xl px-4 sm:px-6"
-      fullWidthOnMd={true}
+      title="Start Session"
+      className="w-full px-4 sm:px-5"
+      maxWidth="max-w-[60rem]"
+      fullWidthOnMd={false}
     >
-      <div className="space-y-6 w-full">
-        {/* Session Details Section */}
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className=" bg-[var(--accent-primary)]/10 rounded-lg">
-              <Target size={20} className="text-[var(--accent-primary)]" />
-            </div>
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Session Details</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="session-title"
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
-                >
-                  Session Title <span className="text-red-500">*</span>
-                </label>
-                <FormInput
-                  id="session-title"
-                  label=""
-                  value={sessionTitle}
-                  onChange={(value) => {
-                    setSessionTitle(value);
-                    if (titleError && value.trim()) {
-                      setTitleError("");
-                    }
-                  }}
-                  error={titleError}
-                  required
-                  placeholder="e.g., Math Chapter 5 Review"
-                  className="text-base"
-                />
+      <div className="space-y-6 w-full max-w-[56rem] mx-auto">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <div className="space-y-6">
+            {/* Session Details Section */}
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className=" bg-[var(--accent-primary)]/10 rounded-lg">
+                  <Target size={20} className="text-[var(--accent-primary)]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">Session Details</h3>
               </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="assignment"
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
-                >
-                  Assignment (optional)
-                </label>
-                <AutocompleteInput
-                  id="assignment"
-                  value={assignment}
-                  onChange={setAssignment}
-                  placeholder="e.g., CS101 Homework"
-                  suggestions={assignments}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label
-                htmlFor="session-description"
-                className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
-              >
-                Description (optional)
-              </label>
-              <FormTextarea
-                id="session-description"
-                label=""
-                value={sessionDescription}
-                onChange={setSessionDescription}
-                error=""
-                placeholder="Add notes about what you want to accomplish..."
-                className="w-full resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Timer Sync Options */}
-            <div className="bg-[var(--bg-primary)] rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-3">
-                <h4 className="text-sm font-medium text-[var(--text-primary)]">Timer Options</h4>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSyncPomo((v) => !v)}
-                  className={`flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
-                    syncPomo 
-                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]" 
-                      : "border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]"
-                  }`}
-                >
-                  <span className="font-medium text-sm">Start Pomodoro Timer</span>
-                  {syncPomo ? (
-                    <Check size={18} className="text-[var(--accent-primary)]" />
-                  ) : (
-                    <Square size={18} />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSyncCountdown((v) => !v)}
-                  className={`flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
-                    syncCountdown 
-                      ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]" 
-                      : "border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]"
-                  }`}
-                >
-                  <span className="font-medium text-sm">Start Countdown Timer</span>
-                  {syncCountdown ? (
-                    <Check size={18} className="text-[var(--accent-primary)]" />
-                  ) : (
-                    <Square size={18} />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-[var(--border-primary)]/50"></div>
-
-        {/* Task Selection Section */}
-        <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <List size={20} className="text-blue-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Tasks</h3>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            {/* Include Tasks Toggle */}
-            <div className="flex items-center justify-between p-3 bg-[var(--bg-primary)] rounded-lg">
-              <div>
-                <div className="font-medium text-[var(--text-primary)]">Include tasks in this session?</div>
-                <div className="text-sm text-[var(--text-secondary)]">Select tasks to focus on during your study session</div>
-              </div>
-              <button
-                onClick={() => setIncludeTasks(!includeTasks)}
-                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 border-2 ${
-                  includeTasks ? "bg-[var(--accent-primary)] border-[var(--accent-primary)]" : "bg-[var(--bg-secondary)] border-[var(--border-primary)]"
-                }`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    includeTasks ? "translate-x-5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Task List - Only show when toggle is on */}
-            {includeTasks && (
-              <div className="space-y-2">
-                {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-[var(--text-secondary)]">
-                    <List size={48} className="mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No tasks available</p>
-                    <button
-                      onClick={() => setShowTaskForm(true)}
-                      className="mt-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="session-title"
+                      className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
                     >
-                      Create your first task
+                      Session Title <span className="text-red-500">*</span>
+                    </label>
+                    <FormInput
+                      id="session-title"
+                      label=""
+                      value={sessionTitle}
+                      onChange={(value) => {
+                        setSessionTitle(value);
+                        if (titleError && value.trim()) {
+                          setTitleError("");
+                        }
+                      }}
+                      error={titleError}
+                      required
+                      placeholder="e.g., Algebra Homework"
+                      className="text-base"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="assignment"
+                      className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
+                    >
+                      Assignment (optional)
+                    </label>
+                    <AutocompleteInput
+                      id="assignment"
+                      value={assignment}
+                      onChange={setAssignment}
+                      placeholder="e.g., Math"
+                      suggestions={assignmentSuggestions}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label
+                    htmlFor="session-description"
+                    className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]"
+                  >
+                    Description (optional)
+                  </label>
+                  <FormTextarea
+                    id="session-description"
+                    label=""
+                    value={sessionDescription}
+                    onChange={setSessionDescription}
+                    error=""
+                    placeholder="Add notes about what you want to accomplish..."
+                    className="w-full resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Timer Sync Options */}
+                <div className="bg-[var(--bg-primary)] rounded-lg ">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h4 className="text-sm font-medium text-[var(--text-primary)]">Timer Options</h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSyncPomo((v) => !v)}
+                      className={`flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
+                        syncPomo 
+                          ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]" 
+                          : "border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]"
+                      }`}
+                    >
+                      <span className="font-medium text-sm">Start Pomodoro Timer</span>
+                      {syncPomo ? (
+                        <Check size={18} className="text-[var(--accent-primary)]" />
+                      ) : (
+                        <Square size={18} />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSyncCountdown((v) => !v)}
+                      className={`flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg border-2 transition-all duration-200 ${
+                        syncCountdown 
+                          ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]" 
+                          : "border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)]"
+                      }`}
+                    >
+                      <span className="font-medium text-sm">Start Countdown Timer</span>
+                      {syncCountdown ? (
+                        <Check size={18} className="text-[var(--accent-primary)]" />
+                      ) : (
+                        <Square size={18} />
+                      )}
                     </button>
                   </div>
-                ) : (
-                  <div className="max-h-48 overflow-y-auto space-y-1">
-                    {tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        onClick={() => {
-                          setSelectedTasks(prev => {
-                            if (prev.includes(task.id)) {
-                              return prev.filter(id => id !== task.id);
-                            } else {
-                              return [...prev, task.id];
-                            }
-                          });
-                        }}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                          selectedTasks.includes(task.id)
-                            ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10"
-                            : "border-[var(--border-primary)] hover:bg-[var(--bg-hover)]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                              selectedTasks.includes(task.id)
-                                ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]"
-                                : "border-[var(--border-primary)]"
-                            }`}>
-                              {selectedTasks.includes(task.id) && (
-                                <Check size={12} className="text-white" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-[var(--text-primary)] text-sm">
-                                {task.title}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-[var(--border-primary)]/50 lg:hidden"></div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Task Selection Section */}
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <List size={20} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-[var(--text-primary)]">Tasks</h3>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                    {tasks.length === 0 ? (
+                      <div className="text-center py-8 text-[var(--text-secondary)]">
+                        <List size={48} className="mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No tasks available</p>
+                        <button
+                          onClick={() => setShowTaskForm(true)}
+                          className="mt-2 text-sm text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
+                        >
+                          Create your first task
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="max-h-56 overflow-y-auto pr-1 [scrollbar-color:var(--accent-primary)_transparent] space-y-3">
+                        {groupedTasks.map(([assignmentLabel, grouped]) => (
+                          <div key={assignmentLabel} className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+                                <span className="h-2 w-2 rounded-full bg-[var(--accent-primary)]"></span>
+                                {assignmentLabel}
                               </div>
-                              {task.assignment && (
-                                <div className="text-xs text-[var(--text-secondary)]">
-                                  {task.assignment}
-                                </div>
-                              )}
+                              <span className="text-[10px] text-[var(--text-tertiary)]">{grouped.length} task{grouped.length !== 1 ? "s" : ""}</span>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                              {grouped.map((task) => {
+                                const isSelected = selectedTasks.includes(task.id);
+                                return (
+                                  <div
+                                    key={task.id}
+                                    onClick={() => {
+                                      setSelectedTasks((prev) => {
+                                        if (prev.includes(task.id)) {
+                                          return prev.filter((id) => id !== task.id);
+                                        }
+                                        return [...prev, task.id];
+                                      });
+                                    }}
+                                    className={`group relative flex w-full cursor-pointer flex-col gap-3 rounded-xl border-2 p-4 transition-all duration-200 ${
+                                      isSelected
+                                        ? "border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-[0_10px_30px_-18px_rgba(34,197,94,0.6)]"
+                                        : "border-[var(--border-primary)] bg-[var(--bg-primary)] hover:border-[var(--accent-primary)]/70 hover:bg-[var(--bg-secondary)]"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex-1 min-w-[200px]">
+                                        <div className="text-sm font-semibold text-[var(--text-primary)]">
+                                          {task.title}
+                                        </div>
+                                        {task.assignment && (
+                                          <div className="mt-1 text-xs font-medium uppercase tracking-wide text-[var(--text-tertiary)]">
+                                            {task.assignment}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div
+                                        className={`ml-auto flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg border-2 transition-colors duration-200 ${
+                                          isSelected
+                                            ? "border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent"
+                                            : "border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:border-[var(--accent-primary)]"
+                                        }`}
+                                      >
+                                        {isSelected && <Check size={14} />}
+                                      </div>
+                                    </div>
+                                    {task.description && (
+                                      task.description.includes('<') ? (
+                                        <div
+                                          className="text-[var(--text-secondary)] text-xs leading-relaxed break-words prose prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-li:whitespace-pre-wrap"
+                                          dangerouslySetInnerHTML={{ __html: task.description }}
+                                        />
+                                      ) : (
+                                        <p className="text-xs leading-relaxed text-[var(--text-secondary)] line-clamp-3 whitespace-pre-line">
+                                          {task.description}
+                                        </p>
+                                      )
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-                
-                {/* Add Task Button */}
-                {tasks.length > 0 && (
-                  <button
-                    onClick={() => setShowTaskForm(true)}
-                    className="w-full p-2 border-2 border-dashed border-[var(--border-primary)] rounded-lg text-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors duration-200 text-sm"
-                  >
-                    + Add new task
-                  </button>
-                )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -521,33 +543,31 @@ const StartSessionModal = ({
                   ? "bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-secondary)] cursor-not-allowed"
                   : "text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10"
               }`}
-              aria-label={isSubmitting ? "Starting session" : "Start study session"}
+              aria-label={isSubmitting ? "Starting session" : "Start session"}
             >
               {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" aria-hidden="true"></div>
-                    Starting...
-                  </>
-                ) : (
-                  <>
-                    Start Session
-                  </>
-                )}
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" aria-hidden="true"></div>
+                  Starting...
+                </>
+              ) : (
+                <>Start Session</>
+              )}
             </button>
           </div>
         </div>
-        </div>
 
-      {showTaskForm && (
-        <TaskForm
-          onClose={() => setShowTaskForm(false)}
-          onTaskCreated={(newTaskId) => {
-            setLastAddedTaskId(newTaskId);
-          }}
-        />
-      )}
-    </BaseModal>
+        {showTaskForm && (
+          <TaskForm
+            onClose={() => setShowTaskForm(false)}
+            onTaskCreated={(newTaskId) => {
+              setLastAddedTaskId(newTaskId);
+            }}
+          />
+        )}
+      </BaseModal>
   );
 };
 
 export default StartSessionModal;
+

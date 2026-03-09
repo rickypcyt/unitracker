@@ -63,22 +63,43 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!showSuggestions || filtered.length === 0) return;
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       e.stopPropagation();
       setActiveIndex((prev) => (prev + 1) % filtered.length);
-    } else if (e.key === 'ArrowUp') {
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
       e.preventDefault();
       e.stopPropagation();
       setActiveIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
-    } else if (e.key === 'Enter' || e.key === 'Tab') {
-      if (activeIndex >= 0 && filtered[activeIndex]) {
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveIndex((prev) => {
+        const nextIndex = prev < 0 ? 0 : prev + (e.shiftKey ? -1 : 1);
+        return (nextIndex + filtered.length) % filtered.length;
+      });
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      const indexToUse = activeIndex >= 0 ? activeIndex : 0;
+      if (filtered[indexToUse]) {
         e.preventDefault();
         e.stopPropagation();
-        onChange(filtered[activeIndex]);
+        onChange(filtered[indexToUse]);
         setShowSuggestions(false);
       }
-    } else if (e.key === 'Escape') {
+      return;
+    }
+
+    if (e.key === 'Escape') {
       e.stopPropagation();
       setShowSuggestions(false);
     }

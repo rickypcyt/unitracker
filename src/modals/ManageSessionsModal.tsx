@@ -416,7 +416,7 @@ const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
               onClick={onClose}
               className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors"
             >
-              Start Studying
+              Start
             </button>
           </div>
         </div>
