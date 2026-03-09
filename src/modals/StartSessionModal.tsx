@@ -529,7 +529,7 @@ const StartSessionModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-8 py-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-secondary)] transition-all duration-200"
+              className="flex-1 px-8 py-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
               aria-label="Cancel and close modal"
             >
               Cancel
@@ -570,4 +570,3 @@ const StartSessionModal = ({
 };
 
 export default StartSessionModal;
-
