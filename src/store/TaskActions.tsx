@@ -50,34 +50,92 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
         throw new Error('Usuario no autenticado');
       }
 
-      // Filter by workspace if provided, otherwise get all tasks
-      let query = supabase
+      const taskSelectFields = 'id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_at, end_at';
+
+      // Fetch workspace ids shared with this user so we can include their tasks
+      const { data: sharedRecords, error: sharedWorkspaceError } = await supabase
+        .from('shared_workspaces')
+        .select('workspace_id, shared_by, received_by, user_id')
+        .or(`shared_by.eq.${user.id},received_by.eq.${user.id},user_id.eq.${user.id}`);
+
+      if (sharedWorkspaceError) {
+        console.error('fetchTasks: error fetching shared workspaces', sharedWorkspaceError);
+      }
+
+      const sharedWorkspaceIds = Array.from(
+        new Set(
+          (sharedRecords ?? [])
+            .filter(record => {
+              const workspaceId = record.workspace_id;
+              if (!workspaceId) return false;
+              const sharedBy = record.shared_by;
+              const receivedBy = record.received_by;
+              const userId = record.user_id;
+              const isOwner = sharedBy === user.id;
+              const isRecipient = receivedBy === user.id || userId === user.id;
+              return isOwner ? isRecipient : !!workspaceId;
+            })
+            .map(record => record.workspace_id)
+        )
+      );
+
+      // Fetch user's own tasks
+      let ownedQuery = supabase
         .from('tasks')
-        .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_at, end_at')
+        .select(taskSelectFields)
         .eq('user_id', user.id);
 
-      // Add workspace filter if workspaceId is provided
       if (workspaceId) {
-        query = query.eq('workspace_id', workspaceId);
+        ownedQuery = ownedQuery.eq('workspace_id', workspaceId);
       }
 
-      query = query.order('assignment');
+      ownedQuery = ownedQuery.order('assignment');
 
-      const { data, error } = await query;
+      const { data: ownedTasksData, error: ownedTasksError } = await ownedQuery;
 
-      if (error) throw error;
+      if (ownedTasksError) throw ownedTasksError;
+
+      const ownedTasks = ownedTasksData ?? [];
+
+      // Fetch tasks from workspaces shared with the user (if any)
+      const relevantSharedIds = workspaceId
+        ? sharedWorkspaceIds.filter(id => id === workspaceId)
+        : sharedWorkspaceIds;
+
+      let sharedTasks: any[] = [];
+
+      if (relevantSharedIds.length > 0) {
+        const { data: sharedTasksData, error: sharedTasksError } = await supabase
+          .from('tasks')
+          .select(taskSelectFields)
+          .in('workspace_id', relevantSharedIds)
+          .order('assignment');
+
+        if (sharedTasksError) {
+          console.error('fetchTasks: error fetching tasks from shared workspaces', sharedTasksError);
+        } else {
+          sharedTasks = (sharedTasksData ?? []).filter(task => task.user_id !== user.id);
+        }
+      }
+
+      // Merge and deduplicate tasks
+      const taskMap = new Map<string, any>();
+      [...ownedTasks, ...sharedTasks].forEach(task => {
+        if (task?.id) {
+          taskMap.set(String(task.id), task);
+        }
+      });
+
+      const combinedTasks = Array.from(taskMap.values()).sort((a, b) => {
+        const assignmentA = (a?.assignment ?? '').toLowerCase();
+        const assignmentB = (b?.assignment ?? '').toLowerCase();
+        return assignmentA.localeCompare(assignmentB);
+      });
 
       useAppStore.setState((state) => ({
-        tasks: { ...state.tasks, loading: false, tasks: data, error: null, isCached: true, lastFetch: Date.now() }
+        tasks: { ...state.tasks, loading: false, tasks: combinedTasks, error: null, isCached: true, lastFetch: Date.now() }
       }));
-      saveTasksToLocalStorage(data);
-
-      // If fetching for a specific workspace, filter current tasks to show only this workspace's tasks immediately
-      if (workspaceId) {
-        useAppStore.setState((state) => ({
-          tasks: { ...state.tasks, tasks: data }
-        }));
-      }
+      saveTasksToLocalStorage(combinedTasks);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       useAppStore.setState((state) => ({

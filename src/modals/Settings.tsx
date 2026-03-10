@@ -22,6 +22,7 @@ import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
 import ManageSessionsModal from "@/modals/ManageSessionsModal";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import UserModal from "@/modals/UserModal";
+import { useAuth } from "@/hooks/useAuth";
 import useTheme from "@/hooks/useTheme";
 
 // Define the AccentColor type locally since it's not exported from theme.ts
@@ -39,9 +40,17 @@ interface SettingsProps {
   friends?: any[];
   workspaces?: any[];
   onRemoveFriend?: (friend: { id: string; username?: string | null; email?: string | null }) => Promise<void>;
+  currentUserId?: string;
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], workspaces = [], onRemoveFriend }) => {
+const Settings: React.FC<SettingsProps> = ({
+  isOpen,
+  onClose,
+  friends = [],
+  workspaces = [],
+  onRemoveFriend,
+  currentUserId,
+}) => {
   const {
     accentPalette,
     setAccentPalette,
@@ -49,6 +58,8 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], work
     handleThemeChange,
     currentTheme,
   } = useTheme();
+  const { user } = useAuth();
+  const effectiveUserId = currentUserId ?? user?.id ?? "";
   const [showUserModal, setShowUserModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [showFriendsModal, setShowFriendsModal] = useState(false);
@@ -324,6 +335,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], work
         onClose={() => setShowFriendsModal(false)}
         friends={friends}
         availableWorkspaces={workspaces}
+        {...(effectiveUserId && { currentUserId: effectiveUserId })}
         {...(onRemoveFriend && { onRemoveFriend })}
       />
       <ManageCompletedTasksModal

@@ -106,7 +106,6 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
         // Continue anyway, don't block the fetch
       }
 
-      const currentWorkspaces = workspacesRef.current ?? [];
       const currentFriends = friendsRef.current ?? [];
 
       const { data, error } = await supabase
@@ -318,6 +317,31 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     }
   }, [isOpen, fetchSharedWorkspaces]);
 
+  const handleSelectSharedWorkspaceEntry = useCallback(
+    (entry: any) => {
+      const workspaceId = entry?.workspace?.id;
+
+      if (!workspaceId) {
+        console.warn('Shared workspace entry is missing a workspace id.');
+        return;
+      }
+
+      const currentList = workspacesRef.current ?? [];
+      const matchedWorkspace = currentList.find(ws => String(ws.id) === String(workspaceId));
+
+      const fallbackWorkspace = {
+        id: workspaceId,
+        name: entry?.workspace?.name || 'Shared workspace',
+        icon: entry?.workspace?.icon || 'Briefcase',
+        taskCount: entry?.workspace?.taskCount ?? 0,
+        sharedBy: entry?.partner?.id || entry?.shared_by || null,
+      };
+
+      handleSelectWorkspace((matchedWorkspace || fallbackWorkspace) as Workspace & { taskCount?: number });
+    },
+    [handleSelectWorkspace]
+  );
+
   const sortedWorkspaces = useMemo(() => {
     // Create the "All" workspace
     const allWorkspace = {
@@ -394,25 +418,43 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                       <div className="space-y-2">
                         <ul className="space-y-2">
                           {sharedByUser.map(entry => (
-                            <li key={entry.id} className="flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
-                                <div className="text-xs text-[var(--text-secondary)] truncate">
-                                  Shared with {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                            <li key={entry.id}>
+                              <button
+                                onClick={() => handleSelectSharedWorkspaceEntry(entry)}
+                                className="w-full flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-colors text-left"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
+                                  <div className="text-xs text-[var(--text-secondary)] truncate">
+                                    Shared with {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                                  </div>
+                                  <div className="text-[0.7rem] text-[var(--text-tertiary)]">Tap to open</div>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="text-xs text-[var(--text-secondary)]">
-                                  {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                <div className="flex items-center gap-2">
+                                  <div className="text-xs text-[var(--text-secondary)]">
+                                    {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                  </div>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      handleUnshareWorkspace(entry.id);
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleUnshareWorkspace(entry.id);
+                                      }
+                                    }}
+                                    className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                                    title="Stop sharing"
+                                  >
+                                    <Trash2 size={14} />
+                                  </span>
                                 </div>
-                                <button
-                                  onClick={() => handleUnshareWorkspace(entry.id)}
-                                  className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors"
-                                  title="Stop sharing"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                              </button>
                             </li>
                           ))}
                         </ul>
@@ -423,25 +465,43 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                       <div className="space-y-2">
                         <ul className="space-y-2">
                           {sharedWithUser.map(entry => (
-                            <li key={entry.id} className="flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
-                                <div className="text-xs text-[var(--text-secondary)] truncate">
-                                  Shared by {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                            <li key={entry.id}>
+                              <button
+                                onClick={() => handleSelectSharedWorkspaceEntry(entry)}
+                                className="w-full flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-colors text-left"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
+                                  <div className="text-xs text-[var(--text-secondary)] truncate">
+                                    Shared by {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
+                                  </div>
+                                  <div className="text-[0.7rem] text-[var(--text-tertiary)]">Tap to open</div>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="text-xs text-[var(--text-secondary)]">
-                                  {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                <div className="flex items-center gap-2">
+                                  <div className="text-xs text-[var(--text-secondary)]">
+                                    {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
+                                  </div>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      handleUnshareWorkspace(entry.id);
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleUnshareWorkspace(entry.id);
+                                      }
+                                    }}
+                                    className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                                    title="Remove from shared workspaces"
+                                  >
+                                    <Trash2 size={14} />
+                                  </span>
                                 </div>
-                                <button
-                                  onClick={() => handleUnshareWorkspace(entry.id)}
-                                  className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors"
-                                  title="Remove from shared workspaces"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                              </button>
                             </li>
                           ))}
                         </ul>

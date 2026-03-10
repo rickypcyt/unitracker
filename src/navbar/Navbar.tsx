@@ -78,34 +78,20 @@ const Navbar = () => {
     fetchWorkspaces();
   }, [setWorkspaces, setCurrentWorkspace, activeWorkspace]);
 
-  // Fetch tasks for all workspaces to get accurate counts
+  // Fetch tasks for all workspaces to get accurate counts (includes shared workspaces via fetchTasks)
   useEffect(() => {
     const fetchAllTasks = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       try {
-        const { data: allTasks, error } = await supabase
-          .from('tasks')
-          .select('id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, recurrence_type, recurrence_weekdays, start_at, end_at')
-          .eq('user_id', user.id)
-          .order('assignment');
-
-        if (!error && allTasks) {
-          // Update the global tasks state with all tasks
-          useAppStore.setState((state) => ({
-            tasks: { ...state.tasks, tasks: allTasks, error: null, isCached: true, lastFetch: Date.now() }
-          }));
-        }
+        await fetchTasks(undefined, true);
       } catch (error) {
         console.error('Error fetching all tasks for workspace counts:', error);
       }
     };
 
     if (workspaces.length > 0) {
-      fetchAllTasks();
+      void fetchAllTasks();
     }
-  }, [workspaces.length]); // Re-fetch when workspaces change
+  }, [workspaces.length, fetchTasks]); // Re-fetch when workspaces change
 
   // Clear workspaces if not logged in (but not in demo mode)
   useEffect(() => {
