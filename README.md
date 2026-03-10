@@ -31,6 +31,9 @@ UniTracker is an all-in-one app for students who want to organize their time, ta
 
 Questions, suggestions, or want to help improve UniTracker? Contact us! Your feedback helps the app grow.
 
+- **Join our Discord community:** [https://discord.gg/8sRswbPQQm](https://discord.gg/8sRswbPQQm)
+- Connect with other students, share tips, and get help from the community.
+
 ---
 
 Made with ❤️ for modern students.
