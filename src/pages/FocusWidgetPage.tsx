@@ -56,6 +56,18 @@ const FocusWidgetPage = () => {
     fetchActiveTask();
   }, []);
 
+  // Handle ESC key to exit focus widget mode
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Real-time timer updates
   useStudyTimer(
     (elapsed: number) => {
