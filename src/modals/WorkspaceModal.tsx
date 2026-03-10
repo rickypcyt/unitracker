@@ -194,7 +194,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     return ws.taskCount || 0;
   };
 
-  const handleUnshareWorkspace = async (shareId: string) => {
+  const handleUnshareWorkspace = async (shareId: string, removedWorkspaceId?: string | number) => {
     try {
       const { error } = await supabase
         .from('shared_workspaces')
@@ -207,6 +207,26 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
       } else {
         console.log('Workspace unshared successfully');
         // Could add success toast here
+      }
+
+      // If the active workspace was the one just unshared, switch to a fallback
+      if (removedWorkspaceId && activeWorkspace?.id === removedWorkspaceId) {
+        const availableWorkspaces = workspacesRef.current ?? [];
+
+        const fallbackWorkspace = availableWorkspaces.find(ws => ws.id !== removedWorkspaceId) || {
+          id: ALL_WORKSPACE_ID,
+          name: 'All',
+          icon: 'Workflow',
+          taskCount: availableWorkspaces.reduce((sum, ws) => sum + (ws.taskCount || 0), 0)
+        };
+
+        try {
+          localStorage.setItem('activeWorkspaceId', fallbackWorkspace.id.toString());
+        } catch {
+          // Ignore localStorage errors
+        }
+
+        onSelectWorkspace(fallbackWorkspace as Workspace & { taskCount?: number });
       }
       await fetchSharedWorkspaces();
     } catch (error) {
@@ -439,13 +459,13 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                                     tabIndex={0}
                                     onClick={e => {
                                       e.stopPropagation();
-                                      handleUnshareWorkspace(entry.id);
+                                      handleUnshareWorkspace(entry.id, entry.workspace?.id);
                                     }}
                                     onKeyDown={e => {
                                       if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        handleUnshareWorkspace(entry.id);
+                                        handleUnshareWorkspace(entry.id, entry.workspace?.id);
                                       }
                                     }}
                                     className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
@@ -486,13 +506,13 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                                     tabIndex={0}
                                     onClick={e => {
                                       e.stopPropagation();
-                                      handleUnshareWorkspace(entry.id);
+                                      handleUnshareWorkspace(entry.id, entry.workspace?.id);
                                     }}
                                     onKeyDown={e => {
                                       if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        handleUnshareWorkspace(entry.id);
+                                        handleUnshareWorkspace(entry.id, entry.workspace?.id);
                                       }
                                     }}
                                     className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
