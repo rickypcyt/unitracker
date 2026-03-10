@@ -1,14 +1,16 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { FC, Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
+import { useAuthActions, useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from "@/store/appStore";
 
+import FloatingFooter from "@/components/FloatingFooter";
 import Navbar from "@/navbar/Navbar";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
 import TourManager from "./components/TourManager";
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
-import { useAuthActions } from "@/store/appStore";
+import { useFriendManagement } from "@/hooks/useFriendManagement";
 
 // Lazy load pages for better performance
 const CalendarPage = lazy(() => import("@/pages/calendar/CalendarPage"));
@@ -38,7 +40,55 @@ const pagesMap: Record<string, FC> = {
 // -------------------------
 const PageContent: FC = () => {
   const { activePage } = useNavigation();
+  const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
+  const { tasks } = useTasks();
+  const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
+  const fetchTasks = useFetchTasks();
+  const { user } = useAuth();
+  const { friends } = useFriendManagement(user?.id);
+  
   const ActiveComponent = pagesMap[activePage] || SessionPage;
+
+  // Workspace handlers
+  const handleSelectWorkspace = (ws: any) => {
+    setCurrentWorkspace(ws);
+    localStorage.setItem('activeWorkspaceId', ws.id);
+  };
+  
+  const handleCreateWorkspace = (newWorkspace: any) => {
+    setWorkspaces([...workspaces, newWorkspace]);
+  };
+  
+  const handleEditWorkspace = (updatedWorkspace: any) => {
+    setWorkspaces(workspaces.map((ws: any) => ws.id === updatedWorkspace.id ? updatedWorkspace : ws));
+    if (activeWorkspace?.id === updatedWorkspace.id) {
+      setCurrentWorkspace(updatedWorkspace);
+    }
+  };
+  
+  const handleDeleteWorkspace = (workspaceId: any) => {
+    const updatedWorkspaces = workspaces.filter((ws: any) => ws.id !== workspaceId);
+    setWorkspaces(updatedWorkspaces);
+    if (activeWorkspace?.id === workspaceId) {
+      const newActiveWorkspace = updatedWorkspaces.length > 0 ? updatedWorkspaces[0] : null;
+      setCurrentWorkspace(newActiveWorkspace);
+    }
+  };
+
+  const refreshWorkspaces = () => {
+    fetchTasks(undefined, true);
+  };
+
+  // Calcula el número de tasks por workspace (solo incompletas)
+  const workspacesWithTaskCount = (Array.isArray(workspaces) ? workspaces : []).map(ws => {
+    const taskCount = tasks.filter(task => {
+      return task.workspace_id === ws.id && !task.completed;
+    }).length;
+    return {
+      ...ws,
+      taskCount
+    };
+  });
 
   // Focus widget page should occupy full screen without navbar
   if (activePage === 'focusWidget') {
@@ -57,6 +107,17 @@ const PageContent: FC = () => {
           <ActiveComponent />
         </Suspense>
       </div>
+      <FloatingFooter
+        workspaces={workspacesWithTaskCount}
+        activeWorkspace={activeWorkspace}
+        onSelectWorkspace={handleSelectWorkspace}
+        onCreateWorkspace={handleCreateWorkspace}
+        onEditWorkspace={handleEditWorkspace}
+        onDeleteWorkspace={handleDeleteWorkspace}
+        onRefreshWorkspaces={refreshWorkspaces}
+        friends={friends}
+        {...(user?.id && { currentUserId: user.id })}
+      />
     </div>
   );
 };

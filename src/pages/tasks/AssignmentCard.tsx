@@ -5,7 +5,7 @@ import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
 
-interface SortableColumnProps {
+interface AssignmentCardProps {
   id?: string;
   assignment: string;
   tasks: any[];
@@ -25,7 +25,7 @@ interface SortableColumnProps {
   onUpdateAssignment: (oldName: string, newName: string) => void;
 }
 
-export const SortableColumn = ({
+export const AssignmentCard = ({
   assignment,
   tasks,
   pinned,
@@ -42,7 +42,7 @@ export const SortableColumn = ({
   onMoveToWorkspace,
   onDeleteAssignment,
   onUpdateAssignment,
-}: SortableColumnProps) => {
+}: AssignmentCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
   const [isMinimized, setIsMinimized] = useState(false);

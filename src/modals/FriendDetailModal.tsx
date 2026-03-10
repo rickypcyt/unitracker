@@ -24,8 +24,6 @@ interface FriendDetailModalProps {
 }
 
 const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, friend, sharedWorkspaces, availableWorkspaces = [], currentUserId, allFriends = [], onRemoveFriend }) => {
-  console.log('FriendDetailModal: Props', { onRemoveFriend: !!onRemoveFriend, friend: friend?.username });
-  
   const [showShareModal, setShowShareModal] = useState(false);
   
   if (!friend) return null;
@@ -76,8 +74,7 @@ const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, 
           workspaces={availableWorkspaces}
           friends={allFriends}
           currentUserId={currentUserId || ''}
-          onShare={async (workspaceId: string, recipient: string, options: { onSuccess?: () => void; onError?: (msg?: string) => void }) => {
-            console.log('DEBUG: Sharing workspace', { workspaceId, recipient, allFriendsLength: allFriends.length });
+          onShare={async (_workspaceId: string, _recipient: string, options: { onSuccess?: () => void; onError?: (msg?: string) => void }) => {
             try {
               // Aquí puedes implementar la lógica para compartir el workspace
               // Por ahora, solo mostramos éxito

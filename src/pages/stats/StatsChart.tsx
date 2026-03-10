@@ -261,7 +261,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 stroke="var(--text-secondary)"
                 tickLine={false}
                 axisLine={false}
-                interval={isWeekChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd')}
+                interval={isWeekChart ? 0 : (isYearChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd'))}
                 minTickGap={isSmall ? 5 : 0}
                 tickMargin={title === 'This Month' ? (isSmall ? 4 : 8) : title === 'This Year' ? 12 : 8}
                 fontSize={isSmall ? '11px' : '12px'}

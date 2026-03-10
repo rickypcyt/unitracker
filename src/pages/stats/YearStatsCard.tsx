@@ -16,11 +16,6 @@ interface YearStatsCardProps {
   isDemo?: boolean;
 }
 
-const monthLabels = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
 const YearStatsCard = ({
   data,
   accentColor,
@@ -65,30 +60,6 @@ const YearStatsCard = ({
       accentColor={accentColor}
       customTitle={<></>}
     />
-    {/* Month labels below the chart */}
-    <svg className="w-full h-6 mt-2" viewBox="0 0 727 30">
-      {monthLabels.map((month, index) => {
-        const x = (727 / 12) * index + (727 / 24); // Center each label in its column
-        return (
-          <text
-            key={month}
-            x={x}
-            y="15"
-            textAnchor="middle"
-            fontSize="12px"
-            fill="var(--text-secondary)"
-            stroke="none"
-            className="recharts-text recharts-cartesian-axis-tick-value"
-            style={{
-              WebkitFontSmoothing: 'antialiased',
-              MozOsxFontSmoothing: 'grayscale'
-            }}
-          >
-            <tspan x={x} dy="0.71em">{month}</tspan>
-          </text>
-        );
-      })}
-    </svg>
   </ChartCard>
 );
 

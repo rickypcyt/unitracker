@@ -1,5 +1,5 @@
+import { AssignmentCard } from './AssignmentCard';
 import React from 'react';
-import { SortableColumn } from './SortableColumn';
 
 interface AssignmentColumnsProps {
   incompletedByAssignment: Record<string, any[]>;
@@ -91,7 +91,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
             className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-2 shadow-sm"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
-            <SortableColumn
+            <AssignmentCard
               id={column.id}
               assignment={column.title}
               tasks={column.tasks}

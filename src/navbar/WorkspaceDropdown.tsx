@@ -68,15 +68,18 @@ const WorkspaceDropdown: React.FC<WorkspaceDropdownProps> = ({
         <button 
           data-tour="workspace-selector"
           onClick={() => setShowWorkspaceModal(true)}
-          className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] relative"
+          className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] antialiased focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
           aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Click to open workspace selector.`}
+          title={activeWorkspace?.name || 'Select Workspace'}
         >
           {(() => {
             const IconComp = iconOptions[activeWorkspace?.icon || 'Briefcase'] || Briefcase;
-            return <IconComp className="w-4 h-4 md:w-4 md:h-4 lg:w-5 lg:h-5" />;
+            return <IconComp className="w-5 h-5" />;
           })()}
-          <span className="font-medium truncate max-w-[140px] text-[13px] sm:text-sm md:text-base">{activeWorkspace?.name || 'Select Workspace'}</span>
-          <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-4 lg:h-4" />
+          <span className="font-medium truncate max-w-[120px] text-sm">
+            {activeWorkspace?.name || 'Select Workspace'}
+          </span>
+          <ChevronDown className="w-4 h-4" />
         </button>
       </div>
       

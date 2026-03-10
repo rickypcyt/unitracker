@@ -65,8 +65,35 @@ class AudioEngine {
 
     try {
       if (!Tone.context || Tone.context.state !== "running") {
-        await Tone.start();
-        await Tone.context.resume();
+        let resolved = false;
+
+        const attemptStart = async () => {
+          try {
+            await Tone.start();
+            if (Tone.context.state !== "running") {
+              await Tone.context.resume();
+            }
+            resolved = Tone.context.state === "running";
+          } catch (error) {
+            console.warn("Tone start/resume blocked:", error);
+          }
+        };
+
+        await attemptStart();
+
+        if (!resolved && (!Tone.context || Tone.context.state !== "running")) {
+          await new Promise<void>((resolve) => {
+            const resumeAudio = async () => {
+              await attemptStart();
+              document.removeEventListener("pointerup", resumeAudio);
+              document.removeEventListener("keydown", resumeAudio);
+              resolve();
+            };
+
+            document.addEventListener("pointerup", resumeAudio, { once: true });
+            document.addEventListener("keydown", resumeAudio, { once: true });
+          });
+        }
       }
 
       if (Tone.context.state !== "running") {

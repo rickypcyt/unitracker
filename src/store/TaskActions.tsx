@@ -1,6 +1,8 @@
 import { supabase } from '@/utils/supabaseClient';
 import { useAppStore } from '@/store/appStore';
 
+const ALL_WORKSPACE_ID = 'all';
+
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -80,12 +82,14 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
       );
 
       // Fetch user's own tasks
+      const isAllWorkspace = workspaceId === ALL_WORKSPACE_ID;
+
       let ownedQuery = supabase
         .from('tasks')
         .select(taskSelectFields)
         .eq('user_id', user.id);
 
-      if (workspaceId) {
+      if (workspaceId && !isAllWorkspace) {
         ownedQuery = ownedQuery.eq('workspace_id', workspaceId);
       }
 
@@ -98,7 +102,7 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
       const ownedTasks = ownedTasksData ?? [];
 
       // Fetch tasks from workspaces shared with the user (if any)
-      const relevantSharedIds = workspaceId
+      const relevantSharedIds = workspaceId && !isAllWorkspace
         ? sharedWorkspaceIds.filter(id => id === workspaceId)
         : sharedWorkspaceIds;
 

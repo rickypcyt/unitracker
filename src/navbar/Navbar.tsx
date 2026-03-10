@@ -1,11 +1,10 @@
-import { BarChart3, BookOpen, Calendar, CircleCheckBig, Github, ListTodo, Timer } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, CircleCheckBig, ListTodo, Timer } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import SettingsButton from './SettingsButton';
 import SettingsPanel from '@/modals/Settings';
-import WorkspaceDropdown from './WorkspaceDropdown';
 import { supabase } from '@/utils/supabaseClient';
 import useAppStore from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
@@ -308,31 +307,8 @@ const Navbar = () => {
               })}
             </div>
           </div>
-          {/* Workspace, GitHub y Settings a la derecha */}
+          {/* Settings a la derecha */}
           <div className="flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2 flex-shrink-0">
-            {/* Workspace and GitHub only visible on desktop */}
-            <div className="hidden lg:flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2">
-              <WorkspaceDropdown
-                workspaces={workspacesWithTaskCount}
-                activeWorkspace={activeWorkspace}
-                onSelectWorkspace={handleSelectWorkspace}
-                onCreateWorkspace={handleCreateWorkspace}
-                onEditWorkspace={handleEditWorkspace}
-                onDeleteWorkspace={handleDeleteWorkspace}
-                friends={friends}
-                {...(user?.id && { currentUserId: user.id })}
-              />
-              <a
-                href="https://github.com/rickypcyt/unitracker"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2 rounded-md transition-colors border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)]"
-                title="View on GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-            </div>
-            
             {/* Settings button - always visible */}
             <SettingsButton
               isLoggedIn={isLoggedIn}

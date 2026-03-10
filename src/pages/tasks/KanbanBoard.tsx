@@ -426,6 +426,7 @@ export const KanbanBoard = () => {
   }
 
   return (
+    <>
       <div className="flex flex-col lg:flex-row gap-4 h-full kanban-board" data-tour="tasks-board">
         {/* Left Column - Active Tasks */}
         <div className="flex-1 min-h-0">
@@ -465,6 +466,7 @@ export const KanbanBoard = () => {
             onTaskContextMenu={handleTaskContextMenu}
           />
         )}
+      </div>
 
       {/* Context Menu */}
       {contextMenu && (
@@ -627,6 +629,6 @@ export const KanbanBoard = () => {
           onSave={handleQuickDateSave}
         />
       )}
-    </div>
+    </>
   );
-}; 
+};

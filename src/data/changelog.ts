@@ -18,6 +18,41 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.3.3",
+    date: "March 10, 2026",
+    time: "6:08 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "Dynamic island widget with workspace selector, GitHub link, and Discord access",
+        "Workspace selector moved from navbar to floating footer for better accessibility",
+        "Modern glassmorphism design with backdrop blur and centered positioning"
+      ],
+      improved: [
+        "Better workspace management with dedicated floating controls",
+        "Enhanced user experience with always-accessible workspace switching"
+      ]
+    }
+  },
+  {
+    version: "1.3.2",
+    date: "March 10, 2026",
+    time: "5:40 PM",
+    type: "patch",
+    changes: {
+      added: [
+        "Navbar now includes a quick access button to join the community Discord server"
+      ],
+      fixed: [
+        "Friend management now handles pending requests and reciprocal friendships correctly",
+        "Workspace sharing flow is fully functional, allowing friends to access shared workspaces"
+      ],
+      improved: [
+        "Workspace modal updates active selection when a shared workspace is unshared"
+      ]
+    }
+  },
+  {
     version: "1.3.1",
     date: "February 16, 2026",
     time: "7:05 PM",
