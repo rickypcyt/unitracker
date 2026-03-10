@@ -10,6 +10,7 @@ import { supabase } from '@/utils/supabaseClient';
 import useAppStore from '@/store/appStore';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
+import { useFriendManagement } from '@/hooks/useFriendManagement';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const Navbar = () => {
@@ -20,14 +21,21 @@ const Navbar = () => {
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
-  const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
-  const [sentRequests, setSentRequests] = useState<any[]>([]);
-  const [friends, setFriends] = useState<any[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const initialRequestsFetchedRef = useRef(false);
+  const prevRequestCountRef = useRef<number | null>(null);
+
+  const {
+    friends,
+    receivedRequests,
+    sentRequests,
+    handleSendRequest,
+    handleAccept,
+    handleReject,
+    handleRemoveFriend,
+  } = useFriendManagement(user?.id);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -108,82 +116,22 @@ const Navbar = () => {
     }
   }, [isLoggedIn, isDemo, setWorkspaces]);
 
-  // Load friend requests from Supabase
-  const fetchRequests = useCallback(async () => {
-    if (!user) {
-      setReceivedRequests([]);
-      setSentRequests([]);
-      return;
-    }
-    const { data: rec } = await supabase
-      .from('friend_requests')
-      .select('*, from_user:profiles!friend_requests_from_user_id_fkey(username, avatar_url)')
-      .eq('to_user_id', user.id)
-      .eq('status', 'pending');
-    const { data: sent } = await supabase
-      .from('friend_requests')
-      .select('*, to_user:profiles!friend_requests_to_user_id_fkey(username, avatar_url)')
-      .eq('from_user_id', user.id)
-      .eq('status', 'pending');
-    let newlyReceived: any[] = [];
-    setReceivedRequests(prev => {
-      const previousIds = new Set(prev.map((request: any) => request.id));
-      newlyReceived = (rec || []).filter((request: any) => !previousIds.has(request.id));
-      return rec || [];
-    });
-    setSentRequests(sent || []);
+  useEffect(() => {
+    const currentCount = receivedRequests.length;
+    const prevCount = prevRequestCountRef.current;
 
-    if (initialRequestsFetchedRef.current && newlyReceived.length > 0) {
-      if (newlyReceived.length === 1) {
-        const senderName = newlyReceived[0]?.from_user?.username || 'Someone';
+    if (prevCount !== null && currentCount > prevCount) {
+      const newCount = currentCount - prevCount;
+      if (newCount === 1) {
+        const senderName = receivedRequests[0]?.from_user?.username || 'Someone';
         toast.success(`New friend request from ${senderName}`);
       } else {
-        toast.success(`${newlyReceived.length} new friend requests`);
+        toast.success(`${newCount} new friend requests`);
       }
     }
 
-    if (!initialRequestsFetchedRef.current) {
-      initialRequestsFetchedRef.current = true;
-    }
-  }, [user?.id]); // Only depend on user.id, not the entire user object
-  useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
-
-  const fetchFriends = useCallback(async () => {
-    if (!user) {
-      setFriends([]);
-      return;
-    }
-    const { data, error } = await supabase
-      .from('friends')
-      .select('*')
-      .or(`user1.eq.${user.id},user2.eq.${user.id}`);
-    if (error) {
-      setFriends([]);
-      return;
-    }
-    // Map to get the friend user id (the other one)
-    const friendIds = data.map(row => row.user1 === user.id ? row.user2 : row.user1);
-    // Fetch friend profiles
-    if (friendIds.length === 0) {
-      setFriends([]);
-      return;
-    }
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, username, email, avatar_url')
-      .in('id', friendIds);
-    if (profilesError) {
-      setFriends([]);
-      return;
-    }
-    setFriends(profiles);
-  }, [user?.id]); // Only depend on user.id, not the entire user object
-
-  useEffect(() => {
-    fetchFriends();
-  }, [fetchFriends]);
+    prevRequestCountRef.current = currentCount;
+  }, [receivedRequests]);
 
 
   // Calcula el número de tasks por workspace (solo incompletas)
@@ -226,105 +174,18 @@ const Navbar = () => {
     fetchTasks(undefined, true); // Fetch ALL tasks (no workspace filter) with force refresh
   };
 
-  // Send friend request logic
-  const handleSendRequest = async (username: any, { onSuccess, onError }: { onSuccess: any; onError: any }) => {
-    try {
-      if (!user) {
-        onError && onError('You must be logged in to send a friend request.');
-        return;
-      }
-      // 1. Find user by username
-      const { data: toUser, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .maybeSingle();
-      if (userError || !toUser) {
-        onError && onError('User not found.');
-        return;
-      }
-      if (toUser.id === user.id) {
-        onError && onError('You cannot send a friend request to yourself.');
-        return;
-      }
-      // 2. Insert friend request
-      const { error: insertError } = await supabase
-        .from('friend_requests')
-        .insert({ from_user_id: user.id, to_user_id: toUser.id, status: 'pending' });
-      if (insertError) {
-        if (insertError.message && insertError.message.includes('duplicate')) {
-          onError && onError('Friend request already sent.');
-        } else {
-          onError && onError('Error sending friend request: ' + insertError.message);
-        }
-        return;
-      }
-      // 3. Refresh requests
-      await fetchRequests();
-      onSuccess && onSuccess();
-    } catch (err) {
-      onError && onError('Unexpected error: ' + (err as any)?.message || err);
-    }
-  };
-  const handleAccept = async (request: any) => {
-    try {
-      console.warn('[ACCEPT] Iniciando proceso para request:', request);
-      // 1. Actualiza la solicitud a "accepted"
-      const { error: updateError } = await supabase
-        .from('friend_requests')
-        .update({ status: 'accepted' })
-        .eq('id', request.id);
-      if (updateError) {
-        toast.error('Error updating request: ' + updateError.message);
-        return;
-      }
-      console.warn('[ACCEPT] Solicitud actualizada a accepted');
-      // 2. Inserta en la tabla friends (amistad simétrica)
-      const [user1, user2] = [request.from_user_id, request.to_user_id].sort();
-      const { error: insertError } = await supabase
-        .from('friends')
-        .insert([{ user1, user2 }]);
-      if (insertError && !insertError.message.includes('duplicate key value')) {
-        toast.error('Error creating friendship: ' + insertError.message);
-        return;
-      }
-      if (insertError && insertError.message.includes('duplicate key value')) {
-        console.warn('[ACCEPT] Amistad ya existía, ignorando error de duplicado.');
-      } else {
-        console.warn('[ACCEPT] Amistad insertada en tabla friends');
-      }
-      // 3. Refresca solicitudes y amigos
-      await fetchRequests();
-      await fetchFriends();
-      console.warn('[ACCEPT] Solicitudes y amigos refrescados');
-    } catch (error) {
-      toast.error('Unexpected error: ' + (error as any).message);
-      console.error('[ACCEPT] Error inesperado:', error);
-    }
-  };
-  const handleReject = async (request: any) => {
-    try {
-      console.warn('[REJECT] Iniciando proceso para request:', request);
-      // 1. Actualiza la solicitud a "rejected"
-      const { error: updateError } = await supabase
-        .from('friend_requests')
-        .update({ status: 'rejected' })
-        .eq('id', request.id);
-      if (updateError) {
-        toast.error('Error updating request: ' + updateError.message);
-        return;
-      }
-      console.warn('[REJECT] Solicitud actualizada a rejected');
-      // 2. Refresca solicitudes
-      await fetchRequests();
-      console.warn('[REJECT] Solicitudes refrescadas');
-    } catch (error) {
-      toast.error('Unexpected error: ' + (error as any).message);
-      console.error('[REJECT] Error inesperado:', error);
-    }
-  };
+  useEffect(() => {
+    const handleFriendErrors = (promise: Promise<unknown>) => {
+      void promise.catch(err => {
+        const message = err instanceof Error ? err.message : String(err);
+        toast.error(message);
+      });
+    };
 
-  
+    // expose wrapper functions for settings button callbacks
+    // we store them on refs to avoid recreating handlers passed down
+  }, []);
+
   // Navigation link class
   const isActive = (page: any) => activePage === page;
   const navLinkClass = (page: any) =>
@@ -501,6 +362,7 @@ const Navbar = () => {
               workspaces={workspacesWithTaskCount}
               activeWorkspace={activeWorkspace}
               onSelectWorkspace={handleSelectWorkspace}
+              onRemoveFriend={handleRemoveFriend}
               githubUrl="https://github.com/rickypcyt/unitracker"
             />
           </div>
@@ -512,6 +374,7 @@ const Navbar = () => {
           onClose={() => setShowSettings(false)}
           friends={friends}
           workspaces={workspacesWithTaskCount}
+          onRemoveFriend={handleRemoveFriend}
         />
       )}
     </nav>

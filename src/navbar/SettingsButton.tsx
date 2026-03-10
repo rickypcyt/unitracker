@@ -32,6 +32,7 @@ const SettingsButton = ({
   onCreateWorkspace,
   onEditWorkspace,
   onDeleteWorkspace,
+  onRemoveFriend,
   githubUrl = "https://github.com/rickypcyt/unitracker"
 }: {
   isLoggedIn: boolean;
@@ -51,6 +52,7 @@ const SettingsButton = ({
   onCreateWorkspace?: (workspace: any) => void;
   onEditWorkspace?: (workspace: any) => void;
   onDeleteWorkspace?: (workspaceId: string | number) => void;
+  onRemoveFriend?: (friend: { id: string; username?: string | null; email?: string | null }) => Promise<void>;
   githubUrl?: string;
 }) => {
   const { hasNewChanges, markAsSeen } = useChangelog();
@@ -175,12 +177,14 @@ const SettingsButton = ({
         friends={friends}
         availableWorkspaces={workspaces}
         {...(user?.id && { currentUserId: user.id })}
+        {...(onRemoveFriend && { onRemoveFriend })}
       />
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
         friends={friends}
         workspaces={workspaces}
+        {...(onRemoveFriend && { onRemoveFriend })}
       />
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
       <WorkspaceModal

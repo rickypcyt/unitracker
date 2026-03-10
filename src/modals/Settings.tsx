@@ -38,9 +38,10 @@ interface SettingsProps {
   onClose: () => void;
   friends?: any[];
   workspaces?: any[];
+  onRemoveFriend?: (friend: { id: string; username?: string | null; email?: string | null }) => Promise<void>;
 }
 
-const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], workspaces = [] }) => {
+const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], workspaces = [], onRemoveFriend }) => {
   const {
     accentPalette,
     setAccentPalette,
@@ -323,6 +324,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose, friends = [], work
         onClose={() => setShowFriendsModal(false)}
         friends={friends}
         availableWorkspaces={workspaces}
+        {...(onRemoveFriend && { onRemoveFriend })}
       />
       <ManageCompletedTasksModal
         isOpen={showCompletedTasksModal}

@@ -192,7 +192,10 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ isOpen, onClose, friends = 
                     {onRemoveFriend && (
                       <button
                         className="p-2 rounded-full hover:bg-red-500/20 text-red-500 hover:text-red-700 transition-colors"
-                        onClick={e => { e.stopPropagation(); onRemoveFriend(friend); }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          void onRemoveFriend(friend);
+                        }}
                         title="Remove friend"
                       >
                         <Trash2 size={18} />
