@@ -18,6 +18,24 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.3.4",
+    date: "March 17, 2026",
+    time: "9:03 PM",
+    type: "patch",
+    changes: {
+      improved: [
+        "Brown noise: Removed hiss for cleaner sound",
+        "Ocean waves: Completely redesigned for realistic ocean sound",
+        "Rain sound: Added crisp high frequencies for better rain texture"
+      ],
+      fixed: [
+        "Brown noise hiss issues",
+        "Ocean waves artificial sound quality",
+        "Rain sound muffled filtering"
+      ]
+    }
+  },
+  {
     version: "1.3.3",
     date: "March 10, 2026",
     time: "6:08 PM",

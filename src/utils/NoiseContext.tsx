@@ -162,7 +162,6 @@ class BrownNoiseNode extends BaseSoundNode {
   private deepGain: Tone.Gain;
   private mainGain: Tone.Gain;
   private midGain: Tone.Gain;
-  private highGain: Tone.Gain;
   private outputGain: Tone.Gain;
 
   constructor(volume: number) {
@@ -183,18 +182,19 @@ class BrownNoiseNode extends BaseSoundNode {
     midFilter.Q.value = 0.5;
     this.midGain = new Tone.Gain(0.15);
 
-    const highTexture = new Tone.Noise("pink").start();
-    const highFilter = new Tone.Filter(1000, "highpass", -24);
-    highFilter.Q.value = 0.3;
-    this.highGain = new Tone.Gain(0.02);
+    // High frequency texture layer removed to eliminate hiss
+    // const highTexture = new Tone.Noise("pink").start();
+    // const highFilter = new Tone.Filter(1000, "highpass", -24);
+    // highFilter.Q.value = 0.3;
+    // this.highGain = new Tone.Gain(0.02);
 
     const slowLFO = new Tone.LFO(0.015, 0.9, 1.1).start();
     const mediumLFO = new Tone.LFO(0.03, 0.95, 1.05).start();
-    const highLFO = new Tone.LFO(0.08, 0.01, 0.03).start();
+    // const highLFO = new Tone.LFO(0.08, 0.01, 0.03).start();
 
     slowLFO.connect(this.deepGain.gain);
     mediumLFO.connect(this.mainGain.gain);
-    highLFO.connect(this.highGain.gain);
+    // highLFO.connect(this.highGain.gain);
 
     const smoothingFilter = new Tone.Filter(500, "lowpass", -12);
     smoothingFilter.Q.value = 0.2;
@@ -217,7 +217,7 @@ class BrownNoiseNode extends BaseSoundNode {
     deepBrown.chain(deepFilter, this.deepGain, this.outputGain);
     mainBrown.chain(mainFilter, this.mainGain, this.outputGain);
     midBrown.chain(midFilter, this.midGain, this.outputGain);
-    highTexture.chain(highFilter, this.highGain, this.outputGain);
+    // highTexture.chain(highFilter, this.highGain, this.outputGain);
 
     [
       deepBrown,
@@ -229,10 +229,6 @@ class BrownNoiseNode extends BaseSoundNode {
       midBrown,
       midFilter,
       this.midGain,
-      highTexture,
-      highFilter,
-      this.highGain,
-      highLFO,
       slowLFO,
       mediumLFO,
       smoothingFilter,
@@ -251,14 +247,15 @@ class BrownNoiseNode extends BaseSoundNode {
 class RainSoundNode extends BaseSoundNode {
   private mainGain: Tone.Gain;
   private backgroundGain: Tone.Gain;
+  private topPinkGain: Tone.Gain;
 
   constructor(volume: number) {
     super(volume);
 
     const noise = new Tone.Noise("white").start();
-    const filter = new Tone.Filter(2000, "bandpass");
-    filter.Q.value = 1.2;
-
+    const highpass = new Tone.Filter(1500, "highpass");
+    highpass.Q.value = 0.3;
+    
     const envelope = new Tone.AmplitudeEnvelope({
       attack: 0.01,
       decay: 0.08,
@@ -272,11 +269,17 @@ class RainSoundNode extends BaseSoundNode {
       preDelay: 0.01,
     }).toDestination();
 
-    this.mainGain = new Tone.Gain(volume * 0.8).connect(reverb);
+    this.mainGain = new Tone.Gain(volume * 1.3).connect(reverb);
 
-    noise.connect(filter);
-    filter.connect(envelope);
+    noise.connect(highpass);
+    highpass.connect(envelope);
     envelope.connect(this.mainGain);
+
+    // Additional pink noise layer on top
+    const topPinkNoise = new Tone.Noise("pink").start();
+    this.topPinkGain = new Tone.Gain(volume * 0.075);
+    topPinkNoise.connect(this.topPinkGain);
+    this.topPinkGain.connect(reverb);
 
     const scheduleRainDrops = (time: number): void => {
       const interval = Math.random() * 0.25 + 0.05;
@@ -293,7 +296,7 @@ class RainSoundNode extends BaseSoundNode {
     const backgroundRain = new Tone.Noise("pink").start();
     const backgroundFilter = new Tone.Filter(800, "lowpass");
     backgroundFilter.Q.value = 0.4;
-    this.backgroundGain = new Tone.Gain(volume * 0.3);
+    this.backgroundGain = new Tone.Gain(volume * 0.5);
 
     backgroundRain.connect(backgroundFilter);
     backgroundFilter.connect(this.backgroundGain);
@@ -301,8 +304,10 @@ class RainSoundNode extends BaseSoundNode {
 
     [
       noise,
-      filter,
+      highpass,
       envelope,
+      topPinkNoise,
+      this.topPinkGain,
       backgroundRain,
       backgroundFilter,
       this.backgroundGain,
@@ -318,9 +323,11 @@ class RainSoundNode extends BaseSoundNode {
     if (isMuted) {
       this.setGainWithRamp(this.mainGain, 0);
       this.setGainWithRamp(this.backgroundGain, 0);
+      this.setGainWithRamp(this.topPinkGain, 0);
     } else {
-      this.setGainWithRamp(this.mainGain, volume * 0.8);
-      this.setGainWithRamp(this.backgroundGain, volume * 0.3);
+      this.setGainWithRamp(this.mainGain, volume * 1.3);
+      this.setGainWithRamp(this.backgroundGain, volume * 0.5);
+      this.setGainWithRamp(this.topPinkGain, volume * 0.075);
     }
   }
 }
@@ -403,7 +410,7 @@ class OceanWavesNode extends BaseSoundNode {
     const noise = new Tone.Noise("pink").start();
     noise.volume.value = -Infinity;
     const highpass = new Tone.Filter(80, "highpass");
-    const lowpass = new Tone.Filter(1200, "lowpass");
+    const lowpass = new Tone.Filter(800, "lowpass");
     lowpass.Q.value = 0.8;
     const gain = new Tone.Gain(0);
 
@@ -417,12 +424,12 @@ class OceanWavesNode extends BaseSoundNode {
   private createWaveRetreat(outputGain: Tone.Gain): void {
     const noise = new Tone.Noise("pink").start();
     noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(600, "bandpass");
+    const filter = new Tone.Filter(400, "bandpass");
     filter.Q.value = 2.0;
     const gain = new Tone.Gain(0);
 
-    const washCycleLFO = new Tone.LFO(0.08, 0, 1).start();
-    const washFrequencyLFO = new Tone.LFO(0.08, 300, 800).start();
+    const washCycleLFO = new Tone.LFO(0.06, 0, 1).start();
+    const washFrequencyLFO = new Tone.LFO(0.06, 200, 600).start();
     
     washCycleLFO.connect(gain.gain);
     washFrequencyLFO.connect(filter.frequency);
@@ -437,11 +444,11 @@ class OceanWavesNode extends BaseSoundNode {
   private createBreakingWaves(outputGain: Tone.Gain): void {
     const noise = new Tone.Noise("pink").start();
     noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(800, "bandpass");
+    const filter = new Tone.Filter(600, "bandpass");
     filter.Q.value = 1.5;
     const gain = new Tone.Gain(0);
 
-    const lfo = new Tone.LFO(0.15, 0.05, 0.2).start();
+    const lfo = new Tone.LFO(0.12, 0.05, 0.2).start();
     lfo.connect(gain.gain);
 
     noise.chain(filter, gain, outputGain);
@@ -452,13 +459,13 @@ class OceanWavesNode extends BaseSoundNode {
   }
 
   private createFoam(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("white").start();
+    const noise = new Tone.Noise("pink").start();
     noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(3000, "highpass");
+    const filter = new Tone.Filter(1500, "highpass");
     filter.Q.value = 0.5;
     const gain = new Tone.Gain(0);
 
-    const lfo = new Tone.LFO(0.25, 0.02, 0.1).start();
+    const lfo = new Tone.LFO(0.18, 0.02, 0.08).start();
     lfo.connect(gain.gain);
 
     noise.chain(filter, gain, outputGain);
@@ -469,9 +476,9 @@ class OceanWavesNode extends BaseSoundNode {
   }
 
   private createSplashes(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("white").start();
+    const noise = new Tone.Noise("pink").start();
     noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(4000, "bandpass");
+    const filter = new Tone.Filter(2000, "bandpass");
     filter.Q.value = 1.0;
     const gain = new Tone.Gain(0);
 
@@ -485,33 +492,33 @@ class OceanWavesNode extends BaseSoundNode {
   private fadeIn(volume: number): void {
     setTimeout(() => {
       // Fade in noise sources
-      this.noiseSources.get("deep")?.volume.rampTo(-20, 0.5);
-      this.noiseSources.get("main")?.volume.rampTo(-15, 0.5);
-      this.noiseSources.get("surface")?.volume.rampTo(-10, 0.5);
-      this.noiseSources.get("retreat")?.volume.rampTo(-15, 0.5);
-      this.noiseSources.get("breaking")?.volume.rampTo(-12, 0.5);
-      this.noiseSources.get("foam")?.volume.rampTo(-18, 0.5);
-      this.noiseSources.get("splash")?.volume.rampTo(-20, 0.5);
+      this.noiseSources.get("deep")?.volume.rampTo(-18, 0.5);
+      this.noiseSources.get("main")?.volume.rampTo(-12, 0.5);
+      this.noiseSources.get("surface")?.volume.rampTo(-8, 0.5);
+      this.noiseSources.get("retreat")?.volume.rampTo(-14, 0.5);
+      this.noiseSources.get("breaking")?.volume.rampTo(-10, 0.5);
+      this.noiseSources.get("foam")?.volume.rampTo(-16, 0.5);
+      this.noiseSources.get("splash")?.volume.rampTo(-18, 0.5);
 
       // Fade in component gains
-      this.componentGains.get("deep")?.gain.rampTo(0.15, 2.5);
-      this.componentGains.get("main")?.gain.rampTo(0.5, 2.5);
-      this.componentGains.get("surface")?.gain.rampTo(0.3, 2.5);
-      this.componentGains.get("retreat")?.gain.rampTo(0.08, 2.8);
-      this.componentGains.get("breaking")?.gain.rampTo(0.12, 3.0);
-      this.componentGains.get("foam")?.gain.rampTo(0.06, 3.2);
-      this.componentGains.get("splash")?.gain.rampTo(0.04, 3.4);
+      this.componentGains.get("deep")?.gain.rampTo(0.25, 2.5);
+      this.componentGains.get("main")?.gain.rampTo(0.6, 2.5);
+      this.componentGains.get("surface")?.gain.rampTo(0.4, 2.5);
+      this.componentGains.get("retreat")?.gain.rampTo(0.1, 2.8);
+      this.componentGains.get("breaking")?.gain.rampTo(0.15, 3.0);
+      this.componentGains.get("foam")?.gain.rampTo(0.05, 3.2);
+      this.componentGains.get("splash")?.gain.rampTo(0.03, 3.4);
 
       // Fade in output and master gains
-      this.outputGain.gain.rampTo(0.5, 2.5);
-      this.masterGain.gain.rampTo(volume * 0.3, 3.0);
+      this.outputGain.gain.rampTo(0.6, 2.5);
+      this.masterGain.gain.rampTo(volume * 0.5, 3.0);
     }, 200);
   }
 
   setVolume(volume: number): void {
     this.volume = volume;
     const isMuted = volume === 0;
-    const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * 0.3;
+    const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * 0.5;
 
     if (isMuted) {
       this.masterGain.gain.cancelScheduledValues(0);
@@ -581,9 +588,9 @@ const SOUND_CONFIGS: SoundConfig[] = [
     label: "Ocean Waves",
     icon: "Waves",
     min: 0,
-    max: 3,
+    max: 5,
     defaultVolume: 0.8,
-    volumeMultiplier: 0.3,
+    volumeMultiplier: 0.5,
     create: (volume: number) => new OceanWavesNode(volume),
   },
 ];
