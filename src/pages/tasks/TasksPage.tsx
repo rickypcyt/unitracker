@@ -189,7 +189,7 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-[calc(100vh-4rem)] z-0" onWheel={handleWheel}>
+      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-screen bg-black z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector */}
       <div className="lg:hidden w-full mb-4">
         <WorkspaceSelector />

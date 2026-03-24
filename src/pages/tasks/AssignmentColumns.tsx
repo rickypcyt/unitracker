@@ -82,8 +82,8 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
     <div className="flex justify-center w-full mb-4">
       <div className={`w-full gap-4 ${
         fixedColumns.length <= 2 ? 'grid grid-cols-1 lg:grid-cols-2' : 
-        fixedColumns.length <= 4 ? 'grid grid-cols-1 lg:grid-cols-2' : 
-        'grid grid-cols-1 lg:grid-cols-2'
+        fixedColumns.length <= 3 ? 'grid grid-cols-1 lg:grid-cols-3' : 
+        'grid grid-cols-1 lg:grid-cols-3'
       }`}>
         {fixedColumns.map((column) => (
           <div
