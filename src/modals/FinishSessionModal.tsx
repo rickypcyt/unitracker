@@ -243,13 +243,28 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ isOpen, onClose
       
       // Get current duration from timer or use session stats
       const currentDuration = getDurationFromTimer();
-      
-      // Update session with proper duration format and task completion
-      // Use the DAILY count as the authoritative value for pomodoros_completed
+
+      // Calculate pomodoros based on study time and configured work interval
       let finalDailyPomos = 0;
       try {
-        const today = new Date().toISOString().split('T')[0];
-        finalDailyPomos = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
+        // Parse duration to get total seconds
+        const durationParts = currentDuration.split(':').map(Number);
+        const hours = durationParts[0] || 0;
+        const minutes = durationParts[1] || 0;
+        const seconds = durationParts[2] || 0;
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+
+        // Get configured work interval (in seconds)
+        let workDurationSeconds = 3000; // Default 50 minutes
+        const pomodoroModes = JSON.parse(localStorage.getItem('pomodoroModes') || '[]');
+        if (pomodoroModes.length > 0) {
+          workDurationSeconds = pomodoroModes[0].work || 3000;
+        }
+
+        // Calculate pomodoros based on total study time
+        const workDurationMinutes = workDurationSeconds / 60;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        finalDailyPomos = Math.floor(totalMinutes / workDurationMinutes);
       } catch {}
 
       console.log('[FinishSessionModal] Attempting to finish session', {

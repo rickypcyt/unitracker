@@ -862,7 +862,7 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
   }, []);
 
   // Función para calcular pomodoros automáticamente basados en la duración
-  // Un pomodoro = 60 minutos (50 trabajo + 10 descanso)
+  // Usa el intervalo de trabajo configurado (por defecto 50 minutos = 3000 segundos)
   // Solo aplica a sesiones de estudio, no a sesiones de pomodoro específicas
   const calculatePomodorosFromDuration = useCallback((totalSeconds: number, sessionType: string = 'study'): number => {
     if (sessionType === 'pomodoro') {
@@ -870,8 +870,20 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
       // ya que usan su propio sistema de conteo manual
       return 0;
     }
+    // Obtener el intervalo de trabajo configurado (en segundos)
+    // Por defecto 50 minutos (3000 segundos)
+    let workDurationSeconds = 3000;
+    try {
+      const pomodoroModes = JSON.parse(localStorage.getItem('pomodoroModes') || '[]');
+      if (pomodoroModes.length > 0) {
+        const currentMode = pomodoroModes[0]; // Usar el primer modo
+        workDurationSeconds = currentMode.work || 3000;
+      }
+    } catch {}
+    
+    const workDurationMinutes = workDurationSeconds / 60;
     const totalMinutes = Math.floor(totalSeconds / 60);
-    return Math.floor(totalMinutes / 60); // Un pomodoro cada 60 minutos
+    return Math.floor(totalMinutes / workDurationMinutes);
   }, []);
 
   // Función para manejar finalización de sesión
