@@ -50,11 +50,9 @@ export const useTaskManager = (activeWorkspace) => {
     if (!userId) return;
     
     // For "All" workspace, fetch all tasks without workspace filter
-    if (activeWorkspaceId === ALL_WORKSPACE_ID) {
-      console.log('useTaskManager - Fetching all tasks for "All" workspace');
+    if (!activeWorkspace || activeWorkspaceId === ALL_WORKSPACE_ID) {
       fetchTasksRef.current(null, true); // Pass null to fetch all tasks
     } else if (activeWorkspaceId) {
-      console.log('useTaskManager - Fetching tasks for workspace:', activeWorkspaceId);
       fetchTasksRef.current(activeWorkspaceId, true);
     }
   }, [userId, activeWorkspaceId]);
@@ -126,13 +124,9 @@ export const useTaskManager = (activeWorkspace) => {
 
     try {
       // Convert deadline to proper format for database
-      console.log('Original deadline from task:', updatedTask.deadline);
       const deadlineForDB = parseDateForDB(updatedTask.deadline);
-      console.log('Converted deadline for DB:', deadlineForDB);
 
       // Actualizar el estado local inmediatamente
-      console.log('DEBUG: Calling updateTaskSuccess with:', updatedTask);
-      console.log('DEBUG: Task status specifically:', updatedTask.status);
       updateTaskSuccess(updatedTask);
 
       // Actualizar en la base de datos
@@ -146,7 +140,9 @@ export const useTaskManager = (activeWorkspace) => {
           difficulty: updatedTask.difficulty,
           assignment: updatedTask.assignment,
           activetask: updatedTask.activetask,
-          status: updatedTask.status
+          status: updatedTask.status,
+          start_at: updatedTask.start_at,
+          end_at: updatedTask.end_at
         })
         .eq('id', updatedTask.id);
 

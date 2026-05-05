@@ -167,7 +167,7 @@ export const KanbanBoard = () => {
 
   useEffect(() => {
     if (activeWorkspace) {
-      console.log('KanbanBoard - workspace changed:', activeWorkspace.id);
+      // Workspace changed
     }
   }, [activeWorkspace?.id]);
 
@@ -624,7 +624,6 @@ export const KanbanBoard = () => {
       {quickDateTask && (
         <QuickDatePicker
           task={quickDateTask}
-          position={quickDateTask.position}
           onClose={() => setQuickDateTask(null)}
           onSave={handleQuickDateSave}
         />

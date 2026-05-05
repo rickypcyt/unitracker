@@ -75,7 +75,7 @@ const Navbar = () => {
       }
     };
     fetchWorkspaces();
-  }, [setWorkspaces, setCurrentWorkspace, activeWorkspace]);
+  }, [setWorkspaces, setCurrentWorkspace]);
 
   // Fetch tasks for all workspaces to get accurate counts (includes shared workspaces via fetchTasks)
   useEffect(() => {

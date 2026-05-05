@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { AssignmentSortMenu } from "@/components/AssignmentSortMenu";
 import { CheckCircle2 } from "lucide-react";
+import { QuickDatePicker } from "@/modals/QuickDatePicker";
 import RecurringTasksToggle from "@/pages/calendar/RecurringTasksToggle";
 import { Task } from "@/types/taskStorage";
 import TaskFilter from "@/pages/calendar/TaskFilter";
@@ -41,10 +42,11 @@ const AllTasks: React.FC<AllTasksProps> = ({
   onFilterChange,
   onSortChange
 }) => {
-  const { handleToggleCompletion, handleDeleteTask } = useTaskManager(undefined);
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(undefined);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [quickDateTask, setQuickDateTask] = useState<Task | null>(null);
   
   const [collapsedAssignments, setCollapsedAssignments] = useState<Set<string>>(() => {
     try {
@@ -130,6 +132,15 @@ const AllTasks: React.FC<AllTasksProps> = ({
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setEditingTask(null);
+  };
+
+  const handleSetDate = (task: Task, position: { x: number; y: number }) => {
+    setQuickDateTask({ ...task, position } as any);
+  };
+
+  const handleQuickDateSave = (updatedTask: Task) => {
+    handleUpdateTask(updatedTask);
+    setQuickDateTask(null);
   };
 
   // Wrapper para handleToggleCompletion - firma (id: string) => void
@@ -310,6 +321,16 @@ const AllTasks: React.FC<AllTasksProps> = ({
             setContextMenu(null);
           }}
           onSetTaskStatus={() => {}}
+          onSetDate={handleSetDate}
+        />
+      )}
+
+      {/* Quick Date Picker */}
+      {quickDateTask && (
+        <QuickDatePicker
+          task={quickDateTask}
+          onClose={() => setQuickDateTask(null)}
+          onSave={handleQuickDateSave}
         />
       )}
     </div>

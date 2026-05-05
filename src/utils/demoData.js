@@ -23,9 +23,9 @@ export const demoAssignments = [
 ];
 
 export const demoTasks = [
-  { id: 'demo-task-1', title: 'Solve calculus exercises (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: false, due_date: todayStr, created_at: todayStr, difficulty: 'medium', completed_at: null },
-  { id: 'demo-task-2', title: 'Review theorems (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: true, due_date: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy', completed_at: yesterdayStr },
-  { id: 'demo-task-3', title: 'Implement REST API (demo)', assignment: 'demo-assignment-b', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
+  { id: 'demo-task-1', title: 'Solve calculus exercises (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: false, due_date: todayStr, deadline: todayStr, created_at: todayStr, difficulty: 'medium', completed_at: null },
+  { id: 'demo-task-2', title: 'Review theorems (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: true, due_date: yesterdayStr, deadline: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy', completed_at: yesterdayStr },
+  { id: 'demo-task-3', title: 'Implement REST API (demo)', assignment: 'demo-assignment-b', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, deadline: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
 ];
 
 export const demoNotes = [

@@ -11,14 +11,12 @@ interface QuickDatePickerProps {
   task: any;
   onClose: () => void;
   onSave: (task: any) => void;
-  position?: { x: number; y: number };
 }
 
 export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   task,
   onClose,
-  onSave,
-  position
+  onSave
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
@@ -27,48 +25,20 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
     return parsed;
   });
   
+  const [startTime, setStartTime] = useState(() => {
+    if (task.start_at) {
+      return to12Hour(task.start_at);
+    }
+    return '8:00 AM';
+  });
+
   const [endTime, setEndTime] = useState(() => {
     if (task.end_at) {
       return to12Hour(task.end_at);
     }
-    return '11:00 AM';
+    return '9:00 AM';
   });
 
-  // Calculate position based on click location or fallback to right side
-  const getPosition = () => {
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-    
-    if (position) {
-      const menuWidth = 320; // min-w-[320px]
-      const menuHeight = 400; // estimated height
-      
-      let x = position.x;
-      let y = position.y - 200; // Move 200px up from click
-      
-      // Adjust horizontal position if menu would go off screen
-      if (x + menuWidth > windowWidth) {
-        x = Math.max(10, windowWidth - menuWidth - 10);
-      }
-      
-      // Adjust vertical position if menu would go off screen
-      if (y + menuHeight > windowHeight) {
-        y = Math.max(10, windowHeight - menuHeight - 10);
-      }
-      
-      // Ensure menu doesn't go above top of screen
-      if (y < 10) {
-        y = position.y + 20; // Show below if no space above
-      }
-      
-      return { x, y };
-    }
-    
-    // Fallback to right side center
-    return { x: windowWidth - 340, y: windowHeight / 2 - 200 };
-  };
-
-  const pos = getPosition();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -93,44 +63,68 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
 
   const handleSave = () => {
     const updatedTask = { ...task };
-    
+
     if (selectedDate) {
+      // Convert to DD/MM/YYYY format (same as TaskForm)
       const day = String(selectedDate.getDate()).padStart(2, '0');
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const year = selectedDate.getFullYear();
-      updatedTask.deadline = `${day}/${month}/${year}`;
-      
-      updatedTask.end_at = to24Hour(endTime) + ':00'; // Time limit as deadline
-      updatedTask.start_at = null; // No start time needed for deadline
+      const dateStr = `${day}/${month}/${year}`;
+
+      // Set deadline in DD/MM/YYYY format
+      updatedTask.deadline = dateStr;
+      updatedTask.due_date = dateStr;
+
+      // Convert start time to timestamptz format using the deadline date
+      const start24 = to24Hour(startTime);
+      if (start24) {
+        const timeParts = start24.split(':');
+        const hours = timeParts[0] || '0';
+        const minutes = timeParts[1] || '0';
+
+        // Create timestamp manually to avoid timezone conversion
+        const dateStr = `${year}-${month}-${day}`;
+        updatedTask.start_at = `${dateStr} ${hours}:${minutes}:00+00`;
+      }
+
+      // Convert end time to timestamptz format using the deadline date
+      const end24 = to24Hour(endTime);
+      if (end24) {
+        const timeParts = end24.split(':');
+        const hours = timeParts[0] || '0';
+        const minutes = timeParts[1] || '0';
+
+        // Create timestamp manually to avoid timezone conversion
+        const dateStr = `${year}-${month}-${day}`;
+        updatedTask.end_at = `${dateStr} ${hours}:${minutes}:00+00`;
+      }
     } else {
       updatedTask.deadline = '';
+      updatedTask.due_date = '';
       updatedTask.start_at = null;
       updatedTask.end_at = null;
     }
-    
+
     onSave(updatedTask);
     onClose();
   };
 
   const handleClearDate = () => {
     setSelectedDate(null);
-    setEndTime('11:00 AM');
+    setStartTime('8:00 AM');
+    setEndTime('9:00 AM');
   };
 
   return (
-    <div
-      ref={menuRef}
-      className="fixed z-50 min-w-[320px] rounded-lg bg-[var(--bg-primary)] p-4 shadow-xl"
-      style={{
-        position: 'fixed',
-        left: `${pos.x}px`,
-        top: `${pos.y}px`,
-        border: '2px solid var(--border-primary)',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        maxHeight: '80vh',
-        overflowY: 'auto',
-      }}
-    >
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div
+        ref={menuRef}
+        className="min-w-[320px] max-w-md rounded-lg bg-[var(--bg-primary)] p-4 shadow-xl border-2 border-[var(--border-primary)]"
+        style={{
+          maxHeight: '80vh',
+          overflowY: 'auto',
+        }}
+      >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -170,19 +164,47 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
         </button>
       </div>
 
-      {/* Time Limit - Only show if date is selected */}
+      {/* Time - Only show if date is selected */}
       {selectedDate && (
         <div className="border-t border-[var(--border-primary)] pt-4">
           <div className="flex items-center gap-2 mb-3">
             <Clock size={16} className="text-[var(--text-primary)]" />
-            <span className="text-sm font-medium text-[var(--text-primary)]">Time Limit/Deadline</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">Task Time</span>
           </div>
           
-          <div className="max-w-xs mx-auto">
-            {/* Time Limit */}
+          <div className="max-w-xs mx-auto space-y-3">
+            {/* Task Start Time */}
             <div>
               <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
-                Time Limit/Deadline
+                Task Start Time
+              </label>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setStartTime(decrementTime(startTime))}
+                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                >
+                  −
+                </button>
+                <input
+                  type="text"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
+                  placeholder="8:00 AM"
+                />
+                <button
+                  onClick={() => setStartTime(incrementTime(startTime))}
+                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Task End Time */}
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+                Task End Time
               </label>
               <div className="flex items-center gap-1">
                 <button
@@ -196,7 +218,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
-                  placeholder="11:00 AM"
+                  placeholder="9:00 AM"
                 />
                 <button
                   onClick={() => setEndTime(incrementTime(endTime))}
@@ -224,6 +246,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
         >
           Save
         </button>
+      </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 
+import { QuickDatePicker } from '@/modals/QuickDatePicker';
 import type { Task } from '@/types/taskStorage';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { TaskItem } from '@/pages/tasks/TaskItem';
@@ -44,7 +45,7 @@ interface MonthGroup {
 const UpcomingTasks = () => {
   const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(undefined);
   const realTasks = useSelector((state: RootState) => state.tasks.tasks);
-  const { isDemo, demoTasks } = useDemoMode();
+  const { isDemo, demoTasks, showLoginPrompt } = useDemoMode();
   const tasks = isDemo ? demoTasks : realTasks;
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
@@ -56,6 +57,7 @@ const UpcomingTasks = () => {
   });
   const dispatch = useDispatch();
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [quickDateTask, setQuickDateTask] = useState<Task | null>(null);
 
   useEffect(() => {
     // Listen for the refreshTaskList event
@@ -82,30 +84,30 @@ const UpcomingTasks = () => {
   // Filter and sort upcoming tasks
   const upcomingTasks = tasks
     .filter(task => {
-      if (!task.due_date) return false;
-      const taskDate = new Date(task.due_date);
+      if (!task.deadline) return false;
+      const taskDate = new Date(task.deadline);
       taskDate.setHours(0, 0, 0, 0);
       return taskDate >= today && !task.completed;
     })
-    .sort((a: Task, b: Task) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
+    .sort((a: Task, b: Task) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime());
 
   // Group tasks by time periods
   const todayTasks = upcomingTasks.filter(task => {
-    if (!task.due_date) return false;
-    const taskDate = new Date(task.due_date);
+    if (!task.deadline) return false;
+    const taskDate = new Date(task.deadline);
     return taskDate.toDateString() === today.toDateString();
   });
 
   const thisWeekTasks = upcomingTasks.filter(task => {
-    if (!task.due_date) return false;
-    const taskDate = new Date(task.due_date);
+    if (!task.deadline) return false;
+    const taskDate = new Date(task.deadline);
     return taskDate > today && taskDate <= endOfWeek;
   });
 
   // Group remaining tasks by month
   const tasksByMonth = upcomingTasks.reduce((groups: Record<string, MonthGroup>, task: Task) => {
-    if (!task.due_date) return groups;
-    const taskDate = new Date(task.due_date);
+    if (!task.deadline) return groups;
+    const taskDate = new Date(task.deadline);
     if (taskDate <= today || taskDate <= endOfWeek) return groups;
 
     const monthKey = `${taskDate.getFullYear()}-${taskDate.getMonth()}`;
@@ -154,15 +156,32 @@ const UpcomingTasks = () => {
     setShowTaskForm(true);
   };
 
+  const handleViewTask = (task: Task) => {
+    setViewingTask(task);
+  };
+
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setEditingTask(null);
   };
 
+  const handleSetDate = (task: Task, position: { x: number; y: number }) => {
+    if (isDemo) {
+      showLoginPrompt();
+      return;
+    }
+    setQuickDateTask({ ...task, position } as any);
+  };
+
+  const handleQuickDateSave = (updatedTask: Task) => {
+    handleUpdateTask(updatedTask);
+    setQuickDateTask(null);
+  };
+
   // Removed unused getDifficultyColor
 
   // Add No Deadline group
-  const noDeadlineTasks = tasks.filter(task => (!task.due_date || task.due_date === '' || task.due_date === null) && !task.completed);
+  const noDeadlineTasks = tasks.filter(task => (!task.deadline || task.deadline === '' || task.deadline === null) && !task.completed);
 
   const handleTaskContextMenu = (e: React.MouseEvent, task: Task) => {
     e.preventDefault();
@@ -291,6 +310,16 @@ const UpcomingTasks = () => {
           onEditTask={handleEditTask}
           onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
+          onSetDate={handleSetDate}
+        />
+      )}
+
+      {/* Quick Date Picker */}
+      {quickDateTask && (
+        <QuickDatePicker
+          task={quickDateTask}
+          onClose={() => setQuickDateTask(null)}
+          onSave={handleQuickDateSave}
         />
       )}
     </div>
