@@ -5,6 +5,7 @@ import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'r
 import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUtils';
 
 import DatePicker from 'react-datepicker';
+import { parseDateFromString } from '@/utils/dateUtils';
 
 interface QuickDatePickerProps {
   task: any;
@@ -21,32 +22,9 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-    if (task.deadline) {
-      // Handle DD/MM/YYYY format
-      if (task.deadline.includes('/')) {
-        const [day, month, year] = task.deadline.split('/');
-        const dayNum = parseInt(day);
-        const monthNum = parseInt(month);
-        const yearNum = parseInt(year);
-        
-        // Validate date components
-        if (!isNaN(dayNum) && !isNaN(monthNum) && !isNaN(yearNum)) {
-          if (monthNum >= 1 && monthNum <= 12 && yearNum >= 1900 && yearNum <= 2100) {
-            const date = new Date(yearNum, monthNum - 1, dayNum);
-            // Check if date is valid (day exists in month)
-            if (!isNaN(date.getTime()) && date.getDate() === dayNum) {
-              return date;
-            }
-          }
-        }
-        console.error('Invalid date in task.deadline:', task.deadline);
-        return null;
-      } else {
-        const date = new Date(task.deadline);
-        return isNaN(date.getTime()) ? null : date;
-      }
-    }
-    return null;
+    if (!task.deadline) return null;
+    const parsed = parseDateFromString(task.deadline);
+    return parsed;
   });
   
   const [endTime, setEndTime] = useState(() => {

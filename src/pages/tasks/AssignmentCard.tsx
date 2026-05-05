@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
 import { ColumnMenu } from '@/modals/ColumnMenu';
+import { parseDateFromString } from '@/utils/dateUtils';
 
 interface AssignmentCardProps {
   id?: string;
@@ -56,9 +57,10 @@ export const AssignmentCard = ({
       if (!b.deadline) return -1; // b va al final
       
       // Convertir deadlines a Date para comparar
-      const dateA = new Date(a.deadline);
-      const dateB = new Date(b.deadline);
-      
+      const dateA = parseDateFromString(a.deadline);
+      const dateB = parseDateFromString(b.deadline);
+      if (!dateA || !dateB) return 0;
+
       // Ordenar de más antiguo (atrasado) a más nuevo (futuro)
       return dateA.getTime() - dateB.getTime();
     });

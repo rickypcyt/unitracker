@@ -1,5 +1,5 @@
 import { CheckCircle2, Circle } from "lucide-react";
-import { formatDateShort, getTimeRemainingString, isToday, isTomorrow } from '@/utils/dateUtils';
+import { formatDateShort, getTimeRemainingString, isToday, isTomorrow, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
 import { Task } from '@/types/taskStorage';
@@ -28,7 +28,8 @@ const formatTime = (timeStr: string | undefined | null) => {
 const getDeadlineColor = (dateStr: string) => {
     if (!dateStr) return 'text-[var(--text-secondary)]'; // No deadline
 
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return 'text-[var(--text-secondary)]';
     const now = new Date();
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
@@ -150,7 +151,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     // Helper para verificar si la tarea es para hoy (sin importar la hora)
     const isTaskForToday = (dateStr: string) => {
         if (!dateStr) return false;
-        const taskDate = new Date(dateStr);
+        const taskDate = parseDateFromString(dateStr);
+        if (!taskDate) return false;
         const today = new Date();
         return (
             taskDate.getDate() === today.getDate() &&

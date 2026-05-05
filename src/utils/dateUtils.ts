@@ -14,13 +14,36 @@ export function getLocalDateString(date = new Date()): string {
 }
 
 /**
+ * Parses a date string into a Date object, prioritizing DD/MM/YYYY or DD-MM-YYYY formats.
+ */
+export function parseDateFromString(dateStr: string): Date | null {
+    const trimmed = dateStr.trim();
+    if (!trimmed) return null;
+
+    const slashMatch = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+    if (slashMatch) {
+        const day = slashMatch[1];
+        const month = slashMatch[2];
+        const year = slashMatch[3];
+        if (!day || !month || !year) return null;
+        const isoDate = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`;
+        const parsed = new Date(isoDate);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const parsed = new Date(trimmed);
+    return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
  * Formats a date string into DD/MM/YYYY format
  * @param dateStr - The date string to format (can be null or undefined)
  * @returns A formatted date string in the format "DD/MM/YYYY" or empty string if no date provided
  */
 export function formatDate(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return "";
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -34,7 +57,8 @@ export function formatDate(dateStr: string | null | undefined): string {
  */
 export function formatDateTime(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return "";
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -50,7 +74,8 @@ export function formatDateTime(dateStr: string | null | undefined): string {
  */
 export function formatDateTimeWithAmPm(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return "";
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -85,7 +110,8 @@ export function formatDateForInput(date: Date): string {
  */
 export function getTimeRemainingString(dateStr: string): string {
     const now = new Date();
-    const target = new Date(dateStr);
+    const target = parseDateFromString(dateStr);
+    if (!target) return '';
     const diffTime = target.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
@@ -98,7 +124,8 @@ export function getTimeRemainingString(dateStr: string): string {
 
 export function formatDateShort(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return "";
     const weekday = date.toLocaleString('en-US', { weekday: 'short' });
     const month = date.toLocaleString('en-US', { month: 'short' });
     const day = date.getDate();
@@ -112,7 +139,8 @@ export function formatDateShort(dateStr: string | null | undefined): string {
  */
 export function isToday(dateStr: string | null | undefined): boolean {
     if (!dateStr) return false;
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return false;
     const now = new Date();
     return date.getFullYear() === now.getFullYear() &&
         date.getMonth() === now.getMonth() &&
@@ -126,7 +154,8 @@ export function isToday(dateStr: string | null | undefined): boolean {
  */
 export function isTomorrow(dateStr: string | null | undefined): boolean {
     if (!dateStr) return false;
-    const date = new Date(dateStr);
+    const date = parseDateFromString(dateStr);
+    if (!date) return false;
     const now = new Date();
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     return date.getFullYear() === tomorrow.getFullYear() &&
