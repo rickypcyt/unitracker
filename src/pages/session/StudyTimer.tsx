@@ -1446,6 +1446,20 @@ const StudyTimer = ({ onSyncChange, isSynced }: StudyTimerProps) => {
     }
   }, [studyState.sessionStatus, studyState.lastPausedAt]);
 
+  // Estado para forzar actualización en tiempo real
+  const [, forceUpdate] = useState(0);
+
+  // Actualizar el tiempo "ago" cada segundo cuando está pausado
+  useEffect(() => {
+    if (studyState.sessionStatus !== "paused" || !studyState.lastPausedAt) return;
+
+    const interval = setInterval(() => {
+      forceUpdate(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [studyState.sessionStatus, studyState.lastPausedAt]);
+
   // Crear botones de ajuste de tiempo
   const createAdjustButton = useCallback(
     (adjustment: number, label: string) => (

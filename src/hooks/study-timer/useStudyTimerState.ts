@@ -38,6 +38,7 @@ const parseStoredState = (savedState: string | null, defaultState: any) => {
           typeof parsed.sessionDescription === "string"
             ? parsed.sessionDescription
             : "",
+        lastPausedAt: parsed.lastPausedAt ? safeNumber(Number(parsed.lastPausedAt)) : null,
       };
     }
     return defaultState;
@@ -94,6 +95,7 @@ export function useStudyTimerState(): [StudyState, (updates: Partial<StudyState>
       sessionStatus: state.sessionStatus,
       sessionTitle: state.sessionTitle || "",
       sessionDescription: state.sessionDescription || "",
+      lastPausedAt: state.lastPausedAt,
     };
     saveToLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE, stateToSave);
   };
