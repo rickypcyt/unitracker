@@ -114,7 +114,7 @@ function detectAlpha(ctx: CanvasRenderingContext2D, w: number, h: number): boole
   const sampleH = Math.min(96, h);
   const imgData = ctx.getImageData(0, 0, sampleW, sampleH).data;
   for (let i = 3; i < imgData.length; i += 4) {
-    if (imgData[i] < 255) return true;
+    if (imgData[i]! < 255) return true;
   }
   return false;
 }

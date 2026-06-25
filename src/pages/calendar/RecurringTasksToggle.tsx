@@ -1,7 +1,6 @@
 import { Check } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
 import { useRecurringTasks } from './RecurringTasksContext';
-import { useState } from 'react';
 
 interface RecurringTasksToggleProps {
   className?: string;

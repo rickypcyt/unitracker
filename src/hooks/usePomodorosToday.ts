@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { supabase } from '@/utils/supabaseClient';
 import { getLocalDateString } from '@/utils/dateUtils';
 
-export default function usePomodorosToday(userId) {
+export default function usePomodorosToday(userId: string | undefined) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export default function usePomodorosToday(userId) {
       .gte('started_at', `${today}T00:00:00`)
       .lte('started_at', `${today}T23:59:59`);
     if (!error && data) {
-      const sum = data.reduce((acc, row) => acc + (row.pomodoros_completed || 0), 0);
+      const sum = data.reduce((acc: number, row: any) => acc + (row.pomodoros_completed || 0), 0);
       setTotal(sum);
     }
     setLoading(false);
@@ -35,7 +35,7 @@ export default function usePomodorosToday(userId) {
 
     // Add event listener
     window.addEventListener('pomodoroCompleted', handlePomodoroComplete);
-    
+
     // Clean up
     return () => {
       window.removeEventListener('pomodoroCompleted', handlePomodoroComplete);

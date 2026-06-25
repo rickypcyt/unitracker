@@ -6,7 +6,7 @@ interface Note {
   title: string;
   assignment: string | null;
   description: string;
-  date: string;
+  date?: string | undefined;
   user_id?: string;
 }
 
@@ -168,7 +168,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
                                     <Calendar size={12} />
-                                    <span>{new Date(note.date).toLocaleDateString()}</span>
+                                    <span>{note.date ? new Date(note.date).toLocaleDateString() : ''}</span>
                                   </div>
                                   <button
                                     onClick={(e) => {

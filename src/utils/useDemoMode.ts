@@ -18,7 +18,7 @@ export default function useDemoMode() {
   const isDemo = !isLoggedIn;
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
-  const { currentWorkspace, workspaces } = useWorkspace();
+  const { workspaces } = useWorkspace();
 
   // Setup demo workspaces when in demo mode
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function useDemoMode() {
   useEffect(() => {
     if (!isDemo && workspaces.length > 0) {
       // Check if current workspaces are demo workspaces
-      const hasDemoWorkspaces = workspaces.some(ws => 
+      const hasDemoWorkspaces = workspaces.some(ws =>
         demoWorkspaces.some(demoWs => demoWs.id === ws.id)
       );
       if (hasDemoWorkspaces) {
@@ -65,4 +65,4 @@ export default function useDemoMode() {
     showLoginPrompt,
     closeLoginPrompt,
   };
-} 
+}

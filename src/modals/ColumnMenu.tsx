@@ -1,5 +1,17 @@
 import BaseMenu from '@/modals/BaseMenu';
 
+interface ColumnMenuProps {
+  x: number;
+  y: number;
+  assignment: string;
+  onAddTask: () => void;
+  onSortClick: (assignment: string, pos: { x: number; y: number }) => void;
+  onTogglePin: () => void;
+  onClose: () => void;
+  pinned: boolean;
+  tasks: any[];
+}
+
 export const ColumnMenu = ({
   x,
   y,
@@ -10,7 +22,7 @@ export const ColumnMenu = ({
   onClose,
   pinned,
   tasks
-}) => {
+}: ColumnMenuProps) => {
   const optionStyle = {
     padding: '0.5rem 1rem',
     cursor: 'pointer',

@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Helper function to do deep comparison of objects
-const isEqual = (obj1, obj2) => {
+const isEqual = (obj1: any, obj2: any) => {
   return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
 
-export const useFormState = (initialState = {}, initialValidation = {}) => {
+interface ValidationRules {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  message?: string;
+}
+
+export const useFormState = (
+  initialState: Record<string, any> = {},
+  initialValidation: Record<string, ValidationRules> = {}
+) => {
   const [formData, setFormData] = useState(initialState);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const prevInitialStateRef = useRef(initialState);
@@ -23,13 +34,13 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     }
   }, [initialState]);
 
-  const handleChange = useCallback((field, value) => {
+  const handleChange = useCallback((field: string, value: any) => {
     // Update form data
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-    
+
     // Mark form as dirty and as interacted
     setIsDirty(prev => prev || true);
     setHasInteracted(true);
@@ -42,7 +53,7 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     });
   }, []);
 
-  const validateField = (field, value) => {
+  const validateField = (field: string, value: string) => {
     const rules = initialValidation[field];
     if (!rules) return null;
 
@@ -66,7 +77,7 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: Record<string, string> = {};
     let isValid = true;
 
     // Validate all fields
@@ -99,4 +110,4 @@ export const useFormState = (initialState = {}, initialValidation = {}) => {
     resetForm,
     setFormData
   };
-}; 
+};

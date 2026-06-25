@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-
 type StorageValue<T> = T | null;
 type StorageKey = string;
-
 interface UseStorageOptions<T> {
   defaultValue?: T;
   serialize?: (value: T) => string;
   deserialize?: (value: string) => T;
 }
-
 interface UseStorageReturn<T> {
   value: StorageValue<T>;
   setValue: (value: T | ((prev: StorageValue<T>) => T)) => void;
@@ -17,12 +14,12 @@ interface UseStorageReturn<T> {
 }
 
 // Hook centralizado para manejar localStorage con error handling y tipado
-export function useStorage<T>(
-  key: StorageKey,
-  options: UseStorageOptions<T> = {}
-): UseStorageReturn<T> {
-  const { defaultValue = null, serialize = JSON.stringify, deserialize = JSON.parse } = options;
-
+export function useStorage<T>(key: StorageKey, options: UseStorageOptions<T> = {}): UseStorageReturn<T> {
+  const {
+    defaultValue = null,
+    serialize = JSON.stringify,
+    deserialize = JSON.parse
+  } = options;
   const [value, setValueState] = useState<StorageValue<T>>(defaultValue);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,10 +38,7 @@ export function useStorage<T>(
   // Guardar valor en localStorage
   const setValue = useCallback((newValue: T | ((prev: StorageValue<T>) => T)) => {
     try {
-      const valueToStore = typeof newValue === 'function' 
-        ? (newValue as Function)(getValue()) 
-        : newValue;
-      
+      const valueToStore = typeof newValue === 'function' ? (newValue as Function)(getValue()) : newValue;
       setValueState(valueToStore);
       localStorage.setItem(key, serialize(valueToStore));
     } catch (error) {
@@ -81,21 +75,25 @@ export function useStorage<T>(
         setValueState(defaultValue);
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [key, defaultValue, deserialize]);
-
-  return { value, setValue, removeValue, isLoading };
+  return {
+    value,
+    setValue,
+    removeValue,
+    isLoading
+  };
 }
 
 // Hook especializado para objetos complejos con validación
-export function useObjectStorage<T extends Record<string, any>>(
-  key: StorageKey,
-  options: UseStorageOptions<T> & { validator?: (obj: any) => obj is T } = {}
-): UseStorageReturn<T> {
-  const { validator, ...restOptions } = options;
-
+export function useObjectStorage<T extends Record<string, any>>(key: StorageKey, options: UseStorageOptions<T> & {
+  validator?: (obj: any) => obj is T;
+} = {}): UseStorageReturn<T> {
+  const {
+    validator,
+    ...restOptions
+  } = options;
   const safeDeserialize = useCallback((value: string): T => {
     try {
       const parsed = JSON.parse(value);
@@ -109,36 +107,35 @@ export function useObjectStorage<T extends Record<string, any>>(
       return options.defaultValue as T;
     }
   }, [key, options.defaultValue, validator]);
-
-  return useStorage<T>(key, { ...restOptions, deserialize: safeDeserialize });
+  return useStorage<T>(key, {
+    ...restOptions,
+    deserialize: safeDeserialize
+  });
 }
 
 // Hook para arrays con métodos útiles
-export function useArrayStorage<T>(
-  key: StorageKey,
-  options: UseStorageOptions<T[]> = {}
-) {
-  const { value, setValue, removeValue, isLoading } = useStorage<T[]>(key, {
+export function useArrayStorage<T>(key: StorageKey, options: UseStorageOptions<T[]> = {}) {
+  const {
+    value,
+    setValue,
+    removeValue,
+    isLoading
+  } = useStorage<T[]>(key, {
     defaultValue: [],
-    ...options,
+    ...options
   });
-
   const addItem = useCallback((item: T) => {
-    setValue((prev) => [...(prev || []), item]);
+    setValue(prev => [...(prev || []), item]);
   }, [setValue]);
-
   const removeItem = useCallback((predicate: (item: T) => boolean) => {
-    setValue((prev) => (prev || []).filter(predicate));
+    setValue(prev => (prev || []).filter(predicate));
   }, [setValue]);
-
   const updateItem = useCallback((predicate: (item: T) => boolean, updater: (item: T) => T) => {
-    setValue((prev) => (prev || []).map(item => predicate(item) ? updater(item) : item));
+    setValue(prev => (prev || []).map(item => predicate(item) ? updater(item) : item));
   }, [setValue]);
-
   const clearArray = useCallback(() => {
     setValue([]);
   }, [setValue]);
-
   return {
     value,
     setValue,
@@ -147,31 +144,29 @@ export function useArrayStorage<T>(
     addItem,
     removeItem,
     updateItem,
-    clearArray,
+    clearArray
   };
 }
 
 // Hook para contadores con persistencia
-export function useCounterStorage(
-  key: StorageKey,
-  initialValue: number = 0
-) {
-  const { value, setValue, removeValue, isLoading } = useStorage<number>(key, {
-    defaultValue: initialValue,
+export function useCounterStorage(key: StorageKey, initialValue: number = 0) {
+  const {
+    value,
+    setValue,
+    removeValue,
+    isLoading
+  } = useStorage<number>(key, {
+    defaultValue: initialValue
   });
-
   const increment = useCallback((by: number = 1) => {
-    setValue((prev) => (prev || 0) + by);
+    setValue(prev => (prev || 0) + by);
   }, [setValue]);
-
   const decrement = useCallback((by: number = 1) => {
-    setValue((prev) => Math.max(0, (prev || 0) - by));
+    setValue(prev => Math.max(0, (prev || 0) - by));
   }, [setValue]);
-
   const reset = useCallback(() => {
     setValue(initialValue);
   }, [setValue, initialValue]);
-
   return {
     count: value || 0,
     setCount: setValue,
@@ -179,43 +174,40 @@ export function useCounterStorage(
     decrement,
     reset,
     removeCount: removeValue,
-    isLoading,
+    isLoading
   };
 }
 
 // Hook para settings con auto-save
-export function useSettingsStorage<T extends Record<string, any>>(
-  key: StorageKey,
-  defaultSettings: T
-) {
-  const { value, setValue, isLoading } = useObjectStorage<T>(key, {
-    defaultValue: defaultSettings,
+export function useSettingsStorage<T extends Record<string, any>>(key: StorageKey, defaultSettings: T) {
+  const {
+    value,
+    setValue,
+    isLoading
+  } = useObjectStorage<T>(key, {
+    defaultValue: defaultSettings
   });
-
-  const updateSetting = useCallback(<K extends keyof T>(setting: K, value: T[K]) => {
-    setValue((prev) => ({
+  const updateSetting = useCallback(<K extends keyof T,>(setting: K, value: T[K]) => {
+    setValue(prev => ({
       ...(prev || defaultSettings),
-      [setting]: value,
+      [setting]: value
     }) as T);
   }, [setValue, defaultSettings]);
-
   const updateSettings = useCallback((updates: Partial<T>) => {
-    setValue((prev) => ({
+    setValue(prev => ({
       ...(prev || defaultSettings),
-      ...updates,
+      ...updates
     }) as T);
   }, [setValue, defaultSettings]);
-
   const resetSettings = useCallback(() => {
     setValue(defaultSettings);
   }, [setValue, defaultSettings]);
-
   return {
     settings: value || defaultSettings,
     updateSetting,
     updateSettings,
     resetSettings,
-    isLoading,
+    isLoading
   };
 }
 
@@ -228,13 +220,11 @@ export class StorageMigrator {
         const value = transform ? transform(JSON.parse(oldValue)) : JSON.parse(oldValue);
         localStorage.setItem(newKey, JSON.stringify(value));
         localStorage.removeItem(oldKey);
-        console.log(`Migrated storage key from "${oldKey}" to "${newKey}"`);
       }
     } catch (error) {
       console.warn(`Error migrating storage key from "${oldKey}" to "${newKey}":`, error);
     }
   }
-
   static clearPattern(pattern: string) {
     try {
       const keys = Object.keys(localStorage);
@@ -243,12 +233,10 @@ export class StorageMigrator {
           localStorage.removeItem(key);
         }
       });
-      console.log(`Cleared localStorage keys matching pattern: ${pattern}`);
     } catch (error) {
       console.warn(`Error clearing localStorage pattern "${pattern}":`, error);
     }
   }
-
   static getStorageSize(): string {
     try {
       let total = 0;

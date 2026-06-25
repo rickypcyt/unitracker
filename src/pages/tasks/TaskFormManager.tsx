@@ -1,7 +1,6 @@
 import AITaskForm from './AITaskForm';
 import TaskForm from './TaskForm';
 import { useState } from 'react';
-
 type TaskFormManagerProps = {
   initialAssignment?: string | null;
   initialTask?: any | null;
@@ -11,7 +10,6 @@ type TaskFormManagerProps = {
   onClose: () => void;
   onTaskCreated?: (id: string) => void;
 };
-
 const TaskFormManager = ({
   initialAssignment = null,
   initialTask = null,
@@ -21,33 +19,12 @@ const TaskFormManager = ({
   onClose,
   onTaskCreated
 }: TaskFormManagerProps) => {
-  const [activeMode, setActiveMode] = useState<'ai' | 'manual'>(
-    initialTask ? 'manual' : initialActiveTab
-  );
-
+  const [activeMode, setActiveMode] = useState<'ai' | 'manual'>(initialTask ? 'manual' : initialActiveTab);
   if (activeMode === 'ai') {
-    return (
-      <AITaskForm
-        onClose={onClose}
-        onSwitchToManual={() => setActiveMode('manual')}
-      />
-    );
+    return <AITaskForm onClose={onClose} onSwitchToManual={() => setActiveMode('manual')} />;
   }
-
-  return (
-    <TaskForm
-      initialAssignment={initialAssignment}
-      initialTask={initialTask}
-      initialDeadline={initialDeadline}
-      focusOnDate={focusOnDate}
-      onClose={onClose}
-      onTaskCreated={onTaskCreated || (() => {})}
-      onSwitchToAI={() => {
-        console.log('TaskFormManager: Switching to AI mode');
-        setActiveMode('ai');
-      }}
-    />
-  );
+  return <TaskForm initialAssignment={initialAssignment} initialTask={initialTask} initialDeadline={initialDeadline} focusOnDate={focusOnDate} onClose={onClose} onTaskCreated={onTaskCreated || (() => {})} onSwitchToAI={() => {
+    setActiveMode('ai');
+  }} />;
 };
-
 export default TaskFormManager;

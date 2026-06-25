@@ -2,7 +2,7 @@ import { ReactNode, createContext, useContext, useEffect, useState } from 'react
 
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -52,10 +52,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (error) throw error;
     } catch (error) {
       console.error('Error logging in:', error instanceof Error ? error.message : 'Unknown error');
-      toast.error('Error logging in with Google', {
-        containerId: 'main-toast-container',
-        position: 'top-center'
-      });
+      toast.error('Error logging in with Google');
     }
   };
 
@@ -70,10 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     } catch (error) {
       console.error('Error logging out:', error instanceof Error ? error.message : 'Unknown error');
-      toast.error('Error logging out', {
-        containerId: 'main-toast-container',
-        position: 'top-center'
-      });
+      toast.error('Error logging out');
     }
   };
 

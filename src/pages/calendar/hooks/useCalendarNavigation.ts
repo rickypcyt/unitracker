@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 interface UseCalendarNavigationProps {
   currentDate: Date;
-  setCurrentDate: (date: Date) => void;
+  setCurrentDate: (date: Date | ((prev: Date) => Date)) => void;
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
   focusedDate: Date;
@@ -10,11 +10,9 @@ interface UseCalendarNavigationProps {
 }
 
 export const useCalendarNavigation = ({
-  currentDate,
   setCurrentDate,
   selectedDate,
   setSelectedDate,
-  focusedDate,
   setFocusedDate,
 }: UseCalendarNavigationProps) => {
   const goToPreviousMonth = useCallback(() => {

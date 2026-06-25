@@ -19,7 +19,7 @@ interface Note {
   title: string;
   assignment: string | null;
   description: string;
-  date: string;
+  date?: string | undefined;
   user_id?: string;
   created_at?: string;
   last_edited?: string;

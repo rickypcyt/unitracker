@@ -68,7 +68,7 @@ interface TaskItemProps {
     onToggleCompletion: (id: string) => void;
     onDelete?: (id: string) => void;
     onEditTask: (task: Task) => void;
-    onViewTask?: (task: Task) => void; // New: for viewing task details
+    onViewTask?: ((task: Task) => void) | undefined; // New: for viewing task details
     onContextMenu: (e: React.MouseEvent, task: Task) => void;
     showAssignment?: boolean;
     assignmentLeftOfDate?: boolean;

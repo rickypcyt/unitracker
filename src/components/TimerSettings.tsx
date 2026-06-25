@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Clock } from 'lucide-react';
 import BaseModal from '@/modals/BaseModal';
 
-const TimerSettings = ({ isOpen, onClose }) => {
+interface TimerSettingsProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
   const [pomodoroSettings, setPomodoroSettings] = useState({
     work: 25,
     break: 5,
@@ -16,14 +21,14 @@ const TimerSettings = ({ isOpen, onClose }) => {
     seconds: 0
   });
 
-  const handlePomodoroChange = (field, value) => {
+  const handlePomodoroChange = (field: string, value: string) => {
     setPomodoroSettings(prev => ({
       ...prev,
       [field]: Math.max(1, parseInt(value) || 1)
     }));
   };
 
-  const handleCountdownChange = (field, value) => {
+  const handleCountdownChange = (field: string, value: string) => {
     const numValue = parseInt(value) || 0;
     const maxValue = field === 'hours' ? 23 : 59;
     setCountdownSettings(prev => ({

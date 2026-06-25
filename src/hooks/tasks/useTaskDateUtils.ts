@@ -18,7 +18,7 @@ export const getSelectedDateFromDMY = (dmy: string | undefined | null): Date | n
   if (!dmy) return null;
   const parts = dmy.split('/');
   if (parts.length === 3) {
-    const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    const date = new Date(parseInt(parts[2]!, 10), parseInt(parts[1]!, 10) - 1, parseInt(parts[0]!, 10));
     if (!isNaN(date.getTime())) {
       return date;
     }

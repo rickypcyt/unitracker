@@ -1,23 +1,27 @@
-import { useAddTaskSuccess, useDeleteTaskSuccess, useFetchTasks, useTasks, useToggleTaskStatus, useUpdateTaskSuccess } from '@/store/appStore';
+import { useDeleteTaskSuccess, useFetchTasks, useTasks, useToggleTaskStatus, useUpdateTaskSuccess } from '@/store/appStore';
 import { useEffect, useRef, useState } from 'react';
 
+import type { User } from '@supabase/supabase-js';
 import { parseDateForDB } from '@/utils/timeUtils';
 import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { toggleTaskStatus } from "@/store/TaskActions";
-import { useAuth } from '@/hooks/useAuth';
 
 // Constant for the "All" workspace
 const ALL_WORKSPACE_ID = 'all';
 
-export const useTaskManager = (activeWorkspace) => {
-  const addTaskSuccess = useAddTaskSuccess();
+interface Workspace {
+  id: string;
+  [key: string]: any;
+}
+
+export const useTaskManager = (activeWorkspace: Workspace | null) => {
   const updateTaskSuccess = useUpdateTaskSuccess();
   const deleteTaskSuccess = useDeleteTaskSuccess();
   const toggleTaskStatusAction = useToggleTaskStatus();
   const fetchTasksAction = useFetchTasks();
   const { tasks } = useTasks();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const fetchTasksRef = useRef(fetchTasksAction);
 
   const userId = user?.id || null;
@@ -48,19 +52,19 @@ export const useTaskManager = (activeWorkspace) => {
   // Fetch tasks when user or workspace changes
   useEffect(() => {
     if (!userId) return;
-    
+
     // For "All" workspace, fetch all tasks without workspace filter
     if (!activeWorkspace || activeWorkspaceId === ALL_WORKSPACE_ID) {
-      fetchTasksRef.current(null, true); // Pass null to fetch all tasks
+      fetchTasksRef.current(undefined, true);
     } else if (activeWorkspaceId) {
       fetchTasksRef.current(activeWorkspaceId, true);
     }
   }, [userId, activeWorkspaceId]);
 
-  const handleToggleCompletion = async (taskId) => {
+  const handleToggleCompletion = async (taskId: string) => {
     if (!userId) return;
 
-    const task = tasks.find(t => t.id === taskId);
+    const task = tasks.find((t: any) => t.id === taskId);
     if (!task) return;
 
     try {
@@ -70,9 +74,9 @@ export const useTaskManager = (activeWorkspace) => {
       // Actualizar en la base de datos
       const { error } = await supabase
         .from('tasks')
-        .update({ 
+        .update({
           completed: !task.completed,
-          completed_at: !task.completed ? new Date().toISOString() : null 
+          completed_at: !task.completed ? new Date().toISOString() : null
         })
         .eq('id', taskId);
 
@@ -86,7 +90,7 @@ export const useTaskManager = (activeWorkspace) => {
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
+  const handleDeleteTask = async (taskId: string) => {
     if (!userId) return;
 
     try {
@@ -101,7 +105,7 @@ export const useTaskManager = (activeWorkspace) => {
 
       if (error) {
         // Si hay error, revertir el estado local
-        fetchTasksAction(activeWorkspace?.id);
+        fetchTasksAction(activeWorkspace?.id ?? undefined);
         if (error.message && error.message.includes('violates foreign key constraint')) {
           toast.error('Cannot delete this task because it is associated with an active session. Please deactivate the task first.');
         } else {
@@ -109,7 +113,7 @@ export const useTaskManager = (activeWorkspace) => {
         }
         throw error;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.message && error.message.includes('violates foreign key constraint')) {
         toast.error('Cannot delete this task because it is associated with an active session. Please deactivate the task first.');
       } else if (!error.message?.includes('eliminando la tarea')) {
@@ -119,7 +123,7 @@ export const useTaskManager = (activeWorkspace) => {
     }
   };
 
-  const handleUpdateTask = async (updatedTask) => {
+  const handleUpdateTask = async (updatedTask: any) => {
     if (!userId) return;
 
     try {
@@ -149,7 +153,7 @@ export const useTaskManager = (activeWorkspace) => {
       if (error) {
         console.error('Database error:', error);
         // Si hay error, revertir el estado local
-        fetchTasksAction(activeWorkspace?.id);
+        fetchTasksAction(activeWorkspace?.id ?? undefined);
         throw error;
       }
     } catch (error) {
@@ -159,10 +163,10 @@ export const useTaskManager = (activeWorkspace) => {
 
   return {
     user,
-    tasks: activeWorkspaceId === ALL_WORKSPACE_ID 
+    tasks: activeWorkspaceId === ALL_WORKSPACE_ID
       ? tasks // Return all tasks for "All" workspace
-      : activeWorkspace 
-        ? tasks.filter(task => task.workspace_id === activeWorkspace.id)
+      : activeWorkspace
+        ? tasks.filter((task: any) => task.workspace_id === activeWorkspace.id)
         : tasks,
     handleToggleCompletion,
     handleDeleteTask,

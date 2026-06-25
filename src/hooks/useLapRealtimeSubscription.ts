@@ -10,7 +10,7 @@ export const useLapRealtimeSubscription = () => {
   const invalidateCache = useAppStore((state) => state.invalidateCache);
 
   useEffect(() => {
-    let channel = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
     let isMounted = true;
 
     const setupSubscription = async () => {
@@ -19,14 +19,14 @@ export const useLapRealtimeSubscription = () => {
       if (!user || !isMounted) return;
       channel = supabase
         .channel('study_laps_changes')
-        .on('postgres_changes', 
-          { 
-            event: '*', 
-            schema: 'public', 
+        .on('postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
             table: 'study_laps',
             filter: `user_id=eq.${user.id}`
-          }, 
-          (payload) => {
+          },
+          (payload: any) => {
             // Invalidar caché antes de procesar el cambio
             invalidateCache();
             switch (payload.eventType) {
@@ -58,4 +58,4 @@ export const useLapRealtimeSubscription = () => {
       }
     };
   }, [addLap, updateLap, deleteLap, invalidateCache]);
-}; 
+};

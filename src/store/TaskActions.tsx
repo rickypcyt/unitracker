@@ -1,6 +1,5 @@
 import { supabase } from '@/utils/supabaseClient';
 import { useAppStore } from '@/store/appStore';
-
 const ALL_WORKSPACE_ID = 'all';
 
 // Cache duration in milliseconds (5 minutes)
@@ -20,7 +19,9 @@ function saveTasksToLocalStorage(tasks: any[]) {
 
 // En tu archivo TaskActions.js
 export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = false) => {
-  const { tasks: taskState } = useAppStore.getState();
+  const {
+    tasks: taskState
+  } = useAppStore.getState();
 
   // Create a unique key for this request
   const requestKey = `${workspaceId || 'all'}-${forceRefresh ? 'force' : 'cached'}`;
@@ -29,92 +30,80 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
   if (ongoingRequests.has(requestKey)) {
     return ongoingRequests.get(requestKey);
   }
-  
+
   // Create the request promise
   const requestPromise = (async () => {
     try {
       // Set loading state
-      useAppStore.setState((state) => ({
-        tasks: { ...state.tasks, loading: true }
+      useAppStore.setState(state => ({
+        tasks: {
+          ...state.tasks,
+          loading: true
+        }
       }));
-      
+
       // Check if we have a valid cache (unless force refresh or workspace-specific fetch)
-      if (!forceRefresh && !workspaceId && taskState.isCached && taskState.lastFetch && (Date.now() - taskState.lastFetch < CACHE_DURATION)) {
-        useAppStore.setState((state) => ({
-          tasks: { ...state.tasks, loading: false, tasks: taskState.tasks }
+      if (!forceRefresh && !workspaceId && taskState.isCached && taskState.lastFetch && Date.now() - taskState.lastFetch < CACHE_DURATION) {
+        useAppStore.setState(state => ({
+          tasks: {
+            ...state.tasks,
+            loading: false,
+            tasks: taskState.tasks
+          }
         }));
         return;
       }
-
-      const { data: { user } } = await supabase.auth.getUser();
-
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('Usuario no autenticado');
       }
-
       const taskSelectFields = 'id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_at, end_at';
 
       // Fetch workspace ids shared with this user so we can include their tasks
-      const { data: sharedRecords, error: sharedWorkspaceError } = await supabase
-        .from('shared_workspaces')
-        .select('workspace_id, shared_by, received_by, user_id')
-        .or(`shared_by.eq.${user.id},received_by.eq.${user.id},user_id.eq.${user.id}`);
-
+      const {
+        data: sharedRecords,
+        error: sharedWorkspaceError
+      } = await supabase.from('shared_workspaces').select('workspace_id, shared_by, received_by, user_id').or(`shared_by.eq.${user.id},received_by.eq.${user.id},user_id.eq.${user.id}`);
       if (sharedWorkspaceError) {
         console.error('fetchTasks: error fetching shared workspaces', sharedWorkspaceError);
       }
-
-      const sharedWorkspaceIds = Array.from(
-        new Set(
-          (sharedRecords ?? [])
-            .filter(record => {
-              const workspaceId = record.workspace_id;
-              if (!workspaceId) return false;
-              const sharedBy = record.shared_by;
-              const receivedBy = record.received_by;
-              const userId = record.user_id;
-              const isOwner = sharedBy === user.id;
-              const isRecipient = receivedBy === user.id || userId === user.id;
-              return isOwner ? isRecipient : !!workspaceId;
-            })
-            .map(record => record.workspace_id)
-        )
-      );
+      const sharedWorkspaceIds = Array.from(new Set((sharedRecords ?? []).filter(record => {
+        const workspaceId = record.workspace_id;
+        if (!workspaceId) return false;
+        const sharedBy = record.shared_by;
+        const receivedBy = record.received_by;
+        const userId = record.user_id;
+        const isOwner = sharedBy === user.id;
+        const isRecipient = receivedBy === user.id || userId === user.id;
+        return isOwner ? isRecipient : !!workspaceId;
+      }).map(record => record.workspace_id)));
 
       // Fetch user's own tasks
       const isAllWorkspace = workspaceId === ALL_WORKSPACE_ID;
-
-      let ownedQuery = supabase
-        .from('tasks')
-        .select(taskSelectFields)
-        .eq('user_id', user.id);
-
+      let ownedQuery = supabase.from('tasks').select(taskSelectFields).eq('user_id', user.id);
       if (workspaceId && !isAllWorkspace) {
         ownedQuery = ownedQuery.eq('workspace_id', workspaceId);
       }
-
       ownedQuery = ownedQuery.order('assignment');
-
-      const { data: ownedTasksData, error: ownedTasksError } = await ownedQuery;
-
+      const {
+        data: ownedTasksData,
+        error: ownedTasksError
+      } = await ownedQuery;
       if (ownedTasksError) throw ownedTasksError;
-
       const ownedTasks = ownedTasksData ?? [];
 
       // Fetch tasks from workspaces shared with the user (if any)
-      const relevantSharedIds = workspaceId && !isAllWorkspace
-        ? sharedWorkspaceIds.filter(id => id === workspaceId)
-        : sharedWorkspaceIds;
-
+      const relevantSharedIds = workspaceId && !isAllWorkspace ? sharedWorkspaceIds.filter(id => id === workspaceId) : sharedWorkspaceIds;
       let sharedTasks: any[] = [];
-
       if (relevantSharedIds.length > 0) {
-        const { data: sharedTasksData, error: sharedTasksError } = await supabase
-          .from('tasks')
-          .select(taskSelectFields)
-          .in('workspace_id', relevantSharedIds)
-          .order('assignment');
-
+        const {
+          data: sharedTasksData,
+          error: sharedTasksError
+        } = await supabase.from('tasks').select(taskSelectFields).in('workspace_id', relevantSharedIds).order('assignment');
         if (sharedTasksError) {
           console.error('fetchTasks: error fetching tasks from shared workspaces', sharedTasksError);
         } else {
@@ -129,31 +118,39 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
           taskMap.set(String(task.id), task);
         }
       });
-
       const combinedTasks = Array.from(taskMap.values()).sort((a, b) => {
         const assignmentA = (a?.assignment ?? '').toLowerCase();
         const assignmentB = (b?.assignment ?? '').toLowerCase();
         return assignmentA.localeCompare(assignmentB);
       });
-
-      useAppStore.setState((state) => ({
-        tasks: { ...state.tasks, loading: false, tasks: combinedTasks, error: null, isCached: true, lastFetch: Date.now() }
+      useAppStore.setState(state => ({
+        tasks: {
+          ...state.tasks,
+          loading: false,
+          tasks: combinedTasks,
+          error: null,
+          isCached: true,
+          lastFetch: Date.now()
+        }
       }));
       saveTasksToLocalStorage(combinedTasks);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      useAppStore.setState((state) => ({
-        tasks: { ...state.tasks, loading: false, error: errorMessage }
+      useAppStore.setState(state => ({
+        tasks: {
+          ...state.tasks,
+          loading: false,
+          error: errorMessage
+        }
       }));
     } finally {
       // Clean up the ongoing request
       ongoingRequests.delete(requestKey);
     }
   })();
-  
+
   // Store the ongoing request
   ongoingRequests.set(requestKey, requestPromise);
-  
   return requestPromise;
 };
 
@@ -169,18 +166,24 @@ export const addTask = async (newTask: any) => {
   if (!newTask.difficulty) {
     throw new Error('Task difficulty is required');
   }
-
-  const { addTask, tasks: taskState, workspace } = useAppStore.getState();
-
+  const {
+    addTask,
+    tasks: taskState,
+    workspace
+  } = useAppStore.getState();
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-
+    const {
+      data: {
+        user
+      }
+    } = await supabase.auth.getUser();
     if (!user) {
       // If no user, generate a local ID and store in localStorage
       const localTasks = JSON.parse(localStorage.getItem('localTasks') || '[]');
       const localTask = {
         ...newTask,
-        id: Date.now(), // Use timestamp as local ID
+        id: Date.now(),
+        // Use timestamp as local ID
         created_at: new Date().toISOString(),
         completed: false,
         activetask: false
@@ -189,7 +192,6 @@ export const addTask = async (newTask: any) => {
       localStorage.setItem('localTasks', JSON.stringify(localTasks));
       return localTask;
     }
-
     const taskWithUser = {
       ...newTask,
       user_id: user.id,
@@ -198,23 +200,22 @@ export const addTask = async (newTask: any) => {
       activetask: false,
       workspace_id: workspace?.currentWorkspace?.id || null
     };
-
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([taskWithUser])
-      .select()
-      .single();
-
+    const {
+      data,
+      error
+    } = await supabase.from('tasks').insert([taskWithUser]).select().single();
     if (error) throw error;
-
     addTask(data);
     // Actualiza localStorage
     saveTasksToLocalStorage([...taskState.tasks, data]);
     return data;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    useAppStore.setState((state) => ({
-      tasks: { ...state.tasks, error: errorMessage }
+    useAppStore.setState(state => ({
+      tasks: {
+        ...state.tasks,
+        error: errorMessage
+      }
     }));
     throw error;
   }
@@ -222,29 +223,33 @@ export const addTask = async (newTask: any) => {
 
 // Acción para marcar como completado/no completado
 export const toggleTaskStatus = async (id: any, completed: any) => {
-  const { updateTask, tasks: taskState } = useAppStore.getState();
-  
+  const {
+    updateTask,
+    tasks: taskState
+  } = useAppStore.getState();
   try {
     // Actualización optimista
     const currentTask = taskState.tasks.find(t => t.id === id);
     if (!currentTask) return;
-    
-    updateTask(id, { completed, completed_at: completed ? new Date().toISOString() : null });
+    updateTask(id, {
+      completed,
+      completed_at: completed ? new Date().toISOString() : null
+    });
 
     // Actualizar en la base de datos
-    const { data, error } = await supabase
-      .from('tasks')
-      .update({ 
-        completed: completed,
-        completed_at: completed ? new Date().toISOString() : null 
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
+    const {
+      data,
+      error
+    } = await supabase.from('tasks').update({
+      completed: completed,
+      completed_at: completed ? new Date().toISOString() : null
+    }).eq('id', id).select().single();
     if (error) {
       // Revertir en caso de error
-      updateTask(id, { completed: !completed, completed_at: currentTask.completed_at });
+      updateTask(id, {
+        completed: !completed,
+        completed_at: currentTask.completed_at
+      });
       throw error;
     }
 
@@ -252,66 +257,69 @@ export const toggleTaskStatus = async (id: any, completed: any) => {
     updateTask(id, data);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    useAppStore.setState((state) => ({
-      tasks: { ...state.tasks, error: errorMessage }
+    useAppStore.setState(state => ({
+      tasks: {
+        ...state.tasks,
+        error: errorMessage
+      }
     }));
   }
 };
 
 // Acción para eliminar tarea
 export const deleteTask = async (id: any) => {
-  const { deleteTask, tasks: taskState } = useAppStore.getState();
-  
+  const {
+    deleteTask,
+    tasks: taskState
+  } = useAppStore.getState();
   try {
     // Eliminar la tarea de la base de datos
-    const { error } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
-
+    const {
+      error
+    } = await supabase.from('tasks').delete().eq('id', id);
     if (error) throw error;
-
     deleteTask(id);
     // Actualiza localStorage
     saveTasksToLocalStorage(taskState.tasks.filter(t => t.id !== id));
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    useAppStore.setState((state) => ({
-      tasks: { ...state.tasks, error: errorMessage }
+    useAppStore.setState(state => ({
+      tasks: {
+        ...state.tasks,
+        error: errorMessage
+      }
     }));
   }
 };
 
 // Acción para actualizar tarea
 export const updateTaskAction = async (task: any) => {
-  const { updateTask, tasks: taskState } = useAppStore.getState();
-  
-  console.log('updateTaskAction - Updating task with data:', task);
-  
+  const {
+    updateTask,
+    tasks: taskState
+  } = useAppStore.getState();
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-
+    const {
+      data: {
+        user
+      }
+    } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Usuario no autenticado');
     }
-
     if (!task || !task.id) {
       throw new Error('ID de tarea inválido');
     }
 
     // Verificar que la tarea pertenece al usuario
-    const { data: taskData, error: taskError } = await supabase
-      .from('tasks')
-      .select('user_id')
-      .eq('id', task.id)
-      .single();
-
+    const {
+      data: taskData,
+      error: taskError
+    } = await supabase.from('tasks').select('user_id').eq('id', task.id).single();
     if (taskError) throw taskError;
-
     if (!taskData || taskData.user_id !== user.id) {
       throw new Error('No tienes permiso para editar esta tarea');
     }
-
     const updateData = {
       title: task.title,
       description: task.description,
@@ -324,15 +332,12 @@ export const updateTaskAction = async (task: any) => {
       recurrence_type: task.recurrence_type ?? 'none',
       recurrence_weekdays: task.recurrence_weekdays ?? null,
       start_at: task.start_at ?? null,
-      end_at: task.end_at ?? null,
+      end_at: task.end_at ?? null
     };
-
-    const { data, error } = await supabase
-      .from('tasks')
-      .update(updateData)
-      .eq('id', task.id)
-      .select();
-
+    const {
+      data,
+      error
+    } = await supabase.from('tasks').update(updateData).eq('id', task.id).select();
     if (error) {
       console.error('updateTaskAction - Database error:', error);
       throw error;
@@ -343,8 +348,11 @@ export const updateTaskAction = async (task: any) => {
     saveTasksToLocalStorage(updatedTasks);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    useAppStore.setState((state) => ({
-      tasks: { ...state.tasks, error: errorMessage }
+    useAppStore.setState(state => ({
+      tasks: {
+        ...state.tasks,
+        error: errorMessage
+      }
     }));
     throw error;
   }
@@ -352,11 +360,11 @@ export const updateTaskAction = async (task: any) => {
 
 // Acción para forzar una actualización de las tareas
 export const forceTaskRefresh = async (workspaceId?: string) => {
-  useAppStore.setState((state) => ({
-    tasks: { ...state.tasks, isCached: false }
+  useAppStore.setState(state => ({
+    tasks: {
+      ...state.tasks,
+      isCached: false
+    }
   }));
   return fetchTasks(workspaceId);
 };
-
-
-

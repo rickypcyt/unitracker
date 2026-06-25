@@ -1,10 +1,11 @@
 import { memo, useEffect } from 'react';
-import { useAuth, useFetchTasks, useWorkspace } from '@/store/appStore';
+import { useFetchTasks, useWorkspace } from '@/store/appStore';
 
 import { Helmet } from "react-helmet-async";
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import { fetchLaps } from '@/store/LapActions';
+import { useAuth } from '@/hooks/useAuth';
 import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
 import { useLocation } from 'react-router-dom';
 

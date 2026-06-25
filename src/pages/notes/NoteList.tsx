@@ -8,7 +8,7 @@ interface Note {
   title: string;
   assignment: string | null;
   description: string;
-  date: string;
+  date?: string | undefined;
   user_id?: string;
 }
 
@@ -22,7 +22,7 @@ interface NoteListProps {
   editForm: React.ReactNode;
 }
 
-const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDelete, editingId, editForm }) => {
+const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _error, onEdit, onDelete, editingId, editForm }) => {
   const { isLoggedIn } = useAuth();
   // Solo mostrar el spinner si loading y aún no se sabe si hay notas (notes.length === 0)
 
@@ -90,7 +90,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading, error, onEdit, onDe
             <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
               <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                 <Calendar size={14} />
-                <span>{new Date(note.date).toLocaleDateString()}</span>
+                <span>{note.date ? new Date(note.date).toLocaleDateString() : ''}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button

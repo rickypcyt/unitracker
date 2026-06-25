@@ -2,20 +2,25 @@ import { useEffect, useState } from "react";
 
 import { useUiActions } from '@/store/appStore';
 
+interface Task {
+  id: string;
+  [key: string]: any;
+}
+
 export const useTaskDetails = () => {
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [editedTask, setEditedTask] = useState(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editedTask, setEditedTask] = useState<Task | null>(null);
   const [taskDetailsEdit, setTaskEditing] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const { setCalendarVisibility } = useUiActions();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const { setCalendarVisible } = useUiActions();
 
   // Abre el modal de detalles y edita la tarea seleccionada
-  const handleOpenTaskDetails = (task) => {
+  const handleOpenTaskDetails = (task: Task) => {
     setSelectedTask(task);
     setEditedTask(task);
     setTaskEditing(true);
     setSelectedTaskId(task.id);
-    setCalendarVisibility(false); // Oculta el calendario si está abierto
+    setCalendarVisible(false); // Oculta el calendario si está abierto
   };
 
   // Cierra el modal de detalles
@@ -24,15 +29,17 @@ export const useTaskDetails = () => {
     setEditedTask(null);
     setTaskEditing(false);
     setSelectedTaskId(null);
-    setCalendarVisibility(true); // Muestra el calendario si estaba oculto
+    setCalendarVisible(true); // Muestra el calendario si estaba oculto
   };
 
   // Actualiza los campos de la tarea editada
-  const handleEditTaskField = (field, value) => {
-    setEditedTask((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleEditTaskField = (field: string, value: any) => {
+    setEditedTask((prev) =>
+      prev ? {
+        ...prev,
+        [field]: value,
+      } : null
+    );
   };
 
   // Sincroniza el editedTask si cambia la tarea seleccionada

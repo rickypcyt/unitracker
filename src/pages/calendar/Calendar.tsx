@@ -1,7 +1,5 @@
 import "./mobile-calendar.css";
-
 import { handleDateDoubleClick, handleTouchEnd } from "./utils/calendarUtils";
-
 import CalendarHeader from "./components/CalendarHeader";
 import DayView from "./components/DayView";
 import LoginPromptModal from "@/modals/LoginPromptModal";
@@ -16,17 +14,20 @@ import { useCalendarKeyboard } from "./hooks/useCalendarKeyboard";
 import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
 import { useCalendarState } from "./hooks/useCalendarState";
 import { useDeleteTaskSuccess } from "@/store/appStore";
-
 interface CalendarProps {
   view?: 'month' | 'week' | 'day';
   onViewChange?: (view: 'month' | 'week' | 'day') => void;
   tasks?: Task[]; // Optional filtered tasks
 }
-
 type ViewType = 'month' | 'week' | 'day';
-
-const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTasks }: CalendarProps) => {
-  const { isLoggedIn } = useAuth();
+const Calendar = ({
+  view = 'month' as ViewType,
+  onViewChange,
+  tasks: filteredTasks
+}: CalendarProps) => {
+  const {
+    isLoggedIn
+  } = useAuth();
 
   // State management
   const {
@@ -45,7 +46,7 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
     selectedTask,
     setSelectedTask,
     viewingTask,
-    setViewingTask,
+    setViewingTask
   } = useCalendarState();
 
   // Data management
@@ -54,8 +55,14 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
     getTasksWithDeadline,
     getStudiedHoursForDate,
     hasTasksWithDeadline,
-    calendarDays,
-  } = useCalendarData({ currentDate, selectedDate, ...(filteredTasks && { tasks: filteredTasks }) });
+    calendarDays
+  } = useCalendarData({
+    currentDate,
+    selectedDate,
+    ...(filteredTasks && {
+      tasks: filteredTasks
+    })
+  });
 
   // Navigation functions
   const {
@@ -66,14 +73,14 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
     goToPreviousDay,
     goToNextDay,
     goToToday,
-    handleDateClick,
+    handleDateClick
   } = useCalendarNavigation({
     currentDate,
     setCurrentDate,
     selectedDate,
     setSelectedDate,
     focusedDate,
-    setFocusedDate,
+    setFocusedDate
   });
 
   // Keyboard navigation
@@ -83,147 +90,51 @@ const Calendar = ({ view = 'month' as ViewType, onViewChange, tasks: filteredTas
     setFocusedDate,
     setSelectedDate,
     setCurrentDate,
-    handleDateDoubleClick: (date) => handleDateDoubleClick(
-      date,
-      isLoggedIn,
-      setSelectedDate,
-      setIsLoginPromptOpen,
-      setShowTaskForm
-    ),
+    handleDateDoubleClick: date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)
   });
-
   const handleEditTask = (task: Task) => {
     setViewingTask(null);
     setSelectedTask(task);
     setShowTaskForm(true);
   };
-
   const deleteTaskSuccess = useDeleteTaskSuccess();
-
   const handleDeleteTask = (task: Task) => {
     // Eliminar la tarea del estado local inmediatamente
     deleteTaskSuccess(task.id);
-    
+
     // Cerrar el modal
     setViewingTask(null);
-    
+
     // TODO: También eliminar de la base de datos si es necesario
     // Por ahora, solo eliminamos del estado local
-    console.log('Task deleted:', task.title);
   };
-
-  return (
-    <div className="w-full h-full flex flex-col">
-      <div
-        className={`maincard p-0 pt-4 relative w-full transition-all duration-300 calendar-view flex flex-col h-full ${
-          view === 'month' ? '' : 'flex-1'
-        }`}
-      >
+  return <div className="w-full h-full flex flex-col">
+      <div className={`maincard p-0 pt-4 relative w-full transition-all duration-300 calendar-view flex flex-col h-full ${view === 'month' ? '' : 'flex-1'}`}>
         {/* Calendar Header with navigation and view switcher */}
-        <CalendarHeader
-          view={view}
-          currentDate={currentDate}
-          selectedDate={selectedDate}
-          onViewChange={onViewChange || (() => {})}
-          goToPreviousMonth={goToPreviousMonth}
-          goToNextMonth={goToNextMonth}
-          goToPreviousWeek={goToPreviousWeek}
-          goToNextWeek={goToNextWeek}
-          goToPreviousDay={goToPreviousDay}
-          goToNextDay={goToNextDay}
-          goToToday={goToToday}
-          tasks={filteredTasks || []}
-        />
+        <CalendarHeader view={view} currentDate={currentDate} selectedDate={selectedDate} onViewChange={onViewChange || (() => {})} goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} goToPreviousWeek={goToPreviousWeek} goToNextWeek={goToNextWeek} goToPreviousDay={goToPreviousDay} goToNextDay={goToNextDay} goToToday={goToToday} tasks={filteredTasks || []} />
 
         {/* View Content */}
         <div className={`flex-1 relative ${view === 'month' ? '' : ''}`}>
-          {view === 'week' ? (
-            <WeekView
-              currentDate={currentDate}
-              isLoggedIn={isLoggedIn}
-              getTasksWithDeadline={getTasksWithDeadline}
-              setSelectedDate={setSelectedDate}
-              setFocusedDate={setFocusedDate}
-              setShowTaskForm={setShowTaskForm}
-              setIsLoginPromptOpen={setIsLoginPromptOpen}
-              setSelectedTask={setSelectedTask}
-              setViewingTask={setViewingTask}
-              handleEditTask={handleEditTask}
-              onTaskContextMenu={(e, task) => {
-                e.preventDefault();
-                // Context menu logic here - for now just show task details
-                setViewingTask(task);
-              }}
-            />
-          ) : view === 'day' ? (
-            <DayView
-              selectedDate={selectedDate}
-              isLoggedIn={isLoggedIn}
-              getTasksForDayAndHour={getTasksForDayAndHour}
-              setSelectedDate={setSelectedDate}
-              setShowTaskForm={setShowTaskForm}
-              setIsLoginPromptOpen={setIsLoginPromptOpen}
-            />
-          ) : (
-            <MonthView
-              calendarDays={calendarDays}
-              hasTasksWithDeadline={hasTasksWithDeadline}
-              getTasksWithDeadline={getTasksWithDeadline}
-              getStudiedHoursForDate={getStudiedHoursForDate}
-              handleDateClick={handleDateClick}
-              handleDateDoubleClick={(date) => handleDateDoubleClick(
-                date,
-                isLoggedIn,
-                setSelectedDate,
-                setIsLoginPromptOpen,
-                setShowTaskForm
-              )}
-              handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, (date) => handleDateDoubleClick(
-                date,
-                isLoggedIn,
-                setSelectedDate,
-                setIsLoginPromptOpen,
-                setShowTaskForm
-              ))}
-            />
-          )}
+          {view === 'week' ? <WeekView currentDate={currentDate} isLoggedIn={isLoggedIn} getTasksWithDeadline={getTasksWithDeadline} setSelectedDate={setSelectedDate} setFocusedDate={setFocusedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} setSelectedTask={setSelectedTask} setViewingTask={setViewingTask} handleEditTask={handleEditTask} onTaskContextMenu={(e, task) => {
+          e.preventDefault();
+          // Context menu logic here - for now just show task details
+          setViewingTask(task);
+        }} /> : view === 'day' ? <DayView selectedDate={selectedDate} isLoggedIn={isLoggedIn} getTasksForDayAndHour={getTasksForDayAndHour} setSelectedDate={setSelectedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} /> : <MonthView calendarDays={calendarDays} hasTasksWithDeadline={hasTasksWithDeadline} getTasksWithDeadline={getTasksWithDeadline} getStudiedHoursForDate={getStudiedHoursForDate} handleDateClick={handleDateClick} handleDateDoubleClick={date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)} handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm))} />}
         </div>
 
         {/* Modals */}
-        {showTaskForm && (
-          <TaskForm
-            initialTask={selectedTask}
-            initialAssignment=""
-            initialDeadline={selectedDate}
-            onClose={() => {
-              setShowTaskForm(false);
-              setSelectedTask(null);
-            }}
-            onTaskCreated={(newTaskId: string) => {
-              if (newTaskId)
-                window.dispatchEvent(new CustomEvent("refreshTaskList"));
-              setShowTaskForm(false);
-              setSelectedTask(null);
-            }}
-          />
-        )}
-        <LoginPromptModal
-          isOpen={isLoginPromptOpen}
-          onClose={() => setIsLoginPromptOpen(false)}
-        />
+        {showTaskForm && <TaskForm initialTask={selectedTask} initialAssignment="" initialDeadline={selectedDate} onClose={() => {
+        setShowTaskForm(false);
+        setSelectedTask(null);
+      }} onTaskCreated={(newTaskId: string) => {
+        if (newTaskId) window.dispatchEvent(new CustomEvent("refreshTaskList"));
+        setShowTaskForm(false);
+        setSelectedTask(null);
+      }} />}
+        <LoginPromptModal isOpen={isLoginPromptOpen} onClose={() => setIsLoginPromptOpen(false)} />
         {/* Task View Modal */}
-        {viewingTask && (
-          <TaskViewModal
-            isOpen={!!viewingTask}
-            onClose={() => setViewingTask(null)}
-            task={viewingTask}
-            onEdit={handleEditTask}
-            onDelete={handleDeleteTask}
-          />
-        )}
+        {viewingTask && <TaskViewModal isOpen={!!viewingTask} onClose={() => setViewingTask(null)} task={viewingTask} onEdit={handleEditTask} onDelete={handleDeleteTask} />}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Calendar;

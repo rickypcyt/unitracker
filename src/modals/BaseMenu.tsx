@@ -1,4 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
+
+interface BaseMenuProps {
+  x: number;
+  y: number;
+  onClose: () => void;
+  children: ReactNode;
+  className?: string;
+  zIndex?: string;
+  maxWidth?: string;
+  role?: string;
+  'aria-label'?: string;
+}
 
 const BaseMenu = ({
   x,
@@ -10,17 +22,17 @@ const BaseMenu = ({
   maxWidth = 'max-w-md',
   role = 'menu',
   'aria-label': ariaLabel = 'Menu options'
-}) => {
-  const menuRef = useRef(null);
+}: BaseMenuProps) => {
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
       }
@@ -35,7 +47,7 @@ const BaseMenu = ({
     };
   }, [onClose]);
 
-  const menuStyle = {
+  const menuStyle: React.CSSProperties = {
     position: 'fixed',
     top: y,
     left: x,

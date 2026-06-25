@@ -1,5 +1,4 @@
 import "@/index.css";
-import "react-toastify/dist/ReactToastify.css";
 
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 
@@ -10,8 +9,6 @@ import ErrorBoundary from "@/utils/ErrorBoundary";
 import { HelmetProvider } from "react-helmet-async";
 import ReactDOM from "react-dom/client";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Toaster } from "react-hot-toast";
-import { createPortal } from "react-dom";
 
 // -------------------------
 // Polyfill Notification
@@ -41,27 +38,6 @@ if (
 }
 
 // -------------------------
-// Render Toaster
-// -------------------------
-createPortal(
-  <Toaster
-    position="top-right"
-    toastOptions={{
-      duration: 3000,
-      style: {
-        background: "#333",
-        color: "#fff",
-        padding: "16px",
-        borderRadius: "8px",
-        border: "2px solid var(--border-primary)",
-        marginTop: "64px", // Add top margin to avoid navbar
-      },
-    }}
-  />,
-  document.body
-);
-
-// -------------------------
 // Main App render
 // -------------------------
 const root = ReactDOM.createRoot(document.getElementById("root")!);
@@ -71,11 +47,11 @@ root.render(
     <ChakraProvider value={defaultSystem}>
       <HelmetProvider>
         <BrowserRouter>
-            <App />
-            <Analytics />
-            <SpeedInsights />
-          </BrowserRouter>
-        </HelmetProvider>
-      </ChakraProvider>
+          <App />
+          <Analytics />
+          <SpeedInsights />
+        </BrowserRouter>
+      </HelmetProvider>
+    </ChakraProvider>
   </ErrorBoundary>
 );

@@ -9,7 +9,7 @@ interface TaskListProps {
   onTaskToggle: (task: Task) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: Task) => void;
-  onViewTask?: (task: Task) => void;
+  onViewTask?: ((task: Task) => void) | undefined;
   onTaskContextMenu: (e: React.MouseEvent, task: Task) => void;
 }
 

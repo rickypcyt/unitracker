@@ -219,8 +219,7 @@ const App: FC = () => {
 
     requestNotificationPermission();
 
-    window.addEventListener("keydown", () => {});
-    return () => window.removeEventListener("keydown", () => {});
+    return () => {};
   }, []);
 
   // -------------------------

@@ -1,8 +1,9 @@
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
-import { useAuth, useLaps, useTasks } from '@/store/appStore';
+import { useLaps, useTasks } from '@/store/appStore';
 
 import { supabase } from '@/utils/supabaseClient';
+import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import usePomodorosToday from '@/hooks/usePomodorosToday';
 

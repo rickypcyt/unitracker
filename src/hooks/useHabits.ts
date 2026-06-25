@@ -2,38 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { useAuth } from './useAuth';
 
-// Función de diagnóstico para probar la conexión directa
-const testDirectApiCall = async (habitId: string, dateString: string, userId: string) => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-  const url = `${supabaseUrl}/rest/v1/habit_completions?select=*&habit_id=eq.${habitId}&completion_date=eq.${dateString}&user_id=eq.${userId}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-        'Prefer': 'return=representation'
-      }
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('testDirectApiCall: Error response:', errorText);
-      return { success: false, error: errorText };
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error('testDirectApiCall: Fetch error:', error);
-    return { success: false, error: error.message };
-  }
-};
 
 export interface Habit {
   id: string;

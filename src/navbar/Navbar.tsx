@@ -1,12 +1,11 @@
 import { BarChart3, BookOpen, Calendar, CircleCheckBig, ListTodo, Timer } from 'lucide-react';
-import { ToastContainer, toast } from 'react-toastify';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import SettingsButton from './SettingsButton';
 import SettingsPanel from '@/modals/Settings';
 import { supabase } from '@/utils/supabaseClient';
-import useAppStore from '@/store/appStore';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useFriendManagement } from '@/hooks/useFriendManagement';
@@ -135,42 +134,6 @@ const Navbar = () => {
     setCurrentWorkspace(ws);
     localStorage.setItem('activeWorkspaceId', ws.id);
   };
-  const handleCreateWorkspace = (newWorkspace: any) => {
-    setWorkspaces([...workspaces, newWorkspace]);
-  };
-  const handleEditWorkspace = (updatedWorkspace: any) => {
-    setWorkspaces(workspaces.map((ws: any) => ws.id === updatedWorkspace.id ? updatedWorkspace : ws));
-    if (activeWorkspace?.id === updatedWorkspace.id) {
-      setCurrentWorkspace(updatedWorkspace);
-    }
-  };
-  const handleDeleteWorkspace = (workspaceId: any) => {
-    const updatedWorkspaces = workspaces.filter((ws: any) => ws.id !== workspaceId);
-    setWorkspaces(updatedWorkspaces);
-    if (activeWorkspace?.id === workspaceId) {
-      const newActiveWorkspace = updatedWorkspaces.length > 0 ? updatedWorkspaces[0] : null;
-      setCurrentWorkspace(newActiveWorkspace);
-    }
-  };
-
-  const refreshWorkspaces = () => {
-    // This will trigger a re-calculation of task counts
-    // The workspacesWithTaskCount will be recalculated with fresh task data
-    fetchTasks(undefined, true); // Fetch ALL tasks (no workspace filter) with force refresh
-  };
-
-  useEffect(() => {
-    const handleFriendErrors = (promise: Promise<unknown>) => {
-      void promise.catch(err => {
-        const message = err instanceof Error ? err.message : String(err);
-        toast.error(message);
-      });
-    };
-
-    // expose wrapper functions for settings button callbacks
-    // we store them on refs to avoid recreating handlers passed down
-  }, []);
-
   // Navigation link class
   const isActive = (page: any) => activePage === page;
   const navLinkClass = (page: any) =>
@@ -233,14 +196,6 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden" data-tour="navbar">
-      <ToastContainer
-        position="top-center"
-        autoClose={4000}
-        theme="dark"
-        pauseOnHover={false}
-        hideProgressBar
-        toastClassName="!bg-[var(--bg-secondary)] !text-[var(--text-primary)] !border !border-[var(--border-primary)] !text-sm"
-      />
       <div className="w-full px-2 overflow-x-hidden">
         <div className="flex items-center justify-between h-16 w-full">
           {/* Logo a la izquierda */}

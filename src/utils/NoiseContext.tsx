@@ -27,6 +27,16 @@ interface SoundConfig {
   create: (volume: number) => SoundNode;
 }
 
+interface SoundRef {
+  filter?: { frequency: { value: number } };
+  highpass?: { frequency: { value: number } };
+  lowpass?: { frequency: { value: number } };
+  reverb?: { wet: { value: number } };
+  pinkHighpass?: { frequency: { value: number } };
+  pinkLowpass?: { frequency: { value: number } };
+  waveLFO?: { frequency: { value: number } };
+}
+
 interface Sound {
   key: string;
   label: string;
@@ -36,6 +46,7 @@ interface Sound {
   min: number;
   max: number;
   defaultVolume: number;
+  soundRef?: SoundRef | null;
 }
 
 interface NoiseContextType {
@@ -45,6 +56,7 @@ interface NoiseContextType {
   setVolume: (index: number, volume: number) => Promise<void>;
   toggleAllSounds: () => Promise<void>;
   isInitialized: boolean;
+  initializeAudio: () => Promise<boolean>;
 }
 
 // ==================== AUDIO ENGINE ====================
@@ -757,6 +769,7 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
         setVolume,
         toggleAllSounds,
         isInitialized,
+        initializeAudio,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Plus } from 'lucide-react';
+import { EyeOff, Plus } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 
 import { Habit } from '../../types/common';
@@ -233,7 +233,7 @@ const HabitsPage = memo(() => {
                       <span
                         className="truncate cursor-pointer hover:text-[var(--accent-primary)] transition-colors"
                         title={`Click to edit: ${habit.name}`}
-                        onClick={() => handleStartEditHabit(habit)}
+                        onClick={() => handleStartEditHabit(habit as Habit)}
                       >
                         {habit.name}
                       </span>
@@ -247,7 +247,6 @@ const HabitsPage = memo(() => {
                     // Always show current and future days
                     // Show past days only if showPastDays is true
                     const isGhostDay = day > realDaysCount;
-                    const isFutureDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day > todayDayForMonth;
                     const isPastDay = !isGhostDay && isThisMonthCurrent && todayDayForMonth !== null && day < todayDayForMonth;
                     
                     return !isPastDay || showPastDays;

@@ -16,7 +16,7 @@ interface ColumnDropdownMenuProps {
 
 const ColumnDropdownMenu = ({
   assignment,
-  tasks, // eslint-disable-line @typescript-eslint/no-unused-vars
+  tasks: _tasks,
   onMoveToWorkspace,
   columnMenu,
   onDeleteAssignment,

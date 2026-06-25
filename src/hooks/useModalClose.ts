@@ -1,14 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 
-export function useModalClose(modalRef, onClose) {
+export function useModalClose(modalRef: RefObject<HTMLElement | null>, onClose: () => void) {
   useEffect(() => {
-    function handleKeyDown(e) {
+    function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         onClose();
       }
     }
-    function handleClick(e) {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
+    function handleClick(e: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
       }
     }
@@ -19,4 +19,4 @@ export function useModalClose(modalRef, onClose) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, [modalRef, onClose]);
-} 
+}

@@ -42,7 +42,7 @@ const AllTasks: React.FC<AllTasksProps> = ({
   onFilterChange,
   onSortChange
 }) => {
-  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(undefined);
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);

@@ -39,7 +39,7 @@ export const updateTaskStatus = async ({ user, task, dispatch, supabase }: TaskU
     } else {
         // Remote
         const newCompletedStatus = !task.completed;
-        await dispatch(toggleTaskStatus(task.id) as unknown as AnyAction);
+        await dispatch(toggleTaskStatus(task.id, newCompletedStatus) as unknown as AnyAction);
         try {
             const { error } = await supabase
                 .from("tasks")
@@ -51,7 +51,7 @@ export const updateTaskStatus = async ({ user, task, dispatch, supabase }: TaskU
             if (error) throw error;
         } catch (error) {
             // Revert the optimistic update if the API call fails
-            await dispatch(toggleTaskStatus(task.id) as unknown as AnyAction);
+            await dispatch(toggleTaskStatus(task.id, task.completed) as unknown as AnyAction);
             console.error("Error updating task:", error);
         }
     }

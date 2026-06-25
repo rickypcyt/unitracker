@@ -1,4 +1,4 @@
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import CalendarExport from '@/components/CalendarExport';
 import type { Task } from '@/types/taskStorage';
@@ -110,7 +110,7 @@ const CalendarHeader = ({
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
           aria-label="Previous"
         >
-          <FaChevronLeft size={16} className="sm:size-base" />
+          <ChevronLeft size={16} className="sm:size-base" />
         </button>
         <div className="flex-1 md:flex-none text-center md:text-left px-2 md:px-0">
           {view === 'day' && renderDayHeader()}
@@ -122,7 +122,7 @@ const CalendarHeader = ({
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
           aria-label="Next"
         >
-          <FaChevronRight size={16} className="sm:size-base" />
+          <ChevronRight size={16} className="sm:size-base" />
         </button>
       </div>
       

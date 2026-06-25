@@ -14,7 +14,7 @@ import SessionDetailsModal from "@/modals/SessionDetailsModal";
 import { deleteLap } from "@/store/LapActions";
 import { formatDateShort } from "@/utils/dateUtils";
 import { getMonthYear } from "@/hooks/useTimers";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import useDemoMode from "@/utils/useDemoMode";
 import { useLaps } from "@/store/appStore";

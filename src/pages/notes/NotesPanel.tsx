@@ -4,9 +4,9 @@ import React from 'react';
 interface Note {
   id?: string;
   title: string;
-  assignment: string;
+  assignment: string | null;
   description: string;
-  date: string;
+  date?: string | undefined;
   user_id?: string;
 }
 

@@ -1,14 +1,15 @@
-import { useUi, useUiActions } from '@/store/appStore';
+import { useUi } from '@/store/appStore';
+import { useTimerActions } from '@/store/appStore';
 
 import { Link } from 'lucide-react';
-import React from 'react';
 
 const SyncToggle = () => {
-  const isSynced = useUi(state => state.isSynced);
-  const { setTimerState } = useUiActions();
+  const ui = useUi();
+  const isSynced = ui.isSynced;
+  const { setStudyTimerState } = useTimerActions();
 
   const handleToggle = () => {
-    setTimerState('study', isSynced ? 'stopped' : 'running');
+    setStudyTimerState(isSynced ? 'stopped' : 'running');
   };
 
   return (

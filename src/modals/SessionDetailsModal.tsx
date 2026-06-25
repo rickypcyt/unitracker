@@ -1,10 +1,10 @@
 import { Calendar, Clock, Edit2, Flame, Target, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { deleteLap, updateLap } from '@/store/LapActions';
+import { format, parseISO } from 'date-fns';
 
 import BaseModal from '@/modals/BaseModal';
-import moment from 'moment';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 // Lap interface defined locally until we create a types file
 interface Lap {
@@ -97,11 +97,11 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
     };
 
     const formatDate = (dateString: string) => {
-        return moment(dateString).format('MMMM D, YYYY');
+        return format(parseISO(dateString), 'MMMM d, yyyy');
     };
 
     const formatTime = (dateString: string) => {
-        return moment(dateString).format('h:mm A');
+        return format(parseISO(dateString), 'h:mm a');
     };
 
     return (

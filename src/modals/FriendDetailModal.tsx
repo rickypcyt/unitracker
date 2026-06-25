@@ -23,7 +23,7 @@ interface FriendDetailModalProps {
   onRemoveFriend?: (friend: Friend) => void;
 }
 
-const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, friend, sharedWorkspaces, availableWorkspaces = [], currentUserId, allFriends = [], onRemoveFriend }) => {
+const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, friend, availableWorkspaces = [], currentUserId, allFriends = [], onRemoveFriend }) => {
   const [showShareModal, setShowShareModal] = useState(false);
   
   if (!friend) return null;

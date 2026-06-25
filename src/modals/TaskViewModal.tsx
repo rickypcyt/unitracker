@@ -1,10 +1,8 @@
 import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
-
 import BaseModal from "@/modals/BaseModal";
 import React from "react";
 import { formatDate } from "@/utils/dateUtils";
 import moment from "moment";
-
 interface Task {
   id: string;
   title: string;
@@ -24,7 +22,6 @@ interface Task {
   end_at?: string | null;
   activetask?: boolean;
 }
-
 interface TaskViewModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,15 +29,13 @@ interface TaskViewModalProps {
   onEdit: (task: Task) => void;
   onDelete?: (task: Task) => void;
 }
-
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 const TaskViewModal: React.FC<TaskViewModalProps> = ({
   isOpen,
   onClose,
   task,
   onEdit,
-  onDelete,
+  onDelete
 }) => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
@@ -54,36 +49,61 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
         return 'text-[var(--text-secondary)]';
     }
   };
-
   const getStatusInfo = (status?: string) => {
-    console.log('Task status:', status); // Debug para ver qué estado tiene la tarea
+    // Debug para ver qué estado tiene la tarea
     switch (status?.toLowerCase()) {
       case 'not_started':
       case 'not-started':
-        return { label: 'Not Started', color: 'text-gray-400 bg-gray-400/10 border-gray-400' };
+        return {
+          label: 'Not Started',
+          color: 'text-gray-400 bg-gray-400/10 border-gray-400'
+        };
       case 'in_progress':
       case 'in-progress':
-        return { label: 'In Progress', color: 'text-blue-500 bg-blue-500/10 border-blue-500' };
+        return {
+          label: 'In Progress',
+          color: 'text-blue-500 bg-blue-500/10 border-blue-500'
+        };
       case 'on_hold':
       case 'on-hold':
-        return { label: 'On Hold', color: 'text-blue-500 bg-blue-500/10 border-blue-500' };
+        return {
+          label: 'On Hold',
+          color: 'text-blue-500 bg-blue-500/10 border-blue-500'
+        };
       case 'active':
-        return { label: 'Active', color: 'text-green-500 bg-green-500/10 border-green-500' };
+        return {
+          label: 'Active',
+          color: 'text-green-500 bg-green-500/10 border-green-500'
+        };
       case 'completed':
-        return { label: 'Completed', color: 'text-green-500 bg-green-500/10 border-green-500' };
+        return {
+          label: 'Completed',
+          color: 'text-green-500 bg-green-500/10 border-green-500'
+        };
       case 'cancelled':
       case 'canceled':
-        return { label: 'Cancelled', color: 'text-red-500 bg-red-500/10 border-red-500' };
+        return {
+          label: 'Cancelled',
+          color: 'text-red-500 bg-red-500/10 border-red-500'
+        };
       case 'todo':
       case 'to-do':
-        return { label: 'To Do', color: 'text-gray-500 bg-gray-500/10 border-gray-500' };
+        return {
+          label: 'To Do',
+          color: 'text-gray-500 bg-gray-500/10 border-gray-500'
+        };
       case 'pending':
-        return { label: 'Pending', color: 'text-orange-500 bg-orange-500/10 border-orange-500' };
+        return {
+          label: 'Pending',
+          color: 'text-orange-500 bg-orange-500/10 border-orange-500'
+        };
       default:
-        return { label: status || 'No Status', color: 'text-[var(--text-secondary)] bg-[var(--bg-secondary)] border-[var(--border-primary)]' };
+        return {
+          label: status || 'No Status',
+          color: 'text-[var(--text-secondary)] bg-[var(--bg-secondary)] border-[var(--border-primary)]'
+        };
     }
   };
-
   const getDifficultyBgColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
@@ -96,23 +116,20 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
         return 'bg-[var(--bg-secondary)] border-[var(--border-primary)]';
     }
   };
-
   const to12Hour = (time24: string | null | undefined): string => {
     if (!time24) return '';
-    
     try {
       let hours = 0;
       let minutes = 0;
-      
+
       // Handle ISO date format: '2026-02-09T17:00:00+00:00'
       if (time24.includes('T')) {
         const timePart = time24.split('T')[1]; // '17:00:00+00:00'
         if (!timePart) return '';
-        
+
         // Remove timezone info if present
         const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
         if (!cleanTimePart) return '';
-        
         const parts = cleanTimePart.split(':').map(Number);
         hours = parts[0] ?? 0;
         minutes = parts[1] ?? 0;
@@ -121,11 +138,10 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
       else if (time24.includes(' ')) {
         const timePart = time24.split(' ')[1]; // '10:00:00+00'
         if (!timePart) return '';
-        
+
         // Remove timezone info if present
         const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
         if (!cleanTimePart) return '';
-        
         const parts = cleanTimePart.split(':').map(Number);
         hours = parts[0] ?? 0;
         minutes = parts[1] ?? 0;
@@ -137,62 +153,44 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
         hours = h ?? 0;
         minutes = m ?? 0;
       }
-      
+
       // Validate hours and minutes
       if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        console.warn('Invalid time values in to12Hour:', time24, { hours, minutes });
+        console.warn('Invalid time values in to12Hour:', time24, {
+          hours,
+          minutes
+        });
         return '';
       }
-      
       const period = hours >= 12 ? 'PM' : 'AM';
-      const displayHour = hours === 0 ? 12 : (hours > 12 ? hours - 12 : hours);
+      const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
       return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
     } catch (error) {
       console.warn('Error in to12Hour:', time24, error);
       return '';
     }
   };
-
   const isRecurring = task.recurrence_type === 'weekly' && Array.isArray(task.recurrence_weekdays) && task.recurrence_weekdays.length > 0;
-
-  return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title=""
-      maxWidth="max-w-3xl"
-      className="!p-0"
-      showHeader={false}
-    >
+  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-3xl" className="!p-0" showHeader={false}>
       <div className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
         {/* Header */}
         <div className="p-6 border-b border-[var(--border-primary)]">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-[var(--text-primary)]">Task Details</h2>
             <div className="flex items-center gap-3">
-              {task.completed ? (
-                <div className="px-3 py-1 rounded-full text-sm font-medium border bg-green-500/20 text-green-400 border-green-500/30">
+              {task.completed ? <div className="px-3 py-1 rounded-full text-sm font-medium border bg-green-500/20 text-green-400 border-green-500/30">
                   Completed
-                </div>
-              ) : task.status ? (
-                <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusInfo(task.status).color}`}>
+                </div> : task.status ? <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusInfo(task.status).color}`}>
                   {getStatusInfo(task.status).label}
-                </div>
-              ) : (
-                <div className="px-3 py-1 rounded-full text-sm font-medium border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                </div> : <div className="px-3 py-1 rounded-full text-sm font-medium border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
                   Pending
-                </div>
-              )}
-              {task.activetask && (
-                <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                </div>}
+              {task.activetask && <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
                   Active
-                </div>
-              )}
-              {isRecurring && (
-                <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                </div>}
+              {isRecurring && <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
                   Recurring
-                </div>
-              )}
+                </div>}
             </div>
           </div>
           
@@ -201,12 +199,10 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
               <Calendar size={16} />
               <span>Created {task.created_at ? moment(task.created_at).fromNow() : 'Unknown'}</span>
             </div>
-            {(task.deadline || task.due_date) && (
-              <div className="flex items-center gap-2">
+            {(task.deadline || task.due_date) && <div className="flex items-center gap-2">
                 <Clock size={16} />
                 <span>Due {moment(task.deadline || task.due_date).fromNow()}</span>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
 
@@ -252,15 +248,12 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           </div>
 
           {/* Description */}
-          {task.description && (
-            <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          {task.description && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
-              <div 
-                className="prose prose-invert max-w-none text-[var(--text-primary)]"
-                dangerouslySetInnerHTML={{ __html: task.description }}
-              />
-            </div>
-          )}
+              <div className="prose prose-invert max-w-none text-[var(--text-primary)]" dangerouslySetInnerHTML={{
+            __html: task.description
+          }} />
+            </div>}
 
           {/* Schedule Info */}
           <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
@@ -269,46 +262,35 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
               Schedule
             </h3>
             <div className="space-y-3">
-              {isRecurring ? (
-                <>
+              {isRecurring ? <>
                   <div>
                     <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Recurrence</label>
                     <p className="text-[var(--text-primary)]">
                       Every {task.recurrence_weekdays?.map(d => WEEKDAY_LABELS[d ?? 0]).join(', ')}
                     </p>
                   </div>
-                  {task.start_at && task.end_at && (
-                    <div>
+                  {task.start_at && task.end_at && <div>
                       <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Time</label>
                       <p className="text-[var(--text-primary)]">
                         {to12Hour(task.start_at)} - {to12Hour(task.end_at)}
                       </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div>
+                    </div>}
+                </> : <div>
                   <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Deadline</label>
                   <p className="text-[var(--text-primary)]">
-                    {task.deadline || task.due_date 
-                      ? formatDate(task.deadline || task.due_date)
-                      : 'No deadline'}
+                    {task.deadline || task.due_date ? formatDate(task.deadline || task.due_date) : 'No deadline'}
                   </p>
                   {/* Show time if available */}
-                  {task.start_at && (
-                    <p className="text-[var(--text-secondary)] text-sm mt-1">
+                  {task.start_at && <p className="text-[var(--text-secondary)] text-sm mt-1">
                       Time: {to12Hour(task.start_at)}
                       {task.end_at && ` - ${to12Hour(task.end_at)}`}
-                    </p>
-                  )}
-                </div>
-              )}
+                    </p>}
+                </div>}
             </div>
           </div>
 
           {/* Completion Info */}
-          {task.completed && task.completed_at && (
-            <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          {task.completed && task.completed_at && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
                 <CheckCircle2 size={18} className="text-green-400" />
                 Completed
@@ -316,39 +298,27 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
               <p className="text-[var(--text-secondary)] text-sm">
                 Completed on {moment(task.completed_at).format('MMMM D, YYYY [at] h:mm A')}
               </p>
-            </div>
-          )}
+            </div>}
         </div>
 
         {/* Action Buttons */}
         <div className="p-6 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]">
           <div className="flex items-center justify-between gap-3">
-            {onDelete && (
-              <button
-                onClick={() => {
-                  onDelete(task);
-                  onClose();
-                }}
-                className="px-4 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2"
-              >
+            {onDelete && <button onClick={() => {
+            onDelete(task);
+            onClose();
+          }} className="px-4 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2">
                 <Trash2 size={18} />
                 <span>Delete</span>
-              </button>
-            )}
+              </button>}
             <div className="flex items-center gap-3 ml-auto">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-              >
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
                 Close
               </button>
-              <button
-                onClick={() => {
-                  onEdit(task);
-                  onClose();
-                }}
-                className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-2"
-              >
+              <button onClick={() => {
+              onEdit(task);
+              onClose();
+            }} className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-2">
                 <Edit size={18} />
                 <span>Edit</span>
               </button>
@@ -356,8 +326,6 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           </div>
         </div>
       </div>
-    </BaseModal>
-  );
+    </BaseModal>;
 };
-
 export default TaskViewModal;

@@ -1,7 +1,14 @@
 import { CheckCircle2, Clock } from 'lucide-react';
+
 import { formatDate } from '@/utils/dateUtils';
 
-const DayTooltip = ({ date, tasks, studiedHours }) => {
+interface DayTooltipProps {
+  date: Date;
+  tasks: any[];
+  studiedHours: number;
+}
+
+const DayTooltip = ({ date, tasks, studiedHours }: DayTooltipProps) => {
   const totalTasks = tasks?.length || 0;
 
   return (

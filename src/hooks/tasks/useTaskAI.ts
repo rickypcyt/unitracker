@@ -18,7 +18,6 @@ export function useTaskAI(initialTab: 'manual' | 'ai' = 'ai') {
   const [showAIPreview, setShowAIPreview] = useState(false);
   const [aiParsedTasks, setAiParsedTasks] = useState<AiParsedTask[] | null>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const [aiCancelHover, setAiCancelHover] = useState(false);
   const [aiAbortController, setAiAbortController] = useState<AbortController | null>(null);
   const aiCancelledRef = useRef(false);
 

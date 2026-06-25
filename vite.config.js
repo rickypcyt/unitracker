@@ -102,7 +102,7 @@ export default defineConfig(({ command, mode }) => {
       },
       sourcemap: true,
       cssMinify: true,
-      minify: false,
+      minify: 'terser',
       reportCompressedSize: false,
       modulePreload: {
         polyfill: false

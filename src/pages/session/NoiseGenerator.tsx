@@ -93,7 +93,7 @@ function SoundControl({
         className="h-2 w-full"
         thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors -translate-y-1 border-2 border-[var(--accent-primary)]"
         trackClassName="h-2 rounded-full bg-[var(--border-primary)]"
-        renderTrack={(props, state) => {
+        renderTrack={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>, state: { index: number }) => {
           const { key, ...rest } = props;
           return (
             <div
@@ -111,7 +111,7 @@ function SoundControl({
         max={max}
         step={0.01}
         value={volume}
-        onChange={setVolume}
+        onChange={(v) => setVolume(Array.isArray(v) ? v[0] ?? 0 : v)}
         renderThumb={(props) => {
           const { key, ...rest } = props;
           return <div key={key} {...rest} />;
@@ -227,7 +227,7 @@ function NoiseSettingsModal({
   };
 
   const applyPreset = useCallback(
-    (soundKey: keyof PresetsMap, soundRef: SoundRef | null, preset: Preset) => {
+    (soundKey: keyof PresetsMap, soundRef: SoundRef | null | undefined, preset: Preset) => {
       if (!soundRef) return;
       
       if (soundKey === 'brown' && 'filterFreq' in preset) {

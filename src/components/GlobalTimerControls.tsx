@@ -1,12 +1,12 @@
 import { Pause, Play, RotateCcw } from 'lucide-react';
-import { useAppStore, useUiActions } from '@/store/appStore';
+import { useAppStore, useTimerActions } from '@/store/appStore';
 
 const GlobalTimerControls = () => {
   const isSynced = useAppStore((state) => state.ui.isSynced);
   const studyTimerState = useAppStore((state) => state.ui.studyTimerState);
   const pomodoroState = useAppStore((state) => state.ui.pomodoroState);
   const countdownState = useAppStore((state) => state.ui.countdownState);
-  const { setStudyRunning, setPomoRunning, setTimerState } = useUiActions();
+  const { setStudyTimerState, setPomodoroTimerState, setCountdownTimerState } = useTimerActions();
 
   if (!isSynced) return null;
 
@@ -14,11 +14,9 @@ const GlobalTimerControls = () => {
 
   const handlePlayPause = () => {
     const newRunningState = !anyTimerRunning;
-    setStudyRunning(newRunningState);
-    setPomoRunning(newRunningState);
-    setTimerState('study', newRunningState ? 'running' : 'stopped');
-    setTimerState('pomodoro', newRunningState ? 'running' : 'stopped');
-    setTimerState('countdown', newRunningState ? 'running' : 'stopped');
+    setStudyTimerState(newRunningState ? 'running' : 'stopped');
+    setPomodoroTimerState(newRunningState ? 'running' : 'stopped');
+    setCountdownTimerState(newRunningState ? 'running' : 'stopped');
   };
 
   const handleReset = () => {
@@ -28,9 +26,9 @@ const GlobalTimerControls = () => {
       window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
     } catch {}
     // Resetear todos los timers via Zustand
-    setTimerState('study', 'stopped');
-    setTimerState('pomodoro', 'stopped');
-    setTimerState('countdown', 'stopped');
+    setStudyTimerState('stopped');
+    setPomodoroTimerState('stopped');
+    setCountdownTimerState('stopped');
   };
 
   return (

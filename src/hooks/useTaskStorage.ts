@@ -1,10 +1,10 @@
-import { useAddTaskSuccess, useAppStore, useDeleteTaskSuccess, useTaskCrudActions, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
+import { useAddTaskSuccess, useDeleteTaskSuccess, useTaskCrudActions, useTasks, useUpdateTaskSuccess } from '@/store/appStore';
 import { useEffect, useState } from "react";
 
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Task } from "@/types/taskStorage";
 import { supabase } from "@/utils/supabaseClient";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 interface User {
     id: string;
@@ -83,7 +83,7 @@ export const useTaskStorage = (): TaskStorageHook => {
     const addTaskSuccess = useAddTaskSuccess();
     const updateTaskSuccess = useUpdateTaskSuccess();
     const deleteTaskSuccess = useDeleteTaskSuccess();
-    const { setTasks, addTask: addTaskToState, updateTask, deleteTask } = useTaskCrudActions();
+    const { setTasks } = useTaskCrudActions();
     const { tasks } = useTasks();
     const [user, setUser] = useState<User | null>(null);
     const [localTasks, setLocalTasks] = useState<Task[]>(() => {

@@ -1,5 +1,15 @@
 import BaseMenu from '@/modals/BaseMenu';
 
+interface SortMenuProps {
+  x: number;
+  y: number;
+  assignmentId: string;
+  onSelectSort: (assignmentId: string, sortType: string, direction: string) => void;
+  onClose: () => void;
+  currentSortType?: string;
+  currentSortDirection?: string;
+}
+
 export const SortMenu = ({
   x,
   y,
@@ -8,7 +18,7 @@ export const SortMenu = ({
   onClose,
   currentSortType = 'deadline',
   currentSortDirection = 'asc'
-}) => {
+}: SortMenuProps) => {
   const optionStyle = {
     padding: '0.5rem 1rem',
     cursor: 'pointer',
@@ -17,12 +27,12 @@ export const SortMenu = ({
     backgroundColor: 'var(--bg-secondary)',
   };
 
-  const handleOptionClick = (sortOption) => () => {
+  const handleOptionClick = (sortOption: string) => () => {
     onSelectSort(assignmentId, sortOption, currentSortDirection);
     onClose();
   };
 
-  const handleDirectionClick = (direction) => () => {
+  const handleDirectionClick = (direction: string) => () => {
     if (currentSortType) {
       onSelectSort(assignmentId, currentSortType, direction);
     } else {
@@ -31,7 +41,7 @@ export const SortMenu = ({
     onClose();
   };
 
-  const getOptionClassName = (optionType, optionValue) => {
+  const getOptionClassName = (optionType: string, optionValue: string) => {
     let className = "hover:bg-[var(--bg-primary)] transition-colors duration-75";
     if (optionType === 'type' && currentSortType === optionValue) {
       className += ' font-semibold text-white bg-[var(--accent-primary)]';

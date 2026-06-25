@@ -25,7 +25,7 @@ interface Note {
   title: string;
   assignment: string | null;
   description: string;
-  date: string;
+  date?: string | undefined;
   user_id?: string;
   created_at?: string;
   last_edited?: string;
@@ -42,7 +42,7 @@ interface NotesSidepanelProps {
 
 const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   notes,
-  loading,
+  loading: _loading,
   error,
   selectedNoteId,
   onNoteSelect,

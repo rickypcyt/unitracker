@@ -1,7 +1,11 @@
 import { useEffect, useRef } from "react";
 
-export default function useEventListener(event, handler, deps = []) {
-  const savedHandler = useRef();
+export default function useEventListener(
+  event: string,
+  handler: (event: any) => void,
+  deps: React.DependencyList = []
+) {
+  const savedHandler = useRef<((event: any) => void) | undefined>(undefined);
 
   // Always keep latest handler in ref so listener stays stable
   useEffect(() => {
@@ -10,7 +14,7 @@ export default function useEventListener(event, handler, deps = []) {
 
   useEffect(() => {
     // Create a stable wrapper bound for this effect run
-    const listener = (e) => {
+    const listener = (e: Event) => {
       if (typeof savedHandler.current === "function") {
         savedHandler.current(e);
       }

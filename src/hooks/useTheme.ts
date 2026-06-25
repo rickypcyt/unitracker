@@ -2,31 +2,43 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "./useAuth";
 
+// Extend Window interface for Capacitor
+declare global {
+  interface Window {
+    Capacitor?: {
+      isNativePlatform: () => boolean;
+    };
+  }
+}
+
+type Theme = 'light' | 'dark';
+type ThemePreference = 'light' | 'dark' | 'auto';
+
 const useTheme = () => {
-  const { user, isLoggedIn } = useAuth();
-  
+  const { isLoggedIn } = useAuth();
+
   // Función para detectar el tema del sistema
-  const getSystemTheme = () => {
+  const getSystemTheme = (): Theme => {
     if (typeof window === 'undefined') return 'light';
-    
+
     // Detectar tema del sistema en browser
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return "dark";
     }
-    
+
     return "light";
   };
 
   // Función para obtener la preferencia de tema del usuario
-  const getThemePreference = () => {
+  const getThemePreference = (): ThemePreference => {
     if (typeof window === 'undefined') return 'auto';
-    
+
     const savedPreference = localStorage.getItem("themePreference");
-    return savedPreference || 'auto'; // Por defecto 'auto' (seguir sistema)
+    return (savedPreference as ThemePreference) || 'auto';
   };
 
   // Función para obtener el tema actual basado en la preferencia
-  const getCurrentTheme = () => {
+  const getCurrentTheme = (): Theme => {
     const preference = getThemePreference();
     if (preference === 'auto') {
       return getSystemTheme();
@@ -34,10 +46,10 @@ const useTheme = () => {
     return preference;
   };
 
-  const [themePreference, setThemePreference] = useState(getThemePreference);
-  const [currentTheme, setCurrentTheme] = useState(getCurrentTheme);
+  const [themePreference, setThemePreference] = useState<ThemePreference>(getThemePreference);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(getCurrentTheme);
   const [showWelcomeModal, setShowWelcomeModal] = useState(
-    !localStorage.getItem("hasSeenWelcomeModal")
+    typeof window !== 'undefined' ? !localStorage.getItem("hasSeenWelcomeModal") : false
   );
   const [showThemeSelectionModal, setShowThemeSelectionModal] = useState(false);
   const [showAccentColorModal, setShowAccentColorModal] = useState(false);
@@ -45,13 +57,12 @@ const useTheme = () => {
   const [showTour, setShowTour] = useState(false);
 
   const [accentPalette, setAccentPalette] = useState(
-    localStorage.getItem("accentPalette") || "#0A84FF"
+    typeof window !== 'undefined' ? localStorage.getItem("accentPalette") || "#0A84FF" : "#0A84FF"
   );
 
   // Show tour for demo users after welcome modal closes
   useEffect(() => {
-    if (!isLoggedIn && !showWelcomeModal && !localStorage.getItem("hasSeenTour")) {
-      console.log('Activating tour for demo user');
+    if (!isLoggedIn && !showWelcomeModal && typeof window !== 'undefined' && !localStorage.getItem("hasSeenTour")) {
       setTimeout(() => {
         setShowTour(true);
       }, 300);
@@ -63,11 +74,10 @@ const useTheme = () => {
     if (isLoggedIn) {
       setShowLoginModal(false);
       localStorage.setItem("hasSeenLoginModal", "true");
-      
+
       // Show tour for logged in users who haven't seen it
       setTimeout(() => {
-        if (!localStorage.getItem("hasSeenTour")) {
-          console.log('Activating tour for logged in user');
+        if (typeof window !== 'undefined' && !localStorage.getItem("hasSeenTour")) {
           setShowTour(true);
         }
       }, 500);
@@ -75,17 +85,17 @@ const useTheme = () => {
   }, [isLoggedIn]);
 
   // Función para aplicar el tema
-  const applyTheme = useCallback((theme) => {
+  const applyTheme = useCallback((theme: Theme) => {
     const root = document.documentElement;
-    
+
     // Remover atributos de DayFlow que puedan interferir
     root.removeAttribute('data-dayflow-theme-override');
     root.removeAttribute('data-theme');
-    
+
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    root.style.colorScheme = theme;
-    
+    (root.style as any).colorScheme = theme;
+
     // Aplicar colores CSS a DayFlow
     const computedStyle = getComputedStyle(root);
     const accentColor = computedStyle.getPropertyValue('--accent-primary').trim();
@@ -94,7 +104,7 @@ const useTheme = () => {
     const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
     const textSecondary = computedStyle.getPropertyValue('--text-secondary').trim();
     const border = computedStyle.getPropertyValue('--border').trim();
-    
+
     // Crear estilos personalizados para DayFlow
     const dayflowStyles = `
       .df-calendar {
@@ -133,29 +143,29 @@ const useTheme = () => {
         border-color: ${accentColor} !important;
       }
     `;
-    
+
     // Eliminar estilos anteriores de DayFlow si existen
     const existingStyle = document.getElementById('dayflow-custom-styles');
     if (existingStyle) {
       existingStyle.remove();
     }
-    
+
     // Crear y añadir nuevos estilos
     const styleTag = document.createElement('style');
     styleTag.id = 'dayflow-custom-styles';
     styleTag.textContent = dayflowStyles;
     document.head.appendChild(styleTag);
-    
+
     // Para Capacitor: actualizar la barra de estado si está disponible
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       // Importar dinámicamente el plugin de status bar si está disponible
       import('@capacitor/status-bar').then(({ StatusBar }) => {
         if (theme === 'dark') {
-          StatusBar.setStyle({ style: 'DARK' }).catch(() => {
+          StatusBar.setStyle({ style: 'DARK' as any }).catch(() => {
             // Silenciosamente fallar si no está disponible
           });
         } else {
-          StatusBar.setStyle({ style: 'LIGHT' }).catch(() => {
+          StatusBar.setStyle({ style: 'LIGHT' as any }).catch(() => {
             // Silenciosamente fallar si no está disponible
           });
         }
@@ -220,7 +230,7 @@ const useTheme = () => {
     }, 200);
   };
 
-  const handleAccentColorSelection = (color) => {
+  const handleAccentColorSelection = (color: string) => {
     setAccentPalette(color);
     localStorage.setItem("accentPalette", color);
     setShowAccentColorModal(false);
@@ -233,7 +243,7 @@ const useTheme = () => {
     }, 200);
   };
 
-  const handleThemeSelection = (theme) => {
+  const handleThemeSelection = (theme: ThemePreference) => {
     handleThemeChange(theme);
     setShowThemeSelectionModal(false);
     localStorage.setItem("hasSeenThemeSelectionModal", "true");
@@ -245,7 +255,7 @@ const useTheme = () => {
     }, 200);
   };
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) handleCloseWelcome();
   };
 
@@ -257,7 +267,7 @@ const useTheme = () => {
   const handleTourComplete = () => {
     setShowTour(false);
     localStorage.setItem("hasSeenTour", "true");
-    
+
     // Open login modal after tour completes
     setTimeout(() => {
       setShowLoginModal(true);
@@ -270,10 +280,10 @@ const useTheme = () => {
   };
 
   // Función para cambiar la preferencia de tema
-  const handleThemeChange = useCallback((newPreference) => {
+  const handleThemeChange = useCallback((newPreference: ThemePreference) => {
     setThemePreference(newPreference);
     localStorage.setItem("themePreference", newPreference);
-    
+
     // Calcular el tema actual basado en la nueva preferencia
     const actualTheme = newPreference === 'auto' ? getSystemTheme() : newPreference;
     setCurrentTheme(actualTheme);
@@ -299,8 +309,8 @@ const useTheme = () => {
   // Efecto para escuchar cambios en la preferencia del sistema
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleSystemThemeChange = (e) => {
+
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
       // Solo actualizar si la preferencia está en 'auto'
       if (themePreference === 'auto') {
         const newTheme = e.matches ? "dark" : "light";
@@ -310,9 +320,9 @@ const useTheme = () => {
     };
 
     mediaQuery.addEventListener('change', handleSystemThemeChange);
-    
+
     // También escuchar cambios en Capacitor si está disponible
-    let capacitorListener;
+    let capacitorListener: (() => void) | undefined;
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       // Para dispositivos móviles, también podemos escuchar cambios del sistema
       const checkSystemTheme = () => {
@@ -324,7 +334,7 @@ const useTheme = () => {
           }
         }
       };
-      
+
       // Verificar cada vez que la app vuelve al foreground
       document.addEventListener('resume', checkSystemTheme);
       capacitorListener = () => document.removeEventListener('resume', checkSystemTheme);
@@ -357,7 +367,7 @@ const useTheme = () => {
     handleLogin,
     handleOverlayClick,
     handleThemeChange,
-    toggleTheme, // Para compatibilidad con el código existente
+    toggleTheme,
     setAccentPalette
   };
 };

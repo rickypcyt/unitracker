@@ -2,8 +2,8 @@
 
 // Utilidades para fechas relativas
 const today = new Date();
-const format = (d) => d.toISOString().split('T')[0];
-const addDays = (date, days) => {
+const format = (d: Date) => d.toISOString().split('T')[0];
+const addDays = (date: Date, days: number) => {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
@@ -43,98 +43,98 @@ export const demoSessions = [
 ];
 
 export const demoHabits = [
-  { 
-    id: 'demo-habit-1', 
-    name: 'Study', 
-    description: 'Study for 1 hour every morning before breakfast', 
-    frequency: 'daily', 
-    target_count: 7, 
-    current_count: 5, 
-    color: '#3B82F6', 
-    icon: '📚', 
-    workspace_id: 'demo-ws-1', 
-    created_at: format(addDays(today, -7)), 
+  {
+    id: 'demo-habit-1',
+    name: 'Study',
+    description: 'Study for 1 hour every morning before breakfast',
+    frequency: 'daily',
+    target_count: 7,
+    current_count: 5,
+    color: '#3B82F6',
+    icon: '📚',
+    workspace_id: 'demo-ws-1',
+    created_at: format(addDays(today, -7)),
     completed_dates: [format(addDays(today, -2)), format(addDays(today, -1)), todayStr],
     user_id: 'demo-user',
     completions: {
-      [format(addDays(today, -2))]: true,
-      [format(addDays(today, -1))]: true,
-      [todayStr]: true
-    }
+      [format(addDays(today, -2)) as string]: true,
+      [format(addDays(today, -1)) as string]: true,
+      [todayStr as string]: true
+    } as Record<string, boolean>
   },
-  { 
-    id: 'demo-habit-2', 
-    name: 'Exercise', 
-    description: 'Take a 15-minute break every 2 hours of study', 
-    frequency: 'daily', 
-    target_count: 5, 
-    current_count: 3, 
-    color: '#10B981', 
-    icon: '🏃', 
-    workspace_id: 'demo-ws-1', 
-    created_at: format(addDays(today, -5)), 
+  {
+    id: 'demo-habit-2',
+    name: 'Exercise',
+    description: 'Take a 15-minute break every 2 hours of study',
+    frequency: 'daily',
+    target_count: 5,
+    current_count: 3,
+    color: '#10B981',
+    icon: '🏃',
+    workspace_id: 'demo-ws-1',
+    created_at: format(addDays(today, -5)),
     completed_dates: [yesterdayStr, todayStr],
     user_id: 'demo-user',
     completions: {
-      [yesterdayStr]: true,
-      [todayStr]: true
-    }
+      [yesterdayStr as string]: true,
+      [todayStr as string]: true
+    } as Record<string, boolean>
   },
-  { 
-    id: 'demo-habit-3', 
-    name: 'Code', 
-    description: 'Review and refactor code for 30 minutes daily', 
-    frequency: 'daily', 
-    target_count: 7, 
-    current_count: 4, 
-    color: '#8B5CF6', 
-    icon: '💻', 
-    workspace_id: 'demo-ws-2', 
-    created_at: format(addDays(today, -6)), 
+  {
+    id: 'demo-habit-3',
+    name: 'Code',
+    description: 'Review and refactor code for 30 minutes daily',
+    frequency: 'daily',
+    target_count: 7,
+    current_count: 4,
+    color: '#8B5CF6',
+    icon: '💻',
+    workspace_id: 'demo-ws-2',
+    created_at: format(addDays(today, -6)),
     completed_dates: [format(addDays(today, -3)), format(addDays(today, -1)), todayStr],
     user_id: 'demo-user',
     completions: {
-      [format(addDays(today, -3))]: true,
-      [format(addDays(today, -1))]: true,
-      [todayStr]: true
-    }
+      [format(addDays(today, -3)) as string]: true,
+      [format(addDays(today, -1)) as string]: true,
+      [todayStr as string]: true
+    } as Record<string, boolean>
   },
-  { 
-    id: 'demo-habit-4', 
-    name: 'Project', 
-    description: 'Plan weekly tasks and goals every Sunday', 
-    frequency: 'weekly', 
-    target_count: 4, 
-    current_count: 2, 
-    color: '#F59E0B', 
-    icon: '📋', 
-    workspace_id: 'demo-ws-2', 
-    created_at: format(addDays(today, -14)), 
+  {
+    id: 'demo-habit-4',
+    name: 'Project',
+    description: 'Plan weekly tasks and goals every Sunday',
+    frequency: 'weekly',
+    target_count: 4,
+    current_count: 2,
+    color: '#F59E0B',
+    icon: '📋',
+    workspace_id: 'demo-ws-2',
+    created_at: format(addDays(today, -14)),
     completed_dates: [format(addDays(today, -7)), format(addDays(today, -14))],
     user_id: 'demo-user',
     completions: {
-      [format(addDays(today, -7))]: true,
-      [format(addDays(today, -14))]: true
-    }
+      [format(addDays(today, -7)) as string]: true,
+      [format(addDays(today, -14)) as string]: true
+    } as Record<string, boolean>
   },
-  { 
-    id: 'demo-habit-5', 
-    name: 'Reading', 
-    description: 'Read 2 technical articles per week', 
-    frequency: 'weekly', 
-    target_count: 8, 
-    current_count: 5, 
-    color: '#EF4444', 
-    icon: '📖', 
-    workspace_id: 'demo-ws-1', 
-    created_at: format(addDays(today, -21)), 
+  {
+    id: 'demo-habit-5',
+    name: 'Reading',
+    description: 'Read 2 technical articles per week',
+    frequency: 'weekly',
+    target_count: 8,
+    current_count: 5,
+    color: '#EF4444',
+    icon: '📖',
+    workspace_id: 'demo-ws-1',
+    created_at: format(addDays(today, -21)),
     completed_dates: [format(addDays(today, -7)), format(addDays(today, -3)), todayStr],
     user_id: 'demo-user',
     completions: {
-      [format(addDays(today, -7))]: true,
-      [format(addDays(today, -3))]: true,
-      [todayStr]: true
-    }
+      [format(addDays(today, -7)) as string]: true,
+      [format(addDays(today, -3)) as string]: true,
+      [todayStr as string]: true
+    } as Record<string, boolean>
   }
 ];
 
@@ -154,4 +154,4 @@ export const demoStats = {
   pomodoros: 15,
   pomodoroMinutes: 300,
   pomodorosToday: 3,
-}; 
+};
