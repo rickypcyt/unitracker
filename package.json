@@ -53,7 +53,6 @@
     "@tiptap/starter-kit": "^3.0.9",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
-    "@vitejs/plugin-react": "^5.1.2",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
