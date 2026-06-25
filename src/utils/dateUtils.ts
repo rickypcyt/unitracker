@@ -161,4 +161,42 @@ export function isTomorrow(dateStr: string | null | undefined): boolean {
     return date.getFullYear() === tomorrow.getFullYear() &&
         date.getMonth() === tomorrow.getMonth() &&
         date.getDate() === tomorrow.getDate();
+}
+
+export function fromNow(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const date = parseDateFromString(dateStr);
+    if (!date) return '';
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.round(diffMs / 1000);
+    const diffMin = Math.round(diffSec / 60);
+    const diffHr = Math.round(diffMin / 60);
+    const diffDay = Math.round(diffHr / 24);
+    const diffMonth = Math.round(diffDay / 30);
+    const diffYear = Math.round(diffDay / 365);
+
+    const past = diffMs > 0;
+
+    if (Math.abs(diffSec) < 60) return past ? 'a few seconds ago' : 'in a few seconds';
+    if (Math.abs(diffMin) < 60) return past ? `${diffMin} minute${diffMin === 1 ? '' : 's'} ago` : `in ${Math.abs(diffMin)} minute${Math.abs(diffMin) === 1 ? '' : 's'}`;
+    if (Math.abs(diffHr) < 24) return past ? `${diffHr} hour${diffHr === 1 ? '' : 's'} ago` : `in ${Math.abs(diffHr)} hour${Math.abs(diffHr) === 1 ? '' : 's'}`;
+    if (Math.abs(diffDay) < 30) return past ? `${diffDay} day${diffDay === 1 ? '' : 's'} ago` : `in ${Math.abs(diffDay)} day${Math.abs(diffDay) === 1 ? '' : 's'}`;
+    if (Math.abs(diffMonth) < 12) return past ? `${diffMonth} month${diffMonth === 1 ? '' : 's'} ago` : `in ${Math.abs(diffMonth)} month${Math.abs(diffMonth) === 1 ? '' : 's'}`;
+    return past ? `${diffYear} year${diffYear === 1 ? '' : 's'} ago` : `in ${Math.abs(diffYear)} year${Math.abs(diffYear) === 1 ? '' : 's'}`;
+}
+
+export function formatLongDateTime(dateStr: string | null | undefined): string {
+    if (!dateStr) return '';
+    const date = parseDateFromString(dateStr);
+    if (!date) return '';
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHour = hours % 12 || 12;
+    return `${month} ${day}, ${year} at ${displayHour}:${minutes} ${ampm}`;
 } 

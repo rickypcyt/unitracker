@@ -99,13 +99,13 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   };
   
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-4 shadow-xl min-w-[200px] text-center backdrop-blur-sm">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-3 shadow-2xl min-w-[200px] text-center backdrop-blur-md">
       <div className="font-semibold text-[var(--accent-primary)] mb-2 text-center text-sm">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
-      <div className="flex items-center justify-center gap-2 mb-2">
-        <div className="text-[var(--text-primary)] text-center">Time: <b className="text-lg">{formatMinutesToHMText(entry.minutes)}</b></div>
+      <div className="flex items-center justify-center gap-2 mb-1">
+        <div className="text-[var(--text-primary)] text-center text-sm">Time: <b className="text-base">{formatMinutesToHMText(entry.minutes)}</b></div>
         {getTrendIcon()}
       </div>
-      <div className="text-[var(--text-primary)] text-center mb-2">Tasks: <b>{dayTasks.length}</b></div>
+      <div className="text-[var(--text-secondary)] text-center text-xs mb-2">Tasks: <b className="text-[var(--text-primary)]">{dayTasks.length}</b></div>
       {tags.length > 0 && (
         <div className="text-[var(--text-secondary)] text-center text-xs mt-2">
           <div className="font-medium mb-1">Tags:</div>
@@ -177,7 +177,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   );
   const isMonthChart = title === 'This Month';
   const isYearChart = title === 'This Year' || !isNaN(parseInt(title));
-  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-xl bg-[var(--bg-secondary)] shadow-lg hover:shadow-xl transition-shadow duration-300 z-10`;
+  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-xl bg-[var(--bg-secondary)]/50 transition-all duration-300 z-10`;
 
   // Para 'This Year' o años específicos: escalar y mostrar etiquetas enteras según el mayor valor
   const yearDivisor = (title === 'This Year' || !isNaN(parseInt(title))) && dataMaxMinutes > 0
@@ -221,7 +221,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               return !isNaN(n) && (n === 1 || n % 5 === 0);
             })
           : undefined)
-      : (title === 'This Year' && isSmall
+      : (isYearChart && isSmall
           ? (Array.isArray(data) ? data.map(d => d.dayName).filter((_, i) => i % 2 === 0) : undefined)
           : undefined))
   );
@@ -243,9 +243,9 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 left: isSmall ? 12 : 24
               }} 
               barCategoryGap={
-                title === 'This Month' ? (isSmall ? 12 : 8) :
-                (title === 'This Week' || title === 'Last Week') ? 20 :
-                (title === 'This Year' ? 24 : 20)
+                isWeekChart ? 8 :
+                isMonthChart ? 4 :
+                isYearChart ? 12 : 8
               }
             >
               {/** Build ticks for Month on small screens: every 5 days */}
@@ -254,7 +254,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 dataKey={
                   isWeekChart
                     ? 'dayName'
-                    : title === 'This Year'
+                    : isYearChart
                     ? 'dayName'
                     : 'realDay'
                 }
@@ -263,7 +263,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 axisLine={false}
                 interval={isWeekChart ? 0 : (isYearChart ? 0 : (title === 'This Month' && isSmall ? 0 : 'preserveStartEnd'))}
                 minTickGap={isSmall ? 5 : 0}
-                tickMargin={title === 'This Month' ? (isSmall ? 4 : 8) : title === 'This Year' ? 12 : 8}
+                tickMargin={title === 'This Month' ? (isSmall ? 4 : 8) : isYearChart ? 12 : 8}
                 fontSize={isSmall ? '11px' : '12px'}
                 {...(Array.isArray(xTicks) && xTicks.length > 0 ? { ticks: xTicks as (string | number)[] } : {})}
                 tickFormatter={(value, index) => {
@@ -302,8 +302,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               <Bar
                 dataKey="minutes"
                 fill={accentColor}
-                radius={[8, 8, 0, 0]}
-                barSize={title === 'This Month' ? (isSmall ? 10 : 12) : title === 'This Year' ? 20 : 20}
+                radius={[6, 6, 0, 0]}
                 animationDuration={300}
                 animationBegin={0}
               >

@@ -297,7 +297,7 @@ const Statistics = (): ReactElement => {
   // Si es demo, usar demoStats
   if (isDemo) {
     return (
-      <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-6 mt-4 rounded-lg sticky top-0 z-50">
+      <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-4 mt-4 rounded-2xl shadow-sm">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-2 w-full">
           {statCards.map((card, i) => (
             <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
@@ -315,7 +315,7 @@ const Statistics = (): ReactElement => {
   }
 
   return (
-    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-2 rounded-lg sticky  mt-4">
+    <div className="stats-banner bg-[var(--bg-primary)] border border-[var(--border-primary)] py-3 px-4 rounded-2xl shadow-sm">
       <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 w-full items-center justify-items-center">
         {statCards.map((card, i) => (
           <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">

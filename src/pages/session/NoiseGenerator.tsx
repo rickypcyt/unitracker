@@ -1,9 +1,10 @@
 import {
   Cloud,
   CloudRain,
-  MoreVertical,
+  Headphones,
   Pause,
   Play,
+  SlidersHorizontal,
   Waves,
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
@@ -17,7 +18,6 @@ import { useNoise } from "@/utils/NoiseContext";
 // SoundControl component
 // -------------------------
 
-// Definir tipo para las props del icono
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
   className?: string;
@@ -26,6 +26,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 type IconComponent = React.ComponentType<IconProps>;
 
 interface SoundControlProps {
+  soundKey: string;
   label: string;
   icon: IconComponent;
   volume: number;
@@ -33,11 +34,47 @@ interface SoundControlProps {
   isPlaying: boolean;
   start: () => void;
   stop: () => void;
-  className?: string;
   max: number;
 }
 
+const SOUND_THEMES = {
+  brown: {
+    iconBg: "bg-amber-500/10",
+    iconText: "text-amber-600 dark:text-amber-400",
+    gradient: "bg-gradient-to-r from-amber-400 to-amber-600",
+    activeBorder: "border-amber-500/40",
+    activeRing: "ring-amber-500/30",
+    badge: "bg-amber-500/10",
+    badgeText: "text-amber-600 dark:text-amber-400",
+  },
+  rain: {
+    iconBg: "bg-blue-500/10",
+    iconText: "text-blue-600 dark:text-blue-400",
+    gradient: "bg-gradient-to-r from-blue-400 to-blue-600",
+    activeBorder: "border-blue-500/40",
+    activeRing: "ring-blue-500/30",
+    badge: "bg-blue-500/10",
+    badgeText: "text-blue-600 dark:text-blue-400",
+  },
+  ocean: {
+    iconBg: "bg-cyan-500/10",
+    iconText: "text-cyan-600 dark:text-cyan-400",
+    gradient: "bg-gradient-to-r from-cyan-400 to-cyan-600",
+    activeBorder: "border-cyan-500/40",
+    activeRing: "ring-cyan-500/30",
+    badge: "bg-cyan-500/10",
+    badgeText: "text-cyan-600 dark:text-cyan-400",
+  },
+};
+
+type SoundTheme = (typeof SOUND_THEMES)[keyof typeof SOUND_THEMES];
+
+function getSoundTheme(key: string): SoundTheme {
+  return SOUND_THEMES[key as keyof typeof SOUND_THEMES] ?? SOUND_THEMES.brown;
+}
+
 function SoundControl({
+  soundKey,
   label,
   icon: Icon,
   volume,
@@ -45,78 +82,99 @@ function SoundControl({
   isPlaying,
   start,
   stop,
-  className,
   max,
 }: SoundControlProps) {
+  const theme = getSoundTheme(soundKey);
+  const percentage = Math.round((volume / max) * 100);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      layout
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`relative overflow-hidden bg-gradient-to-br from-[var(--accent-secondary)/5] to-[var(--accent-primary)/5] p-4 rounded-xl border-[var(--border-primary)] hover:shadow-md transition-all duration-300 ${
-        className || ""
+      whileHover={{ y: -2 }}
+      className={`relative rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-lg ${
+        isPlaying
+          ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
+          : "border-[var(--border-primary)]"
       }`}
     >
-      <div className="flex items-center justify-between mb-3">
-        <label className="text-md font-medium text-[var(--text-primary)] flex items-center gap-2">
-          <div className="p-1 bg-[var(--accent-primary)]/10 rounded-md">
-            <Icon size={18} className="text-[var(--accent-primary)]" />
-          </div>
-          <span>{label}</span>
-        </label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-normal bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] px-2 py-0.5 rounded-full">
-            {Math.round((volume / max) * 100)}%
-          </span>
-          <div className="w-8 flex justify-center">
-            {!isPlaying ? (
-              <button
-                type="button"
-                onClick={start}
-                className="text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
-              >
-                <Play size={20} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={stop}
-                className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 transition-colors"
-              >
-                <Pause size={20} />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-      <ReactSlider
-        className="h-2 w-full"
-        thumbClassName="w-4 h-4 rounded-full bg-[var(--accent-primary)] cursor-pointer hover:bg-[var(--accent-primary)]/80 transition-colors -translate-y-1 border-2 border-[var(--accent-primary)]"
-        trackClassName="h-2 rounded-full bg-[var(--border-primary)]"
-        renderTrack={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>, state: { index: number }) => {
-          const { key, ...rest } = props;
-          return (
-            <div
-              key={key}
-              {...rest}
-              className={`h-2 rounded-full ${
-                state.index === 0
-                  ? "bg-[var(--accent-primary)]"
-                  : "bg-[var(--border-primary)]"
-              }`}
+      <div className="flex items-center gap-4">
+        <motion.div
+          animate={isPlaying ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+          transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
+        >
+          <Icon size={22} className={theme.iconText} />
+          {isPlaying && (
+            <span
+              className={`absolute inset-0 rounded-full ${theme.activeRing} animate-ping opacity-40`}
             />
-          );
-        }}
-        min={0}
-        max={max}
-        step={0.01}
-        value={volume}
-        onChange={(v) => setVolume(Array.isArray(v) ? v[0] ?? 0 : v)}
-        renderThumb={(props) => {
-          const { key, ...rest } = props;
-          return <div key={key} {...rest} />;
-        }}
-      />
+          )}
+        </motion.div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="font-semibold text-[var(--text-primary)] truncate">
+              {label}
+            </span>
+            <span
+              className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
+            >
+              {percentage}%
+            </span>
+          </div>
+
+          <ReactSlider
+            className="h-2 w-full"
+            thumbClassName="h-5 w-5 rounded-full bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+            trackClassName="h-2 rounded-full"
+            renderTrack={(
+              props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>,
+              state: { index: number }
+            ) => {
+              const { key, ...rest } = props;
+              return (
+                <div
+                  key={key}
+                  {...rest}
+                  className={`h-2 rounded-full ${
+                    state.index === 0
+                      ? theme.gradient
+                      : "bg-[var(--border-primary)]"
+                  }`}
+                />
+              );
+            }}
+            min={0}
+            max={max}
+            step={0.01}
+            value={volume}
+            onChange={(v) => setVolume(Array.isArray(v) ? v[0] ?? 0 : v)}
+            renderThumb={(props) => {
+              const { key, ...rest } = props;
+              return <div key={key} {...rest} />;
+            }}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={isPlaying ? stop : start}
+          aria-label={isPlaying ? `Stop ${label}` : `Play ${label}`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 ${
+            isPlaying
+              ? `${theme.iconBg} ${theme.iconText}`
+              : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--accent-primary)]/10 hover:text-[var(--accent-primary)]"
+          }`}
+        >
+          {isPlaying ? (
+            <Pause size={20} />
+          ) : (
+            <Play size={20} className="ml-0.5" />
+          )}
+        </button>
+      </div>
     </motion.div>
   );
 }
@@ -266,75 +324,94 @@ function NoiseSettingsModal({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Noise Generator Settings"
+      title="Noise Settings"
       maxWidth="max-w-lg"
     >
-      <div className="space-y-6">
-        {sounds.map((sound, idx) => (
-          <div
-            key={sound.key}
-            className="mb-4 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              {sound.icon === "Cloud" ? (
-                <Cloud size={22} />
-              ) : sound.icon === "CloudRain" ? (
-                <CloudRain size={22} />
-              ) : (
-                <Waves size={22} />
-              )}
-              <span className="font-semibold text-[var(--text-primary)]">
-                {sound.label}
-              </span>
-            </div>
+      <div className="space-y-5">
+        {sounds.map((sound, idx) => {
+          const theme = getSoundTheme(sound.key);
+          const Icon =
+            sound.icon === "Cloud"
+              ? Cloud
+              : sound.icon === "CloudRain"
+              ? CloudRain
+              : Waves;
 
-            {/* Max volume */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-[var(--text-secondary)]">
-                Max Volume:
-              </span>
-              <input
-                type="number"
-                min={0.1}
-                max={5}
-                step={0.1}
-                value={maxVolumes[idx]}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  setMaxVolumes((vols) =>
-                    vols.map((v, i) => (i === idx ? value : v))
-                  );
-                  if (sound.volume > value) setVolume(idx, value);
-                }}
-                className="w-16 px-2 py-1 rounded border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none"
-              />
-            </div>
+          return (
+            <div
+              key={sound.key}
+              className={`rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 transition-all ${
+                sound.isPlaying ? `ring-1 ${theme.activeRing}` : ""
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg ${theme.iconBg}`}
+                >
+                  <Icon size={18} className={theme.iconText} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-[var(--text-primary)]">
+                    {sound.label}
+                  </h4>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Max volume and presets
+                  </p>
+                </div>
+              </div>
 
-            {/* Presets */}
-            <div className="flex gap-2 mt-1">
-              {presetsMap[sound.key as keyof PresetsMap].map(
-                (preset: Preset, pIdx: number) => (
-                  <button
-                    key={preset.label}
-                    className={`px-2 py-1 rounded border text-sm transition ${
-                      selectedPresets[idx] === pIdx
-                        ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]"
-                        : "bg-[var(--bg-secondary)] border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--accent-primary)] hover:text-white"
-                    }`}
-                    onClick={() => {
-                      applyPreset(sound.key as keyof PresetsMap, sound.soundRef, preset);
-                      setSelectedPresets((sel) =>
-                        sel.map((v, i) => (i === idx ? pIdx : v)) as [number, number, number]
-                      );
-                    }}
-                  >
-                    {preset.label}
-                  </button>
-                )
-              )}
+              <div className="flex items-center gap-3 mb-4">
+                <label className="text-sm text-[var(--text-secondary)]">
+                  Max volume
+                </label>
+                <input
+                  type="number"
+                  min={0.1}
+                  max={5}
+                  step={0.1}
+                  value={maxVolumes[idx]}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    setMaxVolumes((vols) =>
+                      vols.map((v, i) => (i === idx ? value : v))
+                    );
+                    if (sound.volume > value) setVolume(idx, value);
+                  }}
+                  className="w-20 px-3 py-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {presetsMap[sound.key as keyof PresetsMap].map(
+                  (preset: Preset, pIdx: number) => (
+                    <button
+                      key={preset.label}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                        selectedPresets[idx] === pIdx
+                          ? `${theme.iconBg} ${theme.iconText} ring-1 ${theme.activeRing}`
+                          : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-primary)]"
+                      }`}
+                      onClick={() => {
+                        applyPreset(
+                          sound.key as keyof PresetsMap,
+                          sound.soundRef,
+                          preset
+                        );
+                        setSelectedPresets((sel) =>
+                          sel.map((v, i) =>
+                            i === idx ? pIdx : v
+                          ) as [number, number, number]
+                        );
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </BaseModal>
   );
@@ -402,10 +479,10 @@ export default function NoiseGenerator() {
   // Animation variants
   const container = {
     hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
   };
   const item = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 16 },
     show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
@@ -415,32 +492,48 @@ export default function NoiseGenerator() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between pb-3 border-b border-[var(--border-primary)]"
+        className="flex items-center justify-between pb-3"
       >
-        {/* Play/Pause All button */}
-        <button
-          onClick={handlePlayPauseAll}
-          className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-          aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
-        >
-          {anySoundPlaying ? <Pause size={20} /> : <Play size={20} />}
-        </button>
-
-        {/* Title centered */}
-        <div className="flex-1">
-          <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] text-center">
-            Noise Generator
-          </h3>
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
+            <Headphones size={18} className="text-[var(--accent-primary)]" />
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
+              Noise Generator
+            </h3>
+            {anySoundPlaying && (
+              <span className="text-[11px] text-[var(--accent-primary)] font-medium">
+                {sounds.filter(s => s.isPlaying).length} active
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Settings button */}
-        <button
-          className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-          onClick={() => setIsSettingsOpen(true)}
-          aria-label="Noise generator settings"
-        >
-          <MoreVertical size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePlayPauseAll}
+            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+              anySoundPlaying
+                ? "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-deep)] shadow-md"
+                : "bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
+            }`}
+            aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
+          >
+            {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
+            <span className="hidden sm:inline">
+              {anySoundPlaying ? "Pause all" : "Play all"}
+            </span>
+          </button>
+
+          <button
+            className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label="Noise generator settings"
+          >
+            <SlidersHorizontal size={20} />
+          </button>
+        </div>
       </motion.div>
 
       {/* Sound controls */}
@@ -448,11 +541,12 @@ export default function NoiseGenerator() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex-1 flex flex-col justify-center space-y-4 py-2"
+        className="flex-1 flex flex-col justify-center gap-4 py-4"
       >
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>
             <SoundControl
+              soundKey={sound.key}
               label={sound.label}
               icon={
                 sound.icon === "Cloud"
@@ -466,14 +560,13 @@ export default function NoiseGenerator() {
               isPlaying={sound.isPlaying}
               start={() => handleStart(idx)}
               stop={() => stopSound(idx)}
-              className={sound.key === "ocean" ? "mb-2" : ""}
               max={maxVolumes[idx] || 4}
             />
           </motion.div>
         ))}
       </motion.div>
 
-{/* Settings modal */}
+      {/* Settings modal */}
       <NoiseSettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

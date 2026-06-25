@@ -1,8 +1,8 @@
 import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
+import { ClipboardCheck, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
-import { ClipboardCheck } from 'lucide-react';
 import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -71,7 +71,7 @@ export const KanbanBoard = () => {
   // Supabase pinned columns hook
   const { pinnedColumns, togglePin } = usePinnedColumns(activeWorkspace?.id || null);
   
-  const [showCompleted] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
   // Get pinned columns for current workspace
   const currentWorkspacePins = useMemo(() => {
     // Obtener todas las asignaciones actuales y asegurar que todas tengan un estado de pineo
@@ -358,6 +358,16 @@ export const KanbanBoard = () => {
     }
   }, [assignmentToDelete, handleDeleteAssignment]);
 
+  // Compute completed count per assignment for progress bars
+  const completedByAssignment = useMemo(() => {
+    const grouped: Record<string, number> = {};
+    completedTasks.forEach((task: any) => {
+      const assignment = task.assignment || "No assignment";
+      grouped[assignment] = (grouped[assignment] || 0) + 1;
+    });
+    return grouped;
+  }, [completedTasks]);
+
   const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
 
   // Don't show anything until workspace is properly loaded and validated
@@ -367,12 +377,14 @@ export const KanbanBoard = () => {
   if (!activeWorkspace && (!workspaces || workspaces.length === 0)) {
     return (
       <div className="flex items-center justify-center py-12 min-h-[40vh]">
-        <div className="text-center">
-          <ClipboardCheck className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
-          <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
+          </div>
+          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
             No Workspaces Available
           </h3>
-          <p className="text-base text-[var(--text-secondary)] mb-1">
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
             Create your first workspace to start organizing your tasks.
           </p>
         </div>
@@ -395,10 +407,28 @@ export const KanbanBoard = () => {
   // Show loading when tasks are loading or workspace is changing
   if (tasksLoading || workspaceChanging) {
     return (
-      <div className="flex items-center justify-center py-12 min-h-[40vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading tasks...</p>
+      <div className="px-4 py-6 space-y-4">
+        {/* Skeleton columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-4 w-4 rounded bg-[var(--bg-primary)] animate-pulse" />
+                <div className="h-4 w-24 rounded bg-[var(--bg-primary)] animate-pulse" />
+                <div className="h-3 w-12 rounded bg-[var(--bg-primary)] animate-pulse" />
+              </div>
+              <div className="h-1 w-full rounded-full bg-[var(--bg-primary)] animate-pulse mb-3" />
+              {[0, 1].map(j => (
+                <div key={j} className="flex items-center gap-2 p-2.5 rounded-xl bg-[var(--bg-primary)] mb-2">
+                  <div className="h-4 w-4 rounded-full bg-[var(--bg-primary)] animate-pulse" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-3/4 rounded bg-[var(--bg-secondary)] animate-pulse" />
+                    <div className="h-2 w-1/2 rounded bg-[var(--bg-secondary)] animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -407,16 +437,26 @@ export const KanbanBoard = () => {
   if (noTasks) {
     return (
       <div className="flex items-center justify-center py-12 min-h-[40vh]">
-        <div className="text-center">
-          <ClipboardCheck className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
-          <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
+          </div>
+          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
             {activeWorkspace ? `No tasks in "${activeWorkspace.name}"` : 'No Tasks Yet'}
           </h3>
-          <p className="text-base text-[var(--text-secondary)] mb-1">
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
             {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
           </p>
-          {!isLoggedIn && (
-            <p className="text-sm text-[var(--text-secondary)] opacity-70 mt-2">
+          {isLoggedIn ? (
+            <button
+              onClick={() => handleAddTask(null)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
+            >
+              <Plus size={18} />
+              Create your first task
+            </button>
+          ) : (
+            <p className="text-xs text-[var(--text-secondary)] opacity-70">
               Remember to login first
             </p>
           )}
@@ -427,8 +467,8 @@ export const KanbanBoard = () => {
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row gap-4 h-full min-h-screen kanban-board" data-tour="tasks-board">
-        {/* Left Column - Active Tasks */}
+      <div className="flex flex-col gap-4 h-full min-h-screen kanban-board" data-tour="tasks-board">
+        {/* Active Tasks */}
         <div className="flex-1 min-h-0">
           <AssignmentColumns
             incompletedByAssignment={incompletedByAssignmentForAll}
@@ -450,21 +490,27 @@ export const KanbanBoard = () => {
             }}
             onUpdateAssignment={handleUpdateAssignment}
             onAssignmentDoubleClick={handleAssignmentDoubleClick}
+            completedByAssignment={completedByAssignment}
           />
         </div>
 
-        {/* Right Column - Completed Tasks */}
+        {/* Completed Tasks - below active tasks, same centered column */}
         {completedTasks && completedTasks.length > 0 && (
-          <CompletedTasksSection
-            showCompleted={showCompleted}
-            completedTasks={completedTasks}
-            onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
-            onTaskToggle={handleToggleCompletion}
-            onTaskDelete={handleConfirmDeleteTask}
-            onEditTask={handleEditTask}
-            onViewTask={handleViewTask}
-            onTaskContextMenu={handleTaskContextMenu}
-          />
+          <div className="flex justify-center w-full">
+            <div className="w-full max-w-2xl">
+              <CompletedTasksSection
+                showCompleted={showCompleted}
+                onToggleShowCompleted={() => setShowCompleted(prev => !prev)}
+                completedTasks={completedTasks}
+                onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
+                onTaskToggle={handleToggleCompletion}
+                onTaskDelete={handleConfirmDeleteTask}
+                onEditTask={handleEditTask}
+                onViewTask={handleViewTask}
+                onTaskContextMenu={handleTaskContextMenu}
+              />
+            </div>
+          </div>
         )}
       </div>
 

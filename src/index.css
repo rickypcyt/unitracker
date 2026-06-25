@@ -14,6 +14,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* FAB shine effect */
+@keyframes fab-shine {
+  0% { transform: translateX(-150%) rotate(25deg); }
+  100% { transform: translateX(250%) rotate(25deg); }
+}
+.fab-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.fab-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 0;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: translateX(-150%) rotate(25deg);
+  animation: fab-shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
 /* DayFlow Calendar Custom CSS Variables */
 :root {
   /* Light mode variables for DayFlow */
@@ -865,6 +893,89 @@ h1 {
   margin-bottom: 1rem;
 }
 
+/* Modern unified timer control buttons */
+.timer-ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-primary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.timer-ctrl-btn:hover {
+  background-color: rgba(30, 144, 255, 0.08);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+.timer-ctrl-btn:active {
+  transform: translateY(0);
+}
+
+.timer-ctrl-btn-primary {
+  background-color: transparent;
+  color: var(--accent-primary);
+  border-color: var(--border-primary);
+}
+
+.timer-ctrl-btn-primary:hover {
+  background-color: rgba(30, 144, 255, 0.1);
+  border-color: var(--accent-primary);
+}
+
+/* Pomodoro-specific primary button - red */
+.timer-ctrl-btn-pomo {
+  background-color: transparent;
+  color: #ef4444;
+  border-color: var(--border-primary);
+}
+
+.timer-ctrl-btn-pomo:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+/* Countdown-specific primary button - green */
+.timer-ctrl-btn-countdown {
+  background-color: transparent;
+  color: #22c55e;
+  border-color: var(--border-primary);
+}
+
+.timer-ctrl-btn-countdown:hover {
+  background-color: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+}
+
+/* Modern time adjustment buttons */
+.timer-adjust-btn {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.timer-adjust-btn:hover:not(:disabled) {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary)/5;
+}
+
+.timer-adjust-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .control-button {
   @apply btn-base btn-rounded-full btn-padding-1 btn-bg-secondary  btn-hover-bg-secondary-opacity-30 btn-flex-center;
 }
@@ -1145,6 +1256,182 @@ h1 {
   .react-hot-toast {
     margin-top: 2.5rem !important; /* mt-10 */
   }
+}
+
+/* =========================
+   Session Dashboard Styles
+   ========================= */
+.dashboard-stat-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.dark .dashboard-stat-card {
+  background-color: var(--bg-primary);
+}
+
+.dashboard-timer-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dark .dashboard-timer-card {
+  background-color: var(--bg-primary);
+}
+
+.dashboard-unified-timer-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 1rem;
+  padding: 0;
+  min-height: 340px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-unified-timer-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-primary), #ef4444 50%, #22c55e);
+  opacity: 0.7;
+}
+
+.dark .dashboard-unified-timer-card {
+  background-color: var(--bg-primary);
+}
+
+/* Timer Panels - individual styling per timer */
+.timer-panel {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
+}
+
+/* Study Timer panel - blue accent */
+.timer-panel-study {
+  border-left: 3px solid var(--accent-primary);
+}
+
+/* Pomodoro panel - red/tomato accent */
+.timer-panel-pomo {
+  border-left: 3px solid #ef4444;
+}
+
+/* Countdown panel - green accent */
+.timer-panel-countdown {
+  border-left: 3px solid #22c55e;
+}
+
+/* Drag and drop states */
+.timer-panel-dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.timer-panel-drag-over {
+  border-color: var(--accent-primary);
+  border-style: dashed;
+  border-width: 2px;
+}
+
+/* Panel labels */
+.timer-panel-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-primary);
+  background-color: rgba(30, 144, 255, 0.08);
+  border-radius: 0.375rem;
+  width: 100%;
+}
+
+.timer-panel-label-pomo {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.timer-panel-label-countdown {
+  color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.08);
+}
+
+/* Status badges inside panel labels */
+.timer-status-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.25rem;
+  margin-left: 0.25rem;
+}
+
+.timer-status-idle {
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+}
+
+.timer-status-active {
+  color: var(--accent-primary);
+  background-color: rgba(30, 144, 255, 0.12);
+}
+
+.timer-status-paused {
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+}
+
+.timer-status-pomo-work {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+.timer-status-pomo-break {
+  color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.12);
+}
+
+.timer-status-pomo-long {
+  color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.dashboard-noise-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem 1.5rem;
+  min-height: 400px;
+  transition: border-color 0.2s ease;
+}
+
+.dark .dashboard-noise-card {
+  background-color: var(--bg-primary);
 }
 
 /* Chart responsive improvements */

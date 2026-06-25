@@ -18,6 +18,7 @@ interface AssignmentColumnsProps {
   onDeleteAssignment: (assignment: string) => void;
   onUpdateAssignment: (oldName: string, newName: string) => void;
   onAssignmentDoubleClick?: (assignment: string) => void;
+  completedByAssignment?: Record<string, number>;
 }
 
 export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
@@ -37,6 +38,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   onDeleteAssignment,
   onUpdateAssignment,
   onAssignmentDoubleClick,
+  completedByAssignment = {},
 }) => {
   // Create a column for each assignment (show all assignments)
   const assignmentList = Object.keys(incompletedByAssignment);
@@ -80,15 +82,11 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
 
   return (
     <div className="flex justify-center w-full mb-4">
-      <div className={`w-full gap-4 ${
-        fixedColumns.length <= 2 ? 'grid grid-cols-1 lg:grid-cols-2' : 
-        fixedColumns.length <= 3 ? 'grid grid-cols-1 lg:grid-cols-3' : 
-        'grid grid-cols-1 lg:grid-cols-3'
-      }`}>
+      <div className="flex flex-col items-center w-full max-w-2xl mx-auto gap-4">
         {fixedColumns.map((column) => (
           <div
             key={column.id}
-            className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-2 shadow-sm"
+            className="w-full bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] p-3 shadow-md"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard
@@ -109,6 +107,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
               onMoveToWorkspace={() => onMoveToWorkspace(column.assignmentName)}
               onDeleteAssignment={() => onDeleteAssignment(column.assignmentName)}
               onUpdateAssignment={onUpdateAssignment}
+              completedCount={completedByAssignment[column.assignmentName] || 0}
             />
           </div>
         ))}

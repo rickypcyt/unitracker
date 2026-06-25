@@ -2,6 +2,7 @@ import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from '
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/SectionTitle';
+import TimeSegmentDisplay from './TimeSegmentDisplay';
 import { useAppStore } from '@/store/appStore';
 import useEventListener from '@/hooks/useEventListener';
 
@@ -20,12 +21,14 @@ const pad = (n: number, field: Field) => {
 
 // Eliminado getInitialTime: ya no se usa. El baseline persiste vía writeBaseline/readBaseline.
 interface CountdownProps {
-  isSynced?: boolean;
-  isRunning?: boolean;
+  isSynced?: boolean | undefined;
+  isRunning?: boolean | undefined;
+  hideHeader?: boolean;
 }
 const Countdown: React.FC<CountdownProps> = ({
   isSynced = false,
-  isRunning = false
+  isRunning = false,
+  hideHeader = false
 }) => {
   const {
     setCountdownState,
@@ -831,7 +834,7 @@ const Countdown: React.FC<CountdownProps> = ({
     }
   };
   return <div className="flex flex-col items-center justify-center">
-      <div className="section-title justify-center relative w-full px-4 py-3">
+      {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <button type="button" onClick={() => setSyncCountdownWithTimer(!syncCountdownWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncCountdownWithTimer ? 'Disable Countdown sync' : 'Enable Countdown sync'} title={syncCountdownWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
           {syncCountdownWithTimer ? <RefreshCw size={20} className="icon" style={{
           color: 'var(--accent-primary)'
@@ -840,15 +843,14 @@ const Countdown: React.FC<CountdownProps> = ({
         }} />}
         </button>
         <SectionTitle title="Countdown" tooltip="A countdown timer that counts down from a set time. Perfect for timed exams, presentations, or any activity with a specific duration limit." size="sm" />
-        {/* Botón de alarma */}
         <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
           {alarmEnabled ? <Bell size={20} className="text-[var(--text-secondary)]" /> : <BellOff size={20} className="text-[var(--text-secondary)]" />}
         </button>
-      </div>
+      </div>}
 
-      <div className="flex items-center justify-center mb-2 sm:mb-3">
+      {/* Digital display - segmented boxes for each time unit */}
+      <div className="flex items-center justify-center gap-1.5 py-2">
         {fields.map((field, idx) => {
-        // Derivar el valor mostrado desde la fuente de verdad
         let value;
         if (isCountdownRunning) {
           const h = Math.floor(secondsLeft / 3600);
@@ -858,9 +860,7 @@ const Countdown: React.FC<CountdownProps> = ({
           if (field === 'minutes') value = pad(m, 'minutes');
           if (field === 'seconds') value = pad(s, 'seconds');
         } else {
-          let h = 0,
-            m = 0,
-            s = 0;
+          let h = 0, m = 0, s = 0;
           if (pausedSecondsLeft !== null) {
             h = Math.floor(pausedSecondsLeft / 3600);
             m = Math.floor(pausedSecondsLeft % 3600 / 60);
@@ -875,41 +875,52 @@ const Countdown: React.FC<CountdownProps> = ({
           if (field === 'minutes') value = pad(m, 'minutes');
           if (field === 'seconds') value = pad(s, 'seconds');
         }
+        const isFocused = focusedField === field && !isRunningGlobal;
         return <React.Fragment key={field}>
-              <input ref={inputRefs.current[field]} type="text" inputMode="numeric" pattern="[0-9]*" value={value} placeholder={undefined} onFocus={e => handleFocus(field, e)} onBlur={e => handleBlur(field, e)} onChange={e => handleInputChange(field, e.target.value)} onKeyDown={e => handleInputKeyDown(e, field)} className={`w-8 sm:w-10 md:w-12 lg:w-14 text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-mono bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 ${focusedField === field && !isRunningGlobal ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`} tabIndex={idx + 1} style={{
-            letterSpacing: '0.05em'
-          }} disabled={isCountdownRunning} // Opcional: deshabilita edición durante cuenta regresiva
-          />
-              {field !== 'seconds' && <span className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-mono text-[var(--text-primary)] mx-0">:</span>}
-            </React.Fragment>;
+            <div className={`flex flex-col items-center`}>
+              <input
+                ref={inputRefs.current[field]}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={value}
+                placeholder={undefined}
+                onFocus={e => handleFocus(field, e)}
+                onBlur={e => handleBlur(field, e)}
+                onChange={e => handleInputChange(field, e.target.value)}
+                onKeyDown={e => handleInputKeyDown(e, field)}
+                className={`w-10 sm:w-12 md:w-14 text-center text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
+                  isFocused ? 'text-green-500' : isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
+                }`}
+                tabIndex={idx + 1}
+                style={{ letterSpacing: '0.05em' }}
+                disabled={isCountdownRunning}
+              />
+              <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                {field === 'hours' ? 'hrs' : field === 'minutes' ? 'min' : 'sec'}
+              </span>
+            </div>
+            {field !== 'seconds' && <span className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none self-start mt-0.5 text-[var(--text-secondary)]">:</span>}
+          </React.Fragment>;
       })}
       </div>
 
       {/* Time adjustment buttons - only show when not synced */}
-      {!(isSynced || syncCountdownWithTimer) && <div className="flex gap-1 mb-1 sm:mb-2">
-          <button onClick={() => handleTimeAdjustment(-1800)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Subtract 30 minutes">
-            -30
-          </button>
-          <button onClick={() => handleTimeAdjustment(-900)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Subtract 15 minutes">
-            -15
-          </button>
-          <button onClick={() => handleTimeAdjustment(900)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Add 15 minutes">
-            +15
-          </button>
-          <button onClick={() => handleTimeAdjustment(1800)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Add 30 minutes">
-            +30
-          </button>
+      {!(isSynced || syncCountdownWithTimer) && <div className="flex gap-1 mb-1.5">
+          <button onClick={() => handleTimeAdjustment(-1800)} className="timer-adjust-btn" aria-label="Subtract 30 minutes">-30</button>
+          <button onClick={() => handleTimeAdjustment(-900)} className="timer-adjust-btn" aria-label="Subtract 15 minutes">-15</button>
+          <button onClick={() => handleTimeAdjustment(900)} className="timer-adjust-btn" aria-label="Add 15 minutes">+15</button>
+          <button onClick={() => handleTimeAdjustment(1800)} className="timer-adjust-btn" aria-label="Add 30 minutes">+30</button>
         </div>}
 
-      {!(isSynced || syncCountdownWithTimer) && <div className="flex justify-center items-center gap-2 sm:gap-3">
-          <button onClick={() => handleReset()} className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label="Reset timer">
-            <RotateCcw size={20} className="text-[var(--accent-primary)]" />
+      {!(isSynced || syncCountdownWithTimer) && <div className="flex justify-center items-center gap-2">
+          <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
+            <RotateCcw size={18} className="text-[var(--text-secondary)]" />
           </button>
-
-          {isCountdownRunning ? <button onClick={() => handlePlayPause()} className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label="Pause countdown">
-              <Pause size={20} className="text-[var(--accent-primary)]" />
-            </button> : <button onClick={() => handlePlayPause()} disabled={calculateSeconds(baselineTimeRef.current) === 0} className="p-2 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label="Start countdown">
-              <Play size={20} className="text-[var(--accent-primary)]" />
+          {isCountdownRunning ? <button onClick={() => handlePlayPause()} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Pause countdown">
+              <Pause size={18} />
+            </button> : <button onClick={() => handlePlayPause()} disabled={calculateSeconds(baselineTimeRef.current) === 0} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Start countdown">
+              <Play size={18} />
             </button>}
         </div>}
     </div>;

@@ -9,6 +9,7 @@ import type { PomodoroModeType } from '../../types/pomodoro';
 import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
 // import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
 import SectionTitle from '@/components/SectionTitle';
+import TimeSegmentDisplay from './TimeSegmentDisplay';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
@@ -64,12 +65,6 @@ interface PomoState {
 // ============================================================================
 
 const safeNumber = (v: unknown, def: number): number => typeof v === 'number' && Number.isFinite(v) ? v : def;
-const formatPomoTime = (seconds: number): string => {
-  const roundedSeconds = Math.round(seconds);
-  const mins = Math.floor(roundedSeconds / 60);
-  const secs = roundedSeconds % 60;
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
 const loadSounds = () => {
   const sounds = {
     work: new Audio(POMODORO_SOUNDS.WORK),
@@ -267,7 +262,10 @@ const useMidnightReset = (onReset: () => void) => {
 // MAIN COMPONENT
 // ============================================================================
 
-const Pomodoro: React.FC = () => {
+interface PomodoroProps {
+  hideHeader?: boolean;
+}
+const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
   // const { user }: { user: import('@supabase/supabase-js').User | null } = useAuth(); // Not used
   const {
     syncSettings,
@@ -286,6 +284,13 @@ const Pomodoro: React.FC = () => {
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
   const [localResetKey, setLocalResetKey] = useState(0);
   const [isCounting, setIsCounting] = useState(false); // Prevent double counting
+
+  // Listen for settings open from UnifiedTimer
+  useEffect(() => {
+    const handler = () => setIsSettingsModalOpen(true);
+    window.addEventListener("pomodoro-open-settings", handler);
+    return () => window.removeEventListener("pomodoro-open-settings", handler);
+  }, []);
   // const [pomodorosTodayLocal, setPomodorosTodayLocal] = useState(() =>
   //   parseInt(localStorage.getItem(`pomodoroDailyCount_${getLocalDateString()}`) || '0', 10)
   // ); // Not used
@@ -1214,7 +1219,7 @@ const Pomodoro: React.FC = () => {
 
   return <div className="flex flex-col items-center h-full">
       {/* Header */}
-      <div className="section-title justify-center relative w-full px-4 py-3">
+      {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <button type="button" onClick={() => setSyncPomodoroWithTimer(!syncPomodoroWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'} title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
           {syncPomodoroWithTimer ? <RefreshCw size={20} className="icon" style={{
           color: 'var(--accent-primary)'
@@ -1232,14 +1237,35 @@ const Pomodoro: React.FC = () => {
         <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
           {alarmEnabled ? <Bell size={20} className="text-[var(--text-secondary)]" /> : <BellOff size={20} className="text-[var(--text-secondary)]" />}
         </button>
-      </div>
+      </div>}
 
-      {/* Timer Display */}
-      <div className="relative group text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-mono mb-2 sm:mb-3 text-center text-[var(--text-primary)]" role="timer" aria-label="Current pomodoro time">
-        <span>{formatPomoTime(pomoState.timeLeft)}</span>
-        
-        {/* Hover tooltip showing current mode */}
-        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+      {/* Timer Display - bold with mode-colored accent */}
+      <div className="relative group w-full flex flex-col items-center py-1" role="timer" aria-label="Current pomodoro time">
+        <div className="flex items-start justify-center gap-1.5">
+          {(() => {
+            const roundedSeconds = Math.round(pomoState.timeLeft);
+            const mins = Math.floor(roundedSeconds / 60);
+            const secs = roundedSeconds % 60;
+            const parts = [
+              { val: mins.toString().padStart(2, '0'), label: 'min' },
+              { val: secs.toString().padStart(2, '0'), label: 'sec' },
+            ];
+            const colorClass = pomoState.currentMode === 'work' ? 'text-red-500' :
+              pomoState.currentMode === 'break' ? 'text-green-500' : 'text-blue-500';
+            return parts.map((p, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <span className={`text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-mono font-bold tabular-nums tracking-tight leading-none ${colorClass}`}>{p.val}</span>
+                <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">{p.label}</span>
+              </div>
+            )).flatMap((el, i) => i < 1 ? [
+              el,
+              <span key={`sep-${i}`} className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none mt-2 ${colorClass}`}>:</span>
+            ] : [el]);
+          })()}
+        </div>
+
+        {/* Hover tooltip */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
           <div className="flex items-center justify-center gap-1.5">
             {pomoState.currentMode === 'work' && <>
                 <span className="text-sm">🍅</span>
@@ -1255,14 +1281,12 @@ const Pomodoro: React.FC = () => {
               </>}
           </div>
 
-          {/* Additional mode info */}
           <div className="mt-1 text-xs text-[var(--text-secondary)]">
             {pomoState.currentMode === 'work' && <div>Focus time: {Math.floor((currentModeConfig?.work || 3000) / 60)}min</div>}
             {pomoState.currentMode === 'break' && <div>Break time: {Math.floor((currentModeConfig?.break || 600) / 60)}min</div>}
             {pomoState.currentMode === 'longBreak' && <div>Long break: {Math.floor((currentModeConfig?.longBreak || 1800) / 60)}min</div>}
           </div>
 
-          {/* Pomodoro count */}
           <div className="mt-1 text-xs text-[var(--text-secondary)]">
             Completed today: {pomoState.pomodoroToday}
           </div>
@@ -1270,28 +1294,22 @@ const Pomodoro: React.FC = () => {
       </div>
 
       {/* Time adjustment buttons - only show when not synced */}
-      {!syncPomodoroWithTimer && <div className="flex gap-1 mb-1 sm:mb-2">
-          {[-600, -300, 300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={`${adj > 0 ? 'Add' : 'Subtract'} ${Math.abs(adj / 60)} minutes`}>
+      {!syncPomodoroWithTimer && <div className="flex gap-1 mb-1.5">
+          {[-600, -300, 300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`${adj > 0 ? 'Add' : 'Subtract'} ${Math.abs(adj / 60)} minutes`}>
               {adj > 0 ? '+' : ''}{adj / 60}
             </button>)}
         </div>}
 
       {/* Timer Controls */}
-      <div className="timer-controls flex justify-center items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+      <div className="flex justify-center items-center gap-2 mb-1">
         {!syncPomodoroWithTimer && <>
-            <button onClick={() => handleReset()} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Reset timer">
-              <RotateCcw size={20} style={{
-            color: 'var(--accent-primary)'
-          }} />
+            <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
+              <RotateCcw size={18} className="text-[var(--text-secondary)]" />
             </button>
-            {!isPomodoroRunning ? <button onClick={() => handleStart()} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Start timer">
-                <Play size={20} style={{
-            color: 'var(--accent-primary)'
-          }} />
-              </button> : <button onClick={() => handleStop()} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Pause timer">
-                <Pause size={20} style={{
-            color: 'var(--accent-primary)'
-          }} />
+            {!isPomodoroRunning ? <button onClick={() => handleStart()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Start timer">
+                <Play size={18} />
+              </button> : <button onClick={() => handleStop()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Pause timer">
+                <Pause size={18} />
               </button>}
           </>}
       </div>

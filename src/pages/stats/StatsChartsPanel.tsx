@@ -1,8 +1,8 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import MonthStatsCard from './MonthStatsCard';
-import WeekStatsCard from './WeekStatsCard';
-import YearStatsCard from './YearStatsCard';
+import ChartCard from './ChartCard';
+import StatsChart from './StatsChart';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLaps } from '@/store/appStore';
 
@@ -10,6 +10,14 @@ const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthLabels = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+type TabKey = 'week' | 'month' | 'year';
+
+const tabs: { key: TabKey; label: string }[] = [
+  { key: 'week', label: 'Week' },
+  { key: 'month', label: 'Month' },
+  { key: 'year', label: 'Year' },
 ];
 
 function formatMinutesToHHMM(minutes: number) {
@@ -52,13 +60,13 @@ function getISOWeekNumber(date: Date) {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
 }
 
-// Obtener color de acento una sola vez fuera del componente
 const getAccentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
 
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
   const accentColor = getAccentColor();
+  const [activeTab, setActiveTab] = useState<TabKey>('week');
 
   // Semana
   const [weekOffset, setWeekOffset] = useState(0);
@@ -68,7 +76,6 @@ const StatsChartsPanel = memo(() => {
   }, [weekOffset]);
   const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
   const shownWeekData = useMemo(() => {
-    // Pre-calcular dailyMinutes una sola vez
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
       if (lapDate) {
@@ -79,7 +86,6 @@ const StatsChartsPanel = memo(() => {
     }, {} as Record<string, number>);
     
     const weekDays = getWeekDays(shownWeekMonday);
-    // Siempre 7 elementos, uno por cada día de la semana
     return weekDayLabels.map((label, idx) => {
       const date = weekDays[idx];
       const minutes = date && dailyMinutes[date] ? dailyMinutes[date] : 0;
@@ -105,7 +111,6 @@ const StatsChartsPanel = memo(() => {
     const month = shownMonthDate.getMonth();
     const monthDays = getMonthDays(shownMonthDate);
     
-    // Pre-calcular dailyMinutes para el mes específico
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDateObj = new Date(lap.created_at);
       if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
@@ -140,7 +145,6 @@ const StatsChartsPanel = memo(() => {
   const shownYearData = useMemo(() => {
     const monthlyMinutes = Array(12).fill(0);
     
-    // Procesar laps una sola vez para el año específico
     laps.forEach(lap => {
       const lapDate = new Date(lap.created_at);
       if (lapDate.getFullYear() === shownYear) {
@@ -159,32 +163,23 @@ const StatsChartsPanel = memo(() => {
     }));
   }, [laps, shownYear]);
 
-  // Memoize the handlers to prevent unnecessary re-renders
-  const handleWeekPrevious = useCallback(() => {
-    setWeekOffset((prev) => prev + 1);
-  }, []);
-  
-  const handleWeekNext = useCallback(() => {
-    setWeekOffset((prev) => prev - 1);
-  }, []);
-  
-  const handleMonthPrevious = useCallback(() => {
-    setMonthOffset((prev) => prev - 1);
-  }, []);
-  
-  const handleMonthNext = useCallback(() => {
-    setMonthOffset((prev) => prev + 1);
-  }, []);
-  
-  const handleYearPrevious = useCallback(() => {
-    setYearOffset((prev) => prev + 1);
-  }, []);
-  
-  const handleYearNext = useCallback(() => {
-    setYearOffset((prev) => prev - 1);
-  }, []);
+  const handlePrevious = useCallback(() => {
+    if (activeTab === 'week') setWeekOffset((prev) => prev + 1);
+    else if (activeTab === 'month') setMonthOffset((prev) => prev - 1);
+    else setYearOffset((prev) => prev + 1);
+  }, [activeTab]);
 
-  if (isDemo) {
+  const handleNext = useCallback(() => {
+    if (activeTab === 'week') setWeekOffset((prev) => prev - 1);
+    else if (activeTab === 'month') setMonthOffset((prev) => prev + 1);
+    else setYearOffset((prev) => prev - 1);
+  }, [activeTab]);
+
+  const isNextDisabled = activeTab === 'week' ? weekOffset === 0 : activeTab === 'month' ? monthOffset >= 0 : yearOffset === 0;
+
+  // Demo data
+  const demoData = useMemo(() => {
+    if (!isDemo) return null;
     const demoWeek = [60, 90, 120, 80, 100, 110, 70];
     const demoMonth = [60, 80, 120, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 110, 90, 60, 150, 100, 70, 60, 130, 140, 60, 80, 120, 60, 60, 90];
     const demoYear = [120, 90, 100, 80, 110, 130, 120, 100, 90, 110, 120, 100];
@@ -196,15 +191,12 @@ const StatsChartsPanel = memo(() => {
       d.setDate(monday.getDate() + i);
       return d.toISOString().split('T')[0];
     });
-    const thisWeekData = weekDayLabels.map((label, idx) => {
-      const date = weekDays[idx];
-      return {
-        date: date || '',
-        minutes: demoWeek[idx] || 0,
-        hoursLabel: formatMinutesToHHMM(demoWeek[idx] || 0),
-        dayName: label,
-      };
-    });
+    const thisWeekData = weekDayLabels.map((label, idx) => ({
+      date: weekDays[idx] || '',
+      minutes: demoWeek[idx] || 0,
+      hoursLabel: formatMinutesToHHMM(demoWeek[idx] || 0),
+      dayName: label,
+    }));
     const shownMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const shownMonthData = Array.from({ length: daysInMonth }, (_, i) => {
@@ -225,91 +217,79 @@ const StatsChartsPanel = memo(() => {
       dayName: label,
       date: `${shownYear}-${String(idx+1).padStart(2,'0')}-01`,
     }));
-    return (
-      <div className="w-full flex flex-col gap-2 sm:gap-3">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 items-stretch">
-          <div className="h-full">
-            <WeekStatsCard
-              data={thisWeekData}
-              accentColor={accentColor}
-              shownWeekNumber={shownWeekNumber}
-              weekOffset={weekOffset}
-              setWeekOffset={setWeekOffset}
-              isDemo={true}
-              handleWeekPrevious={handleWeekPrevious}
-              handleWeekNext={handleWeekNext}
-            />
-          </div>
-          <div className="h-full">
-            <MonthStatsCard
-              data={shownMonthData}
-              accentColor={accentColor}
-              shownMonthDate={shownMonthDate}
-              setMonthOffset={setMonthOffset}
-              monthOffset={monthOffset}
-              isDemo={true}
-              handleMonthPrevious={handleMonthPrevious}
-              handleMonthNext={handleMonthNext}
-            />
-          </div>
-        </div>
-        <div className="w-full">
-          <YearStatsCard
-            data={thisYearData}
-            accentColor={accentColor}
-            shownYear={shownYear}
-            yearOffset={yearOffset}
-            setYearOffset={setYearOffset}
-            isDemo={true}
-            handleYearPrevious={handleYearPrevious}
-            handleYearNext={handleYearNext}
-          />
-        </div>
-      </div>
-    );
-  }
+    return { thisWeekData, shownMonthData, thisYearData };
+  }, [isDemo, shownYear]);
 
-  // Logueado
+  // Select data and title based on active tab
+  const chartData = isDemo
+    ? (activeTab === 'week' ? demoData!.thisWeekData : activeTab === 'month' ? demoData!.shownMonthData : demoData!.thisYearData)
+    : (activeTab === 'week' ? shownWeekData : activeTab === 'month' ? shownMonthData : shownYearData);
+
+  const chartTitle = activeTab === 'week' ? `Week ${shownWeekNumber}` : activeTab === 'month' ? 'This Month' : `${shownYear}`;
+  const chartXAxisTicks = activeTab === 'week' ? weekDayLabels : undefined;
+
+  const periodLabel = activeTab === 'week'
+    ? `Week ${shownWeekNumber}`
+    : activeTab === 'month'
+      ? shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })
+      : `${shownYear}`;
+
   return (
-    <div className="w-full flex flex-col gap-2 sm:gap-3">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 items-stretch">
-        <div className="h-full">
-          <WeekStatsCard
-            data={shownWeekData}
-            accentColor={accentColor}
-            shownWeekNumber={shownWeekNumber}
-            weekOffset={weekOffset}
-            setWeekOffset={setWeekOffset}
-            isDemo={false}
-            handleWeekPrevious={handleWeekPrevious}
-            handleWeekNext={handleWeekNext}
-          />
-        </div>
-        <div className="h-full">
-          <MonthStatsCard
-            data={shownMonthData}
-            accentColor={accentColor}
-            shownMonthDate={shownMonthDate}
-            setMonthOffset={setMonthOffset}
-            monthOffset={monthOffset}
-            isDemo={false}
-            handleMonthPrevious={handleMonthPrevious}
-            handleMonthNext={handleMonthNext}
-          />
-        </div>
-      </div>
-      <div className="w-full">
-        <YearStatsCard
-          data={shownYearData}
+    <div className="w-full">
+      <ChartCard
+        paddingClass="p-2"
+        className=""
+        isDemo={isDemo}
+        header={
+          <div className="relative flex items-center justify-between w-full">
+            {/* Period label + navigation */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handlePrevious}
+                className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={18} className="text-[var(--text-primary)]" />
+              </button>
+              <span className="font-semibold text-sm sm:text-base text-center select-none transition-colors duration-200 text-[var(--accent-primary)] min-w-[80px] sm:min-w-[120px]">
+                {periodLabel}
+              </span>
+              <button
+                onClick={handleNext}
+                className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="Next"
+                disabled={isNextDisabled}
+              >
+                <ChevronRight size={18} className={`text-[var(--text-primary)] ${isNextDisabled ? 'opacity-40' : ''}`} />
+              </button>
+            </div>
+            {/* Tabs - right aligned */}
+            <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-0.5">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-4 py-2 rounded-md text-base font-medium transition-all duration-200 ${
+                    activeTab === tab.key
+                      ? 'bg-[var(--bg-primary)] text-[var(--accent-primary)] shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        <StatsChart
+          data={chartData}
+          title={chartTitle}
           accentColor={accentColor}
-          shownYear={shownYear}
-          yearOffset={yearOffset}
-          setYearOffset={setYearOffset}
-          isDemo={false}
-          handleYearPrevious={handleYearPrevious}
-          handleYearNext={handleYearNext}
+          customTitle={<></>}
+          xAxisTicks={chartXAxisTicks}
         />
-      </div>
+      </ChartCard>
     </div>
   );
 });

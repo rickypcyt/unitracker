@@ -1,4 +1,4 @@
-import { Info, Plus, X } from 'lucide-react';
+import { Info, Plus, Sparkles, X, Zap } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
@@ -15,6 +15,8 @@ const TasksPage = memo(() => {
   const { activePage } = useNavigation();
   const isVisible = activePage === 'tasks';
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
+  const [fabMode, setFabMode] = useState<'manual' | 'ai'>('manual');
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
@@ -70,7 +72,7 @@ const TasksPage = memo(() => {
     };
   }, [handleRefresh, activeWorkspace?.id, isVisible]); // Add activeWorkspace?.id to dependencies
 
-  const handleAddTask = () => {
+  const handleAddTask = (mode: 'manual' | 'ai' = 'manual') => {
     if (!isLoggedIn) {
       setIsLoginPromptOpen(true);
       return;
@@ -79,7 +81,9 @@ const TasksPage = memo(() => {
       setShowWorkspaceModal(true);
       return;
     }
+    setFabMode(mode);
     setShowTaskForm(true);
+    setShowFabMenu(false);
   };
 
   const handleCloseTaskForm = () => {
@@ -217,18 +221,49 @@ const TasksPage = memo(() => {
           </button>
         </div>
       )}
-      {/* Floating Action Button */}
-      <button
-        onClick={handleAddTask}
-        className="fixed bottom-6 right-6 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-transparent border-2 border-dashed border-[var(--accent-primary)] text-[var(--accent-primary)] shadow-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center justify-center z-50"
-        aria-label="Add new task"
-      >
-        <Plus className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9" />
-      </button>
+      {/* Floating Action Button with mini-menu */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+        {/* Mini menu options */}
+        {showFabMenu && (
+          <>
+            <button
+              onClick={() => handleAddTask('ai')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+            >
+              <Sparkles size={16} className="text-violet-400" />
+              AI Task
+            </button>
+            <button
+              onClick={() => handleAddTask('manual')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+            >
+              <Zap size={16} className="text-amber-400" />
+              Quick Add
+            </button>
+          </>
+        )}
+        {/* Main FAB */}
+        <button
+          onClick={() => setShowFabMenu(prev => !prev)}
+          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--accent-primary)] text-white shadow-xl shadow-[var(--accent-primary)]/30 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden ${!showFabMenu ? 'fab-shine' : ''}`}
+          aria-label="Add new task"
+          aria-expanded={showFabMenu}
+        >
+          <Plus className={`w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300 ${showFabMenu ? 'rotate-45' : ''}`} />
+        </button>
+      </div>
+      {/* Backdrop to close FAB menu */}
+      {showFabMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowFabMenu(false)}
+        />
+      )}
       {/* Task Form Modal */}
       {showTaskForm && (
         <TaskFormManager
           onClose={handleCloseTaskForm}
+          initialActiveTab={fabMode}
           onTaskCreated={() => {
             fetchTasks(activeWorkspace?.id);
             handleCloseTaskForm();

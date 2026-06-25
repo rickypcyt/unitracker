@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-import { Edit2, ListOrdered, MoreVertical, Move, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit2, ListOrdered, MoreVertical, Move, Pin, PinOff, Trash2 } from 'lucide-react';
 
 import { useState } from 'react';
 
@@ -12,6 +12,10 @@ interface ColumnDropdownMenuProps {
   onDeleteAssignment?: (assignment: string) => void;
   onEditAssignment?: () => void;
   onSortClick?: (assignmentId: string, position: { x: number; y: number }) => void;
+  isMinimized?: boolean;
+  onToggleMinimize?: () => void;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
 }
 
 const ColumnDropdownMenu = ({
@@ -22,6 +26,10 @@ const ColumnDropdownMenu = ({
   onDeleteAssignment,
   onEditAssignment,
   onSortClick,
+  isMinimized = false,
+  onToggleMinimize,
+  isPinned = false,
+  onTogglePin,
 }: ColumnDropdownMenuProps) => {
   const [isMenuButtonHovered, setIsMenuButtonHovered] = useState(false);
   const [open, setOpen] = useState(false);
@@ -85,7 +93,7 @@ const ColumnDropdownMenu = ({
             <Edit2 size={16} className="text-[var(--text-secondary)]" />
             Edit assignment name
           </DropdownMenu.Item>
-          
+
           <DropdownMenu.Item
             onClick={handleSortClick}
             className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
@@ -93,9 +101,29 @@ const ColumnDropdownMenu = ({
             <ListOrdered size={16} className="text-[var(--text-secondary)]" />
             Sort by
           </DropdownMenu.Item>
-          
+
           <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
-          
+
+          {onTogglePin && (
+            <DropdownMenu.Item
+              onClick={() => { onTogglePin(); setOpen(false); }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+            >
+              {isPinned ? <PinOff size={16} className="text-[var(--text-secondary)]" /> : <Pin size={16} className="text-[var(--text-secondary)]" />}
+              {isPinned ? 'Unpin column' : 'Pin column'}
+            </DropdownMenu.Item>
+          )}
+
+          {onToggleMinimize && (
+            <DropdownMenu.Item
+              onClick={() => { onToggleMinimize(); setOpen(false); }}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+            >
+              {isMinimized ? <ChevronUp size={16} className="text-[var(--text-secondary)]" /> : <ChevronDown size={16} className="text-[var(--text-secondary)]" />}
+              {isMinimized ? 'Expand tasks' : 'Collapse tasks'}
+            </DropdownMenu.Item>
+          )}
+
           <DropdownMenu.Item
             onClick={() => {
               onMoveToWorkspace(assignment);

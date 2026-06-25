@@ -1,8 +1,9 @@
 import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
+import { formatDate, formatLongDateTime, fromNow } from "@/utils/dateUtils";
+
 import BaseModal from "@/modals/BaseModal";
 import React from "react";
-import { formatDate } from "@/utils/dateUtils";
-import moment from "moment";
+
 interface Task {
   id: string;
   title: string;
@@ -197,11 +198,11 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
             <div className="flex items-center gap-2">
               <Calendar size={16} />
-              <span>Created {task.created_at ? moment(task.created_at).fromNow() : 'Unknown'}</span>
+              <span>Created {task.created_at ? fromNow(task.created_at) : 'Unknown'}</span>
             </div>
             {(task.deadline || task.due_date) && <div className="flex items-center gap-2">
                 <Clock size={16} />
-                <span>Due {moment(task.deadline || task.due_date).fromNow()}</span>
+                <span>Due {fromNow(task.deadline || task.due_date)}</span>
               </div>}
           </div>
         </div>
@@ -296,7 +297,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
                 Completed
               </h3>
               <p className="text-[var(--text-secondary)] text-sm">
-                Completed on {moment(task.completed_at).format('MMMM D, YYYY [at] h:mm A')}
+                Completed on {formatLongDateTime(task.completed_at)}
               </p>
             </div>}
         </div>

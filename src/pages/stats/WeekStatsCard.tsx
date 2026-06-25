@@ -32,13 +32,13 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
     <div className="h-full flex flex-col">
       <ChartCard
         paddingClass="p-2"
-        className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-4 z-50 backdrop-blur-sm"
+className=""
         isDemo={isDemo}
         header={
           <>
             <button
               onClick={handleWeekPrevious || (() => setWeekOffset((prev) => prev + 1))}
-              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
               aria-label="Previous week"
             >
               <ChevronLeft size={20} />
@@ -48,7 +48,7 @@ const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeek
             </span>
             <button
               onClick={handleWeekNext || (() => setWeekOffset((prev) => prev - 1))}
-              className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
               aria-label="Next week"
               disabled={weekOffset === 0}
             >

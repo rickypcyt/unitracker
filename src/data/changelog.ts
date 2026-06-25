@@ -18,6 +18,31 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.3.5",
+    date: "June 26, 2026",
+    time: "12:15 AM",
+    type: "patch",
+    changes: {
+      added: [
+        "Noise Generator header now shows the number of active sounds"
+      ],
+      improved: [
+        "Start Session modal redesigned with chip-style timer options and cleaner action buttons",
+        "Timer play/pause buttons now use a subtle gray border instead of themed colors",
+        "Reset icons in Pomodoro, Study Timer, and Countdown are now gray for a cleaner look",
+        "Assignment cards simplified to use a single accent color and a clearer progress label",
+        "Noise Generator header layout improved with the title on the left and grouped controls on the right"
+      ],
+      fixed: [
+        "Study Time Today card now correctly sums completed sessions from the database instead of only reading the active timer",
+        "Completed Tasks section TypeScript errors resolved"
+      ],
+      removed: [
+        "Task selection section removed from the Start Session modal"
+      ]
+    }
+  },
+  {
     version: "1.3.4",
     date: "March 17, 2026",
     time: "9:03 PM",

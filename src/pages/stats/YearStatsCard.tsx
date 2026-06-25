@@ -28,12 +28,12 @@ const YearStatsCard = ({
 }: YearStatsCardProps): ReactElement => (
   <ChartCard
     paddingClass="p-2"
-    className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-4 z-50 backdrop-blur-sm"
+className=""
     header={
       <>
         <button
           onClick={handleYearPrevious || (() => setYearOffset((prev) => prev + 1))}
-          className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
           aria-label="Año anterior"
         >
           <ChevronLeft size={20} />
@@ -45,7 +45,7 @@ const YearStatsCard = ({
         </span>
         <button
           onClick={handleYearNext || (() => setYearOffset((prev) => prev - 1))}
-          className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
           aria-label="Año siguiente"
         >
           <ChevronRight size={20} />

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Pin, PinOff, Plus, Save, X } from 'lucide-react';
+import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
@@ -24,6 +24,7 @@ interface AssignmentCardProps {
   onMoveToWorkspace: (assignment: string) => void;
   onDeleteAssignment: () => void;
   onUpdateAssignment: (oldName: string, newName: string) => void;
+  completedCount?: number;
 }
 
 export const AssignmentCard = ({
@@ -43,6 +44,7 @@ export const AssignmentCard = ({
   onMoveToWorkspace,
   onDeleteAssignment,
   onUpdateAssignment,
+  completedCount = 0,
 }: AssignmentCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
@@ -102,6 +104,9 @@ export const AssignmentCard = ({
     onAddTask();
   };
 
+  const totalTasks = tasks.length + completedCount;
+  const progressPct = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+
   return (
     <div
       onDoubleClick={handleColumnDoubleClick}
@@ -114,7 +119,7 @@ export const AssignmentCard = ({
       data-column-id={assignment}
       data-testid={`column-${assignment}`}
     >
-      <div className="flex items-center justify-between w-full mt-1 mb-2 sm:mt-3 sm:mb-3">
+      <div className="flex items-center justify-between w-full mt-1 mb-1 sm:mt-2 sm:mb-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onTogglePin}
@@ -122,9 +127,9 @@ export const AssignmentCard = ({
               title={pinned ? "Unpin column" : "Pin column"}
             >
               {pinned ? (
-                <Pin size={20} className="text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-all duration-200 fill-[var(--accent-primary)]" />
+                <Pin size={18} className="text-[var(--accent-primary)] transition-all duration-200 fill-[var(--accent-primary)]" />
               ) : (
-                <PinOff size={20} className="text-neutral-400 hover:text-neutral-200 transition-all duration-200" />
+                <PinOff size={18} className="text-neutral-400 hover:text-neutral-200 transition-all duration-200" />
               )}
             </button>
             {isEditing ? (
@@ -156,24 +161,23 @@ export const AssignmentCard = ({
                 </button>
               </div>
             ) : (
-              <h3 className="font-medium text-lg text-[var(--text-primary)] group-hover:text-[var(--text-primary)] truncate">
+              <h3 className="font-semibold text-lg text-[var(--text-primary)] truncate">
                 {assignment}
               </h3>
             )}
-            <span className="text-base text-[var(--text-secondary)] flex-shrink-0">
-              ({tasks.length})
+            <span className="text-sm text-[var(--text-secondary)] flex-shrink-0">
+              {tasks.length} active{completedCount > 0 && ` · ${completedCount} done`}
             </span>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <button
               data-tour="add-task"
               onClick={onAddTask}
-              className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
+              className="p-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
               title="Add task"
             >
-              <Plus size={22} />
+              <Plus size={18} />
             </button>
-            {/* Radix UI Dropdown Menu */}
             <ColumnDropdownMenu
               assignment={assignment}
               tasks={tasks}
@@ -182,27 +186,33 @@ export const AssignmentCard = ({
               onDeleteAssignment={onDeleteAssignment}
               onEditAssignment={() => setIsEditing(true)}
               onSortClick={onSortClick}
+              isMinimized={isMinimized}
+              onToggleMinimize={handleToggleMinimize}
+              isPinned={pinned}
+              onTogglePin={onTogglePin}
             />
-            {/* Chevron button */}
-            <button
-              onClick={handleToggleMinimize}
-              className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              title={isMinimized ? "Expand tasks" : "Collapse tasks"}
-            >
-              {isMinimized ? (
-                <ChevronUp size={22} />
-              ) : (
-                <ChevronDown size={22} />
-              )}
-            </button>
           </div>
       </div>
 
-      
+      {/* Progress bar */}
+      {totalTasks > 0 && (
+        <div className="flex items-center gap-2 mb-2 px-1">
+          <div className="h-1.5 flex-1 rounded-full bg-[var(--bg-primary)] overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300 bg-[var(--accent-primary)]"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+          <span className="text-xs text-[var(--text-secondary)] flex-shrink-0">
+            {progressPct}% completed
+          </span>
+        </div>
+      )}
+
       <div
         className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar pb-2`}
         style={{
-          minHeight: '100px',
+          minHeight: '60px',
           maxHeight: 'none',
           overflowY: 'visible',
           padding: '0 0 0.5rem 0',
@@ -212,18 +222,30 @@ export const AssignmentCard = ({
         }}
       >
         <div className="flex-1 min-h-0">
-          {sortedTasks.map((task) => (
-            <AssignmentTask
-              key={task.id}
-              task={task}
-              assignment={assignment}
-              onToggleCompletion={onTaskToggle}
-              onTaskDelete={onTaskDelete}
-              onEditTask={onEditTask}
-              onViewTask={onViewTask || (() => {})}
-              onTaskContextMenu={onTaskContextMenu}
-            />
-          ))}
+          {sortedTasks.length === 0 ? (
+            <div
+              onClick={onAddTask}
+              className="flex flex-col items-center justify-center py-6 rounded-lg border border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
+            >
+              <Plus size={20} className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] mb-1 transition-colors" />
+              <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                No tasks yet — click to add
+              </span>
+            </div>
+          ) : (
+            sortedTasks.map((task) => (
+              <AssignmentTask
+                key={task.id}
+                task={task}
+                assignment={assignment}
+                onToggleCompletion={onTaskToggle}
+                onTaskDelete={onTaskDelete}
+                onEditTask={onEditTask}
+                onViewTask={onViewTask || (() => {})}
+                onTaskContextMenu={onTaskContextMenu}
+              />
+            ))
+          )}
         </div>
       </div>
 

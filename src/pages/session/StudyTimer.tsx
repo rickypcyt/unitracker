@@ -1,6 +1,7 @@
 import { Check, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
-import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
+import { useStudyTimer } from "@/hooks/useTimers";
+import TimeSegmentDisplay from "./TimeSegmentDisplay";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
@@ -128,11 +129,13 @@ const useModalStates = () => {
 
 interface StudyTimerProps {
   onSyncChange?: (isSynced: boolean) => void;
-  isSynced?: boolean;
+  isSynced?: boolean | undefined;
+  hideHeader?: boolean;
 }
 const StudyTimer = ({
   onSyncChange,
-  isSynced
+  isSynced,
+  hideHeader = false
 }: StudyTimerProps) => {
   const {
     isLoggedIn
@@ -154,6 +157,15 @@ const StudyTimer = ({
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
   const [localResetKey, setLocalResetKey] = useState(0);
+
+  // Listen for settings open from UnifiedTimer
+  useEffect(() => {
+    const handler = () => {
+      if (currentSessionId) updateModal("isEditModalOpen", true);
+    };
+    window.addEventListener("study-open-settings", handler);
+    return () => window.removeEventListener("study-open-settings", handler);
+  }, [currentSessionId, updateModal]);
   const [, setSessionsTodayCount] = useState(0);
   // Tracks "N minutes ago" re-renders when paused
   const [, tickPausedDisplay] = useState(0);
@@ -998,18 +1010,43 @@ const StudyTimer = ({
   }];
   return <div className="flex flex-col items-center h-min">
       {/* Header */}
-      <div className="section-title justify-center relative w-full px-4 py-3">
+      {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <SectionTitle title="Timer" tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management." size="md" />
         {currentSessionId ? <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Configure session">
             <MoreVertical size={20} />
           </button> : <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[28px]" />}
-      </div>
+      </div>}
 
-      {/* Timer display */}
-      <div className="relative group text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl font-mono mb-2 sm:mb-3 text-center text-[var(--text-primary)]" role="timer" aria-label="Current session time">
-        <span>{formatStudyTime(safeNumber(studyState.time), false)}</span>
+      {/* Timer display - Large modern display */}
+      <div className="relative group w-full flex flex-col items-center py-3" role="timer" aria-label="Current session time">
+        <div className="flex items-start justify-center gap-1.5">
+          {(() => {
+            const totalSec = safeNumber(studyState.time);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = Math.floor(totalSec % 60);
+            const parts = [
+              { val: h.toString().padStart(2, '0'), label: 'hrs' },
+              { val: m.toString().padStart(2, '0'), label: 'min' },
+              { val: s.toString().padStart(2, '0'), label: 'sec' },
+            ];
+            return parts.map((p, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <span className={`text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-mono font-bold tabular-nums tracking-tight leading-none ${
+                  isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                }`}>{p.val}</span>
+                <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">{p.label}</span>
+              </div>
+            )).flatMap((el, i) => i < 2 ? [
+              el,
+              <span key={`sep-${i}`} className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none mt-2 ${
+                isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+              }`}>:</span>
+            ] : [el]);
+          })()}
+        </div>
 
-        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>
             <div>{studyState.sessionTitle || summaryData.title || "No Session"}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -1019,48 +1056,38 @@ const StudyTimer = ({
       </div>
 
       {/* Time adjustment buttons */}
-      <div className="flex gap-1 mb-2 sm:mb-3">
+      <div className="flex gap-1 mb-2">
         {timeAdjustmentButtons.map(({
         adjustment,
         label
-      }) => <button key={label} onClick={() => adjustTime(adjustment)} className="px-3 py-1 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={`${label.startsWith("-") ? "Subtract" : "Add"} ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
+      }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`${label.startsWith("-") ? "Subtract" : "Add"} ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
             {label}
           </button>)}
       </div>
 
       {/* Controls */}
-      <div className="timer-controls flex justify-center items-center gap-1 sm:gap-2">
+      <div className="flex justify-center items-center gap-2">
         {!isSynced && <>
-            <button onClick={() => reset()} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Reset timer" title="Reset timer">
-              <RotateCcw size={20} style={{
-            color: "var(--accent-primary)"
-          }} />
+            <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
+              <RotateCcw size={18} className="text-[var(--text-secondary)]" />
             </button>
 
-            {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
-                <Play size={20} style={{
-            color: "var(--accent-primary)"
-          }} />
-              </button> : <button onClick={() => pause()} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Pause timer" title="Pause timer">
-                <Pause size={20} style={{
-            color: "var(--accent-primary)"
-          }} />
+            {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
+                <Play size={18} />
+              </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label="Pause timer" title="Pause timer">
+                <Pause size={18} />
               </button>}
           </>}
 
         {currentSessionId && <>
-            <button onClick={handleExitSession} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] transition-colors" aria-label="Exit session" title="Exit session">
-              <X size={20} style={{
-            color: "var(--accent-primary)"
-          }} />
+            <button onClick={handleExitSession} className="timer-ctrl-btn" aria-label="Exit session" title="Exit session">
+              <X size={18} />
             </button>
             <button onClick={() => {
           if (isStudyRunningRedux) pause();
           updateModal("isFinishModalOpen", true);
-        }} className="control-button flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Finish session" title="Finish session">
-              <Check size={20} style={{
-            color: "var(--accent-primary)"
-          }} />
+        }} className="timer-ctrl-btn" aria-label="Finish session" title="Finish session">
+              <Check size={18} />
             </button>
           </>}
       </div>

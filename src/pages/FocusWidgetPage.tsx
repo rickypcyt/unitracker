@@ -1,10 +1,11 @@
-import { Plus, X } from "lucide-react";
+import { Coffee, Plus, X } from "lucide-react";
 import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
 import { useEffect, useState } from "react";
 
 import SessionsModal from "@/modals/TodaysSessionsModal";
 import StartSessionModal from "@/modals/StartSessionModal";
 import { formatDateShort } from "@/utils/dateUtils";
+import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { useAppStore } from "@/store/appStore";
 import { useNavigation } from "@/navbar/NavigationContext";
@@ -120,11 +121,11 @@ const FocusWidgetPage = () => {
               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
               : studyState.sessionStatus === 'paused'
               ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+              : 'bg-purple-500/15 text-purple-300 border border-purple-500/30'
           }`}>
             {studyState.sessionStatus === 'active' ? 'In Session' :
              studyState.sessionStatus === 'paused' ? 'Session Paused' :
-             'No Active Session'}
+             'Idle Mode'}
           </span>
         </div>
         {/* Session title */}
@@ -154,38 +155,48 @@ const FocusWidgetPage = () => {
         </div>
       )}
 
-      {/* Plus button to open Today's Sessions modal - only show when not in active or paused session */}
+      {/* Fun idle state shown when no session is running */}
       {studyState.sessionStatus !== 'active' && studyState.sessionStatus !== 'paused' && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <button
-          onClick={() => setIsSessionsModalOpen(true)}
-          className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
-          style={{
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-          aria-label="Open Today's Sessions"
-        >
-          {/* Accent primary ring */}
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'transparent',
-              border: '2px solid var(--accent-primary)',
-              opacity: '0.3'
-            }}
-          ></div>
-          <div className="relative z-10">
-            <Plus size={20} style={{ color: 'var(--accent-primary)' }} />
-          </div>
-        </button>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center max-w-md px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+          >
+            <div className="relative flex justify-center h-32">
+              <motion.div
+                animate={{ y: [0, -12, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+              >
+                <Coffee size={48} className="text-[var(--accent-primary)]" />
+              </motion.div>
+              <motion.div
+                animate={{ opacity: [0.2, 0.5, 0.2], scale: [0.9, 1.1, 0.9] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-white/10 blur-md"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-white text-2xl sm:text-3xl font-bold">
+                Your session is on a coffee break
+              </h2>
+              <p className="text-white/60 text-base sm:text-lg leading-relaxed">
+                It refuses to start until you bribe it with focus, caffeine, or a really interesting to-do list.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsSessionsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-primary)] text-white text-sm font-medium hover:bg-[var(--accent-deep)] transition-colors shadow-lg hover:shadow-xl"
+              aria-label="Open Today's Sessions"
+            >
+              <Plus size={18} />
+              Start a session
+            </button>
+          </motion.div>
         </div>
       )}
 

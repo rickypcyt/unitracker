@@ -6,7 +6,7 @@ import { useDeleteTaskSuccess, useUpdateTaskSuccess } from '@/store/appStore';
 import BaseModal from "@/modals/BaseModal";
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { Task } from '@/pages/tasks/task';
-import moment from "moment";
+import { fromNow } from "@/utils/dateUtils";
 import toast from "react-hot-toast";
 import { useFormState } from "@/hooks/useFormState";
 
@@ -194,12 +194,12 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
             <div className="flex items-center gap-2">
               <Calendar size={16} />
-              <span>Created {moment(task.created_at).fromNow()}</span>
+              <span>Created {fromNow(task.created_at)}</span>
             </div>
             {task.due_date && (
               <div className="flex items-center gap-2">
                 <Clock size={16} />
-                <span>Due {moment(task.due_date).fromNow()}</span>
+                <span>Due {fromNow(task.due_date)}</span>
               </div>
             )}
           </div>

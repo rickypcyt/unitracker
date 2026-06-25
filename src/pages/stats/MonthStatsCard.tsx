@@ -19,13 +19,13 @@ interface MonthStatsCardProps {
 const MonthStatsCard = ({ data, accentColor, shownMonthDate, setMonthOffset, monthOffset, handleMonthPrevious, handleMonthNext, isDemo = false }: MonthStatsCardProps): ReactElement => (
   <ChartCard
     paddingClass="p-2"
-    className="bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky top-4 z-50 backdrop-blur-sm"
+className=""
     isDemo={isDemo}
     header={
       <>
         <button
           onClick={handleMonthPrevious || (() => setMonthOffset((prev) => prev - 1))}
-          className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
           aria-label="Mes anterior"
         >
           <ChevronLeft size={20} />
@@ -37,7 +37,7 @@ const MonthStatsCard = ({ data, accentColor, shownMonthDate, setMonthOffset, mon
         </span>
         <button
           onClick={handleMonthNext || (() => setMonthOffset((prev) => prev + 1))}
-          className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
           aria-label="Mes siguiente"
           disabled={monthOffset >= 0}
         >
