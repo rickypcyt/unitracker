@@ -12,7 +12,7 @@ import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import { updateLap } from '@/store/LapActions';
 // import { useAuth } from '@/hooks/useAuth'; // Not used
 import useEventListener from '@/hooks/useEventListener';
