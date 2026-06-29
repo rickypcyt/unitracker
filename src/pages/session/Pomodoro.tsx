@@ -9,7 +9,6 @@ import type { PomodoroModeType } from '../../types/pomodoro';
 import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
 // import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
 import SectionTitle from '@/components/SectionTitle';
-import TimeSegmentDisplay from './TimeSegmentDisplay';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used

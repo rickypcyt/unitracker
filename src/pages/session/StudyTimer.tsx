@@ -1,7 +1,6 @@
 import { Check, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
-import TimeSegmentDisplay from "./TimeSegmentDisplay";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DeleteSessionModal from "@/modals/DeleteSessionModal";
@@ -259,6 +258,22 @@ const StudyTimer = ({
           timeAtStart,
           activeSessionId
         });
+      } else if (parsed.sessionStatus === "paused") {
+        // Restore paused state so "Last paused N ago" survives refresh
+        setStudyTimerState("paused");
+        updateStudyState({
+          isRunning: false,
+          sessionStatus: "paused",
+          lastPausedAt: parsed.lastPausedAt ? safeNumber(Number(parsed.lastPausedAt)) : Date.now(),
+          time: safeNumber(Number(parsed.time)),
+          timeAtStart: safeNumber(Number(parsed.timeAtStart)),
+          lastStart: null
+        });
+        devLog("[StudyTimer] Restored paused state after refresh:", {
+          lastPausedAt: parsed.lastPausedAt,
+          time: parsed.time,
+          activeSessionId
+        });
       }
     } catch (error) {
       console.error("[StudyTimer] Error restoring running state:", error);
@@ -411,7 +426,8 @@ const StudyTimer = ({
       timeAtStart: studyState.timeAtStart,
       sessionStatus: studyState.sessionStatus,
       sessionTitle: studyState.sessionTitle ?? "",
-      sessionDescription: studyState.sessionDescription ?? ""
+      sessionDescription: studyState.sessionDescription ?? "",
+      lastPausedAt: studyState.lastPausedAt
     });
     onSyncChange?.(isPomodoroSync);
   }, [studyState, onSyncChange, isPomodoroSync]);
@@ -987,11 +1003,14 @@ const StudyTimer = ({
   // ── Helpers ───────────────────────────────────────────────────────────────
   const getTimeSinceLastPause = useCallback((): string => {
     if (studyState.sessionStatus !== "paused" || !studyState.lastPausedAt) return "";
-    const diffMin = Math.floor((Date.now() - studyState.lastPausedAt) / 60_000);
+    const diffSec = Math.floor((Date.now() - studyState.lastPausedAt) / 1000);
+    const diffMin = Math.floor(diffSec / 60);
     const diffHr = Math.floor(diffMin / 60);
     const min = diffMin % 60;
-    if (diffHr > 0) return `${diffHr} hour${diffHr > 1 ? "s" : ""}${min > 0 ? ` and ${min} minute${min > 1 ? "s" : ""}` : ""} ago`;
-    return `${min} minute${min !== 1 ? "s" : ""} ago`;
+    const sec = diffSec % 60;
+    if (diffHr > 0) return `${diffHr} hour${diffHr > 1 ? "s" : ""}${min > 0 ? ` and ${min} minute${min > 1 ? "s" : ""} ago` : ""} ago`;
+    if (diffMin > 0) return `${diffMin} minute${diffMin !== 1 ? "s" : ""}${sec > 0 ? ` and ${sec} second${sec !== 1 ? "s" : ""} ago` : " ago"}`;
+    return `${sec} second${sec !== 1 ? "s" : ""} ago`;
   }, [studyState.sessionStatus, studyState.lastPausedAt]);
 
   // ── Render ────────────────────────────────────────────────────────────────
