@@ -18,6 +18,49 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "1.4.0",
+    date: "June 30, 2026",
+    time: "9:30 PM",
+    type: "major",
+    changes: {
+      added: [
+        "Major UI overhaul across nearly every page in the app for a more cohesive and modern look",
+        "Floating Island footer redesigned with workspace selector, task badge, active session timer, theme toggle, and quick add task button",
+        "Habits page completely redesigned with Today and History views, streak tracking (current and best), month completion rate, and heatmap/calendar/week sub-views",
+        "Notes welcome view redesigned with search functionality and notes grouped by assignment",
+        "Settings modal rebuilt with tabbed interface: Appearance, Account, Data, What's New, and About",
+        "Changelog viewer integrated directly into Settings under the What's New tab",
+        "Workspace modal now includes search filtering for workspaces",
+        "Calendar sidebar is now resizable with drag-to-resize and can be toggled between left and right positions",
+        "New useResizable hook for reusable drag-to-resize functionality",
+        "New TaskPageSettingsModal for task page configuration",
+        "Quick add task button in the floating footer that navigates to tasks and triggers the task form"
+      ],
+      improved: [
+        "App-wide UI refresh: Tasks, Calendar, Notes, Habits, Stats, Session, and modals all received visual updates",
+        "Pomodoro timer heavily refactored with stale closure prevention via refs and proper interval cleanup on midnight reset",
+        "Task item time display now uses compact format (e.g. 8–9 AM instead of 08:00 AM - 09:00 AM)",
+        "Task item date parsing no longer converts timezones, fixing incorrect Today/Tomorrow labels",
+        "On-hold task status now uses a slow pulse animation for better visual distinction",
+        "Calendar Day, Week, and Month views improved with better layout and time handling",
+        "Navbar simplified by removing redundant elements now in the floating footer",
+        "Notes side panel and mobile selector improved with better layout and navigation",
+        "Various modals updated for consistent styling (BaseModal, session modals, task modals)",
+        "Stats pages updated with cleaner chart panels and insights layout",
+        "Theme toggle is now instant with no transition delay"
+      ],
+      fixed: [
+        "Duplicate separator line removed from floating footer when session timer is active",
+        "Pomodoro midnight reset interval now properly cleaned up to prevent memory leaks",
+        "TaskItem date label bugs fixed with timezone-safe date extraction"
+      ],
+      removed: [
+        "Old editable title and date picker removed from Notes welcome view",
+        "Redundant navbar settings button content removed (now in Settings modal tabs)"
+      ]
+    }
+  },
+  {
     version: "1.3.5",
     date: "June 26, 2026",
     time: "12:15 AM",
