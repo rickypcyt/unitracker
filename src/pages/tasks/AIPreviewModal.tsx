@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/BaseModal';
 import DatePicker from 'react-datepicker';
+import { getLocalDateString } from '@/utils/dateUtils';
 
 type AITask = {
   task?: string;
@@ -73,7 +74,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
     if (editIdx === null) return;
     
     // Format date back to string
-    const dateString = editDate ? editDate.toISOString().split('T')[0] : null;
+    const dateString = editDate ? getLocalDateString(editDate) : null;
     
     setItems(prev => prev.map((it, i) => i === editIdx ? {
       ...it,
@@ -220,7 +221,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] active:scale-95 transition-transform">
                           Cancel
                         </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md bg-[var(--accent-primary)] text-white font-medium active:scale-95 transition-transform">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-medium active:scale-95 transition-transform">
                           Save
                         </button>
                       </div>

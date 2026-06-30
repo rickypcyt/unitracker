@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import useEventListener from "@/hooks/useEventListener";
 import { useSessionId } from "@/hooks/study-timer/useSessionId";
 import { useStudyTimerState, type StudyState } from "@/hooks/study-timer/useStudyTimerState";
+import { getLocalDateString } from "@/utils/dateUtils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -336,7 +337,7 @@ const StudyTimer = ({
   // ── Daily session counter reset ───────────────────────────────────────────
   useEffect(() => {
     const check = () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateString();
       const lastReset = getFromLocalStorage<string | null>(STORAGE_KEYS.LAST_SESSIONS_RESET, null, false);
       if (lastReset !== today) {
         setSessionsTodayCount(0);
@@ -353,7 +354,7 @@ const StudyTimer = ({
   useEffect(() => {
     const fetch = async () => {
       try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = getLocalDateString();
         const {
           data,
           error
@@ -706,7 +707,7 @@ const StudyTimer = ({
       }
       const formattedDuration = formatDuration(studyState.time);
       if (formattedDuration === "00:00:00") return;
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateString();
       const pomodorosToday = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) ?? "0", 10) || 0;
       const localStartedAt = getFromLocalStorage<string | null>(STORAGE_KEYS.STUDY_TIMER_STARTED_AT, null, false);
       const updateData: Record<string, unknown> = {

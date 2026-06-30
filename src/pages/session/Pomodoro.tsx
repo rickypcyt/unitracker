@@ -660,9 +660,29 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     // Notifications
     const notifTitle = isWork ? willTakeLongBreak ? 'Work Session Complete! Time for a Long Break! 🎉' : 'Work Session Complete! 🎉' : 'Break Complete! ⏰';
     const notifBody = isWork ? willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.' : 'Break is over! Time to get back to work.';
-    toast(isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break.' : 'Work session complete! Time for a break.' : "Break is over! Let's get back to work!", {
-      icon: isWork ? '🎉' : '💪'
-    });
+    const toastType = isWork ? willTakeLongBreak ? 'longBreak' : 'break' : 'work';
+    const toastMsg = isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break! 🎉' : 'Work session complete! Time for a break! ☕' : "Break is over! Let's get back to work! 💪";
+    toast(toastMsg, {
+      icon: isWork ? willTakeLongBreak ? '🎉' : '☕' : '💪',
+      duration: 4000,
+      style: {
+        borderRadius: '12px',
+        padding: '12px 16px',
+        fontSize: '14px',
+      },
+      ariaProps: {
+        role: 'status',
+        'aria-live': 'polite',
+      },
+    } as any);
+    // Tag the toast element with data-pomo-type for CSS styling
+    setTimeout(() => {
+      const toastEls = document.querySelectorAll('.react-hot-toast');
+      const lastToast = toastEls[toastEls.length - 1];
+      if (lastToast && !lastToast.getAttribute('data-pomo-type')) {
+        lastToast.setAttribute('data-pomo-type', toastType);
+      }
+    }, 0);
     showNotification(notifTitle, {
       body: notifBody,
       icon: isWork ? '🍅' : '💪',

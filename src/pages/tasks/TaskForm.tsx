@@ -1,8 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, CheckCircle2, ChevronDown } from 'lucide-react';
-import { FormActions, FormButton } from '@/modals/FormElements';
+import { Calendar, Check, ChevronDown, ChevronUp, Sparkles, Wand2 } from 'lucide-react';
 import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useEffect, useRef, useState } from 'react';
 
@@ -17,6 +16,7 @@ import { useFormState } from '@/hooks/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
+
 type TaskFormProps = {
   initialAssignment?: string | null;
   initialTask?: any | null;
@@ -136,7 +136,6 @@ const TaskForm = ({
     hasInteracted
   } = useFormState(initialFormState as any, validationRules as any) as any;
   const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
-  const [isDifficultyDropdownOpen, setIsDifficultyDropdownOpen] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const isEditingExistingTask = Boolean(initialTask);
   // Force hasSubmitted to be false initially (debug)
@@ -421,40 +420,32 @@ const TaskForm = ({
   }
 
   // Render Components
-  const renderTabSelector = () => <div className="w-full flex justify-center items-center select-none mb-4 sm:mb-4 px-4">
-      <div className="flex items-center gap-2 sm:gap-3">
-        <span className="cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base text-[var(--accent-primary)]">
+  const renderTabSelector = () => <div className="w-full flex justify-center mb-4">
+      <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-1">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm">
+          <Wand2 size={14} />
           Manual
         </span>
-        <span className="text-[var(--border-primary)] font-bold text-sm sm:text-base mx-1">|</span>
-        <span className="cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" onClick={() => {
-        onSwitchToAI?.();
-      }}>
+        <button type="button" className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" onClick={() => onSwitchToAI?.()}>
+          <Sparkles size={14} />
           Auto (AI)
-        </span>
+        </button>
       </div>
     </div>;
   const renderDifficultySelector = () => {
-    const selectedOption = DIFFICULTY_OPTIONS.find(option => option.value === formData.difficulty) || DIFFICULTY_OPTIONS[1];
-    return <div className="relative">
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Difficulty</label>
-        <div className="relative">
-          <button type="button" onClick={() => setIsDifficultyDropdownOpen(!isDifficultyDropdownOpen)} className="w-full px-4 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] flex items-center justify-between">
-            <span className={selectedOption.color}>{selectedOption.label}</span>
-            <ChevronDown size={20} className={`text-[var(--text-secondary)] transition-transform duration-200 ${isDifficultyDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {isDifficultyDropdownOpen && <div className="absolute z-10 w-full mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg">
-              {DIFFICULTY_OPTIONS.map(option => <button key={option.value} type="button" onClick={() => {
-            handleChange('difficulty', option.value);
-            setIsDifficultyDropdownOpen(false);
-          }} className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-[var(--bg-secondary)] transition-colors ${option.value === formData.difficulty ? 'bg-[var(--bg-secondary)]' : ''} first:rounded-t-lg last:rounded-b-lg`}>
-                  <span className={option.color}>{option.label}</span>
-                  {option.value === formData.difficulty && <CheckCircle2 size={16} className={option.color} />}
-                </button>)}
-            </div>}
+    return <div>
+        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Difficulty</label>
+        <div className="flex gap-2">
+          {DIFFICULTY_OPTIONS.map(option => {
+            const isSelected = option.value === formData.difficulty;
+            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? `ring-1 ring-current ${option.color} bg-[var(--bg-secondary)]` : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
+              <span className={`w-2 h-2 rounded-full ${option.value === 'easy' ? 'bg-[#00FF41]' : option.value === 'medium' ? 'bg-[#00BFFF]' : 'bg-[#FF003C]'}`} />
+              {option.label}
+              {isSelected && <Check size={14} className={option.color} />}
+            </button>;
+          })}
         </div>
-        {displayErrors.difficulty && <p className="mt-1 text-base text-red-500">{displayErrors.difficulty}</p>}
+        {displayErrors.difficulty && <p className="mt-1 text-sm text-red-500">{displayErrors.difficulty}</p>}
       </div>;
   };
   const renderDatePicker = () => <div className="w-full">
@@ -473,9 +464,9 @@ const TaskForm = ({
           setDisplayStartTime('');
           setDisplayEndTime('');
         }
-      }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`} style={{
+      }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />
+      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />
         <button type="button" onClick={() => {
         handleChange('deadline', '');
         handleChange('start_at', null);
@@ -527,7 +518,7 @@ const TaskForm = ({
       {formData.isRecurring && <div className="mt-3">
           <p className="text-sm text-[var(--text-secondary)] mb-2">Repeat on:</p>
           <div className="flex flex-wrap gap-1">
-            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${(formData.recurrence_weekdays || []).includes(d) ? 'border-2 border-[var(--accent-primary)] bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] font-medium' : 'border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}>
+            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-10 h-9 rounded-lg cursor-pointer transition-all text-sm font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'bg-[var(--accent-primary)] text-white' : 'border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
                 <input type="checkbox" className="sr-only" checked={(formData.recurrence_weekdays || []).includes(d)} onChange={e => {
             setRecurrenceError(null);
             const current = (formData.recurrence_weekdays || []) as number[];
@@ -665,13 +656,13 @@ const TaskForm = ({
               setDisplayStartTime(to12Hour(prev24));
             }
           }
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-8" placeholder="10:00 AM" />
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="10:00 AM" />
           <div className="absolute right-2 flex flex-col gap-0">
-            <button type="button" onClick={incrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs" title="Increase time">
-              ▲
+            <button type="button" onClick={incrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Increase time">
+              <ChevronUp size={14} />
             </button>
-            <button type="button" onClick={decrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs" title="Decrease time">
-              ▼
+            <button type="button" onClick={decrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Decrease time">
+              <ChevronDown size={14} />
             </button>
           </div>
         </div>
@@ -733,13 +724,13 @@ const TaskForm = ({
               setDisplayEndTime(to12Hour(prev24));
             }
           }
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] pr-8" placeholder="11:00 AM" />
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="11:00 AM" />
           <div className="absolute right-2 flex flex-col gap-0">
-            <button type="button" onClick={incrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs" title="Increase time">
-              ▲
+            <button type="button" onClick={incrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Increase time">
+              <ChevronUp size={14} />
             </button>
-            <button type="button" onClick={decrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-0.5 leading-none text-xs" title="Decrease time">
-              ▼
+            <button type="button" onClick={decrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Decrease time">
+              <ChevronDown size={14} />
             </button>
           </div>
         </div>
@@ -768,7 +759,7 @@ const TaskForm = ({
       }
     }}>
         {/* Workspace and Status Selectors */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <LocalWorkspaceSelector selectedWorkspace={selectedWorkspace} onWorkspaceChange={setSelectedWorkspace} />
           </div>
@@ -778,14 +769,14 @@ const TaskForm = ({
         </div>
 
         {/* Main Content - Single Column */}
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-4">
           {/* Title and Subject */}
           <div className={`${initialAssignment ? '' : 'grid grid-cols-1 lg:grid-cols-2 gap-4'}`}>
             <div className={initialAssignment ? '' : ''}>
               <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Title
               </label>
-              <input id="title" type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`} required placeholder="Enter task title" />
+              <input id="title" type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} required placeholder="Enter task title" />
               {displayErrors.title && <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>}
             </div>
 
@@ -845,14 +836,14 @@ const TaskForm = ({
           </div>
         </div>
 
-        <FormActions className="mt-6">
-          <FormButton type="button" variant="secondary" onClick={handleCancel}>
+        <div className="flex justify-end gap-2 mt-6 mb-4">
+          <button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-sm font-medium">
             Cancel
-          </FormButton>
-          <FormButton type="submit" variant="custom" className="border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]">
+          </button>
+          <button type="submit" className="px-5 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium flex items-center gap-2">
             {initialTask ? 'Save Changes' : 'Add Task'}
-          </FormButton>
-        </FormActions>
+          </button>
+        </div>
       </form>
     </BaseModal>;
 };

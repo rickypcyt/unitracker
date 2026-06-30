@@ -44,9 +44,9 @@ export const SortMenu = ({
   const getOptionClassName = (optionType: string, optionValue: string) => {
     let className = "hover:bg-[var(--bg-primary)] transition-colors duration-75";
     if (optionType === 'type' && currentSortType === optionValue) {
-      className += ' font-semibold text-white bg-[var(--accent-primary)]';
+      className += ' font-semibold text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent';
     } else if (optionType === 'direction' && currentSortDirection === optionValue) {
-      className += ' font-semibold text-white bg-[var(--accent-primary)]';
+      className += ' font-semibold text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent';
     }
     return className;
   };

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import AutocompleteInput from "@/modals/AutocompleteInput";
 import BaseModal from "@/modals/BaseModal";
+import { getLocalDateString } from "@/utils/dateUtils";
 import { supabase } from "@/utils/supabaseClient";
 import { useAppStore } from "@/store/appStore";
 
@@ -61,7 +62,7 @@ const StartSessionModal = ({
         error: userError
       } = await supabase.auth.getUser();
       if (userError || !data?.user) throw userError || new Error("User not authenticated");
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateString();
       const {
         data: latestSession,
         error: latestSessionError
@@ -229,12 +230,12 @@ const StartSessionModal = ({
             className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
               isSubmitting || !sessionTitle.trim()
                 ? "bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] cursor-not-allowed"
-                : "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-deep)] shadow-md"
+                : "border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
             }`}
             aria-label={isSubmitting ? "Starting session" : "Start session"}
           >
             {isSubmitting ? <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" aria-hidden="true"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-primary)] border-t-transparent" aria-hidden="true"></div>
                 <span>Starting...</span>
               </> : <>
                 <Play size={18} />

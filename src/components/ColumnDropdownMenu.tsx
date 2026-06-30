@@ -56,8 +56,8 @@ const ColumnDropdownMenu = ({
           onMouseLeave={() => setIsMenuButtonHovered(false)}
           className={`p-2 rounded-lg transition-all duration-200 relative group hover:scale-105 active:scale-95 ${
             columnMenu 
-              ? 'bg-[var(--accent-primary)] text-white shadow-lg scale-105' 
-              : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg scale-105' 
+              : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
           }`}
           title="More options"
         >

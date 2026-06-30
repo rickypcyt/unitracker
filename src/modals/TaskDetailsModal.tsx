@@ -167,7 +167,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       title=""
       hasUnsavedChanges={false}
       maxWidth="max-w-3xl"
-      className="!p-0"
+      padding="none"
       showHeader={false}
     >
       <div className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)]">

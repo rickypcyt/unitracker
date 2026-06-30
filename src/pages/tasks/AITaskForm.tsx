@@ -1,6 +1,7 @@
 import AIPreviewModal from './AIPreviewModal';
 import BaseModal from '@/modals/BaseModal';
 import { addTask } from '@/store/TaskActions';
+import { getLocalDateString } from '@/utils/dateUtils';
 import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
 import { useRef } from 'react';
 import { useTaskAI } from '@/hooks/tasks/useTaskAI';
@@ -109,8 +110,7 @@ const AITaskForm = ({
     data?: any;
     error?: string;
   }> {
-    const now = new Date();
-    const currentDate = now.toISOString().slice(0, 10);
+    const currentDate = getLocalDateString();
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // Check cache first
@@ -249,7 +249,7 @@ const AITaskForm = ({
 
 STRICT_RULES:
 - INPUT_LANGUAGE → OUTPUT_LANGUAGE
-- TODAY=${currentDate}, TOMORROW=${new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+- TODAY=${currentDate}, TOMORROW=${getLocalDateString(new Date(Date.now() + 86400000))}
 - MAX_50_CHARS_PER_DESCRIPTION
 - RESPONSE_MUST_START_WITH_[ AND_END_WITH_]
 - ABSOLUTELY_NO_MARKDOWN_FENCES

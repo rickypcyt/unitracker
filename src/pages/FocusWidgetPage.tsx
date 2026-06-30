@@ -190,7 +190,7 @@ const FocusWidgetPage = () => {
 
             <button
               onClick={() => setIsSessionsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-primary)] text-white text-sm font-medium hover:bg-[var(--accent-deep)] transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 transition-colors shadow-lg hover:shadow-xl"
               aria-label="Open Today's Sessions"
             >
               <Plus size={18} />

@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import TimerSettings from "@/components/TimerSettings";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
+import { getLocalDateString } from "@/utils/dateUtils";
 import { useNavigation } from "@/navbar/NavigationContext";
 
 const durationToSeconds = (duration?: string | number | null): number => {
@@ -39,7 +40,7 @@ const SessionPage = memo(() => {
   useEffect(() => {
     const loadStats = () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateString();
         const pomos = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
         const sessions = parseInt(localStorage.getItem('sessionsTodayCount') || '0', 10);
 

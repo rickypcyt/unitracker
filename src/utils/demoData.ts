@@ -1,8 +1,10 @@
 // Demo data for unauthenticated users
 
+import { getLocalDateString } from '@/utils/dateUtils';
+
 // Utilidades para fechas relativas
 const today = new Date();
-const format = (d: Date) => d.toISOString().split('T')[0];
+const format = (d: Date) => getLocalDateString(d);
 const addDays = (date: Date, days: number) => {
   const d = new Date(date);
   d.setDate(d.getDate() + days);

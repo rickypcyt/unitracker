@@ -271,7 +271,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
                 disabled={usernameLoading}
               />
               <button
-                className="mt-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90 w-full disabled:opacity-60"
+                className="mt-2 px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60"
                 onClick={async () => {
                   await handleSaveUsername();
                   if (usernameValid && username) setEditingUsername(false);

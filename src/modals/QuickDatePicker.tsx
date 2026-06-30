@@ -242,7 +242,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 px-3 py-2 text-sm text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 rounded-md transition-colors"
+          className="flex-1 px-3 py-2 text-sm text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 rounded-md transition-colors"
         >
           Save
         </button>

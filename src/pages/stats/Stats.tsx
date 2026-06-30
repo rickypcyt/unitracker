@@ -2,6 +2,7 @@ import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
 import { useLaps, useTasks } from '@/store/appStore';
 
+import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -179,7 +180,7 @@ function getLongestStreak(tasks: Task[]): number {
 
 function getAveragePerDay(laps: Lap[]): number {
   if (!laps.length) return 0;
-  const days = new Set(laps.map(lap => new Date(lap.created_at).toISOString().split('T')[0]));
+  const days = new Set(laps.map(lap => getLocalDateString(new Date(lap.created_at))));
   const totalMinutes = laps.reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
   return days.size ? totalMinutes / days.size : 0;
 }

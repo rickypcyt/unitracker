@@ -1,9 +1,12 @@
 import { AlertCircle, CheckCircle, Clock, Loader2, Target, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
+import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-hot-toast';
+
 interface FinishSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -67,7 +70,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
         // Use the same authoritative daily count as Pomodoro hover
         let pomodorosToday = 0;
         try {
-          const today = new Date().toISOString().split('T')[0];
+          const today = getLocalDateString();
           pomodorosToday = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10) || 0;
         } catch {}
         setSessionStats({
@@ -410,7 +413,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
                   </div> : <div className="space-y-2">
                     {availableTasks.map(task => <div key={task.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors">
                         <span className="flex-1 text-[var(--text-primary)]">{task.title}</span>
-                        <button onClick={() => handleAddTaskToFinished(task)} className="px-3 py-1 text-sm bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors">
+                        <button onClick={() => handleAddTaskToFinished(task)} className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
                           Add to Finished
                         </button>
                       </div>)}

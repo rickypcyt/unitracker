@@ -10,6 +10,7 @@ type BaseModalProps = {
   children: ReactNode;
   className?: string;
   overlayClassName?: string;
+  contentClassName?: string;
   hasUnsavedChanges?: boolean;
   showCloseButton?: boolean;
   maxWidth?: string;
@@ -17,7 +18,10 @@ type BaseModalProps = {
   closeOnEsc?: boolean;
   closeOnOverlayClick?: boolean;
   showHeader?: boolean;
-  fullWidthOnMd?: boolean; // New prop to control width on medium screens
+  fullWidthOnMd?: boolean;
+  padding?: 'none' | 'sm' | 'md' | 'lg' | string;
+  maxHeight?: string;
+  backdropBlur?: boolean;
 };
 
 // Constants
@@ -42,6 +46,7 @@ const BaseModal = ({
   children,
   className = "",
   overlayClassName,
+  contentClassName = "",
   hasUnsavedChanges = false,
   showCloseButton = true,
   maxWidth = "max-w-md",
@@ -50,6 +55,9 @@ const BaseModal = ({
   closeOnOverlayClick = true,
   showHeader = true,
   fullWidthOnMd = false,
+  padding = "md",
+  maxHeight = "max-h-[90vh]",
+  backdropBlur = true,
 }: BaseModalProps) => {
   const lastActiveElement = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -147,18 +155,25 @@ const BaseModal = ({
   // Don't render if modal is closed
   if (!isOpen) return null;
 
+  const paddingClass = {
+    none: '',
+    sm: 'p-3 sm:p-4',
+    md: 'p-4 sm:p-5',
+    lg: 'p-5 sm:p-6',
+  }[padding as string] ?? padding;
+
   const overlayClasses = `
     BaseModal fixed inset-0 w-screen h-screen 
     ${overlayClassName ?? DEFAULT_OVERLAY_CLASS} 
     flex items-center justify-center ${zIndex} 
-    backdrop-blur-md w-full px-3 sm:px-4 overflow-hidden
+    ${backdropBlur ? 'backdrop-blur-md' : ''} w-full px-3 sm:px-4 overflow-hidden
   `.trim();
 
   const modalClasses = `
     bg-[var(--bg-primary)] border border-[var(--border-primary)] 
-    sm:border-2 rounded-lg sm:rounded-xl p-4 sm:p-5 
-    w-full ${maxWidth} mx-auto ${className} 
-    shadow-xl max-h-[90vh] h-auto overflow-y-auto 
+    sm:border-2 rounded-lg sm:rounded-xl 
+    ${paddingClass} w-full ${maxWidth} mx-auto ${className} 
+    shadow-xl ${maxHeight} h-auto
     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] 
     flex flex-col
     ${fullWidthOnMd ? 'md:max-w-[85%]' : ''}
@@ -216,7 +231,7 @@ const BaseModal = ({
           </header>
         )}
 
-        <main className="flex-1">
+        <main className={`flex-1 overflow-y-auto ${contentClassName}`.trim()}>
           {children}
         </main>
       </div>

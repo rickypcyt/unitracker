@@ -1,4 +1,5 @@
 import { AssignmentCard } from './AssignmentCard';
+import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
 import React from 'react';
 
 interface AssignmentColumnsProps {
@@ -19,9 +20,10 @@ interface AssignmentColumnsProps {
   onUpdateAssignment: (oldName: string, newName: string) => void;
   onAssignmentDoubleClick?: (assignment: string) => void;
   completedByAssignment?: Record<string, number>;
+  columnCount?: ColumnCount;
 }
 
-export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
+export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: React.ReactNode }> = ({
   incompletedByAssignment,
   currentWorkspacePins,
   onTogglePin,
@@ -39,6 +41,8 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
   onUpdateAssignment,
   onAssignmentDoubleClick,
   completedByAssignment = {},
+  columnCount = 1,
+  children,
 }) => {
   // Create a column for each assignment (show all assignments)
   const assignmentList = Object.keys(incompletedByAssignment);
@@ -80,9 +84,16 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
     assignmentName: assignment // Keep the original assignment name for pin functionality
   }));
 
+  const gridColsClass = {
+    1: 'lg:grid-cols-1 max-w-2xl',
+    2: 'lg:grid-cols-2 max-w-4xl',
+    3: 'lg:grid-cols-3 max-w-6xl',
+    4: 'lg:grid-cols-4 max-w-7xl',
+  }[columnCount];
+
   return (
-    <div className="flex justify-center w-full mb-4">
-      <div className="flex flex-col items-center w-full max-w-2xl mx-auto gap-4">
+    <div className="flex justify-center w-full">
+      <div className={`grid ${gridColsClass} mx-auto gap-4 w-full`}>
         {fixedColumns.map((column) => (
           <div
             key={column.id}
@@ -111,6 +122,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps> = ({
             />
           </div>
         ))}
+        {children}
       </div>
     </div>
   );

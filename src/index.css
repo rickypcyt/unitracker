@@ -14,6 +14,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Slow pulse for on_hold status */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
 /* FAB shine effect */
 @keyframes fab-shine {
   0% { transform: translateX(-150%) rotate(25deg); }
@@ -379,7 +388,6 @@
   html, body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 0.1s ease;
     min-height: 100vh;
     height: 100%;
   }
@@ -1240,6 +1248,35 @@ h1 {
 }
 .react-hot-toast {
   pointer-events: auto;
+}
+
+/* Pomodoro toast variants */
+.react-hot-toast[data-pomo-type='work'] {
+  background: var(--accent-primary) !important;
+  color: #fff !important;
+  border: 1px solid var(--accent-primary) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18) !important;
+  font-weight: 600 !important;
+}
+.react-hot-toast[data-pomo-type='work'] .react-hot-toast-dismiss,
+.react-hot-toast[data-pomo-type='work'] > div {
+  color: #fff !important;
+}
+
+.react-hot-toast[data-pomo-type='break'] {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid #22c55e !important;
+  box-shadow: 0 4px 24px rgba(34,197,94,0.15) !important;
+  font-weight: 500 !important;
+}
+
+.react-hot-toast[data-pomo-type='longBreak'] {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1.5px solid #3b82f6 !important;
+  box-shadow: 0 4px 24px rgba(59,130,246,0.15) !important;
+  font-weight: 500 !important;
 }
 
 .react-hot-toast-container[data-y="top"][data-x="right"],

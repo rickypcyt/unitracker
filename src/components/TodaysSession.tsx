@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
 import { SYNC_EVENTS } from '@/utils/constants';
+import { getLocalDateString } from '@/utils/dateUtils';
 import { motion } from 'framer-motion';
 import { useLaps } from '@/store/appStore';
+
 interface Lap {
   id: string;
   created_at: string;
@@ -97,7 +100,7 @@ const TodaysSession = () => {
       const cached = JSON.parse(raw);
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      const todayKey = startOfDay.toISOString().slice(0, 10);
+      const todayKey = getLocalDateString(startOfDay);
       if (cached?.date === todayKey && cached?.metrics) {
         setStableMetrics(cached.metrics);
       }
@@ -175,7 +178,7 @@ const TodaysSession = () => {
     // Only cache zero-only if there was no previous cache (first load of the day)
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const todayKey = startOfDay.toISOString().slice(0, 10);
+    const todayKey = getLocalDateString(startOfDay);
     const raw = localStorage.getItem(TODAY_CACHE_KEY);
     const cached = raw ? (() => {
       try {

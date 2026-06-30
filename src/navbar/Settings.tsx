@@ -58,7 +58,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Settings" maxWidth="max-w-md" className="!p-0">
+      <BaseModal isOpen={isOpen} onClose={onClose} title="Settings" maxWidth="max-w-md" padding="none">
         <div className="space-y-6 p-6">
             {/* Theme Section */}
             <div className="space-y-4">
@@ -250,7 +250,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
           onClose={() => setShowStudySessions(false)}
           title="Study Sessions"
           maxWidth="max-w-4xl"
-          className="!p-0"
+          padding="none"
         >
           <div className="p-6">
             <StudySessions />

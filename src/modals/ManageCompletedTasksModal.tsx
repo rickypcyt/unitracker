@@ -6,6 +6,7 @@ import { useTaskCrudActions, useTasks } from '@/store/appStore';
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import type { Task } from '@/pages/tasks/taskStorage';
+
 interface ManageCompletedTasksModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -54,7 +55,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
   };
   if (!isOpen) return null;
   return <>
-      <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-2xl" className="!p-0" showHeader={false}>
+      <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-2xl" padding="none" showHeader={false}>
         <div className="space-y-4 p-6">
           <div className="relative flex items-center justify-center mb-6">
             {selectedMonth && <button onClick={handleBackToMonths} className="absolute left-0 flex items-center text-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors">

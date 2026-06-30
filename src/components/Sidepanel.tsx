@@ -8,6 +8,9 @@ interface SidepanelProps {
   onToggle: () => void;
   width?: number; // tailwind rem units like 80
   collapsedWidth?: number; // tailwind rem units like 12
+  widthPx?: number; // pixel width for resizable mode
+  onResizeStart?: (e: React.MouseEvent) => void;
+  resizable?: boolean;
   topOffsetClass?: string; // e.g., top-16
   children: React.ReactNode;
   toggleTitle?: { expand: string; collapse: string };
@@ -21,6 +24,9 @@ const Sidepanel: React.FC<SidepanelProps> = ({
   onToggle,
   width = 80,
   collapsedWidth = 12,
+  widthPx,
+  onResizeStart,
+  resizable = false,
   topOffsetClass = 'top-16',
   children,
   toggleTitle = { expand: 'Expand panel', collapse: 'Collapse panel' },
@@ -29,10 +35,12 @@ const Sidepanel: React.FC<SidepanelProps> = ({
 }) => {
   const sideClass = position === 'left' ? 'left-0 border-r' : 'right-0 border-l';
   const panelWidth = isCollapsed ? `w-${collapsedWidth}` : `w-${width}`;
+  const widthStyle = widthPx != null && !isCollapsed ? { width: `${widthPx}px` } : undefined;
 
   return (
     <div
-      className={`fixed ${sideClass} ${topOffsetClass} h-[calc(100vh-7rem)] bg-[var(--bg-secondary)] border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${panelWidth} ${className} overflow-y-auto`}
+      className={`fixed ${sideClass} ${topOffsetClass} h-[calc(100vh-7rem)] bg-[var(--bg-secondary)] border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${widthStyle ? '' : panelWidth} ${className} overflow-y-auto`}
+      style={widthStyle}
     >
       {/* Header with Title and Toggle Button */}
       {!isCollapsed && title && (
@@ -87,6 +95,17 @@ const Sidepanel: React.FC<SidepanelProps> = ({
       {!isCollapsed && (
         <div className="w-full h-full">
           {children}
+        </div>
+      )}
+
+      {/* Resize Handle */}
+      {resizable && !isCollapsed && (
+        <div
+          className={`absolute top-0 ${position === 'left' ? 'right-0' : 'left-0'} h-full w-1 cursor-col-resize hover:bg-[var(--accent-primary)]/30 transition-colors group z-30`}
+          onMouseDown={onResizeStart}
+        >
+          <div className={`absolute inset-y-0 ${position === 'left' ? '-right-1 -left-1' : '-left-1 -right-1'} z-10`} />
+          <div className="w-0.5 h-12 bg-[var(--border-primary)] group-hover:bg-[var(--accent-primary)] rounded-full transition-colors absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2" />
         </div>
       )}
     </div>

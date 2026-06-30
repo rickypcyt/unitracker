@@ -80,7 +80,7 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
 
       {/* Collapsible task list grouped by assignment */}
       <div
-        className={`relative transition-all duration-200 hide-scrollbar pb-2`}
+        className={`relative transition-all duration-200 hide-scrollbar pb-2 mb-4`}
         style={{
           display: showCompleted ? 'block' : 'none',
         }}

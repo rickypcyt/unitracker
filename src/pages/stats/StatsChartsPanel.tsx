@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import ChartCard from './ChartCard';
 import StatsChart from './StatsChart';
+import { getLocalDateString } from '@/utils/dateUtils';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLaps } from '@/store/appStore';
 
@@ -37,7 +38,7 @@ function getWeekDays(monday: Date) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return d.toISOString().split('T')[0] || '';
+    return getLocalDateString(d);
   });
 }
 
@@ -46,9 +47,8 @@ function getMonthDays(date: Date) {
   const month = date.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   return Array.from({ length: daysInMonth }, (_, i) => {
-    const day = i + 1;
-    const date = new Date(Date.UTC(year, month, day));
-    return date.toISOString().split('T')[0] || '';
+    const d = new Date(year, month, i + 1);
+    return getLocalDateString(d);
   });
 }
 
@@ -77,7 +77,7 @@ const StatsChartsPanel = memo(() => {
   const shownWeekNumber = getISOWeekNumber(shownWeekMonday);
   const shownWeekData = useMemo(() => {
     const dailyMinutes = laps.reduce((acc, lap) => {
-      const lapDate = new Date(lap.created_at).toISOString().split('T')[0];
+      const lapDate = getLocalDateString(new Date(lap.created_at));
       if (lapDate) {
         const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
         acc[lapDate] = (acc[lapDate] || 0) + minutes;
@@ -114,7 +114,7 @@ const StatsChartsPanel = memo(() => {
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDateObj = new Date(lap.created_at);
       if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
-        const lapDate = lapDateObj.toISOString().split('T')[0];
+        const lapDate = getLocalDateString(lapDateObj);
         if (lapDate) {
           const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
           acc[lapDate] = (acc[lapDate] || 0) + minutes;
@@ -189,7 +189,7 @@ const StatsChartsPanel = memo(() => {
     const weekDays = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
-      return d.toISOString().split('T')[0];
+      return getLocalDateString(d);
     });
     const thisWeekData = weekDayLabels.map((label, idx) => ({
       date: weekDays[idx] || '',
@@ -203,7 +203,7 @@ const StatsChartsPanel = memo(() => {
       const date = new Date(shownMonthDate);
       date.setDate(i + 1);
       return {
-        date: date.toISOString().split('T')[0] || '',
+        date: getLocalDateString(date) || '',
         minutes: demoMonth[i % demoMonth.length] || 0,
         hoursLabel: formatMinutesToHHMM(demoMonth[i % demoMonth.length] || 0),
         dayName: i.toString(),

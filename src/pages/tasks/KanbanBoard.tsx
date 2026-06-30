@@ -3,6 +3,7 @@ import { ClipboardCheck, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
+import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
 import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
@@ -38,7 +39,11 @@ interface ContextMenuState {
   task: any;
 }
 
-export const KanbanBoard = () => {
+interface KanbanBoardProps {
+  columnCount?: ColumnCount;
+}
+
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => {
   const { isLoggedIn } = useAuth();
   const {
     isDemo,
@@ -450,7 +455,7 @@ export const KanbanBoard = () => {
           {isLoggedIn ? (
             <button
               onClick={() => handleAddTask(null)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
             >
               <Plus size={18} />
               Create your first task
@@ -467,7 +472,7 @@ export const KanbanBoard = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-4 h-full min-h-screen kanban-board" data-tour="tasks-board">
+      <div className="flex flex-col h-full min-h-screen kanban-board" data-tour="tasks-board">
         {/* Active Tasks */}
         <div className="flex-1 min-h-0">
           <AssignmentColumns
@@ -491,13 +496,9 @@ export const KanbanBoard = () => {
             onUpdateAssignment={handleUpdateAssignment}
             onAssignmentDoubleClick={handleAssignmentDoubleClick}
             completedByAssignment={completedByAssignment}
-          />
-        </div>
-
-        {/* Completed Tasks - below active tasks, same centered column */}
-        {completedTasks && completedTasks.length > 0 && (
-          <div className="flex justify-center w-full">
-            <div className="w-full max-w-2xl">
+            columnCount={columnCount}
+          >
+            {completedTasks && completedTasks.length > 0 && (
               <CompletedTasksSection
                 showCompleted={showCompleted}
                 onToggleShowCompleted={() => setShowCompleted(prev => !prev)}
@@ -509,9 +510,9 @@ export const KanbanBoard = () => {
                 onViewTask={handleViewTask}
                 onTaskContextMenu={handleTaskContextMenu}
               />
-            </div>
-          </div>
-        )}
+            )}
+          </AssignmentColumns>
+        </div>
       </div>
 
       {/* Context Menu */}

@@ -1,9 +1,11 @@
 import { AlertCircle, Calendar, Check, CheckCircle, Clock, Play, Trash2, TrendingUp, X } from 'lucide-react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useEffect, useState } from 'react';
+
 import DeleteSessionModal from './DeleteSessionModal';
 import { motion } from 'framer-motion';
 import { supabase } from '@/utils/supabaseClient';
+
 interface Session {
   id: string;
   name: string;
@@ -169,16 +171,10 @@ const SessionsModal = ({
   const hasToday = sessions.length > 0;
   if (!isOpen) return null;
   return <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)]">
-        <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center sticky top-0 bg-[var(--bg-primary)] z-10">
-          <div className="flex items-center gap-2">
-            <Calendar size={20} className="text-[var(--accent-primary)]" />
-            <h2 className="text-xl font-semibold">Sessions</h2>
-          </div>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors" aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
+      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)] relative">
+        <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">
+          <X size={18} />
+        </button>
 
         {/* Tabs */}
         <div className="flex border-b border-[var(--border-primary)]">
@@ -295,12 +291,12 @@ const SessionsModal = ({
         </div>
         
         <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2 sticky bottom-0 bg-[var(--bg-primary)] z-10">
-          {activeTab === 'unfinished' && onFinishAllSessions && <button onClick={onFinishAllSessions} className="px-4 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
+          {activeTab === 'unfinished' && onFinishAllSessions && unfinishedSessions.length > 0 && <button onClick={onFinishAllSessions} className="px-4 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
               Finish All Sessions
             </button>}
           <div className="flex space-x-3 ml-auto">
             <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
-              Close
+              Cancel
             </button>
             <button onClick={() => {
             // Close current modal and open StartSessionModal

@@ -337,7 +337,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                         <span className="flex-1 text-[var(--text-primary)]">{task.title}</span>
                         <button
                           onClick={() => handleAddTaskToActive(task)}
-                          className="px-3 py-1 text-sm bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors"
+                          className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
                         >
                           Add to Session
                         </button>

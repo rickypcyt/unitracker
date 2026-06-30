@@ -23,26 +23,21 @@ const StatsPage = memo(() => {
   useEffect(() => {
     if (user && isVisible) {
       fetchLaps();
-      fetchTasks(activeWorkspace?.id);
+      fetchTasks(activeWorkspace?.id, false); // Use cache, don't force refresh
     }
   }, [user, isVisible]); // Remove fetchTasks from dependencies
 
-  // Escuchar eventos de actualización
+  // Escuchar eventos de actualización de laps únicamente
   useEffect(() => {
     if (!user) return;
     const handleRefresh = () => {
       fetchLaps();
-      fetchTasks(activeWorkspace?.id);
     };
 
     window.addEventListener('refreshStats', handleRefresh);
-    window.addEventListener('studyTimerStateChanged', handleRefresh);
-    window.addEventListener('resetPomodoro', handleRefresh);
 
     return () => {
       window.removeEventListener('refreshStats', handleRefresh);
-      window.removeEventListener('studyTimerStateChanged', handleRefresh);
-      window.removeEventListener('resetPomodoro', handleRefresh);
     };
   }, [user]); // Remove fetchTasks from dependencies
 

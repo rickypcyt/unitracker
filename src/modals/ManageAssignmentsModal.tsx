@@ -116,7 +116,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
         onClose={onClose}
         title=""
         maxWidth="max-w-4xl"
-        className="!p-0"
+        padding="none"
         showHeader={false}
       >
         <div className="p-6 max-h-[85vh] overflow-y-auto">

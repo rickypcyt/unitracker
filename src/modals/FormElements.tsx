@@ -175,7 +175,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
 }) => {
   const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
   const variantClasses = {
-    primary: 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/80',
+    primary: 'border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10',
     secondary: 'bg-transparent text-[var(--text-secondary)] border border-[var(--text-secondary)] hover:bg-transparent hover:text-[var(--text-primary)]',
     danger: 'bg-red-500 text-white hover:bg-red-600',
     custom: '',

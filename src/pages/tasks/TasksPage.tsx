@@ -1,4 +1,4 @@
-import { Info, Plus, Sparkles, X, Zap } from 'lucide-react';
+import { Info, Plus, Settings as SettingsIcon, Sparkles, X, Zap } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
+import TaskPageSettingsModal, { type ColumnCount, type FabPosition } from '@/modals/TaskPageSettingsModal';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import WorkspaceSelector from '@/pages/calendar/WorkspaceSelector';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +18,14 @@ const TasksPage = memo(() => {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
   const [fabMode, setFabMode] = useState<'manual' | 'ai'>('manual');
+  const [showSettings, setShowSettings] = useState(false);
+  const [columnCount, setColumnCount] = useState<ColumnCount>(() => {
+    const saved = localStorage.getItem('taskPageColumnCount');
+    return (Number(saved) as ColumnCount) || 1;
+  });
+  const [fabPosition, setFabPosition] = useState<FabPosition>(() => {
+    return (localStorage.getItem('taskPageFabPosition') as FabPosition) || 'bottom-right';
+  });
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
@@ -41,19 +50,14 @@ const TasksPage = memo(() => {
   const touchStartY = useRef(0);
   const touchEndY = useRef(0);
 
-  const handleRefresh = useCallback(() => {
-    if (isVisible) {
-      fetchTasks(activeWorkspace?.id); // Fetch tasks for current workspace
-    }
-  }, [isVisible, activeWorkspace?.id, fetchTasks]);
-
   useEffect(() => {
-    // Initial fetch when the page becomes visible
-    handleRefresh();
+    // Fetch tasks when page becomes visible
+    if (isVisible) {
+      fetchTasks(activeWorkspace?.id);
+    }
 
-    // Listen for the custom refresh event
+    // Listen for the custom refresh event (triggered after task creation)
     const handleRefreshEvent = () => {
-      console.warn('refreshTaskList event received'); // Log for debugging
       fetchTasks(activeWorkspace?.id);
     };
 
@@ -70,7 +74,7 @@ const TasksPage = memo(() => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [handleRefresh, activeWorkspace?.id, isVisible]); // Add activeWorkspace?.id to dependencies
+  }, [activeWorkspace?.id, isVisible, fetchTasks]);
 
   const handleAddTask = (mode: 'manual' | 'ai' = 'manual') => {
     if (!isLoggedIn) {
@@ -84,6 +88,29 @@ const TasksPage = memo(() => {
     setFabMode(mode);
     setShowTaskForm(true);
     setShowFabMenu(false);
+  };
+
+  useEffect(() => {
+    const handleQuickAdd = () => handleAddTask('manual');
+    window.addEventListener('quickAddTask', handleQuickAdd);
+    return () => window.removeEventListener('quickAddTask', handleQuickAdd);
+  }, [handleAddTask]);
+
+  const handleColumnCountChange = (count: ColumnCount) => {
+    setColumnCount(count);
+    localStorage.setItem('taskPageColumnCount', String(count));
+  };
+
+  const handleFabPositionChange = (pos: FabPosition) => {
+    setFabPosition(pos);
+    localStorage.setItem('taskPageFabPosition', pos);
+  };
+
+  const fabPositionClass: Record<FabPosition, string> = {
+    'bottom-right': 'bottom-6 right-6',
+    'bottom-left': 'bottom-6 left-6',
+    'top-right': 'top-6 right-6',
+    'top-left': 'top-6 left-6',
   };
 
   const handleCloseTaskForm = () => {
@@ -193,13 +220,22 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-screen bg-black z-0" onWheel={handleWheel}>
+      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-screen bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector */}
       <div className="lg:hidden w-full mb-4">
         <WorkspaceSelector />
       </div>
       
-      <KanbanBoard />
+      <KanbanBoard columnCount={columnCount} />
+      {/* Task Page Settings Button */}
+      <button
+        onClick={() => setShowSettings(true)}
+        className="fixed top-6 left-6 z-50 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
+        aria-label="Task page settings"
+        title="Task page settings"
+      >
+        <SettingsIcon size={18} />
+      </button>
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (
         <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
@@ -222,7 +258,7 @@ const TasksPage = memo(() => {
         </div>
       )}
       {/* Floating Action Button with mini-menu */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+      <div className={`fixed ${fabPositionClass[fabPosition]} z-50 flex flex-col items-end gap-2`}>
         {/* Mini menu options */}
         {showFabMenu && (
           <>
@@ -245,7 +281,7 @@ const TasksPage = memo(() => {
         {/* Main FAB */}
         <button
           onClick={() => setShowFabMenu(prev => !prev)}
-          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[var(--accent-primary)] text-white shadow-xl shadow-[var(--accent-primary)]/30 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden ${!showFabMenu ? 'fab-shine' : ''}`}
+          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg shadow-[var(--accent-primary)]/20 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden ${!showFabMenu ? 'fab-shine' : ''}`}
           aria-label="Add new task"
           aria-expanded={showFabMenu}
         >
@@ -259,6 +295,15 @@ const TasksPage = memo(() => {
           onClick={() => setShowFabMenu(false)}
         />
       )}
+      {/* Task Page Settings Modal */}
+      <TaskPageSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        columnCount={columnCount}
+        fabPosition={fabPosition}
+        onColumnCountChange={handleColumnCountChange}
+        onFabPositionChange={handleFabPositionChange}
+      />
       {/* Task Form Modal */}
       {showTaskForm && (
         <TaskFormManager

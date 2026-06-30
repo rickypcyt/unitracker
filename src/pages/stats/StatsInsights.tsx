@@ -1,5 +1,6 @@
 import { Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
 
+import { getLocalDateString } from '@/utils/dateUtils';
 import { useLaps } from '@/store/appStore';
 import { useMemo } from 'react';
 
@@ -54,7 +55,7 @@ const StatsInsights = () => {
     // Calculate daily study times
     const dailyMinutes: Record<string, number> = {};
     laps.forEach(lap => {
-      const date = new Date(lap.created_at).toISOString().split('T')[0];
+      const date = getLocalDateString(new Date(lap.created_at));
       if (date) {
         const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
         dailyMinutes[date] = (dailyMinutes[date] || 0) + minutes;

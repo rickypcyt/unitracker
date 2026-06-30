@@ -3,10 +3,10 @@ import {
   getOccurrenceForDayAndHour,
   isRecurringTask,
 } from '@/utils/recurrenceUtils';
-import { isSameDay, parseISO } from 'date-fns';
 import { useCallback, useMemo } from 'react';
 
 import type { Task } from '@/types/taskStorage';
+import { isSameDay } from 'date-fns';
 import { useAppStore } from '@/store/appStore';
 
 /** Task with optional occurrence range for calendar slots (recurring or one-off with duration) */
@@ -64,7 +64,7 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
         if (task.deadline) {
           const taskDate = new Date(task.deadline);
           taskDate.setHours(0, 0, 0, 0);
-          if (isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()))) {
+          if (isSameDay(taskDate, targetDate)) {
             return true;
           }
         }
@@ -73,7 +73,7 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
         if (task.completed && task.completed_at) {
           const completedDate = new Date(task.completed_at);
           completedDate.setHours(0, 0, 0, 0);
-          if (isSameDay(parseISO(completedDate.toISOString()), parseISO(targetDate.toISOString()))) {
+          if (isSameDay(completedDate, targetDate)) {
             return true;
           }
         }
@@ -118,7 +118,7 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
         if (!task.deadline) return false;
         const taskDeadline = new Date(task.deadline);
         taskDeadline.setHours(0, 0, 0, 0);
-        return isSameDay(parseISO(taskDeadline.toISOString()), parseISO(targetDate.toISOString()));
+        return isSameDay(taskDeadline, targetDate);
       });
     },
     [tasks]
@@ -136,22 +136,18 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
         
         // Include tasks with start_at and end_at
         if (task.start_at && task.end_at) {
-          // For now, we'll show tasks with start/end times on their deadline date
-          // This could be enhanced to show them on multiple days if needed
           if (task.deadline) {
             const taskDate = new Date(task.deadline);
             taskDate.setHours(0, 0, 0, 0);
-            return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
+            return isSameDay(taskDate, targetDate);
           }
-          // If no deadline, we could show on today or selected date
           return isSameDay(targetDate, new Date());
         }
         
-        // Legacy deadline behavior
         if (!task.deadline) return false;
         const taskDate = new Date(task.deadline);
         taskDate.setHours(0, 0, 0, 0);
-        return isSameDay(parseISO(taskDate.toISOString()), parseISO(targetDate.toISOString()));
+        return isSameDay(taskDate, targetDate);
       });
       return withDeadline;
     },
@@ -213,7 +209,7 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
         const taskDay = new Date(taskDate);
         taskDay.setHours(0, 0, 0, 0);
 
-        if (!isSameDay(parseISO(taskDay.toISOString()), parseISO(targetDate.toISOString())))
+        if (!isSameDay(taskDay, targetDate))
           continue;
         if (taskHour === hour || ((taskHour === 0 || taskHour === 9) && hour === 9)) {
           const start = new Date(task.deadline);

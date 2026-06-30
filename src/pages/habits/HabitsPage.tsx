@@ -1,5 +1,5 @@
-import { EyeOff, Plus } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
+import { Calendar, Check, ChevronLeft, ChevronRight, EyeOff, Flame, Grid3x3, History, Plus, Target, TrendingUp, Trophy } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import { Habit } from '../../types/common';
 import HabitCreateModal from '../../modals/HabitCreateModal';
@@ -10,6 +10,76 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCalendarData } from '../calendar/hooks/useCalendarData';
 import useDemoMode from '@/utils/useDemoMode';
 import { useHabits } from '../../hooks/useHabits';
+
+type ViewMode = 'today' | 'history';
+type HistorySubView = 'calendar' | 'heatmap' | 'week';
+
+const calculateStreak = (completions: Record<string, boolean>): { current: number; best: number } => {
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+  const completedDates = Object.keys(completions).filter(d => completions[d]).sort();
+  if (completedDates.length === 0) return { current: 0, best: 0 };
+
+  let current = 0;
+  let checkDate = completedDates.includes(todayStr) ? today : (completedDates.includes(yesterdayStr) ? yesterday : null);
+  if (checkDate) {
+    let d = new Date(checkDate);
+    while (true) {
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (completions[ds]) {
+        current++;
+        d.setDate(d.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  let best = 0;
+  let temp = 0;
+  let prev: Date | null = null;
+  for (const ds of completedDates) {
+    const [y, m, d] = ds.split('-').map(Number);
+    const curr = new Date(y, (m ?? 0) - 1, d ?? 1);
+    if (prev) {
+      const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+      if (diff === 1) {
+        temp++;
+      } else {
+        best = Math.max(best, temp);
+        temp = 1;
+      }
+    } else {
+      temp = 1;
+    }
+    prev = curr;
+  }
+  best = Math.max(best, temp);
+
+  return { current, best };
+};
+
+const getMonthCompletionRate = (completions: Record<string, boolean>, year: number, month: number): number => {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+  const effectiveDays = isCurrentMonth ? today.getDate() : daysInMonth;
+  let completed = 0;
+  for (let day = 1; day <= effectiveDays; day++) {
+    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    if (completions[dateKey]) completed++;
+  }
+  return effectiveDays > 0 ? Math.round((completed / effectiveDays) * 100) : 0;
+};
+
+const getTotalCompleted = (completions: Record<string, boolean>): number => {
+  return Object.values(completions).filter(v => v).length;
+};
+
 
 const HabitsPage = memo(() => {
   const { isLoggedIn } = useAuth();
@@ -24,6 +94,10 @@ const HabitsPage = memo(() => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [pendingNoteSaves, setPendingNoteSaves] = useState<Record<string, string>>({}); // Track pending saves
   const [tooltipContent, setTooltipContent] = useState<{ date: Date; tasks: any[] } | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('today');
+  const [historySubView, setHistorySubView] = useState<HistorySubView>('week');
+  const [historyMonthOffset, setHistoryMonthOffset] = useState(0); // 0 = current month, -1 = prev, etc.
+  const [historyWeekOffset, setHistoryWeekOffset] = useState(0); // 0 = current week
   
   // Load preferences from localStorage
   const [showPastMonths, setShowPastMonths] = useState(() => {
@@ -34,6 +108,10 @@ const HabitsPage = memo(() => {
     const saved = localStorage.getItem('habits-showPastDays');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [heatmapRange, setHeatmapRange] = useState(() => {
+    const saved = localStorage.getItem('habits-heatmapRange');
+    return saved !== null ? JSON.parse(saved) : 90;
+  });
 
   // Save preferences to localStorage when they change
   useEffect(() => {
@@ -43,6 +121,10 @@ const HabitsPage = memo(() => {
   useEffect(() => {
     localStorage.setItem('habits-showPastDays', JSON.stringify(showPastDays));
   }, [showPastDays]);
+
+  useEffect(() => {
+    localStorage.setItem('habits-heatmapRange', JSON.stringify(heatmapRange));
+  }, [heatmapRange]);
 
   // Use demo habits when in demo mode, otherwise use real habits
   const {
@@ -61,6 +143,43 @@ const HabitsPage = memo(() => {
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
   const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const completedToday = useMemo(() => {
+    if (!displayHabits || displayHabits.length === 0) return 0;
+    return displayHabits.filter(h => (h.completions as Record<string, boolean>)?.[todayStr]).length;
+  }, [displayHabits, todayStr]);
+
+  // Compute aggregate stats
+  const stats = useMemo(() => {
+    if (!displayHabits || displayHabits.length === 0) {
+      return { bestStreak: 0, totalCompletions: 0, monthCompletionRate: 0, activeHabits: 0, topStreak: 0 };
+    }
+
+    let bestStreak = 0;
+    let totalCompletions = 0;
+    let topStreak = 0;
+
+    for (const habit of displayHabits) {
+      const { current, best } = calculateStreak(habit.completions as Record<string, boolean>);
+      bestStreak = Math.max(bestStreak, best);
+      topStreak = Math.max(topStreak, current);
+      totalCompletions += getTotalCompleted(habit.completions as Record<string, boolean>);
+    }
+
+    const monthRate = getMonthCompletionRate(
+      displayHabits.reduce((acc, h) => ({ ...acc, ...h.completions }), {} as Record<string, boolean>),
+      currentYear,
+      currentMonth
+    );
+
+    return {
+      bestStreak,
+      totalCompletions,
+      monthCompletionRate: monthRate,
+      activeHabits: displayHabits.length,
+      topStreak,
+    };
+  }, [displayHabits, currentYear, currentMonth]);
 
   const handleStartEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
@@ -146,7 +265,7 @@ const HabitsPage = memo(() => {
     await toggleHabitCompletion(habitId, date);
   };
 
-  // Generate months to display (previous, current, and next month)
+  // Generate months to display based on historyMonthOffset
   const generateMonths = () => {
     const months: Array<{
       year: number;
@@ -158,15 +277,17 @@ const HabitsPage = memo(() => {
       opacity: string;
     }> = [];
     
-    // Calculate previous, current, and next months
-    const prevMonth = new Date(currentYear, currentMonth - 1);
-    const currMonth = new Date(currentYear, currentMonth);
-    const nextMonth = new Date(currentYear, currentMonth + 1);
+    const baseDate = new Date(currentYear, currentMonth + historyMonthOffset);
+    const prevMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() - 1);
+    const currMonth = new Date(baseDate.getFullYear(), baseDate.getMonth());
+    const nextMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1);
+    
+    const isCurrentMonth = (d: Date) => d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
     
     const monthsToShow = [
-      { date: prevMonth, isCurrent: false, opacity: 'opacity-60' },
-      { date: currMonth, isCurrent: true, opacity: 'opacity-100' },
-      { date: nextMonth, isCurrent: false, opacity: 'opacity-80' }
+      { date: prevMonth, isCurrent: isCurrentMonth(prevMonth), opacity: 'opacity-60' },
+      { date: currMonth, isCurrent: isCurrentMonth(currMonth), opacity: 'opacity-100' },
+      { date: nextMonth, isCurrent: isCurrentMonth(nextMonth), opacity: 'opacity-80' }
     ];
     
     monthsToShow.forEach(({ date, isCurrent, opacity }) => {
@@ -342,14 +463,14 @@ const HabitsPage = memo(() => {
                             {!isGhostDay ? (
                               <button
                                 onClick={() => handleToggleHabitForMonth(habit.id, year, month, day)}
-                                className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                                className={`w-6 h-6 rounded-full border-2 transition-all hover:scale-110 active:scale-95 ${
                                   isPastDay
                                     ? isCompleted
                                       ? 'bg-[var(--accent-primary)]/60 border-[var(--accent-primary)]/60'
-                                      : 'border-white/60 hover:border-[var(--accent-primary)]/60'
+                                      : 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]/60'
                                     : isCompleted
-                                    ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
-                                    : 'border-white hover:border-[var(--accent-primary)]'
+                                    ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] scale-110'
+                                    : 'border-[var(--text-secondary)] hover:border-[var(--accent-primary)] hover:scale-105'
                                 }`}
                                 title={isCompleted ? 'Completed' : 'Not completed'}
                               />
@@ -446,86 +567,559 @@ const HabitsPage = memo(() => {
           property="og:description"
           content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
         />
-
       </Helmet>
       <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 overflow-hidden">
-      {/* Toolbar */}
-      <div className="maincard flex items-center justify-between mb-0 mt-4 p-3 sm:p-4 w-full bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)] shadow-none border-1">
-        <div className="text-sm font-medium text-[var(--text-secondary)]">
-          {currentYear} - 3 Months View
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 mb-4">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
+            <Flame size={20} className="text-[var(--accent-primary)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-2xl font-bold text-[var(--text-primary)] leading-tight">{stats.topStreak}</div>
+            <div className="text-xs text-[var(--text-secondary)] truncate">Current Streak</div>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowPastMonths(!showPastMonths)}
-            className={`flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 rounded-md transition-colors text-sm md:text-xs lg:text-sm ${
-              showPastMonths 
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10' 
-                : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            <EyeOff size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
-            <span className="hidden sm:inline">Hide Past Months</span>
-            <span className="sm:hidden">Hide Months</span>
-          </button>
-          
-          <button
-            onClick={() => setShowPastDays(!showPastDays)}
-            className={`flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 rounded-md transition-colors text-sm md:text-xs lg:text-sm ${
-              showPastDays 
-                ? 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10' 
-                : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            <EyeOff size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
-            <span className="hidden sm:inline">Hide Past Days</span>
-            <span className="sm:hidden">Hide Days</span>
-          </button>
-          
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-1.5 lg:px-3 lg:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)]/10 transition-colors text-sm md:text-xs lg:text-sm"
-          >
-            <Plus size={14} className="md:w-3 md:h-3 lg:w-4 lg:h-4" />
-            <span className="hidden sm:inline">Create Habit</span>
-            <span className="sm:hidden">Create</span>
-          </button>
+        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
+            <Trophy size={20} className="text-[var(--accent-primary)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-2xl font-bold text-[var(--text-primary)] leading-tight">{stats.bestStreak}</div>
+            <div className="text-xs text-[var(--text-secondary)] truncate">Best Streak</div>
+          </div>
+        </div>
+        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
+            <TrendingUp size={20} className="text-[var(--accent-primary)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-2xl font-bold text-[var(--text-primary)] leading-tight">{stats.monthCompletionRate}%</div>
+            <div className="text-xs text-[var(--text-secondary)] truncate">This Month</div>
+          </div>
+        </div>
+        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
+            <Target size={20} className="text-[var(--accent-primary)]" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-2xl font-bold text-[var(--text-primary)] leading-tight">{stats.totalCompletions}</div>
+            <div className="text-xs text-[var(--text-secondary)] truncate">Total Completions</div>
+          </div>
         </div>
       </div>
-      
-      <div className="space-y-8 mb-4">
-        {/* Months Grid - Single column */}
-        <div className="grid grid-cols-1 gap-6">
-          {months
-            .filter(monthData => {
-              // Always show current month
-              if (monthData.isCurrent) {
-                return true;
-              }
-              // Calculate if month is future or past
-              const monthDate = new Date(monthData.year, monthData.month, 1);
-              const today = new Date();
-              const isFutureMonth = monthDate > today;
-              const isPastMonth = monthDate < today;
-              
-              // Show future months always, past months only if showPastMonths is true
-              return isFutureMonth || (showPastMonths && isPastMonth);
-            })
-            .map((monthData) => (
-            <div key={`${monthData.year}-${monthData.month}`}>
-              {renderHabitsTable(
-                monthData.year,
-                monthData.month,
-                monthData.days,
-                monthData.realDays,
-                monthData.title,
-                monthData.opacity,
-                showPastDays
+
+      {/* Tab bar */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('today')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'today'
+                ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <Check size={14} />
+            <span>Today</span>
+          </button>
+          <button
+            onClick={() => setViewMode('history')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'history'
+                ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <History size={14} />
+            <span>History</span>
+          </button>
+        </div>
+
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center gap-1 px-3 py-1.5 bg-[var(--accent-primary)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+        >
+          <Plus size={16} />
+          <span className="hidden sm:inline">New Habit</span>
+        </button>
+      </div>
+
+      {/* Content area */}
+      {viewMode === 'today' ? (
+        /* Today's Habits Checklist */
+        <div className="mb-4">
+          {displayHabits.length === 0 ? (
+            <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-8 text-center">
+              <p className="text-sm text-[var(--text-secondary)]">No habits yet. Create your first habit to start tracking!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Today header */}
+              <div className="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                    {today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </h2>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    {completedToday} of {displayHabits.length} completed
+                  </p>
+                </div>
+                {completedToday === displayHabits.length && displayHabits.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--accent-primary)]">
+                    <Trophy size={16} />
+                    All done!
+                  </div>
+                )}
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden mb-4">
+                <div
+                  className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-300"
+                  style={{ width: `${displayHabits.length > 0 ? (completedToday / displayHabits.length) * 100 : 0}%` }}
+                />
+              </div>
+
+              {/* Habit checklist items */}
+              {displayHabits.map((habit) => {
+                const completions = habit.completions as Record<string, boolean>;
+                const isCompleted = !!completions[todayStr];
+                const { current, best } = calculateStreak(completions);
+                const total = getTotalCompleted(completions);
+
+                return (
+                  <div
+                    key={habit.id}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 ${
+                      isCompleted
+                        ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]/30'
+                        : 'bg-[var(--bg-primary)] border-[var(--border-primary)] hover:border-[var(--border-secondary)]'
+                    }`}
+                  >
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => handleToggleHabitForMonth(habit.id, today.getFullYear(), today.getMonth(), today.getDate())}
+                      className={`flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all hover:scale-110 active:scale-95 flex items-center justify-center ${
+                        isCompleted
+                          ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                          : 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]'
+                      }`}
+                    >
+                      {isCompleted && <Check size={16} className="text-white" />}
+                    </button>
+
+                    {/* Habit name + streak */}
+                    <button
+                      onClick={() => handleStartEditHabit(habit as Habit)}
+                      className="flex-1 text-left min-w-0 group"
+                    >
+                      <div className={`text-sm font-medium truncate transition-colors ${
+                        isCompleted
+                          ? 'text-[var(--text-secondary)] line-through'
+                          : 'text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]'
+                      }`}>
+                        {habit.name}
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-[var(--text-secondary)]">
+                        {current > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Flame size={11} className="text-[var(--accent-primary)]" />
+                            {current}d streak
+                          </span>
+                        )}
+                        {best > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Trophy size={11} className="text-[var(--accent-primary)]" />
+                            {best}d best
+                          </span>
+                        )}
+                        <span>{total} total</span>
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* History View */
+        <div className="mb-4">
+          {/* History sub-toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-1">
+              <button
+                onClick={() => setHistorySubView('calendar')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  historySubView === 'calendar'
+                    ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <Calendar size={14} />
+                <span className="hidden sm:inline">Calendar</span>
+              </button>
+              <button
+                onClick={() => setHistorySubView('week')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  historySubView === 'week'
+                    ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <History size={14} />
+                <span className="hidden sm:inline">Week</span>
+              </button>
+              <button
+                onClick={() => setHistorySubView('heatmap')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  historySubView === 'heatmap'
+                    ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+              >
+                <Grid3x3 size={14} />
+                <span className="hidden sm:inline">Heatmap</span>
+              </button>
+            </div>
+
+            {/* Month/Week navigation */}
+            <div className="flex items-center gap-2">
+              {(historySubView === 'calendar' || historySubView === 'week') && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => historySubView === 'week' ? setHistoryWeekOffset(o => o - 1) : setHistoryMonthOffset(o => o - 1)}
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                    aria-label="Previous"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <span className="text-sm font-medium text-[var(--text-primary)] min-w-[120px] text-center">
+                    {historySubView === 'week'
+                      ? (() => {
+                          const ref = new Date(currentYear, currentMonth, currentDate.getDate() + historyWeekOffset * 7);
+                          const weekStart = new Date(ref);
+                          weekStart.setDate(ref.getDate() - ref.getDay());
+                          const weekEnd = new Date(weekStart);
+                          weekEnd.setDate(weekStart.getDate() + 6);
+                          return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                        })()
+                      : new Date(currentYear, currentMonth + historyMonthOffset).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                    }
+                  </span>
+                  <button
+                    onClick={() => historySubView === 'week' ? setHistoryWeekOffset(o => o + 1) : setHistoryMonthOffset(o => o + 1)}
+                    className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                    aria-label="Next"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                  {(historyMonthOffset !== 0 || historyWeekOffset !== 0) && (
+                    <button
+                      onClick={() => { setHistoryMonthOffset(0); setHistoryWeekOffset(0); }}
+                      className="ml-1 px-2 py-1 text-xs rounded-lg text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 transition-colors"
+                    >
+                      Today
+                    </button>
+                  )}
+                </div>
+              )}
+              {historySubView === 'heatmap' && (
+                <select
+                  value={heatmapRange}
+                  onChange={(e) => setHeatmapRange(Number(e.target.value))}
+                  className="px-2 py-1.5 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                >
+                  <option value={90}>90 days</option>
+                  <option value={180}>180 days</option>
+                  <option value={365}>1 year</option>
+                </select>
               )}
             </div>
-          ))}
+
+            <div className="flex items-center gap-2">
+              {historySubView === 'calendar' && (
+                <>
+                  <button
+                    onClick={() => setShowPastMonths(!showPastMonths)}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-sm ${
+                      showPastMonths
+                        ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    <EyeOff size={14} />
+                    <span className="hidden sm:inline">Past Months</span>
+                  </button>
+                  <button
+                    onClick={() => setShowPastDays(!showPastDays)}
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-sm ${
+                      showPastDays
+                        ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    <EyeOff size={14} />
+                    <span className="hidden sm:inline">Past Days</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {historySubView === 'heatmap' ? (
+            /* Heatmap View */
+            <div className="space-y-6">
+              {displayHabits.map((habit) => {
+                const completions = habit.completions as Record<string, boolean>;
+                const { current, best } = calculateStreak(completions);
+                const total = getTotalCompleted(completions);
+
+                // Generate last N days for heatmap
+                const days: Array<{ date: Date; key: string; completed: boolean }> = [];
+                const heatToday = new Date();
+                for (let i = heatmapRange - 1; i >= 0; i--) {
+                  const d = new Date(heatToday);
+                  d.setDate(d.getDate() - i);
+                  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                  days.push({ date: d, key, completed: !!completions[key] });
+                }
+
+                // Group into weeks (columns)
+                const weeks: Array<typeof days> = [];
+                let currentWeek: typeof days = [];
+                let prevDay = -1;
+                for (const day of days) {
+                  const dow = day.date.getDay();
+                  if (prevDay !== -1 && dow === 0 && currentWeek.length > 0) {
+                    weeks.push(currentWeek);
+                    currentWeek = [];
+                  }
+                  currentWeek.push(day);
+                  prevDay = dow;
+                }
+                if (currentWeek.length > 0) weeks.push(currentWeek);
+
+                return (
+                  <div key={habit.id} className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={() => handleStartEditHabit(habit as Habit)}
+                        className="text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+                      >
+                        {habit.name}
+                      </button>
+                      <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
+                        <span className="flex items-center gap-1"><Flame size={12} className="text-[var(--accent-primary)]" />{current}d streak</span>
+                        <span className="flex items-center gap-1"><Trophy size={12} className="text-[var(--accent-primary)]" />{best}d best</span>
+                        <span>{total} total</span>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <div className="flex gap-1 min-w-fit">
+                        {weeks.map((week, wi) => (
+                          <div key={wi} className="flex flex-col gap-1">
+                            {week.map((day) => (
+                              <button
+                                key={day.key}
+                                onClick={() => handleToggleHabitForMonth(habit.id, day.date.getFullYear(), day.date.getMonth(), day.date.getDate())}
+                                className={`w-3.5 h-3.5 rounded-sm transition-all hover:ring-1 hover:ring-[var(--accent-primary)] hover:ring-offset-1 ${
+                                  day.completed ? 'bg-[var(--accent-primary)]' : 'bg-[var(--bg-secondary)] border border-[var(--border-primary)]'
+                                }`}
+                                title={`${day.key}: ${day.completed ? 'Completed' : 'Not completed'}`}
+                              />
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Legend */}
+                    <div className="flex items-center justify-end gap-1.5 mt-3 text-xs text-[var(--text-secondary)]">
+                      <span>Less</span>
+                      <div className="w-3 h-3 rounded-sm bg-[var(--bg-secondary)] border border-[var(--border-primary)]" />
+                      <div className="w-3 h-3 rounded-sm bg-[var(--accent-primary)]/25" />
+                      <div className="w-3 h-3 rounded-sm bg-[var(--accent-primary)]/50" />
+                      <div className="w-3 h-3 rounded-sm bg-[var(--accent-primary)]/75" />
+                      <div className="w-3 h-3 rounded-sm bg-[var(--accent-primary)]" />
+                      <span>More</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : historySubView === 'week' ? (
+            /* Week View - Card-based list matching Today's style */
+            <div className="space-y-6">
+              {(() => {
+                const ref = new Date(currentYear, currentMonth, currentDate.getDate() + historyWeekOffset * 7);
+                const weekStart = new Date(ref);
+                weekStart.setDate(ref.getDate() - ref.getDay());
+                const weekDays = Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(weekStart);
+                  d.setDate(weekStart.getDate() + i);
+                  return d;
+                });
+                const isThisWeek = historyWeekOffset === 0;
+
+                return weekDays.map((date) => {
+                  const y = date.getFullYear();
+                  const m = date.getMonth();
+                  const d = date.getDate();
+                  const dateKey = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                  const isToday = isThisWeek && d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
+                  const isPast = date < today && !isToday;
+                  const isFuture = date > today && !isToday;
+                  const dow = date.getDay();
+                  const isWeekend = dow === 0 || dow === 6;
+
+                  const dayCompleted = displayHabits.filter(h => (h.completions as Record<string, boolean>)?.[dateKey]).length;
+                  const dayTotal = displayHabits.length;
+                  const allDone = dayTotal > 0 && dayCompleted === dayTotal;
+
+                  return (
+                    <div key={dateKey}>
+                      {/* Day header */}
+                      <div className="flex items-center justify-between mb-2 px-1">
+                        <div>
+                          <h3 className={`text-base font-bold ${
+                            isToday ? 'text-[var(--accent-primary)]' : isFuture ? 'text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'
+                          }`}>
+                            {date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                            {isToday && <span className="ml-2 text-xs font-normal text-[var(--accent-primary)]">• Today</span>}
+                            {isWeekend && !isToday && <span className="ml-2 text-xs font-normal text-[var(--text-tertiary)]">• Weekend</span>}
+                          </h3>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                            {dayCompleted} of {dayTotal} completed
+                          </p>
+                        </div>
+                        {allDone && (
+                          <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--accent-primary)]">
+                            <Trophy size={14} />
+                            All done!
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="h-1.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden mb-3">
+                        <div
+                          className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-300"
+                          style={{ width: `${dayTotal > 0 ? (dayCompleted / dayTotal) * 100 : 0}%` }}
+                        />
+                      </div>
+
+                      {/* Habit checklist items */}
+                      <div className={`space-y-2 ${isFuture ? 'opacity-50' : ''}`}>
+                        {displayHabits.map((habit) => {
+                          const completions = habit.completions as Record<string, boolean>;
+                          const isCompleted = !!completions[dateKey];
+                          const { current, best } = calculateStreak(completions);
+                          const total = getTotalCompleted(completions);
+
+                          return (
+                            <div
+                              key={`${habit.id}-${dateKey}`}
+                              className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 ${
+                                isCompleted
+                                  ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]/30'
+                                  : 'bg-[var(--bg-primary)] border-[var(--border-primary)] hover:border-[var(--border-secondary)]'
+                              } ${isPast && !isCompleted ? 'opacity-70' : ''}`}
+                            >
+                              {/* Checkbox */}
+                              <button
+                                onClick={() => handleToggleHabitForMonth(habit.id, y, m, d)}
+                                className={`flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all hover:scale-110 active:scale-95 flex items-center justify-center ${
+                                  isCompleted
+                                    ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                                    : isPast
+                                    ? 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]/60'
+                                    : 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]'
+                                }`}
+                              >
+                                {isCompleted && <Check size={16} className="text-white" />}
+                              </button>
+
+                              {/* Habit name + streak */}
+                              <button
+                                onClick={() => handleStartEditHabit(habit as Habit)}
+                                className="flex-1 text-left min-w-0 group"
+                              >
+                                <div className={`text-sm font-medium truncate transition-colors ${
+                                  isCompleted
+                                    ? 'text-[var(--text-secondary)] line-through'
+                                    : 'text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]'
+                                }`}>
+                                  {habit.name}
+                                </div>
+                                <div className="flex items-center gap-3 mt-0.5 text-xs text-[var(--text-secondary)]">
+                                  {current > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Flame size={11} className="text-[var(--accent-primary)]" />
+                                      {current}d streak
+                                    </span>
+                                  )}
+                                  {best > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Trophy size={11} className="text-[var(--accent-primary)]" />
+                                      {best}d best
+                                    </span>
+                                  )}
+                                  <span>{total} total</span>
+                                </div>
+                              </button>
+                            </div>
+                          );
+                        })}
+
+                        {/* Notes input for this day */}
+                        <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                          <input
+                            type="text"
+                            placeholder="Add a note for this day..."
+                            className="flex-1 px-2 py-1 text-sm bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
+                            defaultValue={journalNotes[dateKey] || ''}
+                            onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}
+                            onKeyDown={(e) => handleNoteKeyDownForMonth(y, m, d, e)}
+                            onBlur={() => handleNoteBlurForMonth(y, m, d)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          ) : (
+            /* Calendar View */
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 gap-6">
+                {months
+                  .filter(monthData => {
+                    if (monthData.isCurrent) return true;
+                    const monthDate = new Date(monthData.year, monthData.month, 1);
+                    const isFutureMonth = monthDate > today;
+                    const isPastMonth = monthDate < today;
+                    return isFutureMonth || (showPastMonths && isPastMonth);
+                  })
+                  .map((monthData) => (
+                  <div key={`${monthData.year}-${monthData.month}`}>
+                    {renderHabitsTable(
+                      monthData.year,
+                      monthData.month,
+                      monthData.days,
+                      monthData.realDays,
+                      monthData.title,
+                      monthData.opacity,
+                      showPastDays
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <HabitCreateModal
         isOpen={isCreateModalOpen}
@@ -544,7 +1138,7 @@ const HabitsPage = memo(() => {
       {/* Day Dropdown Menu */}
       {tooltipContent && (
         <div
-          className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200 max-w-xs z-50"
+          className="fixed bg-[var(--bg-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] rounded-lg shadow-xl transition-all duration-200 max-w-xs z-50"
           style={{
             top: '15%',
             left: '50%',
@@ -566,7 +1160,6 @@ const HabitsPage = memo(() => {
                 key={task.id}
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-[var(--bg-secondary)] transition-colors group cursor-pointer"
                 onClick={() => {
-                  // Navigate to tasks page or open task modal
                   window.location.href = '/tasks';
                 }}
               >

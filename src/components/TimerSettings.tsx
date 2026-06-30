@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Clock } from 'lucide-react';
 import BaseModal from '@/modals/BaseModal';
+import { Clock } from 'lucide-react';
+import { useState } from 'react';
 
 interface TimerSettingsProps {
   isOpen: boolean;
@@ -173,7 +173,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)] transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
             Save Settings
           </button>

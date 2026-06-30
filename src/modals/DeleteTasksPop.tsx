@@ -21,7 +21,8 @@ const DeleteCompletedModal: React.FC<DeleteCompletedModalProps> = ({
       onClose={onClose}
       title="Delete Confirmation"
       maxWidth="max-w-md"
-      className="!p-0 !pt-4"
+      className="!pt-4"
+      padding="none"
     >
       <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">

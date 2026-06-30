@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, FileText, Folder, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Folder, Plus, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 // Utility function to get time ago string
@@ -59,6 +59,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   };
 
   const [expandedAssignments, setExpandedAssignments] = useState<Set<string>>(getInitialState());
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Save state to localStorage whenever it changes
   React.useEffect(() => {
@@ -69,12 +70,20 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     }
   }, [expandedAssignments]);
 
-  // Group notes by assignment and remove duplicates
+  // Group notes by assignment and remove duplicates, with search filter
   const notesByAssignment = useMemo(() => {
     const grouped: Record<string, Note[]> = {};
     const seenNotes = new Set<string>();
     
-    notes.forEach(note => {
+    const filtered = searchQuery.trim()
+      ? notes.filter(note => 
+          note.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          note.assignment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          note.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : notes;
+    
+    filtered.forEach(note => {
       // Create a unique identifier for the note using ID if available, otherwise use title+date
       const noteId = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
       
@@ -161,43 +170,59 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   }
 
   return (
-    <div className="w-80 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col h-full">
-      <div className="flex-1 p-4 overflow-y-auto pb-20">
+    <div className="w-full bg-[var(--bg-secondary)] flex flex-col h-full">
+      {/* Search bar */}
+      <div className="p-3 border-b border-[var(--border-primary)]">
+        <div className="flex items-center gap-2 h-9 px-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg focus-within:border-[var(--accent-primary)] transition-colors">
+          <Search size={14} className="text-[var(--text-secondary)] flex-shrink-0" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search notes..."
+            className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 p-3 overflow-y-auto pb-20">
         {Object.keys(notesByAssignment).length === 0 ? (
           <div className="text-center py-8">
             <FileText className="mx-auto mb-2 w-8 h-8 text-[var(--text-secondary)] opacity-50" />
-            <p className="text-base text-[var(--text-secondary)]">No notes yet</p>
+            <p className="text-sm text-[var(--text-secondary)]">
+              {searchQuery ? 'No notes match your search' : 'No notes yet'}
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
             {Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
-              <div key={assignment} className="border border-[var(--border-primary)] rounded-lg overflow-hidden">
+              <div key={assignment} className="border border-[var(--border-primary)] rounded-xl overflow-hidden">
                 <div className="flex items-center">
                   <button
                     onClick={() => toggleAssignment(assignment)}
-                    className="flex-1 px-3 py-3 bg-[var(--bg-primary)] flex items-center justify-between text-left"
+                    className="flex-1 px-3 py-2.5 bg-[var(--bg-primary)] flex items-center justify-between text-left hover:bg-[var(--bg-secondary)] transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       {expandedAssignments.has(assignment) ? (
-                        <ChevronDown size={18} className="text-[var(--text-secondary)]" />
+                        <ChevronDown size={16} className="text-[var(--text-secondary)]" />
                       ) : (
-                        <ChevronRight size={18} className="text-[var(--text-secondary)]" />
+                        <ChevronRight size={16} className="text-[var(--text-secondary)]" />
                       )}
-                      <Folder size={18} className="text-[var(--accent-primary)]" />
-                      <span className="text-base font-medium text-[var(--text-primary)]">
+                      <Folder size={16} className="text-[var(--accent-primary)]" />
+                      <span className="text-sm font-medium text-[var(--text-primary)] truncate">
                         {assignment}
                       </span>
                     </div>
-                    <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-1 rounded-full">
+                    <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-0.5 rounded-full">
                       {assignmentNotes.length}
                     </span>
                   </button>
                   <button
                     onClick={() => onCreateNote(assignment)}
-                    className="px-2 py-3 bg-[var(--bg-primary)] border-l border-[var(--border-primary)]"
+                    className="px-2.5 py-2.5 bg-[var(--bg-primary)] border-l border-[var(--border-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
                     title={`Create new note for "${assignment}"`}
                   >
-                    <Plus size={16} />
+                    <Plus size={14} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" />
                   </button>
                 </div>
                 
@@ -209,19 +234,19 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                         <div
                           key={noteKey}
                           onClick={() => onNoteSelect(note.id || noteKey)}
-                          className={`px-3 py-3 border-b border-[var(--border-primary)] last:border-b-0 cursor-pointer ${
+                          className={`px-3 py-2.5 border-b border-[var(--border-primary)] last:border-b-0 cursor-pointer transition-colors ${
                             selectedNoteId === note.id
                               ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
-                              : ''
+                              : 'hover:bg-[var(--bg-primary)]/50'
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-base font-medium text-[var(--text-primary)] truncate">
+                              <h4 className="text-sm font-medium text-[var(--text-primary)] truncate">
                                 {note.title}
                               </h4>
-                              <div className="mt-1">
-                                <p className="text-sm text-[var(--text-secondary)]">
+                              <div className="mt-0.5">
+                                <p className="text-xs text-[var(--text-secondary)]">
                                   Updated {getTimeAgo(note.last_edited)}
                                 </p>
                               </div>
@@ -240,7 +265,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
       <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)] sticky bottom-0">
         <button
           onClick={() => onCreateNote()}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-[var(--accent-primary)]/15 hover:bg-[var(--accent-primary)]/25 text-[var(--text-primary)] transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
           aria-label="Create note"
         >
           <Plus size={16} className="text-[var(--accent-primary)]" />

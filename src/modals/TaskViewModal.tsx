@@ -172,7 +172,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
     }
   };
   const isRecurring = task.recurrence_type === 'weekly' && Array.isArray(task.recurrence_weekdays) && task.recurrence_weekdays.length > 0;
-  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-3xl" className="!p-0" showHeader={false}>
+  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-3xl" padding="none" showHeader={false}>
       <div className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
         {/* Header */}
         <div className="p-6 border-b border-[var(--border-primary)]">

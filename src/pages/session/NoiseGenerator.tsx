@@ -515,7 +515,7 @@ export default function NoiseGenerator() {
             onClick={handlePlayPauseAll}
             className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
               anySoundPlaying
-                ? "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-deep)] shadow-md"
+                ? "border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
                 : "bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
             }`}
             aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}

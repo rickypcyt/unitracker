@@ -2,6 +2,7 @@ import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, P
 import { getOccurrenceForDate, isRecurringTask } from '@/utils/recurrenceUtils';
 import { useEffect, useRef, useState } from 'react';
 
+import { getLocalDateString } from '@/utils/dateUtils';
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
 import { restrictToWindowEdges } from '@dnd-kit/modifiers';
@@ -218,7 +219,7 @@ const WeekView = ({
 
         // Format date for deadline
         const formatDate = (date: Date) => {
-          return date.toISOString().split('T')[0];
+          return getLocalDateString(date);
         };
 
         // Update the task with new times and deadline

@@ -1,4 +1,5 @@
 import { Task } from '@/pages/tasks/taskStorage';
+import { getLocalDateString } from '@/utils/dateUtils';
 
 type CalendarTask = Task & {
   deadline?: string | null;
@@ -233,7 +234,7 @@ const startOfDay = (date: Date): Date => {
 };
 
 const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0]?.replace(/-/g, '') ?? '';
+  return getLocalDateString(date).replace(/-/g, '') ?? '';
 };
 
 const parseDateOnly = (dateString: string): Date => {
@@ -384,7 +385,7 @@ export const downloadICSFile = (tasks: Task[], filename?: string): void => {
   
   const link = document.createElement('a');
   link.href = url;
-  link.download = filename || `unitracker-tasks-${new Date().toISOString().split('T')[0]}.ics`;
+  link.download = filename || `unitracker-tasks-${getLocalDateString()}.ics`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

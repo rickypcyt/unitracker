@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { getLocalDateString } from '@/utils/dateUtils';
 import { useTasks } from '@/store/appStore';
 
 function formatMinutesToHMText(minutes: number) {
@@ -60,7 +61,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   } else if (date) {
     dayTasks = tasks.filter((t: any) => {
       if (!t.completed_at) return false;
-      const completedDate = new Date(t.completed_at).toISOString().split('T')[0];
+      const completedDate = getLocalDateString(new Date(t.completed_at));
       return completedDate === date;
     });
   }

@@ -1,8 +1,10 @@
 import { Check, Play, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
 import { formatDistanceToNowStrict } from 'date-fns';
 import { motion } from 'framer-motion';
 import { supabase } from '@/utils/supabaseClient';
+
 interface UnfinishedSession {
   id: string;
   name: string;
@@ -106,13 +108,10 @@ const UnfinishedSessionsModal = ({
   };
   if (!isOpen) return null;
   return <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)]">
-        <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center sticky top-0 bg-[var(--bg-primary)] z-10">
-          <h2 className="text-xl font-semibold">Unfinished Sessions</h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors" aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
+      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)] relative">
+        <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">
+          <X size={18} />
+        </button>
 
         <div className="p-4 space-y-4">
           {loading ? <div className="flex justify-center py-8">
@@ -165,12 +164,12 @@ const UnfinishedSessionsModal = ({
         </div>
         
         <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2 sticky bottom-0 bg-[var(--bg-primary)] z-10">
-          {onFinishAllSessions && <button onClick={onFinishAllSessions} className="px-4 border-1 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
+          {onFinishAllSessions && sessions.length > 0 && <button onClick={onFinishAllSessions} className="px-4 border-1 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
               Finish All Sessions
             </button>}
           <div className="flex space-x-3 ml-auto">
-            <button onClick={onClose} className="px-4 border-2 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
-              Close
+            <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+              Cancel
             </button>
             <button onClick={() => {
             onSessionResumed('');

@@ -318,7 +318,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
     };
   }, [contextMenu]);
   if (!isLoggedIn && !isDemo) {
-    return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" className="!p-0" showHeader={false}>
+    return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
         <div className="p-4">
           <div className="relative flex items-center justify-center mb-6">
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
@@ -337,7 +337,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
 
   // If not in demo mode and no sessions, show empty state
   if (!isDemo && !status && lapsData.length === 0) {
-    return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" className="!p-0" showHeader={false}>
+    return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
         <div className="p-4">
           <div className="relative flex items-center justify-center mb-6">
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">
@@ -355,14 +355,14 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
             <p className="text-[var(--text-secondary)] mb-6">
               Start a new study session to see your progress here.
             </p>
-            <button onClick={onClose} className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary-hover)] transition-colors">
+            <button onClick={onClose} className="px-4 py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
               Start
             </button>
           </div>
         </div>
       </BaseModal>;
   }
-  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" className="!p-0" showHeader={false}>
+  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
       <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col">
         <div className="p-4 flex-shrink-0">
           <div className="relative flex items-center justify-center mb-6">

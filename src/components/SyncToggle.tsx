@@ -1,7 +1,6 @@
-import { useUi } from '@/store/appStore';
-import { useTimerActions } from '@/store/appStore';
-
 import { Link } from 'lucide-react';
+import { useTimerActions } from '@/store/appStore';
+import { useUi } from '@/store/appStore';
 
 const SyncToggle = () => {
   const ui = useUi();
@@ -18,12 +17,12 @@ const SyncToggle = () => {
         onClick={handleToggle}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 font-semibold ${
           isSynced
-            ? 'bg-[var(--accent-primary)] text-white shadow-lg'
+            ? 'border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10'
             : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
         }`}
         aria-label={isSynced ? 'Disable timer synchronization' : 'Enable timer synchronization'}
       >
-        <Link size={18} className={isSynced ? 'text-white' : 'text-[var(--text-secondary)]'} />
+        <Link size={18} className={isSynced ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} />
         {isSynced ? 'Synchronized' : 'Sync Timers'}
       </button>
     </div>

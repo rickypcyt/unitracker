@@ -1,5 +1,6 @@
-import { BookOpen, Briefcase, Check, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Loader2, Music, Plane, Plus, Share, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { BookOpen, Briefcase, Check, ChevronRight, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Loader2, Music, Plane, Plus, Search, Share, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import BaseModal from './BaseModal';
 import ManageWorkspacesModal from '@/modals/ManageWorkspacesModal';
 import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
@@ -74,6 +75,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showManageModal, setShowManageModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [sharedByUser, setSharedByUser] = useState<any[]>([]);
@@ -339,119 +341,168 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     // Return "All" workspace first, then sorted workspaces
     return [allWorkspace, ...workspaces.sort((a, b) => a.name.localeCompare(b.name))];
   }, [workspaces]);
+
+  const filteredWorkspaces = useMemo(() => {
+    if (!searchQuery.trim()) return sortedWorkspaces;
+    const q = searchQuery.toLowerCase();
+    return sortedWorkspaces.filter((ws: any) => ws.name.toLowerCase().includes(q));
+  }, [sortedWorkspaces, searchQuery]);
+
   return <>
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Select Workspace" maxWidth="max-w-md">
-        <div className="space-y-2" onKeyDown={handleKeyDown}>
-          {sortedWorkspaces.map((ws: any, i: number) => <button key={ws.id} ref={el => {
-          itemRefs.current[i] = el;
-        }} onClick={() => handleSelectWorkspace(ws)} className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${activeWorkspace?.id === ws.id ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5'}`}>
-              {(() => {
-            const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
-            return <IconComp className="w-5 h-5 text-[var(--text-primary)]" />;
-          })()}
-              <div className="flex-1 text-left">
-                <span className={`font-medium ${activeWorkspace?.id === ws.id ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                  {ws.name}
-                </span>
-                <span className="text-sm text-[var(--text-secondary)] ml-2">
-                  ({getTaskCountByWorkspace(ws)})
-                </span>
-              </div>
-              {activeWorkspace?.id === ws.id && <Check className="w-5 h-5 text-[var(--accent-primary)]" />}
-            </button>)}
-          
-          <div className="border-t border-[var(--border-primary)] pt-4 mt-4 space-y-3">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Shared Workspaces</h3>
-            {sharedLoading ? <div className="flex items-center gap-2 text-[var(--text-secondary)] text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Loading shared workspaces...
-              </div> : <>
-                {sharedError && <div className="text-sm text-red-500">{sharedError}</div>}
-
-                {sharedByUser.length === 0 && sharedWithUser.length === 0 && !sharedError ? <div className="text-sm text-[var(--text-secondary)]">You haven&apos;t shared or received any workspaces yet.</div> : <div className="space-y-3">
-                    {sharedByUser.length > 0 && <div className="space-y-2">
-                        <ul className="space-y-2">
-                          {sharedByUser.map(entry => <li key={entry.id}>
-                              <button onClick={() => handleSelectSharedWorkspaceEntry(entry)} className="w-full flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-colors text-left">
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
-                                  <div className="text-xs text-[var(--text-secondary)] truncate">
-                                    Shared with {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
-                                  </div>
-                                  <div className="text-[0.7rem] text-[var(--text-tertiary)]">Tap to open</div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="text-xs text-[var(--text-secondary)]">
-                                    {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
-                                  </div>
-                                  <span role="button" tabIndex={0} onClick={e => {
-                          e.stopPropagation();
-                          handleUnshareWorkspace(entry.id, entry.workspace?.id);
-                        }} onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleUnshareWorkspace(entry.id, entry.workspace?.id);
-                          }
-                        }} className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer" title="Stop sharing">
-                                    <Trash2 size={14} />
-                                  </span>
-                                </div>
-                              </button>
-                            </li>)}
-                        </ul>
-                      </div>}
-
-                    {sharedWithUser.length > 0 && <div className="space-y-2">
-                        <ul className="space-y-2">
-                          {sharedWithUser.map(entry => <li key={entry.id}>
-                              <button onClick={() => handleSelectSharedWorkspaceEntry(entry)} className="w-full flex items-center gap-3 p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-colors text-left">
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown workspace'}</div>
-                                  <div className="text-xs text-[var(--text-secondary)] truncate">
-                                    Shared by {entry.partner?.username || entry.partner?.email || entry.partner?.id || 'Unknown user'}
-                                  </div>
-                                  <div className="text-[0.7rem] text-[var(--text-tertiary)]">Tap to open</div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="text-xs text-[var(--text-secondary)]">
-                                    {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
-                                  </div>
-                                  <span role="button" tabIndex={0} onClick={e => {
-                          e.stopPropagation();
-                          handleUnshareWorkspace(entry.id, entry.workspace?.id);
-                        }} onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleUnshareWorkspace(entry.id, entry.workspace?.id);
-                          }
-                        }} className="p-1 rounded hover:bg-red-500/10 text-red-500 hover:text-red-700 transition-colors cursor-pointer" title="Remove from shared workspaces">
-                                    <Trash2 size={14} />
-                                  </span>
-                                </div>
-                              </button>
-                            </li>)}
-                        </ul>
-                      </div>}
-                  </div>}
-              </>}
+      <BaseModal isOpen={isOpen} onClose={onClose} title="Select Workspace" maxWidth="max-w-md" showHeader={false}>
+        <div className="flex flex-col" onKeyDown={handleKeyDown}>
+          {/* Search bar */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search workspaces..."
+              className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+            />
           </div>
 
-          <div className="border-t border-[var(--border-primary)] pt-4 mt-4 space-y-2">
-            <button onClick={() => setShowCreateModal(true)} className="w-full flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-all duration-200">
-              <Plus className="w-5 h-5 text-[var(--accent-primary)]" />
-              <span className="font-medium text-[var(--accent-primary)]">New workspace</span>
+          {/* Workspace list */}
+          <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
+            {filteredWorkspaces.length === 0 && (
+              <div className="text-center py-6 text-sm text-[var(--text-secondary)]">
+                No workspaces found
+              </div>
+            )}
+            {filteredWorkspaces.map((ws: any, i: number) => {
+              const isActive = activeWorkspace?.id === ws.id;
+              const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
+              return (
+                <button
+                  key={ws.id}
+                  ref={el => { itemRefs.current[i] = el; }}
+                  onClick={() => handleSelectWorkspace(ws)}
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]'
+                      : 'hover:bg-[var(--bg-secondary)]'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    isActive ? 'bg-[var(--accent-primary)]/15' : 'bg-[var(--bg-secondary)]'
+                  }`}>
+                    <IconComp className={`w-4 h-4 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <span className={`text-sm font-medium ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                      {ws.name}
+                    </span>
+                    {getTaskCountByWorkspace(ws) > 0 && (
+                      <span className="ml-2 text-xs text-[var(--text-secondary)]">
+                        {getTaskCountByWorkspace(ws)} tasks
+                      </span>
+                    )}
+                  </div>
+                  {isActive && <Check className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Shared Workspaces section */}
+          {(sharedByUser.length > 0 || sharedWithUser.length > 0 || sharedLoading) && (
+            <div className="border-t border-[var(--border-primary)] pt-3 mt-3">
+              <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">Shared</h3>
+              {sharedLoading ? (
+                <div className="flex items-center gap-2 text-[var(--text-secondary)] text-sm py-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading...
+                </div>
+              ) : (
+                <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+                  {sharedByUser.map(entry => (
+                    <button
+                      key={entry.id}
+                      onClick={() => handleSelectSharedWorkspaceEntry(entry)}
+                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
+                        <Share className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
+                        <div className="text-xs text-[var(--text-secondary)] truncate">
+                          → {entry.partner?.username || entry.partner?.email || 'Unknown'}
+                        </div>
+                      </div>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); handleUnshareWorkspace(entry.id, entry.workspace?.id); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleUnshareWorkspace(entry.id, entry.workspace?.id); } }}
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 transition-all cursor-pointer"
+                        title="Stop sharing"
+                      >
+                        <Trash2 size={14} />
+                      </span>
+                    </button>
+                  ))}
+                  {sharedWithUser.map(entry => (
+                    <button
+                      key={entry.id}
+                      onClick={() => handleSelectSharedWorkspaceEntry(entry)}
+                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
+                        <Share className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
+                        <div className="text-xs text-[var(--text-secondary)] truncate">
+                          ← {entry.partner?.username || entry.partner?.email || 'Unknown'}
+                        </div>
+                      </div>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => { e.stopPropagation(); handleUnshareWorkspace(entry.id, entry.workspace?.id); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleUnshareWorkspace(entry.id, entry.workspace?.id); } }}
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 transition-all cursor-pointer"
+                        title="Remove"
+                      >
+                        <Trash2 size={14} />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Action buttons footer */}
+          <div className="border-t border-[var(--border-primary)] pt-3 mt-3 grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Plus className="w-4 h-4 text-[var(--accent-primary)]" />
+              </div>
+              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">New</span>
             </button>
-            
-            <button onClick={() => setShowManageModal(true)} className="w-full flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-all duration-200">
-              <Edit className="w-5 h-5 text-[var(--accent-primary)]" />
-              <span className="font-medium text-[var(--accent-primary)]">Edit workspaces</span>
+            <button
+              onClick={() => setShowManageModal(true)}
+              className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Edit className="w-4 h-4 text-[var(--accent-primary)]" />
+              </div>
+              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Edit</span>
             </button>
-            
-            <button onClick={() => setShowShareModal(true)} className="w-full flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 transition-all duration-200">
-              <Share className="w-5 h-5 text-[var(--accent-primary)]" />
-              <span className="font-medium text-[var(--accent-primary)]">Share workspace</span>
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Share className="w-4 h-4 text-[var(--accent-primary)]" />
+              </div>
+              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Share with a friend</span>
             </button>
           </div>
         </div>

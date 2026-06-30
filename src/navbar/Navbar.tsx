@@ -12,7 +12,7 @@ import { useFriendManagement } from '@/hooks/useFriendManagement';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const Navbar = () => {
-  const { isLoggedIn, loginWithGoogle, logout, user } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { activePage, navigateTo, navOrder, setNavOrder } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { tasks } = useTasks();
@@ -28,10 +28,6 @@ const Navbar = () => {
   const {
     friends,
     receivedRequests,
-    sentRequests,
-    handleSendRequest,
-    handleAccept,
-    handleReject,
     handleRemoveFriend,
   } = useFriendManagement(user?.id);
 
@@ -129,11 +125,6 @@ const Navbar = () => {
     };
   });
 
-  // Workspace handlers
-  const handleSelectWorkspace = (ws: any) => {
-    setCurrentWorkspace(ws);
-    localStorage.setItem('activeWorkspaceId', ws.id);
-  };
   // Navigation link class
   const isActive = (page: any) => activePage === page;
   const navLinkClass = (page: any) =>
@@ -266,21 +257,9 @@ const Navbar = () => {
           <div className="flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2 flex-shrink-0">
             {/* Settings button - always visible */}
             <SettingsButton
-              isLoggedIn={isLoggedIn}
-              loginWithGoogle={loginWithGoogle}
-              logout={logout}
-              hasFriendRequests={receivedRequests.length > 0}
-              receivedRequests={receivedRequests}
-              sentRequests={sentRequests}
-              onSendRequest={handleSendRequest}
-              onAccept={handleAccept}
-              onReject={handleReject}
               friends={friends}
               workspaces={workspacesWithTaskCount}
-              activeWorkspace={activeWorkspace}
-              onSelectWorkspace={handleSelectWorkspace}
               onRemoveFriend={handleRemoveFriend}
-              githubUrl="https://github.com/rickypcyt/unitracker"
             />
           </div>
         </div>

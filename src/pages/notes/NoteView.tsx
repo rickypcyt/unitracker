@@ -1,5 +1,5 @@
+import { Calendar, Save, Trash2, X } from 'lucide-react';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { Save, Trash2, X } from 'lucide-react';
 
 import MobileNotesSelector from './MobileNotesSelector';
 
@@ -215,7 +215,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               <button
                 onClick={handleSave}
                 disabled={!hasUnsavedChanges || isSaving}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-primary)]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
               >
                 <Save size={14} className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                 <span className="hidden xs:inline">{isSaving ? 'Saving...' : 'Save'}</span>
@@ -288,65 +288,76 @@ const NoteView: React.FC<NoteViewProps> = ({
   // Render view mode
   return (
     <div className="h-full flex flex-col relative">
-      {/* Note Title Header */}
-      <div className="p-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
-          placeholder="Note Title"
-        />
-      </div>
-
-      {/* Note Properties */}
-      <div className="p-0 bg-[var(--bg-primary)]">
-        <div className="border-b border-[var(--border-primary)] overflow-hidden">
-          <div className="flex flex-col">
-            {/* Assignment */}
-            <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Assignment</span>
-                <input
-                  type="text"
-                  value={assignment}
-                  onChange={(e) => setAssignment(e.target.value)}
-                  className={`text-sm font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-right flex-1 ml-4 ${
-                    !assignment || assignment.trim() === ''
-                      ? 'text-red-400 placeholder-red-400'
-                      : 'text-[var(--text-primary)]'
-                  }`}
-                  placeholder="Add here"
-                />
-              </div>
-            </div>
-
-            {/* Created Date */}
-            {note.created_at && (
-              <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Created</span>
-                  <span className="text-sm text-[var(--text-primary)] font-medium">{new Date(note.created_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Updated Date */}
-            {note.last_edited && (
-              <div className="p-3 border-b border-[var(--border-primary)] last:border-b-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[var(--text-secondary)] uppercase tracking-wide">Updated</span>
-                  <span className="text-sm text-[var(--text-primary)] font-medium">{new Date(note.last_edited).toLocaleDateString()}</span>
-                </div>
-              </div>
-            )}
+      {/* Note Header with inline properties */}
+      <div className="px-4 sm:px-6 py-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
+            placeholder="Note Title"
+          />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={handleSave}
+              disabled={!hasUnsavedChanges || isSaving}
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+            >
+              <Save size={14} />
+              <span>{isSaving ? 'Saving...' : 'Save'}</span>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+              title="Delete note"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
+        </div>
+
+        {/* Inline metadata bar */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+          {/* Assignment */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[var(--text-secondary)]">Assignment:</span>
+            <input
+              type="text"
+              value={assignment}
+              onChange={(e) => setAssignment(e.target.value)}
+              className={`font-medium bg-transparent border-none focus:outline-none focus:ring-0 w-32 sm:w-40 ${
+                !assignment || assignment.trim() === ''
+                  ? 'text-red-400 placeholder-red-400'
+                  : 'text-[var(--accent-primary)]'
+              }`}
+              placeholder="Add here"
+            />
+          </div>
+
+          {/* Date */}
+          <div className="flex items-center gap-1.5">
+            <Calendar size={14} className="text-[var(--text-secondary)]" />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-[var(--text-primary)]"
+            />
+          </div>
+
+          {/* Last edited */}
+            {note.last_edited && (
+              <span className="text-[var(--text-secondary)] italic">
+                Last edited {new Date(note.last_edited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="w-full min-h-[calc(100vh-8rem)] sm:min-h-[calc(100vh-10rem)]">
+        <div className="w-full min-h-[calc(100vh-10rem)] sm:min-h-[calc(100vh-12rem)]">
           <Suspense fallback={<EditorLoader />}>
             <MarkdownWysiwyg
               ref={editorRef}
@@ -358,7 +369,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             />
           </Suspense>
         </div>
-        </div>
+      </div>
 
       {/* Mobile Notes Selector */}
       <MobileNotesSelector
@@ -372,7 +383,6 @@ const NoteView: React.FC<NoteViewProps> = ({
         selectedNoteId={selectedNoteId}
         onDelete={onDeleteNote || (() => {})}
         onCreateNote={() => {
-          // This would need to be passed down from parent
           setShowMobileNotes(false);
         }}
         isOpen={showMobileNotes}

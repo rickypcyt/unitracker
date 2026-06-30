@@ -113,7 +113,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   const predefinedModes = pomodoroModes.slice(0, customModeIndex);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} className="!p-0 lg:max-w-6xl">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" className="lg:max-w-6xl">
       <div className="p-6 max-h-[95vh] overflow-y-auto">
         <div className="relative flex items-center justify-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">

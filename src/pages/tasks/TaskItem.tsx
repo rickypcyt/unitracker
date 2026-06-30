@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock, Loader, Pencil, Play, Trash2, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Loader, Pause, Pencil, Play, Trash2, Zap } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, isToday, isTomorrow, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
@@ -138,7 +138,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             case 'in_progress':
                 return <Loader size={13} className="text-yellow-500 animate-spin" strokeWidth={2.5} />;
             case 'on_hold':
-                return null;
+                return <Pause size={13} className="text-blue-500 animate-pulse-slow" strokeWidth={2.5} />;
             case 'active':
                 return <Play size={13} className="text-green-500" strokeWidth={2.5} />;
             default:
@@ -238,6 +238,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             tabIndex={0}
             role="listitem"
         >
+            {/* Status icon — top-right corner */}
+            {statusIcon && !task.completed && (
+                <span className="absolute top-2 right-2 flex-shrink-0 flex items-center justify-center z-10">
+                    {statusIcon}
+                </span>
+            )}
+
             {/* Contenido principal */}
             <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
                 {/* Assignment above title when showAssignment is true (calendar view) */}
@@ -249,11 +256,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
                 {/* Row 1: Title + difficulty badge */}
                 <div className="flex items-center gap-1.5 min-w-0">
-                    {statusIcon && !task.completed && (
-                        <span className="flex-shrink-0 flex items-center justify-center">
-                            {statusIcon}
-                        </span>
-                    )}
                     <span
                         className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
                             task.completed
