@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock, Loader, Pause, Pencil, Play, Trash2, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Loader, Pencil, Play, Trash2, Zap } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, isToday, isTomorrow, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
@@ -18,10 +18,28 @@ const formatRecurrenceText = (weekdays: number[]) => {
     return `Every ${selectedDays.join(', ')}`;
 };
 
-// Helper para formatear tiempo reutilizando la lógica del formulario
-const formatTime = (timeStr: string | undefined | null) => {
-    if (!timeStr) return '';
-    return to12Hour(timeStr);
+// Helper para formatear rangos de tiempo de forma compacta: "8–9 AM" en vez de "08:00 AM - 09:00 AM"
+const formatTimeRange = (startStr: string | undefined | null, endStr: string | undefined | null) => {
+    if (!startStr) return '';
+    const start12 = to12Hour(startStr);
+    if (!endStr) return start12;
+    const end12 = to12Hour(endStr);
+    const startPeriod = start12.split(' ')[1] || '';
+    const endPeriod = end12.split(' ')[1] || '';
+    const startHM = start12.split(' ')[0] || '';
+    const endHM = end12.split(' ')[0] || '';
+    const startHour = startHM.split(':')[0] || '';
+    const startMin = startHM.split(':')[1] || '';
+    const endHour = endHM.split(':')[0] || '';
+    const endMin = endHM.split(':')[1] || '';
+    if (startPeriod === endPeriod) {
+        const startLabel = startMin === '00' ? startHour : `${startHour}:${startMin}`;
+        const endLabel = endMin === '00' ? endHour : `${endHour}:${endMin}`;
+        return `${startLabel}\u2013${endLabel} ${startPeriod}`;
+    }
+    const startLabel = startMin === '00' ? `${startHour} ${startPeriod}` : `${startHM} ${startPeriod}`;
+    const endLabel = endMin === '00' ? `${endHour} ${endPeriod}` : `${endHM} ${endPeriod}`;
+    return `${startLabel} \u2013 ${endLabel}`;
 };
 
 // Helper para determinar el color del deadline
@@ -120,7 +138,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             case 'in_progress':
                 return <Loader size={13} className="text-yellow-500 animate-spin" strokeWidth={2.5} />;
             case 'on_hold':
-                return <Pause size={13} className="text-blue-500" strokeWidth={2.5} />;
+                return null;
             case 'active':
                 return <Play size={13} className="text-green-500" strokeWidth={2.5} />;
             default:
@@ -180,33 +198,31 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         }
     };
 
-    // Helper para el label de hoy/mañana
-    const renderDateLabel = (deadline: string) => {
-        if (isToday(deadline)) {
-            return <span className="text-green-500 ml-1">(Today)</span>;
-        }
-        if (isTomorrow(deadline)) {
-            return <span className="text-yellow-500 ml-1">(Tomorrow)</span>;
+    // Helper para extraer YYYY-MM-DD de un date string sin conversión de zona horaria
+    const getDateOnlyString = (dateStr: string): string | null => {
+        if (!dateStr) return null;
+        const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+        // DD/MM/YYYY format
+        const slashMatch = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+        if (slashMatch && slashMatch[1] && slashMatch[2] && slashMatch[3]) {
+            return `${slashMatch[3]}-${slashMatch[2].padStart(2, '0')}-${slashMatch[1].padStart(2, '0')}`;
         }
         return null;
     };
-    
+
     // Helper para verificar si la tarea es para hoy (sin importar la hora)
     const isTaskForToday = (dateStr: string) => {
         if (!dateStr) return false;
-        const taskDate = parseDateFromString(dateStr);
-        if (!taskDate) return false;
-        const today = new Date();
-        return (
-            taskDate.getDate() === today.getDate() &&
-            taskDate.getMonth() === today.getMonth() &&
-            taskDate.getFullYear() === today.getFullYear()
-        );
+        const dateOnly = getDateOnlyString(dateStr);
+        if (!dateOnly) return false;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return dateOnly === todayStr;
     };
 
     
     const deadlineProgress = task.deadline ? getDeadlineProgress(task.deadline) : null;
-    const difficultyLabel = getDifficultyLabel(task.difficulty || '');
     const statusIcon = getStatusIcon(task.status);
 
     return (
@@ -231,7 +247,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     </div>
                 )}
 
-                {/* Title row with badges */}
+                {/* Row 1: Title + difficulty badge */}
                 <div className="flex items-center gap-1.5 min-w-0">
                     {statusIcon && !task.completed && (
                         <span className="flex-shrink-0 flex items-center justify-center">
@@ -248,55 +264,62 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     >
                         {task.title}
                     </span>
-                    {difficultyLabel && !task.completed && (
-                        <span className={`flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full ${getDifficultyColor(task.difficulty || 'medium', 'bg')} ${getDifficultyColor(task.difficulty || 'medium')}`}>
-                            {difficultyLabel}
+                    {task.deadline && task.deadline !== '' && task.recurrence_type !== 'weekly' && (
+                        <span className={`flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                            isTaskForToday(task.deadline)
+                                ? 'bg-green-500/10 text-green-500'
+                                : getDeadlineColor(task.deadline) === 'text-red-500'
+                                ? 'bg-red-500/10 text-red-500'
+                                : getDeadlineColor(task.deadline) === 'text-yellow-500'
+                                ? 'bg-yellow-500/10 text-yellow-500'
+                                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
+                        }`}>
+                            {getTimeRemainingString(task.deadline)}
                         </span>
                     )}
                 </div>
 
-                {/* Date/Recurrence + Progress bar */}
-                <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1 text-sm" style={{ color: 'var(--muted-strong)' }}>
-                        {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
-                            <span className="text-[var(--text-secondary)] flex items-center gap-1">
-                                <Zap size={13} className="flex-shrink-0" />
-                                {formatRecurrenceText(task.recurrence_weekdays)}
-                                {task.start_at && (
-                                    <span className="ml-0.5">
-                                        {formatTime(task.start_at)}
-                                        {task.end_at && ` - ${formatTime(task.end_at)}`}
-                                    </span>
-                                )}
+                {/* Row 2: Date / time / days remaining — full width with justify-between */}
+                <div className="w-full">
+                    {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
+                        <div className="flex items-center justify-between gap-2 text-sm w-full">
+                            <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
+                                <Zap size={13} className="flex-shrink-0 opacity-70" />
+                                <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
                             </span>
-                        ) : task.deadline && task.deadline !== '' ? (
-                            <span className={`flex items-center gap-1 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
-                                <Clock size={13} className="flex-shrink-0" />
-                                {isTaskForToday(task.deadline) ? 'Today' : formatDateShort(task.deadline)}
-                                {task.start_at && (
-                                    <span className="ml-0.5">
-                                        {formatTime(task.start_at)}
-                                        {task.end_at && ` - ${formatTime(task.end_at)}`}
-                                    </span>
-                                )}
-                                {!isTaskForToday(task.deadline) && (
-                                    <span className="ml-0.5 opacity-80">({getTimeRemainingString(task.deadline)})</span>
-                                )}
-                                {renderDateLabel(task.deadline)}
-                            </span>
-                        ) : <span className="text-[var(--text-secondary)] opacity-60">No deadline</span>}
-                    </div>
-
-                    {/* Deadline progress bar */}
-                    {deadlineProgress !== null && !task.completed && (
-                        <div className="h-1 w-full rounded-full bg-[var(--bg-primary)] overflow-hidden">
-                            <div
-                                className={`h-full rounded-full transition-all duration-300 ${getProgressBarColor(deadlineProgress)}`}
-                                style={{ width: `${deadlineProgress}%` }}
-                            />
+                            {task.start_at && (
+                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
+                                    <Clock size={12} className="opacity-60" />
+                                    {formatTimeRange(task.start_at, task.end_at)}
+                                </span>
+                            )}
                         </div>
-                    )}
+                    ) : task.deadline && task.deadline !== '' ? (
+                        <div className="flex items-center justify-between gap-2 text-sm w-full">
+                            <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
+                                <Clock size={13} className="flex-shrink-0" />
+                                <span className="truncate">{formatDateShort(task.deadline)}</span>
+                            </span>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {task.start_at && (
+                                    <span className="text-[var(--text-secondary)] flex items-center gap-1">
+                                        {formatTimeRange(task.start_at, task.end_at)}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-sm">No deadline</span>}
                 </div>
+
+                {/* Row 3: Progress bar */}
+                {deadlineProgress !== null && !task.completed && (
+                    <div className="h-1.5 w-full rounded-full bg-[var(--bg-secondary)] overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-300 ${getProgressBarColor(deadlineProgress)}`}
+                            style={{ width: `${deadlineProgress}%` }}
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Right side: complete button + hover actions */}

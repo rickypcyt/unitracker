@@ -1,4 +1,5 @@
 import { createJSONStorage, persist } from 'zustand/middleware';
+
 import type { PomodoroModeType } from '@/types/pomodoro';
 import { create } from 'zustand';
 import { fetchTasks as fetchTasksAction } from '@/store/TaskActions';
@@ -265,22 +266,23 @@ const DEFAULT_POMODORO_SETTINGS: PomodoroSettings = {
   volume: 0.7
 };
 const DEFAULT_POMODORO_STATE: PomoState = {
-  timeLeft: 1500,
-  // 25 minutes
+  timeLeft: 3000,
+  // 50 minutes (Extended Focus default)
   isRunning: false,
   currentMode: 'work',
-  modeIndex: 0,
+  modeIndex: 1,
+  // Extended Focus as default
   workSessionsCompleted: 0,
   workSessionsBeforeLongBreak: 4,
-  longBreakDuration: 900,
-  // 15 minutes
+  longBreakDuration: 1800,
+  // 30 minutes
   startTime: 0,
   pausedTime: 0,
-  work: 1500,
-  // 25 minutes in seconds
-  break: 300,
-  // 5 minutes in seconds
-  longBreak: 900 // 15 minutes in seconds
+  work: 3000,
+  // 50 minutes in seconds
+  break: 600,
+  // 10 minutes in seconds
+  longBreak: 1800 // 30 minutes in seconds
 };
 const INITIAL_POMODORO_MODES: PomodoroMode[] = [{
   label: 'Traditional',

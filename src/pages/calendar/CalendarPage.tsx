@@ -9,6 +9,7 @@ import { RecurringTasksProvider } from '@/pages/calendar/RecurringTasksContext';
 import { Task } from '@/types/taskStorage';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLocation } from 'react-router-dom';
+import { useResizable } from '@/hooks/useResizable';
 
 // Constants for localStorage keys
 const STORAGE_KEYS = {
@@ -145,37 +146,87 @@ const CalendarPage = memo(() => {
   }, [isVisible]);
 
 
+  const { width: sidebarWidth, onMouseDown: onResizeStart } = useResizable({
+    initialWidth: 320,
+    minWidth: 240,
+    maxWidth: 560,
+    storageKey: 'calendarSidebarWidth',
+  });
+
+  const [sidebarRight, setSidebarRight] = useState(() => {
+    return localStorage.getItem('calendarSidebarRight') === 'true';
+  });
+
+  const toggleSidebarPosition = () => {
+    setSidebarRight(prev => {
+      const next = !prev;
+      localStorage.setItem('calendarSidebarRight', String(next));
+      return next;
+    });
+  };
+
   // Render calendar content
   const renderCalendarContent = () => {
+    const sidebar = (
+      <div
+        className="hidden lg:flex flex-col gap-4 flex-shrink-0"
+        style={{ width: `${sidebarWidth}px` }}
+      >
+        <AllTasks 
+          filteredTasks={filteredTasks} 
+          title={getFilterLabel(selectedFilter)}
+          showCompleted={false}
+          sortBy={taskSortBy}
+          hideSortMenu={false}
+          allTasks={tasks}
+          onFilteredTasksChange={setFilteredTasks}
+          selectedFilter={selectedFilter}
+          onFilterChange={handleFilterChange}
+          onSortChange={setTaskSortBy}
+          sidebarRight={sidebarRight}
+          onToggleSidebar={toggleSidebarPosition}
+        />
+      </div>
+    );
+
+    const resizeHandle = (
+      <div
+        className="hidden lg:flex items-center justify-center w-1 cursor-col-resize hover:bg-[var(--accent-primary)]/30 transition-colors flex-shrink-0 group relative"
+        onMouseDown={onResizeStart}
+      >
+        <div className="absolute inset-y-0 -left-1 -right-1 z-10" />
+        <div className="w-0.5 h-12 bg-[var(--border-primary)] group-hover:bg-[var(--accent-primary)] rounded-full transition-colors" />
+      </div>
+    );
+
+    const calendarPanel = (
+      <div className="flex-1 min-w-0">
+        <div className="w-full h-full">
+          <Calendar 
+            view={view} 
+            onViewChange={handleViewChange}
+            tasks={tasks}
+          />
+        </div>
+      </div>
+    );
+
     return (
       <div className="w-full flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row gap-4 flex-1">
-          {/* Left Column - All Tasks and Filter (Desktop) */}
-          <div className="hidden lg:flex flex-col gap-4 w-80 flex-shrink-0">
-            <AllTasks 
-              filteredTasks={filteredTasks} 
-              title={getFilterLabel(selectedFilter)}
-              showCompleted={false}
-              sortBy={taskSortBy}
-              hideSortMenu={false}
-              allTasks={tasks}
-              onFilteredTasksChange={setFilteredTasks}
-              selectedFilter={selectedFilter}
-              onFilterChange={handleFilterChange}
-              onSortChange={setTaskSortBy}
-            />
-          </div>
-
-          {/* Calendar Panel */}
-          <div className="flex-1 min-w-0">
-            <div className="w-full h-full">
-              <Calendar 
-                view={view} 
-                onViewChange={handleViewChange}
-                tasks={tasks}
-              />
-            </div>
-          </div>
+        <div className="flex flex-col lg:flex-row gap-0 flex-1">
+          {!sidebarRight && (
+            <>
+              {sidebar}
+              {resizeHandle}
+            </>
+          )}
+          {calendarPanel}
+          {sidebarRight && (
+            <>
+              {resizeHandle}
+              {sidebar}
+            </>
+          )}
         </div>
 
         {/* Mobile Filter and All Tasks - Below Calendar */}

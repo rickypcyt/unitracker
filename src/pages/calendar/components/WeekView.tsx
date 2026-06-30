@@ -1,10 +1,12 @@
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { getOccurrenceForDate, isRecurringTask } from '@/utils/recurrenceUtils';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
 import { handleAddTask } from '../utils/calendarUtils';
 import { isSameDay } from 'date-fns';
 import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { useAppStore } from '@/store/appStore';
+
 interface WeekViewProps {
   currentDate: Date;
   isLoggedIn: boolean;
@@ -39,6 +41,7 @@ const WeekView = ({
     minute: number;
   } | null>(null);
   const updateTaskSuccess = useAppStore(state => state.updateTaskSuccess);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const sensors = useSensors(useSensor(PointerSensor, {
     activationConstraint: {
       distance: 8
@@ -51,6 +54,15 @@ const WeekView = ({
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Auto-scroll to current hour on mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      const currentHour = new Date().getHours();
+      const scrollPosition = Math.max(0, (currentHour - 2) * 60);
+      scrollRef.current.scrollTop = scrollPosition;
+    }
   }, []);
   const startOfWeek = new Date(currentDate);
   const day = startOfWeek.getDay();
@@ -234,22 +246,26 @@ const WeekView = ({
     }
   };
   return <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragOver={handleDragOver} modifiers={[restrictToWindowEdges]}>
-      <div className="flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative overflow-hidden h-full">
+      <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full">
       {/* Header with days - Sticky header */}
-      <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm pb-1 border-b border-[var(--border-primary)]/30 flex-shrink-0">
-        <div className="grid grid-cols-8 gap-1">
-          <div className="text-sm text-[var(--text-secondary)] font-medium p-1"></div>
-          {weekDays.map((day, i) => <div key={i} className={`text-center text-sm font-medium p-1 rounded ${isSameDay(day, new Date()) ? 'text-[var(--accent-primary)] font-semibold' : 'text-[var(--text-primary)]'}`}>
-              <div className="text-sm sm:text-base font-medium opacity-90">{day.toLocaleDateString('en', {
+      <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm px-2 pt-3 pb-2 flex-shrink-0">
+        <div className="grid grid-cols-8 gap-0.5">
+          <div className="text-xs text-[var(--text-secondary)] font-medium p-1.5"></div>
+          {weekDays.map((day, i) => {
+            const isToday = isSameDay(day, new Date());
+            const isWeekend = i >= 5;
+            return <div key={i} className={`text-center p-1.5 rounded-lg transition-colors ${isToday ? 'bg-[var(--accent-primary)]/10' : isWeekend ? 'bg-[var(--bg-secondary)]/40' : ''}`}>
+              <div className={`text-xs sm:text-sm font-medium ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>{day.toLocaleDateString('en', {
                 weekday: 'short'
               })}</div>
-              <div className="text-base">{day.getDate()}</div>
-            </div>)}
+              <div className={`text-sm sm:text-base flex items-center justify-center mx-auto mt-0.5 font-semibold ${isToday ? 'w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--accent-primary)] text-white' : 'text-[var(--text-primary)]'}`}>{day.getDate()}</div>
+            </div>;
+          })}
         </div>
       </div>
 
       {/* Time grid */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto px-2 pb-2" ref={scrollRef}>
         <div className="relative">
           {/* Render all tasks that span multiple hours */}
           {(() => {
@@ -316,7 +332,7 @@ const WeekView = ({
               const durationInMinutes = (occurrenceEnd.getTime() - occurrenceStart.getTime()) / (1000 * 60);
               const topPosition = getTopPosition(startMinutesFromStart);
               const blockHeight = getHeight(durationInMinutes);
-              return <div key={`spanning-task-${task.id}-${dayIndex}`} data-calendar-task draggable id={task.id.toString()} className="text-[var(--text-primary)] text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing" style={{
+              return <div key={`spanning-task-${task.id}-${dayIndex}`} data-calendar-task draggable id={task.id.toString()} className="text-[var(--text-primary)] text-xs sm:text-sm px-2 py-1 rounded-lg shadow-sm truncate pointer-events-auto cursor-pointer transition-all border-l-2 border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 absolute z-10 hover:shadow-md hover:border-l-[var(--accent-primary)] hover:cursor-grab active:cursor-grabbing" style={{
                 left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
                 top: `${topPosition + 9}px`,
                 width: `11.5%`,
@@ -337,11 +353,11 @@ const WeekView = ({
                 hour: '2-digit',
                 minute: '2-digit'
               })}`}>
-                  {!isMobile && task.assignment && <div className="text-xs text-[var(--text-primary)] truncate">
+                  {!isMobile && task.assignment && <div className="text-xs text-[var(--accent-primary)]/80 truncate font-medium">
                       {task.assignment}
                     </div>}
                   <div className="font-medium line-clamp-2">{task.title || 'Sin título'}</div>
-                  {!isMobile && <div className="text-xs opacity-90 truncate">
+                  {!isMobile && <div className="text-xs opacity-70 truncate">
                       {occurrenceStart.toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -355,12 +371,13 @@ const WeekView = ({
           })()}
           
           {hours.map(hour => {
-            return <div key={hour} className="grid grid-cols-8 gap-1 border-t border-[var(--border-primary)]/30 relative">
-                <div className="text-sm text-[var(--text-secondary)] p-1 text-left">
+            return <div key={hour} className={`grid grid-cols-8 gap-0.5 relative ${hour % 2 === 0 ? 'bg-[var(--bg-secondary)]/15' : ''}`}>
+                <div className="text-xs text-[var(--text-secondary)] p-1.5 text-right font-medium opacity-60">
                   {format12Hour(hour)}
                 </div>
                 {weekDays.map((day, i) => {
                 const isCurrentDay = isSameDay(day, new Date());
+                const isWeekend = i >= 5;
 
                 // Check if there's a task that starts at this hour (regardless of minutes)
                 const singleHourTask = (() => {
@@ -407,7 +424,7 @@ const WeekView = ({
                   return null;
                 })();
                 const dropZoneKey = `${i}-${hour}`;
-                return <div key={i} id={dropZoneKey} className={`border-l border-[var(--border-primary)]/20 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden ${hoveredSlot?.key === dropZoneKey ? 'border-[var(--accent-primary)]/40' : 'hover:bg-[var(--border-primary)]/30'} ${isCurrentDay && hoveredSlot?.key !== dropZoneKey ? 'bg-[var(--accent-primary)]/5' : ''}`} onDoubleClick={e => {
+                return <div key={i} id={dropZoneKey} className={`cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-hidden rounded-md ${hoveredSlot?.key === dropZoneKey ? 'bg-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]/30' : 'hover:bg-[var(--bg-secondary)]/40'} ${isCurrentDay && hoveredSlot?.key !== dropZoneKey ? 'bg-[var(--accent-primary)]/5' : ''} ${isWeekend && !isCurrentDay ? 'bg-[var(--bg-secondary)]/20' : ''}`} onDoubleClick={e => {
                   if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
                   handleAddTask(e, day, hour, isLoggedIn, setSelectedDate, setFocusedDate, setShowTaskForm, setIsLoginPromptOpen, setSelectedTask);
                 }} onMouseEnter={() => {}}>
@@ -419,12 +436,13 @@ const WeekView = ({
                     borderColor: 'var(--accent-primary)',
                     zIndex: 1
                   }} />}
-                      {isCurrentDay && hour === currentHour && <div className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center" style={{
+                      {isCurrentDay && hour === currentHour && <div className="absolute left-0 right-0 z-20 flex items-center" style={{
                     top: `${getTopPosition(currentMinutesFromStart)}px`,
                     width: 'calc(100% + 8px)',
                     left: '-4px'
                   }}>
-                          <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1 mr-2">
+                          <div className="w-full h-0.5 bg-[var(--accent-primary)] rounded-full" />
+                          <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--accent-primary)] text-white px-1.5 py-0.5 rounded-md shadow-sm">
                             {now.toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -433,14 +451,13 @@ const WeekView = ({
                         </div>}
                       
                       {/* Half-hour divider line */}
-                      <div className="absolute left-0 right-0 border-t border-[var(--border-primary)]/20 pointer-events-none" style={{
+                      <div className="absolute left-0 right-0 border-t border-dashed border-[var(--border-primary)]/15 pointer-events-none" style={{
                     top: '30px',
-                    // Middle of the 60px hour cell
                     zIndex: 1
                   }} />
                       
                       {/* Render task if this is its hour block */}
-                      {singleHourTask && <div data-calendar-task draggable id={singleHourTask.task.id.toString()} className="text-[var(--text-primary)] text-xs sm:text-sm px-1.5 pt-1 pb-0.5 rounded shadow-sm truncate pointer-events-auto cursor-pointer transition-all hover:shadow-md border border-[var(--accent-primary)] bg-[var(--bg-primary)] absolute z-10 hover:scale-105 hover:shadow-lg hover:cursor-grab active:cursor-grabbing" style={{
+                      {singleHourTask && <div data-calendar-task draggable id={singleHourTask.task.id.toString()} className="text-[var(--text-primary)] text-xs sm:text-sm px-2 py-1 rounded-lg shadow-sm truncate pointer-events-auto cursor-pointer transition-all border-l-2 border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 absolute z-10 hover:shadow-md hover:border-l-[var(--accent-primary)] hover:cursor-grab active:cursor-grabbing" style={{
                     left: '2px',
                     right: '2px',
                     // Use consistent mathematical model for positioning
@@ -462,11 +479,11 @@ const WeekView = ({
                     hour: '2-digit',
                     minute: '2-digit'
                   })}`}>
-                          {!isMobile && singleHourTask.task.assignment && <div className="text-xs text-[var(--text-primary)] truncate">
+                          {!isMobile && singleHourTask.task.assignment && <div className="text-xs text-[var(--accent-primary)]/80 truncate font-medium">
                               {singleHourTask.task.assignment}
                             </div>}
                           <div className="font-medium truncate">{singleHourTask.task.title || 'Sin título'}</div>
-                          {!isMobile && <div className="text-xs opacity-90 truncate">
+                          {!isMobile && <div className="text-xs opacity-70 truncate">
                               {singleHourTask.occurrenceStart.toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -485,9 +502,9 @@ const WeekView = ({
       </div>
       
       <DragOverlay>
-        {activeTask ? <div className="text-[var(--text-primary)] text-sm px-2 py-1 rounded shadow-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
+        {activeTask ? <div className="text-[var(--text-primary)] text-sm px-2 py-1.5 rounded-lg shadow-lg border-l-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] opacity-90">
             <div className="font-medium line-clamp-2">{activeTask.title || 'Sin título'}</div>
-            {activeTask.assignment && <div className="text-xs text-[var(--text-primary)] truncate">
+            {activeTask.assignment && <div className="text-xs text-[var(--accent-primary)] truncate">
                 {activeTask.assignment}
               </div>}
           </div> : null}

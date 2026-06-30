@@ -109,27 +109,46 @@ export function formatDateForInput(date: Date): string {
  * @returns A string like "in 2 days" or "3 days ago"
  */
 export function getTimeRemainingString(dateStr: string): string {
+    const dateOnly = getDateOnlyString(dateStr);
+    if (!dateOnly) return '';
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    const target = new Date(year, month - 1, day);
     const now = new Date();
-    const target = parseDateFromString(dateStr);
-    if (!target) return '';
+    now.setHours(0, 0, 0, 0);
     const diffTime = target.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'tomorrow';
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
     if (diffDays === -1) return 'Yesterday';
-    if (diffDays > 0) return `in ${diffDays} days`;
+    if (diffDays > 0) return `In ${diffDays} days`;
     return `${Math.abs(diffDays)} days ago`;
 }
 
 export function formatDateShort(dateStr: string | null | undefined): string {
     if (!dateStr) return "";
-    const date = parseDateFromString(dateStr);
-    if (!date) return "";
+    const dateOnly = getDateOnlyString(dateStr);
+    if (!dateOnly) return "";
+    const [year, month, day] = dateOnly.split('-').map(Number);
+    if (!year || !month || !day) return "";
+    const date = new Date(year, month - 1, day);
     const weekday = date.toLocaleString('en-US', { weekday: 'short' });
-    const month = date.toLocaleString('en-US', { month: 'short' });
-    const day = date.getDate();
-    return `${weekday}, ${month} ${day}`;
+    const monthName = date.toLocaleString('en-US', { month: 'short' });
+    return `${weekday}, ${monthName} ${day}`;
+}
+
+/**
+ * Extracts YYYY-MM-DD from a date string without timezone conversion
+ */
+function getDateOnlyString(dateStr: string): string | null {
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+    const slashMatch = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+    if (slashMatch && slashMatch[1] && slashMatch[2] && slashMatch[3]) {
+        return `${slashMatch[3]}-${slashMatch[2].padStart(2, '0')}-${slashMatch[1].padStart(2, '0')}`;
+    }
+    return null;
 }
 
 /**
@@ -139,12 +158,11 @@ export function formatDateShort(dateStr: string | null | undefined): string {
  */
 export function isToday(dateStr: string | null | undefined): boolean {
     if (!dateStr) return false;
-    const date = parseDateFromString(dateStr);
-    if (!date) return false;
+    const dateOnly = getDateOnlyString(dateStr);
+    if (!dateOnly) return false;
     const now = new Date();
-    return date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return dateOnly === todayStr;
 }
 
 /**
@@ -154,13 +172,12 @@ export function isToday(dateStr: string | null | undefined): boolean {
  */
 export function isTomorrow(dateStr: string | null | undefined): boolean {
     if (!dateStr) return false;
-    const date = parseDateFromString(dateStr);
-    if (!date) return false;
-    const now = new Date();
-    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    return date.getFullYear() === tomorrow.getFullYear() &&
-        date.getMonth() === tomorrow.getMonth() &&
-        date.getDate() === tomorrow.getDate();
+    const dateOnly = getDateOnlyString(dateStr);
+    if (!dateOnly) return false;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+    return dateOnly === tomorrowStr;
 }
 
 export function fromNow(dateStr: string | null | undefined): string {

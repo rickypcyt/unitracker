@@ -21,14 +21,16 @@ interface ContextMenuState {
 interface AllTasksProps {
   filteredTasks?: Task[];
   title?: string;
-  showCompleted?: boolean; // Add prop to control whether to show completed tasks
+  showCompleted?: boolean;
   sortBy?: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc';
   hideSortMenu?: boolean;
-  allTasks?: Task[]; // All tasks for filtering
+  allTasks?: Task[];
   onFilteredTasksChange?: (tasks: Task[]) => void;
   selectedFilter?: string;
   onFilterChange?: (filter: string) => void;
   onSortChange?: (sort: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc') => void;
+  sidebarRight?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 const AllTasks: React.FC<AllTasksProps> = ({ 
@@ -40,7 +42,9 @@ const AllTasks: React.FC<AllTasksProps> = ({
   onFilteredTasksChange,
   selectedFilter,
   onFilterChange,
-  onSortChange
+  onSortChange,
+  sidebarRight,
+  onToggleSidebar
 }) => {
   const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -97,9 +101,14 @@ const AllTasks: React.FC<AllTasksProps> = ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Group tasks by assignment (only non-completed tasks)
+  // Group tasks by assignment (only non-completed tasks), sorted by deadline (closest first)
   const tasksByAssignment = tasks
     .filter(task => !task.completed)
+    .sort((a, b) => {
+      const aDate = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+      const bDate = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+      return aDate - bDate;
+    })
     .reduce((groups: { [key: string]: Task[] }, task: Task) => {
       const assignment = task.assignment || 'No Assignment';
       if (!groups[assignment]) {
@@ -192,10 +201,21 @@ const AllTasks: React.FC<AllTasksProps> = ({
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">
               {title || "All Tasks"}
             </h3>
-            <AssignmentSortMenu 
-              currentSort={effectiveSortBy} 
-              onSortChange={onSortChange || (hideSortMenu ? setLocalSortBy : () => {})} 
-            />
+            <div className="flex items-center gap-2">
+              {onToggleSidebar && (
+                <button
+                  onClick={onToggleSidebar}
+                  className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors px-2 py-1 rounded-md hover:bg-[var(--bg-secondary)]/50"
+                  title={sidebarRight ? 'Move panel to left' : 'Move panel to right'}
+                >
+                  {sidebarRight ? <span>← Left</span> : <span>Right →</span>}
+                </button>
+              )}
+              <AssignmentSortMenu 
+                currentSort={effectiveSortBy} 
+                onSortChange={onSortChange || (hideSortMenu ? setLocalSortBy : () => {})} 
+              />
+            </div>
           </div>
         )}
         
