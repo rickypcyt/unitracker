@@ -151,45 +151,46 @@ const SessionPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/session" />
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
-      <div className="w-full px-2 sm:px-4 md:px-3 lg:px-6 xl:px-24 session-page">
+      <div className="w-full session-page" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)', paddingLeft: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)', paddingRight: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)' }}>
         {/* Dashboard Header */}
-        <div className="flex items-center justify-between w-full mt-4 mb-4 px-2">
+        <div className="flex items-center justify-between w-full mt-4 mb-4 px-2" style={{ marginTop: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', marginBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
           <div className="flex flex-col">
-            <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-0.5">
+            <h1 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1.125rem, 1rem + 0.6vw, 1.5rem)', marginBottom: '0.125rem' }}>
               {sessionTitle || 'Start a Session!'}
             </h1>
-            <p className="text-sm text-[var(--text-secondary)]">{todayDate}</p>
+            <p className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)' }}>{todayDate}</p>
           </div>
           <button
             onClick={() => navigateTo('focusWidget')}
-            className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/5"
+            className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/5"
+            style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}
           >
             <Zap size={16} />
             <span className="hidden sm:inline">Focus Widget</span>
           </button>
         </div>
 
-        <div className="w-full px-2 overflow-hidden pb-2">
-          <div className="flex flex-col lg:flex-row gap-3">
+        <div className="w-full overflow-hidden pb-2">
+          <div className="flex flex-col lg:flex-row" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
             {/* Unified Timer */}
             <div className="w-full lg:w-1/2" data-tour="session-timer">
               <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
             </div>
 
             {/* Right column: stats row + Noise Generator */}
-            <div className="w-full lg:w-1/2 flex flex-col gap-3">
+            <div className="w-full lg:w-1/2 flex flex-col" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
               {/* Stats Row */}
-              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              <div className="grid grid-cols-4" style={{ gap: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}>
                 {/* Pomodoros Today */}
                 <div className="dashboard-stat-card">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="p-1.5 rounded-lg bg-red-500/10">
                       <Flame size={16} className="text-red-500" />
                     </div>
-                    <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Pomodoros</span>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Pomodoros</span>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.pomodorosToday}</div>
-                  <div className="text-xs text-[var(--text-secondary)]">today</div>
+                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.pomodorosToday}</div>
+                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
                 </div>
 
                 {/* Study Time */}
@@ -198,10 +199,10 @@ const SessionPage = memo(() => {
                     <div className="p-1.5 rounded-lg bg-blue-500/10">
                       <Clock size={16} className="text-blue-500" />
                     </div>
-                    <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Study Time</span>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Study Time</span>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--text-primary)]">{formatStudyTime(stats.studyTime)}</div>
-                  <div className="text-xs text-[var(--text-secondary)]">session today</div>
+                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{formatStudyTime(stats.studyTime)}</div>
+                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>session today</div>
                 </div>
 
                 {/* Sessions Today */}
@@ -210,10 +211,10 @@ const SessionPage = memo(() => {
                     <div className="p-1.5 rounded-lg bg-green-500/10">
                       <Activity size={16} className="text-green-500" />
                     </div>
-                    <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Sessions</span>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sessions</span>
                   </div>
-                  <div className="text-2xl font-bold text-[var(--text-primary)]">{stats.sessionsToday}</div>
-                  <div className="text-xs text-[var(--text-secondary)]">today</div>
+                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.sessionsToday}</div>
+                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
                 </div>
 
                 {/* Sync Status - Dynamic */}
@@ -226,18 +227,18 @@ const SessionPage = memo(() => {
                         <Link2Off size={16} className="text-[var(--text-secondary)]" />
                       )}
                     </div>
-                    <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Sync</span>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sync</span>
                   </div>
                   {syncPomodoro && syncCountdown ? (
-                    <div className="text-sm font-bold text-[var(--accent-primary)]">Pomo + Countdown</div>
+                    <div className="font-bold text-[var(--accent-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomo + Countdown</div>
                   ) : syncPomodoro ? (
-                    <div className="text-sm font-bold text-red-500">Pomodoro</div>
+                    <div className="font-bold text-red-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomodoro</div>
                   ) : syncCountdown ? (
-                    <div className="text-sm font-bold text-green-500">Countdown</div>
+                    <div className="font-bold text-green-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Countdown</div>
                   ) : (
-                    <div className="text-sm font-bold text-[var(--text-secondary)]">OFF</div>
+                    <div className="font-bold text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>OFF</div>
                   )}
-                  <div className="text-xs text-[var(--text-secondary)]">
+                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
                     {syncPomodoro || syncCountdown ? 'linked to Study' : 'independent timers'}
                   </div>
                 </div>

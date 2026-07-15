@@ -53,12 +53,13 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md overflow-y-auto" style={{ padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.5rem)' }}>
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border border-[var(--border-primary)]/50 w-full max-w-4xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 lg:px-10 lg:py-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border border-[var(--border-primary)]/50 w-full max-w-4xl relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
+        style={{ margin: 'clamp(0.25rem, 0.2rem + 0.3vw, 1rem)', padding: 'clamp(0.75rem, 0.6rem + 1vw, 2.5rem)' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -69,90 +70,92 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
+          className="absolute rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
+          style={{ top: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', right: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', padding: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}
         >
-          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-200" />
+          <X className="transition-transform duration-200" style={{ width: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)' }} />
         </button>
         
         {/* Header Section */}
-        <div className="flex flex-col items-center mb-6 sm:mb-8 md:mb-10 relative z-10">
+        <div className="flex flex-col items-center relative z-10" style={{ marginBottom: 'clamp(1rem, 0.8rem + 1vw, 2.5rem)' }}>
           {/* Logo with animation */}
-          <div className="flex items-center justify-center mb-3 sm:mb-4">
-            <span className="text-[var(--text-primary)] font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Uni</span>
-            <span className="text-[var(--accent-primary)] font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Tracker</span>
+          <div className="flex items-center justify-center" style={{ marginBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+            <span className="text-[var(--text-primary)] font-bold" style={{ fontSize: 'clamp(1.25rem, 1rem + 1.5vw, 3rem)' }}>Uni</span>
+            <span className="text-[var(--accent-primary)] font-bold" style={{ fontSize: 'clamp(1.25rem, 1rem + 1.5vw, 3rem)' }}>Tracker</span>
           </div>
           
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[var(--text-primary)] mb-2 sm:mb-3 text-center bg-gradient-to-r from-[var(--text-primary)] to-[var(--accent-primary)] bg-clip-text text-transparent px-2">
+          <h2 className="font-semibold text-[var(--text-primary)] text-center bg-gradient-to-r from-[var(--text-primary)] to-[var(--accent-primary)] bg-clip-text text-transparent" style={{ fontSize: 'clamp(1rem, 0.9rem + 0.6vw, 1.5rem)', marginBottom: 'clamp(0.375rem, 0.3rem + 0.3vw, 0.75rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)' }}>
             Your all-in-one study companion
           </h2>
           
-          <p className="text-sm sm:text-base md:text-lg text-[var(--text-secondary)] text-center max-w-2xl leading-relaxed px-3 sm:px-0">
+          <p className="text-[var(--text-secondary)] text-center max-w-2xl leading-relaxed" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)' }}>
             Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.
           </p>
         </div>
         
         {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8 relative z-10">
-          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 relative z-10" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', marginBottom: 'clamp(1rem, 0.8rem + 1vw, 2rem)' }}>
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+            <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
+              <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
+                <Clock className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">AI Task Creation</h3>
-                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>AI Task Creation</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.</p>
               </div>
             </div>
           </div>
           
-          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
-                <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+            <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
+              <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
+                <BarChart2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Weekly & Monthly Stats</h3>
-                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Track your progress and productivity with comprehensive analytics and beautiful visualizations.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Weekly & Monthly Stats</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Track your progress and productivity with comprehensive analytics and beautiful visualizations.</p>
               </div>
             </div>
           </div>
           
-          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+            <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
+              <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
+                <Calendar className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Calendar Planning</h3>
-                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Plan sessions and deadlines visually with our intuitive calendar system.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Calendar Planning</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Plan sessions and deadlines visually with our intuitive calendar system.</p>
               </div>
             </div>
           </div>
           
-          <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[var(--accent-primary)]" />
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+            <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
+              <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
+                <CheckCircle2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 text-[var(--text-primary)]">Advanced Task System</h3>
-                <p className="text-[var(--text-secondary)] text-xs sm:text-xs md:text-sm leading-relaxed">Organize with kanban board system and manage your workflow efficiently.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Advanced Task System</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Organize with kanban board system and manage your workflow efficiently.</p>
               </div>
             </div>
           </div>
         </div>
         
         {/* CTA Section */}
-        <div className="flex flex-col items-center gap-3 sm:gap-4 relative z-10">
+        <div className="flex flex-col items-center relative z-10" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
           <button
-            className="group px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold text-sm sm:text-base md:text-lg cursor-pointer transition-all duration-300 transform active:scale-[0.98] flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10 min-h-[44px] sm:min-h-[48px]"
+            className="group rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold cursor-pointer transition-all duration-300 transform active:scale-[0.98] flex items-center bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10"
+            style={{ paddingLeft: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingRight: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingTop: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', paddingBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', gap: 'clamp(0.375rem, 0.3rem + 0.3vw, 0.75rem)', minHeight: 'clamp(2.75rem, 2.5rem + 0.5vw, 3rem)' }}
             onClick={onClose}
           >
             Get Started
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300" />
+            <ArrowRight className="transition-transform duration-300" style={{ width: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)' }} />
           </button>
           
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] opacity-70 text-center px-4">
+          <p className="text-[var(--text-secondary)] opacity-70 text-center" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)' }}>
             Join thousands of students improving their productivity
           </p>
         </div>

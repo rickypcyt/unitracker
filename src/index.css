@@ -1510,3 +1510,47 @@ h1 {
     font-size: 10px !important;
   }
 }
+
+/* =========================
+   DPI / Monitor Scaling Support
+   Adjusts root font-size for common Windows scaling levels
+   ========================= */
+
+/* 125% scaling (120 DPI) - common on laptops */
+@media (resolution: 120dpi) {
+  html {
+    font-size: 0.875rem;
+  }
+}
+
+/* 125% scaling alternative */
+@media (-webkit-min-device-pixel-ratio: 1.25) and (max-width: 2560px) {
+  html {
+    font-size: 0.875rem;
+  }
+}
+
+/* 150% scaling (144 DPI) */
+@media (resolution: 144dpi) {
+  html {
+    font-size: 0.833rem;
+  }
+}
+
+/* 150% scaling alternative */
+@media (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 2560px) {
+  html {
+    font-size: 0.833rem;
+  }
+}
+
+/* Session page fluid spacing helpers */
+.session-page {
+  --fluid-gap: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --fluid-gap-sm: clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem);
+  --fluid-text-xs: clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem);
+  --fluid-text-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --fluid-text-base: clamp(0.875rem, 0.85rem + 0.15vw, 1rem);
+  --fluid-text-lg: clamp(1rem, 0.85rem + 0.8vw, 1.5rem);
+  --fluid-text-xl: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+}
