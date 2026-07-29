@@ -1,6 +1,6 @@
 import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
 import { ReactElement, ReactNode, useEffect, useState } from 'react';
-import { useLaps, useTasks } from '@/store/appStore';
+import { useLaps, useTasksOnly } from '@/store/appStore';
 
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
@@ -263,7 +263,7 @@ const statCards: StatCard[] = [
 
 
 const Statistics = (): ReactElement => {
-  const { tasks } = useTasks();
+  const tasks = useTasksOnly();
   const { laps } = useLaps();
   const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();

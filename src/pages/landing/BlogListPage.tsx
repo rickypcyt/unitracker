@@ -19,6 +19,16 @@ const BlogListPage = () => {
         <title>Blog — UniTracker | Study Tips, Productivity Guides & Tutorials</title>
         <meta name="description" content="Learn how to study smarter with UniTracker's blog. Pomodoro guides, time management tips, app comparisons, and tutorials for students." />
         <link rel="canonical" href="https://unitracker.me/blog" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://unitracker.me/blog" />
+        <meta property="og:title" content="Blog — UniTracker | Study Tips & Productivity Guides" />
+        <meta property="og:description" content="Learn how to study smarter with UniTracker's blog. Pomodoro guides, time management tips, app comparisons, and tutorials for students." />
+        <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta property="og:site_name" content="UniTracker" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Blog — UniTracker | Study Tips & Productivity Guides" />
+        <meta name="twitter:description" content="Learn how to study smarter with UniTracker's blog. Pomodoro guides, time management tips, and tutorials for students." />
+        <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
       <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">

@@ -17,7 +17,7 @@ const TIMER_CONFIG: Record<TimerId, { label: string; icon: typeof Clock; panelCl
 const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?: boolean }) => {
   const [showPomodoro, setShowPomodoro] = useState(true);
   const [showCountdown, setShowCountdown] = useState(true);
-  const [order, setOrder] = useState<TimerId[]>(["study", "pomodoro", "countdown"]);
+  const [order, setOrder] = useState<TimerId[]>(["pomodoro", "study", "countdown"]);
   const [draggedId, setDraggedId] = useState<TimerId | null>(null);
   const [dragOverId, setDragOverId] = useState<TimerId | null>(null);
   const dragIdRef = useRef<TimerId | null>(null);
@@ -103,7 +103,15 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
         const parsed = JSON.parse(saved);
         setShowPomodoro(parsed.showPomodoro ?? true);
         setShowCountdown(parsed.showCountdown ?? false);
-        if (Array.isArray(parsed.order)) setOrder(parsed.order);
+        if (Array.isArray(parsed.order)) {
+          const DEFAULT_ORDER: TimerId[] = ["pomodoro", "study", "countdown"];
+          const savedOrder = parsed.order as TimerId[];
+          if (savedOrder.length === 3 && savedOrder[0] === "study" && savedOrder[1] === "pomodoro") {
+            setOrder(DEFAULT_ORDER);
+          } else {
+            setOrder(savedOrder);
+          }
+        }
       }
     } catch {}
   }, []);
@@ -249,7 +257,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   return (
     <div className="flex flex-col gap-3">
       {/* Timer Panels */}
-      <div className="grid gap-3 grid-cols-1">
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;

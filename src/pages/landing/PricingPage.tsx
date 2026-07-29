@@ -68,9 +68,19 @@ const PricingPage = () => {
   return (
     <>
       <Helmet>
-        <title>Pricing — UniTracker</title>
+        <title>Pricing — UniTracker | Free Study App for Students</title>
         <meta name="description" content="Simple, transparent pricing. UniTracker is free forever for students. Upgrade to Pro or Team for advanced features." />
         <link rel="canonical" href="https://unitracker.me/pricing" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://unitracker.me/pricing" />
+        <meta property="og:title" content="Pricing — UniTracker | Free Study App" />
+        <meta property="og:description" content="Simple, transparent pricing. UniTracker is free forever for students." />
+        <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta property="og:site_name" content="UniTracker" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Pricing — UniTracker | Free Study App" />
+        <meta name="twitter:description" content="Simple, transparent pricing. UniTracker is free forever for students." />
+        <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
       <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">

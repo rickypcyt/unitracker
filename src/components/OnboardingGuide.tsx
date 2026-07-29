@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
-import { useLaps, useTasks, useWorkspace } from '@/store/appStore';
+import { useLaps, useTasksOnly, useWorkspace } from '@/store/appStore';
 
 type OnboardingStep = 'workspace' | 'task' | 'session' | 'done';
 
@@ -47,7 +47,7 @@ const OnboardingGuide: React.FC = () => {
   const { isLoggedIn } = useAuth();
   const { navigateTo } = useNavigation();
   const { workspaces } = useWorkspace();
-  const { tasks } = useTasks();
+  const tasks = useTasksOnly();
   const { laps } = useLaps();
 
   const [dismissed, setDismissed] = useState(false);

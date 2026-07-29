@@ -3,7 +3,7 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { getLocalDateString } from '@/utils/dateUtils';
-import { useTasks } from '@/store/appStore';
+import { useTasksOnly } from '@/store/appStore';
 
 function formatMinutesToHMText(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -124,7 +124,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
 };
 
 const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }: any) => {
-  const { tasks } = useTasks();
+  const tasks = useTasksOnly();
   const [isSmall, setIsSmall] = useState(false);
 
   useEffect(() => {

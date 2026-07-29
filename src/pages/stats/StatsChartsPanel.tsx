@@ -62,10 +62,18 @@ function getISOWeekNumber(date: Date) {
 
 const getAccentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
 
+let cachedAccentColor: string | null = null;
+const getCachedAccentColor = () => {
+  if (!cachedAccentColor) {
+    cachedAccentColor = getAccentColor();
+  }
+  return cachedAccentColor;
+};
+
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
-  const accentColor = getAccentColor();
+  const accentColor = getCachedAccentColor();
   const [activeTab, setActiveTab] = useState<TabKey>('week');
 
   // Semana

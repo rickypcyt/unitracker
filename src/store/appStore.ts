@@ -957,6 +957,7 @@ export const useTimerStates = () => useAppStore(state => ({
 
 // 🎯 Selectors para Redux replacement
 export const useTasks = () => useAppStore(state => state.tasks);
+export const useTasksOnly = () => useAppStore(state => state.tasks.tasks);
 export const useTasksLoading = () => useAppStore(state => state.tasks.loading);
 export const useFetchTasks = (): ((workspaceId?: string, forceRefresh?: boolean) => Promise<void>) => useAppStore(state => state.fetchTasks);
 export const useAddTaskSuccess = () => useAppStore(state => state.addTaskSuccess);

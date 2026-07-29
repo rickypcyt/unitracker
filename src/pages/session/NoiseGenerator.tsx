@@ -126,7 +126,7 @@ function SoundControl({
           </div>
 
           <ReactSlider
-            className="h-2 w-full bg-[var(--bg-secondary)] rounded-full"
+            className="h-2 w-full bg-[var(--border-primary)] rounded-full"
             thumbClassName="h-5 w-5 rounded-full bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
             trackClassName="h-2 rounded-full"
             renderTrack={(
@@ -141,7 +141,7 @@ function SoundControl({
                   className={`h-2 rounded-full ${
                     state.index === 0
                       ? theme.gradient
-                      : "bg-[var(--bg-secondary)]"
+                      : "bg-[var(--border-primary)]"
                   }`}
                 />
               );

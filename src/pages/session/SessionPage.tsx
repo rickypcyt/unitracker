@@ -3,6 +3,7 @@ import { memo, useEffect, useState } from "react";
 import { useAppStore, useLaps, useUi } from "@/store/appStore";
 
 import { Helmet } from "react-helmet-async";
+import AssignmentsOverview from "@/pages/session/AssignmentsOverview";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import TimerSettings from "@/components/TimerSettings";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
@@ -151,7 +152,7 @@ const SessionPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/session" />
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
-      <div className="w-full session-page" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)', paddingLeft: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)', paddingRight: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)' }}>
+      <div className="w-full session-page" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)', paddingLeft: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)', paddingRight: 'clamp(0.5rem, 0.3rem + 1vw, 2rem)', paddingBottom: 'clamp(2rem, 1.5rem + 2vw, 4rem)' }}>
         {/* Dashboard Header */}
         <div className="flex items-center justify-between w-full mt-4 mb-4 px-2" style={{ marginTop: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', marginBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
           <div className="flex flex-col">
@@ -170,86 +171,84 @@ const SessionPage = memo(() => {
           </button>
         </div>
 
-        <div className="w-full overflow-hidden pb-2">
-          <div className="flex flex-col lg:flex-row" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
-            {/* Unified Timer */}
-            <div className="w-full lg:w-1/2" data-tour="session-timer">
-              <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
+        <div className="w-full pb-2 flex flex-col" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}>
+            {/* Pomodoros Today */}
+            <div className="dashboard-stat-card">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1.5 rounded-lg bg-red-500/10">
+                  <Flame size={16} className="text-red-500" />
+                </div>
+                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Pomodoros</span>
+              </div>
+              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.pomodorosToday}</div>
+              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
             </div>
 
-            {/* Right column: stats row + Noise Generator */}
-            <div className="w-full lg:w-1/2 flex flex-col" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
-              {/* Stats Row */}
-              <div className="grid grid-cols-4" style={{ gap: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}>
-                {/* Pomodoros Today */}
-                <div className="dashboard-stat-card">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="p-1.5 rounded-lg bg-red-500/10">
-                      <Flame size={16} className="text-red-500" />
-                    </div>
-                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Pomodoros</span>
-                  </div>
-                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.pomodorosToday}</div>
-                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
+            {/* Study Time */}
+            <div className="dashboard-stat-card">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1.5 rounded-lg bg-blue-500/10">
+                  <Clock size={16} className="text-blue-500" />
                 </div>
-
-                {/* Study Time */}
-                <div className="dashboard-stat-card">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="p-1.5 rounded-lg bg-blue-500/10">
-                      <Clock size={16} className="text-blue-500" />
-                    </div>
-                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Study Time</span>
-                  </div>
-                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{formatStudyTime(stats.studyTime)}</div>
-                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>session today</div>
-                </div>
-
-                {/* Sessions Today */}
-                <div className="dashboard-stat-card">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="p-1.5 rounded-lg bg-green-500/10">
-                      <Activity size={16} className="text-green-500" />
-                    </div>
-                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sessions</span>
-                  </div>
-                  <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.sessionsToday}</div>
-                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
-                </div>
-
-                {/* Sync Status - Dynamic */}
-                <div className="dashboard-stat-card">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className={`p-1.5 rounded-lg ${syncPomodoro || syncCountdown ? 'bg-[var(--accent-primary)]/10' : 'bg-[var(--bg-secondary)]'}`}>
-                      {syncPomodoro || syncCountdown ? (
-                        <Link2 size={16} className="text-[var(--accent-primary)]" />
-                      ) : (
-                        <Link2Off size={16} className="text-[var(--text-secondary)]" />
-                      )}
-                    </div>
-                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sync</span>
-                  </div>
-                  {syncPomodoro && syncCountdown ? (
-                    <div className="font-bold text-[var(--accent-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomo + Countdown</div>
-                  ) : syncPomodoro ? (
-                    <div className="font-bold text-red-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomodoro</div>
-                  ) : syncCountdown ? (
-                    <div className="font-bold text-green-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Countdown</div>
-                  ) : (
-                    <div className="font-bold text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>OFF</div>
-                  )}
-                  <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
-                    {syncPomodoro || syncCountdown ? 'linked to Study' : 'independent timers'}
-                  </div>
-                </div>
+                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Study Time</span>
               </div>
+              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{formatStudyTime(stats.studyTime)}</div>
+              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>session today</div>
+            </div>
 
-              {/* Noise Generator */}
-              <div className="dashboard-noise-card min-h-0 flex-1">
-                <NoiseGenerator />
+            {/* Sessions Today */}
+            <div className="dashboard-stat-card">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="p-1.5 rounded-lg bg-green-500/10">
+                  <Activity size={16} className="text-green-500" />
+                </div>
+                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sessions</span>
+              </div>
+              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.sessionsToday}</div>
+              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
+            </div>
+
+            {/* Sync Status - Dynamic */}
+            <div className="dashboard-stat-card">
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`p-1.5 rounded-lg ${syncPomodoro || syncCountdown ? 'bg-[var(--accent-primary)]/10' : 'bg-[var(--bg-secondary)]'}`}>
+                  {syncPomodoro || syncCountdown ? (
+                    <Link2 size={16} className="text-[var(--accent-primary)]" />
+                  ) : (
+                    <Link2Off size={16} className="text-[var(--text-secondary)]" />
+                  )}
+                </div>
+                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sync</span>
+              </div>
+              {syncPomodoro && syncCountdown ? (
+                <div className="font-bold text-[var(--accent-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomo + Countdown</div>
+              ) : syncPomodoro ? (
+                <div className="font-bold text-red-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomodoro</div>
+              ) : syncCountdown ? (
+                <div className="font-bold text-green-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Countdown</div>
+              ) : (
+                <div className="font-bold text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>OFF</div>
+              )}
+              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
+                {syncPomodoro || syncCountdown ? 'linked to Study' : 'independent timers'}
               </div>
             </div>
           </div>
+
+          {/* Unified Timer */}
+          <div className="w-full" data-tour="session-timer">
+            <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
+          </div>
+
+          {/* Noise Generator */}
+          <div className="dashboard-noise-card">
+            <NoiseGenerator />
+          </div>
+
+          {/* Assignments Overview */}
+          <AssignmentsOverview />
         </div>
 
         {/* Modal de configuración */}

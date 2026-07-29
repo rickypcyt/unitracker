@@ -1,7 +1,7 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { FC, Suspense, lazy, useEffect, useRef, useState } from "react";
+import { FC, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
-import { useAuthActions, useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from "@/store/appStore";
+import { useAuthActions, useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from "@/store/appStore";
 import type { Workspace } from "@/types/workspace";
 import { Navigate, Route, Routes } from "react-router-dom";
 
@@ -13,11 +13,13 @@ import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
 import OnboardingGuide from "@/components/OnboardingGuide";
 import PageTooltips from "@/components/PageTooltips";
-import PricingPage from "@/pages/landing/PricingPage";
-import ComparePage from "@/pages/landing/ComparePage";
-import BlogListPage from "@/pages/landing/BlogListPage";
-import BlogPostPage from "@/pages/landing/BlogPostPage";
 import TourManager from "./components/TourManager";
+
+// Lazy load landing pages for better initial bundle
+const PricingPage = lazy(() => import("@/pages/landing/PricingPage"));
+const ComparePage = lazy(() => import("@/pages/landing/ComparePage"));
+const BlogListPage = lazy(() => import("@/pages/landing/BlogListPage"));
+const BlogPostPage = lazy(() => import("@/pages/landing/BlogPostPage"));
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useFriendManagement } from "@/hooks/useFriendManagement";
@@ -76,7 +78,7 @@ const pagesMap: Record<string, FC> = {
 const PageContent: FC = () => {
   const { activePage } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
-  const { tasks } = useTasks();
+  const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { user } = useAuth();
@@ -115,7 +117,7 @@ const PageContent: FC = () => {
   };
 
   // Calcula el número de tasks por workspace (solo incompletas)
-  const workspacesWithTaskCount = (Array.isArray(workspaces) ? workspaces : []).map(ws => {
+  const workspacesWithTaskCount = useMemo(() => (Array.isArray(workspaces) ? workspaces : []).map(ws => {
     const taskCount = tasks.filter(task => {
       return task.workspace_id === ws.id && !task.completed;
     }).length;
@@ -123,7 +125,7 @@ const PageContent: FC = () => {
       ...ws,
       taskCount
     };
-  });
+  }), [workspaces, tasks]);
 
   // Focus widget page should occupy full screen without navbar
   if (activePage === 'focusWidget') {
@@ -300,10 +302,10 @@ const App: FC = () => {
           <UserModalGate />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/compare" element={<ComparePage />} />
-            <Route path="/blog" element={<BlogListPage />} />
-            <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/pricing" element={<Suspense fallback={<PageLoader fullScreen />}><PricingPage /></Suspense>} />
+            <Route path="/compare" element={<Suspense fallback={<PageLoader fullScreen />}><ComparePage /></Suspense>} />
+            <Route path="/blog" element={<Suspense fallback={<PageLoader fullScreen />}><BlogListPage /></Suspense>} />
+            <Route path="/blog/:slug" element={<Suspense fallback={<PageLoader fullScreen />}><BlogPostPage /></Suspense>} />
             <Route path="/app" element={
               <NavigationProvider>
                 <TourManager>

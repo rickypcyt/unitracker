@@ -31,8 +31,17 @@ const BlogPostPage = () => {
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={`https://unitracker.me/blog/${post.slug}`} />
         <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://unitracker.me/blog/${post.slug}`} />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.excerpt} />
+        <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta property="og:site_name" content="UniTracker" />
+        <meta property="article:published_time" content={post.date} />
+        <meta property="article:author" content="UniTracker" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt} />
+        <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
       <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">

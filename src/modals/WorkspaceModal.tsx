@@ -378,10 +378,10 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                   key={ws.id}
                   ref={el => { itemRefs.current[i] = el; }}
                   onClick={() => handleSelectWorkspace(ws)}
-                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200 ${
                     isActive
-                      ? 'bg-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]'
-                      : 'hover:bg-[var(--bg-secondary)]'
+                      ? 'bg-[var(--accent-primary)]/10 border-[var(--accent-primary)]'
+                      : 'border-transparent hover:bg-[var(--bg-secondary)]'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${

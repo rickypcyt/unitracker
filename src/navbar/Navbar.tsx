@@ -1,6 +1,6 @@
 import { BarChart3, BookOpen, Calendar, CircleCheckBig, LayoutDashboard, ListTodo, Timer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import SettingsButton from './SettingsButton';
 import SettingsPanel from '@/modals/Settings';
@@ -16,7 +16,7 @@ const Navbar = () => {
   const { isLoggedIn, user } = useAuth();
   const { activePage, navigateTo, navOrder, setNavOrder } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
-  const { tasks } = useTasks();
+  const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();

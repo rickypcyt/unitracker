@@ -1,6 +1,6 @@
 import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
 import { ClipboardCheck, Plus } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
 import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
@@ -169,22 +169,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => 
   const handleCloseColumnMenu = () => {
     setColumnMenu(null);
   };
-
-  useEffect(() => {
-    if (activeWorkspace) {
-      // Workspace changed
-    }
-  }, [activeWorkspace?.id]);
-
-  // Add a small delay to ensure everything is properly loaded
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Component is ready
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
 
   const handleSelectSort = useCallback((assignmentId: string, sortType: string, sortDirection: string = 'asc') => {
     const currentConfig = assignmentSortConfig[assignmentId];

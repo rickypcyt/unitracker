@@ -1375,17 +1375,17 @@ h1 {
 
 /* Study Timer panel - blue accent */
 .timer-panel-study {
-  border-left: 3px solid var(--accent-primary);
+  border: 1px solid var(--border-primary);
 }
 
 /* Pomodoro panel - red/tomato accent */
 .timer-panel-pomo {
-  border-left: 3px solid #ef4444;
+  border: 1px solid var(--border-primary);
 }
 
 /* Countdown panel - green accent */
 .timer-panel-countdown {
-  border-left: 3px solid #22c55e;
+  border: 1px solid var(--border-primary);
 }
 
 /* Drag and drop states */

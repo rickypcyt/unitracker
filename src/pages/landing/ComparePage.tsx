@@ -66,6 +66,16 @@ const ComparePage = () => {
         <title>UniTracker vs Notion vs Todoist vs Forest — Comparison</title>
         <meta name="description" content="Compare UniTracker with Notion, Todoist, and Forest. See why UniTracker is the best free study app for students." />
         <link rel="canonical" href="https://unitracker.me/compare" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://unitracker.me/compare" />
+        <meta property="og:title" content="UniTracker vs Notion vs Todoist vs Forest" />
+        <meta property="og:description" content="Compare UniTracker with Notion, Todoist, and Forest. See why UniTracker is the best free study app for students." />
+        <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta property="og:site_name" content="UniTracker" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="UniTracker vs Notion vs Todoist vs Forest" />
+        <meta name="twitter:description" content="Compare UniTracker with Notion, Todoist, and Forest. See why UniTracker is the best free study app for students." />
+        <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
       <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
