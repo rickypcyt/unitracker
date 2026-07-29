@@ -117,45 +117,6 @@ const DayView = ({
 
   return (
     <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border border-[var(--border-primary)]/40 rounded-xl relative min-h-0 h-full overflow-hidden">
-      {/* Day header */}
-      <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)]/40 flex-shrink-0 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={`text-base font-semibold tracking-tight ${
-                isCurrentDay
-                  ? "text-[var(--accent-primary)]"
-                  : "text-[var(--text-primary)]"
-              }`}
-            >
-              {selectedDate.toLocaleDateString("en", { weekday: "long" })}
-            </div>
-            <div
-              className={`text-sm font-medium ${
-                isCurrentDay
-                  ? "text-[var(--accent-primary)]"
-                  : "text-[var(--text-secondary)]"
-              }`}
-            >
-              {selectedDate.toLocaleDateString("en", {
-                month: "short",
-                day: "numeric",
-              })}
-            </div>
-            {isCurrentDay && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 px-1.5 py-0.5 rounded-md">
-                Today
-              </span>
-            )}
-          </div>
-          {totalTasksForDay > 0 && (
-            <div className="text-xs font-medium text-[var(--text-secondary)] tabular-nums">
-              {totalTasksForDay} task{totalTasksForDay !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Time grid */}
       <div className="flex-1 overflow-auto" ref={scrollRef}>
         <div className="relative px-2 pb-4">
