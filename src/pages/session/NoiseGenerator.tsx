@@ -335,7 +335,7 @@ function NoiseSettingsModal({
           return (
             <div
               key={sound.key}
-              className={`rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 transition-all ${
+              className={`rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 transition-all ${
                 sound.isPlaying ? `ring-1 ${theme.activeRing}` : ""
               }`}
             >
@@ -372,7 +372,7 @@ function NoiseSettingsModal({
                     );
                     if (sound.volume > value) setVolume(idx, value);
                   }}
-                  className="w-20 px-3 py-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                  className="w-20 px-3 py-1.5 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
                 />
               </div>
 
@@ -529,7 +529,7 @@ export default function NoiseGenerator() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex-1 flex flex-col justify-center gap-4 py-4"
+        className="flex-1 flex flex-col gap-3 py-2"
       >
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>

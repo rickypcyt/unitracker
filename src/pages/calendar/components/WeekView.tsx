@@ -253,7 +253,7 @@ const WeekView = ({
       onDragOver={handleDragOver}
       modifiers={[restrictToWindowEdges]}
     >
-      <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border border-[var(--border-primary)]/40">
+      <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border-2 border-[var(--border-primary)]/40">
         {/* Sticky header */}
         <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)]/40 px-2 pt-3 pb-2 flex-shrink-0">
           <div className="grid grid-cols-8 gap-1">

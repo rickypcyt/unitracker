@@ -48,7 +48,7 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
+        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className={`w-4 h-4 rounded-full ${statusColor.replace('text', 'bg')} opacity-60`}></div>
@@ -66,7 +66,7 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg z-20">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-20">
             {STATUS_OPTIONS.map((option) => (
               <button
                 key={option.id}

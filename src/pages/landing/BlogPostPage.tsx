@@ -10,7 +10,7 @@ const BlogPostPage = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex items-center justify-center">
+      <div className="h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex items-center justify-center">
         <div className="text-center">
           <p className="text-4xl font-bold mb-4">404</p>
           <p className="text-[var(--text-secondary)] mb-6">Post not found</p>
@@ -44,7 +44,7 @@ const BlogPostPage = () => {
         <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
-      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="h-screen overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[var(--bg-primary)]/80 border-b border-[var(--border-primary)]/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -106,7 +106,7 @@ const BlogPostPage = () => {
 
           {/* CTA */}
           <div className="mt-12 border-t border-[var(--border-primary)]/30 pt-8">
-            <div className="bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/20 rounded-2xl p-6 text-center">
+            <div className="bg-[var(--accent-primary)]/5 border-2 border-[var(--accent-primary)]/20 rounded-2xl p-6 text-center">
               <h3 className="text-xl font-bold mb-2">Try UniTracker Free</h3>
               <p className="text-sm text-[var(--text-secondary)] mb-4">
                 Put these tips into action with a free Pomodoro timer, task manager, and study analytics.
@@ -130,7 +130,7 @@ const BlogPostPage = () => {
                   <Link
                     key={rel.slug}
                     to={`/blog/${rel.slug}`}
-                    className="group border border-[var(--border-primary)]/30 rounded-xl p-4 hover:border-[var(--accent-primary)]/50 transition-colors"
+                    className="group border-2 border-[var(--border-primary)]/30 rounded-xl p-4 hover:border-[var(--accent-primary)]/50 transition-colors"
                   >
                     <span className="text-xs text-[var(--accent-primary)] font-semibold">{rel.category}</span>
                     <h4 className="text-sm font-semibold mt-1 group-hover:text-[var(--accent-primary)] transition-colors line-clamp-2">

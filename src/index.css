@@ -399,9 +399,8 @@
   html, body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    min-height: 100vh;
     height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   /* Ensure background extends under status bar on iOS */
@@ -414,7 +413,7 @@
   }
 
   body {
-    min-height: 100vh;
+    height: 100%;
     margin: 0;
     padding: 0;
     background-color: var(--bg-primary);
@@ -422,15 +421,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   /* Ensure root element covers full height */
   #root {
-    min-height: 100vh;
+    height: 100%;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   /* Additional iOS Safari fixes */
@@ -440,7 +439,7 @@
     }
     
     #root {
-      min-height: -webkit-fill-available !important;
+      height: -webkit-fill-available !important;
       background-color: var(--bg-primary) !important;
     }
   }
@@ -1522,8 +1521,7 @@ h1 {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: 0.75rem;
-  padding: 1rem 1.25rem 1.5rem;
-  min-height: 400px;
+  padding: 1rem 1.25rem;
   transition: border-color 0.2s ease;
 }
 

@@ -303,7 +303,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
         </div>
 
         {/* Session Statistics */}
-        <div className="mb-6 p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+        <div className="mb-6 p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)]">
           <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
             <Target size={18} />
             Session Statistics
@@ -346,14 +346,14 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
               <label htmlFor="sessionTitle" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Session Title
               </label>
-              <input type="text" id="sessionTitle" value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Session title" disabled />
+              <input type="text" id="sessionTitle" value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Session title" disabled />
             </div>
 
             <div>
               <label htmlFor="sessionDescription" className="block text-base font-medium text-[var(--text-secondary)] mb-2">
                 Session Notes
               </label>
-              <textarea id="sessionDescription" value={sessionDescription} onChange={e => setSessionDescription(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" rows={3} placeholder="Add notes about this session..." />
+              <textarea id="sessionDescription" value={sessionDescription} onChange={e => setSessionDescription(e.target.value)} className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" rows={3} placeholder="Add notes about this session..." />
             </div>
           </div>
         </div>
@@ -364,19 +364,19 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
               <CheckCircle size={18} />
               Tasks Completed This Session
             </h3>
-            <button onClick={() => setShowTaskSelector(true)} className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1">
+            <button onClick={() => setShowTaskSelector(true)} className="px-3 py-1 text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1">
               <CheckCircle size={14} />
               Add Finished Tasks
             </button>
           </div>
           
-          {activeTasks.length === 0 ? <div className="text-center text-gray-400 py-6 text-lg font-medium bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+          {activeTasks.length === 0 ? <div className="text-center text-gray-400 py-6 text-lg font-medium bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)]">
               No tasks were completed in this session.
               <div className="text-sm mt-2">
                 Click "Add Finished Tasks" to mark tasks as completed.
               </div>
             </div> : <div className="space-y-2">
-              {activeTasks.map(task => <div key={task.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+              {activeTasks.map(task => <div key={task.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)]">
                   <input type="checkbox" id={`task-${task.id}`} checked={selectedTasks.includes(task.id)} onChange={e => {
               if (e.target.checked) {
                 setSelectedTasks(prev => [...prev, task.id]);
@@ -399,7 +399,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
 
         {/* Task Selector Modal */}
         {showTaskSelector && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)]">
+            <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)]">
               <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center sticky top-0 bg-[var(--bg-primary)] z-10">
                 <h2 className="text-xl font-semibold">Add Finished Tasks</h2>
                 <button onClick={() => setShowTaskSelector(false)} className="p-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors" aria-label="Close">
@@ -411,9 +411,9 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
                 {availableTasks.length === 0 ? <div className="text-center py-8 text-[var(--text-secondary)]">
                     No available tasks to add.
                   </div> : <div className="space-y-2">
-                    {availableTasks.map(task => <div key={task.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors">
+                    {availableTasks.map(task => <div key={task.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors">
                         <span className="flex-1 text-[var(--text-primary)]">{task.title}</span>
-                        <button onClick={() => handleAddTaskToFinished(task)} className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
+                        <button onClick={() => handleAddTaskToFinished(task)} className="px-3 py-1 text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
                           Add to Finished
                         </button>
                       </div>)}
@@ -421,14 +421,14 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
               </div>
 
               <div className="p-4 border-t border-[var(--border-primary)] flex justify-end">
-                <button onClick={() => setShowTaskSelector(false)} className="px-4 py-2 border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
+                <button onClick={() => setShowTaskSelector(false)} className="px-4 py-2 border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
                   Done
                 </button>
               </div>
             </div>
           </div>}
 
-        {error && <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        {error && <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg">
             <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <AlertCircle size={16} />
               <span className="text-sm">{error}</span>
@@ -439,7 +439,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
           <button onClick={onClose} disabled={isFinishing} className="cancel-button border-2 disabled:opacity-50 disabled:cursor-not-allowed">
             Cancel
           </button>
-          <button onClick={handleFinish} disabled={isFinishing || isLoading} className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed">
+          <button onClick={handleFinish} disabled={isFinishing || isLoading} className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed">
             {isFinishing ? <>
                 <Loader2 size={16} className="animate-spin" />
                 Finishing...

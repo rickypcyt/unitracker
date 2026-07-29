@@ -244,7 +244,7 @@ const TasksPage = memo(() => {
       {/* Task Page Settings Button */}
       <button
         onClick={() => setShowSettings(true)}
-        className="fixed top-6 left-6 z-50 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
+        className="fixed top-6 left-6 z-50 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
         aria-label="Task page settings"
         title="Task page settings"
       >
@@ -252,7 +252,7 @@ const TasksPage = memo(() => {
       </button>
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (
-        <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
+        <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
           <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
           <span className="flex-1">Swipe right to switch workspace</span>
           <button
@@ -278,14 +278,14 @@ const TasksPage = memo(() => {
           <>
             <button
               onClick={() => handleAddTask('ai')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
             >
               <Sparkles size={16} className="text-violet-400" />
               AI Task
             </button>
             <button
               onClick={() => handleAddTask('manual')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] shadow-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2"
             >
               <Zap size={16} className="text-amber-400" />
               Quick Add

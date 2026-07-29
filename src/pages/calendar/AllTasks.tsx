@@ -269,7 +269,7 @@ const AllTasks: React.FC<AllTasksProps> = ({
             return (
               <div
                 key={assignment}
-                className="rounded-xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)] overflow-hidden"
+                className="rounded-xl border-2 border-[var(--border-primary)]/50 bg-[var(--bg-primary)] overflow-hidden"
               >
                 {/* Assignment header */}
                 <button

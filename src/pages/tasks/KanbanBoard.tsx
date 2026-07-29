@@ -416,7 +416,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
         {/* Skeleton columns */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {[0, 1, 2].map(i => (
-            <div key={i} className="bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] p-3">
+            <div key={i} className="bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] p-3">
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-4 w-4 rounded bg-[var(--bg-primary)] animate-pulse" />
                 <div className="h-4 w-24 rounded bg-[var(--bg-primary)] animate-pulse" />
@@ -455,7 +455,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
           {isLoggedIn ? (
             <button
               onClick={() => handleAddTask(null)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
             >
               <Plus size={18} />
               Create your first task

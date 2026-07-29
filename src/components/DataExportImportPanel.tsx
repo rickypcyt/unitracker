@@ -54,7 +54,7 @@ const DataExportImportPanel = () => {
 
   const btnClass = "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all active:scale-95";
   const primaryBtn = `${btnClass} bg-[var(--accent-primary)] text-white hover:opacity-90`;
-  const secondaryBtn = `${btnClass} border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50`;
+  const secondaryBtn = `${btnClass} border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50`;
 
   return (
     <div className="space-y-6">
@@ -66,7 +66,7 @@ const DataExportImportPanel = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Tasks */}
-          <div className="border border-[var(--border-primary)] rounded-xl p-3 space-y-2">
+          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
               <FileText size={14} />
               Tasks
@@ -92,7 +92,7 @@ const DataExportImportPanel = () => {
           </div>
 
           {/* Sessions */}
-          <div className="border border-[var(--border-primary)] rounded-xl p-3 space-y-2">
+          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
               <Clock size={14} />
               Sessions
@@ -118,7 +118,7 @@ const DataExportImportPanel = () => {
           </div>
 
           {/* Stats */}
-          <div className="border border-[var(--border-primary)] rounded-xl p-3 space-y-2">
+          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
               <Database size={14} />
               Stats

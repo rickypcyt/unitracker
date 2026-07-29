@@ -201,7 +201,7 @@ const AdminDashboard = () => {
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'stats'
               ? 'bg-[var(--accent-primary)] text-white'
-              : 'border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
+              : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
           }`}
         >
           <TrendingUp size={16} />
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'email'
               ? 'bg-[var(--accent-primary)] text-white'
-              : 'border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
+              : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
           }`}
         >
           <Mail size={16} />
@@ -229,7 +229,7 @@ const AdminDashboard = () => {
         {cards.map((card) => (
           <div
             key={card.label}
-            className="bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
+            className="bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center`}>
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
         {signInCards.map((card) => (
           <div
             key={card.label}
-            className="bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
+            className="bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center`}>
@@ -261,7 +261,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Chart */}
-      <div className="bg-[var(--bg-secondary)]/20 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6 mb-6">
+      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6 mb-6">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           New Users (Last 30 Days)
         </h2>
@@ -292,7 +292,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent users table */}
-      <div className="bg-[var(--bg-secondary)]/20 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6">
+      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
           Recent Users
         </h2>

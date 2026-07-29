@@ -22,7 +22,7 @@ const TimeSegmentDisplay: React.FC<TimeSegmentDisplayProps> = ({
       {segments.map((segment, i) => (
         <React.Fragment key={segment.label}>
           <div className="flex flex-col items-center">
-            <div className="flex items-center justify-center w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+            <div className="flex items-center justify-center w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
               <span className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums tracking-tight leading-none ${segment.colorClass || 'text-[var(--text-primary)]'}`}>
                 {segment.value}
               </span>

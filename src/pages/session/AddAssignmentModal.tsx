@@ -78,7 +78,7 @@ const AddAssignmentModal = ({
             }}
             onKeyDown={handleKeyDown}
             placeholder="e.g. Calculus, Physics, History..."
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg px-3 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+            className="w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
             autoFocus
           />
           {error && (

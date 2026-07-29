@@ -228,7 +228,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
       maxWidth="max-w-2xl"
     >
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500 rounded-lg text-red-500 text-sm">
+        <div className="mb-4 p-3 bg-red-500/10 border-2 border-red-500 rounded-lg text-red-500 text-sm">
           {error}
         </div>
       )}
@@ -238,7 +238,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
           const IconComponent = iconOptions.find(opt => opt.name === workspace.icon)?.icon || Briefcase;
           return (
             <div key={workspace.id}>
-              <div className="flex items-center gap-3 p-3 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
+              <div className="flex items-center gap-3 p-3 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
                 {/* Icon to the left */}
                 <div className="flex-shrink-0">
                   {isEditing ? (
@@ -266,7 +266,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, workspace)}
-                      className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                      className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
                       placeholder="Workspace name"
                       autoFocus
                     />
@@ -319,7 +319,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                 </div>
               </div>
               {isEditing && expandedIconSelector === workspace.id && (
-                <div className="mt-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-3">
+                <div className="mt-3 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg p-3">
                   <div className="text-sm font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
                   <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-8 gap-2 sm:gap-3">
                     {iconOptions.map((option) => {

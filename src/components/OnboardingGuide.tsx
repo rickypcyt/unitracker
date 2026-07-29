@@ -107,7 +107,7 @@ const OnboardingGuide: React.FC = () => {
 
   return (
     <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-2rem)] max-w-md">
-      <div className="bg-[var(--bg-secondary)] border border-[var(--accent-primary)] rounded-2xl shadow-xl p-4 sm:p-5">
+      <div className="bg-[var(--bg-secondary)] border-2 border-[var(--accent-primary)] rounded-2xl shadow-xl p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-[var(--accent-primary)]/15 flex items-center justify-center">
             <Icon size={20} className="text-[var(--accent-primary)]" />

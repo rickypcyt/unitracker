@@ -78,7 +78,7 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
           return (
             <div
               key={col.id}
-              className="w-full bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] p-3 shadow-md flex flex-col"
+              className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md flex flex-col"
             >
               {/* Column header */}
               <div className="flex items-center justify-between mb-3 px-1">

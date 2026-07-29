@@ -359,7 +359,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search workspaces..."
-              className="w-full pl-10 pr-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-base text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+              className="w-full pl-10 pr-3 py-2.5 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg text-base text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
             />
           </div>
 

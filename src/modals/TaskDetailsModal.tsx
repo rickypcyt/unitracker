@@ -178,13 +178,13 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <div className="flex items-center gap-3">
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 task.completed 
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                  : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                  ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30' 
+                  : 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/30'
               }`}>
                 {task.completed ? 'Completed' : 'Pending'}
               </div>
               {task.activetask && (
-                <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border-2 border-blue-500/30">
                   Active
                 </div>
               )}
@@ -208,7 +208,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Basic Info */}
-          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Tag size={18} className="text-[var(--accent-primary)]" />
               Basic Information
@@ -235,7 +235,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
 
           {/* Description */}
-          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
             <MarkdownWysiwyg
               initialBody={formData.description || ''}
@@ -247,7 +247,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
           {/* Difficulty & Deadline */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+            <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                 <AlertCircle size={18} className="text-[var(--accent-primary)]" />
                 Difficulty
@@ -290,7 +290,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             )}
           </div>
 
-          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
             <FormInput
               id="deadline"
               label="Deadline"

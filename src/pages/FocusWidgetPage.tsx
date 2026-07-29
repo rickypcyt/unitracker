@@ -118,10 +118,10 @@ const FocusWidgetPage = () => {
         <div>
           <span className={`text-sm font-medium px-3 py-1 rounded-full ${
             studyState.sessionStatus === 'active'
-              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+              ? 'bg-green-500/20 text-green-400 border-2 border-green-500/30'
               : studyState.sessionStatus === 'paused'
-              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-              : 'bg-purple-500/15 text-purple-300 border border-purple-500/30'
+              ? 'bg-yellow-500/20 text-yellow-400 border-2 border-yellow-500/30'
+              : 'bg-purple-500/15 text-purple-300 border-2 border-purple-500/30'
           }`}>
             {studyState.sessionStatus === 'active' ? 'In Session' :
              studyState.sessionStatus === 'paused' ? 'Session Paused' :
@@ -168,7 +168,7 @@ const FocusWidgetPage = () => {
               <motion.div
                 animate={{ y: [0, -12, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+                className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center"
               >
                 <Coffee size={48} className="text-[var(--accent-primary)]" />
               </motion.div>
@@ -190,7 +190,7 @@ const FocusWidgetPage = () => {
 
             <button
               onClick={() => setIsSessionsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 transition-colors shadow-lg hover:shadow-xl"
               aria-label="Open Today's Sessions"
             >
               <Plus size={18} />

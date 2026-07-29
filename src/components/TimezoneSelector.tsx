@@ -94,7 +94,7 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-sm text-[var(--text-primary)]"
+        className="flex items-center gap-2 px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-sm text-[var(--text-primary)]"
         aria-label="Select timezone"
       >
         <Globe size={16} />
@@ -126,7 +126,7 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
           
           {/* Dropdown Content */}
           <div 
-            className="fixed z-50 w-80 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-hidden"
+            className="fixed z-50 w-80 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-hidden"
             style={{
               top: `${getDropdownPosition().top}px`,
               left: `${getDropdownPosition().left}px`,
@@ -139,7 +139,7 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
                 placeholder="Search timezone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-md text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-md text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
                 autoFocus
               />
             </div>

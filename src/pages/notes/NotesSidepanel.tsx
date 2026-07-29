@@ -173,7 +173,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     <div className="w-full bg-[var(--bg-secondary)] flex flex-col h-full">
       {/* Search bar */}
       <div className="p-3 border-b border-[var(--border-primary)]">
-        <div className="flex items-center gap-2 h-9 px-3 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg focus-within:border-[var(--accent-primary)] transition-colors">
+        <div className="flex items-center gap-2 h-9 px-3 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg focus-within:border-[var(--accent-primary)] transition-colors">
           <Search size={14} className="text-[var(--text-secondary)] flex-shrink-0" />
           <input
             type="text"
@@ -196,7 +196,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
         ) : (
           <div className="space-y-2">
             {Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
-              <div key={assignment} className="border border-[var(--border-primary)] rounded-xl overflow-hidden">
+              <div key={assignment} className="border-2 border-[var(--border-primary)] rounded-xl overflow-hidden">
                 <div className="flex items-center">
                   <button
                     onClick={() => toggleAssignment(assignment)}
@@ -265,7 +265,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
       <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)] sticky bottom-0">
         <button
           onClick={() => onCreateNote()}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
           aria-label="Create note"
         >
           <Plus size={16} className="text-[var(--accent-primary)]" />

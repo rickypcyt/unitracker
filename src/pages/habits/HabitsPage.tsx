@@ -94,7 +94,9 @@ const HabitsPage = memo(() => {
     const ref = new Date(today);
     ref.setDate(ref.getDate() + weekOffset * 7);
     const weekStart = new Date(ref);
-    weekStart.setDate(ref.getDate() - ref.getDay());
+    const dayOfWeek = ref.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    weekStart.setDate(ref.getDate() - diffToMonday);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart);
       d.setDate(weekStart.getDate() + i);
@@ -294,7 +296,7 @@ const HabitsPage = memo(() => {
       <div className="w-full px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 overflow-hidden">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 mb-4">
-        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
             <Flame size={20} className="text-[var(--accent-primary)]" />
           </div>
@@ -303,7 +305,7 @@ const HabitsPage = memo(() => {
             <div className="text-xs text-[var(--text-secondary)] truncate">Current Streak</div>
           </div>
         </div>
-        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
             <Trophy size={20} className="text-[var(--accent-primary)]" />
           </div>
@@ -312,7 +314,7 @@ const HabitsPage = memo(() => {
             <div className="text-xs text-[var(--text-secondary)] truncate">Best Streak</div>
           </div>
         </div>
-        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
             <TrendingUp size={20} className="text-[var(--accent-primary)]" />
           </div>
@@ -321,7 +323,7 @@ const HabitsPage = memo(() => {
             <div className="text-xs text-[var(--text-secondary)] truncate">This Week</div>
           </div>
         </div>
-        <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
+        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center flex-shrink-0">
             <Target size={20} className="text-[var(--accent-primary)]" />
           </div>
@@ -419,7 +421,7 @@ const HabitsPage = memo(() => {
               return (
                 <div
                   key={habit.id}
-                  className="flex items-center gap-2 sm:gap-3 p-3 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)]"
+                  className="flex items-center gap-2 sm:gap-3 p-3 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)]"
                 >
                   {/* Habit name + streak */}
                   <button
@@ -493,7 +495,7 @@ const HabitsPage = memo(() => {
                 return (
                   <div
                     key={`note-${dateKey}`}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] ${isFuture ? 'opacity-50' : ''}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] ${isFuture ? 'opacity-50' : ''}`}
                   >
                     <span className={`text-xs font-medium w-20 flex-shrink-0 ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
                       {date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}

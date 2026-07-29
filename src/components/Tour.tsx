@@ -165,7 +165,7 @@ const Tour: React.FC<TourProps> = ({
   const isFirstStep = currentStep === 0;
   return <>
       {/* Tour Tooltip */}
-      <div className="fixed z-[99999] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm border border-gray-200 dark:border-gray-700" style={{
+      <div className="fixed z-[99999] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-sm border-2 border-gray-200 dark:border-gray-700" style={{
       position: 'fixed',
       top: '50%',
       left: '50%',

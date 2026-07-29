@@ -45,7 +45,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           {secondaryLabel && onSecondaryClick && (
             <button
               onClick={onSecondaryClick}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-primary)] text-[var(--text-secondary)] text-sm font-medium hover:bg-[var(--bg-secondary)] transition-all w-full sm:w-auto"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-[var(--border-primary)] text-[var(--text-secondary)] text-sm font-medium hover:bg-[var(--bg-secondary)] transition-all w-full sm:w-auto"
             >
               {secondaryLabel}
             </button>

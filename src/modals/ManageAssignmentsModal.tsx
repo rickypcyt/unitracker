@@ -251,7 +251,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                 </div>
 
                 <div className="lg:w-1/2">
-                  <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-5 h-full min-h-[320px] space-y-6">
+                  <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-5 h-full min-h-[320px] space-y-6">
                     {selectedAssignment ? (
                       <>
                         <div>
@@ -277,7 +277,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                                 return (
                                   <li
                                     key={task.id}
-                                    className="border border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/80 hover:border-[var(--accent-primary)] transition-colors"
+                                    className="border-2 border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/80 hover:border-[var(--accent-primary)] transition-colors"
                                   >
                                     <div className="flex items-start justify-between gap-3">
                                       <div className="space-y-1">
@@ -320,7 +320,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                                 return (
                                   <li
                                     key={task.id}
-                                    className="border border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/50">
+                                    className="border-2 border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/50">
                                     <div className="flex items-start justify-between gap-3">
                                       <div className="space-y-1">
                                         <p className="font-medium text-[var(--text-secondary)] text-sm sm:text-base line-through truncate">

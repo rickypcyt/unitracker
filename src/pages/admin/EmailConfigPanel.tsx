@@ -104,7 +104,7 @@ const EmailConfigPanel: React.FC = () => {
       </div>
 
       {/* Config inputs */}
-      <div className="bg-[var(--bg-secondary)]/20 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
+      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Settings size={16} className="text-[var(--text-secondary)]" />
           <h3 className="text-sm font-semibold text-[var(--text-primary)]">Brand Settings</h3>
@@ -116,7 +116,7 @@ const EmailConfigPanel: React.FC = () => {
               type="text"
               value={config.appName}
               onChange={(e) => handleConfigChange('appName', e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             />
           </div>
           <div>
@@ -126,13 +126,13 @@ const EmailConfigPanel: React.FC = () => {
                 type="color"
                 value={config.primaryColor}
                 onChange={(e) => handleConfigChange('primaryColor', e.target.value)}
-                className="w-10 h-9 rounded-lg border border-[var(--border-primary)] cursor-pointer bg-[var(--bg-primary)]"
+                className="w-10 h-9 rounded-lg border-2 border-[var(--border-primary)] cursor-pointer bg-[var(--bg-primary)]"
               />
               <input
                 type="text"
                 value={config.primaryColor}
                 onChange={(e) => handleConfigChange('primaryColor', e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="flex-1 px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ const EmailConfigPanel: React.FC = () => {
               value={config.logoUrl || ''}
               onChange={(e) => handleConfigChange('logoUrl', e.target.value)}
               placeholder="https://..."
-              className="w-full px-3 py-2 text-sm border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             />
           </div>
           <div>
@@ -152,14 +152,14 @@ const EmailConfigPanel: React.FC = () => {
               type="text"
               value={config.footerText}
               onChange={(e) => handleConfigChange('footerText', e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             />
           </div>
         </div>
       </div>
 
       {/* Email type selector */}
-      <div className="bg-[var(--bg-secondary)]/20 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
+      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
         <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Select Email Type</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           {EMAIL_TYPES.map((type) => (
@@ -180,12 +180,12 @@ const EmailConfigPanel: React.FC = () => {
       </div>
 
       {/* Preview & Test */}
-      <div className="bg-[var(--bg-secondary)]/20 border border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
+      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handlePreview}
             disabled={previewLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-primary)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-secondary)]/30 disabled:opacity-50 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-secondary)]/30 disabled:opacity-50 transition-all"
           >
             <Eye size={16} />
             {previewLoading ? 'Loading...' : 'Preview Email'}
@@ -197,7 +197,7 @@ const EmailConfigPanel: React.FC = () => {
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}
               placeholder="test@example.com"
-              className="flex-1 px-3 py-2 text-sm border border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="flex-1 px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
             />
             <button
               onClick={handleSendTest}
@@ -219,7 +219,7 @@ const EmailConfigPanel: React.FC = () => {
         {previewHtml && (
           <div className="mt-4">
             <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">Email Preview:</p>
-            <div className="border border-[var(--border-primary)] rounded-lg overflow-hidden bg-white max-h-[500px] overflow-y-auto">
+            <div className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden bg-white max-h-[500px] overflow-y-auto">
               <iframe
                 srcDoc={previewHtml}
                 className="w-full h-[500px] border-0"

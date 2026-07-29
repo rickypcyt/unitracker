@@ -11,7 +11,6 @@ import {
   Sun,
   User,
   Users,
-  X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -45,6 +44,13 @@ interface SettingsProps {
   currentUserId?: string;
 }
 
+interface SettingsContentProps {
+  friends?: any[];
+  workspaces?: any[];
+  onRemoveFriend?: (friend: { id: string; username?: string | null; email?: string | null }) => Promise<void>;
+  currentUserId?: string;
+}
+
 type Tab = "appearance" | "account" | "data" | "whatsNew" | "about";
 
 const TAB_CONFIG: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
@@ -55,9 +61,7 @@ const TAB_CONFIG: { id: Tab; label: string; icon: React.ComponentType<any> }[] =
   { id: "about", label: "About", icon: Info },
 ];
 
-const Settings: React.FC<SettingsProps> = ({
-  isOpen,
-  onClose,
+const SettingsContent: React.FC<SettingsContentProps> = ({
   friends = [],
   workspaces = [],
   onRemoveFriend,
@@ -87,10 +91,10 @@ const Settings: React.FC<SettingsProps> = ({
   const { hasNewChanges, markAsSeen } = useChangelog();
 
   useEffect(() => {
-    if (isOpen && activeTab === "whatsNew" && markAsSeen) {
+    if (activeTab === "whatsNew" && markAsSeen) {
       markAsSeen();
     }
-  }, [isOpen, activeTab, markAsSeen]);
+  }, [activeTab, markAsSeen]);
 
   const handleAccentColorChange = (color: string) => {
     setAccentPalette(color);
@@ -106,33 +110,16 @@ const Settings: React.FC<SettingsProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   const selectedAccentName = ACCENT_COLORS.find((c) => c.value === accentPalette)?.name || "Custom";
 
   return (
     <>
-      <BaseModal
-        isOpen={isOpen}
-        onClose={onClose}
-        title=""
-        maxWidth="max-w-2xl"
-        padding="none"
-        showHeader={false}
-      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="relative flex items-center justify-center px-6 pt-5 pb-3">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Settings
             </h2>
-            <button
-              onClick={onClose}
-              className="absolute right-4 p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-              aria-label="Close"
-            >
-              <X size={20} />
-            </button>
           </div>
 
           {/* Tab bar */}
@@ -167,7 +154,7 @@ const Settings: React.FC<SettingsProps> = ({
                     <span className="text-sm font-medium text-[var(--text-primary)]">Theme</span>
                   </div>
                   <div className="relative">
-                    <div className="w-full h-9 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg relative overflow-hidden">
+                    <div className="w-full h-9 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
                       <div
                         className="absolute top-1 bottom-1 rounded-md transition-all duration-300 ease-in-out"
                         style={{
@@ -266,14 +253,14 @@ const Settings: React.FC<SettingsProps> = ({
                   {isLoggedIn ? (
                     <button
                       onClick={handleLogout}
-                      className="px-3 py-1.5 text-xs font-medium text-red-500 border border-red-500/30 rounded-lg hover:bg-red-500/10 transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-red-500 border-2 border-red-500/30 rounded-lg hover:bg-red-500/10 transition-colors"
                     >
                       Log Out
                     </button>
                   ) : (
                     <button
                       onClick={loginWithGoogle}
-                      className="px-3 py-1.5 text-xs font-medium text-[var(--accent-primary)] border border-[var(--accent-primary)]/30 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)]/30 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
                     >
                       Log In
                     </button>
@@ -342,7 +329,7 @@ const Settings: React.FC<SettingsProps> = ({
             {activeTab === "whatsNew" && (
               <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
                 {changelogData.map((entry, index) => (
-                  <div key={index} className="border border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]/30">
+                  <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]/30">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold text-[var(--text-primary)]">{entry.date}</h4>
                       <span className="text-xs text-[var(--text-secondary)]">{entry.time}</span>
@@ -455,8 +442,6 @@ const Settings: React.FC<SettingsProps> = ({
             )}
           </div>
         </div>
-      </BaseModal>
-
       {/* Sub-modals */}
       <ManageAssignmentsModal isOpen={showManageAssignmentsModal} onClose={() => setShowManageAssignmentsModal(false)} />
       <ManageSessionsModal isOpen={showSessionsModal} onClose={() => setShowSessionsModal(false)} />
@@ -475,4 +460,34 @@ const Settings: React.FC<SettingsProps> = ({
   );
 };
 
+const Settings: React.FC<SettingsProps> = ({
+  isOpen,
+  onClose,
+  friends = [],
+  workspaces = [],
+  onRemoveFriend,
+  currentUserId,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title=""
+      maxWidth="max-w-2xl"
+      padding="none"
+      showHeader={false}
+    >
+      <SettingsContent
+        friends={friends}
+        workspaces={workspaces}
+        {...(onRemoveFriend && { onRemoveFriend })}
+        {...(currentUserId && { currentUserId })}
+      />
+    </BaseModal>
+  );
+};
+
+export { SettingsContent };
 export default Settings;

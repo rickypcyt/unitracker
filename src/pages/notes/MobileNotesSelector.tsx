@@ -116,7 +116,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
               <p className="text-[var(--text-secondary)] mb-4">No notes yet</p>
               <button
                 onClick={onCreateNote}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 <Plus size={16} />
                 Create your first note
@@ -125,7 +125,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
           ) : (
             <div className="p-4 space-y-3">
               {Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
-                <div key={assignment} className="border border-[var(--border-primary)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
+                <div key={assignment} className="border-2 border-[var(--border-primary)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
                   <button
                     onClick={() => toggleAssignment(assignment)}
                     className="w-full px-4 py-3 bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center justify-between text-left"
@@ -205,7 +205,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
                 onCreateNote();
                 onClose();
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               <Plus size={16} />
               Create New Note

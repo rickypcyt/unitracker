@@ -1051,7 +1051,7 @@ const StudyTimer = ({
           return (
             <div className="relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.3" />
+                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle
                   cx="60" cy="60" r={radius} fill="none"
                   stroke="var(--accent-primary)" strokeWidth="5" strokeLinecap="round"
@@ -1096,7 +1096,7 @@ const StudyTimer = ({
           );
         })()}
 
-        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>
             <div>{studyState.sessionTitle || summaryData.title || "No Session"}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -1105,18 +1105,16 @@ const StudyTimer = ({
           </div>}
       </div>
 
-      {/* Time adjustment buttons */}
-      <div className="flex gap-1 mb-2">
-        {timeAdjustmentButtons.map(({
-        adjustment,
-        label
-      }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`${label.startsWith("-") ? "Subtract" : "Add"} ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
-            {label}
-          </button>)}
-      </div>
-
-      {/* Controls */}
-      <div className="flex justify-center items-center gap-2">
+      {/* Controls with side adjustment buttons */}
+      <div className="flex justify-center items-center gap-2 mt-3">
+        <div className="flex gap-1">
+          {timeAdjustmentButtons.filter(b => b.adjustment < 0).map(({
+            adjustment,
+            label
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
+              {label}
+            </button>)}
+        </div>
         {!isSynced && <>
             <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
               <RotateCcw size={18} className="text-[var(--text-secondary)]" />
@@ -1140,6 +1138,14 @@ const StudyTimer = ({
               <Check size={18} />
             </button>
           </>}
+        <div className="flex gap-1">
+          {timeAdjustmentButtons.filter(b => b.adjustment > 0).map(({
+            adjustment,
+            label
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
+              {label}
+            </button>)}
+        </div>
       </div>
 
       {/* Modals */}

@@ -33,6 +33,7 @@ const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
 const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
 const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 
 // Preload map: import functions for each page to enable hover-based preloading
 const preloadMap: Record<string, () => Promise<unknown>> = {
@@ -44,6 +45,7 @@ const preloadMap: Record<string, () => Promise<unknown>> = {
   notes: () => import("@/pages/notes/Notes"),
   focusWidget: () => import("@/pages/FocusWidgetPage"),
   admin: () => import("@/pages/admin/AdminDashboard"),
+  settings: () => import("@/pages/settings/SettingsPage"),
 };
 
 const preloadedPages = new Set<string>();
@@ -69,6 +71,7 @@ const pagesMap: Record<string, FC> = {
   notes: Notes,
   focusWidget: FocusWidgetPage,
   admin: AdminDashboard,
+  settings: SettingsPage,
 };
 
 
@@ -137,9 +140,9 @@ const PageContent: FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] w-full">
+    <div className="h-screen bg-[var(--bg-primary)] w-full overflow-hidden">
       <Navbar />
-      <div className="pt-16">
+      <div className="lg:pl-20 min-w-0 h-screen overflow-y-auto overflow-x-hidden">
         <Suspense fallback={<PageLoader />}>
           <ActiveComponent />
         </Suspense>
@@ -293,7 +296,7 @@ const App: FC = () => {
             padding: "16px",
             borderRadius: "8px",
             border: "2px solid var(--border-primary)",
-            marginTop: "64px", // Add top margin to avoid navbar
+            marginTop: "16px",
           },
         }}
       />

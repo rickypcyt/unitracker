@@ -128,7 +128,7 @@ const CalendarHeader = ({
       
       <div className="order-2 flex w-full md:w-1/3 justify-center">
         {/* View Switcher */}
-        <div className="flex rounded-md overflow-hidden border border-[var(--border-primary)] text-xs sm:text-base">
+        <div className="flex rounded-md overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
           <button
             className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
               view === 'month'

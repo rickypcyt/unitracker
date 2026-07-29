@@ -110,7 +110,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                                         type="text"
                                         value={editedSession.name}
                                         onChange={(e) => handleEditChange('name', e.target.value)}
-                                        className="bg-white/20 border border-white/30 rounded-lg px-3 py-1 text-white placeholder-white/70 w-full max-w-md"
+                                        className="bg-white/20 border-2 border-white/30 rounded-lg px-3 py-1 text-white placeholder-white/70 w-full max-w-md"
                                         placeholder="Session title"
                                     />
                                 ) : (
@@ -177,7 +177,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                             <textarea
                                 value={editedSession.description || ''}
                                 onChange={(e) => handleEditChange('description', e.target.value)}
-                                className="w-full p-3 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] resize-none"
+                                className="w-full p-3 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] resize-none"
                                 rows={3}
                                 placeholder="Add session description..."
                             />
@@ -196,7 +196,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 lg:col-span-2">Session Information</h3>
                         
                         {/* Duration */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
                                     <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -212,7 +212,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                         </div>
 
                         {/* Tasks Completed */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
                                     <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -228,7 +228,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                         </div>
 
                         {/* Pomodoros */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg">
                                     <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -244,7 +244,7 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                         </div>
 
                         {/* Session Date */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg">
                                     <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />

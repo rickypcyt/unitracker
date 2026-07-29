@@ -342,7 +342,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
             <p className="text-[var(--text-secondary)] mb-6">
               Start a new study session to see your progress here.
             </p>
-            <button onClick={onClose} className="px-4 py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
+            <button onClick={onClose} className="px-4 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
               Start
             </button>
           </div>
@@ -378,7 +378,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                       {/* Month Statistics Header */}
                       <div className="bg-gradient-to-r from-[var(--accent-primary)/10] to-[var(--accent-primary)/5]  rounded-2xl mb-6">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
                             <div className="flex items-center gap-2 mb-2">
                               <BookOpen size={16} className="text-[var(--accent-primary)]" />
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Sessions</span>
@@ -386,7 +386,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                             <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.totalSessions}</p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
                             <div className="flex items-center gap-2 mb-2">
                               <Clock size={16} className="text-[var(--accent-primary)]" />
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
@@ -396,7 +396,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                             </p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
                             <div className="flex items-center gap-2 mb-2">
                               <Zap size={16} className="text-[var(--accent-primary)]" />
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Avg Duration</span>
@@ -404,7 +404,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                             <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.avgDuration}m</p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border-primary)]">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
                             <div className="flex items-center gap-2 mb-2">
                               <Calendar size={16} className="text-[var(--accent-primary)]" />
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Days Active</span>
@@ -418,7 +418,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
 
                       {/* Weeks View */}
                       {weeksData.length > 0 ? <div className="space-y-6">
-                          {weeksData.map(week => <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-2xl p-6 border border-[var(--border-primary)]">
+                          {weeksData.map(week => <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-2xl p-6 border-2 border-[var(--border-primary)]">
                               <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                   <div className="w-2 h-8 bg-[var(--accent-primary)] rounded-full"></div>
@@ -426,7 +426,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                     {week.weekName}
                                   </h3>
                                 </div>
-                                <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] px-3 py-1.5 rounded-full border border-[var(--border-primary)] font-medium">
+                                <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] px-3 py-1.5 rounded-full border-2 border-[var(--border-primary)] font-medium">
                                   {week.totalSessions} {week.totalSessions === 1 ? 'session' : 'sessions'}
                                 </span>
                               </div>
@@ -444,7 +444,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                       </div>
                                       
                                       <div className="flex-1 space-y-2">
-                                        {day.sessions.map((lap, sessionIndex) => <div key={lap.id} className="bg-[var(--accent-primary)/10] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-0 cursor-pointer rounded-lg p-2 group relative overflow-hidden" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)} style={{
+                                        {day.sessions.map((lap, sessionIndex) => <div key={lap.id} className="bg-[var(--accent-primary)/10] border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-0 cursor-pointer rounded-lg p-2 group relative overflow-hidden" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)} style={{
                               animationDelay: `${dayIndex * 50 + sessionIndex * 25}ms`
                             }}>
                                             <div className="flex items-center justify-between">
@@ -474,7 +474,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                   </div>)}
                               </div>
                             </div>)}
-                        </div> : <div className="text-center py-16 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-primary)]">
+                        </div> : <div className="text-center py-16 bg-[var(--bg-secondary)] rounded-2xl border-2 border-[var(--border-primary)]">
                           <div className="mx-auto w-20 h-20 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-6">
                             <BookOpen size={32} className="text-[var(--accent-primary)]" />
                           </div>
@@ -536,7 +536,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                 const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
                 return Object.entries(monthsByYear).sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA)).map(([year, months]) => <div key={year} className="space-y-4">
                         <div className="w-full flex justify-center mb-4">
-                          <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border border-[var(--border-primary)]">
+                          <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border-2 border-[var(--border-primary)]">
                             {year}
                           </h2>
                         </div>
@@ -550,7 +550,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                       const stats = getMonthStats(lapsOfMonth);
                       const totalHours = Math.floor(stats.totalMinutes / 60);
                       const totalMins = stats.totalMinutes % 60;
-                      return <div key={monthYear} className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl p-5 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" onClick={() => setSelectedMonth(monthYear)}>
+                      return <div key={monthYear} className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl p-5 border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" onClick={() => setSelectedMonth(monthYear)}>
                                   <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[var(--accent-primary)/20] to-transparent rounded-bl-full opacity-50"></div>
                                   <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-4">

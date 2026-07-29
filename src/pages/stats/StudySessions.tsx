@@ -240,7 +240,7 @@ const StudySessions: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full bg-[var(--bg-primary)]/90 border border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col">
+        <div className="w-full h-full bg-[var(--bg-primary)]/90 border-2 border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col">
             {selectedMonth ? (
                 // Month detail view
                 <div className="space-y-4">
@@ -385,7 +385,7 @@ const StudySessions: React.FC = () => {
                                                 return (
                                                     <div
                                                         key={monthYear}
-                                                        className="bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer"
+                                                        className="bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer"
                                                         onClick={() => setSelectedMonth(monthYear)}
                                                     >
                                                         <div className="flex items-center justify-between mb-3">

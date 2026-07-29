@@ -104,14 +104,14 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
             </h2>
             <button
               onClick={() => handleOpenCreateModal()}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
             >
               <Plus size={16} />
               New
             </button>
           </div>
           {notes.length > 0 && (
-            <div className="flex items-center gap-2 h-9 px-3 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg focus-within:border-[var(--accent-primary)] transition-colors">
+            <div className="flex items-center gap-2 h-9 px-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg focus-within:border-[var(--accent-primary)] transition-colors">
               <Search size={16} className="text-[var(--text-secondary)] flex-shrink-0" />
               <input
                 type="text"
@@ -153,7 +153,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                 </p>
                 <button
                   onClick={() => handleOpenCreateModal()}
-                  className="inline-flex items-center gap-2 px-6 py-3 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
                 >
                   <Plus size={18} />
                   Create your first note
@@ -236,7 +236,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
               {/* Hero icon */}
               <div className="relative mb-8 text-center">
                 <div className="absolute inset-0 bg-[var(--accent-primary)]/10 blur-3xl rounded-full mx-auto w-48 h-48"></div>
-                <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20">
+                <div className="relative inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]/20">
                   <FileText className="w-10 h-10 text-[var(--accent-primary)]" />
                 </div>
               </div>
@@ -251,17 +251,17 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
 
               {/* Feature highlights */}
               <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Sparkles className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
                   <p className="text-sm font-medium text-[var(--text-primary)]">Rich Markdown</p>
                   <p className="text-xs text-[var(--text-secondary)] mt-1">Format with bold, italic, lists</p>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Folder className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
                   <p className="text-sm font-medium text-[var(--text-primary)]">Organized</p>
                   <p className="text-xs text-[var(--text-secondary)] mt-1">Group notes by assignment</p>
                 </div>
-                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+                <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Tag className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
                   <p className="text-sm font-medium text-[var(--text-primary)]">Searchable</p>
                   <p className="text-xs text-[var(--text-secondary)] mt-1">Find notes instantly</p>
@@ -272,7 +272,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
               <div className="text-center">
                 <button
                   onClick={() => handleOpenCreateModal()}
-                  className="inline-flex items-center gap-2 px-6 py-3 border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-xl hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
+                  className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-xl hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
                 >
                   <Plus size={18} />
                   Create your first note
@@ -285,7 +285,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
           <div className="flex-1 overflow-y-auto">
             {/* Search bar */}
             <div className="sticky top-0 z-10 bg-[var(--bg-primary)]/95 backdrop-blur-sm p-4 border-b border-[var(--border-primary)]">
-              <div className="max-w-2xl mx-auto flex items-center gap-2 h-10 px-4 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl focus-within:border-[var(--accent-primary)] transition-colors">
+              <div className="max-w-2xl mx-auto flex items-center gap-2 h-10 px-4 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl focus-within:border-[var(--accent-primary)] transition-colors">
                 <Search size={18} className="text-[var(--text-secondary)] flex-shrink-0" />
                 <input
                   type="text"

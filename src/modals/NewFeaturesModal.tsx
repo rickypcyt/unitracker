@@ -28,7 +28,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
         {/* Changelog Entries */}
         <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           {changelogData.map((entry, index) => (
-            <div key={index} className="border border-[var(--border-primary)] rounded-lg p-5 bg-[var(--bg-secondary)]/30">
+            <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-5 bg-[var(--bg-secondary)]/30">
               {/* Version Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => window.open('https://github.com/rickypcyt/unitracker', '_blank')}
-                className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
               >
                 View on GitHub
               </button>

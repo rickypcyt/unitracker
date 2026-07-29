@@ -131,7 +131,7 @@ const TaskSelectionPanel = ({
         ? "task-item-active"
         : isActive
         ? "task-item-active"
-        : "bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+        : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]"
     }`;
 
     let borderColor = "";
@@ -185,7 +185,7 @@ const TaskSelectionPanel = ({
           className={`task-item-base task-item-flex ${
             isActive
               ? borderColor + " border-2"
-              : "bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+              : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]"
           }`}
           onClick={() => onTaskSelect ? onTaskSelect(task.id) : null}
         >
@@ -323,7 +323,7 @@ const TaskSelectionPanel = ({
           {sortedAssignments.map((assignment) => (
             <div
               key={assignment}
-              className="border border-[var(--border-primary)] rounded-lg overflow-hidden"
+              className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden"
             >
               <button
                 onClick={() => toggleGroup(assignment)}

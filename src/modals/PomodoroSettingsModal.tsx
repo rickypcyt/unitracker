@@ -306,7 +306,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                           max="50"
                           value={pomodoroSettings.dailyGoal}
                           onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
-                          className="mt-1 w-20 px-2 py-1 rounded text-[var(--text-primary)] border border-[var(--border-primary)]"
+                          className="mt-1 w-20 px-2 py-1 rounded text-[var(--text-primary)] border-2 border-[var(--border-primary)]"
                         />
                       </div>
                     </div>
@@ -388,7 +388,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
         <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-primary)] lg:col-span-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors border border-[var(--border-primary)]"
+            className="px-4 py-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors border-2 border-[var(--border-primary)]"
           >
             Cancel
           </button>

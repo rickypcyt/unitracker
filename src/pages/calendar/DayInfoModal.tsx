@@ -29,7 +29,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Tasks Card */}
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
+          <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[var(--accent-primary)]/20 rounded-lg flex items-center justify-center">
                 <CheckCircle2 size={20} className="text-[var(--accent-primary)]" />
@@ -44,7 +44,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
           </div>
 
           {/* Study Time Card */}
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-4">
+          <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-[var(--accent-primary)]/20 rounded-lg flex items-center justify-center">
                 <Clock size={20} className="text-[var(--accent-primary)]" />
@@ -70,7 +70,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
               {tasks.map((task: any) => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
                 >
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                     task.completed ? "bg-green-500" : "bg-yellow-500"

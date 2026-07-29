@@ -20,7 +20,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({ sortBy, onSortChange, showSo
     <div className="relative">
       <button
         onClick={() => setShowSortMenu(!showSortMenu)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] border border-[var(--border-primary)] transition-all duration-200 hover:shadow-md"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] transition-all duration-200 hover:shadow-md"
       >
         <ArrowUpDown size={16} className="text-[var(--text-secondary)]" />
         Sort by{" "}
@@ -41,7 +41,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({ sortBy, onSortChange, showSo
         </span>
       </button>
       {showSortMenu && (
-        <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-primary)] rounded-lg shadow-lg z-10 border border-[var(--border-primary)] overflow-hidden">
+        <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-primary)] rounded-lg shadow-lg z-10 border-2 border-[var(--border-primary)] overflow-hidden">
           <SortOption label="Default" value="default" currentSort={sortBy} onClick={onSortChange} />
           <SortOption label="Assignment" value="assignment" currentSort={sortBy} onClick={onSortChange} />  
           <SortOption label="Deadline" value="deadline" currentSort={sortBy} onClick={onSortChange} />

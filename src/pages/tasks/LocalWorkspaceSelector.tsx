@@ -58,7 +58,7 @@ const LocalWorkspaceSelector: React.FC<LocalWorkspaceSelectorProps> = ({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
+        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
       >
         <div className="flex items-center gap-3">
           {getWorkspaceIcon(selectedWorkspace?.icon || 'Briefcase', true)}
@@ -75,7 +75,7 @@ const LocalWorkspaceSelector: React.FC<LocalWorkspaceSelectorProps> = ({
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
             {allWorkspaces.map((workspace) => (
               <button
                 key={workspace.id}

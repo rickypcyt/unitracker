@@ -187,10 +187,10 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
                 </div> : <div className="px-3 py-1 rounded-full text-sm font-medium border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
                   Pending
                 </div>}
-              {task.activetask && <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              {task.activetask && <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border-2 border-blue-500/30">
                   Active
                 </div>}
-              {isRecurring && <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+              {isRecurring && <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border-2 border-purple-500/30">
                   Recurring
                 </div>}
             </div>
@@ -211,7 +211,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {/* Basic Info */}
-          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Tag size={18} className="text-[var(--accent-primary)]" />
               Basic Information
@@ -250,7 +250,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           </div>
 
           {/* Description */}
-          {task.description && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          {task.description && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
               <div className="prose prose-invert max-w-none text-[var(--text-primary)]" dangerouslySetInnerHTML={{
             __html: task.description
@@ -258,7 +258,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
             </div>}
 
           {/* Schedule Info */}
-          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
             <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
               <Clock size={18} className="text-[var(--accent-primary)]" />
               Schedule
@@ -292,7 +292,7 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
           </div>
 
           {/* Completion Info */}
-          {task.completed && task.completed_at && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border border-[var(--border-primary)]">
+          {task.completed && task.completed_at && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
                 <CheckCircle2 size={18} className="text-green-400" />
                 Completed
@@ -309,18 +309,18 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
             {onDelete && <button onClick={() => {
             onDelete(task);
             onClose();
-          }} className="px-4 py-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+          }} className="px-4 py-2 rounded-lg border-2 border-red-500 text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2">
                 <Trash2 size={18} />
                 <span>Delete</span>
               </button>}
             <div className="flex items-center gap-3 ml-auto">
-              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
                 Close
               </button>
               <button onClick={() => {
               onEdit(task);
               onClose();
-            }} className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-2">
+            }} className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-2">
                 <Edit size={18} />
                 <span>Edit</span>
               </button>

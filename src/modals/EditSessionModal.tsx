@@ -212,7 +212,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
 
         {/* Error State */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg">
             <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <AlertCircle size={16} />
               <span className="text-sm">{error}</span>
@@ -233,7 +233,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                   id="sessionTitle"
                   value={sessionTitle}
                   onChange={(e) => setSessionTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
+                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
                   placeholder="Enter session title"
                 />
               </div>
@@ -246,7 +246,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                   id="sessionDescription"
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
+                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-colors"
                   rows={3}
                   placeholder="Add notes about this session..."
                 />
@@ -264,7 +264,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
               </h3>
               <button
                 onClick={() => setShowTaskSelector(true)}
-                className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1"
+                className="px-3 py-1 text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1"
               >
                 <CheckCircle size={14} />
                 Add Tasks
@@ -272,7 +272,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
             </div>
             
             {activeTasks.length === 0 ? (
-              <div className="text-center text-gray-400 py-6 text-lg font-medium bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]">
+              <div className="text-center text-gray-400 py-6 text-lg font-medium bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)]">
                 No active tasks in this session.
                 <div className="text-sm mt-2">
                   Click "Add Tasks" to add tasks to this session.
@@ -283,7 +283,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                 {activeTasks.map(task => (
                   <div 
                     key={task.id} 
-                    className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)]"
+                    className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)]"
                   >
                     <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
                       <CheckCircle size={12} className="text-white" />
@@ -310,7 +310,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
         {/* Task Selector Modal */}
         {showTaskSelector && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)]">
+            <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)]">
               <div className="p-4 border-b border-[var(--border-primary)] flex justify-between items-center sticky top-0 bg-[var(--bg-primary)] z-10">
                 <h2 className="text-xl font-semibold">Add Tasks to Session</h2>
                 <button 
@@ -332,12 +332,12 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                     {availableTasks.map(task => (
                       <div 
                         key={task.id} 
-                        className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors"
                       >
                         <span className="flex-1 text-[var(--text-primary)]">{task.title}</span>
                         <button
                           onClick={() => handleAddTaskToActive(task)}
-                          className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+                          className="px-3 py-1 text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
                         >
                           Add to Session
                         </button>
@@ -354,14 +354,14 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                     // Handle new task creation
                     handleTaskFormClose();
                   }}
-                  className="px-3 py-1 text-sm border border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1"
+                  className="px-3 py-1 text-sm border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-1"
                 >
                   <CheckCircle size={14} />
                   New Task
                 </button>
                 <button
                   onClick={() => setShowTaskSelector(false)}
-                  className="px-4 py-2 border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                  className="px-4 py-2 border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
                 >
                   Done
                 </button>
@@ -382,7 +382,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
           <button
             onClick={handleSaveChanges}
             disabled={isSaving || isLoading}
-            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <>

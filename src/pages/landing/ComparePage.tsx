@@ -78,7 +78,7 @@ const ComparePage = () => {
         <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
-      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="h-screen overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[var(--bg-primary)]/80 border-b border-[var(--border-primary)]/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -108,7 +108,7 @@ const ComparePage = () => {
           </div>
 
           {/* Comparison table */}
-          <div className="overflow-x-auto rounded-2xl border border-[var(--border-primary)]/30">
+          <div className="overflow-x-auto rounded-2xl border-2 border-[var(--border-primary)]/30">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-primary)]/30 bg-[var(--bg-secondary)]/30">
@@ -163,7 +163,7 @@ const ComparePage = () => {
                 desc: "Forest is great for focus timing, but that's all it does. No tasks, no calendar, no analytics, no notes. UniTracker has Forest's core feature plus everything else.",
               },
             ].map((card) => (
-              <div key={card.title} className="border border-[var(--border-primary)]/30 rounded-2xl p-6">
+              <div key={card.title} className="border-2 border-[var(--border-primary)]/30 rounded-2xl p-6">
                 <h3 className="text-lg font-bold mb-3 text-[var(--accent-primary)]">{card.title}</h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{card.desc}</p>
               </div>

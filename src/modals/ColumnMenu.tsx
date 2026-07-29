@@ -52,7 +52,7 @@ export const ColumnMenu = ({
       y={y}
       onClose={onClose}
       aria-label="Column options"
-      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] z-[9999]"
+      className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] z-[9999]"
     >
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li

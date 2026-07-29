@@ -209,9 +209,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
       return <span className="timer-status-badge timer-status-pomo-long">Long Break</span>;
     }
     if (id === "countdown") {
-      if (!countdownStatus) return null;
-      if (countdownStatus === "Running") return <span className="timer-status-badge timer-status-active">Running</span>;
-      return <span className="timer-status-badge timer-status-paused">Paused</span>;
+      return null;
     }
     return null;
   };

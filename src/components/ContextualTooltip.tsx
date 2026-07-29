@@ -139,7 +139,7 @@ const ContextualTooltip: React.FC<ContextualTooltipProps> = ({
       <div
         id={tooltipId}
         style={{ ...style, width: tooltipWidth }}
-        className="bg-[var(--bg-secondary)] border border-[var(--accent-primary)] rounded-xl shadow-xl p-4"
+        className="bg-[var(--bg-secondary)] border-2 border-[var(--accent-primary)] rounded-xl shadow-xl p-4"
       >
         <div
           style={arrowStyle}

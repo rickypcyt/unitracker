@@ -1,9 +1,8 @@
-import { BarChart3, BookOpen, Calendar, CircleCheckBig, LayoutDashboard, ListTodo, Timer } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, CircleCheckBig, LayoutDashboard, ListTodo, Menu, Timer, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import SettingsButton from './SettingsButton';
-import SettingsPanel from '@/modals/Settings';
 import { supabase } from '@/utils/supabaseClient';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,10 +19,10 @@ const Navbar = () => {
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
-  const [showSettings, setShowSettings] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const prevRequestCountRef = useRef<number | null>(null);
 
   const {
@@ -137,8 +136,6 @@ const Navbar = () => {
 
   // Navigation link class
   const isActive = (page: any) => activePage === page;
-  const navLinkClass = (page: any) =>
-    `px-4 py-2 rounded-md ${isActive(page) ? 'text-[var(--accent-primary)] ' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium'}`;
 
   // Icon mapping
   const iconMap = {
@@ -199,124 +196,96 @@ const Navbar = () => {
     setDragOverIndex(null);
   };
 
+  const handleNavigate = (page: any) => {
+    navigateTo(page);
+    setMobileOpen(false);
+  };
+
+  const allNavItems = [...navOrder];
+  if (isAdmin) {
+    allNavItems.push({ page: 'admin' as any, icon: null, label: 'Admin' });
+  }
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] z-[10000] overflow-x-hidden" data-tour="navbar">
-      <div className="w-full px-2 overflow-x-hidden">
-        <div className="flex items-center justify-between h-16 w-full">
-          {/* Logo a la izquierda */}
-          <div className="flex items-center flex-shrink-0">
-            {/* Mobile: Show "UT" with U in white and T in accent */}
-            <span className="lg:hidden text-[var(--text-primary)] font-bold text-lg sm:text-xl">U</span>
-            <span className="lg:hidden text-[var(--accent-primary)] font-bold text-lg sm:text-xl">T</span>
-            {/* Desktop: Show full "UniTracker" */}
-            <span className="hidden lg:inline text-[var(--text-primary)] font-bold text-lg lg:text-lg xl:text-2xl">Uni</span>
-            <span className="hidden lg:inline text-[var(--accent-primary)] font-bold text-lg lg:text-lg xl:text-2xl">Tracker</span>
-          </div>
-          {/* Botones de páginas al centro */}
-          <div className="flex-1 flex justify-center items-center">
-            <div className="hidden lg:flex space-x-4 lg:space-x-4 items-center justify-center">
-              {navOrder.map(({ page, label }, index) => {
-                const Icon = iconMap[page as keyof typeof iconMap];
-                return (
-                  <div
-                    key={page}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, { page, label })}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative ${dragOverIndex === index ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--accent-primary)]' : ''} ${isDragging ? 'cursor-move' : ''} hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200`}
-                  >
-                    <button
-                      onClick={() => navigateTo(page as any)}
-                      onMouseEnter={() => preloadPage(page)}
-                      className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1 cursor-grab active:cursor-grabbing'}
-                      data-page={page}
-                    >
-                      <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'} mr-1`} />
-                      <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">{label}</span>
-                    </button>
-                  </div>
-                );
-              })}
-              {isAdmin && (
-                <div className="relative hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200">
-                  <button
-                    onClick={() => navigateTo('admin' as any)}
-                    onMouseEnter={() => preloadPage('admin')}
-                    className={navLinkClass('admin') + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
-                    data-page="admin"
-                  >
-                    <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6 mr-1" />
-                    <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">Admin</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1 items-center justify-center">
-              {navOrder.map(({ page, label }, index) => {
-                const Icon = iconMap[page as keyof typeof iconMap];
-                return (
-                  <div
-                    key={page}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, { page, label })}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative ${dragOverIndex === index ? 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[var(--accent-primary)]' : ''} ${isDragging ? 'cursor-move' : ''} hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200`}
-                  >
-                    <button
-                      onClick={() => navigateTo(page as any)}
-                      onMouseEnter={() => preloadPage(page)}
-                      className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 cursor-grab active:cursor-grabbing ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
-                      data-page={page}
-                    >
-                      <Icon className={`${page === 'habits' ? 'w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-5.5 md:h-5.5 lg:w-4.5 lg:h-4.5 xl:w-5.5 xl:h-5.5' : 'w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6'}`} />
-                      <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">{label}</span>
-                    </button>
-                  </div>
-                );
-              })}
-              {isAdmin && (
-                <div className="relative">
-                  <button
-                    onClick={() => navigateTo('admin' as any)}
-                    onMouseEnter={() => preloadPage('admin')}
-                    className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive('admin') ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
-                    data-page="admin"
-                  >
-                    <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
-                    <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">Admin</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-          {/* Settings a la derecha */}
-          <div className="flex items-center gap-0 sm:gap-0.5 md:gap-1 lg:gap-2 flex-shrink-0">
-            {/* Settings button - always visible */}
-            <SettingsButton
-              friends={friends}
-              workspaces={workspacesWithTaskCount}
-              onRemoveFriend={handleRemoveFriend}
-            />
-          </div>
-        </div>
-      </div>
-      {showSettings && (
-        <SettingsPanel
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-          friends={friends}
-          workspaces={workspacesWithTaskCount}
-          onRemoveFriend={handleRemoveFriend}
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden fixed top-3 left-3 z-[10001] p-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-[10000]"
+          onClick={() => setMobileOpen(false)}
         />
       )}
-    </nav>
+
+      {/* Sidebar */}
+      <nav
+        className={`fixed top-0 left-0 bottom-0 w-16 lg:w-20 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-[10000] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        data-tour="navbar"
+      >
+        {/* Logo + mobile close */}
+        <div className="h-16 flex items-center justify-center border-b border-[var(--border-primary)] flex-shrink-0">
+          <span className="text-[var(--text-primary)] font-bold text-lg">U</span>
+          <span className="text-[var(--accent-primary)] font-bold text-lg">T</span>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden absolute top-3 right-3 p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Nav items */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
+          <div className="flex flex-col items-center gap-1">
+            {allNavItems.map(({ page, label }, index) => {
+              const Icon = iconMap[page as keyof typeof iconMap];
+              return (
+                <div
+                  key={page}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, { page, label })}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className="w-full flex justify-center"
+                >
+                  <button
+                    onClick={() => handleNavigate(page)}
+                    onMouseEnter={() => preloadPage(page)}
+                    className={`group relative w-12 lg:w-16 h-12 lg:h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-150 cursor-grab active:cursor-grabbing ${
+                      isActive(page)
+                        ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                    } ${dragOverIndex === index ? 'ring-2 ring-[var(--accent-primary)]/40' : ''}`}
+                    data-page={page}
+                    title={label}
+                  >
+                    <Icon className="w-5 h-5 lg:w-6 lg:h-6" />
+                    <span className="text-[9px] lg:text-[10px] mt-0.5 font-medium leading-none hidden lg:block">{label}</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Settings at bottom */}
+        <div className="flex justify-center py-3 border-t border-[var(--border-primary)] flex-shrink-0">
+          <SettingsButton />
+        </div>
+      </nav>
+    </>
   );
 };
 
-export default Navbar; 
+export default Navbar;

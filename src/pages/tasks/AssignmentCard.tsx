@@ -225,7 +225,7 @@ export const AssignmentCard = ({
           {sortedTasks.length === 0 ? (
             <div
               onClick={onAddTask}
-              className="flex flex-col items-center justify-center py-6 rounded-lg border border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
+              className="flex flex-col items-center justify-center py-6 rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
             >
               <Plus size={20} className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] mb-1 transition-colors" />
               <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">

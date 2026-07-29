@@ -421,7 +421,7 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             <textarea id="aiPrompt" ref={aiTextareaRef} value={aiPrompt} onChange={e => {
             setAiPrompt(e.target.value);
             localStorage.setItem('aiPromptDraft', e.target.value);
-          }} className="w-full min-h-[150px] sm:min-h-[120px] px-3 py-2 text-sm sm:text-base bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Example: Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)." disabled={aiLoading} />
+          }} className="w-full min-h-[150px] sm:min-h-[120px] px-3 py-2 text-sm sm:text-base bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Example: Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)." disabled={aiLoading} />
           </div>
 
           {aiError && <div className="text-red-500 text-xs sm:text-sm text-center">{aiError}</div>}

@@ -122,7 +122,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               {this.state.errors.map((errorItem, index: number) => (
                 <div 
                   key={errorItem.id} 
-                  className="bg-slate-800/50 backdrop-blur-sm border border-red-500/30 rounded-xl overflow-hidden shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all duration-300 animate-slide-up"
+                  className="bg-slate-800/50 backdrop-blur-sm border-2 border-red-500/30 rounded-xl overflow-hidden shadow-lg shadow-red-500/10 hover:shadow-red-500/20 transition-all duration-300 animate-slide-up"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Error Card Header */}
@@ -154,7 +154,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                           </svg>
                           <span className="text-sm font-semibold text-red-400">Error Message</span>
                         </div>
-                        <pre className="text-xs bg-red-500/10 border border-red-500/20 rounded p-2 text-red-300 overflow-x-auto font-mono">
+                        <pre className="text-xs bg-red-500/10 border-2 border-red-500/20 rounded p-2 text-red-300 overflow-x-auto font-mono">
                           {errorItem.error && errorItem.error.toString()}
                         </pre>
                       </div>
@@ -168,7 +168,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                             </svg>
                             <span className="text-sm font-semibold text-orange-400">Component Stack</span>
                           </div>
-                          <pre className="text-xs bg-orange-500/10 border border-orange-500/20 rounded p-2 text-orange-300 overflow-x-auto font-mono max-h-32 overflow-y-auto">
+                          <pre className="text-xs bg-orange-500/10 border-2 border-orange-500/20 rounded p-2 text-orange-300 overflow-x-auto font-mono max-h-32 overflow-y-auto">
                             {errorItem.errorInfo.componentStack}
                           </pre>
                         </div>
@@ -204,7 +204,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
               <button
                 onClick={this.handleClearErrors}
-                className="group relative px-6 py-3 bg-slate-700 border border-slate-600 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all duration-300 hover:scale-105"
+                className="group relative px-6 py-3 bg-slate-700 border-2 border-slate-600 text-white font-semibold rounded-xl hover:bg-slate-600 transition-all duration-300 hover:scale-105"
               >
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +216,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
               <button
                 onClick={() => window.open('https://github.com/rickypcyt/vitejs-uni-tracker/issues', '_blank')}
-                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-blue-400 font-semibold rounded-xl hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-300 hover:scale-105"
+                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-500/30 text-blue-400 font-semibold rounded-xl hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-300 hover:scale-105"
               >
                 <span className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

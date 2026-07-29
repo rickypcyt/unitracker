@@ -271,7 +271,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
                 disabled={usernameLoading}
               />
               <button
-                className="mt-2 px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60"
+                className="mt-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60"
                 onClick={async () => {
                   await handleSaveUsername();
                   if (usernameValid && username) setEditingUsername(false);
@@ -312,7 +312,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
         />
         {preview && (
           <button
-            className="px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--accent-primary)] border border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] mt-2"
+            className="px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] mt-2"
             onClick={handleUpload}
             disabled={uploading}
           >

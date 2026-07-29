@@ -56,7 +56,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md overflow-y-auto" style={{ padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.5rem)' }}>
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border border-[var(--border-primary)]/50 w-full max-w-4xl relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-4xl relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
         style={{ margin: 'clamp(0.25rem, 0.2rem + 0.3vw, 1rem)', padding: 'clamp(0.75rem, 0.6rem + 1vw, 2.5rem)' }}
@@ -95,7 +95,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         
         {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 relative z-10" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', marginBottom: 'clamp(1rem, 0.8rem + 1vw, 2rem)' }}>
-          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
             <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
               <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
                 <Clock className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
@@ -107,7 +107,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
             <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
               <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
                 <BarChart2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
@@ -119,7 +119,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
             <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
               <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
                 <Calendar className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
@@ -131,7 +131,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
+          <div className="flex items-start rounded-lg sm:rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
             <div className="flex items-center" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
               <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center" style={{ width: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)', height: 'clamp(2rem, 1.8rem + 0.8vw, 3rem)' }}>
                 <CheckCircle2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />

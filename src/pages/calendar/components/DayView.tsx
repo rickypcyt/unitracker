@@ -116,7 +116,7 @@ const DayView = ({
   );
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border border-[var(--border-primary)]/40 rounded-xl relative min-h-0 h-full overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]/40 rounded-xl relative min-h-0 h-full overflow-hidden">
       {/* Time grid */}
       <div className="flex-1 overflow-auto" ref={scrollRef}>
         <div className="relative px-2 pb-4">

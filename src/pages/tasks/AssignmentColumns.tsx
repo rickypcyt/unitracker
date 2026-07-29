@@ -97,7 +97,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
         {fixedColumns.map((column) => (
           <div
             key={column.id}
-            className="w-full bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] p-3 shadow-md"
+            className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard

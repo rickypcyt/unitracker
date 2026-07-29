@@ -17,8 +17,8 @@ const SyncToggle = () => {
         onClick={handleToggle}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 font-semibold ${
           isSynced
-            ? 'border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10'
-            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
+            ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10'
+            : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)]'
         }`}
         aria-label={isSynced ? 'Disable timer synchronization' : 'Enable timer synchronization'}
       >

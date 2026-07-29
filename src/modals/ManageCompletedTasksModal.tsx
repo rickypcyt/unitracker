@@ -84,7 +84,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
                 const dateA = a.completed_at ? new Date(a.completed_at).getTime() : 0;
                 const dateB = b.completed_at ? new Date(b.completed_at).getTime() : 0;
                 return dateB - dateA;
-              }).map(task => <div key={task.id} className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4 hover:border-[var(--accent-primary)] transition-all duration-200 group" onContextMenu={e => {
+              }).map(task => <div key={task.id} className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl p-4 hover:border-[var(--accent-primary)] transition-all duration-200 group" onContextMenu={e => {
                 e.preventDefault();
                 handleEditTask(task);
               }}>
@@ -130,7 +130,7 @@ const ManageCompletedTasksModal: React.FC<ManageCompletedTasksModalProps> = ({
                 <div className="grid grid-cols-1 gap-3">
                   {months.map(month => {
                 const tasksOfMonth = groupedByMonth[month] || [];
-                return <button key={month} onClick={() => handleMonthSelect(month)} className="w-full text-left p-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] rounded-lg border border-[var(--border-primary)] transition-colors group">
+                return <button key={month} onClick={() => handleMonthSelect(month)} className="w-full text-left p-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] rounded-lg border-2 border-[var(--border-primary)] transition-colors group">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-[var(--text-primary)]">{month}</span>
                           <div className="flex items-center">

@@ -126,7 +126,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
       {showSuggestions && filtered.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-[9999] mt-1 w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-[9999] mt-1 w-full bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg max-h-48 overflow-y-auto"
         >
           {filtered.map((suggestion, idx) => (
             <li

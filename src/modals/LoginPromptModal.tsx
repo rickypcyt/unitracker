@@ -35,7 +35,7 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
 
   return (
     <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-xl">
-      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-lg p-6 max-w-md w-full mx-4 border border-[var(--border-primary)] shadow-xl">
+      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-lg p-6 max-w-md w-full mx-4 border-2 border-[var(--border-primary)] shadow-xl">
         <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">Login Required</h2>
         <p className="text-[var(--text-secondary)] mb-6 text-center">
           Signing in will save and sync your tasks to the cloud database.
@@ -53,7 +53,7 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 text-[var(--text-primary)] rounded-lg transition-colors border border-[var(--border-primary)]"
+            className="w-full px-4 py-2 bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 text-[var(--text-primary)] rounded-lg transition-colors border-2 border-[var(--border-primary)]"
           >
             Cancel
           </button>

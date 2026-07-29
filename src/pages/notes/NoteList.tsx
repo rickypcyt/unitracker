@@ -50,7 +50,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _e
         {notes.map((note) => (
           <div
             key={note.id || note.title + note.date}
-            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-1.5 sm:p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square"
+            className="relative flex flex-col w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-1.5 sm:p-2 shadow-sm hover:shadow-lg hover:border-[var(--accent-primary)]/70 transition-all duration-200 group aspect-square"
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"

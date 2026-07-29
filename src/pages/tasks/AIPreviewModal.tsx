@@ -135,12 +135,12 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
               <div className="flex-1">
                 {/* Header: index badge + title + actions */}
                 <div className="flex items-center gap-2 mb-2 sm:mb-1">
-                  <div className="shrink-0 select-none w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
+                  <div className="shrink-0 select-none w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
                   {editIdx === idx ? (
                     <input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
+                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
                       placeholder="Task title"
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -178,7 +178,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <input
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                           placeholder="Description"
                         />
                       </div>
@@ -187,7 +187,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <input
                           value={editSubject}
                           onChange={(e) => setEditSubject(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                           placeholder="Assignment/Subject"
                         />
                       </div>
@@ -197,7 +197,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                           <DatePicker
                             selected={editDate}
                             onChange={(date) => setEditDate(date)}
-                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8 text-sm"
+                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8 text-sm"
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
@@ -210,7 +210,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <select
                           value={editDifficulty}
                           onChange={(e) => setEditDifficulty(e.target.value)}
-                          className="px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
                         >
                           <option value="easy">easy</option>
                           <option value="medium">medium</option>
@@ -218,10 +218,10 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         </select>
                       </div>
                       <div className="mt-2 flex items-center gap-2 justify-end">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] active:scale-95 transition-transform">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] active:scale-95 transition-transform">
                           Cancel
                         </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-medium active:scale-95 transition-transform">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-medium active:scale-95 transition-transform">
                           Save
                         </button>
                       </div>
@@ -267,7 +267,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
               onClick={onCancel}
               aria-label="Cancel"
               title="Cancel"
-              className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border border-[var(--border-primary)] hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] active:scale-95 transition-transform"
+              className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border-2 border-[var(--border-primary)] hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] active:scale-95 transition-transform"
             >
               <X size={18} className="sm:w-4 sm:h-4" />
             </button>
@@ -275,7 +275,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
             <button
               onClick={() => items.length > 0 && onAcceptAll?.(items)}
               title="Accept all"
-              className="px-4 py-2 sm:p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-green-500 border border-green-500/20 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 sm:p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center text-green-500 border-2 border-green-500/20 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={items.length === 0}
             >
               <Check size={18} className="sm:w-4 sm:h-4" />

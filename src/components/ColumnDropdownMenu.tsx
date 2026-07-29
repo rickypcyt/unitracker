@@ -56,8 +56,8 @@ const ColumnDropdownMenu = ({
           onMouseLeave={() => setIsMenuButtonHovered(false)}
           className={`p-2 rounded-lg transition-all duration-200 relative group hover:scale-105 active:scale-95 ${
             columnMenu 
-              ? 'border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg scale-105' 
-              : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
+              ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg scale-105' 
+              : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)]'
           }`}
           title="More options"
         >
@@ -81,7 +81,7 @@ const ColumnDropdownMenu = ({
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="min-w-[220px] bg-[var(--bg-secondary)] rounded-lg p-1 shadow-lg border border-[var(--border-primary)] z-[9999] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+          className="min-w-[220px] bg-[var(--bg-secondary)] rounded-lg p-1 shadow-lg border-2 border-[var(--border-primary)] z-[9999] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
           sideOffset={5}
           align="end"
           collisionPadding={10}

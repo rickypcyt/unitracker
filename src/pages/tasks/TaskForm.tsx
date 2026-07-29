@@ -466,7 +466,7 @@ const TaskForm = ({
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />
+      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />
         <button type="button" onClick={() => {
         handleChange('deadline', '');
         handleChange('start_at', null);
@@ -518,7 +518,7 @@ const TaskForm = ({
       {formData.isRecurring && <div className="mt-3">
           <p className="text-sm text-[var(--text-secondary)] mb-2">Repeat on:</p>
           <div className="flex flex-wrap gap-1">
-            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-10 h-9 rounded-lg cursor-pointer transition-all text-sm font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'bg-[var(--accent-primary)] text-white' : 'border border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
+            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-10 h-9 rounded-lg cursor-pointer transition-all text-sm font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'bg-[var(--accent-primary)] text-white' : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
                 <input type="checkbox" className="sr-only" checked={(formData.recurrence_weekdays || []).includes(d)} onChange={e => {
             setRecurrenceError(null);
             const current = (formData.recurrence_weekdays || []) as number[];
@@ -656,7 +656,7 @@ const TaskForm = ({
               setDisplayStartTime(to12Hour(prev24));
             }
           }
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="10:00 AM" />
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="10:00 AM" />
           <div className="absolute right-2 flex flex-col gap-0">
             <button type="button" onClick={incrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Increase time">
               <ChevronUp size={14} />
@@ -724,7 +724,7 @@ const TaskForm = ({
               setDisplayEndTime(to12Hour(prev24));
             }
           }
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="11:00 AM" />
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all pr-8" placeholder="11:00 AM" />
           <div className="absolute right-2 flex flex-col gap-0">
             <button type="button" onClick={incrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Increase time">
               <ChevronUp size={14} />
@@ -776,7 +776,7 @@ const TaskForm = ({
               <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Title
               </label>
-              <input id="title" type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} required placeholder="Enter task title" />
+              <input id="title" type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} required placeholder="Enter task title" />
               {displayErrors.title && <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>}
             </div>
 
@@ -840,7 +840,7 @@ const TaskForm = ({
           <button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-sm font-medium">
             Cancel
           </button>
-          <button type="submit" className="px-5 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium flex items-center gap-2">
+          <button type="submit" className="px-5 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium flex items-center gap-2">
             {initialTask ? 'Save Changes' : 'Add Task'}
           </button>
         </div>

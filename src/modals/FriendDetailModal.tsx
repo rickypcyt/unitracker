@@ -57,7 +57,7 @@ const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, 
             {availableWorkspaces.length > 0 && (
               <button
                 onClick={() => setShowShareModal(true)}
-                className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] font-medium"
+                className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-medium"
               >
                 Share Workspace
               </button>

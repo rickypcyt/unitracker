@@ -44,9 +44,9 @@ export const SortMenu = ({
   const getOptionClassName = (optionType: string, optionValue: string) => {
     let className = "hover:bg-[var(--bg-primary)] transition-colors duration-75";
     if (optionType === 'type' && currentSortType === optionValue) {
-      className += ' font-semibold text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent';
+      className += ' font-semibold text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent';
     } else if (optionType === 'direction' && currentSortDirection === optionValue) {
-      className += ' font-semibold text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent';
+      className += ' font-semibold text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent';
     }
     return className;
   };
@@ -57,7 +57,7 @@ export const SortMenu = ({
       y={y}
       onClose={onClose}
       aria-label="Sort options"
-      className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] z-[9999]"
+      className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] z-[9999]"
     >
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li

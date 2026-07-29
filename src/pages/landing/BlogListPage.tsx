@@ -31,7 +31,7 @@ const BlogListPage = () => {
         <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
-      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="h-screen overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[var(--bg-primary)]/80 border-b border-[var(--border-primary)]/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -65,7 +65,7 @@ const BlogListPage = () => {
             to={`/blog/${featuredPost.slug}`}
             className="block mb-12 group"
           >
-            <div className="border border-[var(--border-primary)]/30 rounded-2xl overflow-hidden hover:border-[var(--accent-primary)]/50 transition-colors">
+            <div className="border-2 border-[var(--border-primary)]/30 rounded-2xl overflow-hidden hover:border-[var(--accent-primary)]/50 transition-colors">
               <div className="bg-gradient-to-br from-[var(--accent-primary)]/20 to-transparent p-8 sm:p-12">
                 <span className="inline-block px-3 py-1 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-semibold mb-4">
                   Featured
@@ -97,7 +97,7 @@ const BlogListPage = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeCategory === cat
                     ? 'bg-[var(--accent-primary)] text-white'
-                    : 'border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
+                    : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
                 }`}
               >
                 {cat}
@@ -111,7 +111,7 @@ const BlogListPage = () => {
               <Link
                 key={post.slug}
                 to={`/blog/${post.slug}`}
-                className="group border border-[var(--border-primary)]/30 rounded-2xl p-6 hover:border-[var(--accent-primary)]/50 transition-colors"
+                className="group border-2 border-[var(--border-primary)]/30 rounded-2xl p-6 hover:border-[var(--accent-primary)]/50 transition-colors"
               >
                 <span className="inline-block px-2.5 py-1 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-semibold mb-3">
                   {post.category}

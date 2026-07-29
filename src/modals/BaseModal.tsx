@@ -170,7 +170,7 @@ const BaseModal = ({
   `.trim();
 
   const modalClasses = `
-    bg-[var(--bg-primary)] border border-[var(--border-primary)] 
+    bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] 
     sm:border-2 rounded-lg sm:rounded-xl 
     ${paddingClass} w-full ${maxWidth} mx-auto ${className} 
     shadow-xl ${maxHeight} h-auto

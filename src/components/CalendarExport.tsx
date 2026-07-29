@@ -62,7 +62,7 @@ const CalendarExport: React.FC<CalendarExportProps> = ({
         <button
           onClick={exportToICS}
           disabled={isLoading || activeTasks.length === 0}
-          className="inline-flex items-center justify-center px-3 py-1.5 text-[var(--accent-primary)] text-sm rounded-lg border border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary-transparent)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          className="inline-flex items-center justify-center px-3 py-1.5 text-[var(--accent-primary)] text-sm rounded-lg border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary-transparent)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -74,7 +74,7 @@ const CalendarExport: React.FC<CalendarExportProps> = ({
 
         {/* Hover Info Tooltip */}
         {showInfo && (
-          <div className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg z-50 p-3">
+          <div className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-50 p-3">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-[var(--text-secondary)] space-y-1">
@@ -90,7 +90,7 @@ const CalendarExport: React.FC<CalendarExportProps> = ({
       {(error || success) && (
         <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 w-64 z-50">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-center">
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-xs text-red-800">{error}</p>
                 <button
@@ -104,7 +104,7 @@ const CalendarExport: React.FC<CalendarExportProps> = ({
           )}
 
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-center">
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 flex items-center justify-center">
               <div className="text-center">
                 <p className="text-xs text-green-800">{success}</p>
                 <button

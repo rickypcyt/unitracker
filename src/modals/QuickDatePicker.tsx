@@ -189,7 +189,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
                   type="text"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
+                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
                   placeholder="8:00 AM"
                 />
                 <button
@@ -217,7 +217,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
                   type="text"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
+                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
                   placeholder="9:00 AM"
                 />
                 <button
@@ -242,7 +242,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 px-3 py-2 text-sm text-[var(--accent-primary)] border border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 rounded-md transition-colors"
+          className="flex-1 px-3 py-2 text-sm text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 rounded-md transition-colors"
         >
           Save
         </button>

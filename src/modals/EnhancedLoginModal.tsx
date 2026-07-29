@@ -68,7 +68,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         }`}
       >
@@ -99,7 +99,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-[var(--bg-secondary)]/30 border border-[var(--border-primary)]/30"
+              className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30"
             >
               <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <benefit.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" />
@@ -118,7 +118,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
 
         {/* Supabase Info Section */}
         <div className="mb-4 sm:mb-6 relative z-10">
-          <div className="bg-[var(--bg-secondary)]/20 rounded-xl p-4 sm:p-5 border border-[var(--border-primary)]/30">
+          <div className="bg-[var(--bg-secondary)]/20 rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)]/30">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
                 <Database className="w-5 h-5 text-green-500" />
@@ -142,7 +142,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
           
           <button
             onClick={onClose}
-            className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--border-primary)]/30 font-medium"
+            className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border-2 border-[var(--border-primary)]/30 font-medium"
           >
             Let me look around first
           </button>

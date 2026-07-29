@@ -27,7 +27,7 @@ const Sidepanel: React.FC<SidepanelProps> = ({
   widthPx,
   onResizeStart,
   resizable = false,
-  topOffsetClass = 'top-16',
+  topOffsetClass = 'top-0',
   children,
   toggleTitle = { expand: 'Expand panel', collapse: 'Collapse panel' },
   className = '',
@@ -39,7 +39,7 @@ const Sidepanel: React.FC<SidepanelProps> = ({
 
   return (
     <div
-      className={`fixed ${sideClass} ${topOffsetClass} h-[calc(100vh-7rem)] bg-[var(--bg-secondary)] border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${widthStyle ? '' : panelWidth} ${className} overflow-y-auto`}
+      className={`fixed ${sideClass} ${topOffsetClass} h-screen bg-[var(--bg-secondary)] border-[var(--border-primary)] z-10 transition-all duration-300 md:block hidden ${widthStyle ? '' : panelWidth} ${className} overflow-y-auto`}
       style={widthStyle}
     >
       {/* Header with Title and Toggle Button */}

@@ -111,28 +111,21 @@ const AssignmentsOverview = () => {
         className="w-full dashboard-noise-card"
         style={{ padding: 'clamp(0.75rem, 0.6rem + 0.6vw, 1.25rem)' }}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <BookOpen size={18} className="text-[var(--accent-primary)]" />
-            <h2
-              className="font-semibold text-[var(--text-primary)]"
-              style={{ fontSize: 'clamp(0.875rem, 0.8rem + 0.3vw, 1.125rem)' }}
-            >
+            <h2 className="font-semibold text-[var(--text-primary)] text-base sm:text-lg">
               Assignments
             </h2>
             {totalAssignments > 0 && (
-              <span
-                className="text-[var(--text-secondary)]"
-                style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}
-              >
+              <span className="text-sm text-[var(--text-secondary)]">
                 {totalAssignments} · {totalPending} pending
               </span>
             )}
           </div>
           <button
             onClick={handleAddClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20 transition-colors"
-            style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20 transition-colors text-sm"
           >
             <Plus size={16} />
             <span>Add</span>
@@ -154,7 +147,7 @@ const AssignmentsOverview = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div className="flex flex-col gap-1.5">
             {assignments.map(assignment => {
               const progressPct =
                 assignment.total > 0
@@ -165,56 +158,45 @@ const AssignmentsOverview = () => {
                 <div
                   key={assignment.name}
                   onClick={() => handleAssignmentClick()}
-                  className="group cursor-pointer bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg p-3 hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-200"
+                  className="group cursor-pointer flex items-center gap-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2 hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-200"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3
-                      className="font-medium text-[var(--text-primary)] truncate"
-                      style={{ fontSize: 'clamp(0.8rem, 0.75rem + 0.2vw, 0.9375rem)' }}
-                      title={assignment.name}
-                    >
-                      {assignment.name}
-                    </h3>
-                    <ChevronRight
-                      size={16}
-                      className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3 mb-2" style={{ fontSize: 'clamp(0.6875rem, 0.65rem + 0.15vw, 0.8125rem)' }}>
-                    <span className="text-[var(--text-secondary)]">
-                      {assignment.total} total
-                    </span>
+                  <h3
+                    className="font-medium text-[var(--text-primary)] truncate flex-1 text-sm"
+                    title={assignment.name}
+                  >
+                    {assignment.name}
+                  </h3>
+                  <div className="flex items-center gap-2.5 text-xs text-[var(--text-secondary)] flex-shrink-0">
                     {assignment.pending > 0 && (
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        <span className="text-[var(--text-secondary)]">{assignment.pending} pending</span>
+                        {assignment.pending} pending
                       </span>
                     )}
                     {assignment.completed > 0 && (
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 bg-[var(--text-secondary)] rounded-full" />
-                        <span className="text-[var(--text-secondary)]">{assignment.completed} done</span>
+                        {assignment.completed} done
                       </span>
                     )}
                   </div>
-
                   {assignment.total > 0 && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0 w-24">
                       <div className="h-1.5 flex-1 rounded-full bg-[var(--bg-primary)] overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-300 bg-[var(--accent-primary)]"
                           style={{ width: `${progressPct}%` }}
                         />
                       </div>
-                      <span
-                        className="text-[var(--text-secondary)] flex-shrink-0"
-                        style={{ fontSize: 'clamp(0.625rem, 0.6rem + 0.1vw, 0.75rem)' }}
-                      >
+                      <span className="text-xs text-[var(--text-secondary)] flex-shrink-0 w-8 text-right">
                         {progressPct}%
                       </span>
                     </div>
                   )}
+                  <ChevronRight
+                    size={16}
+                    className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
+                  />
                 </div>
               );
             })}
@@ -222,19 +204,13 @@ const AssignmentsOverview = () => {
         )}
 
         {/* Pending Tasks */}
-        <div className="mt-4 pt-4 border-t border-[var(--border-primary)]">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="mt-3 pt-3 border-t border-[var(--border-primary)]">
+          <div className="flex items-center gap-2 mb-2">
             <CircleDot size={16} className="text-[var(--accent-primary)]" />
-            <h3
-              className="font-medium text-[var(--text-primary)]"
-              style={{ fontSize: 'clamp(0.8rem, 0.75rem + 0.2vw, 0.9375rem)' }}
-            >
+            <h3 className="font-medium text-[var(--text-primary)] text-sm sm:text-base">
               Pending Tasks
             </h3>
-            <span
-              className="text-[var(--text-secondary)]"
-              style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}
-            >
+            <span className="text-sm text-[var(--text-secondary)]">
               {pendingTasks.length}
             </span>
           </div>
@@ -242,37 +218,32 @@ const AssignmentsOverview = () => {
           {tasksLoading ? (
             <div className="flex items-center gap-2 py-2">
               <Loader2 size={14} className="text-[var(--accent-primary)] animate-spin" />
-              <p className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}>
+              <p className="text-sm text-[var(--text-secondary)]">
                 Loading tasks...
               </p>
             </div>
           ) : pendingTasks.length === 0 ? (
-            <p
-              className="text-[var(--text-secondary)] py-2"
-              style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}
-            >
+            <p className="text-sm text-[var(--text-secondary)] py-2">
               None — you're all caught up!
             </p>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               {pendingTasks.map(task => (
                 <div
                   key={task.id}
                   onClick={() => handleAssignmentClick()}
-                  className="group cursor-pointer flex items-center gap-2.5 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg px-3 py-2 hover:border-[var(--accent-primary)] transition-all duration-200"
+                  className="group cursor-pointer flex items-center gap-2.5 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2 hover:border-[var(--accent-primary)] transition-all duration-200"
                 >
                   <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] flex-shrink-0" />
                   <span
-                    className="text-[var(--text-primary)] truncate flex-1"
-                    style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem)' }}
+                    className="text-sm text-[var(--text-primary)] truncate flex-1"
                     title={task.title}
                   >
                     {task.title}
                   </span>
                   {task.assignment && (
                     <span
-                      className="text-[var(--text-secondary)] flex-shrink-0 px-2 py-0.5 rounded bg-[var(--bg-primary)]"
-                      style={{ fontSize: 'clamp(0.625rem, 0.6rem + 0.1vw, 0.75rem)' }}
+                      className="text-xs text-[var(--text-secondary)] flex-shrink-0 px-2 py-0.5 rounded bg-[var(--bg-primary)]"
                     >
                       {task.assignment}
                     </span>

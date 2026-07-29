@@ -100,7 +100,7 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   };
   
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl p-3 shadow-2xl min-w-[200px] text-center backdrop-blur-md">
+    <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 shadow-2xl min-w-[200px] text-center backdrop-blur-md">
       <div className="font-semibold text-[var(--accent-primary)] mb-2 text-center text-sm">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
       <div className="flex items-center justify-center gap-2 mb-1">
         <div className="text-[var(--text-primary)] text-center text-sm">Time: <b className="text-base">{formatMinutesToHMText(entry.minutes)}</b></div>

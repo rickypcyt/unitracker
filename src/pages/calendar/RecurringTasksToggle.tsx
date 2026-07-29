@@ -22,7 +22,7 @@ const RecurringTasksToggle: React.FC<RecurringTasksToggleProps> = ({ className =
   return (
     <div className={`relative ${className}`}>
       <label 
-        className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
+        className="flex items-center gap-3 p-3 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
         onClick={handleToggle}
       >
         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${

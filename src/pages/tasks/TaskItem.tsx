@@ -228,7 +228,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     return (
         <div
             className={`group relative flex p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2.5 items-center
-                bg-[var(--bg-primary)] border border-[var(--border-primary)]
+                bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
                 ${getStatusBorderColor(task.status)} border-l-[3px]
                 ${task.completed ? 'opacity-50' : ''}

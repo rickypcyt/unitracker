@@ -95,7 +95,7 @@ const NotesForm: React.FC<NotesFormProps> = ({
         {onCancel && <FormButton type="button" variant="secondary" onClick={onCancel} disabled={loading}>
             Cancel
           </FormButton>}
-        <FormButton type="submit" variant="custom" className="border border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]" disabled={loading}>
+        <FormButton type="submit" variant="custom" className="border-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]" disabled={loading}>
           {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Note"}
         </FormButton>
       </FormActions>

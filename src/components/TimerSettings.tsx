@@ -69,7 +69,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.work}
                 onChange={(e) => handlePomodoroChange('work', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -82,7 +82,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="60"
                 value={pomodoroSettings.break}
                 onChange={(e) => handlePomodoroChange('break', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -95,7 +95,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.longBreak}
                 onChange={(e) => handlePomodoroChange('longBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -108,7 +108,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="10"
                 value={pomodoroSettings.workSessionsBeforeLongBreak}
                 onChange={(e) => handlePomodoroChange('workSessionsBeforeLongBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
           </div>
@@ -131,7 +131,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="23"
                 value={countdownSettings.hours}
                 onChange={(e) => handleCountdownChange('hours', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -144,7 +144,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.minutes}
                 onChange={(e) => handleCountdownChange('minutes', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
             <div>
@@ -157,7 +157,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.seconds}
                 onChange={(e) => handleCountdownChange('seconds', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
               />
             </div>
           </div>
@@ -167,13 +167,13 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
         <div className="flex gap-3 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors border border-[var(--border-primary)]"
+            className="flex-1 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors border-2 border-[var(--border-primary)]"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
             Save Settings
           </button>

@@ -46,7 +46,7 @@ export const AssignmentSortMenu: React.FC<AssignmentSortMenuProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-sm bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
       >
         <ArrowUpDown className="w-4 h-4 text-[var(--text-secondary)]" />
         <span className="text-[var(--text-primary)]">{currentOption?.label || 'Sort'}</span>
@@ -55,7 +55,7 @@ export const AssignmentSortMenu: React.FC<AssignmentSortMenuProps> = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-lg z-50">
+        <div className="absolute top-full left-0 mt-1 w-48 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-50">
           <div className="py-1">
             {SORT_OPTIONS.map((option) => (
               <button

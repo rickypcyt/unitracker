@@ -83,7 +83,7 @@ const PricingPage = () => {
         <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
       </Helmet>
 
-      <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="h-screen overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[var(--bg-primary)]/80 border-b border-[var(--border-primary)]/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -139,7 +139,7 @@ const PricingPage = () => {
                   className={`block w-full text-center py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${
                     tier.highlighted
                       ? 'bg-[var(--accent-primary)] text-white hover:opacity-90'
-                      : 'border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
+                      : 'border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/50'
                   }`}
                 >
                   {tier.cta}
@@ -175,7 +175,7 @@ const PricingPage = () => {
                 { q: 'Do you offer student discounts?', a: 'UniTracker is already built for students. The Free plan covers everything most students need. Pro is priced affordably at $3.99/month.' },
                 { q: 'What payment methods do you accept?', a: 'We accept all major credit cards and PayPal. Pro and Team plans are billed monthly with no long-term commitment.' },
               ].map((faq) => (
-                <div key={faq.q} className="border border-[var(--border-primary)]/30 rounded-xl p-5">
+                <div key={faq.q} className="border-2 border-[var(--border-primary)]/30 rounded-xl p-5">
                   <h3 className="font-semibold mb-2">{faq.q}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{faq.a}</p>
                 </div>

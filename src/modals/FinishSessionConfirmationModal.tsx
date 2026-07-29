@@ -43,7 +43,7 @@ const FinishSessionConfirmationModal: React.FC<FinishSessionConfirmationModalPro
           The following tasks will be marked as completed. Are you sure you want to continue?
         </p>
         
-        <div className="max-h-60 overflow-y-auto border border-[var(--border-primary)] rounded-lg p-2">
+        <div className="max-h-60 overflow-y-auto border-2 border-[var(--border-primary)] rounded-lg p-2">
           {activeTasks.length > 0 ? (
             <ul className="space-y-2">
               {activeTasks.map((task) => (
@@ -62,7 +62,7 @@ const FinishSessionConfirmationModal: React.FC<FinishSessionConfirmationModalPro
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md border border-[var(--border-primary)] disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md border-2 border-[var(--border-primary)] disabled:opacity-50"
           >
             Cancel
           </button>

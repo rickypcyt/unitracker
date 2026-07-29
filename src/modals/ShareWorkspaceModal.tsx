@@ -81,7 +81,7 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
                 sideOffset={5}
                 align="start"
                 collisionPadding={10}
@@ -92,8 +92,8 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                     onClick={() => setSelectedWorkspace(ws)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                       selectedWorkspace?.id === ws.id
-                        ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border border-transparent'
+                        ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent'
                     }`}
                   >
                     <span>{ws.name}</span>
@@ -129,7 +129,7 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
                 sideOffset={5}
                 align="start"
                 collisionPadding={10}
@@ -141,14 +141,14 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                       onClick={() => setSelectedFriend(friend)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                         selectedFriend?.id === friend.id
-                          ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]'
-                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border border-transparent'
+                          ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]'
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent'
                       }`}
                     >
                       <img
                         src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
                         alt={friend.username || friend.email || friend.id}
-                        className="w-6 h-6 rounded-full object-cover border border-[var(--accent-primary)] bg-[var(--bg-primary)]"
+                        className="w-6 h-6 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
                       />
                       <span>{friend.username || friend.email || friend.id}</span>
                       {selectedFriend?.id === friend.id && (
@@ -159,7 +159,7 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                 ) : (
                   <DropdownMenu.Item
                     onClick={onAddFriend || (() => {})}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border border-transparent"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent"
                   >
                     <span>Add a friend to share workspace</span>
                   </DropdownMenu.Item>

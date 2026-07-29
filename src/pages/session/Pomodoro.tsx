@@ -513,7 +513,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
             }
           } catch {}
         }
-        const notifTitle = 'Work Session Complete! 🎉';
+        const notifTitle = 'Work Session Complete!';
         const notifBody = next === 'Long Break' ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.';
         if (notAfterResume && justEnteredBreak && nextCycleReady && pastResumeWindow) {
           try {
@@ -523,8 +523,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
             if (!recentlyNotified2) {
               showNotification(notifTitle, {
                 body: notifBody,
-                icon: '🍅',
-                badge: '🍅',
+                icon: '/assets/android-chrome-192x192.png',
+                badge: '/assets/android-chrome-192x192.png',
                 tag: 'pomodoro-notification',
                 requireInteraction: true
               });
@@ -658,12 +658,11 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     });
 
     // Notifications
-    const notifTitle = isWork ? willTakeLongBreak ? 'Work Session Complete! Time for a Long Break! 🎉' : 'Work Session Complete! 🎉' : 'Break Complete! ⏰';
+    const notifTitle = isWork ? willTakeLongBreak ? 'Work Session Complete! Time for a Long Break!' : 'Work Session Complete!' : 'Break Complete!';
     const notifBody = isWork ? willTakeLongBreak ? 'Great job! Time to take a well-deserved long break.' : 'Great job! Time to take a short break.' : 'Break is over! Time to get back to work.';
     const toastType = isWork ? willTakeLongBreak ? 'longBreak' : 'break' : 'work';
-    const toastMsg = isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break! 🎉' : 'Work session complete! Time for a break! ☕' : "Break is over! Let's get back to work! 💪";
+    const toastMsg = isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break!' : 'Work session complete! Time for a break!' : "Break is over! Let's get back to work!";
     toast(toastMsg, {
-      icon: isWork ? willTakeLongBreak ? '🎉' : '☕' : '💪',
       duration: 4000,
       style: {
         borderRadius: '12px',
@@ -685,8 +684,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     }, 0);
     showNotification(notifTitle, {
       body: notifBody,
-      icon: isWork ? '🍅' : '💪',
-      badge: isWork ? '🍅' : '💪',
+      icon: '/assets/android-chrome-192x192.png',
+      badge: '/assets/android-chrome-192x192.png',
       tag: 'pomodoro-notification',
       requireInteraction: true
     });
@@ -1186,10 +1185,10 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
           const lastNotifyTs2 = Number(localStorage.getItem('lastPomoNotifyTs') || '0');
           const recentlyNotified2 = lastNotifyTs2 && Math.abs(nowTs2 - lastNotifyTs2) < 3000;
           if (!recentlyNotified2) {
-            showNotification('Break Complete! ⏰', {
+            showNotification('Break Complete!', {
               body: 'Break is over! Time to get back to work.',
-              icon: '💪',
-              badge: '💪',
+              icon: '/assets/android-chrome-192x192.png',
+              badge: '/assets/android-chrome-192x192.png',
               tag: 'pomodoro-notification',
               requireInteraction: true
             });
@@ -1306,7 +1305,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
       </div>}
 
       {/* Timer Display - circular progress ring */}
-      <div className="relative group w-full flex flex-col items-center py-2" role="timer" aria-label="Current pomodoro time">
+      <div className="relative w-full flex flex-col items-center py-2" role="timer" aria-label="Current pomodoro time">
         {(() => {
           const roundedSeconds = Math.round(pomoState.timeLeft);
           const mins = Math.floor(roundedSeconds / 60);
@@ -1319,7 +1318,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
           return (
             <div className="relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.3" />
+                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle
                   cx="60" cy="60" r={radius} fill="none"
                   stroke={ringColor} strokeWidth="5" strokeLinecap="round"
@@ -1339,52 +1338,22 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
                   </span>
                 </div>
                 <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                  {pomoState.currentMode === 'work' ? '🍅 Focus' : pomoState.currentMode === 'break' ? '☕ Break' : '🎉 Long Break'}
+                  {pomoState.currentMode === 'work' ? 'Focus' : pomoState.currentMode === 'break' ? 'Break' : 'Long Break'}
                 </span>
               </div>
             </div>
           );
         })()}
-
-        {/* Hover tooltip */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
-          <div className="flex items-center justify-center gap-1.5">
-            {pomoState.currentMode === 'work' && <>
-                <span className="text-sm">🍅</span>
-                <span>Work Session</span>
-              </>}
-            {pomoState.currentMode === 'break' && <>
-                <span className="text-sm">☕</span>
-                <span>Short Break</span>
-              </>}
-            {pomoState.currentMode === 'longBreak' && <>
-                <span className="text-sm">🎉</span>
-                <span>Long Break</span>
-              </>}
-          </div>
-
-          <div className="mt-1 text-xs text-[var(--text-secondary)]">
-            {pomoState.currentMode === 'work' && <div>Focus time: {Math.floor((currentModeConfig?.work || 3000) / 60)}min</div>}
-            {pomoState.currentMode === 'break' && <div>Break time: {Math.floor((currentModeConfig?.break || 600) / 60)}min</div>}
-            {pomoState.currentMode === 'longBreak' && <div>Long break: {Math.floor((currentModeConfig?.longBreak || 1800) / 60)}min</div>}
-          </div>
-
-          <div className="mt-1 text-xs text-[var(--text-secondary)]">
-            Completed today: {pomoState.pomodoroToday}
-          </div>
-        </div>
       </div>
 
-      {/* Time adjustment buttons - only show when not synced */}
-      {!syncPomodoroWithTimer && <div className="flex gap-1 mb-1.5">
-          {[-600, -300, 300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`${adj > 0 ? 'Add' : 'Subtract'} ${Math.abs(adj / 60)} minutes`}>
-              {adj > 0 ? '+' : ''}{adj / 60}
-            </button>)}
-        </div>}
-
-      {/* Timer Controls */}
-      <div className="flex justify-center items-center gap-2 mb-1">
+      {/* Timer Controls with side adjustment buttons */}
+      <div className="flex justify-center items-center gap-2 mb-1 mt-3">
         {!syncPomodoroWithTimer && <>
+            <div className="flex gap-1">
+              {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>
+                  {adj / 60}
+                </button>)}
+            </div>
             <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
               <RotateCcw size={18} className="text-[var(--text-secondary)]" />
             </button>
@@ -1393,6 +1362,11 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
               </button> : <button onClick={() => handleStop()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Pause timer">
                 <Pause size={18} />
               </button>}
+            <div className="flex gap-1">
+              {[300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Add ${adj / 60} minutes`}>
+                  +{adj / 60}
+                </button>)}
+            </div>
           </>}
       </div>
 

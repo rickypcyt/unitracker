@@ -99,7 +99,7 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
                   }
                 }}
                 onBlur={handleTitleSave}
-                className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] text-sm"
+                className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] text-sm"
                 autoFocus
               />
               <div className="flex gap-1">
@@ -153,7 +153,7 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
                   }
                 }}
                 onBlur={handleAssignmentSave}
-                className="w-full px-2 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] text-sm"
+                className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] text-sm"
                 placeholder="Assignment"
                 autoFocus
               />

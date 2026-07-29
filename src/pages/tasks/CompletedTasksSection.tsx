@@ -45,7 +45,7 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
   }
 
   return (
-    <div className="w-full bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-primary)] p-3 shadow-md">
+    <div className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md">
       {/* Accent top bar */}
       <div className="h-1 w-full rounded-full bg-emerald-500 opacity-80" />
 

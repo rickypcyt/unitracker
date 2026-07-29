@@ -171,7 +171,7 @@ const SessionsModal = ({
   const hasToday = sessions.length > 0;
   if (!isOpen) return null;
   return <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-[var(--border-primary)] relative">
+      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)] relative">
         <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">
           <X size={18} />
         </button>
@@ -212,7 +212,7 @@ const SessionsModal = ({
           <p className="text-sm mt-1">Start a new study session to begin tracking!</p>
         </>}
     </div> : <div className="space-y-3">
-      {currentSessions.map(session => <motion.div key={session.id} className={`bg-[var(--bg-secondary)] rounded-lg p-4 border border-[var(--border-primary)] ${activeTab === 'today' ? 'hover:border-[var(--accent-primary)]/30 transition-colors cursor-pointer' : ''}`} initial={{
+      {currentSessions.map(session => <motion.div key={session.id} className={`bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] ${activeTab === 'today' ? 'hover:border-[var(--accent-primary)]/30 transition-colors cursor-pointer' : ''}`} initial={{
             opacity: 0,
             y: 10
           }} animate={{
@@ -291,11 +291,11 @@ const SessionsModal = ({
         </div>
         
         <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2 sticky bottom-0 bg-[var(--bg-primary)] z-10">
-          {activeTab === 'unfinished' && onFinishAllSessions && unfinishedSessions.length > 0 && <button onClick={onFinishAllSessions} className="px-4 py-2 rounded-lg border border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
+          {activeTab === 'unfinished' && onFinishAllSessions && unfinishedSessions.length > 0 && <button onClick={onFinishAllSessions} className="px-4 py-2 rounded-lg border-2 border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
               Finish All Sessions
             </button>}
           <div className="flex space-x-3 ml-auto">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg border border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
               Cancel
             </button>
             <button onClick={() => {
@@ -304,7 +304,7 @@ const SessionsModal = ({
             if (onStartNewSession) {
               onStartNewSession();
             }
-          }} className="px-4 py-2 rounded-lg border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors">
+          }} className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors">
               Start New Session
             </button>
           </div>

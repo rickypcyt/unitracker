@@ -68,7 +68,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
             value={habitName}
             onChange={(e) => setHabitName(e.target.value)}
             placeholder="Enter habit name..."
-            className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+            className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
           />
         </div>
@@ -77,7 +77,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
           <button
             type="button"
             onClick={handleDelete}
-            className="px-4 py-2 bg-transparent border border-red-500 text-red-500 rounded-md hover:bg-red-100 hover:text-red-600 transition-colors"
+            className="px-4 py-2 bg-transparent border-2 border-red-500 text-red-500 rounded-md hover:bg-red-100 hover:text-red-600 transition-colors"
           >
             Delete
           </button>
@@ -85,14 +85,14 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+              className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!habitName.trim()}
-              className="flex-1 px-4 py-2 bg-transparent border border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save
             </button>

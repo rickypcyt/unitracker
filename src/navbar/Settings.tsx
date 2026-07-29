@@ -83,7 +83,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
                 {/* Custom three-position slider */}
                 <div className="relative">
-                  <div className="w-full h-8 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-full relative overflow-hidden">
+                  <div className="w-full h-8 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-full relative overflow-hidden">
                     {/* Slider track background */}
                     <div
                       className="absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-in-out"
