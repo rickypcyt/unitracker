@@ -1,4 +1,4 @@
-import { Check, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
@@ -20,6 +20,8 @@ import { useSessionId } from "@/hooks/study-timer/useSessionId";
 import { useStudyTimerState, type StudyState } from "@/hooks/study-timer/useStudyTimerState";
 import type { PauseEntry } from "@/schemas/timer";
 import { getLocalDateString } from "@/utils/dateUtils";
+import { StudyService } from "@/services/StudyService";
+import { TaskService } from "@/services/TaskService";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -192,6 +194,24 @@ const StudyTimer = ({
     };
     window.addEventListener("study-open-settings", handler);
     return () => window.removeEventListener("study-open-settings", handler);
+  }, [currentSessionId, updateModal]);
+
+  // Listen for exit session from SessionPage header
+  useEffect(() => {
+    const handler = () => {
+      if (currentSessionId) setExitChoiceOpen(true);
+    };
+    window.addEventListener("study-exit-session", handler);
+    return () => window.removeEventListener("study-exit-session", handler);
+  }, [currentSessionId]);
+
+  // Listen for delete session from SessionPage header
+  useEffect(() => {
+    const handler = () => {
+      if (currentSessionId) updateModal("isDeleteModalOpen", true);
+    };
+    window.addEventListener("study-delete-session", handler);
+    return () => window.removeEventListener("study-delete-session", handler);
   }, [currentSessionId, updateModal]);
   const [, setSessionsTodayCount] = useState(0);
   // Tracks "N minutes ago" re-renders when paused
@@ -381,14 +401,9 @@ const StudyTimer = ({
   useEffect(() => {
     const fetch = async () => {
       try {
-        const today = getLocalDateString();
-        const {
-          data,
-          error
-        } = await supabase.from("study_laps").select("id").gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`);
-        if (error) throw error;
-        setSessionsTodayCount(data.length);
-        saveToLocalStorage(STORAGE_KEYS.SESSIONS_TODAY_COUNT, String(data.length));
+        const count = await StudyService.getSessionsToday();
+        setSessionsTodayCount(count);
+        saveToLocalStorage(STORAGE_KEYS.SESSIONS_TODAY_COUNT, String(count));
       } catch (error) {
         console.error("Error fetching sessions count:", error);
       }
@@ -401,12 +416,9 @@ const StudyTimer = ({
     if (!currentSessionId) return;
     const fetchDetails = async () => {
       try {
-        const {
-          data: session,
-          error
-        } = await supabase.from("study_laps").select("name, description").eq("id", currentSessionId).maybeSingle();
-        if (error || !session) {
-          console.error("[StudyTimer] Error fetching session details:", error);
+        const session = await StudyService.getSessionById(currentSessionId);
+        if (!session) {
+          console.error("[StudyTimer] Error fetching session details:");
           return;
         }
         setSummaryData(prev => ({
@@ -492,11 +504,8 @@ const StudyTimer = ({
   const fetchCurrentSessionDetails = useCallback(async () => {
     if (!currentSessionId) return;
     try {
-      const {
-        data: session,
-        error
-      } = await supabase.from("study_laps").select("name, description").eq("id", currentSessionId).maybeSingle();
-      if (error || !session) return;
+      const session = await StudyService.getSessionById(currentSessionId);
+      if (!session) return;
       const updates = {
         sessionTitle: session.name ?? "Untitled Session",
         sessionDescription: session.description ?? ""
@@ -630,12 +639,7 @@ const StudyTimer = ({
       const formatted = formatDuration(studyState.time);
       if (formatted !== "00:00:00") {
         try {
-          const {
-            error
-          } = await supabase.from("study_laps").update({
-            duration: formatted
-          }).eq("id", currentSessionId);
-          if (error) console.error("[StudyTimer] Error updating duration on pause:", error);
+          await StudyService.updateLap(currentSessionId, { duration: formatted });
         } catch (e) {
           console.error("[StudyTimer] Unexpected error updating duration on pause:", e);
         }
@@ -709,34 +713,21 @@ const StudyTimer = ({
   const handleFinishSession = useCallback(async () => {
     if (!currentSessionId) return;
     try {
-      const {
-        data: session,
-        error: fetchError
-      } = await supabase.from("study_laps").select("*").eq("id", currentSessionId).single();
-      if (fetchError || !session) {
-        console.error("[StudyTimer] Error fetching session:", fetchError);
+      const session = await StudyService.getSessionById(currentSessionId);
+      if (!session) {
+        console.error("[StudyTimer] Error fetching session:");
         return;
       }
       const {
-        data: {
-          user
-        }
+        data: { user }
       } = await supabase.auth.getUser();
       if (!user) {
         toast.error("User not authenticated");
         return;
       }
-      const startedAt = session.started_at;
+      const startedAt = session.started_at ?? new Date(0).toISOString();
       const endedAt = new Date().toISOString();
-      const {
-        data: completedTasks,
-        error: tasksError
-      } = await supabase.from("tasks").select("id, completed_at").eq("user_id", user.id).eq("completed", true).gte("completed_at", startedAt).lte("completed_at", endedAt);
-      if (tasksError) {
-        console.error("[StudyTimer] Error fetching completed tasks:", tasksError);
-        toast.error("Failed to fetch completed tasks.");
-        return;
-      }
+      const completedTasks = await TaskService.getCompletedTasksInRange(user.id, startedAt, endedAt);
       const formattedDuration = formatDuration(studyState.time);
       if (formattedDuration === "00:00:00") return;
       const today = getLocalDateString();
@@ -751,21 +742,12 @@ const StudyTimer = ({
       if (localStartedAt) {
         updateData['started_at'] = new Date(Number(localStartedAt)).toISOString();
       }
-      const {
-        error: updateError
-      } = await supabase.from("study_laps").update(updateData).eq("id", currentSessionId);
-      if (updateError) {
-        console.error("[StudyTimer] Error updating study lap:", updateError);
-        toast.error("Failed to update session details.");
-        return;
-      }
+      await StudyService.updateLap(currentSessionId, updateData);
 
       // Refresh title right before showing summary
       let finalTitle = studyState.sessionTitle ?? "Untitled Session";
       try {
-        const {
-          data: latest
-        } = await supabase.from("study_laps").select("name").eq("id", currentSessionId).maybeSingle();
+        const latest = await StudyService.getSessionById(currentSessionId);
         if (latest?.name) {
           finalTitle = latest.name;
           updateStudyState({
@@ -835,14 +817,7 @@ const StudyTimer = ({
   const handleConfirmDelete = useCallback(async () => {
     try {
       if (currentSessionId) {
-        const {
-          error
-        } = await supabase.from("study_laps").delete().eq("id", currentSessionId);
-        if (error) {
-          console.error("[StudyTimer] Error deleting session:", error);
-          toast.error("Failed to delete session.");
-          return;
-        }
+        await StudyService.deleteLap(currentSessionId);
       }
       reset();
       updateSessionId(null);
@@ -886,13 +861,10 @@ const StudyTimer = ({
       // Seed timer from DB duration
       let initialSeconds = 0;
       try {
-        const {
-          data: lap,
-          error
-        } = await supabase.from("study_laps").select("started_at, ended_at, duration").eq("id", sessionId).maybeSingle();
-        if (error) throw error;
-        const durationSeconds = parseHms(lap?.duration);
-        const isUnfinished = !lap?.ended_at;
+        const lap = await StudyService.getSessionById(sessionId);
+        if (!lap) throw new Error("Session not found");
+        const durationSeconds = parseHms(lap.duration);
+        const isUnfinished = !lap.ended_at;
         if (isUnfinished) {
           initialSeconds = durationSeconds;
         } else if (durationSeconds > 0) {
@@ -924,26 +896,16 @@ const StudyTimer = ({
   const handleSessionSelected = useCallback(async (sessionId: string) => {
     if (!sessionId) return;
     try {
-      const {
-        data: session,
-        error: fetchError
-      } = await supabase.from("study_laps").select("name, description, duration, pomodoros_completed").eq("id", sessionId).single();
-      if (fetchError || !session) {
-        console.error("[StudyTimer] Error fetching session:", fetchError);
+      const session = await StudyService.getSessionById(sessionId);
+      if (!session) {
+        console.error("[StudyTimer] Error fetching session:");
         toast.error("Error loading session");
         return;
       }
-      const {
-        error: updateError
-      } = await supabase.from("study_laps").update({
+      await StudyService.updateLap(sessionId, {
         ended_at: null,
         started_at: new Date().toISOString()
-      }).eq("id", sessionId);
-      if (updateError) {
-        console.error("[StudyTimer] Error resuming session:", updateError);
-        toast.error("Error resuming session");
-        return;
-      }
+      });
       const initialSeconds = parseHms(session.duration);
 
       // Notify other components with correct event shape
@@ -975,30 +937,7 @@ const StudyTimer = ({
   }, [updateModal]);
   const handleFinishAllSessions = useCallback(async () => {
     try {
-      const {
-        data: {
-          user
-        },
-        error: authError
-      } = await supabase.auth.getUser();
-      if (authError || !user) return;
-      const now = new Date().toISOString();
-      const {
-        data: sessions,
-        error: fetchError
-      } = await supabase.from("study_laps").select("id, started_at, duration").is("ended_at", null).eq("user_id", user.id);
-      if (fetchError || !sessions?.length) return;
-      await Promise.all(sessions.map(s => {
-        const existing = parseHms(s.duration as string);
-        const payload: Record<string, unknown> = {
-          ended_at: now
-        };
-        if (!existing) {
-          const elapsed = Math.floor((Date.now() - new Date(s.started_at as string).getTime()) / 1000);
-          payload['duration'] = formatDuration(elapsed);
-        }
-        return supabase.from("study_laps").update(payload).eq("id", s.id).eq("user_id", user.id);
-      }));
+      await StudyService.finishAllUnfinishedSessions();
     } catch (error) {
       console.error("[StudyTimer] Error finishing all sessions:", error);
       toast.error("Error finishing sessions");
@@ -1063,7 +1002,17 @@ const StudyTimer = ({
   return <div className="flex flex-col items-center h-min">
       {/* Header */}
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
-        <SectionTitle title="Timer" tooltip="A customizable timer for focused study sessions. Set your own duration and track your study time with detailed analytics and session management." size="md" />
+        <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-[var(--accent-primary)]" />
+            <SectionTitle title="Sessions" tooltip="Track your focus sessions. Start a session, pick a task, and your time is automatically logged for analytics." size="md" />
+          </div>
+          {!currentSessionId && (
+            <p className="text-xs text-[var(--text-secondary)] text-center">
+              Your sessions will appear here. Start one to track your focus time.
+            </p>
+          )}
+        </div>
         {currentSessionId ? <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Configure session">
             <MoreVertical size={20} />
           </button> : <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[28px]" />}
@@ -1095,7 +1044,7 @@ const StudyTimer = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="flex items-center gap-0.5">
-                  {h > 0 && (
+                  {h > 0 ? (
                     <>
                       <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
                         isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
@@ -1105,25 +1054,30 @@ const StudyTimer = ({
                       <span className={`text-xl font-mono font-bold leading-none ${
                         isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
                       }`}>:</span>
+                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                      }`}>
+                        {m.toString().padStart(2, '0')}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                      }`}>
+                        {m.toString().padStart(2, '0')}
+                      </span>
+                      <span className={`text-xl font-mono font-bold leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+                      }`}>:</span>
+                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                      }`}>
+                        {s.toString().padStart(2, '0')}
+                      </span>
                     </>
                   )}
-                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
-                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
-                  }`}>
-                    {m.toString().padStart(2, '0')}
-                  </span>
-                  <span className={`text-xl font-mono font-bold leading-none ${
-                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
-                  }`}>:</span>
-                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
-                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
-                  }`}>
-                    {s.toString().padStart(2, '0')}
-                  </span>
                 </div>
-                <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                  {currentSessionId ? (isStudyRunningRedux ? 'Studying' : 'Paused') : 'Ready'}
-                </span>
               </div>
             </div>
           );

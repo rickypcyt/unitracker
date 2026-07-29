@@ -714,9 +714,11 @@ const Countdown: React.FC<CountdownProps> = ({
       inputRefs.current[nextField].current.focus();
     }
   }, []);
+  const isInsideModal = useCallback(() => {
+    return !!document.querySelector('[role="dialog"]');
+  }, []);
   const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, field: Field) => {
     const idx = fields.indexOf(field);
-    const step = e.shiftKey ? 10 : 1;
     switch (e.key) {
       case 'Tab':
         e.preventDefault();
@@ -726,47 +728,29 @@ const Countdown: React.FC<CountdownProps> = ({
         if (!isCountdownRunning) startCountdown(undefined, false);
         break;
       case 'ArrowRight':
+        if (isInsideModal()) break;
         e.preventDefault();
         navigateField(1, idx);
         break;
       case 'ArrowLeft':
+        if (isInsideModal()) break;
         e.preventDefault();
         navigateField(-1, idx);
         break;
       case 'ArrowUp':
+        if (isInsideModal()) break;
         e.preventDefault();
-        if (isCountdownRunning) break;
-        {
-          const base = baselineTimeRef.current;
-          const nextVal = (base[field] + step) % (fieldMax[field] + 1);
-          const next = {
-            ...base,
-            [field]: nextVal
-          };
-          baselineTimeRef.current = next;
-          setInitialTime(next);
-          writeBaseline(next);
-        }
+        navigateField(-1, idx);
         break;
       case 'ArrowDown':
+        if (isInsideModal()) break;
         e.preventDefault();
-        if (isCountdownRunning) break;
-        {
-          const base = baselineTimeRef.current;
-          const nextVal = (base[field] - step + (fieldMax[field] + 1)) % (fieldMax[field] + 1);
-          const next = {
-            ...base,
-            [field]: nextVal
-          };
-          baselineTimeRef.current = next;
-          setInitialTime(next);
-          writeBaseline(next);
-        }
+        navigateField(1, idx);
         break;
       default:
         break;
     }
-  }, [navigateField, startCountdown, isRunningGlobal]);
+  }, [navigateField, startCountdown, isRunningGlobal, isInsideModal]);
   const handleFocus = (field: Field, e: React.FocusEvent<HTMLInputElement>) => {
     setFocusedField(field);
     setTimeout(() => {
@@ -854,6 +838,7 @@ const Countdown: React.FC<CountdownProps> = ({
             const progress = total > 0 ? Math.max(0, Math.min(1, 1 - secondsLeft / total)) : 0;
             const h = Math.floor(secondsLeft / 3600);
             const m = Math.floor(secondsLeft % 3600 / 60);
+            const s = secondsLeft % 60;
             const radius = 52;
             const circumference = 2 * Math.PI * radius;
             const ringColor = '#22c55e';
@@ -872,21 +857,28 @@ const Countdown: React.FC<CountdownProps> = ({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <div className="flex items-center gap-0.5">
-                    {h > 0 && (
+                    {h > 0 ? (
                       <>
                         <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
                           {h.toString().padStart(2, '0')}
                         </span>
                         <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                          {m.toString().padStart(2, '0')}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                          {m.toString().padStart(2, '0')}
+                        </span>
+                        <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                          {s.toString().padStart(2, '0')}
+                        </span>
                       </>
                     )}
-                    <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
-                      {m.toString().padStart(2, '0')}
-                    </span>
                   </div>
-                  <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                    Countdown
-                  </span>
                 </div>
               </div>
             );
@@ -942,9 +934,6 @@ const Countdown: React.FC<CountdownProps> = ({
                   </React.Fragment>;
               })}
               </div>
-              <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                Countdown
-              </span>
             </div>
           </div>
         )}

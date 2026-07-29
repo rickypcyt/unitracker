@@ -8,9 +8,9 @@ import NoteView from './NoteView';
 import WelcomeView from './WelcomeView';
 import { demoNotes } from '@/utils/demoData';
 import { getLocalDateString } from '@/utils/dateUtils';
-import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
+import { NoteService } from '@/services/NoteService';
 
 interface Note {
   id?: string;
@@ -47,13 +47,12 @@ const Notes: React.FC = () => {
         ? (user as { id?: string }).id
         : undefined;
       if (userId) {
-        const { data, error } = await supabase
-          .from('notes')
-          .select('*')
-          .eq('user_id', userId)
-          .order('last_edited', { ascending: false });
-        if (error) setError('Error loading notes');
-        else setNotes((data as Note[]) || []);
+        try {
+          const data = await NoteService.fetchNotes(userId);
+          setNotes(data as Note[]);
+        } catch {
+          setError('Error loading notes');
+        }
       } else {
         const saved = localStorage.getItem('notes');
         setNotes(saved ? JSON.parse(saved) : []);
@@ -91,26 +90,19 @@ const Notes: React.FC = () => {
       
       const now = new Date().toISOString();
       if (user) {
-        const { data, error: insertError } = await supabase
-          .from('notes')
-          .insert([{ 
+        try {
+          const data = await NoteService.createNote({
             title: noteData.title || '',
             assignment: noteData.assignment ?? null,
             description: noteData.description || '',
             date: safeDate,
             user_id: user.id,
-            created_at: now,
-            last_edited: now
-          }])
-          .select()
-          .single();
-          
-        if (insertError) throw insertError;
-        if (data) {
+          });
           setNotes([data as Note, ...notes]);
           return (data as Note).id || null;
+        } catch (err) {
+          throw err;
         }
-        return null;
       } else {
         const now = new Date().toISOString();
         const newNote: Note = {
@@ -151,16 +143,11 @@ const Notes: React.FC = () => {
     };
     
     if (user) {
-      const { data, error: updateError } = await supabase
-        .from('notes')
-        .update(updatedNote)
-        .eq('id', noteId)
-        .select()
-        .single();
-      if (updateError) {
-        setError(updateError.message);
-      } else if (data) {
+      try {
+        const data = await NoteService.updateNote(noteId, updatedNote);
         setNotes(notes.map(n => n.id === noteId ? data as Note : n));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error updating note');
       }
     } else {
       setNotes(notes.map(n => n.id === noteId ? { ...n, ...updatedNote } as Note : n));
@@ -176,13 +163,7 @@ const Notes: React.FC = () => {
     setError(null);
     try {
       if (user) {
-        const { error } = await supabase
-          .from('notes')
-          .delete()
-          .eq('id', noteToDelete.id);
-        if (error) {
-          throw error;
-        }
+        await NoteService.deleteNote(noteToDelete.id);
       }
       setNotes(notes.filter(n => n.id !== noteToDelete.id));
       setNoteToDelete(null);

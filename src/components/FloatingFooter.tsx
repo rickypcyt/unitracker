@@ -95,7 +95,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] max-w-[calc(100vw-1rem)]">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] max-w-[calc(100%-1rem)]">
         <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-[var(--border-primary)]/70 bg-[var(--bg-primary)]/70 backdrop-blur-[12px] shadow-[0_12px_30px_rgba(15,23,42,0.35)] text-[var(--text-secondary)]">
           {/* Workspace selector with task badge */}
           <button 

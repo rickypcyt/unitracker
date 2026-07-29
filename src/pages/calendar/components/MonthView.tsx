@@ -27,14 +27,14 @@ const MonthView = ({
   handleTouchEnd,
 }: MonthViewProps) => {
   return (
-    <div className="w-full mt-2 sm:mt-4 relative flex-1 min-h-0 overflow-hidden">
-      <div className="h-full flex flex-col min-h-[320px] sm:min-h-[400px] overflow-hidden">
+    <div className="w-full mt-1 sm:mt-2 relative flex-1 min-h-0 overflow-hidden">
+      <div className="h-full flex flex-col min-h-[200px] sm:min-h-[240px] overflow-hidden">
         {/* Weekdays */}
-        <div className="grid grid-cols-7 mb-2 flex-shrink-0">
+        <div className="grid grid-cols-7 mb-1 flex-shrink-0">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-[11px] sm:text-xs font-medium tracking-widest uppercase text-[var(--text-secondary)] flex items-center justify-center h-8 sm:h-9"
+              className="text-[10px] sm:text-[11px] font-medium tracking-widest uppercase text-[var(--text-secondary)] flex items-center justify-center h-6 sm:h-7"
             >
               {day}
             </div>
@@ -42,7 +42,7 @@ const MonthView = ({
         </div>
 
         {/* Days */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 auto-rows-fr">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {calendarDays.map((dayObj, index) => {
             const taskCount =
               dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -80,10 +80,10 @@ const MonthView = ({
                 }}
                 className={`
                   select-none cursor-pointer
-                  flex flex-col items-center
-                  rounded-lg p-1 sm:p-1.5
-                  min-h-0 h-full
+                  flex flex-col items-center justify-center
+                  rounded-md p-0.5 sm:p-1
                   border transition-all duration-150
+                  h-8 sm:h-10
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                   ${
                     isSelected
@@ -96,48 +96,39 @@ const MonthView = ({
                   }
                 `}
               >
-                {/* Fila superior: número + puntos de tareas */}
-                <div className="w-full flex items-start justify-between gap-1">
-                  {/* Número del día */}
-                  <div
-                    className={`
-                      flex items-center justify-center
-                      w-6 h-6 sm:w-7 sm:h-7
-                      rounded-full text-xs sm:text-sm font-medium
-                      transition-colors
+                <div className="flex items-center gap-1">
+                  {/* Day number */}
+                  <span
+                    className={`text-[11px] sm:text-xs font-medium leading-none
                       ${
                         isToday
-                          ? 'bg-[var(--accent-primary)] text-white'
+                          ? 'text-[var(--accent-primary)] font-bold'
                           : isSelected
                           ? 'text-[var(--text-primary)] font-semibold'
                           : dayObj.currentMonth
                           ? 'text-[var(--text-primary)]'
                           : 'text-[var(--text-secondary)]'
-                      }
-                    `}
+                      }`}
                   >
                     {dayObj.date.getDate()}
-                  </div>
+                  </span>
 
-                  {/* Indicadores de tareas (máx 3 puntos) */}
+                  {/* Task dots inline */}
                   {taskCount > 0 && (
-                    <div className="flex gap-0.5 pt-1 pr-0.5">
+                    <div className="flex gap-0.5">
                       {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
                         <span
                           key={i}
-                          className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[var(--accent-primary)]"
+                          className="w-1 h-1 rounded-full bg-[var(--accent-primary)]"
                         />
                       ))}
                     </div>
                   )}
                 </div>
 
-                {/* Espacio flexible */}
-                <div className="flex-1" />
-
-                {/* Horas estudiadas */}
+                {/* Studied hours */}
                 {dayObj.currentMonth && hasStudied && (
-                  <div className="text-[9px] sm:text-[10px] font-medium text-[var(--text-secondary)] tracking-tight">
+                  <div className="text-[8px] sm:text-[9px] font-medium text-[var(--text-secondary)] tracking-tight leading-none mt-0.5">
                     {studiedHours}h
                   </div>
                 )}

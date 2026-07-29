@@ -1,9 +1,8 @@
-import { Activity, Clock, Flame, Link2, Link2Off, Zap } from "lucide-react";
+import { Activity, Clock, Flame, Link2, Link2Off, Trash2, X, Zap } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { useAppStore, useLaps, useUi } from "@/store/appStore";
 
 import { Helmet } from "react-helmet-async";
-import AssignmentsOverview from "@/pages/session/AssignmentsOverview";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import TimerSettings from "@/components/TimerSettings";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
@@ -29,6 +28,7 @@ const SessionPage = memo(() => {
   const { navigateTo } = useNavigation();
   const isSynced = ui.isSynced;
   const isRunning = ui.isRunning;
+  const activeSessionId = useAppStore(s => s.activeSessionId);
   const resetKey = ui.resetKey;
   const syncPomodoro = useAppStore(s => s.syncSettings.syncPomodoroWithTimer);
   const syncCountdown = useAppStore(s => s.syncSettings.syncCountdownWithTimer);
@@ -134,19 +134,19 @@ const SessionPage = memo(() => {
   return (
     <>
       <Helmet>
-        <title>Pomodoro Timer & Study Sessions | UniTracker 2026</title>
+        <title>Focus Timer & Session Tracking | UniTracker 2026</title>
         <meta
           name="description"
-          content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app. No ads, no subscriptions."
+          content="Free Pomodoro timer and focus session tracker. Track your time across any area, manage breaks, and boost productivity. No ads, no subscriptions."
         />
         <meta
           name="keywords"
-          content="pomodoro timer, study timer, productivity timer, focus timer, study sessions, break timer, time management, student productivity"
+          content="pomodoro timer, focus timer, productivity timer, time tracker, focus sessions, break timer, time management, work tracker"
         />
-        <meta property="og:title" content="Pomodoro Timer & Study Sessions | UniTracker 2026" />
+        <meta property="og:title" content="Focus Timer & Session Tracking | UniTracker 2026" />
         <meta
           property="og:description"
-          content="Free Pomodoro timer for students. Track study sessions, manage breaks, and boost productivity with our free study app."
+          content="Free Pomodoro timer and focus session tracker. Track your time across any area, manage breaks, and boost productivity."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://unitracker.me/session" />
@@ -161,94 +161,124 @@ const SessionPage = memo(() => {
             </h1>
             <p className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)' }}>{todayDate}</p>
           </div>
-          <button
-            onClick={() => navigateTo('focusWidget')}
-            className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/5"
-            style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}
-          >
-            <Zap size={16} />
-            <span className="hidden sm:inline">Focus Widget</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {activeSessionId && (
+              <>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('study-exit-session'))}
+                  className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/5"
+                  style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}
+                  title="Cancel session (keep or delete)"
+                >
+                  <X size={16} />
+                  <span className="hidden sm:inline">Cancel Session</span>
+                </button>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('study-delete-session'))}
+                  className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-red-500 transition-colors py-1.5 rounded-lg hover:bg-red-500/5"
+                  style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}
+                  title="Delete session permanently"
+                >
+                  <Trash2 size={16} />
+                  <span className="hidden sm:inline">Finish Session</span>
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => navigateTo('focusWidget')}
+              className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors py-1.5 rounded-lg hover:bg-[var(--accent-primary)]/5"
+              style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}
+            >
+              <Zap size={16} />
+              <span className="hidden sm:inline">Focus Widget</span>
+            </button>
+          </div>
         </div>
 
         <div className="w-full pb-2 flex flex-col" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem)' }}>
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}>
-            {/* Pomodoros Today */}
-            <div className="dashboard-stat-card">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="p-1.5 rounded-lg bg-red-500/10">
-                  <Flame size={16} className="text-red-500" />
-                </div>
-                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Pomodoros</span>
-              </div>
-              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.pomodorosToday}</div>
-              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
-            </div>
-
-            {/* Study Time */}
-            <div className="dashboard-stat-card">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="p-1.5 rounded-lg bg-blue-500/10">
-                  <Clock size={16} className="text-blue-500" />
-                </div>
-                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Study Time</span>
-              </div>
-              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{formatStudyTime(stats.studyTime)}</div>
-              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>session today</div>
-            </div>
-
-            {/* Sessions Today */}
-            <div className="dashboard-stat-card">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="p-1.5 rounded-lg bg-green-500/10">
-                  <Activity size={16} className="text-green-500" />
-                </div>
-                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sessions</span>
-              </div>
-              <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>{stats.sessionsToday}</div>
-              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>today</div>
-            </div>
-
-            {/* Sync Status - Dynamic */}
-            <div className="dashboard-stat-card">
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`p-1.5 rounded-lg ${syncPomodoro || syncCountdown ? 'bg-[var(--accent-primary)]/10' : 'bg-[var(--bg-secondary)]'}`}>
-                  {syncPomodoro || syncCountdown ? (
-                    <Link2 size={16} className="text-[var(--accent-primary)]" />
-                  ) : (
-                    <Link2Off size={16} className="text-[var(--text-secondary)]" />
-                  )}
-                </div>
-                <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>Sync</span>
-              </div>
-              {syncPomodoro && syncCountdown ? (
-                <div className="font-bold text-[var(--accent-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomo + Countdown</div>
-              ) : syncPomodoro ? (
-                <div className="font-bold text-red-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Pomodoro</div>
-              ) : syncCountdown ? (
-                <div className="font-bold text-green-500" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>Countdown</div>
-              ) : (
-                <div className="font-bold text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.75rem, 0.68rem + 0.35vw, 0.875rem)' }}>OFF</div>
-              )}
-              <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
-                {syncPomodoro || syncCountdown ? 'linked to Study' : 'independent timers'}
-              </div>
-            </div>
-          </div>
-
-          {/* Unified Timer */}
+          {/* Top: Timers full width */}
           <div className="w-full" data-tour="session-timer">
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </div>
 
-          {/* Noise Generator */}
-          <div className="dashboard-noise-card">
-            <NoiseGenerator />
-          </div>
+          {/* Bottom row: Noise (left) + Stats (right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-3">
+            {/* Noise Generator */}
+            <div className="dashboard-noise-card">
+              <NoiseGenerator />
+            </div>
 
-          {/* Assignments Overview */}
-          <AssignmentsOverview />
+            {/* Stats grid - responsive auto-fit, centered */}
+            <div className="flex flex-col items-center justify-center">
+              <div
+                className="grid w-full gap-3"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
+                  maxWidth: '500px',
+                }}
+              >
+                {/* Pomodoros Today */}
+                <div className="dashboard-stat-card !p-3 flex flex-col gap-2 items-center text-center">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-red-500/10">
+                      <Flame size={16} className="text-red-500" />
+                    </div>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide text-[0.625rem]">Pomodoros</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="font-bold text-[var(--text-primary)] text-2xl">{stats.pomodorosToday}</span>
+                    <span className="text-[var(--text-secondary)] text-xs">today</span>
+                  </div>
+                </div>
+
+                {/* Study Time */}
+                <div className="dashboard-stat-card !p-3 flex flex-col gap-2 items-center text-center">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-blue-500/10">
+                      <Clock size={16} className="text-blue-500" />
+                    </div>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide text-[0.625rem]">Study</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="font-bold text-[var(--text-primary)] text-2xl">{formatStudyTime(stats.studyTime)}</span>
+                  </div>
+                </div>
+
+                {/* Sessions Today */}
+                <div className="dashboard-stat-card !p-3 flex flex-col gap-2 items-center text-center">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-green-500/10">
+                      <Activity size={16} className="text-green-500" />
+                    </div>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide text-[0.625rem]">Sessions</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className="font-bold text-[var(--text-primary)] text-2xl">{stats.sessionsToday}</span>
+                    <span className="text-[var(--text-secondary)] text-xs">today</span>
+                  </div>
+                </div>
+
+                {/* Sync Status */}
+                <div className="dashboard-stat-card !p-3 flex flex-col gap-2 items-center text-center">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${syncPomodoro || syncCountdown ? 'bg-[var(--accent-primary)]/10' : 'bg-[var(--bg-secondary)]'}`}>
+                      {syncPomodoro || syncCountdown ? (
+                        <Link2 size={16} className="text-[var(--accent-primary)]" />
+                      ) : (
+                        <Link2Off size={16} className="text-[var(--text-secondary)]" />
+                      )}
+                    </div>
+                    <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide text-[0.625rem]">Sync</span>
+                  </div>
+                  <div className="flex items-baseline gap-1 justify-center">
+                    <span className={`font-bold text-lg ${syncPomodoro || syncCountdown ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                      {syncPomodoro && syncCountdown ? 'Pomo + Count' : syncPomodoro ? 'Pomodoro' : syncCountdown ? 'Countdown' : 'OFF'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Modal de configuración */}

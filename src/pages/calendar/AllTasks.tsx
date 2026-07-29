@@ -100,9 +100,8 @@ const AllTasks: React.FC<AllTasksProps> = ({
     }
   }, [effectiveSortBy, title]);
 
-  // Group tasks by assignment (only non-completed), sorted by deadline
+  // Group tasks by assignment (all tasks), sorted by deadline
   const tasksByAssignment = tasks
-    .filter((task) => !task.completed)
     .sort((a, b) => {
       const aDate = a.deadline ? new Date(a.deadline).getTime() : Infinity;
       const bDate = b.deadline ? new Date(b.deadline).getTime() : Infinity;

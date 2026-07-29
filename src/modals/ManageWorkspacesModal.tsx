@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import BaseModal from './BaseModal';
 import DeleteCompletedModal from './DeleteTasksPop';
 import { supabase } from '@/utils/supabaseClient';
+import { WorkspaceService } from '@/services/WorkspaceService';
 import { useModalClose } from '@/hooks/useModalClose';
 
 type Workspace = {
@@ -138,17 +139,10 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     setError('');
 
     try {
-      const { data, error } = await supabase
-        .from('workspaces')
-        .update({
-          name: editName.trim(),
-          icon: editIcon
-        })
-        .eq('id', workspace.id)
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await WorkspaceService.updateWorkspace(workspace.id, {
+        name: editName.trim(),
+        icon: editIcon
+      });
 
       onWorkspaceUpdated(data);
       setEditingId(null);
@@ -172,11 +166,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
     setLoading(true);
     setError('');
     try {
-      const { error } = await supabase
-        .from('workspaces')
-        .delete()
-        .eq('id', workspaceToDelete.id);
-      if (error) throw error;
+      await WorkspaceService.deleteWorkspace(workspaceToDelete.id);
       onWorkspaceDeleted(workspaceToDelete.id);
       if (editingId === workspaceToDelete.id) {
         setEditingId(null);

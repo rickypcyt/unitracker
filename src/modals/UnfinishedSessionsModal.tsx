@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { formatDistanceToNowStrict } from 'date-fns';
 import { motion } from 'framer-motion';
-import { supabase } from '@/utils/supabaseClient';
+import { StudyService } from '@/services/StudyService';
 
 interface UnfinishedSession {
   id: string;
@@ -38,20 +38,8 @@ const UnfinishedSessionsModal = ({
     if (!isOpen) return;
     const fetchUnfinishedSessions = async () => {
       try {
-        const {
-          data: {
-            user
-          }
-        } = await supabase.auth.getUser();
-        if (!user) return;
-        const {
-          data,
-          error
-        } = await supabase.from('study_laps').select('id, name, created_at, started_at, duration, session_number').is('ended_at', null).eq('user_id', user.id).order('created_at', {
-          ascending: false
-        });
-        if (error) throw error;
-        setSessions(data || []);
+        const data = await StudyService.getUnfinishedSessions();
+        setSessions(data as UnfinishedSession[]);
       } catch (error) {
         console.error('Error fetching unfinished sessions:', error);
       } finally {
@@ -62,10 +50,7 @@ const UnfinishedSessionsModal = ({
   }, [isOpen]);
   const handleDeleteSession = async (sessionId: string) => {
     try {
-      const {
-        error
-      } = await supabase.from('study_laps').delete().eq('id', sessionId);
-      if (error) throw error;
+      await StudyService.deleteLap(sessionId);
       setSessions(sessions.filter(session => session.id !== sessionId));
     } catch (error) {
       console.error('Error deleting session:', error);
@@ -86,17 +71,7 @@ const UnfinishedSessionsModal = ({
       };
       const duration = toHMS(seconds);
 
-      // Direct Supabase update instead of Redux
-      const {
-        error
-      } = await supabase.from('study_laps').update({
-        ended_at: now,
-        duration
-      }).eq('id', sessionId);
-      if (error) {
-        console.error('Error finishing session:', error);
-        return;
-      }
+      await StudyService.finishSession(sessionId, duration, now);
       setSessions(sessions.filter(s => s.id !== sessionId));
     } catch (error) {
       console.error('Error finishing session:', error);

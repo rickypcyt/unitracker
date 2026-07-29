@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits' | 'focusWidget';
+type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'analytics' | 'habits' | 'focusWidget';
 
 interface NavItem {
   page: Page;
@@ -9,12 +9,12 @@ interface NavItem {
 }
 
 const DEFAULT_NAV_ORDER: NavItem[] = [
-  { page: 'calendar', icon: null, label: 'Calendar' },
+  { page: 'session', icon: null, label: 'Study' },
   { page: 'tasks', icon: null, label: 'Tasks' },
-  { page: 'session', icon: null, label: 'Session' },
-  { page: 'habits', icon: null, label: 'Habits' },
+  { page: 'calendar', icon: null, label: 'Planning' },
+  { page: 'analytics', icon: null, label: 'Analytics' },
+  { page: 'habits', icon: null, label: 'Journal' },
   { page: 'notes', icon: null, label: 'Notes' },
-  { page: 'stats', icon: null, label: 'Stats' },
 ];
 
 export const useDraggableNav = () => {

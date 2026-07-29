@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import ChartCard from './ChartCard';
 import StatsChart from './StatsChart';
@@ -11,14 +11,6 @@ const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthLabels = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-
-type TabKey = 'week' | 'month' | 'year';
-
-const tabs: { key: TabKey; label: string }[] = [
-  { key: 'week', label: 'Week' },
-  { key: 'month', label: 'Month' },
-  { key: 'year', label: 'Year' },
 ];
 
 function formatMinutesToHHMM(minutes: number) {
@@ -70,13 +62,42 @@ const getCachedAccentColor = () => {
   return cachedAccentColor;
 };
 
+interface PeriodNavProps {
+  label: string;
+  onPrevious: () => void;
+  onNext: () => void;
+  isNextDisabled?: boolean;
+}
+
+const PeriodNav = ({ label, onPrevious, onNext, isNextDisabled }: PeriodNavProps) => (
+  <div className="flex items-center gap-1.5">
+    <button
+      onClick={onPrevious}
+      className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center"
+      aria-label="Previous"
+    >
+      <ChevronLeft size={18} className="text-[var(--text-primary)]" />
+    </button>
+    <span className="font-semibold text-sm sm:text-base text-center select-none transition-colors duration-200 text-[var(--accent-primary)] min-w-[80px] sm:min-w-[120px]">
+      {label}
+    </span>
+    <button
+      onClick={onNext}
+      className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Next"
+      disabled={isNextDisabled}
+    >
+      <ChevronRight size={18} className={`text-[var(--text-primary)] ${isNextDisabled ? 'opacity-40' : ''}`} />
+    </button>
+  </div>
+);
+
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
   const accentColor = getCachedAccentColor();
-  const [activeTab, setActiveTab] = useState<TabKey>('week');
 
-  // Semana
+  // Week
   const [weekOffset, setWeekOffset] = useState(0);
   const shownWeekMonday = useMemo(() => {
     const today = new Date();
@@ -106,7 +127,7 @@ const StatsChartsPanel = memo(() => {
     });
   }, [laps, shownWeekMonday]);
 
-  // Mes
+  // Month
   const [monthOffset, setMonthOffset] = useState(0);
   const shownMonthDate = useMemo(() => {
     const now = new Date();
@@ -143,7 +164,7 @@ const StatsChartsPanel = memo(() => {
     });
   }, [laps, shownMonthDate]);
 
-  // Año
+  // Year
   const [yearOffset, setYearOffset] = useState(0);
   const shownYear = useMemo(() => {
     const today = new Date();
@@ -170,20 +191,6 @@ const StatsChartsPanel = memo(() => {
       date: `${shownYear}-${String(idx+1).padStart(2,'0')}-01`,
     }));
   }, [laps, shownYear]);
-
-  const handlePrevious = useCallback(() => {
-    if (activeTab === 'week') setWeekOffset((prev) => prev + 1);
-    else if (activeTab === 'month') setMonthOffset((prev) => prev - 1);
-    else setYearOffset((prev) => prev + 1);
-  }, [activeTab]);
-
-  const handleNext = useCallback(() => {
-    if (activeTab === 'week') setWeekOffset((prev) => prev - 1);
-    else if (activeTab === 'month') setMonthOffset((prev) => prev + 1);
-    else setYearOffset((prev) => prev - 1);
-  }, [activeTab]);
-
-  const isNextDisabled = activeTab === 'week' ? weekOffset === 0 : activeTab === 'month' ? monthOffset >= 0 : yearOffset === 0;
 
   // Demo data
   const demoData = useMemo(() => {
@@ -228,74 +235,56 @@ const StatsChartsPanel = memo(() => {
     return { thisWeekData, shownMonthData, thisYearData };
   }, [isDemo, shownYear]);
 
-  // Select data and title based on active tab
-  const chartData = isDemo
-    ? (activeTab === 'week' ? demoData!.thisWeekData : activeTab === 'month' ? demoData!.shownMonthData : demoData!.thisYearData)
-    : (activeTab === 'week' ? shownWeekData : activeTab === 'month' ? shownMonthData : shownYearData);
+  const weekData = isDemo ? demoData!.thisWeekData : shownWeekData;
+  const monthData = isDemo ? demoData!.shownMonthData : shownMonthData;
+  const yearData = isDemo ? demoData!.thisYearData : shownYearData;
 
-  const chartTitle = activeTab === 'week' ? `Week ${shownWeekNumber}` : activeTab === 'month' ? 'This Month' : `${shownYear}`;
-  const chartXAxisTicks = activeTab === 'week' ? weekDayLabels : undefined;
-
-  const periodLabel = activeTab === 'week'
-    ? `Week ${shownWeekNumber}`
-    : activeTab === 'month'
-      ? shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })
-      : `${shownYear}`;
+  const weekLabel = `Week ${shownWeekNumber}`;
+  const monthLabel = shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const yearLabel = `${shownYear}`;
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-4">
+      {/* Week chart */}
       <ChartCard
         paddingClass="p-2"
-        className=""
         isDemo={isDemo}
-        header={
-          <div className="relative flex items-center justify-between w-full">
-            {/* Period label + navigation */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handlePrevious}
-                className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center"
-                aria-label="Previous"
-              >
-                <ChevronLeft size={18} className="text-[var(--text-primary)]" />
-              </button>
-              <span className="font-semibold text-sm sm:text-base text-center select-none transition-colors duration-200 text-[var(--accent-primary)] min-w-[80px] sm:min-w-[120px]">
-                {periodLabel}
-              </span>
-              <button
-                onClick={handleNext}
-                className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                aria-label="Next"
-                disabled={isNextDisabled}
-              >
-                <ChevronRight size={18} className={`text-[var(--text-primary)] ${isNextDisabled ? 'opacity-40' : ''}`} />
-              </button>
-            </div>
-            {/* Tabs - right aligned */}
-            <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-0.5">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`px-4 py-2 rounded-md text-base font-medium transition-all duration-200 ${
-                    activeTab === tab.key
-                      ? 'bg-[var(--bg-primary)] text-[var(--accent-primary)] shadow-sm'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        }
+        header={<PeriodNav label={weekLabel} onPrevious={() => setWeekOffset(prev => prev + 1)} onNext={() => setWeekOffset(prev => prev - 1)} isNextDisabled={weekOffset === 0} />}
       >
         <StatsChart
-          data={chartData}
-          title={chartTitle}
+          data={weekData}
+          title={weekLabel}
           accentColor={accentColor}
           customTitle={<></>}
-          xAxisTicks={chartXAxisTicks}
+          xAxisTicks={weekDayLabels}
+        />
+      </ChartCard>
+
+      {/* Month chart */}
+      <ChartCard
+        paddingClass="p-2"
+        isDemo={isDemo}
+        header={<PeriodNav label={monthLabel} onPrevious={() => setMonthOffset(prev => prev - 1)} onNext={() => setMonthOffset(prev => prev + 1)} isNextDisabled={monthOffset >= 0} />}
+      >
+        <StatsChart
+          data={monthData}
+          title={monthLabel}
+          accentColor={accentColor}
+          customTitle={<></>}
+        />
+      </ChartCard>
+
+      {/* Year chart */}
+      <ChartCard
+        paddingClass="p-2"
+        isDemo={isDemo}
+        header={<PeriodNav label={yearLabel} onPrevious={() => setYearOffset(prev => prev + 1)} onNext={() => setYearOffset(prev => prev - 1)} isNextDisabled={yearOffset === 0} />}
+      >
+        <StatsChart
+          data={yearData}
+          title={yearLabel}
+          accentColor={accentColor}
+          customTitle={<></>}
         />
       </ChartCard>
     </div>

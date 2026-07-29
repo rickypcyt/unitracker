@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import DeleteSessionModal from './DeleteSessionModal';
 import { motion } from 'framer-motion';
-import { supabase } from '@/utils/supabaseClient';
+import { StudyService } from '@/services/StudyService';
 
 interface Session {
   id: string;
@@ -42,46 +42,16 @@ const SessionsModal = ({
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const fetchTodaysSessions = async () => {
     try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get today's date range
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      const {
-        data,
-        error
-      } = await supabase.from('study_laps').select('id, name, created_at, started_at, ended_at, duration, session_number, description, tasks_completed, pomodoros_completed').eq('user_id', user.id).not('ended_at', 'is', null) // Only completed sessions
-      .gte('created_at', startOfDay.toISOString()).lt('created_at', endOfDay.toISOString()).order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
-      setSessions(data || []);
+      const data = await StudyService.getTodaysCompletedSessions();
+      setSessions(data as Session[]);
     } catch (error) {
       console.error('Error fetching today\'s sessions:', error);
     }
   };
   const fetchUnfinishedSessions = async () => {
     try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      const {
-        data,
-        error
-      } = await supabase.from('study_laps').select('id, name, created_at, started_at, ended_at, duration, session_number, description, tasks_completed, pomodoros_completed').is('ended_at', null).eq('user_id', user.id).order('created_at', {
-        ascending: false
-      });
-      if (error) throw error;
-      setUnfinishedSessions(data || []);
+      const data = await StudyService.getUnfinishedSessions();
+      setUnfinishedSessions(data as Session[]);
     } catch (error) {
       console.error('Error fetching unfinished sessions:', error);
     }
@@ -119,16 +89,7 @@ const SessionsModal = ({
         return `${h}:${m}:${sec}`;
       };
       const duration = toHMS(seconds);
-      const {
-        error
-      } = await supabase.from('study_laps').update({
-        ended_at: now,
-        duration
-      }).eq('id', sessionId);
-      if (error) {
-        console.error('Error finishing session:', error);
-        return;
-      }
+      await StudyService.finishSession(sessionId, duration, now);
 
       // Refresh both lists
       fetchTodaysSessions();
@@ -144,13 +105,7 @@ const SessionsModal = ({
   const confirmDeleteHandler = async () => {
     if (!sessionToDelete) return;
     try {
-      const {
-        error
-      } = await supabase.from('study_laps').delete().eq('id', sessionToDelete);
-      if (error) {
-        console.error('Error deleting session:', error);
-        return;
-      }
+      await StudyService.deleteLap(sessionToDelete);
       // Refresh both lists
       fetchTodaysSessions();
       fetchUnfinishedSessions();

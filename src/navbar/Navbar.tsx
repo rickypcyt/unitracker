@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useFriendManagement } from '@/hooks/useFriendManagement';
+import { WorkspaceService } from '@/services/WorkspaceService';
 import { useNavigation } from '@/navbar/NavigationContext';
 import { preloadPage } from '@/App';
 
@@ -48,15 +49,8 @@ const Navbar = () => {
         return;
       }
 
-      // Always fetch real workspaces if user exists, regardless of demo mode
-      const { data, error } = await supabase
-        .from('workspaces')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
-
-      if (!error && data) {
-        setWorkspaces(data);
+      const data = await WorkspaceService.fetchWorkspaces(user.id);
+      setWorkspaces(data);
         const savedId = localStorage.getItem('activeWorkspaceId');
         const isStale = activeWorkspace && !data.some((ws: any) => ws.id === activeWorkspace.id);
         if (savedId) {
@@ -64,18 +58,13 @@ const Navbar = () => {
           if (found) {
             setCurrentWorkspace(found);
           } else if (data.length > 0) {
-            // Saved ID no longer exists, pick first workspace
-            setCurrentWorkspace(data[0]);
-            localStorage.setItem('activeWorkspaceId', data[0].id);
+            setCurrentWorkspace(data[0]!);
+            localStorage.setItem('activeWorkspaceId', data[0]!.id);
           }
         } else if (data.length > 0 && (!activeWorkspace || isStale)) {
-          // Set first workspace as active if none selected or current one is stale
-          setCurrentWorkspace(data[0]);
-          localStorage.setItem('activeWorkspaceId', data[0].id);
+          setCurrentWorkspace(data[0]!);
+          localStorage.setItem('activeWorkspaceId', data[0]!.id);
         }
-      } else {
-        console.error('Navbar: Error fetching workspaces:', error);
-      }
     };
     fetchWorkspaces();
   }, [setWorkspaces, setCurrentWorkspace, isLoggedIn]);

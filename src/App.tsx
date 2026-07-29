@@ -8,7 +8,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import FloatingFooter from "@/components/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
 import PageLoader from "@/components/PageLoader";
-import Navbar from "@/navbar/Navbar";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
 import OnboardingGuide from "@/components/OnboardingGuide";
@@ -24,23 +23,31 @@ const BlogPostPage = lazy(() => import("@/pages/landing/BlogPostPage"));
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useFriendManagement } from "@/hooks/useFriendManagement";
+import { useWorkspaceLoader } from "@/hooks/useWorkspaceLoader";
 
-// Lazy load pages for better performance
-const CalendarPage = lazy(() => import("@/pages/calendar/CalendarPage"));
-const FocusWidgetPage = lazy(() => import("@/pages/FocusWidgetPage"));
-const HabitsPage = lazy(() => import("@/pages/habits/HabitsPage"));
-const Notes = lazy(() => import("@/pages/notes/Notes"));
-const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
-const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
-const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
-const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+// Direct imports for stacked pages
+import AssignmentsOverview from "@/pages/session/AssignmentsOverview";
+import CalendarPage from "@/pages/calendar/CalendarPage";
+import FocusWidgetPage from "@/pages/FocusWidgetPage";
+import HabitsPage from "@/pages/habits/HabitsPage";
+import Notes from "@/pages/notes/Notes";
+import PendingTasksOverview from "@/pages/session/PendingTasksOverview";
+import QuickStats from "@/pages/session/QuickStats";
+import SessionPage from "@/pages/session/SessionPage";
+import StatsPage from "@/pages/stats/StatsPage";
+import TasksPage from "@/pages/tasks/TasksPage";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import CollapsibleNotes from "@/components/CollapsibleNotes";
+import Sidebar from "@/components/Sidebar";
+import SectionHeader from "@/components/SectionHeader";
+import { BookOpen, Calendar, CheckCircle2, Notebook, TrendingUp } from "lucide-react";
 
 // Preload map: import functions for each page to enable hover-based preloading
 const preloadMap: Record<string, () => Promise<unknown>> = {
   session: () => import("@/pages/session/SessionPage"),
   tasks: () => import("@/pages/tasks/TasksPage"),
   calendar: () => import("@/pages/calendar/CalendarPage"),
-  stats: () => import("@/pages/stats/StatsPage"),
+  analytics: () => import("@/pages/stats/StatsPage"),
   habits: () => import("@/pages/habits/HabitsPage"),
   notes: () => import("@/pages/notes/Notes"),
   focusWidget: () => import("@/pages/FocusWidgetPage"),
@@ -65,7 +72,7 @@ const pagesMap: Record<string, FC> = {
   session: SessionPage,
   tasks: TasksPage,
   calendar: CalendarPage,
-  stats: StatsPage,
+  analytics: StatsPage,
   habits: HabitsPage,
   notes: Notes,
   focusWidget: FocusWidgetPage,
@@ -77,13 +84,14 @@ const pagesMap: Record<string, FC> = {
 // PageContent component
 // -------------------------
 const PageContent: FC = () => {
-  const { activePage, isSettingsOpen, closeSettings, isNavCollapsed } = useNavigation();
+  const { activePage, isSettingsOpen, closeSettings } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { user } = useAuth();
   const { friends, handleRemoveFriend } = useFriendManagement(user?.id);
+  useWorkspaceLoader();
   
   const ActiveComponent = pagesMap[activePage] || SessionPage;
 
@@ -148,11 +156,51 @@ const PageContent: FC = () => {
   }
 
   return (
-    <div className="h-full bg-[var(--bg-primary)] w-full overflow-hidden flex flex-col">
-      <Navbar />
-      <div className={`${isNavCollapsed ? 'lg:pl-20' : 'lg:pl-64'} min-w-0 flex-1 overflow-y-auto overflow-x-hidden relative transition-all duration-300`}>
+    <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-hidden flex flex-row">
+      <Sidebar />
+      <div className="min-w-0 flex-1 relative">
         <Suspense fallback={<PageLoader />}>
-          <ActiveComponent />
+          <div className="px-4 sm:px-6 lg:px-8 overflow-x-hidden py-4">
+            {activePage === 'session' && <SessionPage />}
+
+            {activePage === 'tasks' && (
+              <div className="flex flex-col gap-4">
+                <SectionHeader icon={<CheckCircle2 size={20} />} title="Tasks" subtitle="Your pending tasks and assignment progress." />
+                <PendingTasksOverview limit={50} />
+                <AssignmentsOverview />
+              </div>
+            )}
+
+            {activePage === 'calendar' && (
+              <div className="flex flex-col gap-4">
+                <SectionHeader icon={<Calendar size={20} />} title="Planning" subtitle="Calendar, deadlines, and upcoming events." />
+                <CalendarPage />
+              </div>
+            )}
+
+            {activePage === 'analytics' && (
+              <div className="flex flex-col gap-4">
+                <SectionHeader icon={<TrendingUp size={20} />} title="Analytics" subtitle="Track your productivity and study trends." />
+                <StatsPage />
+              </div>
+            )}
+
+            {activePage === 'habits' && (
+              <div className="flex flex-col gap-4">
+                <SectionHeader icon={<Notebook size={20} />} title="Journal" subtitle="Daily entries, habits, and reflections." />
+                <HabitsPage />
+              </div>
+            )}
+
+            {activePage === 'notes' && (
+              <div className="flex flex-col gap-4">
+                <SectionHeader icon={<BookOpen size={20} />} title="Notes" subtitle="Your random notes and ideas." />
+                <CollapsibleNotes />
+              </div>
+            )}
+
+            {activePage === 'admin' && <AdminDashboard />}
+          </div>
         </Suspense>
       </div>
       <FloatingFooter

@@ -1,9 +1,10 @@
-import { CheckCircle2, Circle, Clock, Loader, Pause, Pencil, Play, Trash2, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Loader, Pause, Pencil, Trash2, Zap } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, isToday, isTomorrow, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
 import { Task } from '@/types/taskStorage';
 import { to12Hour } from '@/utils/timeUtils';
+import { getTaskStatusConfig, normalizeTaskStatus } from '@/constants/taskStatus';
 
 // Helper para formatear días de recurrencia
 const formatRecurrenceText = (weekdays: number[]) => {
@@ -134,13 +135,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     const getStatusIcon = (status?: string) => {
-        switch (status?.toLowerCase()) {
+        const normalized = normalizeTaskStatus(status);
+        switch (normalized) {
             case 'in_progress':
                 return <Loader size={13} className="text-yellow-500 animate-spin" strokeWidth={2.5} />;
-            case 'on_hold':
+            case 'paused':
                 return <Pause size={13} className="text-blue-500 animate-pulse-slow" strokeWidth={2.5} />;
-            case 'active':
-                return <Play size={13} className="text-green-500" strokeWidth={2.5} />;
+            case 'blocked':
+                return <Circle size={13} className="text-red-500" strokeWidth={2.5} />;
             default:
                 return null;
         }
@@ -167,18 +169,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     const getStatusBorderColor = (status?: string) => {
-        switch (status?.toLowerCase()) {
-            case 'in_progress':
-                return 'border-yellow-500';
-            case 'on_hold':
-                return 'border-blue-500';
-            case 'active':
-                return 'border-green-500';
-            case 'not_started':
-                return 'border-[var(--border-primary)]';
-            default:
-                return 'border-[var(--border-primary)]';
-        }
+        const config = getTaskStatusConfig(status);
+        const colorMap: Record<string, string> = {
+            'border-gray-400': '#9ca3af',
+            'border-purple-400': '#a78bfa',
+            'border-indigo-400': '#818cf8',
+            'border-cyan-400': '#22d3ee',
+            'border-yellow-500': '#eab308',
+            'border-blue-500': '#3b82f6',
+            'border-red-500': '#ef4444',
+            'border-green-500': '#22c55e',
+            'border-gray-600': '#4b5563',
+        };
+        return colorMap[config.borderColor] || '#9ca3af';
     };
 
     const handleToggleClick = (e: React.MouseEvent) => {
@@ -230,9 +233,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             className={`group relative flex p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2.5 items-center
                 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
-                ${getStatusBorderColor(task.status)} border-l-[3px]
                 ${task.completed ? 'opacity-50' : ''}
             `}
+            style={{ borderLeftWidth: '3px', borderLeftColor: getStatusBorderColor(task.status) }}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}

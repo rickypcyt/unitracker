@@ -2,7 +2,6 @@ import type { AnyAction, Dispatch } from "redux";
 import { deleteTask, toggleTaskStatus, updateTaskAction } from "@/store/TaskActions";
 import { getLocalTasks, setLocalTasks } from "@/types/taskStorage";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Task } from "@/types/taskStorage";
 
 interface User {
@@ -14,7 +13,6 @@ interface TaskUpdateParams {
     user: User | null;
     task: Task;
     dispatch: Dispatch<AnyAction>;
-    supabase: SupabaseClient;
 }
 
 interface TaskDeleteParams {
@@ -27,7 +25,7 @@ interface TaskDeleteParams {
  * Updates the completion status of a task
  * @param params - Object containing user, task, dispatch, and supabase client
  */
-export const updateTaskStatus = async ({ user, task, dispatch, supabase }: TaskUpdateParams): Promise<void> => {
+export const updateTaskStatus = async ({ user, task, dispatch }: TaskUpdateParams): Promise<void> => {
     if (!user) {
         // Local
         const tasks = getLocalTasks().map(t =>
@@ -40,20 +38,6 @@ export const updateTaskStatus = async ({ user, task, dispatch, supabase }: TaskU
         // Remote
         const newCompletedStatus = !task.completed;
         await dispatch(toggleTaskStatus(task.id, newCompletedStatus) as unknown as AnyAction);
-        try {
-            const { error } = await supabase
-                .from("tasks")
-                .update({ 
-                    completed: newCompletedStatus,
-                    completed_at: newCompletedStatus ? new Date().toISOString() : null 
-                })
-                .eq("id", task.id);
-            if (error) throw error;
-        } catch (error) {
-            // Revert the optimistic update if the API call fails
-            await dispatch(toggleTaskStatus(task.id, task.completed) as unknown as AnyAction);
-            console.error("Error updating task:", error);
-        }
     }
 };
 
@@ -74,17 +58,15 @@ export const deleteTaskHandler = async ({ user, taskId, dispatch }: TaskDeletePa
  * Updates a task's details
  * @param params - Object containing user, task, dispatch, and supabase client
  */
-export const updateTaskHandler = async ({ user, task, dispatch, supabase }: TaskUpdateParams): Promise<void> => {
+export const updateTaskHandler = async ({ user, task, dispatch }: TaskUpdateParams): Promise<void> => {
     if (!user) {
         const tasks = getLocalTasks().map(t => (t.id === task.id ? task : t));
         setLocalTasks(tasks);
     } else {
         try {
             await dispatch(updateTaskAction(task) as unknown as AnyAction);
-            await supabase.from("tasks").update(task).eq("id", task.id);
         } catch (error) {
-            await dispatch(updateTaskAction(task) as unknown as AnyAction);
             console.error("Error updating task:", error);
         }
     }
-}; 
+};

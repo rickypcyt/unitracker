@@ -292,25 +292,29 @@ const NoteView: React.FC<NoteViewProps> = ({
     <div className="h-full flex flex-col relative">
       {/* Note Header with inline properties */}
       <div className="px-4 sm:px-6 py-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-medium flex-shrink-0"
-                title="Back to notes"
-              >
-                <ArrowLeft size={18} />
-                <span className="hidden sm:inline">Back</span>
-              </button>
-            )}
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
-              placeholder="Note Title"
-            />
+        {/* Back button - top left */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-medium mb-3"
+            title="Back to notes"
+          >
+            <ArrowLeft size={18} />
+            <span className="hidden sm:inline">Back</span>
+          </button>
+        )}
+        <div className="flex items-center justify-between gap-4 mb-3">
+          {/* Left spacer to center title */}
+          <div className="flex-shrink-0 w-24 hidden sm:block" />
+          {/* Centered title */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
+            placeholder="Note Title"
+          />
+          {/* Right: Save + Delete */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleSave}
@@ -327,7 +331,6 @@ const NoteView: React.FC<NoteViewProps> = ({
             >
               <Trash2 size={16} />
             </button>
-          </div>
           </div>
         </div>
 

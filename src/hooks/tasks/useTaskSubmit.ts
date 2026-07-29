@@ -1,5 +1,5 @@
 import { useAddTaskSuccess, useUpdateTaskSuccess, useWorkspace } from '@/store/appStore';
-import { supabase } from '@/utils/supabaseClient';
+import { TaskService } from '@/services/TaskService';
 import { useCallback } from 'react';
 
 // Helper function to convert 12h AM/PM format or ISO timestamp to 24h format (HH:MM)
@@ -196,19 +196,11 @@ export function useTaskSubmit() {
       })
     };
     if (initialTask) {
-      const {
-        data,
-        error
-      } = await supabase.from('tasks').update(taskData).eq('id', initialTask.id).select().single();
-      if (error) throw error;
+      const data = await TaskService.updateTask(initialTask.id, taskData);
       updateTaskSuccess(data);
       return data;
     } else {
-      const {
-        data,
-        error
-      } = await supabase.from('tasks').insert([taskData]).select().single();
-      if (error) throw error;
+      const data = await TaskService.createTask(taskData);
       addTaskSuccess(data);
       return data;
     }

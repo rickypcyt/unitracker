@@ -1,6 +1,7 @@
 import { Calendar, Info, Trash2 } from "lucide-react";
 import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from "react";
 import { Task } from "@/types/taskStorage";
+import { TASK_STATUSES, normalizeTaskStatus, getTaskStatusConfig } from "@/constants/taskStatus";
 interface ContextMenuState {
   type?: string;
   x: number;
@@ -22,27 +23,6 @@ interface TaskListMenuProps {
     y: number;
   }) => void; // New prop for setting date with position
 }
-const TASK_STATUSES = [{
-  id: 'not_started',
-  label: 'Not Started',
-  textColor: 'text-gray-400',
-  bgColor: 'bg-gray-400'
-}, {
-  id: 'on_hold',
-  label: 'On Hold',
-  textColor: 'text-blue-500',
-  bgColor: 'bg-blue-500'
-}, {
-  id: 'in_progress',
-  label: 'In Progress',
-  textColor: 'text-yellow-500',
-  bgColor: 'bg-yellow-500'
-}, {
-  id: 'active',
-  label: 'Active',
-  textColor: 'text-green-500',
-  bgColor: 'bg-green-500'
-}];
 export const TaskListMenu: React.FC<TaskListMenuProps> = ({
   contextMenu,
   onClose,
@@ -162,11 +142,11 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
     onClose();
   };
   if (!contextMenu) return null;
-  const currentStatus = contextMenu.task.status || 'not_started';
-  const currentStatusInfo = TASK_STATUSES.find(s => s.id === currentStatus);
-  const currentStatusLabel = currentStatusInfo?.label || 'Set Status';
-  const currentStatusTextColor = currentStatusInfo?.textColor || 'text-[var(--text-primary)]';
-  const currentStatusBgColor = currentStatusInfo?.bgColor || 'bg-[var(--text-primary)]';
+  const currentStatus = normalizeTaskStatus(contextMenu.task.status);
+  const currentStatusInfo = getTaskStatusConfig(contextMenu.task.status);
+  const currentStatusLabel = currentStatusInfo.label;
+  const currentStatusTextColor = currentStatusInfo.textColor;
+  const currentStatusBgColor = currentStatusInfo.bgColor;
   return <>
       <div ref={menuRef} className="fixed z-50 min-w-[220px] rounded-lg bg-[var(--bg-primary)] p-2 shadow-xl" style={{
       position: 'fixed',

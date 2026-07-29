@@ -1,9 +1,9 @@
 import { BookOpen, Briefcase, Code, Coffee, Database, FolderOpen, Gamepad2, Globe, Heart, Home, Music, Plane, Settings, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 
 import BaseModal from './BaseModal';
-import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
+import { WorkspaceService } from '@/services/WorkspaceService';
 
 const iconOptions = [
   { name: 'Briefcase', icon: Briefcase },
@@ -56,19 +56,11 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
     setError('');
 
     try {
-      const { data, error } = await supabase
-        .from('workspaces')
-        .insert([
-          {
-            name: workspaceName.trim(),
-            user_id: user?.id,
-            icon: selectedIcon
-          }
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await WorkspaceService.createWorkspace({
+        name: workspaceName.trim(),
+        user_id: user?.id,
+        icon: selectedIcon
+      });
 
       onWorkspaceCreated(data);
       onClose();

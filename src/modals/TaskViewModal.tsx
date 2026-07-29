@@ -3,6 +3,7 @@ import { formatDate, formatLongDateTime, fromNow } from "@/utils/dateUtils";
 
 import BaseModal from "@/modals/BaseModal";
 import React from "react";
+import { getTaskStatusConfig } from "@/constants/taskStatus";
 
 interface Task {
   id: string;
@@ -52,59 +53,11 @@ const TaskViewModal: React.FC<TaskViewModalProps> = ({
     }
   };
   const getStatusInfo = (status?: string) => {
-    // Debug para ver qué estado tiene la tarea
-    switch (status?.toLowerCase()) {
-      case 'not_started':
-      case 'not-started':
-        return {
-          label: 'Not Started',
-          color: 'text-gray-400 bg-gray-400/10 border-gray-400'
-        };
-      case 'in_progress':
-      case 'in-progress':
-        return {
-          label: 'In Progress',
-          color: 'text-blue-500 bg-blue-500/10 border-blue-500'
-        };
-      case 'on_hold':
-      case 'on-hold':
-        return {
-          label: 'On Hold',
-          color: 'text-blue-500 bg-blue-500/10 border-blue-500'
-        };
-      case 'active':
-        return {
-          label: 'Active',
-          color: 'text-green-500 bg-green-500/10 border-green-500'
-        };
-      case 'completed':
-        return {
-          label: 'Completed',
-          color: 'text-green-500 bg-green-500/10 border-green-500'
-        };
-      case 'cancelled':
-      case 'canceled':
-        return {
-          label: 'Cancelled',
-          color: 'text-red-500 bg-red-500/10 border-red-500'
-        };
-      case 'todo':
-      case 'to-do':
-        return {
-          label: 'To Do',
-          color: 'text-gray-500 bg-gray-500/10 border-gray-500'
-        };
-      case 'pending':
-        return {
-          label: 'Pending',
-          color: 'text-orange-500 bg-orange-500/10 border-orange-500'
-        };
-      default:
-        return {
-          label: status || 'No Status',
-          color: 'text-[var(--text-secondary)] bg-[var(--bg-secondary)] border-[var(--border-primary)]'
-        };
-    }
+    const config = getTaskStatusConfig(status);
+    return {
+      label: config.label,
+      color: `${config.textColor} ${config.bgColor}/10 ${config.borderColor}`
+    };
   };
   const getDifficultyBgColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {

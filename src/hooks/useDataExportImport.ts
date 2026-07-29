@@ -17,6 +17,105 @@ import {
 } from '@/utils/dataImport';
 import { exportSessionsPDF, exportStatsPDF, exportTasksPDF } from '@/utils/pdfExport';
 import { supabase } from '@/utils/supabaseClient';
+import type { Task } from '@/schemas/task';
+import type { Lap } from '@/types/lap';
+
+function durationToMinutes(duration: string | undefined): number {
+  if (!duration) return 0;
+  const parts = duration.split(':');
+  const h = parseInt(parts[0] || '0');
+  const m = parseInt(parts[1] || '0');
+  return h * 60 + m;
+}
+
+function computeStatsData(tasks: Task[], laps: Lap[]): StatsExportData {
+  const now = new Date();
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrowLocal = new Date(todayLocal);
+  tomorrowLocal.setDate(todayLocal.getDate() + 1);
+  const weekStart = new Date(todayLocal);
+  weekStart.setDate(todayLocal.getDate() - todayLocal.getDay() + (todayLocal.getDay() === 0 ? -6 : 1));
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  let todayMinutes = 0, weekMinutes = 0, monthMinutes = 0, yearMinutes = 0;
+  let totalStudyMinutes = 0;
+  let doneToday = 0, doneWeek = 0, doneMonth = 0, doneYear = 0;
+  let totalTasksCompleted = 0;
+  let pomodoroMinutes = 0;
+
+  laps.forEach(lap => {
+    if (!lap.created_at) return;
+    const lapDate = new Date(lap.created_at);
+    const minutes = durationToMinutes(lap.duration);
+    totalStudyMinutes += minutes;
+
+    if (lapDate >= todayLocal && lapDate < tomorrowLocal) todayMinutes += minutes;
+    if (lapDate >= weekStart) weekMinutes += minutes;
+    if (lapDate.getFullYear() === currentYear && lapDate.getMonth() === currentMonth) monthMinutes += minutes;
+    if (lapDate.getFullYear() === currentYear) yearMinutes += minutes;
+
+    if (lap.type === 'pomodoro' || (lap.name && lap.name.toLowerCase().includes('pomo'))) {
+      pomodoroMinutes += minutes;
+    }
+  });
+
+  tasks.forEach(task => {
+    if (task.completed) {
+      totalTasksCompleted++;
+      if (task.completed_at) {
+        const completedDate = new Date(task.completed_at);
+        if (completedDate >= todayLocal && completedDate < tomorrowLocal) doneToday++;
+        if (completedDate >= weekStart) doneWeek++;
+        if (completedDate.getFullYear() === currentYear && completedDate.getMonth() === currentMonth) doneMonth++;
+        if (completedDate.getFullYear() === currentYear) doneYear++;
+      }
+    }
+  });
+
+  // Longest streak
+  const completedDates = tasks
+    .filter(t => t.completed && t.completed_at)
+    .map(t => new Date(t.completed_at!).setHours(0, 0, 0, 0))
+    .sort((a, b) => a - b);
+  let longestStreak = 0;
+  if (completedDates.length > 0) {
+    let streak = 1, maxStreak = 1;
+    for (let i = 1; i < completedDates.length; i++) {
+      if (completedDates[i] - completedDates[i - 1] === 86400000) {
+        streak++;
+        maxStreak = Math.max(maxStreak, streak);
+      } else if (completedDates[i] !== completedDates[i - 1]) {
+        streak = 1;
+      }
+    }
+    longestStreak = maxStreak;
+  }
+
+  // Avg per day
+  const days = new Set(laps.map(lap => lap.created_at ? new Date(lap.created_at).toDateString() : null).filter(Boolean));
+  const avgPerDay = days.size > 0 ? totalStudyMinutes / days.size : 0;
+
+  // Total pomodoros from laps
+  const totalPomodoros = laps.reduce((acc, lap) => acc + (lap.pomodoros_completed ?? 0), 0);
+
+  return {
+    totalStudyMinutes,
+    totalTasksCompleted,
+    totalPomodoros,
+    longestStreak,
+    todayMinutes,
+    weekMinutes,
+    monthMinutes,
+    yearMinutes,
+    doneToday,
+    doneWeek,
+    doneMonth,
+    doneYear,
+    avgPerDay,
+    pomodoroMinutes,
+  };
+}
 
 export type ExportFormat = 'csv' | 'pdf';
 export type DataType = 'tasks' | 'sessions' | 'stats';
@@ -67,14 +166,11 @@ export function useDataExportImport(): UseDataExportImportReturn {
         }
         toast.success(`Exported ${laps.length} sessions`);
       } else if (dataType === 'stats') {
-        if (!statsData) {
-          toast.error('Stats data not available');
-          return;
-        }
+        const data = statsData ?? computeStatsData(tasks, laps);
         if (format === 'csv') {
-          downloadStatsCSV(statsData);
+          downloadStatsCSV(data);
         } else {
-          exportStatsPDF(statsData);
+          exportStatsPDF(data);
         }
         toast.success('Exported stats');
       }

@@ -116,7 +116,7 @@ const DayView = ({
   );
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]/40 rounded-xl relative min-h-0 h-full overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl relative min-h-0 h-full overflow-hidden">
       {/* Time grid */}
       <div className="flex-1 overflow-auto" ref={scrollRef}>
         <div className="relative px-2 pb-4">
@@ -140,7 +140,7 @@ const DayView = ({
             return (
               <div
                 key={hour}
-                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/25"
+                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/60"
               >
                 {/* Hour label */}
                 <div className="text-[11px] sm:text-xs text-[var(--text-secondary)] pt-1.5 pr-2 text-right font-medium tabular-nums">
@@ -204,7 +204,7 @@ const DayView = ({
 
                   {/* Half-hour divider */}
                   <div
-                    className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/20 pointer-events-none"
+                    className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/50 pointer-events-none"
                     style={{ top: "30px", zIndex: 1 }}
                   />
 

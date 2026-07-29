@@ -3,7 +3,17 @@ import { z } from 'zod';
 export const taskDifficultySchema = z.enum(['easy', 'medium', 'hard']);
 export type TaskDifficulty = z.infer<typeof taskDifficultySchema>;
 
-export const taskStatusSchema = z.enum(['todo', 'in_progress', 'done', 'blocked']);
+export const taskStatusSchema = z.enum([
+  'draft',
+  'planned',
+  'scheduled',
+  'available',
+  'in_progress',
+  'paused',
+  'blocked',
+  'completed',
+  'archived',
+]);
 export type TaskStatus = z.infer<typeof taskStatusSchema>;
 
 export const recurrenceTypeSchema = z.enum(['none', 'weekly']);
@@ -26,6 +36,7 @@ export const taskSchema = z.object({
   activetask: z.boolean().optional(),
   difficulty: z.string().optional(),
   assignment: z.string().optional(),
+  subject_id: z.string().nullable().optional(),
   status: z.string().optional(),
   recurrence_type: recurrenceTypeSchema.nullable().optional(),
   recurrence_weekdays: z.array(z.number().min(0).max(6)).nullable().optional(),
@@ -45,6 +56,7 @@ export const createTaskSchema = taskSchema.omit({
 }).extend({
   title: z.string().min(3, 'Task title must be at least 3 characters').max(100),
   assignment: z.string().min(1, 'Task assignment/subject is required'),
+  subject_id: z.string().nullable().optional(),
   difficulty: taskDifficultySchema,
   workspace_id: z.string().nullable().optional(),
   deadline: z.string().nullable().optional(),

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits' | 'focusWidget' | 'admin';
+type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'analytics' | 'habits' | 'focusWidget' | 'admin';
 
 interface NavigationContextType {
   activePage: Page;
@@ -17,16 +17,16 @@ interface NavigationContextType {
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 const DEFAULT_NAV_ORDER = [
-  { page: 'calendar' as Page, icon: null, label: 'Calendar' },
+  { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'tasks' as Page, icon: null, label: 'Tasks' },
-  { page: 'session' as Page, icon: null, label: 'Session' },
-  { page: 'habits' as Page, icon: null, label: 'Habits' },
+  { page: 'calendar' as Page, icon: null, label: 'Planning' },
+  { page: 'analytics' as Page, icon: null, label: 'Analytics' },
+  { page: 'habits' as Page, icon: null, label: 'Journal' },
   { page: 'notes' as Page, icon: null, label: 'Notes' },
-  { page: 'stats' as Page, icon: null, label: 'Stats' },
 ];
 
 export const NavigationProvider = ({ children }: { children: React.ReactNode }) => {
-  const VALID_PAGES: Page[] = ['tasks', 'calendar', 'session', 'notes', 'stats', 'habits', 'focusWidget', 'admin'];
+  const VALID_PAGES: Page[] = ['tasks', 'calendar', 'session', 'notes', 'analytics', 'habits', 'focusWidget', 'admin'];
 
   const [activePage, setActivePage] = useState<Page>(() => {
     const savedPage = localStorage.getItem('lastVisitedPage') as Page | null;
@@ -79,21 +79,20 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
 
   const navigateTo = useCallback((page: Page) => {
     setActivePage(page);
-    // Save the current page to localStorage
     localStorage.setItem('lastVisitedPage', page);
   }, []);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.ctrlKey) {
       const pageMap = {
-        'tasks': { left: 'habits', right: 'calendar' },
-        'calendar': { left: 'tasks', right: 'session' },
-        'session': { left: 'calendar', right: 'notes' },
-        'notes': { left: 'session', right: 'stats' },
-        'stats': { left: 'notes', right: 'habits' },
-        'habits': { left: 'stats', right: 'tasks' },
+        'session': { left: 'notes', right: 'tasks' },
+        'tasks': { left: 'session', right: 'calendar' },
+        'calendar': { left: 'tasks', right: 'analytics' },
+        'analytics': { left: 'calendar', right: 'habits' },
+        'habits': { left: 'analytics', right: 'notes' },
+        'notes': { left: 'habits', right: 'session' },
         'focusWidget': { left: 'session', right: 'session' },
-        'admin': { left: 'stats', right: 'tasks' },
+        'admin': { left: 'analytics', right: 'tasks' },
       };
 
       const routes = pageMap[activePage] || pageMap['session'];

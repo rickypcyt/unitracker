@@ -113,53 +113,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     setExpandedAssignments(newExpanded);
   };
 
-  // Collapse all assignments initially (none expanded by default)
-  // Only reset when notes change
+  // Expand all assignments by default
   React.useEffect(() => {
-    setExpandedAssignments(new Set());
+    setExpandedAssignments(new Set(Object.keys(notesByAssignment)));
   }, [notesByAssignment]);
-
-  // Listen for note saved events to collapse assignment section
-  React.useEffect(() => {
-    const handleNoteSaved = (event: CustomEvent) => {
-      if (event.detail?.noteId && selectedNoteId === event.detail.noteId) {
-        // Find the assignment of the saved note and collapse it
-        const savedNote = notes.find(n => n.id === event.detail.noteId);
-        if (savedNote) {
-          const assignment = savedNote.assignment || 'Unassigned';
-          setExpandedAssignments(prev => {
-            const newExpanded = new Set(prev);
-            newExpanded.delete(assignment);
-            return newExpanded;
-          });
-        }
-      }
-    };
-
-    const handleNoteDeleted = (event: CustomEvent) => {
-      if (event.detail?.noteId && selectedNoteId === event.detail.noteId) {
-        // Find the assignment of the deleted note and collapse it
-        const deletedNote = notes.find(n => n.id === event.detail.noteId);
-        if (deletedNote) {
-          const assignment = deletedNote.assignment || 'Unassigned';
-          setExpandedAssignments(prev => {
-            const newExpanded = new Set(prev);
-            newExpanded.delete(assignment);
-            return newExpanded;
-          });
-        }
-      }
-    };
-
-    window.addEventListener('noteSaved', handleNoteSaved as EventListener);
-    window.addEventListener('noteDeleted', handleNoteDeleted as EventListener);
-    return () => {
-      window.removeEventListener('noteSaved', handleNoteSaved as EventListener);
-      window.removeEventListener('noteDeleted', handleNoteDeleted as EventListener);
-    };
-  }, [notes, selectedNoteId]);
-
-
 
   if (error) {
     return (

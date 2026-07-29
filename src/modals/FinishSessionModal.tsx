@@ -6,6 +6,8 @@ import TaskForm from '@/pages/tasks/TaskForm';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-hot-toast';
+import { StudyService, SessionTaskService } from '@/services/StudyService';
+import { TaskService } from '@/services/TaskService';
 
 interface FinishSessionModalProps {
   isOpen: boolean;
@@ -18,7 +20,7 @@ interface SessionStats {
   duration: string;
   tasksCompleted: number;
   pomodorosCompleted: number;
-  startedAt: string;
+  startedAt?: string;
 }
 const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
   isOpen,
@@ -57,17 +59,13 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      const {
-        data: session,
-        error
-      } = await supabase.from('study_laps').select('duration, pomodoros_completed, tasks_completed, started_at').eq('id', sessionId).single();
-      if (error) {
-        console.error('Error fetching session stats:', error);
+      const session = await StudyService.getSessionById(sessionId);
+      if (!session) {
+        console.error('Error fetching session stats: session not found');
         setError('Failed to load session statistics');
         return;
       }
-      if (session) {
-        // Use the same authoritative daily count as Pomodoro hover
+      {
         let pomodorosToday = 0;
         try {
           const today = getLocalDateString();
@@ -77,7 +75,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
           duration: session.duration || '00:00:00',
           tasksCompleted: session.tasks_completed || 0,
           pomodorosCompleted: pomodorosToday,
-          startedAt: session.started_at
+          startedAt: session.started_at ?? undefined
         });
       }
     } catch (error) {
@@ -89,60 +87,27 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
   };
   const fetchSessionDetails = async () => {
     try {
-      const {
-        data: session,
-        error
-      } = await supabase.from('study_laps').select('name, description, started_at').eq('id', sessionId).single();
-      if (error) {
-        console.error('Error fetching session details:', error);
+      const session = await StudyService.getSessionById(sessionId);
+      if (!session) {
+        console.error('Error fetching session details: session not found');
         return;
       }
-      if (session) {
-        setSessionTitle(session.name || 'Untitled Session');
-        setSessionDescription(session.description || '');
-      }
+      setSessionTitle(session.name || 'Untitled Session');
+      setSessionDescription(session.description || '');
     } catch (error) {
       console.error('Error in fetchSessionDetails:', error);
     }
   };
   const fetchSessionTasks = async () => {
     try {
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Fetch all tasks for the user (not completed)
-      const {
-        data: userTasks,
-        error: tasksError
-      } = await supabase.from('tasks').select('*').eq('user_id', user.id).eq('completed', false).order('created_at', {
-        ascending: false
-      });
-      if (tasksError) {
-        console.error('Error fetching user tasks:', tasksError);
-        setActiveTasks([]);
-        setAvailableTasks([]);
-        setSelectedTasks([]);
-        return;
-      }
+      const userTasksRaw = await TaskService.fetchTasks();
+      const userTasks = userTasksRaw.filter(t => !t.completed);
 
-      // Fetch session_tasks for this session
-      const {
-        data: sessionTasks,
-        error: sessionTasksError
-      } = await supabase.from('session_tasks').select('task_id, completed_at').eq('session_id', sessionId);
-      if (sessionTasksError) {
-        console.error('Error fetching session tasks:', sessionTasksError);
-        setActiveTasks(userTasks.filter(t => t.activetask));
-        setAvailableTasks(userTasks.filter(t => !t.activetask));
-        setSelectedTasks([]);
-        return;
-      }
+      const sessionTasks = await SessionTaskService.getTasksForSession(sessionId);
 
-      // Mark as selected those tasks that are in session_tasks and completed
       const completedTaskIds = sessionTasks.filter(st => st.completed_at).map(st => st.task_id);
       setActiveTasks(userTasks.filter(t => t.activetask));
       setAvailableTasks(userTasks.filter(t => !t.activetask));
@@ -165,17 +130,8 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     setActiveTasks(prev => [...prev, task]);
     setAvailableTasks(prev => prev.filter(t => t.id !== task.id));
 
-    // Add to session_tasks table
-    supabase.from('session_tasks').insert({
-      session_id: sessionId,
-      task_id: task.id,
-      started_at: new Date().toISOString()
-    }).then(({
-      error
-    }) => {
-      if (error) {
-        console.error('Error adding task to session:', error);
-      }
+    SessionTaskService.addTaskToSession(sessionId, task.id).catch(err => {
+      console.error('Error adding task to session:', err);
     });
   };
   const handleRemoveTaskFromFinished = (task: Task) => {
@@ -186,13 +142,8 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     // Remove from selected tasks if it was selected
     setSelectedTasks(prev => prev.filter(id => id !== task.id));
 
-    // Remove from session_tasks table
-    supabase.from('session_tasks').delete().eq('session_id', sessionId).eq('task_id', task.id).then(({
-      error
-    }) => {
-      if (error) {
-        console.error('Error removing task from session:', error);
-      }
+    SessionTaskService.removeTaskFromSession(sessionId, task.id).catch(err => {
+      console.error('Error removing task from session:', err);
     });
   };
   const formatDuration = (totalSeconds: number): string => {
@@ -248,37 +199,24 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
         const totalMinutes = Math.floor(totalSeconds / 60);
         finalDailyPomos = Math.floor(totalMinutes / workDurationMinutes);
       } catch {}
-      const {
-        error: updateError
-      } = await supabase.from('study_laps').update({
+      await StudyService.updateLap(sessionId, {
         duration: currentDuration,
         ended_at: endTime.toISOString(),
         description: sessionDescription.trim() || null,
         tasks_completed: selectedTasks.length,
         pomodoros_completed: finalDailyPomos
-      }).eq('id', sessionId);
-      if (updateError) {
-        console.error('[FinishSessionModal] Error updating study_laps:', updateError);
-        throw updateError;
-      } else {}
+      });
 
-      // Update task completion status in session_tasks
       const updatePromises = activeTasks.map(task => {
         const isCompleted = selectedTasks.includes(task.id);
-        return supabase.from('session_tasks').update({
-          completed_at: isCompleted ? new Date().toISOString() : null
-        }).eq('session_id', sessionId).eq('task_id', task.id);
+        return SessionTaskService.updateTaskCompletion(sessionId, task.id, isCompleted ? new Date().toISOString() : null);
       });
       await Promise.all(updatePromises);
-      // Update task activetask status (set all to false)
-      const {
-        error: tasksUpdateError
-      } = await supabase.from('tasks').update({
+      await TaskService.batchUpdateTasks(activeTasks.map(t => t.id), {
         activetask: false,
         completed: true,
         completed_at: new Date().toISOString()
-      }).in('id', activeTasks.map(t => t.id));
-      if (tasksUpdateError) throw tasksUpdateError;
+      });
       if (onSessionDetailsUpdated) {
         onSessionDetailsUpdated();
       }

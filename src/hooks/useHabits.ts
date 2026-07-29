@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../utils/supabaseClient';
 import { useAuth } from './useAuth';
+import { HabitService } from '@/services/HabitService';
 
 
 export interface Habit {
@@ -52,48 +52,24 @@ export const useHabits = () => {
       setLoading(true);
       setError(null);
 
-      // Load habits
-      const { data: habitsData, error: habitsError } = await supabase
-        .from('habits')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
-
-      if (habitsError) throw habitsError;
-
-      // Load completions for all habits
-      const habitIds = habitsData?.map(h => h.id) || [];
+      const habitsData = await HabitService.fetchHabits(user.id);
+      const habitIds = habitsData.map(h => h.id);
       let completionsData: HabitCompletion[] = [];
 
       if (habitIds.length > 0) {
-        const { data: compData, error: compError } = await supabase
-          .from('habit_completions')
-          .select('*')
-          .eq('user_id', user.id)
-          .in('habit_id', habitIds);
-
-        if (compError) throw compError;
-        completionsData = compData || [];
+        completionsData = await HabitService.fetchCompletions(user.id, habitIds) as HabitCompletion[];
       }
 
-      // Load journal notes
-      const { data: notesData, error: notesError } = await supabase
-        .from('journal_notes')
-        .select('*')
-        .eq('user_id', user.id);
+      const notesData = await HabitService.fetchJournalNotes(user.id);
 
-      if (notesError) throw notesError;
-
-      // Convert notes array to object
       const notesObject: Record<string, string> = {};
-      (notesData || []).forEach(note => {
+      notesData.forEach(note => {
         notesObject[note.note_date] = note.note || '';
       });
 
       setDailyNotes(notesObject);
 
-      // Combine habits with their completions
-      const habitsWithCompletions: HabitWithCompletions[] = (habitsData || []).map(habit => {
+      const habitsWithCompletions: HabitWithCompletions[] = habitsData.map(habit => {
         const habitCompletions = completionsData.filter(c => c.habit_id === habit.id);
         const completions: Record<string, boolean> = {};
 
@@ -122,16 +98,7 @@ export const useHabits = () => {
     if (!user || !isLoggedIn) return null;
 
     try {
-      const { data, error } = await supabase
-        .from('habits')
-        .insert({
-          user_id: user.id,
-          name: name.trim()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await HabitService.createHabit(user.id, name);
 
       const newHabit: HabitWithCompletions = {
         ...data,
@@ -152,13 +119,7 @@ export const useHabits = () => {
     if (!user || !isLoggedIn) return false;
 
     try {
-      const { error } = await supabase
-        .from('habits')
-        .update({ name: newName.trim() })
-        .eq('id', habitId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      await HabitService.updateHabit(habitId, user.id, newName);
 
       setHabits(prev => prev.map(habit =>
         habit.id === habitId
@@ -179,13 +140,7 @@ export const useHabits = () => {
     if (!user || !isLoggedIn) return false;
 
     try {
-      const { error } = await supabase
-        .from('habits')
-        .delete()
-        .eq('id', habitId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
+      await HabitService.deleteHabit(habitId, user.id);
 
       setHabits(prev => prev.filter(habit => habit.id !== habitId));
       return true;
@@ -210,44 +165,7 @@ export const useHabits = () => {
     const dateString = `${year}-${month}-${day}`; // YYYY-MM-DD format
 
     try {
-      // First, check if completion record exists
-      const { data: existing, error: selectError } = await supabase
-        .from('habit_completions')
-        .select('*')
-        .eq('habit_id', habitId)
-        .eq('completion_date', dateString)
-        .eq('user_id', user.id)
-        .single();
-
-      if (selectError && selectError.code !== 'PGRST116') { // PGRST116 = not found
-        console.error('toggleHabitCompletion: Select error:', selectError);
-        throw selectError;
-      }
-
-      const newCompletedState = !existing?.completed;
-
-      if (existing) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('habit_completions')
-          .update({ completed: newCompletedState })
-          .eq('id', existing.id)
-          .eq('user_id', user.id);
-
-        if (updateError) throw updateError;
-      } else {
-        // Create new record
-        const { error: insertError } = await supabase
-          .from('habit_completions')
-          .insert({
-            habit_id: habitId,
-            user_id: user.id,
-            completion_date: dateString,
-            completed: newCompletedState
-          });
-
-        if (insertError) throw insertError;
-      }
+      const newCompletedState = await HabitService.toggleCompletion(habitId, user.id, dateString);
 
       // Update local state
       setHabits(prev => prev.map(habit => {
@@ -278,53 +196,9 @@ export const useHabits = () => {
     const dateString = `${year}-${month}-${day}`; // YYYY-MM-DD format
 
     try {
-      // Check if note exists
-      const { data: existing, error: selectError } = await supabase
-        .from('journal_notes')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('note_date', dateString)
-        .single();
-
-      if (selectError && selectError.code !== 'PGRST116') { // PGRST116 = not found
-        throw selectError;
-      }
+      await HabitService.saveJournalNote(user.id, dateString, note);
 
       const trimmedNote = note.trim();
-
-      if (existing) {
-        if (trimmedNote === '') {
-          // Delete empty note
-          const { error: deleteError } = await supabase
-            .from('journal_notes')
-            .delete()
-            .eq('id', existing.id)
-            .eq('user_id', user.id);
-
-          if (deleteError) throw deleteError;
-        } else {
-          // Update existing note
-          const { error: updateError } = await supabase
-            .from('journal_notes')
-            .update({ note: trimmedNote })
-            .eq('id', existing.id)
-            .eq('user_id', user.id);
-
-          if (updateError) throw updateError;
-        }
-      } else if (trimmedNote !== '') {
-        // Create new note
-        const { error: insertError } = await supabase
-          .from('journal_notes')
-          .insert({
-            user_id: user.id,
-            note_date: dateString,
-            note: trimmedNote
-          });
-
-        if (insertError) throw insertError;
-      }
-
       // Update local state
       setDailyNotes(prev => {
         const newNotes = { ...prev };

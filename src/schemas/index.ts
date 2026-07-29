@@ -1,6 +1,7 @@
 export * from './task';
 export * from './lap';
 export * from './workspace';
+export * from './subject';
 export * from './note';
 export * from './habit';
 export * from './profile';

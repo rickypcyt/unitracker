@@ -1,8 +1,8 @@
 # UniTracker
 
-**6 apps in 1 — replace your entire study stack.**
+**6 apps in 1 — replace your entire productivity stack.**
 
-UniTracker is a free, open-source, all-in-one study app that combines a Pomodoro timer, task manager, calendar, analytics, notes, and habit tracker into a single, cohesive experience. No more jumping between tabs or paying for multiple subscriptions.
+UniTracker is a free, open-source, all-in-one app that combines a Pomodoro timer, task manager, calendar, analytics, notes, and habit tracker into a single, cohesive experience. Track your time across every area — work, study, personal projects — all in one place, accessible from any device. No more jumping between tabs or paying for multiple subscriptions.
 
 > In active development since **December 2024**.
 
@@ -12,28 +12,28 @@ UniTracker is a free, open-source, all-in-one study app that combines a Pomodoro
 
 ### Timers
 - **Pomodoro Timer** — Customizable work/break intervals with sound alerts and notifications.
-- **Study Timer** — Track total study time across sessions.
+- **Study Timer** — Track total focus time across sessions in any area.
 - **Countdown Timer** — Set a target time and count down with alarm support.
 - **Timer Sync** — Link timers together so starting one starts the others.
 
 ### Task Management
 - **Kanban Board** — Drag-and-drop tasks organized by assignment with pinning, sorting, and difficulty levels.
 - **AI Task Creation** — Generate tasks automatically using AI.
-- **Assignments** — Group tasks by subject/assignment with progress tracking.
+- **Assignments** — Group tasks by project or category with progress tracking.
 - **Tags & Deadlines** — Flexible labeling and due date support.
 
 ### Calendar
-- **Unified View** — Tasks and study sessions displayed together in a monthly, weekly, or daily calendar.
+- **Unified View** — Tasks and focus sessions displayed together in a monthly, weekly, or daily calendar.
 - **Google Calendar Export** — Export your schedule in one click.
 
 ### Analytics
-- **Study Stats** — Visualize study time, pomodoros completed, and session frequency.
-- **Streaks** — Track daily study consistency and build momentum.
+- **Time Stats** — Visualize tracked hours, pomodoros completed, and session frequency.
+- **Streaks** — Track daily consistency and build momentum.
 - **Productivity Trends** — Charts powered by Recharts and Chart.js.
 
 ### Notes & Habits
 - **Markdown Notes** — Rich text editor with live preview (powered by TipTap).
-- **Habit Tracker** — Build study habits with daily tracking and streak visualization.
+- **Habit Tracker** — Build habits with daily tracking and streak visualization.
 
 ### Noise Generator
 - **Ambient Sounds** — Brown noise, rain, ocean waves, and more with individual volume control.
@@ -170,7 +170,7 @@ unitracker/
 UniTracker has been in continuous development since December 2024. Upcoming priorities include:
 
 - iOS support via Capacitor
-- Collaborative study sessions with friends
+- Collaborative focus sessions with friends
 - Advanced analytics with custom date ranges
 - Note templates and linking
 - Calendar integrations beyond Google
@@ -203,4 +203,4 @@ This project is open source. See the repository for details.
 
 ---
 
-Made with ❤️ for modern students. Free, open source, and always will be.
+Made with ❤️ for anyone who wants to track their time. Free, open source, and always will be.

@@ -4,6 +4,7 @@ export const noteSchema = z.object({
   id: z.string().optional(),
   title: z.string().default(''),
   assignment: z.string().nullable().optional(),
+  subject_id: z.string().nullable().optional(),
   description: z.string().default(''),
   date: z.string().optional(),
   user_id: z.string().optional(),

@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export const moodSchema = z.enum(['great', 'good', 'neutral', 'bad', 'terrible']);
+export type SessionMood = z.infer<typeof moodSchema>;
+
+export const energySchema = z.enum(['high', 'medium', 'low']);
+export type SessionEnergy = z.infer<typeof energySchema>;
+
 export const lapSchema = z.object({
   id: z.string(),
   user_id: z.string(),
@@ -19,6 +25,18 @@ export const lapSchema = z.object({
   subject_id: z.string().nullable().optional(),
   subject_name: z.string().nullable().optional(),
   subject_color: z.string().nullable().optional(),
+  // Rich metadata for pattern detection
+  mood: moodSchema.nullable().optional(),
+  energy: energySchema.nullable().optional(),
+  location: z.string().nullable().optional(),
+  noise_level: z.string().nullable().optional(),
+  pauses_count: z.number().nullable().optional(),
+  interruptions_count: z.number().nullable().optional(),
+  objective: z.string().nullable().optional(),
+  result: z.string().nullable().optional(),
+  comments: z.string().nullable().optional(),
+  workspace_id: z.string().nullable().optional(),
+  task_id: z.string().nullable().optional(),
 });
 
 export type Lap = z.infer<typeof lapSchema>;

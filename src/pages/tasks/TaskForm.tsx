@@ -74,7 +74,7 @@ const TaskForm = ({
   });
 
   // Status state
-  const [selectedStatus, setSelectedStatus] = useState(initialTask?.status || 'not_started');
+  const [selectedStatus, setSelectedStatus] = useState(initialTask?.status || 'draft');
   const typedUser = user as any;
   const getInitialRecurrence = () => {
     if (initialTask?.recurrence_type === 'weekly' && Array.isArray(initialTask?.recurrence_weekdays)) return initialTask.recurrence_weekdays;

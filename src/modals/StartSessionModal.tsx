@@ -1,12 +1,13 @@
-import { Check, Clock, Play, Target, Timer } from "lucide-react";
+import { Check, Clock, Folder, Play, Target, Timer } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/FormElements";
 import { useCallback, useEffect, useState } from "react";
 
 import AutocompleteInput from "@/modals/AutocompleteInput";
 import BaseModal from "@/modals/BaseModal";
-import { getLocalDateString } from "@/utils/dateUtils";
 import { supabase } from "@/utils/supabaseClient";
-import { useAppStore } from "@/store/appStore";
+import { useAppStore, useWorkspace } from "@/store/appStore";
+import { StudyService } from "@/services/StudyService";
+import { ALL_WORKSPACE_ID } from "@/hooks/useTaskBoard";
 
 interface StartSessionModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const StartSessionModal = ({
   const {
     syncSettings
   } = useAppStore();
+  const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const syncPomodoroWithTimer = syncSettings.syncPomodoroWithTimer;
   const syncCountdownWithTimer = syncSettings.syncCountdownWithTimer;
   const [sessionTitle, setSessionTitle] = useState("");
@@ -38,6 +40,14 @@ const StartSessionModal = ({
   const [syncPomo, setSyncPomo] = useState(syncPomodoroWithTimer);
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
+  // Pre-select current workspace when modal opens (or null if "All" is selected)
+  useEffect(() => {
+    if (isOpen) {
+      setWorkspaceId(activeWorkspace && activeWorkspace.id !== ALL_WORKSPACE_ID ? activeWorkspace.id : null);
+    }
+  }, [isOpen, activeWorkspace]);
   const validateForm = useCallback(() => {
     const titleValid = sessionTitle.trim().length > 0;
     if (!titleValid) {
@@ -62,23 +72,9 @@ const StartSessionModal = ({
         error: userError
       } = await supabase.auth.getUser();
       if (userError || !data?.user) throw userError || new Error("User not authenticated");
-      const today = getLocalDateString();
-      const {
-        data: latestSession,
-        error: latestSessionError
-      } = await supabase.from("study_laps").select("session_number").gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`).order("session_number", {
-        ascending: false
-      }).limit(1).maybeSingle();
-      if (latestSessionError && latestSessionError.code !== "PGRST116") throw latestSessionError;
-      const nextSessionNumber = latestSession ? Number(latestSession.session_number) + 1 : 1;
+      const nextSessionNumber = await StudyService.getNextSessionNumber();
 
-      // Always create a new session even if another one shares the same name
-      // Each session must have a unique id; do not reuse by name
-
-      const {
-        data: session,
-        error: sessionError
-      } = await supabase.from("study_laps").insert([{
+      const session = await StudyService.createLap({
         user_id: data.user.id,
         started_at: new Date().toISOString(),
         tasks_completed: 0,
@@ -86,9 +82,9 @@ const StartSessionModal = ({
         description: sessionDescription.trim(),
         session_number: nextSessionNumber,
         created_at: new Date().toISOString(),
-        session_assignment: assignment || null
-      }]).select().single();
-      if (sessionError) throw sessionError;
+        session_assignment: assignment || null,
+        workspace_id: workspaceId || null
+      });
       // Reset per-session Pomodoro count and set active session id immediately
       try {
         localStorage.setItem('pomodorosThisSession', '0');
@@ -175,6 +171,27 @@ const StartSessionModal = ({
                   Description (optional)
                 </label>
                 <FormTextarea id="session-description" label="" value={sessionDescription} onChange={setSessionDescription} error="" placeholder="Add notes about what you want to accomplish..." className="w-full resize-none" rows={3} />
+              </div>
+
+              {/* Workspace selector */}
+              <div className="space-y-2">
+                <label htmlFor="workspace" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+                  <Folder size={14} className="text-[var(--text-secondary)]" />
+                  Workspace (optional)
+                </label>
+                <select
+                  id="workspace"
+                  value={workspaceId ?? ""}
+                  onChange={(e) => setWorkspaceId(e.target.value || null)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+                >
+                  <option value="">No workspace</option>
+                  {workspaces.map((ws) => (
+                    <option key={ws.id} value={ws.id}>
+                      {ws.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Timer Sync Options */}

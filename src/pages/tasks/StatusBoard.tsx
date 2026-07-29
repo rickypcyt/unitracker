@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import React from 'react';
+import { normalizeTaskStatus, TODO_STATUSES, ACTIVE_STATUSES } from '@/constants/taskStatus';
 
 interface StatusBoardProps {
   incompletedTasks: any[];
@@ -36,10 +37,10 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
 }) => {
   const columns = useMemo<StatusColumn[]>(() => {
     const todo = incompletedTasks.filter(
-      (t) => !t.status || t.status === 'not_started' || t.status === 'on_hold'
+      (t) => TODO_STATUSES.includes(normalizeTaskStatus(t.status))
     );
     const inProgress = incompletedTasks.filter(
-      (t) => t.status === 'in_progress' || t.status === 'active'
+      (t) => ACTIVE_STATUSES.includes(normalizeTaskStatus(t.status))
     );
 
     return [

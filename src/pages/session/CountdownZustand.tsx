@@ -210,7 +210,6 @@ const CountdownZustand = () => {
 
   const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, field: Field) => {
     const idx = fields.indexOf(field);
-    const step = e.shiftKey ? 10 : 1;
 
     switch (e.key) {
       case 'Tab':
@@ -218,39 +217,27 @@ const CountdownZustand = () => {
         navigateField(e.shiftKey ? -1 : 1, idx);
         break;
       case 'ArrowRight':
+        if (document.querySelector('[role="dialog"]')) break;
         e.preventDefault();
         navigateField(1, idx);
         break;
       case 'ArrowLeft':
+        if (document.querySelector('[role="dialog"]')) break;
         e.preventDefault();
         navigateField(-1, idx);
         break;
       case 'ArrowUp':
+        if (document.querySelector('[role="dialog"]')) break;
         e.preventDefault();
-        if (isCountdownRunning) break;
-        {
-          const base = baselineTimeRef.current;
-          const nextVal = (base[field] + step) % (fieldMax[field] + 1);
-          const next = { ...base, [field]: nextVal as unknown as Field };
-          baselineTimeRef.current = next;
-          timerActions.setCountdownBaseline(next);
-          timerActions.updateCountdownState({ lastTime: next });
-        }
+        navigateField(-1, idx);
         break;
       case 'ArrowDown':
+        if (document.querySelector('[role="dialog"]')) break;
         e.preventDefault();
-        if (isCountdownRunning) break;
-        {
-          const base = baselineTimeRef.current;
-          const nextVal = (base[field] - step + (fieldMax[field] + 1)) % (fieldMax[field] + 1);
-          const next = { ...base, [field]: nextVal as unknown as Field };
-          baselineTimeRef.current = next;
-          timerActions.setCountdownBaseline(next);
-          timerActions.updateCountdownState({ lastTime: next });
-        }
+        navigateField(1, idx);
         break;
     }
-  }, [isCountdownRunning, controls.start, timerActions, navigateField]);
+  }, [controls.start, timerActions, navigateField]);
 
   // 🎯 RENDER
   const displayTime = useMemo(() => {

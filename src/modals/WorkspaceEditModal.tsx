@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import BaseModal from './BaseModal';
 import React from 'react';
 import { Workspace } from '@/types/workspace';
-import { supabase } from '@/utils/supabaseClient';
+import { WorkspaceService } from '@/services/WorkspaceService';
 import { useModalClose } from '@/hooks/useModalClose';
 
 interface IconOption {
@@ -51,16 +51,10 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
     setLoading(true);
     setError('');
     try {
-      const { data, error } = await supabase
-        .from('workspaces')
-        .update({
-          name: workspaceName.trim(),
-          icon: selectedIcon
-        })
-        .eq('id', workspace.id)
-        .select()
-        .single();
-      if (error) throw error;
+      const data = await WorkspaceService.updateWorkspace(workspace.id, {
+        name: workspaceName.trim(),
+        icon: selectedIcon
+      });
       onWorkspaceUpdated(data);
       onClose();
     } catch {

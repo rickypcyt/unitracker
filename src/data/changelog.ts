@@ -18,6 +18,66 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "2.0.0",
+    date: "July 30, 2026",
+    time: "12:00 AM",
+    type: "major",
+    changes: {
+      added: [
+        "Unified Timer view combining Study Timer, Pomodoro, and Countdown into a single cohesive interface with tabbed switching",
+        "Zod validation schemas centralized across the app for robust input validation",
+        "Rate limiting added to API endpoints for improved security and abuse prevention",
+        "Comprehensive testing setup with Vitest unit tests and Playwright E2E tests",
+        "Inter font family integrated app-wide for a cleaner, more professional typography",
+        "Viewport-fit support and safe-area insets for better mobile and notched-device rendering",
+        "View mode toggle for switching between different page layouts dynamically",
+        "Collapsible navbar that can be toggled to maximize workspace area",
+        "Settings converted from a standalone page to an in-app modal with tabbed sections",
+        "Landing pages with full marketing site: homepage, pricing, comparison, and blog",
+        "SEO improvements including enhanced meta tags, Open Graph, and sitemap",
+        "Session pause history tracking with detailed pause entries (start time, end time, duration)",
+        "Circular progress ring animations for Study Timer and Countdown with paused-state spin animation",
+        "Seconds display in Study Timer (MM:SS under 1 hour, HH:MM over 1 hour)",
+        "Arrow key navigation (Up/Down/Left/Right) between timer input fields",
+        "Modal-aware keyboard handling that disables arrow navigation when a dialog is open"
+      ],
+      improved: [
+        "Radical UI overhaul across every page with a more cohesive design system",
+        "Timer components heavily refactored: StudyTimer, Pomodoro, and Countdown now share consistent state management and sync logic",
+        "Session page rebuilt with UnifiedTimer, improved timer controls, and cleaner layout",
+        "Calendar Day/Week/Month views refined with better time handling and layout fixes",
+        "Fixed-height app layout with increased border widths for a more structured appearance",
+        "Horizontal overflow issues resolved across multiple pages",
+        "Timer pause states improved with accurate 'last paused N minutes ago' display that survives page refresh",
+        "Countdown timer circle cleaned up: removed redundant 'Countdown' label text from inside the ring",
+        "Study Timer display now shows seconds when under 1 hour for real-time feedback",
+        "README completely rewritten with improved documentation and SEO",
+        "Fetches and data handling improved across session and task services",
+        "Noise generator sounds fixed and improved for better audio quality",
+        "Overall code quality improvements with centralized schemas and reduced duplication"
+      ],
+      fixed: [
+        "Study Timer showing 00 with no visible changes — now displays seconds in real-time",
+        "Countdown timer displaying 'Countdown' text label inside the circle — removed",
+        "Timer pause state not surviving page refresh — now properly restored from localStorage",
+        "DayView calendar rendering and time handling bugs resolved",
+        "Horizontal overflow on multiple pages fixed",
+        "Noise generator sound quality issues fixed",
+        "Various UI inconsistencies across pages resolved with the design system overhaul"
+      ],
+      removed: [
+        "Standalone settings page — replaced by in-app settings modal",
+        "Redundant 'Countdown' text label inside countdown circle",
+        "Old timer display format that only showed hours and minutes without seconds"
+      ],
+      soon: [
+        "Mobile app release with Capacitor integration",
+        "Advanced analytics and study insights dashboard",
+        "Enhanced workspace collaboration features"
+      ]
+    }
+  },
+  {
     version: "1.4.0",
     date: "June 30, 2026",
     time: "9:30 PM",

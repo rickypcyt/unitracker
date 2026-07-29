@@ -32,70 +32,6 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   const [pomoAlarm, setPomoAlarm] = useState(() => localStorage.getItem("pomodoroAlarmEnabled") !== "false");
   const [countdownAlarm, setCountdownAlarm] = useState(() => localStorage.getItem("countdownAlarmEnabled") !== "false");
 
-  // Status badges from localStorage
-  const [studyStatus, setStudyStatus] = useState<string>("");
-  const [pomoMode, setPomoMode] = useState<string>("");
-  const [countdownStatus, setCountdownStatus] = useState<string>("");
-
-  useEffect(() => {
-    const refreshStatus = () => {
-      // Study status
-      try {
-        const studyRaw = localStorage.getItem("studyTimerState");
-        if (studyRaw) {
-          const parsed = JSON.parse(studyRaw);
-          if (parsed.sessionStatus === "active" || parsed.isRunning) setStudyStatus("Active");
-          else if (parsed.sessionStatus === "paused") setStudyStatus("Paused");
-          else setStudyStatus("No session");
-        } else {
-          setStudyStatus("No session");
-        }
-      } catch { setStudyStatus("No session"); }
-
-      // Pomo mode
-      try {
-        const pomoRaw = localStorage.getItem("pomodoroState");
-        if (pomoRaw) {
-          const parsed = JSON.parse(pomoRaw);
-          if (parsed.isRunning) {
-            const mode = parsed.currentMode || "work";
-            if (mode === "work") setPomoMode("Work");
-            else if (mode === "break") setPomoMode("Break");
-            else setPomoMode("Long Break");
-          } else {
-            setPomoMode("");
-          }
-        } else {
-          setPomoMode("");
-        }
-      } catch { setPomoMode(""); }
-
-      // Countdown status
-      try {
-        const endTs = localStorage.getItem("countdownEndTs");
-        const pausedLeft = localStorage.getItem("countdownPausedLeft");
-        if (endTs) setCountdownStatus("Running");
-        else if (pausedLeft) setCountdownStatus("Paused");
-        else setCountdownStatus("");
-      } catch { setCountdownStatus(""); }
-    };
-
-    refreshStatus();
-    const interval = setInterval(refreshStatus, 1000);
-
-    const handleStateChange = () => refreshStatus();
-    window.addEventListener("study-timer-state-changed", handleStateChange);
-    window.addEventListener("pomodoroStateUpdate", handleStateChange);
-    window.addEventListener("storage", handleStateChange);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("study-timer-state-changed", handleStateChange);
-      window.removeEventListener("pomodoroStateUpdate", handleStateChange);
-      window.removeEventListener("storage", handleStateChange);
-    };
-  }, []);
-
   useEffect(() => {
     try {
       const saved = localStorage.getItem("unifiedTimerLayout");
@@ -196,24 +132,6 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     return null;
   };
 
-  const getStatusBadge = (id: TimerId) => {
-    if (id === "study") {
-      if (studyStatus === "Active") return <span className="timer-status-badge timer-status-active">Active</span>;
-      if (studyStatus === "Paused") return <span className="timer-status-badge timer-status-paused">Paused</span>;
-      return null;
-    }
-    if (id === "pomodoro") {
-      if (!pomoMode) return null;
-      if (pomoMode === "Work") return <span className="timer-status-badge timer-status-pomo-work">Work</span>;
-      if (pomoMode === "Break") return <span className="timer-status-badge timer-status-pomo-break">Break</span>;
-      return <span className="timer-status-badge timer-status-pomo-long">Long Break</span>;
-    }
-    if (id === "countdown") {
-      return null;
-    }
-    return null;
-  };
-
   const renderActions = (id: TimerId) => {
     if (id === "study") {
       return (
@@ -277,7 +195,6 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
                 <GripVertical size={12} className="opacity-40 cursor-grab" />
                 <Icon size={14} />
                 <span>{config.label}</span>
-                {getStatusBadge(id)}
                 <div className="flex items-center gap-0.5 ml-auto">
                   {renderActions(id)}
                 </div>

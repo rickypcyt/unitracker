@@ -253,9 +253,9 @@ const WeekView = ({
       onDragOver={handleDragOver}
       modifiers={[restrictToWindowEdges]}
     >
-      <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border-2 border-[var(--border-primary)]/40">
+      <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border-2 border-[var(--border-primary)]">
         {/* Sticky header */}
-        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)]/40 px-2 pt-3 pb-2 flex-shrink-0">
+        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)] px-2 pt-3 pb-2 flex-shrink-0">
           <div className="grid grid-cols-8 gap-1">
             <div className="text-[11px] text-[var(--text-secondary)] font-medium p-1.5" />
             {weekDays.map((day, i) => {
@@ -430,7 +430,7 @@ const WeekView = ({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="grid grid-cols-8 gap-1 relative border-t border-[var(--border-primary)]/25"
+                className="grid grid-cols-8 gap-1 relative border-t border-[var(--border-primary)]/60"
               >
                 {/* Hour label */}
                 <div className="text-[11px] text-[var(--text-secondary)] pt-1 pr-2 text-right font-medium tabular-nums">
@@ -569,7 +569,7 @@ const WeekView = ({
 
                       {/* Half-hour divider */}
                       <div
-                        className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/20 pointer-events-none"
+                        className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/50 pointer-events-none"
                         style={{ top: "30px", zIndex: 1 }}
                       />
 

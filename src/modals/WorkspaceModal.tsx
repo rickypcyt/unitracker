@@ -7,6 +7,7 @@ import ShareWorkspaceModal from '@/modals/ShareWorkspaceModal';
 import { Workspace } from '@/types/workspace';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import { supabase } from '@/utils/supabaseClient';
+import { SharedWorkspaceService } from '@/services/WorkspaceService';
 
 // Constant for the "All" workspace
 const ALL_WORKSPACE_ID = 'all';
@@ -100,24 +101,8 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
       setSharedLoading(true);
       setSharedError(null);
 
-      // Backfill legacy rows where user_id was not set but the workspace was received by the current user
-      const {
-        error: updateError
-      } = await supabase.from('shared_workspaces').update({
-        user_id: currentUserId
-      }).is('user_id', null).eq('received_by', currentUserId);
-      if (updateError) {
-        console.warn('Error backfilling user_id:', updateError);
-        // Continue anyway, don't block the fetch
-      }
+      const data = await SharedWorkspaceService.fetchSharedWorkspaces(currentUserId);
       const currentFriends = friendsRef.current ?? [];
-      const {
-        data,
-        error
-      } = await supabase.from('shared_workspaces').select('id, workspace_id, shared_by, received_by, user_id, created_at, workspace_name, workspace_icon').or(`shared_by.eq.${currentUserId},received_by.eq.${currentUserId},user_id.eq.${currentUserId}`);
-      if (error) {
-        throw error;
-      }
       const partnerIds = Array.from(new Set((data || []).map(row => row.shared_by === currentUserId ? row.received_by : row.shared_by).filter((id): id is string => !!id)));
       let partnerProfiles: Record<string, any> = {};
       if (partnerIds.length > 0) {
@@ -184,13 +169,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   };
   const handleUnshareWorkspace = async (shareId: string, removedWorkspaceId?: string) => {
     try {
-      const {
-        error
-      } = await supabase.from('shared_workspaces').delete().eq('id', shareId);
-      if (error) {
-        console.error('Error unsharing workspace:', error);
-        // Could add toast notification here
-      } else {}
+      await SharedWorkspaceService.unshareWorkspace(shareId);
 
       // If the active workspace was the one just unshared, switch to a fallback
       if (removedWorkspaceId && activeWorkspace?.id === removedWorkspaceId) {
@@ -223,23 +202,15 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     onError?: (message: string) => void;
   }) => {
     try {
-      // Find the workspace to get its name and icon
       const workspace = workspacesRef.current.find(ws => String(ws.id) === workspaceId);
-      const {
-        error
-      } = await supabase.from('shared_workspaces').insert([{
-        workspace_id: workspaceId,
-        shared_by: currentUserId || '',
-        received_by: recipient,
-        user_id: recipient,
-        workspace_name: workspace?.name || 'Shared workspace',
-        workspace_icon: workspace?.icon || 'Briefcase'
-      }]);
-      if (error) {
-        if (error.message?.toLowerCase().includes('duplicate')) {
+      try {
+        await SharedWorkspaceService.shareWorkspace(workspaceId, currentUserId || '', recipient, workspace?.name, workspace?.icon);
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        if (errMsg?.toLowerCase().includes('duplicate')) {
           onError && onError('This workspace is already shared with that user.');
         } else {
-          onError && onError(error.message);
+          onError && onError(errMsg);
         }
         return;
       }

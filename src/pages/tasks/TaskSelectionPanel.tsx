@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import { Task } from "./task";
 import { useAuth } from "@/hooks/useAuth";
+import { getTaskStatusConfig } from "@/constants/taskStatus";
 
 interface TaskSelectionPanelProps {
   tasks?: Task[];
@@ -136,24 +137,8 @@ const TaskSelectionPanel = ({
 
     let borderColor = "";
     // Use status-based border color instead of difficulty
-    const status = (task as any).status?.toLowerCase();
-    switch (status) {
-      case 'in_progress':
-        borderColor = "border-yellow-500";
-        break;
-      case 'on_hold':
-        borderColor = "border-blue-500";
-        break;
-      case 'active':
-        borderColor = "border-green-500";
-        break;
-      case 'not_started':
-        borderColor = "border-[var(--border-primary)]";
-        break;
-      default:
-        borderColor = "border-[var(--border-primary)]";
-        break;
-    }
+    const config = getTaskStatusConfig((task as any).status);
+    borderColor = config.borderColor;
 
     // Compacto y con assignment en active tasks
     if (isActive && mode === "move") {

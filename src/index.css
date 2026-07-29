@@ -67,7 +67,7 @@
   --dayflow-bg-secondary: #f5f5f5;
   --dayflow-text-primary: #000000;
   --dayflow-text-secondary: #666666;
-  --dayflow-border: #e5e5e5;
+  --dayflow-border: #c5c5c5;
   --dayflow-hover: #f3f4f6;
   --dayflow-accent: #1e90ff;
 }
@@ -78,7 +78,7 @@
   --dayflow-bg-secondary: #1a1a1a;
   --dayflow-text-primary: #ffffff;
   --dayflow-text-secondary: #b5b5b5;
-  --dayflow-border: #252525;
+  --dayflow-border: #1a1a1a;
   --dayflow-hover: #1a1a1a;
   --dayflow-accent: #4da6ff;
 }
@@ -310,7 +310,7 @@
 
     /* Paleta principal */
     --bg-primary: #ffffff;
-    --border-primary: #e5e5e5;
+    --border-primary: #c5c5c5;
     --text-primary: #000000;
     --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
@@ -354,7 +354,7 @@
 
     /* Paleta principal */
     --bg-primary: #000000;
-    --border-primary: rgba(255, 255, 255, 0.25);
+    --border-primary: rgba(255, 255, 255, 0.12);
     --text-primary: #ffffff;
     --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
@@ -370,7 +370,8 @@
     font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
-    height: 100%;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
     font-size: 1rem; /* text-base equivalent */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -399,8 +400,8 @@
   html, body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    overflow-x: hidden;
   }
 
   /* Ensure background extends under status bar on iOS */
@@ -413,7 +414,7 @@
   }
 
   body {
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
     background-color: var(--bg-primary);
@@ -421,15 +422,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
-    overflow: hidden;
   }
 
   /* Ensure root element covers full height */
   #root {
-    height: 100%;
+    min-height: 100%;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   /* Additional iOS Safari fixes */
@@ -1302,7 +1302,7 @@ h1 {
   position: fixed !important;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   pointer-events: none;
 }
 .react-hot-toast {
