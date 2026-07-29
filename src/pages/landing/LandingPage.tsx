@@ -5,13 +5,27 @@ import {
   BarChart3,
   Calendar,
   CheckCircle2,
+  CheckSquare,
+  Circle,
+  Clock,
   Download,
-  Flame,
   Github,
   NotebookPen,
+  Play,
+  Plus,
   Sparkles,
   Timer,
+  TrendingUp,
 } from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 const features = [
   {
@@ -65,84 +79,333 @@ const valueProps = [
   },
 ];
 
-// Deterministic "study streak" heatmap data — density increases toward the
-// most recent weeks, so the grid itself tells the story: momentum builds.
-const STREAK_COLUMNS = 14;
-const STREAK_ROWS = 7;
-const streakCells = Array.from({ length: STREAK_COLUMNS * STREAK_ROWS }, (_, i) => {
-  const col = Math.floor(i / STREAK_ROWS);
-  const pseudo = Math.abs(Math.sin(i * 12.9898)) % 1;
-  const momentum = 0.35 + 0.65 * (col / (STREAK_COLUMNS - 1));
-  const value = pseudo * momentum;
-  let tier = 0;
-  if (value > 0.82) tier = 4;
-  else if (value > 0.62) tier = 3;
-  else if (value > 0.4) tier = 2;
-  else if (value > 0.22) tier = 1;
-  return tier;
-});
+// Demo data for the landing page stats preview
+const demoWeekData = [
+  { day: 'Mon', minutes: 145 },
+  { day: 'Tue', minutes: 210 },
+  { day: 'Wed', minutes: 95 },
+  { day: 'Thu', minutes: 180 },
+  { day: 'Fri', minutes: 260 },
+  { day: 'Sat', minutes: 320 },
+  { day: 'Sun', minutes: 150 },
+];
 
-const tierStyle = (tier: number) => {
-  switch (tier) {
-    case 4:
-      return { background: 'var(--um-teal)', opacity: 1 };
-    case 3:
-      return { background: 'var(--um-lamp)', opacity: 0.95 };
-    case 2:
-      return { background: 'var(--um-lamp)', opacity: 0.55 };
-    case 1:
-      return { background: 'var(--um-lamp)', opacity: 0.25 };
-    default:
-      return { background: 'var(--text-secondary)', opacity: 0.08 };
-  }
+const formatMinutes = (m: number) => {
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  return min > 0 ? `${h}h ${min}m` : `${h}h`;
 };
 
-const StreakGrid = () => (
-  <div
-    className="relative rounded-2xl border border-[var(--border-primary)]/40 bg-[var(--bg-primary)] p-5 shadow-2xl shadow-black/20"
-    style={{ '--um-lamp': '#F4A63A', '--um-teal': '#4FD1AE' } as React.CSSProperties}
-  >
-    <div className="flex items-center justify-between mb-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-secondary)]">Your study streak</p>
-        <div className="flex items-baseline gap-1.5 mt-1">
-          <span
-            className="text-3xl font-semibold text-[var(--text-primary)] font-mono"
-          >
-            ∞
-          </span>
-          <span className="text-sm text-[var(--text-secondary)]">possibilities</span>
+const StatsPreview = () => {
+  const totalMinutes = demoWeekData.reduce((sum, d) => sum + d.minutes, 0);
+  const avgMinutes = Math.round(totalMinutes / demoWeekData.length);
+  const todayIndex = 4; // Friday as "today" for demo
+
+  return (
+    <div className="relative rounded-2xl border border-[var(--border-primary)]/40 bg-[var(--bg-primary)] p-5 shadow-2xl shadow-black/20 animate-um-rise">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-xs uppercase tracking-[0.14em] text-[var(--text-secondary)]">This week</p>
+          <div className="flex items-baseline gap-1.5 mt-1">
+            <span className="text-3xl font-semibold text-[var(--text-primary)] font-mono tabular-nums">
+              {formatMinutes(totalMinutes)}
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">studied</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--accent-primary)]/10">
+          <TrendingUp className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+          <span className="text-xs font-medium text-[var(--accent-primary)]">+24%</span>
         </div>
       </div>
-      <div className="w-9 h-9 rounded-full bg-[var(--um-lamp)]/15 flex items-center justify-center">
-        <Flame className="w-4.5 h-4.5" style={{ color: 'var(--um-lamp)' }} />
+
+      {/* Chart */}
+      <div className="h-48 w-full rounded-xl bg-[var(--bg-secondary)]/50 p-3">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={demoWeekData} barCategoryGap={12}>
+            <XAxis
+              dataKey="day"
+              stroke="var(--text-secondary)"
+              tickLine={false}
+              axisLine={false}
+              fontSize="11px"
+              interval={0}
+            />
+            <YAxis
+              stroke="var(--text-secondary)"
+              tick={{ fill: 'var(--text-secondary)', fontSize: '10px' }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v) => formatMinutes(v as number)}
+              width={36}
+              domain={[0, 360]}
+              ticks={[0, 120, 240, 360]}
+            />
+            <Tooltip
+              cursor={{ fill: 'rgba(30,144,255,0.08)' }}
+              contentStyle={{
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border-primary)',
+                borderRadius: '8px',
+                fontSize: '12px',
+                color: 'var(--text-primary)',
+              }}
+              formatter={(v: number) => [formatMinutes(v), 'Studied']}
+              labelStyle={{ color: 'var(--text-secondary)' }}
+            />
+            <Bar dataKey="minutes" radius={[6, 6, 0, 0]} animationDuration={600}>
+              {demoWeekData.map((_, i) => (
+                <Cell
+                  key={`cell-${i}`}
+                  fill={i === todayIndex ? 'var(--accent-primary)' : 'var(--accent-primary)'}
+                  opacity={i === todayIndex ? 1 : 0.45}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Footer stats */}
+      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[var(--border-primary)]/30">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+          <span className="text-xs text-[var(--text-secondary)]">
+            Avg <span className="text-[var(--text-primary)] font-medium">{formatMinutes(avgMinutes)}</span>/day
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)]/40" />
+          <span className="text-xs text-[var(--text-secondary)]">
+            Best day <span className="text-[var(--text-primary)] font-medium">{formatMinutes(320)}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 bg-[var(--accent-primary)]" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--accent-primary)]" />
+          </span>
+          <span className="text-xs text-[var(--text-secondary)]">Live demo</span>
+        </div>
       </div>
     </div>
+  );
+};
 
-    <div
-      className="grid gap-[3px]"
-      style={{ gridTemplateColumns: `repeat(${STREAK_COLUMNS}, minmax(0, 1fr))` }}
-    >
-      {streakCells.map((tier, i) => (
-        <span
-          key={i}
-          className="aspect-square rounded-[2px] animate-cell-in"
-          style={{ ...tierStyle(tier), animationDelay: `${Math.floor(i / STREAK_ROWS) * 28}ms` }}
-        />
-      ))}
-    </div>
+// ─── Demo Components ───────────────────────────────────────────────────────
 
-    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--border-primary)]/30">
-      <span className="relative flex h-1.5 w-1.5">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: 'var(--um-teal)' }} />
-        <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: 'var(--um-teal)' }} />
-      </span>
-      <p className="text-xs text-[var(--text-secondary)]">
-        Visualize your consistency week by week
-      </p>
+const PomodoroTimerDemo = () => {
+  const totalSeconds = 25 * 60;
+  const elapsed = 8 * 60 + 42;
+  const remaining = totalSeconds - elapsed;
+  const progress = elapsed / totalSeconds;
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+
+  return (
+    <div className="relative rounded-2xl border border-[var(--border-primary)]/40 bg-[var(--bg-primary)] p-5 shadow-2xl shadow-black/20 animate-um-rise">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <Timer className="w-4 h-4 text-[var(--accent-primary)]" />
+          </div>
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Pomodoro</span>
+        </div>
+        <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-0.5 rounded-full">Focus</span>
+      </div>
+
+      <div className="flex flex-col items-center py-4">
+        <div className="relative w-32 h-32 mb-4">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border-primary)" strokeWidth="6" opacity="0.3" />
+            <circle
+              cx="60" cy="60" r="52" fill="none"
+              stroke="var(--accent-primary)" strokeWidth="6" strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 52}
+              strokeDashoffset={2 * Math.PI * 52 * (1 - progress)}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-bold text-[var(--text-primary)] font-mono tabular-nums">
+              {mins}:{secs.toString().padStart(2, '0')}
+            </span>
+            <span className="text-[10px] text-[var(--text-secondary)] mt-0.5">remaining</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--accent-primary)] text-white text-xs font-medium">
+            <Play className="w-3 h-3" /> Running
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-xs font-medium">
+            <Clock className="w-3 h-3" /> Session 2 of 4
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 pt-3 border-t border-[var(--border-primary)]/30">
+        <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+        <span className="text-xs text-[var(--text-secondary)]">Auto-logs to calendar when done</span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+const MiniKanbanDemo = () => {
+  const columns = [
+    {
+      title: 'To Do',
+      color: 'var(--text-secondary)',
+      tasks: [
+        { name: 'Calculus Problem Set', tag: 'Math' },
+        { name: 'Read Chapter 7', tag: 'History' },
+      ],
+    },
+    {
+      title: 'In Progress',
+      color: 'var(--accent-primary)',
+      tasks: [
+        { name: 'Lab Report Draft', tag: 'Chem' },
+      ],
+    },
+    {
+      title: 'Done',
+      color: '#4FD1AE',
+      tasks: [
+        { name: 'Essay Outline', tag: 'English' },
+        { name: 'Flashcards', tag: 'Bio' },
+      ],
+    },
+  ];
+
+  return (
+    <div className="relative rounded-2xl border border-[var(--border-primary)]/40 bg-[var(--bg-primary)] p-5 shadow-2xl shadow-black/20 animate-um-rise">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <CheckSquare className="w-4 h-4 text-[var(--accent-primary)]" />
+          </div>
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Tasks</span>
+        </div>
+        <button className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          <Plus className="w-3 h-3" /> Add task
+        </button>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2.5">
+        {columns.map((col) => (
+          <div key={col.title} className="flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: col.color }} />
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{col.title}</span>
+              <span className="text-[10px] text-[var(--text-secondary)]/50">{col.tasks.length}</span>
+            </div>
+            {col.tasks.map((task) => (
+              <div
+                key={task.name}
+                className="rounded-lg border border-[var(--border-primary)]/30 bg-[var(--bg-secondary)]/40 p-2.5 hover:border-[var(--accent-primary)]/40 transition-colors"
+              >
+                <div className="flex items-start gap-1.5">
+                  {col.title === 'Done' ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#4FD1AE] flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 text-[var(--text-secondary)] flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0">
+                    <p className={`text-xs font-medium text-[var(--text-primary)] leading-tight ${col.title === 'Done' ? 'line-through opacity-50' : ''}`}>
+                      {task.name}
+                    </p>
+                    <span className="text-[9px] text-[var(--text-secondary)] mt-0.5 inline-block">
+                      {task.tag}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 pt-3 mt-1 border-t border-[var(--border-primary)]/30">
+        <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+        <span className="text-xs text-[var(--text-secondary)]">Drag & drop between columns</span>
+      </div>
+    </div>
+  );
+};
+
+const MiniCalendarDemo = () => {
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const today = 15;
+  const taskDays: Record<number, { count: number; color: string }> = {
+    12: { count: 2, color: 'var(--accent-primary)' },
+    15: { count: 3, color: 'var(--accent-primary)' },
+    18: { count: 1, color: 'var(--accent-primary)' },
+    22: { count: 2, color: 'var(--accent-primary)' },
+    25: { count: 1, color: 'var(--accent-primary)' },
+  };
+  const calendarDays = Array.from({ length: 35 }, (_, i) => i - 2);
+
+  return (
+    <div className="relative rounded-2xl border border-[var(--border-primary)]/40 bg-[var(--bg-primary)] p-5 shadow-2xl shadow-black/20 animate-um-rise">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-[var(--accent-primary)]" />
+          </div>
+          <span className="text-sm font-semibold text-[var(--text-primary)]">Calendar</span>
+        </div>
+        <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-0.5 rounded-full">March 2026</span>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 mb-1.5">
+        {days.map((d, i) => (
+          <div key={i} className="text-[9px] font-medium uppercase tracking-wide text-[var(--text-secondary)] text-center">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {calendarDays.map((day) => {
+          const isValid = day >= 1 && day <= 31;
+          const isToday = day === today;
+          const taskInfo = taskDays[day];
+
+          return (
+            <div
+              key={day}
+              className={`aspect-square rounded-md flex flex-col items-center justify-center text-[10px] ${
+                isValid
+                  ? isToday
+                    ? 'bg-[var(--accent-primary)] text-white font-bold'
+                    : taskInfo
+                    ? 'bg-[var(--accent-primary)]/10 text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]/50'
+                  : 'opacity-20'
+              }`}
+            >
+              {isValid && day}
+              {taskInfo && !isToday && (
+                <div className="flex gap-0.5 mt-0.5">
+                  {Array.from({ length: Math.min(taskInfo.count, 3) }).map((_, i) => (
+                    <span key={i} className="w-1 h-1 rounded-full bg-[var(--accent-primary)]" />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-2 pt-3 mt-1 border-t border-[var(--border-primary)]/30">
+        <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+        <span className="text-xs text-[var(--text-secondary)]">Tasks & study sessions in one view</span>
+      </div>
+    </div>
+  );
+};
 
 const LandingPage = () => {
   return (
@@ -174,11 +437,6 @@ const LandingPage = () => {
       </Helmet>
 
       <style>{`
-        @keyframes um-cell-in {
-          from { opacity: 0; transform: scale(0.4); }
-        }
-        .animate-cell-in { animation: um-cell-in 0.5s ease-out both; }
-
         @keyframes um-rise {
           from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
@@ -186,37 +444,57 @@ const LandingPage = () => {
         .animate-um-rise { animation: um-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
         @media (prefers-reduced-motion: reduce) {
-          .animate-cell-in, .animate-um-rise, .animate-ping { animation: none !important; }
+          .animate-um-rise, .animate-ping { animation: none !important; }
         }
       `}</style>
 
       <div
         className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
-        style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
       >
         {/* Nav */}
-        <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[var(--bg-primary)]/85 border-b border-[var(--border-primary)]/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg-primary)]/80 border-b border-[var(--border-primary)]/30">
+          <div className="max-w-7xl mx-auto px-fluid h-16 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Timer className="w-4.5 h-4.5 text-[var(--accent-primary)]" />
+              </div>
+              <span className="font-heading text-lg font-bold tracking-tight text-[var(--text-primary)]">
                 Uni<span className="text-[var(--accent-primary)]">Tracker</span>
               </span>
-            </div>
-            <div className="hidden md:flex items-center gap-6 text-sm">
-              <Link to="/pricing" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link>
-              <Link to="/compare" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Compare</Link>
-              <Link to="/blog" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Blog</Link>
-              <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-1">
+            </Link>
+            <div className="hidden md:flex items-center gap-1">
+              {[
+                { to: '/pricing', label: 'Pricing' },
+                { to: '/compare', label: 'Compare' },
+                { to: '/blog', label: 'Blog' },
+              ].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50 transition-all"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <a
+                href="https://github.com/rickypcyt/unitracker"
+                target="_blank"
+                rel="noopener"
+                className="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50 transition-all flex items-center gap-1.5"
+              >
                 <Github className="w-4 h-4" /> GitHub
               </a>
             </div>
-            <div className="flex items-center gap-3">
-              <Link to="/app" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+            <div className="flex items-center gap-2">
+              <Link
+                to="/app"
+                className="hidden sm:block text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-3 py-2"
+              >
                 Log in
               </Link>
               <Link
                 to="/app"
-                className="text-sm font-medium px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+                className="text-sm font-semibold px-4 py-2 rounded-xl bg-[var(--accent-primary)] text-white hover:brightness-110 hover:shadow-lg hover:shadow-[var(--accent-primary)]/25 transition-all active:scale-95"
               >
                 Get started free
               </Link>
@@ -230,7 +508,7 @@ const LandingPage = () => {
             className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full opacity-[0.12] blur-3xl"
             style={{ background: 'radial-gradient(circle, #F4A63A 0%, transparent 70%)' }}
           />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
+          <div className="relative max-w-7xl mx-auto px-fluid pt-fluid-hero pb-fluid-hero">
             <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-center">
               <div className="animate-um-rise">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-sm font-medium mb-6">
@@ -238,11 +516,11 @@ const LandingPage = () => {
                   6 apps in 1 — replace your study stack
                 </div>
                 <h1
-                  className="text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.08] font-semibold tracking-tight mb-6"
+                  className="text-fluid-hero font-heading font-semibold mb-6"
                 >
                   Stop jumping between apps. Start studying.
                 </h1>
-                <p className="text-lg sm:text-xl text-[var(--text-secondary)] max-w-xl mb-10">
+                <p className="text-fluid-lead text-[var(--text-secondary)] max-w-xl mb-10">
                   Pomodoro timer, tasks, calendar, analytics, notes, and habits — all in one app.
                   No switching tabs, no losing context, no paying for 4 different subscriptions.
                 </p>
@@ -284,21 +562,21 @@ const LandingPage = () => {
               </div>
 
               <div className="animate-um-rise" style={{ animationDelay: '120ms' }}>
-                <StreakGrid />
+                <StatsPreview />
               </div>
             </div>
           </div>
         </section>
 
         {/* Features */}
-        <section className="py-20 border-t border-[var(--border-primary)]/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-fluid-section border-t border-[var(--border-primary)]/30">
+          <div className="max-w-7xl mx-auto px-fluid">
             <div className="mb-14 max-w-2xl">
               <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Everything in one place</p>
-              <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
+              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
                 One app. Your complete study workflow.
               </h2>
-              <p className="text-lg text-[var(--text-secondary)]">
+              <p className="text-fluid-lead text-[var(--text-secondary)]">
                 Every tool is connected to the others. The timer logs sessions to the calendar, sessions feed into analytics, tasks show up on the calendar. Everything works together.
               </p>
             </div>
@@ -313,7 +591,7 @@ const LandingPage = () => {
                   <div className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4 group-hover:bg-[var(--accent-primary)]/20 transition-colors">
                     <f.icon className="w-5 h-5 text-[var(--accent-primary)]" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
+                  <h3 className="text-fluid-h3 font-semibold mb-2">{f.title}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{f.desc}</p>
                   {f.big && (
                     <div className="mt-5 pt-5 border-t border-[var(--border-primary)]/30 flex items-center gap-3">
@@ -338,15 +616,35 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Demo Showcase */}
+        <section className="py-fluid-section border-t border-[var(--border-primary)]/30">
+          <div className="max-w-7xl mx-auto px-fluid">
+            <div className="mb-14 max-w-2xl">
+              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">See it in action</p>
+              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
+                Real components. Real workflow.
+              </h2>
+              <p className="text-fluid-lead text-[var(--text-secondary)]">
+                These aren't screenshots — they're live previews of the actual UI. Timer, tasks, and calendar, all working together.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <PomodoroTimerDemo />
+              <MiniKanbanDemo />
+              <MiniCalendarDemo />
+            </div>
+          </div>
+        </section>
+
       {/* Why UniTracker */}
-        <section className="py-20 border-t border-[var(--border-primary)]/30 bg-[var(--bg-secondary)]/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-fluid-section border-t border-[var(--border-primary)]/30 bg-[var(--bg-secondary)]/20">
+          <div className="max-w-7xl mx-auto px-fluid">
             <div className="mb-14 max-w-2xl">
               <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Why UniTracker</p>
-              <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
+              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
                 No tricks, no fine print
               </h2>
-              <p className="text-lg text-[var(--text-secondary)]">
+              <p className="text-fluid-lead text-[var(--text-secondary)]">
                 We don't sell your data, we don't show ads, we don't lock features behind paywalls. It's that simple.
               </p>
             </div>
@@ -359,7 +657,7 @@ const LandingPage = () => {
                   <div className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
                     <v.icon className="w-5 h-5 text-[var(--accent-primary)]" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{v.title}</h3>
+                  <h3 className="text-fluid-h3 font-semibold mb-2">{v.title}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{v.desc}</p>
                 </div>
               ))}
@@ -368,16 +666,16 @@ const LandingPage = () => {
         </section>
 
         {/* CTA */}
-        <section className="relative py-20 border-t border-[var(--border-primary)]/30 overflow-hidden">
+        <section className="relative py-fluid-section border-t border-[var(--border-primary)]/30 overflow-hidden">
           <div
             className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[520px] h-[300px] opacity-[0.15] blur-3xl"
             style={{ background: 'radial-gradient(circle, #F4A63A 0%, transparent 70%)' }}
           />
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
+          <div className="relative max-w-4xl mx-auto px-fluid text-center">
+            <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
               One app to replace them all
             </h2>
-            <p className="text-lg text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
+            <p className="text-fluid-lead text-[var(--text-secondary)] mb-8 max-w-2xl mx-auto">
               UniTracker replaces 6 different tools — and it's free, open source, and works offline.
             </p>
             <Link
@@ -392,7 +690,7 @@ const LandingPage = () => {
 
         {/* Footer */}
         <footer className="border-t border-[var(--border-primary)]/30 py-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto px-fluid flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center">
               <span className="font-bold text-sm text-[var(--text-primary)]">
                 Uni<span className="text-[var(--accent-primary)]">Tracker</span>

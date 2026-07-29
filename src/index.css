@@ -354,7 +354,7 @@
 
     /* Paleta principal */
     --bg-primary: #000000;
-    --border-primary: #252525d5;
+    --border-primary: rgba(255, 255, 255, 0.25);
     --text-primary: #ffffff;
     --accent-primary: #1e90ff; /* Electric neon blue */
     --accent-primary-transparent: rgba(30, 144, 255, 0.2);
@@ -367,18 +367,19 @@
 
   /* Fuente base */
   html {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Helvetica, Arial, Oxygen, Ubuntu, Cantarell, "Open Sans",
-      "Helvetica Neue", sans-serif;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     height: 100%;
     font-size: 1rem; /* text-base equivalent */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeSpeed;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
     backface-visibility: hidden;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    font-size: 18px; /* o 20px */
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "kern";
+    font-variant-numeric: tabular-nums;
+    font-size: 16px;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: none;
@@ -789,6 +790,52 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 0;
     width: 100%;
+  }
+}
+
+/* =========================
+   Fluid Typography & Spacing Utilities
+   Uses clamp() for smooth scaling without breakpoint jumps.
+   Type scale ratio: ~1.2 (minor third)
+   ========================= */
+@layer utilities {
+  .text-fluid-hero {
+    font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+    line-height: 1.08;
+  }
+  .text-fluid-h2 {
+    font-size: clamp(1.75rem, 3vw + 0.5rem, 2.5rem);
+    line-height: 1.15;
+  }
+  .text-fluid-h3 {
+    font-size: clamp(1.125rem, 1vw + 0.75rem, 1.25rem);
+    line-height: 1.4;
+  }
+  .text-fluid-lead {
+    font-size: clamp(1.0625rem, 0.75vw + 0.75rem, 1.25rem);
+    line-height: 1.6;
+  }
+  .text-fluid-body {
+    font-size: clamp(1rem, 0.5vw + 0.875rem, 1.125rem);
+    line-height: 1.6;
+  }
+  .px-fluid {
+    padding-left: clamp(1rem, 2vw, 2rem);
+    padding-right: clamp(1rem, 2vw, 2rem);
+  }
+  .py-fluid-section {
+    padding-top: clamp(3rem, 6vw, 5rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .pt-fluid-hero {
+    padding-top: clamp(3rem, 5vw, 5rem);
+  }
+  .pb-fluid-hero {
+    padding-bottom: clamp(4rem, 6vw, 6rem);
+  }
+  .font-heading {
+    font-family: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
+    letter-spacing: -0.02em;
   }
 }
 

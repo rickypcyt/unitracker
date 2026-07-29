@@ -27,8 +27,8 @@ const MonthView = ({
   handleTouchEnd,
 }: MonthViewProps) => {
   return (
-    <div className="w-full mt-2 sm:mt-4 relative flex-1 min-h-0">
-      <div className="h-full flex flex-col min-h-[400px] sm:min-h-[500px]">
+    <div className="w-full mt-2 sm:mt-4 relative flex-1 min-h-0 overflow-hidden">
+      <div className="h-full flex flex-col min-h-[320px] sm:min-h-[400px] overflow-hidden">
         {/* Weekdays */}
         <div className="grid grid-cols-7 mb-2 flex-shrink-0">
           {weekdays.map((day, index) => (
@@ -42,7 +42,7 @@ const MonthView = ({
         </div>
 
         {/* Days */}
-        <div className="grid grid-cols-7 gap-1.5 flex-1 auto-rows-fr">
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5 flex-1 auto-rows-fr">
           {calendarDays.map((dayObj, index) => {
             const taskCount =
               dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -79,9 +79,10 @@ const MonthView = ({
                   handleDateClick(dayObj.date);
                 }}
                 className={`
-                  aspect-square select-none cursor-pointer
+                  select-none cursor-pointer
                   flex flex-col items-center
-                  rounded-xl p-1.5 sm:p-2
+                  rounded-lg p-1 sm:p-1.5
+                  min-h-0 h-full
                   border transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                   ${
@@ -101,8 +102,8 @@ const MonthView = ({
                   <div
                     className={`
                       flex items-center justify-center
-                      w-7 h-7 sm:w-8 sm:h-8
-                      rounded-full text-sm font-medium
+                      w-6 h-6 sm:w-7 sm:h-7
+                      rounded-full text-xs sm:text-sm font-medium
                       transition-colors
                       ${
                         isToday
@@ -120,11 +121,11 @@ const MonthView = ({
 
                   {/* Indicadores de tareas (máx 3 puntos) */}
                   {taskCount > 0 && (
-                    <div className="flex gap-0.5 pt-1.5 pr-0.5">
+                    <div className="flex gap-0.5 pt-1 pr-0.5">
                       {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
                         <span
                           key={i}
-                          className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]"
+                          className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[var(--accent-primary)]"
                         />
                       ))}
                     </div>
@@ -136,7 +137,7 @@ const MonthView = ({
 
                 {/* Horas estudiadas */}
                 {dayObj.currentMonth && hasStudied && (
-                  <div className="text-[10px] sm:text-[11px] font-medium text-[var(--text-secondary)] tracking-tight">
+                  <div className="text-[9px] sm:text-[10px] font-medium text-[var(--text-secondary)] tracking-tight">
                     {studiedHours}h
                   </div>
                 )}

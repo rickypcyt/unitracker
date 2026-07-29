@@ -6,7 +6,7 @@ import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
 import LoginPromptModal from '@/modals/LoginPromptModal';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
-import TaskPageSettingsModal, { type ColumnCount, type FabPosition } from '@/modals/TaskPageSettingsModal';
+import TaskPageSettingsModal, { type ColumnCount, type FabPosition, type ViewMode } from '@/modals/TaskPageSettingsModal';
 import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
 import WorkspaceSelector from '@/pages/calendar/WorkspaceSelector';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,9 @@ const TasksPage = memo(() => {
   });
   const [fabPosition, setFabPosition] = useState<FabPosition>(() => {
     return (localStorage.getItem('taskPageFabPosition') as FabPosition) || 'bottom-right';
+  });
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    return (localStorage.getItem('taskPageViewMode') as ViewMode) || 'assignment';
   });
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
@@ -110,6 +113,11 @@ const TasksPage = memo(() => {
   const handleFabPositionChange = (pos: FabPosition) => {
     setFabPosition(pos);
     localStorage.setItem('taskPageFabPosition', pos);
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('taskPageViewMode', mode);
   };
 
   const fabPositionClass: Record<FabPosition, string> = {
@@ -232,7 +240,7 @@ const TasksPage = memo(() => {
         <WorkspaceSelector />
       </div>
       
-      <KanbanBoard columnCount={columnCount} />
+      <KanbanBoard columnCount={columnCount} viewMode={viewMode} />
       {/* Task Page Settings Button */}
       <button
         onClick={() => setShowSettings(true)}
@@ -307,8 +315,10 @@ const TasksPage = memo(() => {
         onClose={() => setShowSettings(false)}
         columnCount={columnCount}
         fabPosition={fabPosition}
+        viewMode={viewMode}
         onColumnCountChange={handleColumnCountChange}
         onFabPositionChange={handleFabPositionChange}
+        onViewModeChange={handleViewModeChange}
       />
       {/* Task Form Modal */}
       {showTaskForm && (

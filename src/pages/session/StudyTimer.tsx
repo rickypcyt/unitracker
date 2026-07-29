@@ -1037,34 +1037,64 @@ const StudyTimer = ({
           </button> : <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[28px]" />}
       </div>}
 
-      {/* Timer display - Large modern display */}
-      <div className="relative group w-full flex flex-col items-center py-3" role="timer" aria-label="Current session time">
-        <div className="flex items-start justify-center gap-1.5">
-          {(() => {
-            const totalSec = safeNumber(studyState.time);
-            const h = Math.floor(totalSec / 3600);
-            const m = Math.floor((totalSec % 3600) / 60);
-            const s = Math.floor(totalSec % 60);
-            const parts = [
-              { val: h.toString().padStart(2, '0'), label: 'hrs' },
-              { val: m.toString().padStart(2, '0'), label: 'min' },
-              { val: s.toString().padStart(2, '0'), label: 'sec' },
-            ];
-            return parts.map((p, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className={`text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-mono font-bold tabular-nums tracking-tight leading-none ${
-                  isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
-                }`}>{p.val}</span>
-                <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">{p.label}</span>
+      {/* Timer display - circular progress ring */}
+      <div className="relative group w-full flex flex-col items-center py-2" role="timer" aria-label="Current session time">
+        {(() => {
+          const totalSec = safeNumber(studyState.time);
+          const h = Math.floor(totalSec / 3600);
+          const m = Math.floor((totalSec % 3600) / 60);
+          const s = Math.floor(totalSec % 60);
+          const POMODORO_INTERVAL = 1500; // 25 min
+          const progress = (totalSec % POMODORO_INTERVAL) / POMODORO_INTERVAL;
+          const radius = 52;
+          const circumference = 2 * Math.PI * radius;
+          return (
+            <div className="relative w-32 h-32">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.3" />
+                <circle
+                  cx="60" cy="60" r={radius} fill="none"
+                  stroke="var(--accent-primary)" strokeWidth="5" strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference * (1 - progress)}
+                  className="transition-all duration-300"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="flex items-center gap-0.5">
+                  {h > 0 && (
+                    <>
+                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                      }`}>
+                        {h.toString().padStart(2, '0')}
+                      </span>
+                      <span className={`text-xl font-mono font-bold leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+                      }`}>:</span>
+                    </>
+                  )}
+                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                  }`}>
+                    {m.toString().padStart(2, '0')}
+                  </span>
+                  <span className={`text-xl font-mono font-bold leading-none ${
+                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+                  }`}>:</span>
+                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                    isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                  }`}>
+                    {s.toString().padStart(2, '0')}
+                  </span>
+                </div>
+                <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                  {currentSessionId ? (isStudyRunningRedux ? 'Studying' : 'Paused') : 'Ready'}
+                </span>
               </div>
-            )).flatMap((el, i) => i < 2 ? [
-              el,
-              <span key={`sep-${i}`} className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none mt-2 ${
-                isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
-              }`}>:</span>
-            ] : [el]);
-          })()}
-        </div>
+            </div>
+          );
+        })()}
 
         {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
             <div className="font-semibold mb-1">Session Title</div>

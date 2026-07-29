@@ -1,6 +1,7 @@
 import { BookOpen, ChevronRight, CircleDot, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFetchTasks, useTasksOnly, useTasksLoading, useWorkspace } from '@/store/appStore';
+import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/navbar/NavigationContext';
 
@@ -40,7 +41,7 @@ const AssignmentsOverview = () => {
   }, [isLoggedIn, activeWorkspace?.id]);
 
   const assignments = useMemo<AssignmentSummary[]>(() => {
-    const filtered = activeWorkspace
+    const filtered = activeWorkspace && activeWorkspace.id !== ALL_WORKSPACE_ID
       ? tasks.filter(t => t.workspace_id === activeWorkspace.id)
       : tasks;
 
@@ -98,7 +99,7 @@ const AssignmentsOverview = () => {
   const totalPending = assignments.reduce((sum, a) => sum + a.pending, 0);
 
   const pendingTasks = useMemo(() => {
-    const filtered = activeWorkspace
+    const filtered = activeWorkspace && activeWorkspace.id !== ALL_WORKSPACE_ID
       ? tasks.filter(t => t.workspace_id === activeWorkspace.id && !t.completed)
       : tasks.filter(t => !t.completed);
     return filtered.slice(0, 6);

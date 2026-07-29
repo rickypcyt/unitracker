@@ -847,61 +847,112 @@ const Countdown: React.FC<CountdownProps> = ({
         </button>
       </div>}
 
-      {/* Digital display - segmented boxes for each time unit */}
-      <div className="flex items-center justify-center gap-1.5 py-2">
-        {fields.map((field, idx) => {
-        let value;
-        if (isCountdownRunning) {
-          const h = Math.floor(secondsLeft / 3600);
-          const m = Math.floor(secondsLeft % 3600 / 60);
-          const s = secondsLeft % 60;
-          if (field === 'hours') value = pad(h, 'hours');
-          if (field === 'minutes') value = pad(m, 'minutes');
-          if (field === 'seconds') value = pad(s, 'seconds');
-        } else {
-          let h = 0, m = 0, s = 0;
-          if (pausedSecondsLeft !== null) {
-            h = Math.floor(pausedSecondsLeft / 3600);
-            m = Math.floor(pausedSecondsLeft % 3600 / 60);
-            s = pausedSecondsLeft % 60;
-          } else {
-            const base = baselineTimeRef.current;
-            h = base.hours;
-            m = base.minutes;
-            s = base.seconds;
-          }
-          if (field === 'hours') value = pad(h, 'hours');
-          if (field === 'minutes') value = pad(m, 'minutes');
-          if (field === 'seconds') value = pad(s, 'seconds');
-        }
-        const isFocused = focusedField === field && !isRunningGlobal;
-        return <React.Fragment key={field}>
-            <div className={`flex flex-col items-center`}>
-              <input
-                ref={inputRefs.current[field]}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={value}
-                placeholder={undefined}
-                onFocus={e => handleFocus(field, e)}
-                onBlur={e => handleBlur(field, e)}
-                onChange={e => handleInputChange(field, e.target.value)}
-                onKeyDown={e => handleInputKeyDown(e, field)}
-                className={`w-10 sm:w-12 md:w-14 text-center text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
-                  isFocused ? 'text-green-500' : isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
-                }`}
-                tabIndex={idx + 1}
-                style={{ letterSpacing: '0.05em' }}
-                disabled={isCountdownRunning}
-              />
-              <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                {field === 'hours' ? 'hrs' : field === 'minutes' ? 'min' : 'sec'}
-              </span>
-            </div>
-            {field !== 'seconds' && <span className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none self-start mt-0.5 text-[var(--text-secondary)]">:</span>}
-          </React.Fragment>;
-      })}
+      {/* Timer display - circular ring when running, editable inputs when stopped */}
+      <div className="flex items-center justify-center py-2">
+        {isCountdownRunning ? (
+          (() => {
+            const total = calculateSeconds(baselineTimeRef.current);
+            const progress = total > 0 ? Math.max(0, Math.min(1, 1 - secondsLeft / total)) : 0;
+            const h = Math.floor(secondsLeft / 3600);
+            const m = Math.floor(secondsLeft % 3600 / 60);
+            const s = secondsLeft % 60;
+            const radius = 52;
+            const circumference = 2 * Math.PI * radius;
+            const ringColor = '#22c55e';
+            return (
+              <div className="relative w-32 h-32">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.3" />
+                  <circle
+                    cx="60" cy="60" r={radius} fill="none"
+                    stroke={ringColor} strokeWidth="5" strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={circumference * (1 - progress)}
+                    className="transition-all duration-300"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="flex items-center gap-0.5">
+                    {h > 0 && (
+                      <>
+                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                          {h.toString().padStart(2, '0')}
+                        </span>
+                        <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                      </>
+                    )}
+                    <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                      {m.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                    <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                      {s.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                    ⏳ Countdown
+                  </span>
+                </div>
+              </div>
+            );
+          })()
+        ) : (
+          <div className="flex items-center justify-center gap-1.5">
+            {fields.map((field, idx) => {
+            let value;
+            if (isCountdownRunning) {
+              const h = Math.floor(secondsLeft / 3600);
+              const m = Math.floor(secondsLeft % 3600 / 60);
+              const s = secondsLeft % 60;
+              if (field === 'hours') value = pad(h, 'hours');
+              if (field === 'minutes') value = pad(m, 'minutes');
+              if (field === 'seconds') value = pad(s, 'seconds');
+            } else {
+              let h = 0, m = 0, s = 0;
+              if (pausedSecondsLeft !== null) {
+                h = Math.floor(pausedSecondsLeft / 3600);
+                m = Math.floor(pausedSecondsLeft % 3600 / 60);
+                s = pausedSecondsLeft % 60;
+              } else {
+                const base = baselineTimeRef.current;
+                h = base.hours;
+                m = base.minutes;
+                s = base.seconds;
+              }
+              if (field === 'hours') value = pad(h, 'hours');
+              if (field === 'minutes') value = pad(m, 'minutes');
+              if (field === 'seconds') value = pad(s, 'seconds');
+            }
+            const isFocused = focusedField === field && !isRunningGlobal;
+            return <React.Fragment key={field}>
+                <div className={`flex flex-col items-center`}>
+                  <input
+                    ref={inputRefs.current[field]}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={value}
+                    placeholder={undefined}
+                    onFocus={e => handleFocus(field, e)}
+                    onBlur={e => handleBlur(field, e)}
+                    onChange={e => handleInputChange(field, e.target.value)}
+                    onKeyDown={e => handleInputKeyDown(e, field)}
+                    className={`w-10 sm:w-12 md:w-14 text-center text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
+                      isFocused ? 'text-green-500' : isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
+                    }`}
+                    tabIndex={idx + 1}
+                    style={{ letterSpacing: '0.05em' }}
+                    disabled={isCountdownRunning}
+                  />
+                  <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                    {field === 'hours' ? 'hrs' : field === 'minutes' ? 'min' : 'sec'}
+                  </span>
+                </div>
+                {field !== 'seconds' && <span className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none self-start mt-0.5 text-[var(--text-secondary)]">:</span>}
+              </React.Fragment>;
+          })}
+          </div>
+        )}
       </div>
 
       {/* Time adjustment buttons - only show when not synced */}

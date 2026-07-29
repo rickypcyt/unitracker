@@ -4,7 +4,9 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
 import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
+import type { ViewMode } from '@/modals/TaskPageSettingsModal';
 import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
+import { StatusBoard } from '@/pages/tasks/StatusBoard';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
 import LoginPromptModal from '@/modals/LoginPromptModal';
@@ -41,9 +43,10 @@ interface ContextMenuState {
 
 interface KanbanBoardProps {
   columnCount?: ColumnCount;
+  viewMode?: ViewMode;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewMode = 'assignment' }) => {
   const { isLoggedIn } = useAuth();
   const {
     isDemo,
@@ -472,7 +475,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => 
       <div className="flex flex-col h-full min-h-screen kanban-board" data-tour="tasks-board">
         {/* Active Tasks */}
         <div className="flex-1 min-h-0">
-          <AssignmentColumns
+          {viewMode === 'status' ? (
+            <StatusBoard
+              incompletedTasks={incompletedTasks}
+              completedTasks={completedTasks}
+              onAddTask={handleAddTask}
+              onTaskToggle={handleToggleCompletion}
+              onTaskDelete={handleConfirmDeleteTask}
+              onEditTask={handleEditTask}
+              onViewTask={handleViewTask}
+              onTaskContextMenu={handleTaskContextMenu}
+            />
+          ) : (
+            <AssignmentColumns
             incompletedByAssignment={incompletedByAssignmentForAll}
             currentWorkspacePins={currentWorkspacePins}
             onTogglePin={handleTogglePin}
@@ -509,6 +524,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => 
               />
             )}
           </AssignmentColumns>
+          )}
         </div>
       </div>
 

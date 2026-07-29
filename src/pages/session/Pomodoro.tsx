@@ -1305,30 +1305,46 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
         </button>
       </div>}
 
-      {/* Timer Display - bold with mode-colored accent */}
-      <div className="relative group w-full flex flex-col items-center py-1" role="timer" aria-label="Current pomodoro time">
-        <div className="flex items-start justify-center gap-1.5">
-          {(() => {
-            const roundedSeconds = Math.round(pomoState.timeLeft);
-            const mins = Math.floor(roundedSeconds / 60);
-            const secs = roundedSeconds % 60;
-            const parts = [
-              { val: mins.toString().padStart(2, '0'), label: 'min' },
-              { val: secs.toString().padStart(2, '0'), label: 'sec' },
-            ];
-            const colorClass = pomoState.currentMode === 'work' ? 'text-red-500' :
-              pomoState.currentMode === 'break' ? 'text-green-500' : 'text-blue-500';
-            return parts.map((p, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className={`text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-mono font-bold tabular-nums tracking-tight leading-none ${colorClass}`}>{p.val}</span>
-                <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">{p.label}</span>
+      {/* Timer Display - circular progress ring */}
+      <div className="relative group w-full flex flex-col items-center py-2" role="timer" aria-label="Current pomodoro time">
+        {(() => {
+          const roundedSeconds = Math.round(pomoState.timeLeft);
+          const mins = Math.floor(roundedSeconds / 60);
+          const secs = roundedSeconds % 60;
+          const modeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
+          const progress = Math.max(0, Math.min(1, 1 - pomoState.timeLeft / modeDuration));
+          const ringColor = pomoState.currentMode === 'work' ? '#ef4444' : pomoState.currentMode === 'break' ? '#22c55e' : '#3b82f6';
+          const radius = 52;
+          const circumference = 2 * Math.PI * radius;
+          return (
+            <div className="relative w-32 h-32">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.3" />
+                <circle
+                  cx="60" cy="60" r={radius} fill="none"
+                  stroke={ringColor} strokeWidth="5" strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference * (1 - progress)}
+                  className="transition-all duration-300"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="flex items-center gap-0.5">
+                  <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                    {mins.toString().padStart(2, '0')}
+                  </span>
+                  <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                  <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                    {secs.toString().padStart(2, '0')}
+                  </span>
+                </div>
+                <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                  {pomoState.currentMode === 'work' ? '🍅 Focus' : pomoState.currentMode === 'break' ? '☕ Break' : '🎉 Long Break'}
+                </span>
               </div>
-            )).flatMap((el, i) => i < 1 ? [
-              el,
-              <span key={`sep-${i}`} className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold leading-none mt-2 ${colorClass}`}>:</span>
-            ] : [el]);
-          })()}
-        </div>
+            </div>
+          );
+        })()}
 
         {/* Hover tooltip */}
         <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">

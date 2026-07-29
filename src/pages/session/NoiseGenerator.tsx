@@ -130,19 +130,14 @@ function SoundControl({
             thumbClassName="h-5 w-5 rounded-full bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
             trackClassName="h-2 rounded-full"
             renderTrack={(
-              props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>,
-              state: { index: number }
+              props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>
             ) => {
               const { key, ...rest } = props;
               return (
                 <div
                   key={key}
                   {...rest}
-                  className={`h-2 rounded-full ${
-                    state.index === 0
-                      ? theme.gradient
-                      : "bg-[var(--border-primary)]"
-                  }`}
+                  className={`h-2 rounded-full ${theme.gradient}`}
                 />
               );
             }}
@@ -494,29 +489,22 @@ export default function NoiseGenerator() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between pb-3"
       >
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-            <Headphones size={18} className="text-[var(--accent-primary)]" />
-          </div>
-          <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
+              <Headphones size={18} className="text-[var(--accent-primary)]" />
+            </div>
             <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
               Noise Generator
             </h3>
-            {anySoundPlaying && (
-              <span className="text-[11px] text-[var(--accent-primary)] font-medium">
-                {sounds.filter(s => s.isPlaying).length} active
-              </span>
-            )}
           </div>
-        </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handlePlayPauseAll}
             className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
               anySoundPlaying
-                ? "border border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
-                : "bg-[var(--bg-secondary)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
+                ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
+                : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
             }`}
             aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
           >

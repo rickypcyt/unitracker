@@ -349,22 +349,22 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   }, [sortedWorkspaces, searchQuery]);
 
   return <>
-      <BaseModal isOpen={isOpen} onClose={onClose} title="Select Workspace" maxWidth="max-w-md" showHeader={false}>
+      <BaseModal isOpen={isOpen} onClose={onClose} title="Select Workspace" maxWidth="max-w-lg" showHeader={false}>
         <div className="flex flex-col" onKeyDown={handleKeyDown}>
           {/* Search bar */}
           <div className="relative mb-3">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-[var(--text-secondary)] pointer-events-none" />
+            <Search className="absolute left-3 top-3 w-5 h-5 text-[var(--text-secondary)] pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search workspaces..."
-              className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+              className="w-full pl-10 pr-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg text-base text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
             />
           </div>
 
           {/* Workspace list */}
-          <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
+          <div className="space-y-2 max-h-[320px] overflow-y-auto">
             {filteredWorkspaces.length === 0 && (
               <div className="text-center py-6 text-sm text-[var(--text-secondary)]">
                 No workspaces found
@@ -384,22 +384,22 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                       : 'border-transparent hover:bg-[var(--bg-secondary)]'
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     isActive ? 'bg-[var(--accent-primary)]/15' : 'bg-[var(--bg-secondary)]'
                   }`}>
-                    <IconComp className={`w-4 h-4 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+                    <IconComp className={`w-5 h-5 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <span className={`text-sm font-medium ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                    <span className={`text-base font-medium ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
                       {ws.name}
                     </span>
                     {getTaskCountByWorkspace(ws) > 0 && (
-                      <span className="ml-2 text-xs text-[var(--text-secondary)]">
+                      <span className="ml-2 text-sm text-[var(--text-secondary)]">
                         {getTaskCountByWorkspace(ws)} tasks
                       </span>
                     )}
                   </div>
-                  {isActive && <Check className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />}
+                  {isActive && <Check className="w-5 h-5 text-[var(--accent-primary)] flex-shrink-0" />}
                 </button>
               );
             })}
@@ -408,7 +408,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
           {/* Shared Workspaces section */}
           {(sharedByUser.length > 0 || sharedWithUser.length > 0 || sharedLoading) && (
             <div className="border-t border-[var(--border-primary)] pt-3 mt-3">
-              <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">Shared</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide mb-2">Shared</h3>
               {sharedLoading ? (
                 <div className="flex items-center gap-2 text-[var(--text-secondary)] text-sm py-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -420,14 +420,14 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                     <button
                       key={entry.id}
                       onClick={() => handleSelectSharedWorkspaceEntry(entry)}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
+                      className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
-                        <Share className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
+                        <Share className="w-4 h-4 text-[var(--text-secondary)]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
-                        <div className="text-xs text-[var(--text-secondary)] truncate">
+                        <div className="text-base font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
+                        <div className="text-sm text-[var(--text-secondary)] truncate">
                           → {entry.partner?.username || entry.partner?.email || 'Unknown'}
                         </div>
                       </div>
@@ -447,14 +447,14 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
                     <button
                       key={entry.id}
                       onClick={() => handleSelectSharedWorkspaceEntry(entry)}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
+                      className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left group"
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
-                        <Share className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--bg-secondary)]">
+                        <Share className="w-4 h-4 text-[var(--text-secondary)]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
-                        <div className="text-xs text-[var(--text-secondary)] truncate">
+                        <div className="text-base font-medium text-[var(--text-primary)] truncate">{entry.workspace?.name || 'Unknown'}</div>
+                        <div className="text-sm text-[var(--text-secondary)] truncate">
                           ← {entry.partner?.username || entry.partner?.email || 'Unknown'}
                         </div>
                       </div>
@@ -481,28 +481,28 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
               onClick={() => setShowCreateModal(true)}
               className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
             >
-              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
-                <Plus className="w-4 h-4 text-[var(--accent-primary)]" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Plus className="w-5 h-5 text-[var(--accent-primary)]" />
               </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">New</span>
+              <span className="text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">New</span>
             </button>
             <button
               onClick={() => setShowManageModal(true)}
               className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
             >
-              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
-                <Edit className="w-4 h-4 text-[var(--accent-primary)]" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Edit className="w-5 h-5 text-[var(--accent-primary)]" />
               </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Edit</span>
+              <span className="text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Edit</span>
             </button>
             <button
               onClick={() => setShowShareModal(true)}
               className="flex flex-col items-center gap-1.5 py-2.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group"
             >
-              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
-                <Share className="w-4 h-4 text-[var(--accent-primary)]" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center group-hover:bg-[var(--accent-primary)]/20 transition-colors">
+                <Share className="w-5 h-5 text-[var(--accent-primary)]" />
               </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Share with a friend</span>
+              <span className="text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Share with a friend</span>
             </button>
           </div>
         </div>

@@ -219,6 +219,7 @@ export default defineConfig(({ command, mode }) => {
         '/api/openrouter': {
           target: 'http://localhost:5173',
           configure: (server) => {
+            if (!server.middlewares) return;
             server.middlewares.use('/api/openrouter', async (req, res) => {
               if (req.method !== 'POST') {
                 res.statusCode = 405;

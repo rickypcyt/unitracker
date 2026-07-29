@@ -91,7 +91,6 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
     }, 300);
   };
 
-  const taskCount = activeWorkspace?.taskCount || 0;
   const showSessionTimer = studyState.isRunning || studyTime > 0;
 
   return (
@@ -112,11 +111,6 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
             <span className="hidden sm:inline text-sm font-medium">
               {activeWorkspace?.name || 'Select Workspace'}
             </span>
-            {taskCount > 0 && (
-              <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-[var(--accent-primary)] text-white">
-                {taskCount}
-              </span>
-            )}
             <ChevronDown className="w-3.5 h-3.5" />
           </button>
 
