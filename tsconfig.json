@@ -30,7 +30,7 @@
     "noImplicitOverride": true,
     "noStrictGenericChecks": false,
     "useUnknownInCatchVariables": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "forceConsistentCasingInFileNames": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,

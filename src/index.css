@@ -401,6 +401,7 @@
     color: var(--text-primary);
     min-height: 100vh;
     height: 100%;
+    overflow-x: hidden;
   }
 
   /* Ensure background extends under status bar on iOS */
@@ -421,6 +422,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
+    overflow-x: hidden;
   }
 
   /* Ensure root element covers full height */
@@ -428,6 +430,7 @@
     min-height: 100vh;
     background-color: var(--bg-primary);
     color: var(--text-primary);
+    overflow-x: hidden;
   }
 
   /* Additional iOS Safari fixes */

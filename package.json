@@ -83,6 +83,7 @@
     "tailwindcss-animate": "^1.0.7",
     "temporal-polyfill": "^0.3.0",
     "tone": "^15.1.22",
+    "zod": "^4.4.3",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

@@ -1,30 +1,37 @@
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { PomodoroModeType } from '@/types/pomodoro';
-import type { Task } from '@/types/taskStorage';
-import type { Workspace } from '@/types/workspace';
-import type { Lap } from '@/types/lap';
+import type {
+  PomodoroModeType,
+  PomodoroMode,
+  PomodoroSettings,
+  PomoState,
+  CountdownTime,
+  CountdownState,
+  StudyState,
+  SyncSettings,
+  TimerState,
+} from '@/schemas/timer';
+import type { Task } from '@/schemas/task';
+import type { Workspace } from '@/schemas/workspace';
+import type { Lap } from '@/schemas/lap';
 import type { User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { fetchTasks as fetchTasksAction } from '@/store/TaskActions';
 
-// 🎯 Tipos para el store
-export interface PomoState {
-  timeLeft: number;
-  isRunning: boolean;
-  currentMode: PomodoroModeType;
-  modeIndex: number;
-  workSessionsCompleted: number;
-  workSessionsBeforeLongBreak: number;
-  longBreakDuration: number;
-  startTime: number;
-  pausedTime: number;
-  work: number;
-  break: number;
-  longBreak: number;
-}
+// Re-export domain types for backward compatibility
+export type {
+  PomodoroModeType,
+  PomodoroMode,
+  PomodoroSettings,
+  PomoState,
+  CountdownTime,
+  CountdownState,
+  StudyState,
+  SyncSettings,
+  TimerState,
+};
 
-// 🎯 Tipos adicionales para reemplazar Redux
+// 🎯 Store-specific types (not domain entities)
 export interface TaskState {
   tasks: Task[];
   loading: boolean;
@@ -68,50 +75,9 @@ export interface UiState {
   isSynced: boolean;
   isRunning: boolean;
   resetKey: number;
-  studyTimerState: 'running' | 'paused' | 'stopped';
-  pomodoroState: 'running' | 'paused' | 'stopped';
-  countdownState: 'running' | 'paused' | 'stopped';
-}
-export interface PomodoroMode {
-  label: string;
-  work: number;
-  break: number;
-  longBreak: number;
-  description?: string;
-}
-export interface PomodoroSettings {
-  autoStartBreak: boolean;
-  autoStartWork: boolean;
-  soundEnabled: boolean;
-  notificationEnabled: boolean;
-  dailyGoal: number;
-  volume: number;
-}
-export interface CountdownTime {
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-export interface CountdownState {
-  status: 'running' | 'paused' | 'stopped';
-  endTimestamp: number | null;
-  pausedSecondsLeft: number | null;
-  lastTime: CountdownTime;
-}
-export interface StudyState {
-  time: number;
-  isRunning: boolean;
-  lastStart: number | null;
-  timeAtStart: number;
-  sessionStatus: 'inactive' | 'active' | 'paused';
-  sessionTitle?: string;
-  sessionDescription?: string;
-  lastPausedAt: number | null;
-}
-export interface SyncSettings {
-  syncPomodoroWithTimer: boolean;
-  syncCountdownWithTimer: boolean;
-  isSyncedWithStudyTimer: boolean;
+  studyTimerState: TimerState;
+  pomodoroState: TimerState;
+  countdownState: TimerState;
 }
 export interface SessionSyncSettings {
   [sessionId: string]: SyncSettings;

@@ -5,7 +5,7 @@ import { useTaskCrudActions, useTasks } from '@/store/appStore';
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
-import type { Task } from '@/pages/tasks/taskStorage';
+import type { Task } from '@/schemas/task';
 
 interface ManageCompletedTasksModalProps {
   isOpen: boolean;

@@ -8,12 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import usePomodorosToday from '@/hooks/usePomodorosToday';
 import type { Lap } from '@/types/lap';
-
-// Tipos para las entidades
-interface Task {
-  completed: boolean;
-  completed_at?: string | null;
-}
+import type { Task } from '@/schemas/task';
 
 interface StatData {
   todayMinutes: number;
