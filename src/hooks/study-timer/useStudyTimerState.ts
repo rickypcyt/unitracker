@@ -1,3 +1,4 @@
+import { pauseEntrySchema, type PauseEntry } from "@/schemas/timer";
 import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
 
 export const STORAGE_KEYS = {
@@ -8,6 +9,16 @@ export const STORAGE_KEYS = {
 
 const safeNumber = (value: unknown, defaultValue = 0) =>
   typeof value === "number" && Number.isFinite(value) ? value : defaultValue;
+
+const parsePauseHistory = (raw: unknown): PauseEntry[] => {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map(entry => {
+      const parsed = pauseEntrySchema.safeParse(entry);
+      return parsed.success ? parsed.data : null;
+    })
+    .filter((entry): entry is PauseEntry => entry !== null);
+};
 
 const parseStoredState = (savedState: string | null, defaultState: any) => {
   // If there's no active session, always return the default state
@@ -39,6 +50,7 @@ const parseStoredState = (savedState: string | null, defaultState: any) => {
             ? parsed.sessionDescription
             : "",
         lastPausedAt: parsed.lastPausedAt ? safeNumber(Number(parsed.lastPausedAt)) : null,
+        pauseHistory: parsePauseHistory(parsed.pauseHistory),
       };
     }
     return defaultState;
@@ -62,6 +74,7 @@ export type StudyState = {
   sessionTitle?: string;
   sessionDescription?: string;
   lastPausedAt: number | null;
+  pauseHistory: PauseEntry[];
 };
 
 export function useStudyTimerState(): [StudyState, (updates: Partial<StudyState>) => void, Dispatch<SetStateAction<StudyState>>] {
@@ -74,6 +87,7 @@ export function useStudyTimerState(): [StudyState, (updates: Partial<StudyState>
     sessionTitle: "",
     sessionDescription: "",
     lastPausedAt: null,
+    pauseHistory: [],
   };
 
   const [studyState, setStudyState] = useState<StudyState>(() => {
@@ -96,6 +110,7 @@ export function useStudyTimerState(): [StudyState, (updates: Partial<StudyState>
       sessionTitle: state.sessionTitle || "",
       sessionDescription: state.sessionDescription || "",
       lastPausedAt: state.lastPausedAt,
+      pauseHistory: state.pauseHistory,
     };
     saveToLocalStorage(STORAGE_KEYS.STUDY_TIMER_STATE, stateToSave);
   };

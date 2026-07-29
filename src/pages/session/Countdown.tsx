@@ -845,10 +845,11 @@ const Countdown: React.FC<CountdownProps> = ({
         </button>
       </div>}
 
-      {/* Timer display - circular ring when running, editable inputs when stopped */}
+      {/* Timer display - circular ring when running or paused, editable inputs when stopped */}
       <div className="flex items-center justify-center py-2">
-        {isCountdownRunning ? (
+        {isCountdownRunning || pausedSecondsLeft !== null ? (
           (() => {
+            const isPaused = !isCountdownRunning && pausedSecondsLeft !== null;
             const total = calculateSeconds(baselineTimeRef.current);
             const progress = total > 0 ? Math.max(0, Math.min(1, 1 - secondsLeft / total)) : 0;
             const h = Math.floor(secondsLeft / 3600);
@@ -863,9 +864,10 @@ const Countdown: React.FC<CountdownProps> = ({
                   <circle
                     cx="60" cy="60" r={radius} fill="none"
                     stroke={ringColor} strokeWidth="5" strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={circumference * (1 - progress)}
-                    className="transition-all duration-300"
+                    strokeDasharray={isPaused ? circumference * 0.25 : circumference}
+                    strokeDashoffset={isPaused ? circumference * 0.5 : circumference * (1 - progress)}
+                    className={`transition-all duration-300 ${isPaused ? 'animate-spin origin-center' : ''}`}
+                    style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">

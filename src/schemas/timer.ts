@@ -58,6 +58,14 @@ export const countdownStateSchema = z.object({
 
 export type CountdownState = z.infer<typeof countdownStateSchema>;
 
+export const pauseEntrySchema = z.object({
+  startedAt: z.number(),
+  endedAt: z.number().nullable(),
+  durationSeconds: z.number().nullable(),
+});
+
+export type PauseEntry = z.infer<typeof pauseEntrySchema>;
+
 export const studyStateSchema = z.object({
   time: z.number(),
   isRunning: z.boolean(),
@@ -67,6 +75,7 @@ export const studyStateSchema = z.object({
   sessionTitle: z.string().optional(),
   sessionDescription: z.string().optional(),
   lastPausedAt: z.number().nullable(),
+  pauseHistory: z.array(pauseEntrySchema).default([]),
 });
 
 export type StudyState = z.infer<typeof studyStateSchema>;

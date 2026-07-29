@@ -1,12 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits' | 'focusWidget' | 'admin' | 'settings';
+type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'stats' | 'habits' | 'focusWidget' | 'admin';
 
 interface NavigationContextType {
   activePage: Page;
   navigateTo: (page: Page) => void;
   navOrder: Array<{ page: Page; icon: any; label: string }>;
   setNavOrder: (order: Array<{ page: Page; icon: any; label: string }>) => void;
+  isSettingsOpen: boolean;
+  openSettings: () => void;
+  closeSettings: () => void;
+  isNavCollapsed: boolean;
+  toggleNavCollapse: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
@@ -21,14 +26,33 @@ const DEFAULT_NAV_ORDER = [
 ];
 
 export const NavigationProvider = ({ children }: { children: React.ReactNode }) => {
+  const VALID_PAGES: Page[] = ['tasks', 'calendar', 'session', 'notes', 'stats', 'habits', 'focusWidget', 'admin'];
+
   const [activePage, setActivePage] = useState<Page>(() => {
-    // Try to get the last visited page from localStorage
-    const savedPage = localStorage.getItem('lastVisitedPage');
-    // If it's the first visit or no saved page, default to 'session'
-    return (savedPage as Page) || 'session';
+    const savedPage = localStorage.getItem('lastVisitedPage') as Page | null;
+    if (savedPage && VALID_PAGES.includes(savedPage)) {
+      return savedPage;
+    }
+    localStorage.setItem('lastVisitedPage', 'session');
+    return 'session';
   });
 
   const [navOrder, setNavOrderState] = useState<Array<{ page: Page; icon: any; label: string }>>(DEFAULT_NAV_ORDER);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNavCollapsed, setIsNavCollapsed] = useState(() => {
+    const saved = localStorage.getItem('navbarCollapsed');
+    return saved ? saved === 'true' : true;
+  });
+
+  const openSettings = useCallback(() => setIsSettingsOpen(true), []);
+  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
+  const toggleNavCollapse = useCallback(() => {
+    setIsNavCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('navbarCollapsed', String(next));
+      return next;
+    });
+  }, []);
 
   // Load nav order from localStorage on mount
   useEffect(() => {
@@ -88,7 +112,7 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
   }, [handleKeyPress]);
 
   return (
-    <NavigationContext.Provider value={{ activePage, navigateTo, navOrder, setNavOrder }}>
+    <NavigationContext.Provider value={{ activePage, navigateTo, navOrder, setNavOrder, isSettingsOpen, openSettings, closeSettings, isNavCollapsed, toggleNavCollapse }}>
       {children}
     </NavigationContext.Provider>
   );

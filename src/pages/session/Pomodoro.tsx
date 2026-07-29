@@ -744,7 +744,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
         lastStart: null,
         // Clear last start
         lastManualAdjustment: Date.now(),
-        manuallyPaused: !fromSync // Mark as manually paused if not from sync
+        manuallyPaused: true // Mark as paused whenever the timer stops
       };
     });
 
@@ -1313,6 +1313,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
           const modeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
           const progress = Math.max(0, Math.min(1, 1 - pomoState.timeLeft / modeDuration));
           const ringColor = pomoState.currentMode === 'work' ? '#ef4444' : pomoState.currentMode === 'break' ? '#22c55e' : '#3b82f6';
+          const isPaused = pomoState.manuallyPaused;
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
           return (
@@ -1322,9 +1323,10 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
                 <circle
                   cx="60" cy="60" r={radius} fill="none"
                   stroke={ringColor} strokeWidth="5" strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference * (1 - progress)}
-                  className="transition-all duration-300"
+                  strokeDasharray={isPaused ? circumference * 0.25 : circumference}
+                  strokeDashoffset={isPaused ? circumference * 0.5 : circumference * (1 - progress)}
+                  className={`transition-[stroke-dasharray,stroke-dashoffset] duration-300 ${isPaused ? 'animate-spin origin-center' : ''}`}
+                  style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">

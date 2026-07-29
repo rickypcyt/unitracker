@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import BaseModal from "@/modals/BaseModal";
 import ReactSlider from "react-slider";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
 
 // -------------------------
@@ -35,6 +35,7 @@ interface SoundControlProps {
   start: () => void;
   stop: () => void;
   max: number;
+  index: number;
 }
 
 const SOUND_THEMES = {
@@ -83,13 +84,13 @@ function SoundControl({
   start,
   stop,
   max,
+  index,
 }: SoundControlProps) {
   const theme = getSoundTheme(soundKey);
   const percentage = Math.round((volume / max) * 100);
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
@@ -101,14 +102,27 @@ function SoundControl({
     >
       <div className="flex items-center gap-4">
         <motion.div
-          animate={isPlaying ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-          transition={{ repeat: Infinity, duration: 2.4, ease: "easeInOut" }}
+          animate={isPlaying ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+          transition={{
+            repeat: Infinity,
+            duration: 3,
+            ease: "easeInOut",
+            delay: index * 0.15,
+          }}
           className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
         >
           <Icon size={22} className={theme.iconText} />
           {isPlaying && (
-            <span
-              className={`absolute inset-0 rounded-full ${theme.activeRing} animate-ping opacity-40`}
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: [0.35, 0], scale: [1, 1.5] }}
+              transition={{
+                repeat: Infinity,
+                duration: 3,
+                ease: "easeInOut",
+                delay: index * 0.15,
+              }}
+              className={`absolute inset-0 rounded-full ${theme.activeRing}`}
             />
           )}
         </motion.div>
@@ -508,7 +522,17 @@ export default function NoiseGenerator() {
             }`}
             aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
           >
-            {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={anySoundPlaying ? "pause" : "play"}
+                initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.5, rotate: 90 }}
+                transition={{ duration: 0.2 }}
+              >
+                {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
+              </motion.div>
+            </AnimatePresence>
             <span className="hidden sm:inline">
               {anySoundPlaying ? "Pause all" : "Play all"}
             </span>
@@ -534,6 +558,7 @@ export default function NoiseGenerator() {
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>
             <SoundControl
+              index={idx}
               soundKey={sound.key}
               label={sound.label}
               icon={

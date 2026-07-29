@@ -14,6 +14,7 @@ import { Toaster } from "react-hot-toast";
 import OnboardingGuide from "@/components/OnboardingGuide";
 import PageTooltips from "@/components/PageTooltips";
 import TourManager from "./components/TourManager";
+import Settings from "@/modals/Settings";
 
 // Lazy load landing pages for better initial bundle
 const PricingPage = lazy(() => import("@/pages/landing/PricingPage"));
@@ -33,7 +34,6 @@ const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
 const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
 const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
-const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 
 // Preload map: import functions for each page to enable hover-based preloading
 const preloadMap: Record<string, () => Promise<unknown>> = {
@@ -45,7 +45,6 @@ const preloadMap: Record<string, () => Promise<unknown>> = {
   notes: () => import("@/pages/notes/Notes"),
   focusWidget: () => import("@/pages/FocusWidgetPage"),
   admin: () => import("@/pages/admin/AdminDashboard"),
-  settings: () => import("@/pages/settings/SettingsPage"),
 };
 
 const preloadedPages = new Set<string>();
@@ -71,7 +70,6 @@ const pagesMap: Record<string, FC> = {
   notes: Notes,
   focusWidget: FocusWidgetPage,
   admin: AdminDashboard,
-  settings: SettingsPage,
 };
 
 
@@ -79,13 +77,13 @@ const pagesMap: Record<string, FC> = {
 // PageContent component
 // -------------------------
 const PageContent: FC = () => {
-  const { activePage } = useNavigation();
+  const { activePage, isSettingsOpen, closeSettings, isNavCollapsed } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { user } = useAuth();
-  const { friends } = useFriendManagement(user?.id);
+  const { friends, handleRemoveFriend } = useFriendManagement(user?.id);
   
   const ActiveComponent = pagesMap[activePage] || SessionPage;
 
@@ -133,16 +131,26 @@ const PageContent: FC = () => {
   // Focus widget page should occupy full screen without navbar
   if (activePage === 'focusWidget') {
     return (
-      <Suspense fallback={<PageLoader fullScreen />}>
-        <ActiveComponent />
-      </Suspense>
+      <>
+        <Suspense fallback={<PageLoader fullScreen />}>
+          <ActiveComponent />
+        </Suspense>
+        <Settings
+          isOpen={isSettingsOpen}
+          onClose={closeSettings}
+          friends={friends}
+          workspaces={workspaces}
+          {...(handleRemoveFriend && { onRemoveFriend: handleRemoveFriend })}
+          {...(user?.id && { currentUserId: user.id })}
+        />
+      </>
     );
   }
 
   return (
-    <div className="h-screen bg-[var(--bg-primary)] w-full overflow-hidden">
+    <div className="h-full bg-[var(--bg-primary)] w-full overflow-hidden flex flex-col">
       <Navbar />
-      <div className="lg:pl-20 min-w-0 h-screen overflow-y-auto overflow-x-hidden">
+      <div className={`${isNavCollapsed ? 'lg:pl-20' : 'lg:pl-64'} min-w-0 flex-1 overflow-y-auto overflow-x-hidden relative transition-all duration-300`}>
         <Suspense fallback={<PageLoader />}>
           <ActiveComponent />
         </Suspense>
@@ -156,6 +164,14 @@ const PageContent: FC = () => {
         onDeleteWorkspace={handleDeleteWorkspace}
         onRefreshWorkspaces={refreshWorkspaces}
         friends={friends}
+        {...(user?.id && { currentUserId: user.id })}
+      />
+      <Settings
+        isOpen={isSettingsOpen}
+        onClose={closeSettings}
+        friends={friends}
+        workspaces={workspaces}
+        {...(handleRemoveFriend && { onRemoveFriend: handleRemoveFriend })}
         {...(user?.id && { currentUserId: user.id })}
       />
     </div>

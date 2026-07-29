@@ -30,6 +30,7 @@ const DEFAULT_STUDY_STATE: StudyState = {
   timeAtStart: 0,
   sessionStatus: 'inactive',
   lastPausedAt: null,
+  pauseHistory: [],
 };
 
 const StudyTimerZustand = () => {

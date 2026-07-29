@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import useEventListener from "@/hooks/useEventListener";
 import { useSessionId } from "@/hooks/study-timer/useSessionId";
 import { useStudyTimerState, type StudyState } from "@/hooks/study-timer/useStudyTimerState";
+import type { PauseEntry } from "@/schemas/timer";
 import { getLocalDateString } from "@/utils/dateUtils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -87,6 +88,32 @@ const formatDuration = (totalSeconds: number): string => {
 };
 const devLog = (..._args: unknown[]) => {
   if (isDev) {}
+};
+
+const formatPauseDuration = (seconds: number): string => {
+  const s = Math.max(0, Math.round(seconds));
+  const m = Math.floor(s / 60);
+  const remS = s % 60;
+  if (m > 0) return `${m}m ${remS.toString().padStart(2, "0")}s`;
+  return `${remS}s`;
+};
+
+const formatPauseTime = (timestamp: number): string =>
+  new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+const openPauseEntry = (history: PauseEntry[]): PauseEntry[] => [
+  ...history,
+  { startedAt: Date.now(), endedAt: null, durationSeconds: null }
+];
+
+const closeLastPauseEntry = (history: PauseEntry[]): PauseEntry[] => {
+  if (history.length === 0) return history;
+  const lastIndex = history.length - 1;
+  const last = history[lastIndex];
+  if (!last || last.endedAt !== null) return history;
+  const endedAt = Date.now();
+  const durationSeconds = (endedAt - last.startedAt) / 1000;
+  return [...history.slice(0, lastIndex), { ...last, endedAt, durationSeconds }];
 };
 
 // ─── Internal hooks ───────────────────────────────────────────────────────────
@@ -218,7 +245,7 @@ const StudyTimer = ({
       const wasRunning: boolean = parsed.isRunning === true;
       const lastStart: number | null = parsed.lastStart ?? null;
       const timeAtStart: number = parsed.timeAtStart ?? 0;
-      setCurrentSession(activeSessionId);
+      setCurrentSession({ id: activeSessionId, title: parsed.sessionTitle ?? '', description: parsed.sessionDescription ?? '', syncPomo: false, syncCountdown: false });
       if (parsed.sessionTitle || parsed.sessionDescription) {
         updateStudyState({
           sessionTitle: parsed.sessionTitle ?? "",
@@ -428,7 +455,8 @@ const StudyTimer = ({
       sessionStatus: studyState.sessionStatus,
       sessionTitle: studyState.sessionTitle ?? "",
       sessionDescription: studyState.sessionDescription ?? "",
-      lastPausedAt: studyState.lastPausedAt
+      lastPausedAt: studyState.lastPausedAt,
+      pauseHistory: studyState.pauseHistory
     });
     onSyncChange?.(isPomodoroSync);
   }, [studyState, onSyncChange, isPomodoroSync]);
@@ -525,7 +553,8 @@ const StudyTimer = ({
       timeAtStart: 0,
       time: 0,
       sessionStatus: preserveSession ? studyState.sessionStatus : "inactive",
-      lastPausedAt: null
+      lastPausedAt: null,
+      pauseHistory: preserveSession ? studyState.pauseHistory : []
     });
     setStudyRunning(false);
     setStudyTimerState("stopped");
@@ -542,7 +571,7 @@ const StudyTimer = ({
         isRunning: false
       }
     }));
-  }, [studyState.sessionStatus, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
+  }, [studyState.sessionStatus, studyState.pauseHistory, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
 
   // ── Core controls ─────────────────────────────────────────────────────────
   const start = useCallback(async (baseTimestamp: number, fromSync = false, seedTime?: number) => {
@@ -563,7 +592,9 @@ const StudyTimer = ({
       lastStart: now,
       timeAtStart: currentTime,
       time: currentTime,
-      sessionStatus: "active"
+      sessionStatus: "active",
+      pauseHistory: closeLastPauseEntry(studyState.pauseHistory),
+      lastPausedAt: null
     });
     setStudyRunning(true);
     setStudyTimerState("running");
@@ -579,7 +610,7 @@ const StudyTimer = ({
       if (isCountdownSync) eventsToEmit.push(SYNC_EVENTS.PLAY_COUNTDOWN);
       emitMultipleSyncEvents(eventsToEmit, Date.now());
     }
-  }, [isStudyRunningRedux, isLoggedIn, currentSessionId, studyState.time, updateStudyState, setStudyRunning, setStudyTimerState, isPomodoroSync, isCountdownSync, updateModal, emitMultipleSyncEvents]);
+  }, [isStudyRunningRedux, isLoggedIn, currentSessionId, studyState.time, studyState.pauseHistory, updateStudyState, setStudyRunning, setStudyTimerState, isPomodoroSync, isCountdownSync, updateModal, emitMultipleSyncEvents]);
   const pause = useCallback(async (fromSync = false) => {
     if (!isStudyRunningRedux) return;
     setStudyRunning(false);
@@ -590,7 +621,8 @@ const StudyTimer = ({
       lastStart: null,
       timeAtStart: studyState.time,
       sessionStatus: "paused",
-      lastPausedAt: Date.now()
+      lastPausedAt: Date.now(),
+      pauseHistory: openPauseEntry(studyState.pauseHistory)
     });
 
     // Persist accumulated duration to DB on every pause
@@ -615,7 +647,7 @@ const StudyTimer = ({
       if (isCountdownSync) eventsToEmit.push(SYNC_EVENTS.PAUSE_COUNTDOWN);
       emitMultipleSyncEvents(eventsToEmit, Date.now());
     }
-  }, [isStudyRunningRedux, currentSessionId, studyState.time, updateStudyState, setStudyRunning, setStudyTimerState, isPomodoroSync, isCountdownSync, emitMultipleSyncEvents]);
+  }, [isStudyRunningRedux, currentSessionId, studyState.time, studyState.pauseHistory, updateStudyState, setStudyRunning, setStudyTimerState, isPomodoroSync, isCountdownSync, emitMultipleSyncEvents]);
   const reset = useCallback((fromSync = false) => {
     const hasActiveSession = !!currentSessionId;
     applyStoppedState(hasActiveSession);
@@ -1044,8 +1076,8 @@ const StudyTimer = ({
           const h = Math.floor(totalSec / 3600);
           const m = Math.floor((totalSec % 3600) / 60);
           const s = Math.floor(totalSec % 60);
-          const POMODORO_INTERVAL = 1500; // 25 min
-          const progress = (totalSec % POMODORO_INTERVAL) / POMODORO_INTERVAL;
+          const isRunning = studyState.isRunning;
+          const isPaused = studyState.sessionStatus === 'paused';
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
           return (
@@ -1055,9 +1087,10 @@ const StudyTimer = ({
                 <circle
                   cx="60" cy="60" r={radius} fill="none"
                   stroke="var(--accent-primary)" strokeWidth="5" strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference * (1 - progress)}
-                  className="transition-all duration-300"
+                  strokeDasharray={isPaused ? circumference * 0.25 : circumference}
+                  strokeDashoffset={isPaused ? circumference * 0.5 : (isRunning ? 0 : circumference)}
+                  className={`transition-all duration-300 ${isPaused ? 'animate-spin origin-center' : ''}`}
+                  style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -1096,12 +1129,30 @@ const StudyTimer = ({
           );
         })()}
 
-        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[180px] text-center">
+        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[220px] text-left">
             <div className="font-semibold mb-1">Session Title</div>
             <div>{studyState.sessionTitle || summaryData.title || "No Session"}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
                 Last paused: {getTimeSinceLastPause()}
               </div>}
+            {studyState.pauseHistory.length > 0 && <>
+                <div className="font-semibold mt-3 mb-1">Pause history</div>
+                <ul className="space-y-1 max-h-32 overflow-y-auto text-xs">
+                  {studyState.pauseHistory.map((entry, idx) => {
+                    const isOngoing = entry.endedAt === null;
+                    const duration = isOngoing ? (Date.now() - entry.startedAt) / 1000 : (entry.durationSeconds ?? 0);
+                    return <li key={`${entry.startedAt}-${idx}`} className="flex justify-between text-[var(--text-secondary)]">
+                        <span>Pause #{idx + 1}</span>
+                        <span>
+                          {formatPauseTime(entry.startedAt)}
+                          {" - "}
+                          {entry.endedAt === null ? "ongoing" : formatPauseTime(entry.endedAt)}
+                          {" ("}{formatPauseDuration(duration)}{")"}
+                        </span>
+                      </li>;
+                  })}
+                </ul>
+              </>}
           </div>}
       </div>
 

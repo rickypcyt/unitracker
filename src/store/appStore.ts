@@ -309,7 +309,8 @@ const DEFAULT_STUDY_STATE: StudyState = {
   lastStart: null,
   timeAtStart: 0,
   sessionStatus: 'inactive',
-  lastPausedAt: null
+  lastPausedAt: null,
+  pauseHistory: []
 };
 const DEFAULT_SYNC_SETTINGS: SyncSettings = {
   syncPomodoroWithTimer: false,
