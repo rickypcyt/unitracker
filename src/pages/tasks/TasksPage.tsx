@@ -96,6 +96,12 @@ const TasksPage = memo(() => {
     return () => window.removeEventListener('quickAddTask', handleQuickAdd);
   }, [handleAddTask]);
 
+  useEffect(() => {
+    const handleOpenWorkspaceModal = () => setShowWorkspaceModal(true);
+    window.addEventListener('openWorkspaceModal', handleOpenWorkspaceModal);
+    return () => window.removeEventListener('openWorkspaceModal', handleOpenWorkspaceModal);
+  }, []);
+
   const handleColumnCountChange = (count: ColumnCount) => {
     setColumnCount(count);
     localStorage.setItem('taskPageColumnCount', String(count));

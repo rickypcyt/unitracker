@@ -1,4 +1,4 @@
-import { BookOpen, Briefcase, Check, ChevronRight, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Loader2, Music, Plane, Plus, Search, Share, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
+import { BookOpen, Briefcase, Check, Coffee, Edit, FolderOpen, Gamepad2, Heart, Home, Loader2, Music, Plane, Plus, Search, Share, ShoppingBag, Smartphone, Star, Target, Trash2, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import BaseModal from './BaseModal';
@@ -28,7 +28,7 @@ interface WorkspaceModalProps {
   onEditWorkspace: (workspace: Workspace & {
     taskCount?: number;
   }) => void;
-  onDeleteWorkspace: (workspaceId: string | number) => void;
+  onDeleteWorkspace: (workspaceId: string) => void;
   currentUserId?: string;
   friends?: any[];
   onAddFriend?: () => void;
@@ -81,7 +81,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   const [sharedByUser, setSharedByUser] = useState<any[]>([]);
   const [sharedWithUser, setSharedWithUser] = useState<any[]>([]);
   const [sharedLoading, setSharedLoading] = useState(false);
-  const [sharedError, setSharedError] = useState<string | null>(null);
+  const [, setSharedError] = useState<string | null>(null);
   const friendsRef = useRef(friends);
   const workspacesRef = useRef(workspaces);
   useEffect(() => {
@@ -182,7 +182,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
   }) => {
     return ws.taskCount || 0;
   };
-  const handleUnshareWorkspace = async (shareId: string, removedWorkspaceId?: string | number) => {
+  const handleUnshareWorkspace = async (shareId: string, removedWorkspaceId?: string) => {
     try {
       const {
         error

@@ -24,6 +24,7 @@ export interface Task {
   start_at?: string | null;
   /** End time for slot e.g. "11:00" (recurring or one-off) */
   end_at?: string | null;
+  [key: string]: unknown;
 }
 
 export interface TaskStorage {

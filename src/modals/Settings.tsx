@@ -18,6 +18,7 @@ import React, { useEffect, useState } from "react";
 import { ACCENT_COLORS } from "@/utils/theme";
 import AddFriendModal from "@/modals/AddFriendModal";
 import BaseModal from "./BaseModal";
+import DataExportImportPanel from "@/components/DataExportImportPanel";
 import FriendsModal from "@/modals/FriendsModal";
 import ManageAssignmentsModal from "@/modals/ManageAssignmentsModal";
 import ManageCompletedTasksModal from "@/modals/ManageCompletedTasksModal";
@@ -307,28 +308,34 @@ const Settings: React.FC<SettingsProps> = ({
             )}
 
             {activeTab === "data" && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowManageAssignmentsModal(true)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                >
-                  <List size={16} className="text-[var(--text-secondary)]" />
-                  Manage Assignments
-                </button>
-                <button
-                  onClick={() => setShowSessionsModal(true)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                >
-                  <Clock size={16} className="text-[var(--text-secondary)]" />
-                  Manage Study Sessions
-                </button>
-                <button
-                  onClick={() => setShowCompletedTasksModal(true)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                >
-                  <CheckCircle size={16} className="text-[var(--text-secondary)]" />
-                  Manage Completed Tasks
-                </button>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowManageAssignmentsModal(true)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                  >
+                    <List size={16} className="text-[var(--text-secondary)]" />
+                    Manage Assignments
+                  </button>
+                  <button
+                    onClick={() => setShowSessionsModal(true)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                  >
+                    <Clock size={16} className="text-[var(--text-secondary)]" />
+                    Manage Study Sessions
+                  </button>
+                  <button
+                    onClick={() => setShowCompletedTasksModal(true)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                  >
+                    <CheckCircle size={16} className="text-[var(--text-secondary)]" />
+                    Manage Completed Tasks
+                  </button>
+                </div>
+
+                <div className="border-t border-[var(--border-primary)]/50 pt-4">
+                  <DataExportImportPanel />
+                </div>
               </div>
             )}
 

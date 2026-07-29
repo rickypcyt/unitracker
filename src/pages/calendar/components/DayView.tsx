@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
-
-import { isSameDay } from 'date-fns';
+import { useEffect, useRef } from "react";
+import { isSameDay } from "date-fns";
 
 const PIXELS_PER_MINUTE = 1;
 const MINUTES_PER_HOUR = 60;
@@ -14,15 +13,12 @@ const minutesFromStartOfDay = (date: Date) =>
 
 const normalizeTimestamp = (value: string) => {
   let normalized = value;
-
-  if (normalized.includes(' ')) {
-    normalized = normalized.replace(' ', 'T');
+  if (normalized.includes(" ")) {
+    normalized = normalized.replace(" ", "T");
   }
-
   if (/([+-]\d{2})$/.test(normalized)) {
     normalized = `${normalized}:00`;
   }
-
   return normalized;
 };
 
@@ -35,12 +31,10 @@ const parseDateTime = (
 
   let normalized = value.trim();
   if (!normalized) return null;
-  normalized = normalizeTimestamp(normalized);
 
+  normalized = normalizeTimestamp(normalized);
   const parsed = new Date(normalized);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed;
-  }
+  if (!Number.isNaN(parsed.getTime())) return parsed;
 
   const timeMatch = normalized.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
   if (timeMatch) {
@@ -108,7 +102,6 @@ const DayView = ({
   const currentMinutesFromStart = minutesFromStartOfDay(now);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to current hour on mount
   useEffect(() => {
     if (scrollRef.current) {
       const scrollHour = isCurrentDay ? currentHour : 8;
@@ -117,28 +110,47 @@ const DayView = ({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Count total tasks for the day for empty state
   const totalTasksForDay = hours.reduce(
     (sum, hour) => sum + getTasksForDayAndHour(selectedDate, hour).length,
     0
   );
 
   return (
-    <div className="flex-1 flex flex-col bg-[var(--bg-primary)]/90 border-[var(--border-primary)] rounded-lg relative min-h-0 h-full">
+    <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border border-[var(--border-primary)]/40 rounded-xl relative min-h-0 h-full overflow-hidden">
       {/* Day header */}
-      <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm pb-2 border-b border-[var(--border-primary)]/30 flex-shrink-0 px-3 py-2">
+      <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)]/40 flex-shrink-0 px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`text-sm sm:text-base font-semibold ${isCurrentDay ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-              {selectedDate.toLocaleDateString('en', { weekday: 'long' })}
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`text-base font-semibold tracking-tight ${
+                isCurrentDay
+                  ? "text-[var(--accent-primary)]"
+                  : "text-[var(--text-primary)]"
+              }`}
+            >
+              {selectedDate.toLocaleDateString("en", { weekday: "long" })}
             </div>
-            <div className={`text-sm sm:text-base font-medium ${isCurrentDay ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
-              {selectedDate.toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+            <div
+              className={`text-sm font-medium ${
+                isCurrentDay
+                  ? "text-[var(--accent-primary)]"
+                  : "text-[var(--text-secondary)]"
+              }`}
+            >
+              {selectedDate.toLocaleDateString("en", {
+                month: "short",
+                day: "numeric",
+              })}
             </div>
+            {isCurrentDay && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 px-1.5 py-0.5 rounded-md">
+                Today
+              </span>
+            )}
           </div>
           {totalTasksForDay > 0 && (
-            <div className="text-xs text-[var(--text-secondary)] font-medium">
-              {totalTasksForDay} task{totalTasksForDay !== 1 ? 's' : ''}
+            <div className="text-xs font-medium text-[var(--text-secondary)] tabular-nums">
+              {totalTasksForDay} task{totalTasksForDay !== 1 ? "s" : ""}
             </div>
           )}
         </div>
@@ -146,29 +158,42 @@ const DayView = ({
 
       {/* Time grid */}
       <div className="flex-1 overflow-auto" ref={scrollRef}>
-        <div className="relative">
+        <div className="relative px-2 pb-4">
           {hours.map((hour) => {
             const isCurrentHour = isCurrentDay && hour === currentHour;
-            const tasksStartingThisHour = getTasksForDayAndHour(selectedDate, hour)
+
+            const tasksStartingThisHour = getTasksForDayAndHour(
+              selectedDate,
+              hour
+            )
               .map((task) => {
                 const { start, end } = resolveTaskTiming(task, selectedDate);
                 return { task, start, end };
               })
-              .filter(({ start }) => start.getHours() === hour && !Number.isNaN(start.getTime()))
+              .filter(
+                ({ start }) =>
+                  start.getHours() === hour && !Number.isNaN(start.getTime())
+              )
               .sort((a, b) => a.start.getTime() - b.start.getTime());
 
             return (
               <div
                 key={hour}
-                className={`grid grid-cols-5 gap-1 border-t border-[var(--border-primary)]/30 relative ${hour % 2 === 0 ? 'bg-[var(--bg-secondary)]/20' : ''}`}
+                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/25"
               >
-                <div className="text-xs sm:text-sm text-[var(--text-secondary)] p-1 text-left font-medium">
+                {/* Hour label */}
+                <div className="text-[11px] sm:text-xs text-[var(--text-secondary)] pt-1.5 pr-2 text-right font-medium tabular-nums">
                   {format12Hour(hour)}
                 </div>
+
+                {/* Slot */}
                 <div
-                  className="col-span-4 border-l border-[var(--border-primary)]/20 cursor-pointer p-1 min-h-[60px] transition-colors relative overflow-visible"
+                  className="cursor-pointer min-h-[60px] transition-colors relative overflow-visible rounded-md hover:bg-[var(--bg-secondary)]/40"
                   onDoubleClick={(e) => {
-                    if ((e.target as HTMLElement).closest('[data-calendar-task]')) return;
+                    if (
+                      (e.target as HTMLElement).closest("[data-calendar-task]")
+                    )
+                      return;
                     const newDate = new Date(selectedDate);
                     newDate.setHours(hour, 0, 0, 0);
                     setSelectedDate(newDate);
@@ -176,6 +201,10 @@ const DayView = ({
                     setShowTaskForm(true);
                   }}
                   onClick={(e) => {
+                    if (
+                      (e.target as HTMLElement).closest("[data-calendar-task]")
+                    )
+                      return;
                     const rect = e.currentTarget.getBoundingClientRect();
                     const y = e.clientY - rect.top;
                     const minutes = clamp(
@@ -191,9 +220,10 @@ const DayView = ({
                   }}
                   title={`Click to set time at ${format12Hour(hour)}`}
                 >
+                  {/* Current time indicator */}
                   {isCurrentHour && (
                     <div
-                      className="absolute left-0 right-0 h-0.5 border-t-2 border-[var(--accent-primary)] z-20 flex items-center"
+                      className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
                       style={{
                         top: `${
                           clamp(
@@ -202,98 +232,101 @@ const DayView = ({
                             MINUTES_PER_HOUR
                           ) * PIXELS_PER_MINUTE
                         }px`,
-                        width: 'calc(100% + 8px)',
-                        left: '-4px',
+                        width: "calc(100% + 6px)",
+                        left: "-3px",
                       }}
                     >
-                      <div className="absolute right-0 text-xs text-[var(--accent-primary)] font-medium bg-[var(--bg-primary)] px-1.5 py-0.5 rounded">
-                        {now.toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
+                      <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] shrink-0" />
+                      <div className="flex-1 h-[2px] bg-[var(--accent-primary)] rounded-full" />
                     </div>
                   )}
 
-                  {/* Half-hour divider line */}
+                  {/* Half-hour divider */}
                   <div
-                    className="absolute left-0 right-0 border-t border-[var(--border-primary)]/20 pointer-events-none"
-                    style={{
-                      top: '30px',
-                      zIndex: 1,
-                    }}
+                    className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/20 pointer-events-none"
+                    style={{ top: "30px", zIndex: 1 }}
                   />
 
-                  {tasksStartingThisHour.map(({ task, start, end }, taskIndex) => {
-                    const minutesFromDayStart = minutesFromStartOfDay(start);
-                    const minutesIntoHour = clamp(
-                      minutesFromDayStart - hour * MINUTES_PER_HOUR,
-                      0,
-                      MINUTES_PER_HOUR
-                    );
-                    const topOffset = minutesIntoHour * PIXELS_PER_MINUTE;
-                    const durationMinutesRaw = Math.round(
-                      (end.getTime() - start.getTime()) / (1000 * 60)
-                    );
-                    const durationMinutes = Math.max(30, durationMinutesRaw);
-                    const blockHeight = Math.max(
-                      28,
-                      durationMinutes * PIXELS_PER_MINUTE
-                    );
-                    const leftOffset = Math.min(taskIndex * 12, 48);
-                    const timeLabel = `${start.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })} - ${end.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}`;
+                  {/* Tasks */}
+                  {tasksStartingThisHour.map(
+                    ({ task, start, end }, taskIndex) => {
+                      const minutesFromDayStart = minutesFromStartOfDay(start);
+                      const minutesIntoHour = clamp(
+                        minutesFromDayStart - hour * MINUTES_PER_HOUR,
+                        0,
+                        MINUTES_PER_HOUR
+                      );
+                      const topOffset = minutesIntoHour * PIXELS_PER_MINUTE;
+                      const durationMinutesRaw = Math.round(
+                        (end.getTime() - start.getTime()) / (1000 * 60)
+                      );
+                      const durationMinutes = Math.max(30, durationMinutesRaw);
+                      const blockHeight = Math.max(
+                        28,
+                        durationMinutes * PIXELS_PER_MINUTE
+                      );
+                      const leftOffset = Math.min(taskIndex * 12, 48);
 
-                    return (
-                      <div
-                        key={task.id}
-                        data-calendar-task
-                        className="absolute z-10 rounded-lg border border-[var(--accent-primary)]/60 bg-[var(--accent-primary)]/10 text-[var(--text-primary)] text-xs sm:text-sm px-2 pt-1 pb-1 shadow-sm transition-all hover:shadow-md hover:border-[var(--accent-primary)]"
-                        style={{
-                          left: `${4 + leftOffset}px`,
-                          right: '4px',
-                          top: `${topOffset}px`,
-                          height: `${blockHeight}px`,
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          const startDate = new Date(start);
-                          setSelectedDate(startDate);
-                          if (!isLoggedIn) {
-                            setIsLoginPromptOpen(true);
-                            return;
-                          }
-                          setShowTaskForm(true);
-                        }}
-                        title={`${task.title ?? 'Task'} ${timeLabel}`}
-                      >
-                        {task.assignment && (
-                          <div className="text-[10px] uppercase tracking-wide text-[var(--accent-primary)]/80 truncate font-medium">
-                            {task.assignment}
+                      const timeLabel = `${start.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })} – ${end.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`;
+
+                      return (
+                        <div
+                          key={task.id}
+                          data-calendar-task
+                          className="absolute z-10 rounded-md border-l-[3px] border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)] text-xs sm:text-[13px] px-2 py-1.5 transition-colors hover:bg-[var(--accent-primary)]/15"
+                          style={{
+                            left: `${4 + leftOffset}px`,
+                            right: "4px",
+                            top: `${topOffset}px`,
+                            height: `${blockHeight}px`,
+                          }}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            const startDate = new Date(start);
+                            setSelectedDate(startDate);
+                            if (!isLoggedIn) {
+                              setIsLoginPromptOpen(true);
+                              return;
+                            }
+                            setShowTaskForm(true);
+                          }}
+                          title={`${task.title ?? "Task"} ${timeLabel}`}
+                        >
+                          {task.assignment && (
+                            <div className="text-[10px] text-[var(--accent-primary)] truncate font-medium mb-0.5">
+                              {task.assignment}
+                            </div>
+                          )}
+                          <div className="font-medium truncate leading-snug">
+                            {task.title || "Sin título"}
                           </div>
-                        )}
-                        <div className="font-medium truncate">
-                          {task.title || 'Sin título'}
+                          <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">
+                            {timeLabel}
+                          </div>
                         </div>
-                        <div className="text-[10px] sm:text-xs opacity-70 truncate">
-                          {timeLabel}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </div>
             );
           })}
+
+          {/* Empty state */}
           {totalTasksForDay === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="text-sm text-[var(--text-secondary)] font-medium">No tasks scheduled</div>
-              <div className="text-xs text-[var(--text-secondary)]/70 mt-1">Double-click any time slot to add one</div>
+            <div className="flex flex-col items-center justify-center py-16 text-center pointer-events-none">
+              <p className="text-sm font-medium text-[var(--text-secondary)]">
+                No tasks scheduled
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]/70 mt-1">
+                Click any time slot to add one
+              </p>
             </div>
           )}
         </div>
@@ -302,11 +335,10 @@ const DayView = ({
   );
 };
 
-// Helper function for 12-hour formatting
 const format12Hour = (hour: number) => {
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-  return `${displayHour}:00 ${period}`;
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${displayHour} ${period}`;
 };
 
 export default DayView;

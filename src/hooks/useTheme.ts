@@ -69,6 +69,17 @@ const useTheme = () => {
     }
   }, [isLoggedIn, showWelcomeModal]);
 
+  // Listen for 'openLoginModal' events from empty states and other components
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      if (!isLoggedIn) {
+        setShowLoginModal(true);
+      }
+    };
+    window.addEventListener('openLoginModal', handleOpenLoginModal);
+    return () => window.removeEventListener('openLoginModal', handleOpenLoginModal);
+  }, [isLoggedIn]);
+
   // Update login modal state when authentication changes
   useEffect(() => {
     if (isLoggedIn) {

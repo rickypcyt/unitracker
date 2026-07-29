@@ -97,7 +97,7 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
 
         if (isSameDay(lapDate, targetDate)) {
           const [h, m] = lap.duration.split(":").map(Number);
-          return total + h * 60 + m;
+          return total + (h ?? 0) * 60 + (m ?? 0);
         }
         return total;
       }, 0);

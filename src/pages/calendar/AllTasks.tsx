@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-
 import { AssignmentSortMenu } from "@/components/AssignmentSortMenu";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight } from "lucide-react";
 import { QuickDatePicker } from "@/modals/QuickDatePicker";
 import RecurringTasksToggle from "@/pages/calendar/RecurringTasksToggle";
 import { Task } from "@/types/taskStorage";
@@ -22,21 +21,23 @@ interface AllTasksProps {
   filteredTasks?: Task[];
   title?: string;
   showCompleted?: boolean;
-  sortBy?: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc';
+  sortBy?: "name-asc" | "name-desc" | "count-asc" | "count-desc";
   hideSortMenu?: boolean;
   allTasks?: Task[];
   onFilteredTasksChange?: (tasks: Task[]) => void;
   selectedFilter?: string;
   onFilterChange?: (filter: string) => void;
-  onSortChange?: (sort: 'name-asc' | 'name-desc' | 'count-asc' | 'count-desc') => void;
+  onSortChange?: (
+    sort: "name-asc" | "name-desc" | "count-asc" | "count-desc"
+  ) => void;
   sidebarRight?: boolean;
   onToggleSidebar?: () => void;
 }
 
-const AllTasks: React.FC<AllTasksProps> = ({ 
-  filteredTasks, 
-  title, 
-  sortBy = 'count-desc', 
+const AllTasks: React.FC<AllTasksProps> = ({
+  filteredTasks,
+  title,
+  sortBy = "count-desc",
   hideSortMenu = false,
   allTasks,
   onFilteredTasksChange,
@@ -44,92 +45,93 @@ const AllTasks: React.FC<AllTasksProps> = ({
   onFilterChange,
   onSortChange,
   sidebarRight,
-  onToggleSidebar
+  onToggleSidebar,
 }) => {
-  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } = useTaskManager(null);
+  const { handleToggleCompletion, handleDeleteTask, handleUpdateTask } =
+    useTaskManager(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [quickDateTask, setQuickDateTask] = useState<Task | null>(null);
-  
-  const [collapsedAssignments, setCollapsedAssignments] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem(`collapsedAssignments_${title || 'all'}`);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
 
-  // Load sort preference from localStorage
-  const [localSortBy, setLocalSortBy] = useState<'name-asc' | 'name-desc' | 'count-asc' | 'count-desc'>(() => {
+  const [collapsedAssignments, setCollapsedAssignments] = useState<Set<string>>(
+    () => {
+      try {
+        const saved = localStorage.getItem(
+          `collapsedAssignments_${title || "all"}`
+        );
+        return saved ? new Set(JSON.parse(saved)) : new Set();
+      } catch {
+        return new Set();
+      }
+    }
+  );
+
+  const [localSortBy, setLocalSortBy] = useState<
+    "name-asc" | "name-desc" | "count-asc" | "count-desc"
+  >(() => {
     try {
-      const saved = localStorage.getItem(`taskSort_${title || 'all'}`);
+      const saved = localStorage.getItem(`taskSort_${title || "all"}`);
       return (saved as any) || sortBy;
     } catch {
       return sortBy;
     }
   });
 
-  // Use local sort if hideSortMenu is true, otherwise use prop
   const effectiveSortBy = hideSortMenu ? localSortBy : sortBy;
-
   const tasks = filteredTasks || [];
 
-  // Save collapsed assignments to localStorage whenever they change
   useEffect(() => {
     try {
-      localStorage.setItem(`collapsedAssignments_${title || 'all'}`, JSON.stringify(Array.from(collapsedAssignments)));
+      localStorage.setItem(
+        `collapsedAssignments_${title || "all"}`,
+        JSON.stringify(Array.from(collapsedAssignments))
+      );
     } catch {
-      // Silently fail if localStorage is not available
+      // Silently fail
     }
   }, [collapsedAssignments, title]);
 
-  // Save sort preference to localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem(`assignmentSort_${title || 'all'}`, sortBy);
+      localStorage.setItem(`taskSort_${title || "all"}`, effectiveSortBy);
     } catch {
-      // Silently fail if localStorage is not available
+      // Silently fail
     }
-  }, [sortBy, title]);
+  }, [effectiveSortBy, title]);
 
-  useEffect(() => {
-    // Tasks are managed by Zustand store
-  }, []);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Group tasks by assignment (only non-completed tasks), sorted by deadline (closest first)
+  // Group tasks by assignment (only non-completed), sorted by deadline
   const tasksByAssignment = tasks
-    .filter(task => !task.completed)
+    .filter((task) => !task.completed)
     .sort((a, b) => {
       const aDate = a.deadline ? new Date(a.deadline).getTime() : Infinity;
       const bDate = b.deadline ? new Date(b.deadline).getTime() : Infinity;
       return aDate - bDate;
     })
     .reduce((groups: { [key: string]: Task[] }, task: Task) => {
-      const assignment = task.assignment || 'No Assignment';
-      if (!groups[assignment]) {
-        groups[assignment] = [];
-      }
+      const assignment = task.assignment || "No Assignment";
+      if (!groups[assignment]) groups[assignment] = [];
       groups[assignment].push(task);
       return groups;
     }, {});
 
-  // Sort assignments based on selected option
   const sortedAssignments = Object.keys(tasksByAssignment).sort((a, b) => {
     switch (effectiveSortBy) {
-      case 'name-asc':
+      case "name-asc":
         return a.localeCompare(b);
-      case 'name-desc':
+      case "name-desc":
         return b.localeCompare(a);
-      case 'count-asc':
-        return (tasksByAssignment[a]?.length || 0) - (tasksByAssignment[b]?.length || 0);
-      case 'count-desc':
+      case "count-asc":
+        return (
+          (tasksByAssignment[a]?.length || 0) -
+          (tasksByAssignment[b]?.length || 0)
+        );
+      case "count-desc":
       default:
-        return (tasksByAssignment[b]?.length || 0) - (tasksByAssignment[a]?.length || 0);
+        return (
+          (tasksByAssignment[b]?.length || 0) -
+          (tasksByAssignment[a]?.length || 0)
+        );
     }
   });
 
@@ -152,12 +154,10 @@ const AllTasks: React.FC<AllTasksProps> = ({
     setQuickDateTask(null);
   };
 
-  // Wrapper para handleToggleCompletion - firma (id: string) => void
   const handleToggleCompletionWrapper = (id: string) => {
     handleToggleCompletion(id);
   };
 
-  // Wrapper para handleDeleteTask - firma (id: string) => void
   const handleDeleteTaskWrapper = (id: string) => {
     handleDeleteTask(id);
   };
@@ -167,131 +167,145 @@ const AllTasks: React.FC<AllTasksProps> = ({
     task: Task
   ) => {
     e.preventDefault();
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      task,
-    });
+    setContextMenu({ x: e.clientX, y: e.clientY, task });
   };
 
-  // Wrapper para compatibilidad con TaskItem
-  const handleTaskContextMenuWrapper = (e: React.MouseEvent, task: Task) => {
+  const handleTaskContextMenuWrapper = (
+    e: React.MouseEvent,
+    task: Task
+  ) => {
     handleTaskContextMenu(e as React.MouseEvent<HTMLDivElement>, task);
   };
 
-  // Función para colapsar/expandir un assignment
   const toggleAssignmentCollapse = (assignment: string) => {
-    setCollapsedAssignments(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(assignment)) {
-        newSet.delete(assignment);
-      } else {
-        newSet.add(assignment);
-      }
-      return newSet;
+    setCollapsedAssignments((prev) => {
+      const next = new Set(prev);
+      if (next.has(assignment)) next.delete(assignment);
+      else next.add(assignment);
+      return next;
     });
   };
 
   return (
     <div className="w-full h-full">
       <div className="w-full h-full flex flex-col overflow-hidden">
-        {/* Sort By - Above everything */}
+        {/* Header */}
         {!hideSortMenu && (
-          <div className="flex items-center justify-between p-3 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)]">
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)]/50 bg-[var(--bg-primary)]">
+            <h3 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
               {title || "All Tasks"}
             </h3>
             <div className="flex items-center gap-2">
               {onToggleSidebar && (
                 <button
                   onClick={onToggleSidebar}
-                  className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors px-2 py-1 rounded-md hover:bg-[var(--bg-secondary)]/50"
-                  title={sidebarRight ? 'Move panel to left' : 'Move panel to right'}
+                  className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-secondary)]/60"
+                  title={
+                    sidebarRight ? "Move panel to left" : "Move panel to right"
+                  }
                 >
-                  {sidebarRight ? <span>← Left</span> : <span>Right →</span>}
+                  {sidebarRight ? "← Left" : "Right →"}
                 </button>
               )}
-              <AssignmentSortMenu 
-                currentSort={effectiveSortBy} 
-                onSortChange={onSortChange || (hideSortMenu ? setLocalSortBy : () => {})} 
+              <AssignmentSortMenu
+                currentSort={effectiveSortBy}
+                onSortChange={
+                  onSortChange || (hideSortMenu ? setLocalSortBy : () => {})
+                }
               />
             </div>
           </div>
         )}
-        
-        {/* Workspace Selector */}
-        {allTasks && (
+
+        {/* Toolbar */}
+        <div className="px-3 pt-3 space-y-2">
+          {allTasks && (
+            <div className="w-full">
+              <WorkspaceSelector />
+            </div>
+          )}
+
+          {allTasks && onFilteredTasksChange && selectedFilter && (
+            <div className="w-full">
+              <TaskFilter
+                tasks={allTasks}
+                onFilteredTasksChange={onFilteredTasksChange}
+                selectedFilter={selectedFilter}
+                onFilterChange={onFilterChange || (() => {})}
+              />
+            </div>
+          )}
+
           <div className="w-full">
-            <WorkspaceSelector />
+            <RecurringTasksToggle />
           </div>
-        )}
-        
-        {/* Filter Dropdown */}
-        {allTasks && onFilteredTasksChange && selectedFilter && (
-          <div className="w-full mt-2">
-            <TaskFilter 
-              tasks={allTasks} 
-              onFilteredTasksChange={onFilteredTasksChange}
-              selectedFilter={selectedFilter}
-              onFilterChange={onFilterChange || (() => {})}
-            />
-          </div>
-        )}
-        
-        {/* Recurring Tasks Toggle */}
-        <div className="w-full mt-2 mb-2">
-          <RecurringTasksToggle />
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-0 py-2 space-y-2">
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
           {/* Empty State */}
           {tasks.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-              <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+              <div className="w-14 h-14 rounded-2xl bg-[var(--bg-secondary)]/80 flex items-center justify-center mb-4">
                 <CheckCircle2
-                  size={32}
-                  className="text-[var(--text-secondary)]"
+                  size={28}
+                  className="text-[var(--text-secondary)]/70"
                 />
               </div>
-              <p className="text-[var(--text-secondary)] text-sm font-medium">
+              <p className="text-[var(--text-primary)] text-sm font-medium">
                 No tasks found
               </p>
-              <p className="text-[var(--text-secondary)]/60 text-xs mt-2">
-                Try selecting a different filter or create a new task
+              <p className="text-[var(--text-secondary)] text-xs mt-1.5 max-w-[220px]">
+                Try a different filter or create a new task
               </p>
             </div>
           )}
 
-          {/* Tasks grouped by assignment */}
+          {/* Groups */}
           {sortedAssignments.map((assignment) => {
-            const isAssignmentCollapsed = collapsedAssignments.has(assignment);
+            const isCollapsed = collapsedAssignments.has(assignment);
+            const count = tasksByAssignment[assignment]?.length || 0;
+
             return (
-            <div key={assignment}>
-              {/* Assignment Container */}
-              <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
-                {/* Assignment Header - Clickable */}
-                <div 
-                  className={`px-4 py-3 border-l-4 cursor-pointer transition-all duration-200 ${
-                    isAssignmentCollapsed 
-                      ? 'bg-gradient-to-r from-gray-500/10 to-gray-500/5 border-l-4 border-gray-500' 
-                      : 'bg-gradient-to-r from-[var(--accent-primary)]/10 to-[var(--accent-primary)]/5 border-l-4 border-[var(--accent-primary)]'
-                  }`}
+              <div
+                key={assignment}
+                className="rounded-xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)] overflow-hidden"
+              >
+                {/* Assignment header */}
+                <button
+                  type="button"
                   onClick={() => toggleAssignmentCollapse(assignment)}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-3 text-left hover:bg-[var(--bg-secondary)]/40 transition-colors duration-150"
                 >
-                  <h4 className={`text-base font-bold transition-colors duration-200 ${
-                    isAssignmentCollapsed ? 'text-gray-500' : 'text-[var(--accent-primary)]'
-                  }`}>
-                    {assignment}
-                  </h4>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">
-                    {tasksByAssignment[assignment]?.length || 0} task{(tasksByAssignment[assignment]?.length || 0) !== 1 ? 's' : ''}
-                  </p>
-                </div>
-                
-                {/* Tasks Container - Hidden when collapsed */}
-                {!isAssignmentCollapsed && (
-                  <div className="bg-[var(--bg-secondary)]/30 p-2 space-y-1 overflow-y-auto">
+                  <span className="text-[var(--text-secondary)] shrink-0">
+                    {isCollapsed ? (
+                      <ChevronRight className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </span>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4
+                        className={`text-sm font-semibold truncate ${
+                          isCollapsed
+                            ? "text-[var(--text-secondary)]"
+                            : "text-[var(--text-primary)]"
+                        }`}
+                      >
+                        {assignment}
+                      </h4>
+                      <span className="shrink-0 text-[11px] font-medium tabular-nums text-[var(--text-secondary)] bg-[var(--bg-secondary)]/80 px-1.5 py-0.5 rounded-md">
+                        {count}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Tasks */}
+                {!isCollapsed && (
+                  <div className="border-t border-[var(--border-primary)]/40 px-2 py-1.5 space-y-0.5">
                     {tasksByAssignment[assignment]?.map((task) => (
                       <TaskItem
                         key={task.id}
@@ -300,14 +314,13 @@ const AllTasks: React.FC<AllTasksProps> = ({
                         onDelete={handleDeleteTaskWrapper}
                         onEditTask={() => handleEditTask(task)}
                         onContextMenu={handleTaskContextMenuWrapper}
-                        showAssignment={false} // Hide assignment since we're grouping by it
+                        showAssignment={false}
                         assignmentLeftOfDate={false}
                       />
                     ))}
                   </div>
                 )}
               </div>
-            </div>
             );
           })}
         </div>

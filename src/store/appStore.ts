@@ -1,6 +1,10 @@
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { PomodoroModeType } from '@/types/pomodoro';
+import type { Task } from '@/types/taskStorage';
+import type { Workspace } from '@/types/workspace';
+import type { Lap } from '@/types/lap';
+import type { User } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { fetchTasks as fetchTasksAction } from '@/store/TaskActions';
 
@@ -22,21 +26,21 @@ export interface PomoState {
 
 // 🎯 Tipos adicionales para reemplazar Redux
 export interface TaskState {
-  tasks: any[];
+  tasks: Task[];
   loading: boolean;
   error: string | null;
   isCached: boolean;
   lastFetch: number | null;
 }
 export interface LapState {
-  laps: any[];
+  laps: Lap[];
   loading: boolean;
   error: string | null;
   isCached: boolean;
   lastFetch: number | null;
 }
 export interface AuthState {
-  user: any;
+  user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -45,8 +49,8 @@ export interface LayoutState {
   theme: 'light' | 'dark';
 }
 export interface WorkspaceState {
-  currentWorkspace: any;
-  workspaces: any[];
+  currentWorkspace: Workspace | null;
+  workspaces: Workspace[];
   loading: boolean;
 }
 export interface PinnedColumnsState {
@@ -193,9 +197,9 @@ export interface AppState {
   // 🎯 Reemplazo de Redux slices
   // Tasks
   tasks: TaskState;
-  setTasks: (tasks: any[]) => void;
-  addTask: (task: any) => void;
-  updateTask: (id: string, updates: any) => void;
+  setTasks: (tasks: Task[]) => void;
+  addTask: (task: Task) => void;
+  updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   setTasksLoading: (loading: boolean) => void;
   setTasksError: (error: string | null) => void;
@@ -203,9 +207,9 @@ export interface AppState {
 
   // Laps (Study Sessions)
   laps: LapState;
-  setLaps: (laps: any[]) => void;
-  addLap: (lap: any) => void;
-  updateLap: (id: string, updates: any) => void;
+  setLaps: (laps: Lap[]) => void;
+  addLap: (lap: Lap) => void;
+  updateLap: (id: string, updates: Partial<Lap>) => void;
   deleteLap: (id: string) => void;
   setLapsLoading: (loading: boolean) => void;
   setLapsError: (error: string | null) => void;
@@ -213,7 +217,7 @@ export interface AppState {
 
   // Auth
   auth: AuthState;
-  setUser: (user: any) => void;
+  setUser: (user: User | null) => void;
   clearUser: () => void;
   setAuthLoading: (loading: boolean) => void;
 
@@ -224,8 +228,8 @@ export interface AppState {
 
   // Workspace
   workspace: WorkspaceState;
-  setCurrentWorkspace: (workspace: any) => void;
-  setWorkspaces: (workspaces: any[]) => void;
+  setCurrentWorkspace: (workspace: Workspace | null) => void;
+  setWorkspaces: (workspaces: Workspace[]) => void;
   setWorkspaceLoading: (loading: boolean) => void;
 
   // UI
@@ -242,15 +246,15 @@ export interface AppState {
   setSyncPomodoroWithTimer: (sync: boolean) => void;
   setPomodoroStateTimer: (state: 'running' | 'paused' | 'stopped') => void;
   resetTimerState: () => void;
-  setCurrentSession: (session: any) => void;
+  setCurrentSession: (session: { id: string; title: string; description: string; syncPomo: boolean; syncCountdown: boolean } | null) => void;
   setCalendarVisibility: (visible: boolean) => void;
-  addTaskSuccess: (task: any) => void;
-  updateTaskSuccess: (task: any) => void;
+  addTaskSuccess: (task: Task) => void;
+  updateTaskSuccess: (task: Task) => void;
   deleteTaskSuccess: (id: string) => void;
   fetchTasks: (workspaceId?: string, forceRefresh?: boolean) => Promise<void>;
   toggleTaskStatus: (id: string, completed: boolean) => void;
-  addLapSuccess: (lap: any) => void;
-  updateLapSuccess: (id: string, updates: any) => void;
+  addLapSuccess: (lap: Lap) => void;
+  updateLapSuccess: (id: string, updates: Partial<Lap>) => void;
   deleteLapSuccess: (id: string) => void;
   lapError: (error: string) => void;
   invalidateCache: () => void;

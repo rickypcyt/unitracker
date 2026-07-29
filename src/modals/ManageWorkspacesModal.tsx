@@ -7,7 +7,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { useModalClose } from '@/hooks/useModalClose';
 
 type Workspace = {
-  id: string | number;
+  id: string;
   name: string;
   icon?: string | null;
   taskCount?: number;

@@ -18,29 +18,10 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import useDemoMode from "@/utils/useDemoMode";
 import { useLaps } from "@/store/appStore";
+import type { Lap } from "@/types/lap";
 
 interface GroupedLabs {
     [key: string]: Lap[];
-}
-
-
-interface Lap {
-    id: string;
-    created_at: string;
-    duration: string;
-    session_number: number;
-    name: string;
-    tasks_completed: number;
-    type: string;
-    subject_id: string;
-    subject_name: string;
-    subject_color: string;
-    user_id: string;
-    start_at: string;
-    end_at: string;
-    notes: string;
-    created_at_ts: number;
-    updated_at: string;
 }
 
 interface ContextMenu {

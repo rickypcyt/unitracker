@@ -7,18 +7,12 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import usePomodorosToday from '@/hooks/usePomodorosToday';
+import type { Lap } from '@/types/lap';
 
 // Tipos para las entidades
 interface Task {
   completed: boolean;
-  completed_at?: string;
-}
-
-interface Lap {
-  created_at: string;
-  duration: string;
-  type?: string;
-  name?: string;
+  completed_at?: string | null;
 }
 
 interface StatData {

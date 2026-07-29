@@ -223,15 +223,11 @@ const AITaskForm = ({
     };
   }
   function getModelCandidates(): string[] {
-    const baseModels = ['arcee-ai/trinity-large-preview:free',
-    // Primary
-    'stepfun/step-3.5-flash:free',
-    // Second option
-    'tngtech/deepseek-r1t2-chimera:free',
-    // Third option
-    'z-ai/glm-4.5-air:free',
-    // Fourth option
-    'deepseek/deepseek-r1-0528:free' // Last resort
+    const baseModels = [
+    // Primary: free router auto-selects available free models
+    'openrouter/free',
+    // Fallback if router is down
+    'deepseek/deepseek-r1-0528:free'
     ];
     const envModel = import.meta.env['VITE_OPENROUTER_MODEL'];
     const envList = envModel ? [String(envModel)] : [];

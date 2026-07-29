@@ -5,25 +5,7 @@ import { format, parseISO } from 'date-fns';
 
 import BaseModal from '@/modals/BaseModal';
 import toast from 'react-hot-toast';
-
-// Lap interface defined locally until we create a types file
-interface Lap {
-  id: string;
-  created_at: string;
-  started_at?: string;
-  duration: string;
-  session_number: number;
-  name: string;
-  description?: string;
-  tasks_completed: number;
-  type: string;
-  subject_id: string;
-  subject_name: string;
-  subject_color: string;
-  pomodoros_completed?: number;
-  focus_score?: number;
-  productivity_rating?: number;
-}
+import type { Lap } from '@/types/lap';
 
 interface SessionDetailsModalProps {
   session: Lap;

@@ -4,16 +4,7 @@ import { SYNC_EVENTS } from '@/utils/constants';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { motion } from 'framer-motion';
 import { useLaps } from '@/store/appStore';
-
-interface Lap {
-  id: string;
-  created_at: string;
-  started_at?: string;
-  ended_at?: string | null;
-  duration?: number; // seconds stored when completed
-  name?: string;
-  session_number?: number;
-}
+import type { Lap } from '@/types/lap';
 const TodaysSession = () => {
   // Get laps from Zustand store
   const {

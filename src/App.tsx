@@ -2,11 +2,21 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { FC, Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
 import { useAuthActions, useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from "@/store/appStore";
+import type { Workspace } from "@/types/workspace";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import FloatingFooter from "@/components/FloatingFooter";
+import LandingPage from "@/pages/landing/LandingPage";
+import PageLoader from "@/components/PageLoader";
 import Navbar from "@/navbar/Navbar";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
+import OnboardingGuide from "@/components/OnboardingGuide";
+import PageTooltips from "@/components/PageTooltips";
+import PricingPage from "@/pages/landing/PricingPage";
+import ComparePage from "@/pages/landing/ComparePage";
+import BlogListPage from "@/pages/landing/BlogListPage";
+import BlogPostPage from "@/pages/landing/BlogPostPage";
 import TourManager from "./components/TourManager";
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
@@ -20,6 +30,30 @@ const Notes = lazy(() => import("@/pages/notes/Notes"));
 const SessionPage = lazy(() => import("@/pages/session/SessionPage"));
 const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
 const TasksPage = lazy(() => import("@/pages/tasks/TasksPage"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+
+// Preload map: import functions for each page to enable hover-based preloading
+const preloadMap: Record<string, () => Promise<unknown>> = {
+  session: () => import("@/pages/session/SessionPage"),
+  tasks: () => import("@/pages/tasks/TasksPage"),
+  calendar: () => import("@/pages/calendar/CalendarPage"),
+  stats: () => import("@/pages/stats/StatsPage"),
+  habits: () => import("@/pages/habits/HabitsPage"),
+  notes: () => import("@/pages/notes/Notes"),
+  focusWidget: () => import("@/pages/FocusWidgetPage"),
+  admin: () => import("@/pages/admin/AdminDashboard"),
+};
+
+const preloadedPages = new Set<string>();
+
+export const preloadPage = (page: string) => {
+  if (preloadedPages.has(page)) return;
+  const loader = preloadMap[page];
+  if (loader) {
+    preloadedPages.add(page);
+    loader();
+  }
+};
 
 // -------------------------
 // Pages mapping
@@ -32,6 +66,7 @@ const pagesMap: Record<string, FC> = {
   habits: HabitsPage,
   notes: Notes,
   focusWidget: FocusWidgetPage,
+  admin: AdminDashboard,
 };
 
 
@@ -50,27 +85,27 @@ const PageContent: FC = () => {
   const ActiveComponent = pagesMap[activePage] || SessionPage;
 
   // Workspace handlers
-  const handleSelectWorkspace = (ws: any) => {
+  const handleSelectWorkspace = (ws: Workspace) => {
     setCurrentWorkspace(ws);
-    localStorage.setItem('activeWorkspaceId', ws.id);
+    localStorage.setItem('activeWorkspaceId', String(ws.id));
   };
   
-  const handleCreateWorkspace = (newWorkspace: any) => {
+  const handleCreateWorkspace = (newWorkspace: Workspace) => {
     setWorkspaces([...workspaces, newWorkspace]);
   };
   
-  const handleEditWorkspace = (updatedWorkspace: any) => {
-    setWorkspaces(workspaces.map((ws: any) => ws.id === updatedWorkspace.id ? updatedWorkspace : ws));
+  const handleEditWorkspace = (updatedWorkspace: Workspace) => {
+    setWorkspaces(workspaces.map((ws: Workspace) => ws.id === updatedWorkspace.id ? updatedWorkspace : ws));
     if (activeWorkspace?.id === updatedWorkspace.id) {
       setCurrentWorkspace(updatedWorkspace);
     }
   };
   
-  const handleDeleteWorkspace = (workspaceId: any) => {
-    const updatedWorkspaces = workspaces.filter((ws: any) => ws.id !== workspaceId);
+  const handleDeleteWorkspace = (workspaceId: Workspace['id']) => {
+    const updatedWorkspaces = workspaces.filter((ws: Workspace) => ws.id !== workspaceId);
     setWorkspaces(updatedWorkspaces);
     if (activeWorkspace?.id === workspaceId) {
-      const newActiveWorkspace = updatedWorkspaces.length > 0 ? updatedWorkspaces[0] : null;
+      const newActiveWorkspace = updatedWorkspaces.length > 0 ? updatedWorkspaces[0] ?? null : null;
       setCurrentWorkspace(newActiveWorkspace);
     }
   };
@@ -93,7 +128,7 @@ const PageContent: FC = () => {
   // Focus widget page should occupy full screen without navbar
   if (activePage === 'focusWidget') {
     return (
-      <Suspense fallback={null}>
+      <Suspense fallback={<PageLoader fullScreen />}>
         <ActiveComponent />
       </Suspense>
     );
@@ -103,7 +138,7 @@ const PageContent: FC = () => {
     <div className="min-h-screen bg-[var(--bg-primary)] w-full">
       <Navbar />
       <div className="pt-16">
-        <Suspense fallback={null}>
+        <Suspense fallback={<PageLoader />}>
           <ActiveComponent />
         </Suspense>
       </div>
@@ -263,11 +298,32 @@ const App: FC = () => {
       <NoiseProvider>
         <AuthProvider>
           <UserModalGate />
-            <NavigationProvider>
-              <TourManager>
-                <PageContent />
-              </TourManager>
-            </NavigationProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/compare" element={<ComparePage />} />
+            <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/app" element={
+              <NavigationProvider>
+                <TourManager>
+                  <PageContent />
+                </TourManager>
+                <OnboardingGuide />
+                <PageTooltips />
+              </NavigationProvider>
+            } />
+            {/* Redirect old app paths to /app */}
+            <Route path="/tasks" element={<Navigate to="/app" replace />} />
+            <Route path="/calendar" element={<Navigate to="/app" replace />} />
+            <Route path="/session" element={<Navigate to="/app" replace />} />
+            <Route path="/notes" element={<Navigate to="/app" replace />} />
+            <Route path="/stats" element={<Navigate to="/app" replace />} />
+            <Route path="/habits" element={<Navigate to="/app" replace />} />
+            <Route path="/focusWidget" element={<Navigate to="/app" replace />} />
+            <Route path="/admin" element={<Navigate to="/app" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </AuthProvider>
       </NoiseProvider>
     </>

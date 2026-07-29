@@ -93,7 +93,7 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({ className = '' })
                   activeWorkspace?.id === workspace.id ? 'bg-[var(--bg-secondary)]' : ''
                 }`}
               >
-                {getWorkspaceIcon(workspace.icon, activeWorkspace?.id === workspace.id)}
+                {getWorkspaceIcon(workspace.icon || 'Briefcase', activeWorkspace?.id === workspace.id)}
                 <span className="text-sm text-[var(--text-primary)]">{workspace.name}</span>
                 {activeWorkspace?.id === workspace.id && (
                   <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full ml-auto" />

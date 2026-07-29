@@ -13,4 +13,5 @@ export interface Task {
   activetask?: boolean;
   difficulty?: string;
   assignment?: string;
-} 
+  [key: string]: unknown;
+}

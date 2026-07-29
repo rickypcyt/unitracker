@@ -12,11 +12,37 @@ interface VercelResponse {
 }
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const ALLOWED_ORIGINS = [
+  'https://unitracker.vercel.app',
+  'https://unitracker.me',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+const APP_URL = 'https://unitracker.vercel.app';
+
+// Simple in-memory rate limiting (per IP, resets on serverless cold start)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per IP
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Rate limiting check
+  const clientIp = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 'unknown';
+  const now = Date.now();
+  const record = rateLimitMap.get(clientIp);
+
+  if (record && now < record.resetTime) {
+    if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+      return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+    record.count++;
+  } else {
+    rateLimitMap.set(clientIp, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
   }
 
   try {
@@ -35,13 +61,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'API configuration error' });
     }
 
+    // Validate and sanitize the origin header
+    const origin = req.headers?.origin || '';
+    const referer = ALLOWED_ORIGINS.includes(origin) ? origin : APP_URL;
+
     // Make request to OpenRouter API
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': req.headers?.origin || 'https://unitracker.vercel.app',
+        'HTTP-Referer': referer,
       },
       body: JSON.stringify({
         model,

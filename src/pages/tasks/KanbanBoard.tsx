@@ -392,6 +392,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1 }) => 
           <p className="text-sm text-[var(--text-secondary)] mb-4">
             Create your first workspace to start organizing your tasks.
           </p>
+          {isLoggedIn ? (
+            <button
+              onClick={() => window.dispatchEvent(new Event('openWorkspaceModal'))}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
+            >
+              <Plus size={18} />
+              Create your first workspace
+            </button>
+          ) : (
+            <p className="text-xs text-[var(--text-secondary)] opacity-70">
+              Remember to login first
+            </p>
+          )}
         </div>
       </div>
     );

@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, CircleCheckBig, ListTodo, Timer } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, CircleCheckBig, LayoutDashboard, ListTodo, Timer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useFriendManagement } from '@/hooks/useFriendManagement';
 import { useNavigation } from '@/navbar/NavigationContext';
+import { preloadPage } from '@/App';
 
 const Navbar = () => {
   const { isLoggedIn, user } = useAuth();
@@ -42,6 +43,7 @@ const Navbar = () => {
 
       if (!user) {
         setWorkspaces([]);
+        setCurrentWorkspace(null);
         localStorage.removeItem('activeWorkspaceId');
         localStorage.removeItem('workspacesHydrated');
         return;
@@ -57,11 +59,18 @@ const Navbar = () => {
       if (!error && data) {
         setWorkspaces(data);
         const savedId = localStorage.getItem('activeWorkspaceId');
+        const isStale = activeWorkspace && !data.some((ws: any) => ws.id === activeWorkspace.id);
         if (savedId) {
           const found = data.find((ws: any) => ws.id === savedId);
-          if (found) setCurrentWorkspace(found);
-        } else if (data.length > 0 && !activeWorkspace) {
-          // Only set first workspace as active if no workspace is currently selected
+          if (found) {
+            setCurrentWorkspace(found);
+          } else if (data.length > 0) {
+            // Saved ID no longer exists, pick first workspace
+            setCurrentWorkspace(data[0]);
+            localStorage.setItem('activeWorkspaceId', data[0].id);
+          }
+        } else if (data.length > 0 && (!activeWorkspace || isStale)) {
+          // Set first workspace as active if none selected or current one is stale
           setCurrentWorkspace(data[0]);
           localStorage.setItem('activeWorkspaceId', data[0].id);
         }
@@ -70,7 +79,7 @@ const Navbar = () => {
       }
     };
     fetchWorkspaces();
-  }, [setWorkspaces, setCurrentWorkspace]);
+  }, [setWorkspaces, setCurrentWorkspace, isLoggedIn]);
 
   // Fetch tasks for all workspaces to get accurate counts (includes shared workspaces via fetchTasks)
   useEffect(() => {
@@ -91,10 +100,11 @@ const Navbar = () => {
   useEffect(() => {
     if (!isLoggedIn && !isDemo) {
       setWorkspaces([]);
+      setCurrentWorkspace(null);
       localStorage.removeItem('activeWorkspaceId');
       localStorage.removeItem('workspacesHydrated');
     }
-  }, [isLoggedIn, isDemo, setWorkspaces]);
+  }, [isLoggedIn, isDemo, setWorkspaces, setCurrentWorkspace]);
 
   useEffect(() => {
     const currentCount = receivedRequests.length;
@@ -138,7 +148,11 @@ const Navbar = () => {
     habits: CircleCheckBig,
     notes: BookOpen,
     stats: BarChart3,
+    admin: LayoutDashboard,
   };
+
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+  const isAdmin = !!user?.email && user.email === adminEmail;
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, item: any) => {
@@ -216,6 +230,7 @@ const Navbar = () => {
                   >
                     <button
                       onClick={() => navigateTo(page as any)}
+                      onMouseEnter={() => preloadPage(page)}
                       className={navLinkClass(page) + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1 cursor-grab active:cursor-grabbing'}
                       data-page={page}
                     >
@@ -225,6 +240,19 @@ const Navbar = () => {
                   </div>
                 );
               })}
+              {isAdmin && (
+                <div className="relative hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:right-0 hover:after:h-0.5 hover:after:bg-[var(--accent-primary)] transition-all duration-200">
+                  <button
+                    onClick={() => navigateTo('admin' as any)}
+                    onMouseEnter={() => preloadPage('admin')}
+                    className={navLinkClass('admin') + ' text-sm sm:text-sm md:text-base lg:text-base xl:text-lg flex items-center gap-1'}
+                    data-page="admin"
+                  >
+                    <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6 mr-1" />
+                    <span className="hidden md:inline text-sm sm:text-sm md:text-base lg:text-base xl:text-lg">Admin</span>
+                  </button>
+                </div>
+              )}
             </div>
             <div className="flex lg:hidden space-x-0 sm:space-x-0.5 md:space-x-1 items-center justify-center">
               {navOrder.map(({ page, label }, index) => {
@@ -242,6 +270,7 @@ const Navbar = () => {
                   >
                     <button
                       onClick={() => navigateTo(page as any)}
+                      onMouseEnter={() => preloadPage(page)}
                       className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 cursor-grab active:cursor-grabbing ${isActive(page) ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
                       data-page={page}
                     >
@@ -251,6 +280,19 @@ const Navbar = () => {
                   </div>
                 );
               })}
+              {isAdmin && (
+                <div className="relative">
+                  <button
+                    onClick={() => navigateTo('admin' as any)}
+                    onMouseEnter={() => preloadPage('admin')}
+                    className={`p-1 sm:p-1.5 rounded-md flex flex-col items-center justify-center transition-colors duration-150 ${isActive('admin') ? 'text-[var(--accent-primary)] bg-[var(--bg-secondary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
+                    data-page="admin"
+                  >
+                    <LayoutDashboard className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
+                    <span className="text-[9px] sm:text-[10px] mt-0.5 font-medium hidden sm:inline md:hidden">Admin</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           {/* Settings a la derecha */}

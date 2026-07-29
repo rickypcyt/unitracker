@@ -22,6 +22,7 @@ interface Task {
   start_at?: string | null;
   end_at?: string | null;
   activetask?: boolean;
+  [key: string]: unknown;
 }
 interface TaskViewModalProps {
   isOpen: boolean;
