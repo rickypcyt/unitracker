@@ -1,4 +1,4 @@
-import { Calendar, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 
 import MobileNotesSelector from './MobileNotesSelector';
@@ -31,6 +31,7 @@ interface NoteViewProps {
   onNoteSelect?: (noteId: string) => void;
   selectedNoteId?: string | undefined;
   onDeleteNote?: (note: Note) => void;
+  onBack?: () => void;
 }
 
 const NoteView: React.FC<NoteViewProps> = ({
@@ -40,7 +41,8 @@ const NoteView: React.FC<NoteViewProps> = ({
   allNotes = [],
   onNoteSelect,
   selectedNoteId,
-  onDeleteNote
+  onDeleteNote,
+  onBack
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
@@ -291,13 +293,24 @@ const NoteView: React.FC<NoteViewProps> = ({
       {/* Note Header with inline properties */}
       <div className="px-4 sm:px-6 py-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
         <div className="flex items-start justify-between gap-4 mb-3">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
-            placeholder="Note Title"
-          />
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-medium flex-shrink-0"
+                title="Back to notes"
+              >
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            )}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0"
+              placeholder="Note Title"
+            />
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleSave}
@@ -314,6 +327,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             >
               <Trash2 size={16} />
             </button>
+          </div>
           </div>
         </div>
 

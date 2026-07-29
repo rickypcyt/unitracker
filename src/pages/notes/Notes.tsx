@@ -5,15 +5,12 @@ import Footer from '../../components/Footer';
 import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteView from './NoteView';
-import NotesSidepanel from './NotesSidepanel';
-import Sidepanel from '../../components/Sidepanel';
 import WelcomeView from './WelcomeView';
 import { demoNotes } from '@/utils/demoData';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import { useResizable } from '@/hooks/useResizable';
 
 interface Note {
   id?: string;
@@ -39,25 +36,7 @@ const Notes: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(undefined);
-  const [isSidepanelCollapsed, setIsSidepanelCollapsed] = useState(() => {
-    return localStorage.getItem('notesSidebarCollapsed') === 'true';
-  });
   const [showLoginModal, setShowLoginModal] = useState(false);
-
-  const { width: sidebarWidth, onMouseDown: onResizeStart } = useResizable({
-    initialWidth: 320,
-    minWidth: 240,
-    maxWidth: 560,
-    storageKey: 'notesSidebarWidth',
-  });
-
-  const handleToggleSidebar = () => {
-    setIsSidepanelCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('notesSidebarCollapsed', String(next));
-      return next;
-    });
-  };
 
   // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
   useEffect(() => {
@@ -220,10 +199,6 @@ const Notes: React.FC = () => {
     setSelectedNoteId(noteId === selectedNoteId ? undefined : noteId);
   };
 
-  const handleBackToNotes = () => {
-    setSelectedNoteId(undefined);
-  };
-
   const handleCreateNote = async (assignment?: string) => {
     if (!user) {
       setShowLoginModal(true);
@@ -270,43 +245,8 @@ const Notes: React.FC = () => {
       </Helmet>
       <React.Fragment>
         <div className="w-full min-h-screen relative pb-16">
-        {/* Left Sidepanel */}
-        <Sidepanel
-          position="left"
-          isCollapsed={isSidepanelCollapsed}
-          onToggle={handleToggleSidebar}
-          width={80}
-          collapsedWidth={12}
-          resizable
-          widthPx={sidebarWidth}
-          onResizeStart={onResizeStart}
-          toggleTitle={{ expand: 'Expand panel', collapse: 'Collapse panel' }}
-          title={
-            <div className="flex flex-col leading-tight">
-              <h2 className="text-base font-semibold text-[var(--text-primary)]">
-                Note Explorer
-              </h2>
-              <span className="text-xs text-[var(--text-secondary)]">
-                {notesToShow.length} {notesToShow.length === 1 ? 'note' : 'notes'}
-              </span>
-            </div>
-          }
-        >
-          <NotesSidepanel
-            notes={notesToShow}
-            loading={loading}
-            error={error}
-            onNoteSelect={handleNoteSelect}
-            selectedNoteId={selectedNoteId}
-            onCreateNote={handleCreateNote}
-          />
-        </Sidepanel>
-
-
-        {/* Main Content Container - Separate from sidepanels */}
-        <div className={`w-full h-full transition-all duration-300 ${
-          isSidepanelCollapsed ? 'md:pl-12' : ''
-        }`} style={!isSidepanelCollapsed ? { paddingLeft: `${sidebarWidth}px` } : undefined}>
+        {/* Main Content Container */}
+        <div className="w-full h-full">
           {selectedNote ? (
             <NoteView
               note={selectedNote}
@@ -316,6 +256,7 @@ const Notes: React.FC = () => {
               onNoteSelect={handleNoteSelect}
               selectedNoteId={selectedNoteId}
               onDeleteNote={(note) => setNoteToDelete(note)}
+              onBack={() => setSelectedNoteId(undefined)}
             />
           ) : (
             <WelcomeView
@@ -332,7 +273,6 @@ const Notes: React.FC = () => {
       </div>
       <Footer
         showActions={!!selectedNote}
-        onBackToNotes={handleBackToNotes}
         {...(selectedNote && {
           onSave: () => { handleUpdateNote({ title: selectedNote.title, assignment: selectedNote.assignment, description: selectedNote.description, date: selectedNote.date }); },
           onDelete: () => { setNoteToDelete(selectedNote); }

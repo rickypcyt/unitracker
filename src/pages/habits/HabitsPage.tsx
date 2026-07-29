@@ -382,133 +382,135 @@ const HabitsPage = memo(() => {
             onCtaClick={() => setIsCreateModalOpen(true)}
           />
         ) : (
-          <div className="space-y-6">
-            {weekDays.map((date) => {
-              const y = date.getFullYear();
-              const m = date.getMonth();
-              const d = date.getDate();
-              const dateKey = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-              const isToday = isCurrentWeek && d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
-              const isPast = date < today && !isToday;
-              const isFuture = date > today && !isToday;
-              const dow = date.getDay();
-              const isWeekend = dow === 0 || dow === 6;
+          <div className="space-y-4">
+            {/* Day headers row */}
+            <div className="flex items-center gap-2 sm:gap-3 px-1">
+              <div className="w-32 sm:w-48 flex-shrink-0" />
+              <div className="flex-1 grid grid-cols-7 gap-1.5 sm:gap-2">
+                {weekDays.map((date) => {
+                  const d = date.getDate();
+                  const isToday = isCurrentWeek && d === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+                  const isFuture = date > today && !isToday;
+                  return (
+                    <div
+                      key={`header-${date.toISOString()}`}
+                      className={`text-center text-xs font-medium ${
+                        isToday
+                          ? 'text-[var(--accent-primary)]'
+                          : isFuture
+                          ? 'text-[var(--text-tertiary)]'
+                          : 'text-[var(--text-secondary)]'
+                      }`}
+                    >
+                      <div>{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                      <div className={`text-sm ${isToday ? 'font-bold text-[var(--accent-primary)]' : ''}`}>{d}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-              const dayCompleted = displayHabits.filter(h => (h.completions as Record<string, boolean>)?.[dateKey]).length;
-              const dayTotal = displayHabits.length;
-              const allDone = dayTotal > 0 && dayCompleted === dayTotal;
+            {/* Habit rows with 7-day grid */}
+            {displayHabits.map((habit) => {
+              const completions = habit.completions as Record<string, boolean>;
+              const { current, best } = calculateStreak(completions);
+              const total = getTotalCompleted(completions);
 
               return (
-                <div key={dateKey}>
-                  {/* Day header */}
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <div>
-                      <h3 className={`text-base font-bold ${
-                        isToday ? 'text-[var(--accent-primary)]' : isFuture ? 'text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                        {isToday && <span className="ml-2 text-xs font-normal text-[var(--accent-primary)]">• Today</span>}
-                        {isWeekend && !isToday && <span className="ml-2 text-xs font-normal text-[var(--text-tertiary)]">• Weekend</span>}
-                      </h3>
-                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                        {dayCompleted} of {dayTotal} completed
-                      </p>
+                <div
+                  key={habit.id}
+                  className="flex items-center gap-2 sm:gap-3 p-3 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)]"
+                >
+                  {/* Habit name + streak */}
+                  <button
+                    onClick={() => handleStartEditHabit(habit as Habit)}
+                    className="w-32 sm:w-48 flex-shrink-0 text-left min-w-0 group"
+                  >
+                    <div className="text-sm font-medium truncate text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                      {habit.name}
                     </div>
-                    {allDone && (
-                      <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--accent-primary)]">
-                        <Trophy size={14} />
-                        All done!
-                      </div>
-                    )}
-                  </div>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-[var(--text-secondary)]">
+                      {current > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Flame size={10} className="text-[var(--accent-primary)]" />
+                          {current}d
+                        </span>
+                      )}
+                      {best > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Trophy size={10} className="text-[var(--accent-primary)]" />
+                          {best}d
+                        </span>
+                      )}
+                      <span>{total} total</span>
+                    </div>
+                  </button>
 
-                  {/* Progress bar */}
-                  <div className="h-1.5 bg-[var(--bg-secondary)] rounded-full overflow-hidden mb-3">
-                    <div
-                      className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-300"
-                      style={{ width: `${dayTotal > 0 ? (dayCompleted / dayTotal) * 100 : 0}%` }}
-                    />
-                  </div>
-
-                  {/* Habit checklist items */}
-                  <div className={`space-y-2 ${isFuture ? 'opacity-50' : ''}`}>
-                    {displayHabits.map((habit) => {
-                      const completions = habit.completions as Record<string, boolean>;
+                  {/* 7-day grid */}
+                  <div className="flex-1 grid grid-cols-7 gap-1.5 sm:gap-2">
+                    {weekDays.map((date) => {
+                      const y = date.getFullYear();
+                      const m = date.getMonth();
+                      const d = date.getDate();
+                      const dateKey = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                       const isCompleted = !!completions[dateKey];
-                      const { current, best } = calculateStreak(completions);
-                      const total = getTotalCompleted(completions);
+                      const isToday = isCurrentWeek && d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
+                      const isFuture = date > today && !isToday;
 
                       return (
-                        <div
+                        <button
                           key={`${habit.id}-${dateKey}`}
-                          className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 ${
+                          onClick={() => handleToggleHabitForMonth(habit.id, y, m, d)}
+                          className={`aspect-square rounded-lg border-2 transition-all hover:scale-105 active:scale-95 flex items-center justify-center ${
                             isCompleted
-                              ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]/30'
-                              : 'bg-[var(--bg-primary)] border-[var(--border-primary)] hover:border-[var(--border-secondary)]'
-                          } ${isPast && !isCompleted ? 'opacity-70' : ''}`}
+                              ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
+                              : isToday
+                              ? 'border-[var(--accent-primary)]/50 hover:border-[var(--accent-primary)] bg-[var(--accent-primary)]/5'
+                              : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/60 bg-[var(--bg-secondary)]'
+                          } ${isFuture ? 'opacity-40' : ''}`}
+                          aria-label={`${isCompleted ? 'Unmark' : 'Mark'} ${habit.name} for ${date.toLocaleDateString()}`}
                         >
-                          {/* Checkbox */}
-                          <button
-                            onClick={() => handleToggleHabitForMonth(habit.id, y, m, d)}
-                            className={`flex-shrink-0 w-7 h-7 rounded-full border-2 transition-all hover:scale-110 active:scale-95 flex items-center justify-center ${
-                              isCompleted
-                                ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)]'
-                                : isPast
-                                ? 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]/60'
-                                : 'border-[var(--text-secondary)]/40 hover:border-[var(--accent-primary)]'
-                            }`}
-                          >
-                            {isCompleted && <Check size={16} className="text-white" />}
-                          </button>
-
-                          {/* Habit name + streak */}
-                          <button
-                            onClick={() => handleStartEditHabit(habit as Habit)}
-                            className="flex-1 text-left min-w-0 group"
-                          >
-                            <div className={`text-sm font-medium truncate transition-colors ${
-                              isCompleted
-                                ? 'text-[var(--text-secondary)] line-through'
-                                : 'text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]'
-                            }`}>
-                              {habit.name}
-                            </div>
-                            <div className="flex items-center gap-3 mt-0.5 text-xs text-[var(--text-secondary)]">
-                              {current > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Flame size={11} className="text-[var(--accent-primary)]" />
-                                  {current}d streak
-                                </span>
-                              )}
-                              {best > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Trophy size={11} className="text-[var(--accent-primary)]" />
-                                  {best}d best
-                                </span>
-                              )}
-                              <span>{total} total</span>
-                            </div>
-                          </button>
-                        </div>
+                          {isCompleted && <Check size={16} className="text-white" />}
+                        </button>
                       );
                     })}
-
-                    {/* Notes input for this day */}
-                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                      <input
-                        type="text"
-                        placeholder="Add a note for this day..."
-                        className="flex-1 px-2 py-1 text-sm bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
-                        defaultValue={journalNotes[dateKey] || ''}
-                        onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}
-                        onKeyDown={(e) => handleNoteKeyDownForMonth(y, m, d, e)}
-                        onBlur={() => handleNoteBlurForMonth(y, m, d)}
-                      />
-                    </div>
                   </div>
                 </div>
               );
             })}
+
+            {/* Journal notes for the week */}
+            <div className="space-y-2 pt-2">
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)] px-1">Journal Notes</h3>
+              {weekDays.map((date) => {
+                const y = date.getFullYear();
+                const m = date.getMonth();
+                const d = date.getDate();
+                const dateKey = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = isCurrentWeek && d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
+                const isFuture = date > today && !isToday;
+
+                return (
+                  <div
+                    key={`note-${dateKey}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] ${isFuture ? 'opacity-50' : ''}`}
+                  >
+                    <span className={`text-xs font-medium w-20 flex-shrink-0 ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                      {date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Add a note..."
+                      className="flex-1 px-2 py-1 text-sm bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
+                      defaultValue={journalNotes[dateKey] || ''}
+                      onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}
+                      onKeyDown={(e) => handleNoteKeyDownForMonth(y, m, d, e)}
+                      onBlur={() => handleNoteBlurForMonth(y, m, d)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
