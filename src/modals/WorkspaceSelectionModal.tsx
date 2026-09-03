@@ -6,7 +6,6 @@ import type { Task } from '@/types/taskStorage';
 interface Workspace {
   id: string;
   name: string;
-  icon: string;
 }
 
 interface WorkspaceSelectionModalProps {

@@ -61,6 +61,7 @@ export default defineConfig(({ command, mode }) => {
           },
           workbox: {
             globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+            maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
             // Don't cache Supabase API calls or large chunks
             navigateFallback: '/index.html',
             navigateFallbackDenylist: [

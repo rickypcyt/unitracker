@@ -173,7 +173,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   return (
     <div className="flex flex-col gap-3">
       {/* Timer Panels */}
-      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+      <div className="grid gap-2 place-items-center justify-center grid-cols-1 md:grid-cols-[repeat(3,minmax(0,24rem))]">
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;
@@ -185,7 +185,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               onDragOver={(e) => handleDragOver(e, id)}
               onDrop={(e) => handleDrop(e, id)}
               onDragEnd={handleDragEnd}
-              className={`timer-panel ${config.panelClass} ${
+              className={`timer-panel w-full h-72 ${config.panelClass} ${
                 draggedId === id ? "timer-panel-dragging" : ""
               } ${
                 dragOverId === id ? "timer-panel-drag-over" : ""

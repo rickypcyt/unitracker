@@ -33,7 +33,7 @@ const SidebarContent = ({ isNavCollapsed, toggleNavCollapse, activePage, navigat
         </button>
       </div>
 
-      <nav className="flex-1 py-3 px-2 flex flex-col gap-1 overflow-y-auto">
+      <nav className="flex-1 py-3 px-2 flex flex-col gap-1">
         {navItems.map(({ page, label, icon: Icon }) => {
           const isActive = activePage === page;
 

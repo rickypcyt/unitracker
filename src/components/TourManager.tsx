@@ -3,7 +3,6 @@ import React, { ReactNode } from 'react';
 import AccentColorModal from '@/modals/AccentColorModal';
 import EnhancedLoginModal from '@/modals/EnhancedLoginModal';
 import ThemeManager from '@/components/ThemeManager';
-import Tour from '@/components/Tour';
 import WelcomeModal from '@/modals/WelcomeModal';
 import useTheme from '@/hooks/useTheme';
 
@@ -16,12 +15,9 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
     showWelcomeModal, 
     showAccentColorModal, 
     showLoginModal,
-    showTour,
     handleCloseWelcome,
     handleCloseAccentColor,
     handleCloseLogin,
-    handleCloseTour,
-    handleTourComplete,
     handleAccentColorSelection,
     handleLogin
   } = useTheme();
@@ -45,13 +41,6 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
         <EnhancedLoginModal 
           onClose={handleCloseLogin}
           onLogin={handleLogin}
-        />
-      )}
-      {showTour && (
-        <Tour 
-          isOpen={showTour}
-          onClose={handleCloseTour}
-          onComplete={handleTourComplete}
         />
       )}
     </>

@@ -244,7 +244,7 @@ const TasksPage = memo(() => {
       {/* Task Page Settings Button */}
       <button
         onClick={() => setShowSettings(true)}
-        className="fixed top-6 left-6 z-50 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
+        className="fixed top-6 right-6 z-40 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
         aria-label="Task page settings"
         title="Task page settings"
       >

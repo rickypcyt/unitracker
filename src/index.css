@@ -1414,12 +1414,17 @@ h1 {
 
 /* Timer Panels - individual styling per timer */
 .timer-panel {
-  border-radius: 0.75rem;
-  padding: 0.75rem;
+  border-radius: 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-primary);
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);
+  transition: all 0.3s ease;
+}
+
+.timer-panel:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* Study Timer panel - blue accent */
@@ -1520,8 +1525,8 @@ h1 {
 .dashboard-noise-card {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  padding: 1rem;
   transition: border-color 0.2s ease;
 }
 

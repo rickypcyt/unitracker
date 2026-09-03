@@ -190,10 +190,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="w-full px-2 sm:px-4 md:px-6 lg:px-8 mt-4 mb-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-6">
-        Admin Dashboard
-      </h1>
-
       {/* Tab navigation */}
       <div className="flex gap-2 mb-6">
         <button

@@ -204,7 +204,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
     try {
       const workspace = workspacesRef.current.find(ws => String(ws.id) === workspaceId);
       try {
-        await SharedWorkspaceService.shareWorkspace(workspaceId, currentUserId || '', recipient, workspace?.name, workspace?.icon);
+        await SharedWorkspaceService.shareWorkspace(workspaceId, currentUserId || '', recipient, workspace?.name, workspace?.icon ?? undefined);
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
         if (errMsg?.toLowerCase().includes('duplicate')) {

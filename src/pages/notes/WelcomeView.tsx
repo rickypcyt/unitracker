@@ -242,9 +242,6 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl font-bold text-[var(--text-primary)] text-center mb-3">
-                Welcome to Notes
-              </h1>
               <p className="text-[var(--text-secondary)] text-center mb-8 leading-relaxed">
                 Create rich markdown notes, organize by assignments, and access your study materials anywhere.
               </p>

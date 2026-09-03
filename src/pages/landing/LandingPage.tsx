@@ -23,51 +23,51 @@ const features = [
   {
     icon: Timer,
     title: 'Pomodoro Timer',
-    desc: 'Customizable work and break intervals, with sound alerts and notifications to keep your momentum going.',
+    desc: 'Custom work/break intervals with sound and notifications.',
     big: true,
   },
   {
     icon: CheckCircle2,
     title: 'Task Management',
-    desc: 'Kanban with drag-and-drop, assignments, difficulty levels, tags, and deadlines that sync with your calendar.',
+    desc: 'Kanban with drag-and-drop, tags, deadlines, and calendar sync.',
   },
   {
     icon: Calendar,
     title: 'Calendar View',
-    desc: 'Tasks and focus sessions in a unified calendar. Export to Google Calendar in one click.',
+    desc: 'Tasks and sessions in one calendar with Google export.',
   },
   {
     icon: BarChart3,
     title: 'Time Analytics',
-    desc: 'See exactly where your time goes. Tracked hours, task completion, and streaks in clear charts.',
+    desc: 'Track hours, completion, and streaks in clear charts.',
   },
   {
     icon: NotebookPen,
     title: 'Notes & Habits',
-    desc: 'Markdown notes linked to your projects, plus habit tracking with daily streaks.',
+    desc: 'Markdown notes for projects plus habit streaks.',
   },
   {
     icon: Download,
     title: 'Export & Backup',
-    desc: 'Export your data as CSV, PDF, or JSON. Import from Notion, Todoist, and Google Calendar.',
+    desc: 'Export CSV, PDF, JSON. Import from Notion, Todoist, Google.',
   },
 ];
 
 const valueProps = [
   {
     icon: Sparkles,
-    title: 'Free forever, no catches',
-    desc: 'No ads, no tracking, no paywalls. The code is on GitHub — anyone can audit it, contribute to it, or fork it.',
+    title: 'Free forever',
+    desc: 'No ads, no tracking, no paywalls. Open source on GitHub.',
   },
   {
     icon: Download,
-    title: 'Your data stays yours',
-    desc: 'Export everything as CSV, PDF, or JSON whenever you want. Import from Notion, Todoist, and Google Calendar.',
+    title: 'Your data',
+    desc: 'Export or import CSV, PDF, JSON, Notion, Todoist, Google.',
   },
   {
     icon: Timer,
-    title: 'Works without wifi',
-    desc: 'Install as a PWA and use the timer, tasks, and notes offline. Your data syncs automatically when you reconnect.',
+    title: 'Works offline',
+    desc: 'Use the app offline as a PWA; sync when you reconnect.',
   },
 ];
 
@@ -171,23 +171,23 @@ const TabSection = () => {
     {
       icon: RefreshCw,
       label: 'Sync',
-      title: 'Start on laptop, finish on phone',
-      desc: 'UniTracker syncs in real-time across all your devices. No manual refresh, no "last saved 3 hours ago" — your data is just there.',
-      features: ['Real-time sync across devices', 'Conflict-free offline edits', 'Automatic backup to cloud'],
+      title: 'Your data, everywhere',
+      desc: 'Real-time sync across devices. No manual refresh needed.',
+      features: ['Real-time sync', 'Offline edits', 'Cloud backup'],
     },
     {
       icon: Users,
       label: 'Collaborate',
-      title: 'Work together, stay accountable',
-      desc: 'Share tasks and sessions with friends or teammates. See each other\'s progress in real-time and keep each other on track.',
-      features: ['Shared task boards', 'Friend activity feed', 'Group focus sessions with timer'],
+      title: 'Work together',
+      desc: 'Share tasks and focus sessions with friends or teammates.',
+      features: ['Shared boards', 'Activity feed', 'Group sessions'],
     },
     {
       icon: Lock,
       label: 'Private',
-      title: 'Your data is yours, always',
-      desc: 'End-to-end encrypted sync means nobody — not even us — can read your data. Export everything as CSV, PDF, or JSON anytime.',
-      features: ['End-to-end encryption', 'No tracking, no ads', 'Full data export anytime'],
+      title: 'Yours, always',
+      desc: 'End-to-end encrypted sync. We cannot read your data.',
+      features: ['End-to-end encryption', 'No tracking', 'Full export'],
     },
   ];
   const active = tabs[activeTab]!;
@@ -448,8 +448,7 @@ const LandingPage = () => {
                   Stop jumping between apps. Start tracking.
                 </h1>
                 <p className="text-fluid-lead text-[var(--text-secondary)] max-w-xl mb-10">
-                  Plan your projects, focus with Pomodoro, track your hours, and keep your notes together —
-                  without switching between six different apps.
+                  Pomodoro, tasks, calendar, notes — free, open source, and offline-ready.
                 </p>
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <Link
@@ -497,7 +496,7 @@ const LandingPage = () => {
                     <h3 className="text-fluid-h3 font-semibold">No tab switching. No scattered notes. Just work.</h3>
                   </dt>
                   <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    Timer, tasks, and notes live in the same window. One shortcut to start a session, one click to check what's due, one place for everything.
+                    Timer, tasks, and notes in one window.
                   </dd>
                 </div>
                 <div>
@@ -508,7 +507,7 @@ const LandingPage = () => {
                     <h3 className="text-fluid-h3 font-semibold">Private by default</h3>
                   </dt>
                   <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    Your data lives on your device. Sync is end-to-end encrypted. No tracking, no analytics, no selling your data.
+                    Your data stays on your device. Encrypted sync. No tracking.
                   </dd>
                 </div>
                 <div>
@@ -519,7 +518,7 @@ const LandingPage = () => {
                     <h3 className="text-fluid-h3 font-semibold">Yours to keep</h3>
                   </dt>
                   <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    Open source, MIT licensed. Fork it, audit it, contribute to it. Export everything as CSV, PDF, or JSON anytime.
+                    MIT licensed. Fork, audit, contribute. Export anytime.
                   </dd>
                 </div>
               </dl>
@@ -544,7 +543,7 @@ const LandingPage = () => {
                 Tools that talk to each other
               </h2>
               <p className="text-fluid-lead text-[var(--text-secondary)]">
-                Your timer logs sessions to the calendar. Sessions feed into analytics. Tasks show up on the calendar. Notes link to projects. Nothing exists in isolation.
+                Timer, tasks, calendar, notes — connected, not scattered.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -589,7 +588,7 @@ const LandingPage = () => {
         <StaticSection
           label="Focus"
           title="Real Pomodoro. Real countdown."
-          description="This is the actual timer from the app, not a mockup. Try it — click play, adjust settings, sync it with your study sessions. Everything works right here."
+          description="The real Pomodoro from the app. Try it — it works right here."
         >
           <TimerShowcase />
         </StaticSection>
@@ -597,7 +596,7 @@ const LandingPage = () => {
         <StaticSection
           label="Track"
           title="Every session, logged automatically."
-          description="Start a focus session and UniTracker records it. No manual timers, no spreadsheets. Your time is tracked and ready for analytics."
+          description="Focus sessions log automatically. Your time is tracked without manual entry."
           reverse
         >
           <StudyTimerShowcase />
@@ -606,7 +605,7 @@ const LandingPage = () => {
         <StaticSection
           label="Organize"
           title="Tasks, calendar, analytics — live."
-          description="This is the real app running in an iframe. Tasks, calendar, and analytics are all connected. What you track here shows up everywhere."
+          description="The real app inside an iframe. Everything you track is connected."
         >
           <AppIframeShowcase page="Tasks & Calendar" />
         </StaticSection>
@@ -620,7 +619,7 @@ const LandingPage = () => {
                 How it fits your workflow
               </h2>
               <p className="text-fluid-lead text-[var(--text-secondary)]">
-                Not another app you have to remember to open. UniTracker adapts to how you already work.
+                UniTracker fits how you already work.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -629,19 +628,19 @@ const LandingPage = () => {
                   time: 'Morning',
                   icon: Calendar,
                   title: 'Check what\'s due today',
-                  desc: 'Open your calendar. See which tasks are pending, which deadlines are coming, and plan your day in 30 seconds.',
+                  desc: 'Plan your day from the calendar in seconds.',
                 },
                 {
                   time: 'Afternoon',
                   icon: Timer,
                   title: 'Start a focus session',
-                  desc: 'Pick a task, hit start on the Pomodoro timer. Your session auto-logs to the calendar so you always know where your time went.',
+                  desc: 'Pomodoro auto-logs to your calendar as you work.',
                 },
                 {
                   time: 'Evening',
                   icon: BarChart3,
                   title: 'See where your time went',
-                  desc: 'Check analytics to see how many hours you tracked, what you completed, and what to prioritize tomorrow.',
+                  desc: 'See tracked hours and what to prioritize next.',
                 },
               ].map((step) => (
                 <div
@@ -692,7 +691,7 @@ const LandingPage = () => {
                 No tricks, no fine print, no surprises
               </h2>
               <p className="text-fluid-lead text-[var(--text-secondary)]">
-                We don't sell your data. We don't show ads. We don't lock features behind paywalls. The code is public — read it, fork it, verify it.
+                No data selling, no ads, no paywalls. The code is public.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -719,7 +718,7 @@ const LandingPage = () => {
                 Ready to see where your time goes?
               </h2>
               <p className="text-lg sm:text-xl text-[var(--text-secondary)] mb-10 max-w-2xl mx-auto">
-                Start tracking in under 30 seconds. No credit card, no setup, no catch.
+                Start in under 30 seconds. No credit card, no setup.
               </p>
               <Link
                 to="/app"
@@ -749,21 +748,21 @@ const LandingPage = () => {
                 {
                   icon: Github,
                   title: 'Open Source',
-                  desc: 'Star us on GitHub. Contribute features, report bugs, or just read the code.',
+                  desc: 'Contribute, report bugs, or read the code.',
                   link: 'https://github.com/rickypcyt/unitracker',
                   linkLabel: 'View on GitHub',
                 },
                 {
                   icon: Users,
                   title: 'Community',
-                  desc: 'Join the first users shaping UniTracker. Your feedback directly shapes what we build next.',
+                  desc: 'Shape UniTracker with your feedback.',
                   link: '/app',
                   linkLabel: 'Join free',
                 },
                 {
                   icon: Sparkles,
                   title: 'Roadmap',
-                  desc: 'Vote on features, suggest ideas, and see what we\'re building next.',
+                  desc: 'Vote and see what we are building next.',
                   link: '/blog',
                   linkLabel: 'Read the blog',
                 },

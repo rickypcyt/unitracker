@@ -1,5 +1,5 @@
-import { CalendarDays, CheckCircle2, Flame, ListChecks, Timer, TrendingUp } from 'lucide-react';
-import { ReactElement, ReactNode, useEffect, useState } from 'react';
+import { CheckCircle2, Flame, ListChecks, Timer } from 'lucide-react';
+import { ReactElement, useEffect, useState } from 'react';
 import { useLaps, useTasksOnly } from '@/store/appStore';
 
 import { getLocalDateString } from '@/utils/dateUtils';
@@ -25,13 +25,6 @@ interface StatData {
   pomodoros: number;
   pomodoroMinutes: number;
   pomodorosToday: number;
-}
-
-interface StatCard {
-  label: string;
-  icon: ReactNode;
-  value: (s: StatData) => string | number;
-  sub: (s: StatData) => string;
 }
 
 function durationToMinutes(duration: string | undefined): number {
@@ -204,64 +197,12 @@ function usePomodorosAllTime(userId: string | undefined): number {
   return total;
 }
 
-const statCards: StatCard[] = [
-  {
-    label: 'Today',
-    icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
-    value: s => formatMinutesToHHMM(s.todayMinutes),
-    sub: s => `${s.doneToday} tasks`,
-  },
-  {
-    label: 'This Week',
-    icon: <TrendingUp size={22} className="text-[var(--accent-primary)]" />, 
-    value: s => formatMinutesToHHMM(s.weekMinutes),
-    sub: s => `${s.doneWeek} tasks`,
-  },
-  {
-    label: 'This Month',
-    icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
-    value: s => formatMinutesToHHMM(s.monthMinutes),
-    sub: s => `${s.doneMonth} tasks`,
-  },
-  {
-    label: 'This Year',
-    icon: <CalendarDays size={22} className="text-[var(--accent-primary)]" />, 
-    value: s => formatMinutesToHHMM(s.yearMinutes),
-    sub: s => `${s.doneYear} tasks`,
-  },
-  
-  {
-    label: 'Per Day',
-    icon: <Timer size={22} className="text-gray-400" />, 
-    value: s => formatMinutesToHHMM(Math.round(s.avgPerDay)),
-    sub: () => 'average',
-  },
-  {
-    label: 'Max Streak',
-    icon: <Flame size={22} className="text-orange-500" />, 
-    value: s => s.longestStreak,
-    sub: () => 'days',
-  },
-  {
-    label: 'Pomodoro',
-    icon: <CheckCircle2 size={22} className="text-red-500" />, 
-    value: s => s.pomodoros ?? 0,
-    sub: () => 'total',
-  },
-  {
-    label: 'Tasks Done',
-    icon: <ListChecks size={22} className="text-green-500" />, 
-    value: s => s.totalTasks,
-    sub: () => 'total',
-  },
-];
-
-
 const Statistics = (): ReactElement => {
   const tasks = useTasksOnly();
   const { laps } = useLaps();
   const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
   const { todayMinutes, weekMinutes, monthMinutes, yearMinutes } = useLapStats(laps);
@@ -284,39 +225,75 @@ const Statistics = (): ReactElement => {
     pomodorosToday,
   };
 
-  // Si es demo, usar demoStats
-  if (isDemo) {
-    return (
-      <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-3 px-4 mt-4 rounded-2xl shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-2 w-full">
-          {statCards.map((card, i) => (
-            <div key={i} className="stat-item flex items-center gap-2 flex-shrink-0 min-w-0">
-              <div className="flex-shrink-0">{card.icon}</div>
-              <div className="flex flex-col min-w-0">
-                <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
-                <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(demoStats)}</div>
-                <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(demoStats)}</div>
-              </div>
-            </div>
+  const statsData = isDemo ? demoStats : statData;
+
+  const selected =
+    period === 'week'
+      ? { minutes: statsData.weekMinutes, done: statsData.doneWeek, label: 'This Week' }
+      : period === 'month'
+      ? { minutes: statsData.monthMinutes, done: statsData.doneMonth, label: 'This Month' }
+      : { minutes: statsData.yearMinutes, done: statsData.doneYear, label: 'This Year' };
+
+  return (
+    <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-4 px-5 rounded-2xl shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">Study Statistics</h2>
+          <p className="text-xs text-[var(--text-secondary)]">{selected.label}</p>
+        </div>
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          {(['week', 'month', 'year'] as const).map(p => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-all capitalize ${
+                period === p
+                  ? 'bg-[var(--accent-primary)] text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
+              }`}
+            >
+              {p}
+            </button>
           ))}
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-3 px-4 rounded-2xl shadow-sm">
-      <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 w-full items-center justify-items-center">
-        {statCards.map((card, i) => (
-          <div key={i} className="stat-item flex flex-col items-center gap-1 flex-shrink-0 min-w-0 text-center">
-            <div className="flex-shrink-0">{card.icon}</div>
-            <div className="flex flex-col min-w-0">
-              <div className="text-sm text-[var(--text-secondary)] font-medium truncate">{card.label}</div>
-              <div className="text-sm font-bold text-[var(--text-primary)] truncate">{card.value(statData)}</div>
-              <div className="text-sm text-[var(--text-secondary)] truncate">{card.sub(statData)}</div>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <Timer size={18} className="text-[var(--accent-primary)]" />
+            <span className="text-xs font-medium">Study Time</span>
           </div>
-        ))}
+          <div className="text-lg font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(selected.minutes)}</div>
+          <div className="text-xs text-[var(--text-secondary)]">hours</div>
+        </div>
+
+        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <ListChecks size={18} className="text-green-500" />
+            <span className="text-xs font-medium">Tasks Done</span>
+          </div>
+          <div className="text-lg font-bold text-[var(--text-primary)]">{selected.done}</div>
+          <div className="text-xs text-[var(--text-secondary)]">in {period}</div>
+        </div>
+
+        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <CheckCircle2 size={18} className="text-red-500" />
+            <span className="text-xs font-medium">Pomodoros</span>
+          </div>
+          <div className="text-lg font-bold text-[var(--text-primary)]">{statsData.pomodoros ?? 0}</div>
+          <div className="text-xs text-[var(--text-secondary)]">total</div>
+        </div>
+
+        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <Flame size={18} className="text-orange-500" />
+            <span className="text-xs font-medium">Max Streak</span>
+          </div>
+          <div className="text-lg font-bold text-[var(--text-primary)]">{statsData.longestStreak}</div>
+          <div className="text-xs text-[var(--text-secondary)]">days</div>
+        </div>
       </div>
     </div>
   );

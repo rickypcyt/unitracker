@@ -814,7 +814,7 @@ const Countdown: React.FC<CountdownProps> = ({
       }
     }
   };
-  return <div className="flex flex-col items-center justify-center">
+  return <div className="flex flex-col h-full w-full">
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <button type="button" onClick={() => setSyncCountdownWithTimer(!syncCountdownWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncCountdownWithTimer ? 'Disable Countdown sync' : 'Enable Countdown sync'} title={syncCountdownWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
           {syncCountdownWithTimer ? <RefreshCw size={20} className="icon" style={{
@@ -830,7 +830,7 @@ const Countdown: React.FC<CountdownProps> = ({
       </div>}
 
       {/* Timer display - circular ring when running or paused, editable inputs when stopped */}
-      <div className="flex items-center justify-center py-2">
+      <div className="flex-1 flex items-center justify-center py-2">
         {isCountdownRunning || pausedSecondsLeft !== null ? (
           (() => {
             const isPaused = !isCountdownRunning && pausedSecondsLeft !== null;
@@ -939,7 +939,7 @@ const Countdown: React.FC<CountdownProps> = ({
         )}
       </div>
 
-      {!(isSynced || syncCountdownWithTimer) && <div className="flex justify-center items-center gap-2 mt-3">
+      {!(isSynced || syncCountdownWithTimer) && <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
           <div className="flex gap-1">
             <button onClick={() => handleTimeAdjustment(-1800)} className="timer-adjust-btn" aria-label="Subtract 30 minutes">-30</button>
             <button onClick={() => handleTimeAdjustment(-900)} className="timer-adjust-btn" aria-label="Subtract 15 minutes">-15</button>

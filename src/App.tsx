@@ -10,8 +10,6 @@ import LandingPage from "@/pages/landing/LandingPage";
 import PageLoader from "@/components/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { Toaster } from "react-hot-toast";
-import OnboardingGuide from "@/components/OnboardingGuide";
-import PageTooltips from "@/components/PageTooltips";
 import TourManager from "./components/TourManager";
 import Settings from "@/modals/Settings";
 
@@ -26,21 +24,16 @@ import { useFriendManagement } from "@/hooks/useFriendManagement";
 import { useWorkspaceLoader } from "@/hooks/useWorkspaceLoader";
 
 // Direct imports for stacked pages
-import AssignmentsOverview from "@/pages/session/AssignmentsOverview";
 import CalendarPage from "@/pages/calendar/CalendarPage";
 import FocusWidgetPage from "@/pages/FocusWidgetPage";
 import HabitsPage from "@/pages/habits/HabitsPage";
 import Notes from "@/pages/notes/Notes";
-import PendingTasksOverview from "@/pages/session/PendingTasksOverview";
-import QuickStats from "@/pages/session/QuickStats";
 import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import CollapsibleNotes from "@/components/CollapsibleNotes";
 import Sidebar from "@/components/Sidebar";
-import SectionHeader from "@/components/SectionHeader";
-import { BookOpen, Calendar, CheckCircle2, Notebook, TrendingUp } from "lucide-react";
 
 // Preload map: import functions for each page to enable hover-based preloading
 const preloadMap: Record<string, () => Promise<unknown>> = {
@@ -167,33 +160,13 @@ const PageContent: FC = () => {
               <TasksPage />
             )}
 
-            {activePage === 'calendar' && (
-              <div className="flex flex-col gap-4" data-tour="calendar">
-                <SectionHeader icon={<Calendar size={20} />} title="Planning" subtitle="Calendar, deadlines, and upcoming events." />
-                <CalendarPage />
-              </div>
-            )}
+            {activePage === 'calendar' && <CalendarPage />}
 
-            {activePage === 'analytics' && (
-              <div className="flex flex-col gap-4" data-tour="stats">
-                <SectionHeader icon={<TrendingUp size={20} />} title="Analytics" subtitle="Track your productivity and study trends." />
-                <StatsPage />
-              </div>
-            )}
+            {activePage === 'analytics' && <StatsPage />}
 
-            {activePage === 'habits' && (
-              <div className="flex flex-col gap-4" data-tour="habits">
-                <SectionHeader icon={<Notebook size={20} />} title="Journal" subtitle="Daily entries, habits, and reflections." />
-                <HabitsPage />
-              </div>
-            )}
+            {activePage === 'habits' && <HabitsPage />}
 
-            {activePage === 'notes' && (
-              <div className="flex flex-col gap-4">
-                <SectionHeader icon={<BookOpen size={20} />} title="Notes" subtitle="Your random notes and ideas." />
-                <CollapsibleNotes />
-              </div>
-            )}
+            {activePage === 'notes' && <CollapsibleNotes />}
 
             {activePage === 'admin' && <AdminDashboard />}
           </div>
@@ -374,8 +347,6 @@ const App: FC = () => {
                 <TourManager>
                   <PageContent />
                 </TourManager>
-                <OnboardingGuide />
-                <PageTooltips />
               </NavigationProvider>
             } />
             {/* Redirect old app paths to /app */}

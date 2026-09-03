@@ -792,8 +792,6 @@ const StudyTimer = ({
     }
   }, [currentSessionId, studyState.time, studyState.sessionTitle, updateModal, reset, updateSessionId, updateStudyState, isPomodoroSync, isCountdownSync, emitSyncEvent, updateTimerTime]);
 
-  // ── Exit session ──────────────────────────────────────────────────────────
-  const handleExitSession = useCallback(() => setExitChoiceOpen(true), []);
   const handleJustExit = useCallback(() => {
     reset();
     updateSessionId(null);
@@ -999,7 +997,7 @@ const StudyTimer = ({
     adjustment: TIME_ADJUSTMENTS.PLUS_TEN,
     label: "+10"
   }];
-  return <div className="flex flex-col items-center h-min">
+  return <div className="flex flex-col h-full w-full">
       {/* Header */}
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <div className="flex flex-col items-center gap-1">
@@ -1019,13 +1017,12 @@ const StudyTimer = ({
       </div>}
 
       {/* Timer display - circular progress ring */}
-      <div className="relative group w-full flex flex-col items-center py-2" role="timer" aria-label="Current session time">
+      <div className="relative group w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current session time">
         {(() => {
           const totalSec = safeNumber(studyState.time);
           const h = Math.floor(totalSec / 3600);
           const m = Math.floor((totalSec % 3600) / 60);
           const s = Math.floor(totalSec % 60);
-          const isRunning = studyState.isRunning;
           const isPaused = studyState.sessionStatus === 'paused';
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
@@ -1113,7 +1110,7 @@ const StudyTimer = ({
       </div>
 
       {/* Controls with side adjustment buttons */}
-      <div className="flex justify-center items-center gap-2 mt-3">
+      <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
         <div className="flex gap-1">
           {timeAdjustmentButtons.filter(b => b.adjustment < 0).map(({
             adjustment,

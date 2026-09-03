@@ -20,17 +20,12 @@ const Navbar = () => {
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
-  const [isDragging, setIsDragging] = useState(false);
   const [draggedItem, setDraggedItem] = useState<any>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const prevRequestCountRef = useRef<number | null>(null);
 
-  const {
-    friends,
-    receivedRequests,
-    handleRemoveFriend,
-  } = useFriendManagement(user?.id);
+  const { receivedRequests } = useFriendManagement(user?.id);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -110,18 +105,6 @@ const Navbar = () => {
 
     prevRequestCountRef.current = currentCount;
   }, [receivedRequests]);
-
-
-  // Calcula el número de tasks por workspace (solo incompletas)
-  const workspacesWithTaskCount = (Array.isArray(workspaces) ? workspaces : []).map(ws => {
-    const taskCount = tasks.filter(task => {
-      return task.workspace_id === ws.id && !task.completed;
-    }).length;
-    return {
-      ...ws,
-      taskCount
-    };
-  });
 
   // Navigation link class
   const isActive = (page: any) => activePage === page;

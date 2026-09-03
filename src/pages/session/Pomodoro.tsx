@@ -1282,7 +1282,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
   // RENDER
   // ============================================================================
 
-  return <div className="flex flex-col items-center h-full">
+  return <div className="flex flex-col h-full w-full">
       {/* Header */}
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <button type="button" onClick={() => setSyncPomodoroWithTimer(!syncPomodoroWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'} title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
@@ -1305,7 +1305,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
       </div>}
 
       {/* Timer Display - circular progress ring */}
-      <div className="relative w-full flex flex-col items-center py-2" role="timer" aria-label="Current pomodoro time">
+      <div className="relative w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current pomodoro time">
         {(() => {
           const roundedSeconds = Math.round(pomoState.timeLeft);
           const mins = Math.floor(roundedSeconds / 60);
@@ -1349,7 +1349,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
       </div>
 
       {/* Timer Controls with side adjustment buttons */}
-      <div className="flex justify-center items-center gap-2 mb-1 mt-3">
+      <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
         {!syncPomodoroWithTimer && <>
             <div className="flex gap-1">
               {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>

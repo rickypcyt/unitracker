@@ -368,7 +368,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   // Show message when no workspaces are available at all
   if (!activeWorkspace && (!workspaces || workspaces.length === 0)) {
     return (
-      <div className="flex items-center justify-center py-12 min-h-[40vh]">
+      <div className="flex items-center justify-center py-6 min-h-[20vh]">
         <div className="text-center max-w-sm">
           <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
             <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
@@ -400,7 +400,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   // This should rarely show now due to fallback, but keeping as safety net
   if (!activeWorkspace && workspaces && workspaces.length > 0) {
     return (
-      <div className="flex items-center justify-center py-12 min-h-[40vh]">
+      <div className="flex items-center justify-center py-6 min-h-[20vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
           <p className="text-[var(--text-secondary)]">Selecting workspace...</p>
@@ -441,23 +441,23 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   if (noTasks) {
     return (
-      <div data-tour="tasks-board" className="flex items-center justify-center py-12 min-h-[40vh]">
-        <div className="text-center max-w-sm">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
-            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
+      <div data-tour="tasks-board" className="flex items-center justify-center py-4 min-h-[12vh]">
+        <div className="text-center max-w-xs">
+          <div className="mx-auto mb-2 w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <ClipboardCheck className="w-5 h-5 text-[var(--accent-primary)]" />
           </div>
-          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
             {activeWorkspace ? `No tasks in "${activeWorkspace.name}"` : 'No Tasks Yet'}
           </h3>
-          <p className="text-sm text-[var(--text-secondary)] mb-4">
+          <p className="text-xs text-[var(--text-secondary)] mb-3">
             {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
           </p>
           {isLoggedIn ? (
             <button
               onClick={() => handleAddTask(null)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-xs font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
             >
-              <Plus size={18} />
+              <Plus size={16} />
               Create your first task
             </button>
           ) : (
