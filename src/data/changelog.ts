@@ -28,7 +28,8 @@ export const changelogData: ChangelogEntry[] = [
       ],
       improved: [
         "Session page now vertically centers the timers and Noise Generator as one group",
-        "Tasks empty state now takes less vertical space"
+        "Tasks empty state now takes less vertical space",
+        "Sidebar is now fixed and independent of main content height"
       ],
       fixed: []
     }
