@@ -94,7 +94,7 @@ const Sidebar = () => {
       </aside>
 
       <aside
-        className={`hidden lg:flex flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex-shrink-0 transition-all duration-300 sticky top-0 min-h-screen self-stretch ${
+        className={`hidden lg:flex fixed top-0 left-0 h-screen z-40 overflow-hidden flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] transition-all duration-300 ${
           isNavCollapsed ? 'w-16' : 'w-56'
         }`}
       >

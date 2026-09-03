@@ -18,6 +18,22 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "2.0.1",
+    date: "September 3, 2026",
+    time: "7:30 AM",
+    type: "patch",
+    changes: {
+      added: [
+        "Consolidated Statistics card with a week/month/year period selector on the right"
+      ],
+      improved: [
+        "Session page now vertically centers the timers and Noise Generator as one group",
+        "Tasks empty state now takes less vertical space"
+      ],
+      fixed: []
+    }
+  },
+  {
     version: "2.0.0",
     date: "July 30, 2026",
     time: "12:00 AM",

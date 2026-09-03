@@ -77,7 +77,7 @@ const pagesMap: Record<string, FC> = {
 // PageContent component
 // -------------------------
 const PageContent: FC = () => {
-  const { activePage, isSettingsOpen, closeSettings } = useNavigation();
+  const { activePage, isSettingsOpen, closeSettings, isNavCollapsed } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
@@ -151,7 +151,7 @@ const PageContent: FC = () => {
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-hidden flex flex-row">
       <Sidebar />
-      <div className="min-w-0 flex-1 relative">
+      <div className={`min-w-0 flex-1 relative transition-[padding] duration-300 ${isNavCollapsed ? 'lg:pl-16' : 'lg:pl-56'}`}>
         <Suspense fallback={<PageLoader />}>
           <div className="px-4 sm:px-6 lg:px-8 overflow-x-hidden py-4">
             {activePage === 'session' && <SessionPage />}
