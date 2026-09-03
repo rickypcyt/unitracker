@@ -1,4 +1,4 @@
-import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Clock, MoreVertical, Pause, Play, RotateCcw } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
@@ -1029,6 +1029,8 @@ const StudyTimer = ({
           const isPaused = studyState.sessionStatus === 'paused';
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
+          const secondsInHour = totalSec % 3600;
+          const hourProgress = secondsInHour / 3600;
           return (
             <div className="relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
@@ -1037,7 +1039,7 @@ const StudyTimer = ({
                   cx="60" cy="60" r={radius} fill="none"
                   stroke="var(--accent-primary)" strokeWidth="5" strokeLinecap="round"
                   strokeDasharray={isPaused ? circumference * 0.25 : circumference}
-                  strokeDashoffset={isPaused ? circumference * 0.5 : (isRunning ? 0 : circumference)}
+                  strokeDashoffset={isPaused ? circumference * 0.5 : circumference * (1 - hourProgress)}
                   className={`transition-all duration-300 ${isPaused ? 'animate-spin origin-center' : ''}`}
                   style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                 />
@@ -1132,17 +1134,6 @@ const StudyTimer = ({
               </button>}
           </>}
 
-        {currentSessionId && <>
-            <button onClick={handleExitSession} className="timer-ctrl-btn" aria-label="Exit session" title="Exit session">
-              <X size={18} />
-            </button>
-            <button onClick={() => {
-          if (isStudyRunningRedux) pause();
-          updateModal("isFinishModalOpen", true);
-        }} className="timer-ctrl-btn" aria-label="Finish session" title="Finish session">
-              <Check size={18} />
-            </button>
-          </>}
         <div className="flex gap-1">
           {timeAdjustmentButtons.filter(b => b.adjustment > 0).map(({
             adjustment,

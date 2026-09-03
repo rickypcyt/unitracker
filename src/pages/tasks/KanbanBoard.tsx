@@ -441,7 +441,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   if (noTasks) {
     return (
-      <div className="flex items-center justify-center py-12 min-h-[40vh]">
+      <div data-tour="tasks-board" className="flex items-center justify-center py-12 min-h-[40vh]">
         <div className="text-center max-w-sm">
           <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
             <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />

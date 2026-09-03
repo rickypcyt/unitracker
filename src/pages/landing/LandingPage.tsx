@@ -1,7 +1,6 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import {
   ArrowRight,
   BarChart3,
@@ -131,27 +130,9 @@ const AppIframeShowcase = ({ page }: { page: string }) => {
   );
 };
 
-// ─── Scroll Reveal Wrapper ───────────────────────────────────────────────────
+// ─── Static Section (replaces PinnedSection) ─────────────────────────────────
 
-const ScrollReveal = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// ─── Pinned Scroll Section (Apple-style) ─────────────────────────────────────
-
-const PinnedSection = ({
+const StaticSection = ({
   label,
   title,
   description,
@@ -164,25 +145,17 @@ const PinnedSection = ({
   children: React.ReactNode;
   reverse?: boolean;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0, 1, 1, 0]);
-  const y = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [60, 0, 0, -40]);
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.95, 1, 1, 0.98]);
-
   return (
-    <section ref={ref} className="relative min-h-[120vh] border-t border-white/5">
-      <div className="sticky top-0 min-h-screen flex items-center py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-fluid w-full">
-          <div className={`grid lg:grid-cols-2 gap-12 items-center ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
-            <motion.div style={{ opacity, y }} className={reverse ? 'lg:col-start-2' : ''}>
-              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">{label}</p>
-              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">{title}</h2>
-              <p className="text-fluid-lead text-[var(--text-secondary)] mb-6">{description}</p>
-            </motion.div>
-            <motion.div style={{ opacity, scale }} className={reverse ? 'lg:col-start-1 lg:row-start-1' : ''}>
-              {children}
-            </motion.div>
+    <section className="py-fluid-section border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-fluid">
+        <div className={`grid lg:grid-cols-2 gap-12 items-center ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
+          <div className={reverse ? 'lg:col-start-2' : ''}>
+            <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">{label}</p>
+            <h2 className="text-fluid-h2 font-heading font-semibold mb-4">{title}</h2>
+            <p className="text-fluid-lead text-[var(--text-secondary)] mb-6">{description}</p>
+          </div>
+          <div className={reverse ? 'lg:col-start-1 lg:row-start-1' : ''}>
+            {children}
           </div>
         </div>
       </div>
@@ -514,7 +487,6 @@ const LandingPage = () => {
         {/* Principles */}
         <section className="py-fluid-section border-t border-white/5">
           <div className="max-w-7xl mx-auto px-fluid">
-            <ScrollReveal>
             <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-14 items-center">
               <dl className="space-y-8">
                 <div>
@@ -560,14 +532,12 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-            </ScrollReveal>
           </div>
         </section>
 
         {/* Features */}
         <section className="py-fluid-section border-t border-white/5">
           <div className="max-w-7xl mx-auto px-fluid">
-            <ScrollReveal>
             <div className="mb-14 max-w-2xl">
               <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Connected, not stacked</p>
               <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
@@ -577,7 +547,6 @@ const LandingPage = () => {
                 Your timer logs sessions to the calendar. Sessions feed into analytics. Tasks show up on the calendar. Notes link to projects. Nothing exists in isolation.
               </p>
             </div>
-            </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {features.map((f) => (
                 <div
@@ -616,36 +585,35 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Scroll Tour — Real Components */}
-        <PinnedSection
+        {/* Showcase — Real Components */}
+        <StaticSection
           label="Focus"
           title="Real Pomodoro. Real countdown."
           description="This is the actual timer from the app, not a mockup. Try it — click play, adjust settings, sync it with your study sessions. Everything works right here."
         >
           <TimerShowcase />
-        </PinnedSection>
+        </StaticSection>
 
-        <PinnedSection
+        <StaticSection
           label="Track"
           title="Every session, logged automatically."
           description="Start a focus session and UniTracker records it. No manual timers, no spreadsheets. Your time is tracked and ready for analytics."
           reverse
         >
           <StudyTimerShowcase />
-        </PinnedSection>
+        </StaticSection>
 
-        <PinnedSection
+        <StaticSection
           label="Organize"
           title="Tasks, calendar, analytics — live."
           description="This is the real app running in an iframe. Tasks, calendar, and analytics are all connected. What you track here shows up everywhere."
         >
           <AppIframeShowcase page="Tasks & Calendar" />
-        </PinnedSection>
+        </StaticSection>
 
         {/* How UniTracker fits your day */}
         <section className="py-fluid-section border-t border-white/5 bg-white/[0.02]">
           <div className="max-w-7xl mx-auto px-fluid">
-            <ScrollReveal>
             <div className="mb-14 max-w-2xl">
               <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">A day with UniTracker</p>
               <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
@@ -693,7 +661,6 @@ const LandingPage = () => {
                 </div>
               ))}
             </div>
-            </ScrollReveal>
           </div>
         </section>
 
@@ -748,7 +715,6 @@ const LandingPage = () => {
         {/* Final CTA */}
         <section className="py-fluid-section border-t border-white/5">
           <div className="max-w-4xl mx-auto px-fluid text-center">
-            <ScrollReveal>
               <h2 className="text-4xl sm:text-5xl font-heading font-bold text-[var(--text-primary)] mb-6">
                 Ready to see where your time goes?
               </h2>
@@ -766,7 +732,6 @@ const LandingPage = () => {
               <p className="mt-6 text-sm text-[var(--text-secondary)]">
                 No credit card required · Free forever · Open source
               </p>
-            </ScrollReveal>
           </div>
         </section>
 

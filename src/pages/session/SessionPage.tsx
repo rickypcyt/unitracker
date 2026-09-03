@@ -208,14 +208,11 @@ const SessionPage = memo(() => {
               <NoiseGenerator />
             </div>
 
-            {/* Stats grid - responsive auto-fit, centered */}
+            {/* Stats grid - 2x2, centered */}
             <div className="flex flex-col items-center justify-center">
               <div
-                className="grid w-full gap-3"
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
-                  maxWidth: '500px',
-                }}
+                className="grid grid-cols-2 gap-3 w-full"
+                style={{ maxWidth: '360px' }}
               >
                 {/* Pomodoros Today */}
                 <div className="dashboard-stat-card !p-3 flex flex-col gap-2 items-center text-center">

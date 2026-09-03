@@ -294,6 +294,7 @@ const TasksPage = memo(() => {
         )}
         {/* Main FAB */}
         <button
+          data-tour="add-task"
           onClick={() => setShowFabMenu(prev => !prev)}
           className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg shadow-[var(--accent-primary)]/20 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden ${!showFabMenu ? 'fab-shine' : ''}`}
           aria-label="Add new task"

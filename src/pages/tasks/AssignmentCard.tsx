@@ -171,7 +171,6 @@ export const AssignmentCard = ({
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <button
-              data-tour="add-task"
               onClick={onAddTask}
               className="p-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
               title="Add task"

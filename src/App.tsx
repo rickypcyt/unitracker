@@ -164,29 +164,25 @@ const PageContent: FC = () => {
             {activePage === 'session' && <SessionPage />}
 
             {activePage === 'tasks' && (
-              <div className="flex flex-col gap-4">
-                <SectionHeader icon={<CheckCircle2 size={20} />} title="Tasks" subtitle="Your pending tasks and assignment progress." />
-                <PendingTasksOverview limit={50} />
-                <AssignmentsOverview />
-              </div>
+              <TasksPage />
             )}
 
             {activePage === 'calendar' && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4" data-tour="calendar">
                 <SectionHeader icon={<Calendar size={20} />} title="Planning" subtitle="Calendar, deadlines, and upcoming events." />
                 <CalendarPage />
               </div>
             )}
 
             {activePage === 'analytics' && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4" data-tour="stats">
                 <SectionHeader icon={<TrendingUp size={20} />} title="Analytics" subtitle="Track your productivity and study trends." />
                 <StatsPage />
               </div>
             )}
 
             {activePage === 'habits' && (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4" data-tour="habits">
                 <SectionHeader icon={<Notebook size={20} />} title="Journal" subtitle="Daily entries, habits, and reflections." />
                 <HabitsPage />
               </div>

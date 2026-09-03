@@ -22,7 +22,7 @@ const PageTooltips: React.FC = () => {
         targetSelector="[data-tour='add-task']"
         title="Create Tasks"
         content="Click the + button to add a new task. Organize by assignment, set deadlines, and track difficulty levels."
-        position="top"
+        position="bottom"
       />
     ),
     calendar: (

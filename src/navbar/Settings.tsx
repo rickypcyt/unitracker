@@ -183,6 +183,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                 </button>
               ) : (
                 <button
+                  data-tour="login-button"
                   onClick={loginWithGoogle}
                   className="w-full px-4 py-2 text-[var(--accent-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors flex items-center gap-2 justify-center"
                 >

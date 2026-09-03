@@ -63,8 +63,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // Clear all caches and local storage
       clearAllCaches();
-      
 
+      // Redirect to demo/landing with full reload
+      window.location.href = '/';
+      
     } catch (error) {
       console.error('Error logging out:', error instanceof Error ? error.message : 'Unknown error');
       toast.error('Error logging out');
