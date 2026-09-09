@@ -11,7 +11,7 @@ import { useLocation } from 'react-router-dom';
 
 const StatsPage = memo(() => {
   const location = useLocation();
-  const isVisible = location.pathname === '/stats';
+  const isVisible = location.pathname === '/analytics';
   const fetchTasks = useFetchTasks();
   const { user } = useAuth();
   const { currentWorkspace: activeWorkspace } = useWorkspace();
@@ -59,8 +59,8 @@ const StatsPage = memo(() => {
           content="Track your study progress with detailed analytics. View study time statistics, productivity charts, and performance insights."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://unitracker.me/stats" />
-        <link rel="canonical" href="https://unitracker.me/stats" />
+        <meta property="og:url" content="https://unitracker.me/analytics" />
+        <link rel="canonical" href="https://unitracker.me/analytics" />
       </Helmet>
       <div className="w-full px-0 overflow-hidden mt-2">
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">

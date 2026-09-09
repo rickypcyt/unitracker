@@ -33,58 +33,107 @@ export interface HabitWithCompletions extends Habit {
   completions: Record<string, boolean>; // key: "YYYY-MM-DD", value: completed
 }
 
+type HabitCache = {
+  habits: HabitWithCompletions[];
+  dailyNotes: Record<string, string>;
+  savedAt: number;
+};
+
+const HABITS_CACHE_TTL = 5 * 60 * 1000;
+const habitMemoryCache = new Map<string, HabitCache>();
+const habitRequests = new Map<string, Promise<HabitCache>>();
+
+const getHabitCache = (userId: string): HabitCache | null => {
+  const memoryCache = habitMemoryCache.get(userId);
+  if (memoryCache) return memoryCache;
+
+  try {
+    const saved = localStorage.getItem(`habits-cache:${userId}`);
+    if (!saved) return null;
+    const parsed = JSON.parse(saved) as HabitCache;
+    if (Array.isArray(parsed.habits) && parsed.dailyNotes && typeof parsed.savedAt === 'number') {
+      habitMemoryCache.set(userId, parsed);
+      return parsed;
+    }
+  } catch (error) {
+    console.error('Error reading habits cache:', error);
+  }
+
+  return null;
+};
+
+const saveHabitCache = (userId: string, cache: HabitCache): void => {
+  habitMemoryCache.set(userId, cache);
+  try {
+    localStorage.setItem(`habits-cache:${userId}`, JSON.stringify(cache));
+  } catch (error) {
+    console.error('Error saving habits cache:', error);
+  }
+};
+
+const fetchHabitData = async (userId: string): Promise<HabitCache> => {
+  const existingRequest = habitRequests.get(userId);
+  if (existingRequest) return existingRequest;
+
+  const request = (async () => {
+    const habitsData = await HabitService.fetchHabits(userId);
+    const habitIds = habitsData.map(h => h.id);
+    const completionsData = habitIds.length > 0
+      ? await HabitService.fetchCompletions(userId, habitIds) as HabitCompletion[]
+      : [];
+    const notesData = await HabitService.fetchJournalNotes(userId);
+    const dailyNotes: Record<string, string> = {};
+
+    notesData.forEach(note => {
+      dailyNotes[note.note_date] = note.note || '';
+    });
+
+    const habits: HabitWithCompletions[] = habitsData.map(habit => {
+      const completions: Record<string, boolean> = {};
+      completionsData
+        .filter(completion => completion.habit_id === habit.id)
+        .forEach(completion => {
+          completions[completion.completion_date] = completion.completed;
+        });
+
+      return { ...habit, completions };
+    });
+
+    const cache = { habits, dailyNotes, savedAt: Date.now() };
+    saveHabitCache(userId, cache);
+    return cache;
+  })();
+
+  habitRequests.set(userId, request);
+  try {
+    return await request;
+  } finally {
+    habitRequests.delete(userId);
+  }
+};
+
 export const useHabits = () => {
   const { user, isLoggedIn } = useAuth();
-  const [habits, setHabits] = useState<HabitWithCompletions[]>([]);
-  const [dailyNotes, setDailyNotes] = useState<Record<string, string>>({}); // key: "YYYY-MM-DD", value: note
-  const [loading, setLoading] = useState(true);
+  const cachedHabits = user?.id ? getHabitCache(user.id) : null;
+  const [habits, setHabits] = useState<HabitWithCompletions[]>(cachedHabits?.habits ?? []);
+  const [dailyNotes, setDailyNotes] = useState<Record<string, string>>(cachedHabits?.dailyNotes ?? {});
+  const [loading, setLoading] = useState(Boolean(isLoggedIn && user && !cachedHabits));
   const [error, setError] = useState<string | null>(null);
 
-  // Load habits and their completions
-  const loadHabits = async () => {
+  const loadHabits = async (showLoading = true) => {
     if (!user || !isLoggedIn) {
       setHabits([]);
+      setDailyNotes({});
       setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       setError(null);
-
-      const habitsData = await HabitService.fetchHabits(user.id);
-      const habitIds = habitsData.map(h => h.id);
-      let completionsData: HabitCompletion[] = [];
-
-      if (habitIds.length > 0) {
-        completionsData = await HabitService.fetchCompletions(user.id, habitIds) as HabitCompletion[];
-      }
-
-      const notesData = await HabitService.fetchJournalNotes(user.id);
-
-      const notesObject: Record<string, string> = {};
-      notesData.forEach(note => {
-        notesObject[note.note_date] = note.note || '';
-      });
-
-      setDailyNotes(notesObject);
-
-      const habitsWithCompletions: HabitWithCompletions[] = habitsData.map(habit => {
-        const habitCompletions = completionsData.filter(c => c.habit_id === habit.id);
-        const completions: Record<string, boolean> = {};
-
-        habitCompletions.forEach(comp => {
-          const dateKey = comp.completion_date;
-          completions[dateKey] = comp.completed;
-        });
-
-        return {
-          ...habit,
-          completions
-        };
-      });
-
-      setHabits(habitsWithCompletions);
+      const cache = await fetchHabitData(user.id);
+      setHabits(cache.habits);
+      setDailyNotes(cache.dailyNotes);
     } catch (err) {
       console.error('Error loading habits:', err);
       setError(err instanceof Error ? err.message : 'Failed to load habits');
@@ -105,7 +154,11 @@ export const useHabits = () => {
         completions: {}
       };
 
-      setHabits(prev => [...prev, newHabit]);
+      setHabits(prev => {
+        const nextHabits = [...prev, newHabit];
+        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
+        return nextHabits;
+      });
       return newHabit;
     } catch (err) {
       console.error('Error creating habit:', err);
@@ -121,11 +174,15 @@ export const useHabits = () => {
     try {
       await HabitService.updateHabit(habitId, user.id, newName);
 
-      setHabits(prev => prev.map(habit =>
-        habit.id === habitId
-          ? { ...habit, name: newName.trim() }
-          : habit
-      ));
+      setHabits(prev => {
+        const nextHabits = prev.map(habit =>
+          habit.id === habitId
+            ? { ...habit, name: newName.trim() }
+            : habit
+        );
+        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
+        return nextHabits;
+      });
 
       return true;
     } catch (err) {
@@ -142,7 +199,11 @@ export const useHabits = () => {
     try {
       await HabitService.deleteHabit(habitId, user.id);
 
-      setHabits(prev => prev.filter(habit => habit.id !== habitId));
+      setHabits(prev => {
+        const nextHabits = prev.filter(habit => habit.id !== habitId);
+        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
+        return nextHabits;
+      });
       return true;
     } catch (err) {
       console.error('Error deleting habit:', err);
@@ -168,14 +229,18 @@ export const useHabits = () => {
       const newCompletedState = await HabitService.toggleCompletion(habitId, user.id, dateString);
 
       // Update local state
-      setHabits(prev => prev.map(habit => {
-        if (habit.id === habitId) {
-          const newCompletions = { ...habit.completions };
-          newCompletions[dateString] = newCompletedState;
-          return { ...habit, completions: newCompletions };
-        }
-        return habit;
-      }));
+      setHabits(prev => {
+        const nextHabits = prev.map(habit => {
+          if (habit.id === habitId) {
+            const newCompletions = { ...habit.completions };
+            newCompletions[dateString] = newCompletedState;
+            return { ...habit, completions: newCompletions };
+          }
+          return habit;
+        });
+        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
+        return nextHabits;
+      });
 
       return true;
     } catch (err) {
@@ -207,6 +272,7 @@ export const useHabits = () => {
         } else {
           newNotes[dateString] = trimmedNote;
         }
+        saveHabitCache(user.id, { habits, dailyNotes: newNotes, savedAt: Date.now() });
         return newNotes;
       });
 
@@ -218,10 +284,26 @@ export const useHabits = () => {
     }
   };
 
-  // Load habits when user changes
+  // Load once per cache window and keep cached data visible while refreshing.
   useEffect(() => {
-    loadHabits();
-  }, [user, isLoggedIn]);
+    if (!user || !isLoggedIn) {
+      setHabits([]);
+      setDailyNotes({});
+      setLoading(false);
+      return;
+    }
+
+    const cache = getHabitCache(user.id);
+    if (cache) {
+      setHabits(cache.habits);
+      setDailyNotes(cache.dailyNotes);
+      setLoading(false);
+
+      if (Date.now() - cache.savedAt < HABITS_CACHE_TTL) return;
+    }
+
+    void loadHabits(!cache);
+  }, [user?.id, isLoggedIn]);
 
   return {
     habits,

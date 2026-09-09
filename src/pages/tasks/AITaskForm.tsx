@@ -223,20 +223,7 @@ const AITaskForm = ({
     };
   }
   function getModelCandidates(): string[] {
-    const baseModels = [
-    // Primary: free router auto-selects available free models
-    'openrouter/free',
-    // Fallback if router is down
-    'deepseek/deepseek-r1-0528:free'
-    ];
-    const envModel = import.meta.env['VITE_OPENROUTER_MODEL'];
-    const envList = envModel ? [String(envModel)] : [];
-
-    // Try models in order of preference
-    const candidates = [...envList, ...baseModels];
-
-    // Deduplicate
-    return candidates.filter((m: string, i: number, arr: string[]) => arr.indexOf(m) === i);
+    return ['openrouter/free'];
   }
   function buildSystemPrompt(currentDate: string, tz: string): string {
     return `ULTRA_DETERMINISTIC_MODE: JSON_OUTPUT_ONLY. NO_MARKDOWN. NO_QUOTES. NO_EXPLANATIONS. NO_META_CONTENT.
@@ -401,7 +388,17 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
     }
     return '';
   }
-  return <BaseModal isOpen={true} onClose={onClose} title="AI Task Generator" maxWidth="max-w-2xl" showCloseButton={true}>
+  return <BaseModal
+    isOpen={true}
+    onClose={() => {
+      if (!aiLoading) onClose();
+    }}
+    title="AI Task Generator"
+    maxWidth="max-w-2xl"
+    showCloseButton={!aiLoading}
+    closeOnEsc={!aiLoading}
+    closeOnOverlayClick={!aiLoading}
+  >
       <div className="space-y-4">
         {/* Tab Selector */}
         <div className="w-full flex justify-center items-center select-none mb-4 sm:mb-4 px-4">

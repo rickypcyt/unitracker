@@ -1565,36 +1565,106 @@ h1 {
 }
 
 /* =========================
-   DPI / Monitor Scaling Support
-   Adjusts root font-size for common Windows scaling levels
+   Responsive UI Foundation
+   Keep sizing in CSS pixels; adapt layout with viewport breakpoints instead of DPI hacks.
    ========================= */
-
-/* 125% scaling (120 DPI) - common on laptops */
-@media (resolution: 120dpi) {
-  html {
-    font-size: 0.875rem;
-  }
+:root {
+  --ui-border-width: 1px;
+  --ui-focus-width: 3px;
+  --ui-focus-color: rgba(30, 144, 255, 0.24);
+  --ui-control-height: 2.75rem;
+  --ui-content-gutter: clamp(1rem, 0.65rem + 1vw, 2rem);
+  --ui-content-max-width: 90rem;
 }
 
-/* 125% scaling alternative */
-@media (-webkit-min-device-pixel-ratio: 1.25) and (max-width: 2560px) {
-  html {
-    font-size: 0.875rem;
-  }
+html {
+  font-size: 16px;
 }
 
-/* 150% scaling (144 DPI) */
-@media (resolution: 144dpi) {
-  html {
-    font-size: 0.833rem;
-  }
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
 }
 
-/* 150% scaling alternative */
-@media (-webkit-min-device-pixel-ratio: 1.5) and (max-width: 2560px) {
-  html {
-    font-size: 0.833rem;
-  }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+  letter-spacing: -0.025em;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 1.25rem + 0.8vw, 2.25rem);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled),
+a[role="button"] {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  border-width: var(--ui-border-width);
+  border-color: var(--border-primary);
+  border-radius: 0.75rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-primary);
+  outline: none;
+  box-shadow: 0 0 0 var(--ui-focus-width) var(--ui-focus-color);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+svg.lucide {
+  flex-shrink: 0;
+  stroke-width: 1.9;
+}
+
+.responsive-content {
+  width: min(100%, var(--ui-content-max-width));
+  margin-inline: auto;
+  padding-inline: var(--ui-content-gutter);
 }
 
 /* Session page fluid spacing helpers */
@@ -1606,4 +1676,20 @@ h1 {
   --fluid-text-base: clamp(0.875rem, 0.85rem + 0.15vw, 1rem);
   --fluid-text-lg: clamp(1rem, 0.85rem + 0.8vw, 1.5rem);
   --fluid-text-xl: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --ui-content-max-width: 96rem;
+  }
+}
+
+@media (max-width: 639px) {
+  :root {
+    --ui-control-height: 2.625rem;
+  }
+
+  h1 {
+    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  }
 }

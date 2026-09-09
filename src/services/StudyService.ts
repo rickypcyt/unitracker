@@ -20,14 +20,33 @@ export class StudyService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
+    const { session_assignment: sessionAssignment, workspace_id: workspaceId, ...baseLapData } = lapData;
+    const payload: Record<string, any> = {
+      ...baseLapData,
+      user_id: user.id,
+      ...(sessionAssignment !== undefined ? { session_assignment: sessionAssignment } : {}),
+      ...(workspaceId !== undefined ? { workspace_id: workspaceId } : {}),
+    };
     const { data, error } = await supabase
       .from('study_laps')
-      .insert({ ...lapData, user_id: user.id })
+      .insert(payload)
       .select()
       .single();
 
-    if (error) throw error;
-    return data as Lap;
+    if (!error) return data as Lap;
+
+    const isMissingOptionalColumn = error.code === 'PGRST204' || /column .* does not exist|schema cache/i.test(error.message ?? '');
+    if (!isMissingOptionalColumn) throw error;
+
+    const { session_assignment: _sessionAssignment, workspace_id: _workspaceId, ...legacyPayload } = payload;
+    const { data: legacyData, error: legacyError } = await supabase
+      .from('study_laps')
+      .insert(legacyPayload)
+      .select()
+      .single();
+
+    if (legacyError) throw legacyError;
+    return legacyData as Lap;
   }
 
   static async updateLap(id: string, updates: Partial<UpdateLapInput>): Promise<Lap> {

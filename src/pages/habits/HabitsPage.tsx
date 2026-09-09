@@ -81,7 +81,8 @@ const HabitsPage = memo(() => {
     updateHabit,
     deleteHabit,
     toggleHabitCompletion,
-    saveJournalNote
+    saveJournalNote,
+    loading
   } = useHabits();
 
   // Combine real habits with demo habits for demo mode
@@ -259,6 +260,20 @@ const HabitsPage = memo(() => {
       }
     };
   }, [pendingNoteSaves, saveJournalNote]);
+
+  if (loading && isLoggedIn && displayHabits.length === 0) {
+    return (
+      <div className="w-full px-4 py-4 sm:px-6 md:px-8 lg:px-12 xl:px-20" aria-label="Loading habits">
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-20 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
+          ))}
+        </div>
+        <div className="mb-4 h-9 w-full animate-pulse rounded-lg bg-[var(--bg-secondary)]" />
+        <div className="h-72 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
+      </div>
+    );
+  }
 
   // Show message if user is not authenticated AND no demo habits available
   if (!isLoggedIn && demoHabits.length === 0) {

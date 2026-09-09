@@ -77,6 +77,7 @@ const StartSessionModal = ({
       const session = await StudyService.createLap({
         user_id: data.user.id,
         started_at: new Date().toISOString(),
+        duration: "00:00:00",
         tasks_completed: 0,
         name: sessionTitle.trim(),
         description: sessionDescription.trim(),
@@ -101,7 +102,7 @@ const StartSessionModal = ({
       });
       onClose();
     } catch (error) {
-      console.error("Error starting session:", error);
+      console.error("Error starting session:", error instanceof Error ? error.message : error);
     } finally {
       setIsSubmitting(false);
     }

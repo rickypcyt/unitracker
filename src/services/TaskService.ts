@@ -2,6 +2,7 @@ import { supabase } from '@/utils/supabaseClient';
 import type { Task } from '@/schemas/task';
 
 const TASK_FIELDS = 'id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, subject_id, difficulty, activetask, deadline, workspace_id, status, recurrence_type, recurrence_weekdays, start_at, end_at';
+const TASK_FIELDS_FALLBACK = 'id, title, description, completed, completed_at, created_at, updated_at, user_id, assignment, difficulty, activetask, deadline, workspace_id';
 
 const ALL_WORKSPACE_ID = 'all';
 
@@ -32,14 +33,25 @@ export class TaskService {
     ));
 
     const isAllWorkspace = workspaceId === ALL_WORKSPACE_ID;
-    let ownedQuery = supabase.from('tasks').select(TASK_FIELDS).eq('user_id', user.id);
-    if (workspaceId && !isAllWorkspace) {
-      ownedQuery = ownedQuery.eq('workspace_id', workspaceId);
+    const buildOwnedQuery = (fields: string) => {
+      let query = supabase.from('tasks').select(fields).eq('user_id', user.id);
+      if (workspaceId && !isAllWorkspace) {
+        query = query.eq('workspace_id', workspaceId);
+      }
+      return query.order('assignment');
+    };
+
+    const ownedQueryResult = await buildOwnedQuery(TASK_FIELDS);
+    let ownedTasksData = ownedQueryResult.data as Task[] | null;
+    let ownedTasksError = ownedQueryResult.error;
+    if (ownedTasksError) {
+      console.warn('fetchTasks: retrying with legacy task fields', ownedTasksError.message);
+      const fallbackResult = await buildOwnedQuery(TASK_FIELDS_FALLBACK);
+      ownedTasksData = fallbackResult.data as Task[] | null;
+      ownedTasksError = fallbackResult.error;
     }
-    ownedQuery = ownedQuery.order('assignment');
-    const { data: ownedTasksData, error: ownedTasksError } = await ownedQuery;
     if (ownedTasksError) throw ownedTasksError;
-    const ownedTasks = ownedTasksData ?? [];
+    const ownedTasks: Task[] = ownedTasksData ?? [];
 
     const relevantSharedIds = workspaceId && !isAllWorkspace
       ? sharedWorkspaceIds.filter(id => id === workspaceId)
@@ -47,15 +59,27 @@ export class TaskService {
 
     let sharedTasks: Task[] = [];
     if (relevantSharedIds.length > 0) {
-      const { data: sharedTasksData, error: sharedTasksError } = await supabase
+      const sharedQuery = await supabase
         .from('tasks')
         .select(TASK_FIELDS)
         .in('workspace_id', relevantSharedIds)
         .order('assignment');
+      let sharedTasksData = sharedQuery.data as Task[] | null;
+      let sharedTasksError = sharedQuery.error;
+      if (sharedTasksError) {
+        console.warn('fetchTasks: retrying shared tasks with legacy fields', sharedTasksError.message);
+        const fallbackQuery = await supabase
+          .from('tasks')
+          .select(TASK_FIELDS_FALLBACK)
+          .in('workspace_id', relevantSharedIds)
+          .order('assignment');
+        sharedTasksData = fallbackQuery.data as Task[] | null;
+        sharedTasksError = fallbackQuery.error;
+      }
       if (sharedTasksError) {
         console.error('fetchTasks: error fetching tasks from shared workspaces', sharedTasksError);
       } else {
-        sharedTasks = (sharedTasksData ?? []).filter(task => task.user_id !== user.id) as Task[];
+        sharedTasks = (sharedTasksData ?? []).filter(task => task.user_id !== user.id);
       }
     }
 

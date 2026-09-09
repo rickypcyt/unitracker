@@ -1,7 +1,7 @@
 import { compression } from 'vite-plugin-compression2';
 import { defineConfig, loadEnv } from 'vite';
 import path from "path";
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
 
@@ -16,13 +16,15 @@ export default defineConfig(({ command, mode }) => {
   
   const isDev = command === 'serve';
   const isFastDev = process.env.FAST_DEV === 'true';
+  const isFastBuild = isFastDev || mode === 'development';
+  const isReleaseBuild = mode === 'release';
   
   return {
     plugins: [
       react(),
-      // PWA - disabled for mobile (Capacitor) and fast dev builds
-      ...(!shouldDisableCompression && !isFastDev ? [
-        VitePWA({
+      // Keep the PWA virtual module available, but skip Workbox generation for fast/mobile builds.
+      VitePWA({
+          disable: shouldDisableCompression || isFastBuild,
           registerType: 'autoUpdate',
           includeAssets: [
             'assets/favicon.ico',
@@ -111,7 +113,6 @@ export default defineConfig(({ command, mode }) => {
             enabled: false,
           },
         }),
-      ] : []),
       // Bundle analyzer solo cuando se solicita explícitamente
       ...(process.env.ANALYZE === 'true' ? [
         visualizer({
@@ -121,8 +122,8 @@ export default defineConfig(({ command, mode }) => {
           brotliSize: true,
         })
       ] : []),
-      // Only enable compression for web builds, not mobile builds
-      ...(!shouldDisableCompression && !isFastDev ? [
+      // Compression is reserved for release builds because gzip + Brotli are expensive locally.
+      ...(isReleaseBuild && !shouldDisableCompression ? [
         compression({
           algorithm: 'gzip',
           exclude: [/\.(br)$/, /\.(gz)$/],
@@ -196,9 +197,9 @@ export default defineConfig(({ command, mode }) => {
           assetFileNames: 'assets/[name]-[hash].[ext]'
         }
       },
-      sourcemap: true,
+      sourcemap: isReleaseBuild,
       cssMinify: true,
-      minify: 'terser',
+      minify: isReleaseBuild ? 'terser' : 'esbuild',
       reportCompressedSize: false,
       modulePreload: {
         polyfill: false

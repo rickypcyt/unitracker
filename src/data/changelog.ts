@@ -18,6 +18,35 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "2.0.2",
+    date: "September 9, 2026",
+    time: "12:00 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "Independent routes for every app section: Study, Tasks, Calendar, Analytics, Journal, Notes, and Focus",
+        "Notes library organized by assignment cards with notes grouped by date",
+        "Responsive Month calendar with compact square day cells",
+        "Dynamic Stats bar chart with Week, Month, and Year selectors inside one card"
+      ],
+      improved: [
+        "Sidebar navigation is now permanently compact with the UT logo",
+        "Responsive typography, focus states, controls, borders, and spacing across laptop and monitor sizes",
+        "Calendar layout now places the calendar beside Upcoming Tasks on desktop",
+        "Notes and Habits now keep cached data visible while loading to prevent empty-state flashes",
+        "AI Task Generator always uses the openrouter/free model",
+        "Authenticated users are redirected directly to the app instead of the landing page",
+        "Production build configuration optimized with faster SWC and esbuild-based local builds"
+      ],
+      fixed: [
+        "Create your first task now opens the task form when a workspace has no active tasks",
+        "Study sessions now include an initial duration and handle legacy database columns safely",
+        "Calendar Month, Week, and Day view switching now works correctly",
+        "AI Task Generator cannot be closed accidentally while a request is running"
+      ]
+    }
+  },
+  {
     version: "2.0.1",
     date: "September 3, 2026",
     time: "7:30 AM",

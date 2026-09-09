@@ -8,6 +8,7 @@
     "dev:fast": "FAST_DEV=true bun vite",
     "dev:ultra": "FAST_DEV=true bun vite --force",
     "build": "vite build",
+    "build:release": "vite build --mode release",
     "build:fast": "vite build --mode development",
     "build:mobile": "DISABLE_COMPRESSION=true vite build",
     "build:mobile:fast": "DISABLE_COMPRESSION=true vite build --mode development",

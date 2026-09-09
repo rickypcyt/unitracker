@@ -5,9 +5,8 @@ import Footer from '../../components/Footer';
 import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteView from './NoteView';
-import WelcomeView from './WelcomeView';
+import NotesDirectory from './NotesDirectory';
 import { demoNotes } from '@/utils/demoData';
-import { getLocalDateString } from '@/utils/dateUtils';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { NoteService } from '@/services/NoteService';
@@ -88,7 +87,6 @@ const Notes: React.FC = () => {
     try {
       const safeDate = getSafeDate(noteData.date);
       
-      const now = new Date().toISOString();
       if (user) {
         try {
           const data = await NoteService.createNote({
@@ -180,27 +178,6 @@ const Notes: React.FC = () => {
     setSelectedNoteId(noteId === selectedNoteId ? undefined : noteId);
   };
 
-  const handleCreateNote = async (assignment?: string) => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    const today = getLocalDateString();
-    const newNote: Omit<Note, 'id'> = {
-      title: 'New Note',
-      assignment: assignment || '',
-      description: '',
-      date: today || ''
-    };
-    
-    const newNoteId = await handleAddNoteWithId(newNote);
-    
-    // Select the newly created note using its ID
-    if (newNoteId) {
-      setSelectedNoteId(newNoteId);
-    }
-  };
-
   const selectedNote = selectedNoteId ? notesToShow.find((note: Note) => note.id === selectedNoteId) : null;
 
   return (
@@ -240,8 +217,14 @@ const Notes: React.FC = () => {
               onBack={() => setSelectedNoteId(undefined)}
             />
           ) : (
-            <WelcomeView
-              onCreateNote={handleCreateNote}
+            <NotesDirectory
+              onCreateNote={async noteData => {
+                if (!user) {
+                  setShowLoginModal(true);
+                  return;
+                }
+                await handleAddNote(noteData);
+              }}
               notes={notesToShow}
               loading={loading}
               error={error}

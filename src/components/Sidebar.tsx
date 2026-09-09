@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock, Notebook, Settings } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, CheckCircle2, Clock, Notebook, Settings } from 'lucide-react';
 import { useNavigation } from '@/navbar/NavigationContext';
 
 const navItems = [
@@ -11,29 +11,22 @@ const navItems = [
 ] as const;
 
 interface SidebarContentProps {
-  isNavCollapsed: boolean;
-  toggleNavCollapse: () => void;
   activePage: string;
   navigateTo: (page: any) => void;
   openSettings: () => void;
 }
 
-const SidebarContent = ({ isNavCollapsed, toggleNavCollapse, activePage, navigateTo, openSettings }: SidebarContentProps) => {
+const SidebarContent = ({ activePage, navigateTo, openSettings }: SidebarContentProps) => {
   return (
     <>
-      <div className="flex items-center justify-between p-4 border-b border-[var(--border-primary)]">
-        {!isNavCollapsed && (
-          <span className="font-bold text-[var(--text-primary)] text-lg">UniTracker</span>
-        )}
-        <button
-          onClick={toggleNavCollapse}
-          className="p-1.5 rounded-lg text-[var(--text-secondary)] flex-shrink-0"
-        >
-          {isNavCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+      <div className="flex h-16 items-center justify-center border-b border-[var(--border-primary)]">
+        <span className="text-lg font-bold" aria-label="UniTracker">
+          <span className="text-[var(--text-primary)]">U</span>
+          <span className="text-[var(--accent-primary)]">T</span>
+        </span>
       </div>
 
-      <nav className="flex-1 py-3 px-2 flex flex-col gap-1">
+      <nav className="flex flex-1 flex-col gap-1 px-2 py-3">
         {navItems.map(({ page, label, icon: Icon }) => {
           const isActive = activePage === page;
 
@@ -41,7 +34,7 @@ const SidebarContent = ({ isNavCollapsed, toggleNavCollapse, activePage, navigat
             <button
               key={page}
               onClick={() => navigateTo(page)}
-              className={`flex items-center justify-center px-3 py-2.5 rounded-lg ${
+              className={`flex items-center justify-center rounded-lg px-3 py-2.5 ${
                 isActive
                   ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
                   : 'text-[var(--text-secondary)]'
@@ -54,10 +47,10 @@ const SidebarContent = ({ isNavCollapsed, toggleNavCollapse, activePage, navigat
         })}
       </nav>
 
-      <div className="p-2 border-t border-[var(--border-primary)]">
+      <div className="border-t border-[var(--border-primary)] p-2">
         <button
           onClick={openSettings}
-          className={`flex items-center justify-center px-3 py-2.5 rounded-lg text-[var(--text-secondary)] w-full`}
+          className="flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-[var(--text-secondary)]"
           title="Settings"
         >
           <Settings size={20} className="flex-shrink-0" />
@@ -68,45 +61,16 @@ const SidebarContent = ({ isNavCollapsed, toggleNavCollapse, activePage, navigat
 };
 
 const Sidebar = () => {
-  const { activePage, navigateTo, isNavCollapsed, toggleNavCollapse, openSettings } = useNavigation();
+  const { activePage, navigateTo, openSettings } = useNavigation();
 
   return (
-    <>
-      {!isNavCollapsed && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-          onClick={toggleNavCollapse}
-        />
-      )}
-
-      <aside
-        className={`fixed top-0 left-0 h-full z-50 bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col transition-all duration-300 lg:hidden ${
-          isNavCollapsed ? '-translate-x-full w-56' : 'translate-x-0 w-56'
-        }`}
-      >
-        <SidebarContent
-          isNavCollapsed={false}
-          toggleNavCollapse={toggleNavCollapse}
-          activePage={activePage}
-          navigateTo={navigateTo}
-          openSettings={openSettings}
-        />
-      </aside>
-
-      <aside
-        className={`hidden lg:flex fixed top-0 left-0 h-screen z-40 overflow-hidden flex-col bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] transition-all duration-300 ${
-          isNavCollapsed ? 'w-16' : 'w-56'
-        }`}
-      >
-        <SidebarContent
-          isNavCollapsed={isNavCollapsed}
-          toggleNavCollapse={toggleNavCollapse}
-          activePage={activePage}
-          navigateTo={navigateTo}
-          openSettings={openSettings}
-        />
-      </aside>
-    </>
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-16 flex-col overflow-hidden border-r border-[var(--border-primary)] bg-[var(--bg-secondary)] lg:flex">
+      <SidebarContent
+        activePage={activePage}
+        navigateTo={navigateTo}
+        openSettings={openSettings}
+      />
+    </aside>
   );
 };
 

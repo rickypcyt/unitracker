@@ -1,9 +1,9 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { FC, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
-import { NavigationProvider, useNavigation } from "@/navbar/NavigationContext";
+import { NavigationProvider, PAGE_PATHS, useNavigation } from "@/navbar/NavigationContext";
 import { useAuthActions, useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from "@/store/appStore";
 import type { Workspace } from "@/types/workspace";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import FloatingFooter from "@/components/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
@@ -32,7 +32,6 @@ import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import CollapsibleNotes from "@/components/CollapsibleNotes";
 import Sidebar from "@/components/Sidebar";
 
 // Preload map: import functions for each page to enable hover-based preloading
@@ -77,7 +76,7 @@ const pagesMap: Record<string, FC> = {
 // PageContent component
 // -------------------------
 const PageContent: FC = () => {
-  const { activePage, isSettingsOpen, closeSettings, isNavCollapsed } = useNavigation();
+  const { activePage, isSettingsOpen, closeSettings } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
@@ -151,9 +150,9 @@ const PageContent: FC = () => {
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-hidden flex flex-row">
       <Sidebar />
-      <div className={`min-w-0 flex-1 relative transition-[padding] duration-300 ${isNavCollapsed ? 'lg:pl-16' : 'lg:pl-56'}`}>
+      <div className="min-w-0 flex-1 relative lg:pl-16">
         <Suspense fallback={<PageLoader />}>
-          <div className="px-4 sm:px-6 lg:px-8 overflow-x-hidden py-4">
+          <div className="px-4 py-4 sm:px-6 lg:px-8 2xl:px-12 overflow-x-hidden">
             {activePage === 'session' && <SessionPage />}
 
             {activePage === 'tasks' && (
@@ -166,7 +165,7 @@ const PageContent: FC = () => {
 
             {activePage === 'habits' && <HabitsPage />}
 
-            {activePage === 'notes' && <CollapsibleNotes />}
+            {activePage === 'notes' && <Notes />}
 
             {activePage === 'admin' && <AdminDashboard />}
           </div>
@@ -194,6 +193,14 @@ const PageContent: FC = () => {
     </div>
   );
 };
+
+const AppRoute: FC = () => (
+  <NavigationProvider>
+    <TourManager>
+      <PageContent />
+    </TourManager>
+  </NavigationProvider>
+);
 
 // -------------------------
 // Supabase auth sync
@@ -254,10 +261,18 @@ const UserModalGate: FC = () => {
   );
 };
 
+const RootRoute: FC = () => {
+  const { isLoggedIn, isAuthLoading } = useAuth();
+
+  if (isAuthLoading) return <PageLoader fullScreen />;
+  return isLoggedIn ? <Navigate to={PAGE_PATHS.session} replace /> : <LandingPage />;
+};
+
 // -------------------------
 // Main App component
 // -------------------------
 const App: FC = () => {
+  const navigate = useNavigate();
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -305,7 +320,7 @@ const App: FC = () => {
     const handleTouchEnd = (e: TouchEvent) => {
       touchEndX.current = e.changedTouches[0]?.screenX || 0;
       const diff = touchEndX.current - touchStartX.current;
-      if (Math.abs(diff) > 60) swipeNavigate(diff);
+      if (Math.abs(diff) > 60) swipeNavigate(diff, navigate);
     };
 
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -315,7 +330,7 @@ const App: FC = () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, []);
+  }, [navigate]);
 
   return (
     <>
@@ -337,27 +352,23 @@ const App: FC = () => {
         <AuthProvider>
           <UserModalGate />
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<RootRoute />} />
             <Route path="/pricing" element={<Suspense fallback={<PageLoader fullScreen />}><PricingPage /></Suspense>} />
             <Route path="/compare" element={<Suspense fallback={<PageLoader fullScreen />}><ComparePage /></Suspense>} />
             <Route path="/blog" element={<Suspense fallback={<PageLoader fullScreen />}><BlogListPage /></Suspense>} />
             <Route path="/blog/:slug" element={<Suspense fallback={<PageLoader fullScreen />}><BlogPostPage /></Suspense>} />
-            <Route path="/app" element={
-              <NavigationProvider>
-                <TourManager>
-                  <PageContent />
-                </TourManager>
-              </NavigationProvider>
-            } />
-            {/* Redirect old app paths to /app */}
-            <Route path="/tasks" element={<Navigate to="/app" replace />} />
-            <Route path="/calendar" element={<Navigate to="/app" replace />} />
-            <Route path="/session" element={<Navigate to="/app" replace />} />
-            <Route path="/notes" element={<Navigate to="/app" replace />} />
-            <Route path="/stats" element={<Navigate to="/app" replace />} />
-            <Route path="/habits" element={<Navigate to="/app" replace />} />
-            <Route path="/focusWidget" element={<Navigate to="/app" replace />} />
-            <Route path="/admin" element={<Navigate to="/app" replace />} />
+            <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />
+            <Route path={PAGE_PATHS.session} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.tasks} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.calendar} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.analytics} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.habits} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.notes} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.focusWidget} element={<AppRoute />} />
+            <Route path={PAGE_PATHS.admin} element={<AppRoute />} />
+            {/* Legacy route aliases */}
+            <Route path="/stats" element={<Navigate to={PAGE_PATHS.analytics} replace />} />
+            <Route path="/focusWidget" element={<Navigate to={PAGE_PATHS.focusWidget} replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
@@ -369,21 +380,18 @@ const App: FC = () => {
 // -------------------------
 // Helpers
 // -------------------------
-const navPages = ["tasks", "calendar", "session", "notes", "stats", "habits"];
+const navPages = ["tasks", "calendar", "session", "notes", "analytics", "habits"] as const;
 
-const swipeNavigate = (diff: number): void => {
-  const currentPage =
-    window.localStorage.getItem("lastVisitedPage") || "session";
-  const currentIdx = navPages.indexOf(currentPage);
+const swipeNavigate = (diff: number, navigate: (path: string) => void): void => {
+  const currentPage = window.localStorage.getItem("lastVisitedPage") || "session";
+  const currentIdx = navPages.indexOf(currentPage as typeof navPages[number]);
 
   if (diff < 0 && currentIdx < navPages.length - 1) {
     const nextPage = navPages[currentIdx + 1];
-    window.localStorage.setItem("lastVisitedPage", nextPage || "");
-    window.dispatchEvent(new Event("navigationchange"));
+    if (nextPage) navigate(PAGE_PATHS[nextPage]);
   } else if (diff > 0 && currentIdx > 0) {
     const prevPage = navPages[currentIdx - 1];
-    window.localStorage.setItem("lastVisitedPage", prevPage || "");
-    window.dispatchEvent(new Event("navigationchange"));
+    if (prevPage) navigate(PAGE_PATHS[prevPage]);
   }
 };
 

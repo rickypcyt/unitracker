@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useAppStore, useWorkspace } from '@/store/appStore';
 
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
@@ -14,6 +14,10 @@ const CalendarPage = memo(() => {
   const { isDemo, demoTasks } = useDemoMode();
   const realTasks = useAppStore((state) => state.tasks.tasks);
   const { currentWorkspace: activeWorkspace } = useWorkspace();
+  const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
+    const savedView = localStorage.getItem('calendarView');
+    return savedView === 'week' || savedView === 'day' ? savedView : 'month';
+  });
 
   const isVisible = location.pathname === '/calendar';
   
@@ -34,6 +38,11 @@ const CalendarPage = memo(() => {
       window.dispatchEvent(new CustomEvent('refreshCalendar'));
     }
   }, [isVisible]);
+
+  const handleViewChange = (nextView: 'month' | 'week' | 'day') => {
+    setView(nextView);
+    localStorage.setItem('calendarView', nextView);
+  };
 
   return (
     <RecurringTasksProvider>
@@ -58,17 +67,19 @@ const CalendarPage = memo(() => {
       </Helmet>
       
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
-        <div className="w-full flex flex-col gap-4">
+        <div className="grid w-full grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.8fr)]">
           {/* Calendar - month view only */}
-          <div className="w-full">
-            <Calendar 
-              view="month"
+          <div className="min-w-0">
+            <Calendar
+              view={view}
+              onViewChange={handleViewChange}
               tasks={tasks}
             />
           </div>
 
-          {/* Upcoming Tasks */}
-          <UpcomingTasks limit={8} />
+          <aside className="min-w-0">
+            <UpcomingTasks limit={8} />
+          </aside>
         </div>
       </div>
     </RecurringTasksProvider>

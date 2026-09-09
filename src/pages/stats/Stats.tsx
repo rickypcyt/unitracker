@@ -202,8 +202,6 @@ const Statistics = (): ReactElement => {
   const { laps } = useLaps();
   const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();
-  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
-
   const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
   const { todayMinutes, weekMinutes, monthMinutes, yearMinutes } = useLapStats(laps);
   const longestStreak = getLongestStreak(tasks);
@@ -227,35 +225,13 @@ const Statistics = (): ReactElement => {
 
   const statsData = isDemo ? demoStats : statData;
 
-  const selected =
-    period === 'week'
-      ? { minutes: statsData.weekMinutes, done: statsData.doneWeek, label: 'This Week' }
-      : period === 'month'
-      ? { minutes: statsData.monthMinutes, done: statsData.doneMonth, label: 'This Month' }
-      : { minutes: statsData.yearMinutes, done: statsData.doneYear, label: 'This Year' };
+  const selected = { minutes: statsData.weekMinutes, done: statsData.doneWeek, label: 'This Week' };
 
   return (
     <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-4 px-5 rounded-2xl shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">Study Statistics</h2>
-          <p className="text-xs text-[var(--text-secondary)]">{selected.label}</p>
-        </div>
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          {(['week', 'month', 'year'] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1 rounded-md text-xs sm:text-sm font-medium transition-all capitalize ${
-                period === p
-                  ? 'bg-[var(--accent-primary)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)]'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
+      <div className="mb-4">
+        <h2 className="text-base font-bold text-[var(--text-primary)] sm:text-lg">Study Statistics</h2>
+        <p className="text-xs text-[var(--text-secondary)]">Weekly overview</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -274,7 +250,7 @@ const Statistics = (): ReactElement => {
             <span className="text-xs font-medium">Tasks Done</span>
           </div>
           <div className="text-lg font-bold text-[var(--text-primary)]">{selected.done}</div>
-          <div className="text-xs text-[var(--text-secondary)]">in {period}</div>
+          <div className="text-xs text-[var(--text-secondary)]">in this week</div>
         </div>
 
         <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">

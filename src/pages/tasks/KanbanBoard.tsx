@@ -360,7 +360,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return grouped;
   }, [completedTasks]);
 
-  const noTasks = incompletedTasks.length === 0 && completedTasks.length === 0;
+  const noTasks = incompletedTasks.length === 0;
 
   // Don't show anything until workspace is properly loaded and validated
 
@@ -441,13 +441,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   if (noTasks) {
     return (
-      <div data-tour="tasks-board" className="flex items-center justify-center py-4 min-h-[12vh]">
-        <div className="text-center max-w-xs">
+      <div data-tour="tasks-board" className="flex min-h-[12vh] flex-col items-center justify-center gap-6 px-4 py-6">
+        <div className="max-w-xs text-center">
           <div className="mx-auto mb-2 w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
             <ClipboardCheck className="w-5 h-5 text-[var(--accent-primary)]" />
           </div>
           <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
-            {activeWorkspace ? `No tasks in "${activeWorkspace.name}"` : 'No Tasks Yet'}
+            {activeWorkspace ? `No tasks in "${activeWorkspace.name}" yet` : 'No Tasks Yet'}
           </h3>
           <p className="text-xs text-[var(--text-secondary)] mb-3">
             {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
@@ -466,6 +466,40 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
             </p>
           )}
         </div>
+        {completedTasks.length > 0 && (
+          <div className="w-full max-w-4xl">
+            <CompletedTasksSection
+              showCompleted={showCompleted}
+              onToggleShowCompleted={() => setShowCompleted(prev => !prev)}
+              completedTasks={completedTasks}
+              onDeleteAllCompletedTasks={() => setShowDeleteCompletedModal(true)}
+              onTaskToggle={handleToggleCompletion}
+              onTaskDelete={handleConfirmDeleteTask}
+              onEditTask={handleEditTask}
+              onViewTask={handleViewTask}
+              onTaskContextMenu={handleTaskContextMenu}
+            />
+          </div>
+        )}
+        {showTaskForm && (
+          <TaskFormManager
+            onClose={handleCloseTaskForm}
+            initialAssignment={selectedAssignment}
+            initialTask={editingTask}
+            focusOnDate={focusOnDate}
+            onTaskCreated={() => {
+              fetchTasksAction(activeWorkspace?.id);
+              handleCloseTaskForm();
+            }}
+          />
+        )}
+        <LoginPromptModal
+          isOpen={isLoginPromptOpen || loginPromptOpen}
+          onClose={() => {
+            setIsLoginPromptOpen(false);
+            closeLoginPrompt();
+          }}
+        />
       </div>
     );
   }

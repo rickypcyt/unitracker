@@ -30,11 +30,11 @@ const MonthView = ({
     <div className="w-full mt-1 sm:mt-2 relative flex-1 min-h-0 overflow-hidden">
       <div className="h-full flex flex-col min-h-[200px] sm:min-h-[240px] overflow-hidden">
         {/* Weekdays */}
-        <div className="grid grid-cols-7 mb-1 flex-shrink-0">
+        <div className="relative left-1/2 mb-1 grid w-fit max-w-full flex-shrink-0 -translate-x-1/2 grid-cols-7 justify-items-center">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="text-[10px] sm:text-[11px] font-medium tracking-widest uppercase text-[var(--text-secondary)] flex items-center justify-center h-6 sm:h-7"
+              className="flex h-6 w-[clamp(2.5rem,10vw,5rem)] items-center justify-center text-center text-[10px] font-medium uppercase text-[var(--text-secondary)] sm:h-7 sm:text-[11px]"
             >
               {day}
             </div>
@@ -42,7 +42,7 @@ const MonthView = ({
         </div>
 
         {/* Days */}
-        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+        <div className="relative left-1/2 grid w-fit max-w-full -translate-x-1/2 grid-cols-7 items-start justify-items-center gap-0">
           {calendarDays.map((dayObj, index) => {
             const taskCount =
               dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -81,9 +81,8 @@ const MonthView = ({
                 className={`
                   select-none cursor-pointer
                   flex flex-col items-center justify-center
-                  rounded-md p-0.5 sm:p-1
+                  w-[clamp(2.5rem,10vw,5rem)] aspect-square min-h-0 rounded-md p-0.5 sm:p-1
                   border transition-all duration-150
-                  h-8 sm:h-10
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                   ${
                     isSelected

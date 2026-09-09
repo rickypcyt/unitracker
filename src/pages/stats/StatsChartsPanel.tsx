@@ -92,10 +92,35 @@ const PeriodNav = ({ label, onPrevious, onNext, isNextDisabled }: PeriodNavProps
   </div>
 );
 
+const PeriodSelector = ({
+  period,
+  onChange,
+}: {
+  period: 'week' | 'month' | 'year';
+  onChange: (period: 'week' | 'month' | 'year') => void;
+}) => (
+  <div className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
+    {(['week', 'month', 'year'] as const).map(option => (
+      <button
+        key={option}
+        onClick={() => onChange(option)}
+        className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors sm:px-3 sm:text-sm ${
+          period === option
+            ? 'bg-[var(--accent-primary)] text-white'
+            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
+        }`}
+      >
+        {option}
+      </button>
+    ))}
+  </div>
+);
+
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
   const accentColor = getCachedAccentColor();
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   // Week
   const [weekOffset, setWeekOffset] = useState(0);
@@ -107,10 +132,10 @@ const StatsChartsPanel = memo(() => {
   const shownWeekData = useMemo(() => {
     const dailyMinutes = laps.reduce((acc, lap) => {
       const lapDate = getLocalDateString(new Date(lap.created_at));
-      if (lapDate) {
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-        acc[lapDate] = (acc[lapDate] || 0) + minutes;
-      }
+      if (!lapDate) return acc;
+
+      const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+      acc[lapDate] = (acc[lapDate] || 0) + minutes;
       return acc;
     }, {} as Record<string, number>);
     
@@ -144,10 +169,10 @@ const StatsChartsPanel = memo(() => {
       const lapDateObj = new Date(lap.created_at);
       if (lapDateObj.getFullYear() === year && lapDateObj.getMonth() === month) {
         const lapDate = getLocalDateString(lapDateObj);
-        if (lapDate) {
-          const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
-          acc[lapDate] = (acc[lapDate] || 0) + minutes;
-        }
+        if (!lapDate) return acc;
+
+        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        acc[lapDate] = (acc[lapDate] || 0) + minutes;
       }
       return acc;
     }, {} as Record<string, number>);
@@ -242,49 +267,51 @@ const StatsChartsPanel = memo(() => {
   const weekLabel = `Week ${shownWeekNumber}`;
   const monthLabel = shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   const yearLabel = `${shownYear}`;
+  const chartData = period === 'week' ? weekData : period === 'month' ? monthData : yearData;
+  const chartLabel = period === 'week' ? weekLabel : period === 'month' ? monthLabel : yearLabel;
+  const chartTicks = period === 'week' ? weekDayLabels : undefined;
+
+  const handlePrevious = () => {
+    if (period === 'week') setWeekOffset(previous => previous + 1);
+    if (period === 'month') setMonthOffset(previous => previous - 1);
+    if (period === 'year') setYearOffset(previous => previous + 1);
+  };
+
+  const handleNext = () => {
+    if (period === 'week') setWeekOffset(previous => previous - 1);
+    if (period === 'month') setMonthOffset(previous => previous + 1);
+    if (period === 'year') setYearOffset(previous => previous - 1);
+  };
+
+  const isNextDisabled = period === 'week'
+    ? weekOffset === 0
+    : period === 'month'
+    ? monthOffset >= 0
+    : yearOffset === 0;
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      {/* Week chart */}
+    <div className="w-full">
       <ChartCard
         paddingClass="p-2"
         isDemo={isDemo}
-        header={<PeriodNav label={weekLabel} onPrevious={() => setWeekOffset(prev => prev + 1)} onNext={() => setWeekOffset(prev => prev - 1)} isNextDisabled={weekOffset === 0} />}
+        header={
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <PeriodSelector period={period} onChange={setPeriod} />
+            <PeriodNav
+              label={chartLabel}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              isNextDisabled={isNextDisabled}
+            />
+          </div>
+        }
       >
         <StatsChart
-          data={weekData}
-          title={weekLabel}
+          data={chartData}
+          title={chartLabel}
           accentColor={accentColor}
           customTitle={<></>}
-          xAxisTicks={weekDayLabels}
-        />
-      </ChartCard>
-
-      {/* Month chart */}
-      <ChartCard
-        paddingClass="p-2"
-        isDemo={isDemo}
-        header={<PeriodNav label={monthLabel} onPrevious={() => setMonthOffset(prev => prev - 1)} onNext={() => setMonthOffset(prev => prev + 1)} isNextDisabled={monthOffset >= 0} />}
-      >
-        <StatsChart
-          data={monthData}
-          title={monthLabel}
-          accentColor={accentColor}
-          customTitle={<></>}
-        />
-      </ChartCard>
-
-      {/* Year chart */}
-      <ChartCard
-        paddingClass="p-2"
-        isDemo={isDemo}
-        header={<PeriodNav label={yearLabel} onPrevious={() => setYearOffset(prev => prev + 1)} onNext={() => setYearOffset(prev => prev - 1)} isNextDisabled={yearOffset === 0} />}
-      >
-        <StatsChart
-          data={yearData}
-          title={yearLabel}
-          accentColor={accentColor}
-          customTitle={<></>}
+          {...(chartTicks ? { xAxisTicks: chartTicks } : {})}
         />
       </ChartCard>
     </div>

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'analytics' | 'habits' | 'focusWidget' | 'admin';
 
@@ -16,6 +17,22 @@ interface NavigationContextType {
 
 const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
+export const PAGE_PATHS: Record<Page, string> = {
+  session: '/session',
+  tasks: '/tasks',
+  calendar: '/calendar',
+  notes: '/notes',
+  analytics: '/analytics',
+  habits: '/habits',
+  focusWidget: '/focus',
+  admin: '/admin',
+};
+
+const PATH_PAGES: Record<string, Page> = Object.entries(PAGE_PATHS).reduce(
+  (pages, [page, path]) => ({ ...pages, [path]: page as Page }),
+  {},
+);
+
 const DEFAULT_NAV_ORDER = [
   { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'tasks' as Page, icon: null, label: 'Tasks' },
@@ -26,17 +43,9 @@ const DEFAULT_NAV_ORDER = [
 ];
 
 export const NavigationProvider = ({ children }: { children: React.ReactNode }) => {
-  const VALID_PAGES: Page[] = ['tasks', 'calendar', 'session', 'notes', 'analytics', 'habits', 'focusWidget', 'admin'];
-
-  const [activePage, setActivePage] = useState<Page>(() => {
-    const savedPage = localStorage.getItem('lastVisitedPage') as Page | null;
-    if (savedPage && VALID_PAGES.includes(savedPage)) {
-      return savedPage;
-    }
-    localStorage.setItem('lastVisitedPage', 'session');
-    return 'session';
-  });
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activePage = PATH_PAGES[location.pathname] || 'session';
   const [navOrder, setNavOrderState] = useState<Array<{ page: Page; icon: any; label: string }>>(DEFAULT_NAV_ORDER);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(() => {
@@ -78,9 +87,9 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
   }, []);
 
   const navigateTo = useCallback((page: Page) => {
-    setActivePage(page);
     localStorage.setItem('lastVisitedPage', page);
-  }, []);
+    navigate(PAGE_PATHS[page]);
+  }, [navigate]);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.ctrlKey) {

@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
+  isAuthLoading: boolean;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -20,19 +21,24 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      setIsAuthLoading(false);
       if (session?.user) ensureProfile(session.user);
+    }).catch(() => {
+      setIsAuthLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
+      setIsAuthLoading(false);
       if (session?.user) ensureProfile(session.user);
       
 
@@ -157,6 +163,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value: AuthContextType = {
     user,
     isLoggedIn,
+    isAuthLoading,
     loginWithGoogle,
     logout
   };
