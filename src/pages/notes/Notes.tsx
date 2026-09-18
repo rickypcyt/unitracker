@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import DeleteNoteModal from '../../modals/DeleteNoteModal';
-import Footer from '../../components/Footer';
 import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '../../modals/LoginPromptModal';
 import NoteView from './NoteView';
@@ -202,7 +201,7 @@ const Notes: React.FC = () => {
         <link rel="canonical" href="https://unitracker.me/notes" />
       </Helmet>
       <React.Fragment>
-        <div className="w-full min-h-screen relative pb-16">
+        <div className="w-full min-h-screen relative">
         {/* Main Content Container */}
         <div className="w-full h-full">
           {selectedNote ? (
@@ -235,13 +234,6 @@ const Notes: React.FC = () => {
           )}
         </div>
       </div>
-      <Footer
-        showActions={!!selectedNote}
-        {...(selectedNote && {
-          onSave: () => { handleUpdateNote({ title: selectedNote.title, assignment: selectedNote.assignment, description: selectedNote.description, date: selectedNote.date }); },
-          onDelete: () => { setNoteToDelete(selectedNote); }
-        })}
-      />
 
     {/* Modals - always rendered */}
     <LoginPromptModal

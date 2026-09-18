@@ -6,7 +6,7 @@ import BaseModal from './BaseModal';
 import DeleteSessionModal from '@/modals/DeleteSessionModal';
 import SessionDetailsModal from '@/modals/SessionDetailsModal';
 import { getMonthYear } from '@/hooks/useTimers';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLaps } from '@/store/appStore';
@@ -418,58 +418,52 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
 
                       {/* Weeks View */}
                       {weeksData.length > 0 ? <div className="space-y-6">
-                          {weeksData.map(week => <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-2xl p-6 border-2 border-[var(--border-primary)]">
-                              <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-2 h-8 bg-[var(--accent-primary)] rounded-full"></div>
-                                  <h3 className="text-xl font-bold text-[var(--text-primary)]">
+                          {weeksData.map(week => <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)]">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-1.5 h-6 bg-[var(--accent-primary)] rounded-full"></div>
+                                  <h3 className="text-base font-bold text-[var(--text-primary)]">
                                     {week.weekName}
                                   </h3>
                                 </div>
-                                <span className="text-sm text-[var(--text-secondary)] bg-[var(--bg-primary)] px-3 py-1.5 rounded-full border-2 border-[var(--border-primary)] font-medium">
+                                <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2.5 py-1 rounded-full border border-[var(--border-primary)] font-medium">
                                   {week.totalSessions} {week.totalSessions === 1 ? 'session' : 'sessions'}
                                 </span>
                               </div>
-                              
-                              <div className="space-y-4">
-                                {sortDaysByCurrentFirst(week.days).map((day, dayIndex) => <div key={dayIndex} className={`bg-[var(--bg-primary)] rounded-lg p-3 border ${day.isToday ? 'border-[var(--accent-primary)] border-2' : 'border-[var(--border-primary)]'}`}>
-                                    <div className="flex items-center gap-3">
-                                      <div className="text-center min-w-[60px]">
-                                        <div className="text-xs text-[var(--text-secondary)] font-medium mb-1">
-                                          {day.dayName.substring(0, 3).toUpperCase()}
-                                        </div>
-                                        <div className="text-base font-bold text-[var(--text-primary)]">
-                                          {day.dayNumber}
-                                        </div>
+
+                              <div className="divide-y divide-[var(--border-primary)]">
+                                {sortDaysByCurrentFirst(week.days).map((day, dayIndex) => <div key={dayIndex} className="flex gap-3 sm:gap-4 py-3 first:pt-0 last:pb-0">
+                                    <div className="w-12 flex-shrink-0 pt-0.5 text-center">
+                                      <div className={`text-xs font-semibold uppercase tracking-wide ${day.isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                                        {day.dayName.substring(0, 3)}
                                       </div>
-                                      
-                                      <div className="flex-1 space-y-2">
-                                        {day.sessions.map((lap, sessionIndex) => <div key={lap.id} className="bg-[var(--accent-primary)/10] border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all duration-0 cursor-pointer rounded-lg p-2 group relative overflow-hidden" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)} style={{
-                              animationDelay: `${dayIndex * 50 + sessionIndex * 25}ms`
-                            }}>
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-[var(--accent-primary)]">
-                                                  #{lap.session_number}
-                                                </span>
-                                                <span className="text-sm font-medium text-[var(--text-primary)] truncate">
-                                                  {lap.name || `Session ${lap.session_number}`}
-                                                </span>
-                                              </div>
-                                              <div className="flex items-center gap-2">
-                                                <span className="text-sm text-[var(--text-secondary)] font-mono">
-                                                  {lap.duration}
-                                                </span>
-                                                <button onClick={e => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(lap.id);
-                                  }} className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1 rounded opacity-0 group-hover:opacity-100">
-                                                  <Trash2 size={12} />
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </div>)}
+                                      <div className={`text-lg font-bold leading-tight ${day.isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                                        {day.dayNumber}
                                       </div>
+                                    </div>
+
+                                    <div className="flex-1 min-w-0 divide-y divide-[var(--border-primary)]/50">
+                                      {day.sessions.map(lap => <div key={lap.id} className="group flex items-center justify-between gap-3 -mx-2 px-2 py-2 rounded-md hover:bg-[var(--accent-primary)]/5 cursor-pointer transition-colors" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)}>
+                                          <div className="flex min-w-0 items-center gap-2">
+                                            <span className="flex-shrink-0 text-xs font-bold text-[var(--accent-primary)]">
+                                              #{lap.session_number}
+                                            </span>
+                                            <span className="truncate text-sm font-medium text-[var(--text-primary)]">
+                                              {lap.name || `Session ${lap.session_number}`}
+                                            </span>
+                                          </div>
+                                          <div className="flex flex-shrink-0 items-center gap-1.5">
+                                            <span className="text-sm font-mono text-[var(--text-secondary)]">
+                                              {lap.duration}
+                                            </span>
+                                            <button onClick={e => {
+                                      e.stopPropagation();
+                                      handleDeleteClick(lap.id);
+                                    }} className="p-1 rounded text-[var(--text-secondary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete session">
+                                              <Trash2 size={13} />
+                                            </button>
+                                          </div>
+                                        </div>)}
                                     </div>
                                   </div>)}
                               </div>

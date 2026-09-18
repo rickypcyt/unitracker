@@ -1,4 +1,4 @@
-import { Clock, MoreVertical, Pause, Play, RotateCcw } from "lucide-react";
+import { Check, Clock, Flag, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
@@ -13,14 +13,14 @@ import SessionSummaryModal from "@/modals/SessionSummaryModal";
 import SessionsModal from "@/modals/TodaysSessionsModal";
 import StartSessionModal from "@/modals/StartSessionModal";
 import { supabase } from "@/utils/supabaseClient";
-import { toast } from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useAuth } from "@/hooks/useAuth";
 import useEventListener from "@/hooks/useEventListener";
 import { useSessionId } from "@/hooks/study-timer/useSessionId";
 import { useStudyTimerState, type StudyState } from "@/hooks/study-timer/useStudyTimerState";
 import type { PauseEntry } from "@/schemas/timer";
 import { getLocalDateString } from "@/utils/dateUtils";
-import { StudyService } from "@/services/StudyService";
+import { StudyService, type SessionLap } from "@/services/StudyService";
 import { TaskService } from "@/services/TaskService";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -100,8 +100,19 @@ const formatPauseDuration = (seconds: number): string => {
   return `${remS}s`;
 };
 
+/** Compact elapsed label for session laps: "15:24" or "1:02:33". */
+const formatLapElapsed = (totalSeconds: number): string => {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor(s % 3600 / 60);
+  const sec = s % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
+    : `${m}:${String(sec).padStart(2, "0")}`;
+};
+
 const formatPauseTime = (timestamp: number): string =>
-  new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 const openPauseEntry = (history: PauseEntry[]): PauseEntry[] => [
   ...history,
@@ -186,6 +197,61 @@ const StudyTimer = ({
   const [modalStates, updateModal] = useModalStates();
   const [isExitChoiceOpen, setExitChoiceOpen] = useState(false);
   const [localResetKey, setLocalResetKey] = useState(0);
+
+  // ── Session laps (timestamped notes inside the active session) ────────────
+  const [sessionLaps, setSessionLaps] = useState<SessionLap[]>([]);
+  const [lapInputOpen, setLapInputOpen] = useState(false);
+  const [lapNote, setLapNote] = useState("");
+  const [lapElapsed, setLapElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!currentSessionId) {
+      setSessionLaps([]);
+      setLapInputOpen(false);
+      return;
+    }
+    StudyService.fetchSessionLaps(currentSessionId)
+      .then(setSessionLaps)
+      .catch((error) => console.error("[StudyTimer] Error fetching session laps:", error));
+  }, [currentSessionId]);
+
+  const handleLapButton = () => {
+    setLapInputOpen((prev) => {
+      if (!prev) {
+        setLapElapsed(Math.round(safeNumber(studyState.time)));
+        setLapNote("");
+      }
+      return !prev;
+    });
+  };
+
+  const handleSaveLap = async () => {
+    const note = lapNote.trim();
+    if (!note || !currentSessionId) {
+      setLapInputOpen(false);
+      return;
+    }
+    try {
+      const lap = await StudyService.createSessionLap(currentSessionId, note, lapElapsed);
+      setSessionLaps((prev) =>
+        [...prev, lap].sort((a, b) => a.elapsed_seconds - b.elapsed_seconds)
+      );
+    } catch (error) {
+      console.error("[StudyTimer] Error saving session lap:", error);
+      toast.error("Could not save lap");
+    }
+    setLapNote("");
+    setLapInputOpen(false);
+  };
+
+  const handleDeleteLap = async (lapId: string) => {
+    setSessionLaps((prev) => prev.filter((lap) => lap.id !== lapId));
+    try {
+      await StudyService.deleteSessionLap(lapId);
+    } catch (error) {
+      console.error("[StudyTimer] Error deleting session lap:", error);
+    }
+  };
 
   // Listen for settings open from UnifiedTimer
   useEffect(() => {
@@ -1017,7 +1083,8 @@ const StudyTimer = ({
       </div>}
 
       {/* Timer display - circular progress ring */}
-      <div className="relative group w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current session time">
+      <div className="w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current session time">
+        <div className="relative group">
         {(() => {
           const totalSec = safeNumber(studyState.time);
           const h = Math.floor(totalSec / 3600);
@@ -1045,18 +1112,26 @@ const StudyTimer = ({
                 <div className="flex items-center gap-0.5">
                   {h > 0 ? (
                     <>
-                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
                         isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
                       }`}>
                         {h.toString().padStart(2, '0')}
                       </span>
-                      <span className={`text-xl font-mono font-bold leading-none ${
+                      <span className={`text-base font-mono font-bold leading-none ${
                         isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
                       }`}>:</span>
-                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
+                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
                         isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
                       }`}>
                         {m.toString().padStart(2, '0')}
+                      </span>
+                      <span className={`text-base font-mono font-bold leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'
+                      }`}>:</span>
+                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                        isStudyRunningRedux ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                      }`}>
+                        {s.toString().padStart(2, '0')}
                       </span>
                     </>
                   ) : (
@@ -1088,56 +1163,142 @@ const StudyTimer = ({
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
                 Last paused: {getTimeSinceLastPause()}
               </div>}
-            {studyState.pauseHistory.length > 0 && <>
-                <div className="font-semibold mt-3 mb-1">Pause history</div>
-                <ul className="space-y-1 max-h-32 overflow-y-auto text-xs">
-                  {studyState.pauseHistory.map((entry, idx) => {
-                    const isOngoing = entry.endedAt === null;
-                    const duration = isOngoing ? (Date.now() - entry.startedAt) / 1000 : (entry.durationSeconds ?? 0);
-                    return <li key={`${entry.startedAt}-${idx}`} className="flex justify-between text-[var(--text-secondary)]">
-                        <span>Pause #{idx + 1}</span>
-                        <span>
-                          {formatPauseTime(entry.startedAt)}
-                          {" - "}
-                          {entry.endedAt === null ? "ongoing" : formatPauseTime(entry.endedAt)}
-                          {" ("}{formatPauseDuration(duration)}{")"}
-                        </span>
-                      </li>;
-                  })}
-                </ul>
-              </>}
+            {studyState.pauseHistory.length > 0 && (() => {
+                const totalPausedSec = studyState.pauseHistory.reduce(
+                  (sum, e) => sum + (e.endedAt === null ? (Date.now() - e.startedAt) / 1000 : (e.durationSeconds ?? 0)),
+                  0
+                );
+                return <>
+                  <div className="font-semibold mt-3 mb-1">Pause history</div>
+                  <ul className="space-y-1 max-h-32 overflow-y-auto text-xs">
+                    {[...studyState.pauseHistory].reverse().map((entry, idx) => {
+                      const isOngoing = entry.endedAt === null;
+                      const duration = isOngoing ? (Date.now() - entry.startedAt) / 1000 : (entry.durationSeconds ?? 0);
+                      const pauseNumber = studyState.pauseHistory.length - idx;
+                      return <li key={`${entry.startedAt}-${idx}`} className={`flex justify-between gap-3 tabular-nums ${isOngoing ? 'text-[var(--accent-primary)] font-medium' : 'text-[var(--text-secondary)]'}`}>
+                          <span className="shrink-0">{isOngoing ? 'Now' : `Pause #${pauseNumber}`}</span>
+                          <span>
+                            {formatPauseTime(entry.startedAt)}
+                            {"–"}
+                            {entry.endedAt === null ? "ongoing" : formatPauseTime(entry.endedAt)}
+                            {" · "}{formatPauseDuration(duration)}
+                          </span>
+                        </li>;
+                    })}
+                  </ul>
+                  <div className="mt-2 pt-1.5 border-t border-[var(--border-primary)] flex justify-between text-xs text-[var(--text-secondary)]">
+                    <span>Total paused</span>
+                    <span className="font-medium tabular-nums">{formatPauseDuration(totalPausedSec)}</span>
+                  </div>
+                </>;
+              })()}
           </div>}
+        </div>
       </div>
 
-      {/* Controls with side adjustment buttons */}
-      <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
+      {/* Lap note input */}
+      {lapInputOpen && currentSessionId && (
+        <div className="w-full px-3 pb-1 shrink-0 flex items-center gap-1.5">
+          <span className="text-xs font-mono font-semibold text-[var(--accent-primary)] tabular-nums shrink-0">
+            {formatLapElapsed(lapElapsed)}
+          </span>
+          <input
+            autoFocus
+            value={lapNote}
+            onChange={(e) => setLapNote(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSaveLap();
+              }
+              if (e.key === "Escape") setLapInputOpen(false);
+            }}
+            placeholder="What just happened? e.g. started writing the report"
+            className="flex-1 min-w-0 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md px-2 py-1 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--accent-primary)]"
+          />
+          <button
+            onClick={handleSaveLap}
+            className="p-1.5 rounded-md text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+            aria-label="Save lap"
+          >
+            <Check size={16} />
+          </button>
+          <button
+            onClick={() => setLapInputOpen(false)}
+            className="p-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            aria-label="Cancel lap"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Session laps list */}
+      {sessionLaps.length > 0 && (
+        <div className="w-full px-3 pb-1 shrink-0 max-h-16 overflow-y-auto hide-scrollbar space-y-0.5">
+          {sessionLaps.map((lap) => (
+            <div key={lap.id} className="group/lap flex items-center gap-2 text-xs leading-snug">
+              <span className="font-mono tabular-nums text-[var(--accent-primary)] shrink-0">
+                {formatLapElapsed(lap.elapsed_seconds)}
+              </span>
+              <span className="truncate text-[var(--text-secondary)]">{lap.note}</span>
+              <button
+                onClick={() => handleDeleteLap(lap.id)}
+                className="ml-auto p-1 rounded opacity-0 group-hover/lap:opacity-100 text-[var(--text-secondary)] hover:text-red-500 transition-opacity shrink-0"
+                aria-label="Delete lap"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Controls: time adjustments left, actions right */}
+      <div className="flex flex-wrap justify-between items-center gap-1.5 mt-auto shrink-0 pb-2">
         <div className="flex gap-1">
-          {timeAdjustmentButtons.filter(b => b.adjustment < 0).map(({
+          {timeAdjustmentButtons.map(({
             adjustment,
             label
-          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={adjustment < 0 ? `Subtract ${Math.abs(adjustment / 60)} minutes` : `Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>
-        {!isSynced && <>
-            <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
-              <RotateCcw size={18} className="text-[var(--text-secondary)]" />
+
+        <div className="flex items-center gap-1.5">
+          {!isSynced && <>
+              <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
+                <RotateCcw size={18} className="text-[var(--text-secondary)]" />
+              </button>
+
+              {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
+                  <Play size={18} />
+                </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label="Pause timer" title="Pause timer">
+                  <Pause size={18} />
+                </button>}
+            </>}
+
+          {currentSessionId && (
+            <button
+              onClick={() => updateModal("isFinishModalOpen", true)}
+              className="timer-ctrl-btn"
+              aria-label="Finish session"
+              title="Finish session"
+            >
+              <Check size={18} className="text-emerald-400" />
             </button>
+          )}
 
-            {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
-                <Play size={18} />
-              </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label="Pause timer" title="Pause timer">
-                <Pause size={18} />
-              </button>}
-          </>}
-
-        <div className="flex gap-1">
-          {timeAdjustmentButtons.filter(b => b.adjustment > 0).map(({
-            adjustment,
-            label
-          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
-              {label}
-            </button>)}
+          {currentSessionId && (
+            <button
+              onClick={handleLapButton}
+              className={`timer-ctrl-btn ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
+              aria-label="Add lap note"
+              title="Add lap note"
+            >
+              <Flag size={18} className={lapInputOpen ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} />
+            </button>
+          )}
         </div>
       </div>
 

@@ -94,22 +94,22 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-sm text-[var(--text-primary)]"
+        className="flex items-center gap-2 w-full h-11 px-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-base text-[var(--text-primary)]"
         aria-label="Select timezone"
       >
-        <Globe size={16} />
-        <span className="truncate max-w-[200px]">
+        <Globe size={18} className="flex-shrink-0" />
+        <span className="flex-1 min-w-0 truncate text-left">
           {getTimezoneLabel(currentTz)}
         </span>
         {isSystemTimezone && (
-          <span className="text-xs text-[var(--text-secondary)]">(System)</span>
+          <span className="text-sm text-[var(--text-secondary)] flex-shrink-0">(System)</span>
         )}
         {showCurrentTime && (
-          <span className="text-xs text-[var(--accent-primary)] font-mono">
+          <span className="text-sm text-[var(--accent-primary)] font-mono flex-shrink-0">
             {formatCurrentTime(currentTz)}
           </span>
         )}
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown */}

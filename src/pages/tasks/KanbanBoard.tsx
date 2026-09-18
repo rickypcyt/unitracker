@@ -441,27 +441,27 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   if (noTasks) {
     return (
-      <div data-tour="tasks-board" className="flex min-h-[12vh] flex-col items-center justify-center gap-6 px-4 py-6">
-        <div className="max-w-xs text-center">
-          <div className="mx-auto mb-2 w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
-            <ClipboardCheck className="w-5 h-5 text-[var(--accent-primary)]" />
+      <div data-tour="tasks-board" className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 py-6">
+        <div className="max-w-sm text-center">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
           </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
+          <h3 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2">
             {activeWorkspace ? `No tasks in "${activeWorkspace.name}" yet` : 'No Tasks Yet'}
           </h3>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">
+          <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-5">
             {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
           </p>
           {isLoggedIn ? (
             <button
               onClick={() => handleAddTask(null)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-xs font-medium hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-semibold hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
             >
-              <Plus size={16} />
+              <Plus size={18} />
               Create your first task
             </button>
           ) : (
-            <p className="text-xs text-[var(--text-secondary)] opacity-70">
+            <p className="text-sm text-[var(--text-secondary)] opacity-70">
               Remember to login first
             </p>
           )}
@@ -506,13 +506,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   return (
     <>
-      <div className="flex flex-col h-full min-h-screen kanban-board" data-tour="tasks-board">
+      <div className="flex flex-col kanban-board" data-tour="tasks-board">
         {/* Active Tasks */}
         <div className="flex-1 min-h-0">
           {viewMode === 'status' ? (
             <StatusBoard
               incompletedTasks={incompletedTasks}
-              completedTasks={completedTasks}
               onAddTask={handleAddTask}
               onTaskToggle={handleToggleCompletion}
               onTaskDelete={handleConfirmDeleteTask}

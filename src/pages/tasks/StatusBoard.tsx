@@ -1,13 +1,12 @@
-import { CheckCircle2, Circle, Loader, Plus } from 'lucide-react';
+import { Circle, Loader, Pause, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import React from 'react';
-import { normalizeTaskStatus, TODO_STATUSES, ACTIVE_STATUSES } from '@/constants/taskStatus';
+import { normalizeTaskStatus, TODO_STATUSES, ACTIVE_STATUSES, BLOCKED_STATUSES } from '@/constants/taskStatus';
 
 interface StatusBoardProps {
   incompletedTasks: any[];
-  completedTasks: any[];
   onAddTask: (assignment: string | null) => void;
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
@@ -27,7 +26,6 @@ interface StatusColumn {
 
 export const StatusBoard: React.FC<StatusBoardProps> = ({
   incompletedTasks,
-  completedTasks,
   onAddTask,
   onTaskToggle,
   onTaskDelete,
@@ -41,6 +39,9 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
     );
     const inProgress = incompletedTasks.filter(
       (t) => ACTIVE_STATUSES.includes(normalizeTaskStatus(t.status))
+    );
+    const onHold = incompletedTasks.filter(
+      (t) => BLOCKED_STATUSES.includes(normalizeTaskStatus(t.status))
     );
 
     return [
@@ -61,19 +62,19 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
         tasks: inProgress,
       },
       {
-        id: 'done',
-        title: 'Done',
-        icon: CheckCircle2,
-        color: 'text-[#4FD1AE]',
-        dotClass: 'bg-[#4FD1AE]',
-        tasks: completedTasks,
+        id: 'on-hold',
+        title: 'On Hold',
+        icon: Pause,
+        color: 'text-blue-500',
+        dotClass: 'bg-blue-500',
+        tasks: onHold,
       },
     ];
-  }, [incompletedTasks, completedTasks]);
+  }, [incompletedTasks]);
 
   return (
     <div className="flex justify-center w-full">
-      <div className="grid grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto gap-4 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto gap-4 w-full">
         {columns.map((col) => {
           const Icon = col.icon;
           return (

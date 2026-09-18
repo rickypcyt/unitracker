@@ -28,7 +28,7 @@
 
 .react-datepicker__day-name {
   color: var(--text-secondary) !important;
-  font-size: 0.75rem !important;
+  font-size: 0.8rem !important;
   width: 2rem !important;
   margin: 0.166rem !important;
 }

@@ -114,7 +114,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 
   return (
     <>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col" style={{ height: 'min(85vh, 42rem)' }}>
           {/* Header */}
           <div className="relative flex items-center justify-center px-6 pt-5 pb-3">
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -123,12 +123,12 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
           </div>
 
           {/* Tab bar */}
-          <div className="flex items-center gap-1 px-6 pb-4 border-b border-[var(--border-primary)]/50">
+          <div className="flex items-center justify-between gap-1 px-6 pb-4 border-b border-[var(--border-primary)]/50">
             {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${
+                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative ${
                   activeTab === id
                     ? "bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50"
@@ -154,7 +154,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     <span className="text-sm font-medium text-[var(--text-primary)]">Theme</span>
                   </div>
                   <div className="relative">
-                    <div className="w-full h-9 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
+                    <div className="w-full h-11 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
                       <div
                         className="absolute top-1 bottom-1 rounded-md transition-all duration-300 ease-in-out"
                         style={{
@@ -173,24 +173,24 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Light theme"
                       >
-                        <Sun size={15} className={themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-xs ${themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"}`}>Light</span>
+                        <Sun size={17} className={themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"}`}>Light</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("auto")}
                         className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="System theme"
                       >
-                        <Monitor size={15} className={themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-xs ${themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"}`}>System</span>
+                        <Monitor size={17} className={themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"}`}>System</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("dark")}
                         className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Dark theme"
                       >
-                        <Moon size={15} className={themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-xs ${themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"}`}>Dark</span>
+                        <Moon size={17} className={themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"}`}>Dark</span>
                       </button>
                     </div>
                   </div>
@@ -237,6 +237,31 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 
             {activeTab === "account" && (
               <div className="space-y-4">
+                {/* Action cards */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setShowUserModal(true)}
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
+                  >
+                    <User size={20} className="text-[var(--accent-primary)]" />
+                    User Profile
+                  </button>
+                  <button
+                    onClick={() => setShowAddFriendModal(true)}
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
+                  >
+                    <Users size={20} className="text-[var(--accent-primary)]" />
+                    Add Friends
+                  </button>
+                  <button
+                    onClick={() => setShowFriendsModal(true)}
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
+                  >
+                    <Users size={20} className="text-[var(--accent-primary)]" />
+                    Manage Friends
+                  </button>
+                </div>
+
                 {/* User info card */}
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--bg-secondary)]">
                   <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white font-semibold text-sm">
@@ -266,56 +291,31 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     </button>
                   )}
                 </div>
-
-                {/* Action buttons */}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setShowUserModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                  >
-                    <User size={16} className="text-[var(--text-secondary)]" />
-                    User Profile
-                  </button>
-                  <button
-                    onClick={() => setShowAddFriendModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                  >
-                    <Users size={16} className="text-[var(--text-secondary)]" />
-                    Add Friends
-                  </button>
-                  <button
-                    onClick={() => setShowFriendsModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
-                  >
-                    <Users size={16} className="text-[var(--text-secondary)]" />
-                    Manage Friends
-                  </button>
-                </div>
               </div>
             )}
 
             {activeTab === "data" && (
               <div className="space-y-6">
-                <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => setShowManageAssignmentsModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
                   >
-                    <List size={16} className="text-[var(--text-secondary)]" />
+                    <List size={20} className="text-[var(--accent-primary)]" />
                     Manage Assignments
                   </button>
                   <button
                     onClick={() => setShowSessionsModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
                   >
-                    <Clock size={16} className="text-[var(--text-secondary)]" />
+                    <Clock size={20} className="text-[var(--accent-primary)]" />
                     Manage Study Sessions
                   </button>
                   <button
                     onClick={() => setShowCompletedTasksModal(true)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/80 transition-colors flex items-center gap-3 text-sm"
+                    className="flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-center"
                   >
-                    <CheckCircle size={16} className="text-[var(--text-secondary)]" />
+                    <CheckCircle size={20} className="text-[var(--accent-primary)]" />
                     Manage Completed Tasks
                   </button>
                 </div>

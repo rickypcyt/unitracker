@@ -1,6 +1,15 @@
 import { supabase } from '@/utils/supabaseClient';
 import type { Lap, UpdateLapInput } from '@/schemas/lap';
 
+export interface SessionLap {
+  id: string;
+  session_id: string;
+  user_id: string;
+  note: string;
+  elapsed_seconds: number;
+  created_at: string;
+}
+
 export class StudyService {
   static async fetchLaps(): Promise<Lap[]> {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -215,6 +224,47 @@ export class StudyService {
 
     if (error && error.code !== 'PGRST116') throw error;
     return (data?.session_number ?? 0) + 1;
+  }
+
+  // ── Session laps: timestamped notes inside a running session ────────────────
+
+  static async fetchSessionLaps(sessionId: string): Promise<SessionLap[]> {
+    const { data, error } = await supabase
+      .from('session_laps')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('elapsed_seconds', { ascending: true });
+
+    if (error) throw error;
+    return (data ?? []) as SessionLap[];
+  }
+
+  static async createSessionLap(sessionId: string, note: string, elapsedSeconds: number): Promise<SessionLap> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('session_laps')
+      .insert({
+        session_id: sessionId,
+        user_id: user.id,
+        note,
+        elapsed_seconds: Math.max(0, Math.round(elapsedSeconds)),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as SessionLap;
+  }
+
+  static async deleteSessionLap(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('session_laps')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 }
 

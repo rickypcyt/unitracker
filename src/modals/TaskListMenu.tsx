@@ -38,6 +38,11 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
     x: 0,
     y: 0
   });
+  const [statusAnchor, setStatusAnchor] = useState<{
+    left: number;
+    top: number;
+    right: number;
+  } | null>(null);
   const [menuPosition, setMenuPosition] = useState<{
     x: number;
     y: number;
@@ -66,42 +71,41 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
         }
       }
     };
+    const handleScrollOrResize = () => onClose();
     document.addEventListener("mousedown", handleClickOutside as unknown as EventListener);
     document.addEventListener("keydown", handleEscape as unknown as EventListener);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside as unknown as EventListener);
       document.removeEventListener("keydown", handleEscape as unknown as EventListener);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, [contextMenu, onClose, showStatusMenu]);
 
-  // Initialize and adjust main menu position to avoid viewport overflow
+  // Position the menu at the cursor, flipping when it would overflow the viewport
   useEffect(() => {
     if (!contextMenu) return;
-    // Initialize with position moved up from click
+    setShowStatusMenu(false);
     setMenuPosition({
       x: contextMenu.x,
-      y: contextMenu.y - 150
+      y: contextMenu.y
     });
     const adjust = () => {
       const el = menuRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
-      let x = contextMenu.x;
-      let y = contextMenu.y - 150; // Start 150px above click
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      // If overflowing right, shift left
-      if (x + rect.width > vw - 8) {
-        x = Math.max(8, vw - rect.width - 8);
-      }
-      // If overflowing bottom, open upwards
-      if (y + rect.height > vh - 8) {
-        y = Math.max(8, vh - rect.height - 8);
-      }
-      // If overflowing top, show below click
-      if (y < 8) {
-        y = contextMenu.y + 20; // Show below if no space above
-      }
+      let x = contextMenu.x;
+      let y = contextMenu.y;
+      // Flip to the left / above the cursor when overflowing
+      if (x + rect.width > vw - 8) x = contextMenu.x - rect.width;
+      if (y + rect.height > vh - 8) y = contextMenu.y - rect.height;
+      // Final clamp so the menu never leaves the viewport
+      x = Math.min(Math.max(8, x), Math.max(8, vw - rect.width - 8));
+      y = Math.min(Math.max(8, y), Math.max(8, vh - rect.height - 8));
       setMenuPosition({
         x,
         y
@@ -111,22 +115,47 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
     const raf = requestAnimationFrame(adjust);
     return () => cancelAnimationFrame(raf);
   }, [contextMenu]);
+
+  // Adjust the status submenu once rendered, keeping it attached to its button
+  useEffect(() => {
+    if (!showStatusMenu || !statusAnchor) return;
+    const adjust = () => {
+      const el = statusMenuRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let x = statusAnchor.right + 6;
+      let y = statusAnchor.top - 4;
+      // Not enough room on the right -> open to the left of the button
+      if (x + rect.width > vw - 8) {
+        x = statusAnchor.left - rect.width - 6;
+      }
+      x = Math.min(Math.max(8, x), Math.max(8, vw - rect.width - 8));
+      y = Math.min(Math.max(8, y), Math.max(8, vh - rect.height - 8));
+      setStatusPosition({
+        x,
+        y
+      });
+    };
+    const raf = requestAnimationFrame(adjust);
+    return () => cancelAnimationFrame(raf);
+  }, [showStatusMenu, statusAnchor]);
+
   const handleStatusButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     const buttonElement = (e.target as HTMLElement).closest('button');
     const rect = buttonElement?.getBoundingClientRect();
     if (rect) {
-      // Default open to the right of the button
-      let x = rect.right + 20;
-      let y = rect.top - 10;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      // Rough initial clamp to viewport; final adjustment occurs after render
-      if (x > vw - 8) x = Math.max(8, vw - 220); // assume ~220px min width
-      if (y > vh - 8) y = Math.max(8, vh - 200); // assume ~200px height
+      setStatusAnchor({
+        left: rect.left,
+        top: rect.top,
+        right: rect.right
+      });
+      // Provisional position; the effect above corrects it after render
       setStatusPosition({
-        x,
-        y
+        x: rect.right + 6,
+        y: rect.top - 4
       });
       setShowStatusMenu(true);
     }

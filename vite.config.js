@@ -16,7 +16,6 @@ export default defineConfig(({ command, mode }) => {
   
   const isDev = command === 'serve';
   const isFastDev = process.env.FAST_DEV === 'true';
-  const isFastBuild = isFastDev || mode === 'development';
   const isReleaseBuild = mode === 'release';
   
   return {
@@ -24,7 +23,7 @@ export default defineConfig(({ command, mode }) => {
       react(),
       // Keep the PWA virtual module available, but skip Workbox generation for fast/mobile builds.
       VitePWA({
-          disable: shouldDisableCompression || isFastBuild,
+          disable: shouldDisableCompression || isFastDev,
           registerType: 'autoUpdate',
           includeAssets: [
             'assets/favicon.ico',
@@ -110,7 +109,7 @@ export default defineConfig(({ command, mode }) => {
             ],
           },
           devOptions: {
-            enabled: false,
+            enabled: true,
           },
         }),
       // Bundle analyzer solo cuando se solicita explícitamente

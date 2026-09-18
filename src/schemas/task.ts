@@ -4,15 +4,10 @@ export const taskDifficultySchema = z.enum(['easy', 'medium', 'hard']);
 export type TaskDifficulty = z.infer<typeof taskDifficultySchema>;
 
 export const taskStatusSchema = z.enum([
-  'draft',
-  'planned',
-  'scheduled',
-  'available',
+  'todo',
   'in_progress',
-  'paused',
-  'blocked',
+  'on_hold',
   'completed',
-  'archived',
 ]);
 export type TaskStatus = z.infer<typeof taskStatusSchema>;
 

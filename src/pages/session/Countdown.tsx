@@ -2,6 +2,7 @@ import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from '
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/SectionTitle';
+import { requestDesktopPermission, showDesktopNotification } from '@/utils/desktopNotifications';
 import { useAppStore } from '@/store/appStore';
 import useEventListener from '@/hooks/useEventListener';
 
@@ -227,35 +228,10 @@ const Countdown: React.FC<CountdownProps> = ({
       } catch {}
     }
 
-    // Request notification permission if not already determined
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'granted') {
-        try {
-          const notification = new Notification('Countdown finished!', {
-            body: 'Your session is complete.',
-            icon: '/assets/apple-touch-icon-removebg-preview.png',
-            silent: false
-          });
-          // Close notification after 5 seconds
-          setTimeout(() => notification.close(), 5000);
-        } catch (error) {
-          console.error('Failed to show notification:', error);
-        }
-      } else if (Notification.permission !== 'denied') {
-        // Request permission if not already denied
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            const notification = new Notification('Countdown finished!', {
-              body: 'Your session is complete.',
-              icon: '/assets/apple-touch-icon.png',
-              silent: false
-            });
-            // Close notification after 5 seconds
-            setTimeout(() => notification.close(), 5000);
-          }
-        });
-      }
-    }
+    showDesktopNotification('Countdown finished!', {
+      body: 'Your session is complete.',
+      tag: 'countdown-notification',
+    });
   }, [isCountdownRunning, alarmEnabled]);
   const handleReset = useCallback((fromSync = false) => {
     setIsCountdownRunning(false);
@@ -780,6 +756,7 @@ const Countdown: React.FC<CountdownProps> = ({
   // Eliminado applyTimeUpdate: no se usa sin estado 'time'.
 
   const handlePlayPause = () => {
+    void requestDesktopPermission();
     if (syncCountdownWithTimer) {
       if (isStudyRunningRedux) {
         window.dispatchEvent(new CustomEvent("pausePomodoroSync", {
@@ -939,7 +916,7 @@ const Countdown: React.FC<CountdownProps> = ({
         )}
       </div>
 
-      {!(isSynced || syncCountdownWithTimer) && <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
+      {!(isSynced || syncCountdownWithTimer) && <div className="flex flex-wrap justify-center items-center gap-1.5 mt-auto shrink-0 pb-2">
           <div className="flex gap-1">
             <button onClick={() => handleTimeAdjustment(-1800)} className="timer-adjust-btn" aria-label="Subtract 30 minutes">-30</button>
             <button onClick={() => handleTimeAdjustment(-900)} className="timer-adjust-btn" aria-label="Subtract 15 minutes">-15</button>

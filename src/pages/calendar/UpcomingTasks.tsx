@@ -2,17 +2,18 @@ import { CalendarClock, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTasksOnly, useTasksLoading, useWorkspace } from '@/store/appStore';
 import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
-import { useNavigation } from '@/navbar/NavigationContext';
 import { useAuth } from '@/hooks/useAuth';
 import TaskForm from '@/pages/tasks/TaskForm';
+import TaskViewModal from '@/modals/TaskViewModal';
 
 const UpcomingTasks = ({ limit = 8 }: { limit?: number }) => {
   const tasks = useTasksOnly();
   const tasksLoading = useTasksLoading();
   const { currentWorkspace: activeWorkspace } = useWorkspace();
-  const { navigateTo } = useNavigation();
   const { isLoggedIn } = useAuth();
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [viewingTask, setViewingTask] = useState<any>(null);
+  const [editingTask, setEditingTask] = useState<any>(null);
 
   const { upcomingTasks, totalCount } = useMemo(() => {
     const now = new Date();
@@ -35,8 +36,8 @@ const UpcomingTasks = ({ limit = 8 }: { limit?: number }) => {
     return { upcomingTasks: filtered.slice(0, limit), totalCount: filtered.length };
   }, [tasks, activeWorkspace, limit]);
 
-  const handleClick = () => {
-    navigateTo('tasks');
+  const handleTaskClick = (task: any) => {
+    setViewingTask(task);
   };
 
   const handleAddTask = () => {
@@ -99,7 +100,7 @@ const UpcomingTasks = ({ limit = 8 }: { limit?: number }) => {
             {upcomingTasks.map(task => (
               <div
                 key={task.id}
-                onClick={handleClick}
+                onClick={() => handleTaskClick(task)}
                 className="group cursor-pointer flex items-center gap-2.5 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2 hover:border-[var(--accent-primary)] transition-all duration-200"
               >
                 <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] flex-shrink-0" />
@@ -131,11 +132,29 @@ const UpcomingTasks = ({ limit = 8 }: { limit?: number }) => {
         )}
       </div>
 
+      {viewingTask && (
+        <TaskViewModal
+          isOpen={!!viewingTask}
+          onClose={() => setViewingTask(null)}
+          task={viewingTask}
+          onEdit={(task) => {
+            setViewingTask(null);
+            setEditingTask(task);
+            setShowTaskForm(true);
+          }}
+        />
+      )}
+
       {showTaskForm && (
         <TaskForm
-          onClose={() => setShowTaskForm(false)}
+          initialTask={editingTask}
+          onClose={() => {
+            setShowTaskForm(false);
+            setEditingTask(null);
+          }}
           onTaskCreated={() => {
             setShowTaskForm(false);
+            setEditingTask(null);
             window.dispatchEvent(new CustomEvent('refreshTaskList'));
           }}
         />

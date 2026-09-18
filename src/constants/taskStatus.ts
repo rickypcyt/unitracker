@@ -1,13 +1,8 @@
 export type TaskStatusId =
-  | 'draft'
-  | 'planned'
-  | 'scheduled'
-  | 'available'
+  | 'todo'
   | 'in_progress'
-  | 'paused'
-  | 'blocked'
-  | 'completed'
-  | 'archived';
+  | 'on_hold'
+  | 'completed';
 
 export interface TaskStatusConfig {
   id: TaskStatusId;
@@ -20,35 +15,11 @@ export interface TaskStatusConfig {
 
 export const TASK_STATUSES: TaskStatusConfig[] = [
   {
-    id: 'draft',
-    label: 'Draft',
+    id: 'todo',
+    label: 'To Do',
     textColor: 'text-gray-400',
     bgColor: 'bg-gray-400',
     borderColor: 'border-gray-400',
-    icon: 'FileEdit',
-  },
-  {
-    id: 'planned',
-    label: 'Planned',
-    textColor: 'text-purple-400',
-    bgColor: 'bg-purple-400',
-    borderColor: 'border-purple-400',
-    icon: 'ClipboardList',
-  },
-  {
-    id: 'scheduled',
-    label: 'Scheduled',
-    textColor: 'text-indigo-400',
-    bgColor: 'bg-indigo-400',
-    borderColor: 'border-indigo-400',
-    icon: 'Calendar',
-  },
-  {
-    id: 'available',
-    label: 'Available',
-    textColor: 'text-cyan-400',
-    bgColor: 'bg-cyan-400',
-    borderColor: 'border-cyan-400',
     icon: 'Circle',
   },
   {
@@ -60,36 +31,20 @@ export const TASK_STATUSES: TaskStatusConfig[] = [
     icon: 'Loader',
   },
   {
-    id: 'paused',
-    label: 'Paused',
+    id: 'on_hold',
+    label: 'On Hold',
     textColor: 'text-blue-500',
     bgColor: 'bg-blue-500',
     borderColor: 'border-blue-500',
     icon: 'Pause',
   },
   {
-    id: 'blocked',
-    label: 'Blocked',
-    textColor: 'text-red-500',
-    bgColor: 'bg-red-500',
-    borderColor: 'border-red-500',
-    icon: 'AlertCircle',
-  },
-  {
     id: 'completed',
-    label: 'Completed',
+    label: 'Done',
     textColor: 'text-green-500',
     bgColor: 'bg-green-500',
     borderColor: 'border-green-500',
     icon: 'CheckCircle2',
-  },
-  {
-    id: 'archived',
-    label: 'Archived',
-    textColor: 'text-gray-600',
-    bgColor: 'bg-gray-600',
-    borderColor: 'border-gray-600',
-    icon: 'Archive',
   },
 ];
 
@@ -100,34 +55,41 @@ export const TASK_STATUS_MAP: Record<TaskStatusId, TaskStatusConfig> =
   }, {} as Record<TaskStatusId, TaskStatusConfig>);
 
 const LEGACY_STATUS_MAP: Record<string, TaskStatusId> = {
-  not_started: 'draft',
-  'not-started': 'draft',
-  on_hold: 'paused',
-  'on-hold': 'paused',
-  active: 'in_progress',
+  draft: 'todo',
+  planned: 'todo',
+  scheduled: 'todo',
+  available: 'todo',
+  not_started: 'todo',
+  'not-started': 'todo',
   in_progress: 'in_progress',
   'in-progress': 'in_progress',
+  active: 'in_progress',
+  paused: 'on_hold',
+  on_hold: 'on_hold',
+  'on-hold': 'on_hold',
+  blocked: 'on_hold',
   completed: 'completed',
   done: 'completed',
+  archived: 'completed',
 };
 
 export function normalizeTaskStatus(status: string | undefined | null): TaskStatusId {
-  if (!status) return 'draft';
+  if (!status) return 'todo';
   const lower = status.toLowerCase();
-  if (lower in LEGACY_STATUS_MAP) return LEGACY_STATUS_MAP[lower] ?? 'draft';
+  if (lower in LEGACY_STATUS_MAP) return LEGACY_STATUS_MAP[lower] ?? 'todo';
   if (TASK_STATUSES.some(s => s.id === lower)) return lower as TaskStatusId;
-  return 'draft';
+  return 'todo';
 }
 
 export function getTaskStatusConfig(status: string | undefined | null): TaskStatusConfig {
   const normalized = normalizeTaskStatus(status);
-  return TASK_STATUS_MAP[normalized] ?? TASK_STATUS_MAP['draft'];
+  return TASK_STATUS_MAP[normalized] ?? TASK_STATUS_MAP['todo'];
 }
 
 export const ACTIVE_STATUSES: TaskStatusId[] = ['in_progress'];
-export const TODO_STATUSES: TaskStatusId[] = ['draft', 'planned', 'available'];
-export const BLOCKED_STATUSES: TaskStatusId[] = ['blocked', 'paused'];
-export const DONE_STATUSES: TaskStatusId[] = ['completed', 'archived'];
+export const TODO_STATUSES: TaskStatusId[] = ['todo'];
+export const BLOCKED_STATUSES: TaskStatusId[] = ['on_hold'];
+export const DONE_STATUSES: TaskStatusId[] = ['completed'];
 
 export function isTaskActive(status: string | undefined | null): boolean {
   return ACTIVE_STATUSES.includes(normalizeTaskStatus(status));

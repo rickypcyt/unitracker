@@ -85,6 +85,7 @@ interface DayViewProps {
   setSelectedDate: (date: Date) => void;
   setShowTaskForm: (show: boolean) => void;
   setIsLoginPromptOpen: (open: boolean) => void;
+  onDayContextMenu: (e: React.MouseEvent, date: Date, hour?: number) => void;
 }
 
 const DayView = ({
@@ -94,8 +95,14 @@ const DayView = ({
   setSelectedDate,
   setShowTaskForm,
   setIsLoginPromptOpen,
+  onDayContextMenu,
 }: DayViewProps) => {
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const VISIBLE_START_HOUR = 6;
+  const VISIBLE_END_HOUR = 24;
+  const hours = Array.from(
+    { length: VISIBLE_END_HOUR - VISIBLE_START_HOUR },
+    (_, i) => i + VISIBLE_START_HOUR
+  );
   const now = new Date();
   const currentHour = now.getHours();
   const isCurrentDay = isSameDay(selectedDate, new Date());
@@ -105,15 +112,13 @@ const DayView = ({
   useEffect(() => {
     if (scrollRef.current) {
       const scrollHour = isCurrentDay ? currentHour : 8;
-      const scrollPosition = Math.max(0, (scrollHour - 2) * 60);
+      const scrollPosition = Math.max(
+        0,
+        (scrollHour - VISIBLE_START_HOUR - 2) * 60
+      );
       scrollRef.current.scrollTop = scrollPosition;
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const totalTasksForDay = hours.reduce(
-    (sum, hour) => sum + getTasksForDayAndHour(selectedDate, hour).length,
-    0
-  );
 
   return (
     <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl relative min-h-0 h-full overflow-hidden">
@@ -140,16 +145,23 @@ const DayView = ({
             return (
               <div
                 key={hour}
-                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/60"
+                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/40"
               >
                 {/* Hour label */}
-                <div className="text-[11px] sm:text-xs text-[var(--text-secondary)] pt-1.5 pr-2 text-right font-medium tabular-nums">
+                <div className="text-xs sm:text-xs text-[var(--text-secondary)] -mt-2 pr-2 text-right font-medium tabular-nums bg-[var(--bg-primary)] w-fit ml-auto px-1 relative z-10">
                   {format12Hour(hour)}
                 </div>
 
                 {/* Slot */}
                 <div
                   className="cursor-pointer min-h-[60px] transition-colors relative overflow-visible rounded-md hover:bg-[var(--bg-secondary)]/40"
+                  onContextMenu={(e) => {
+                    if (
+                      (e.target as HTMLElement).closest("[data-calendar-task]")
+                    )
+                      return;
+                    onDayContextMenu(e, selectedDate, hour);
+                  }}
                   onDoubleClick={(e) => {
                     if (
                       (e.target as HTMLElement).closest("[data-calendar-task]")
@@ -201,12 +213,6 @@ const DayView = ({
                       <div className="flex-1 h-[2px] bg-[var(--accent-primary)] rounded-full" />
                     </div>
                   )}
-
-                  {/* Half-hour divider */}
-                  <div
-                    className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/50 pointer-events-none"
-                    style={{ top: "30px", zIndex: 1 }}
-                  />
 
                   {/* Tasks */}
                   {tasksStartingThisHour.map(
@@ -260,14 +266,14 @@ const DayView = ({
                           title={`${task.title ?? "Task"} ${timeLabel}`}
                         >
                           {task.assignment && (
-                            <div className="text-[10px] text-[var(--accent-primary)] truncate font-medium mb-0.5">
+                            <div className="text-xs text-[var(--accent-primary)] truncate font-medium mb-0.5">
                               {task.assignment}
                             </div>
                           )}
                           <div className="font-medium truncate leading-snug">
                             {task.title || "Sin título"}
                           </div>
-                          <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">
+                          <div className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
                             {timeLabel}
                           </div>
                         </div>
@@ -279,17 +285,6 @@ const DayView = ({
             );
           })}
 
-          {/* Empty state */}
-          {totalTasksForDay === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center pointer-events-none">
-              <p className="text-sm font-medium text-[var(--text-secondary)]">
-                No tasks scheduled
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]/70 mt-1">
-                Click any time slot to add one
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

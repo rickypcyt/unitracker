@@ -121,10 +121,10 @@ const TasksPage = memo(() => {
   };
 
   const fabPositionClass: Record<FabPosition, string> = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6',
-    'top-right': 'top-6 right-6',
-    'top-left': 'top-6 left-6',
+    'bottom-right': 'bottom-20 right-6 sm:bottom-6',
+    'bottom-left': 'bottom-20 left-6 sm:bottom-6',
+    'top-right': 'top-20 lg:top-6 right-6',
+    'top-left': 'top-20 lg:top-6 left-6',
   };
 
   const handleCloseTaskForm = () => {
@@ -234,9 +234,9 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 xl:px-8 pt-4 relative min-h-screen bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
-      {/* Mobile Workspace Selector */}
-      <div className="lg:hidden w-full mb-4">
+      <div className="w-full px-4 sm:px-6 pt-4 pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
+      {/* Mobile Workspace Selector (footer island shows the name from sm up) */}
+      <div className="sm:hidden w-full mb-4">
         <WorkspaceSelector />
       </div>
       
@@ -244,15 +244,16 @@ const TasksPage = memo(() => {
       {/* Task Page Settings Button */}
       <button
         onClick={() => setShowSettings(true)}
-        className="fixed top-6 right-6 z-40 w-10 h-10 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
+        className="fixed top-20 lg:top-6 right-6 z-40 h-10 px-3 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] shadow-md flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition-colors"
         aria-label="Task page settings"
         title="Task page settings"
       >
         <SettingsIcon size={18} />
+        <span className="hidden sm:inline">Task Page Settings</span>
       </button>
       {/* Scroll Instruction Message */}
       {workspaces && workspaces.length > 1 && showScrollTip && (
-        <div className="fixed bottom-6 left-6 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
+        <div className="fixed bottom-20 sm:bottom-6 left-6 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-3 shadow-lg antialiased z-40 flex items-center gap-3 text-sm text-[var(--text-secondary)] max-w-xs">
           <Info className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
           <span className="flex-1">Swipe right to switch workspace</span>
           <button

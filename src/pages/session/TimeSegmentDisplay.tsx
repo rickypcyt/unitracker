@@ -27,7 +27,7 @@ const TimeSegmentDisplay: React.FC<TimeSegmentDisplayProps> = ({
                 {segment.value}
               </span>
             </div>
-            <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
               {segment.label}
             </span>
           </div>

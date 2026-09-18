@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useAppStore, useWorkspace, useWorkspaceActions } from '@/store/appStore';
@@ -82,10 +82,12 @@ function computeStatsData(tasks: Task[], laps: Lap[]): StatsExportData {
   if (completedDates.length > 0) {
     let streak = 1, maxStreak = 1;
     for (let i = 1; i < completedDates.length; i++) {
-      if (completedDates[i] - completedDates[i - 1] === 86400000) {
+      const curr = completedDates[i]!;
+      const prev = completedDates[i - 1]!;
+      if (curr - prev === 86400000) {
         streak++;
         maxStreak = Math.max(maxStreak, streak);
-      } else if (completedDates[i] !== completedDates[i - 1]) {
+      } else if (curr !== prev) {
         streak = 1;
       }
     }

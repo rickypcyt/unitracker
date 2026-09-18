@@ -7,7 +7,7 @@ import BaseModal from "@/modals/BaseModal";
 import MarkdownWysiwyg from '@/MarkdownWysiwyg';
 import { Task } from '@/pages/tasks/task';
 import { fromNow } from "@/utils/dateUtils";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { useFormState } from "@/hooks/useFormState";
 
 interface TaskDetailsModalProps {

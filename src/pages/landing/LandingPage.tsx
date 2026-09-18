@@ -82,7 +82,7 @@ const TimerShowcase = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-[10px] text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Timer</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Timer</span>
       </div>
       <div className="p-4 max-h-[500px] overflow-y-auto">
         <Pomodoro hideHeader />
@@ -100,7 +100,7 @@ const StudyTimerShowcase = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-[10px] text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Study Timer</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Study Timer</span>
       </div>
       <div className="p-4 max-h-[500px] overflow-y-auto">
         <StudyTimer hideHeader />
@@ -118,7 +118,7 @@ const AppIframeShowcase = ({ page }: { page: string }) => {
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-[10px] text-[var(--text-secondary)] ml-2 font-mono">UniTracker — {page}</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — {page}</span>
       </div>
       <iframe
         src={`/app`}

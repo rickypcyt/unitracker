@@ -1,10 +1,10 @@
-import { CheckCircle2, Circle, Clock, Loader, Pause, Pencil, Trash2, Zap } from "lucide-react";
-import { formatDateShort, getTimeRemainingString, isToday, isTomorrow, parseDateFromString } from '@/utils/dateUtils';
+import { CheckCircle2, Circle, Clock, Pencil, Trash2, Zap } from "lucide-react";
+import { formatDateShort, getTimeRemainingString, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
 import { Task } from '@/types/taskStorage';
+import TaskStatusPicker from '@/pages/tasks/TaskStatusPicker';
 import { to12Hour } from '@/utils/timeUtils';
-import { getTaskStatusConfig, normalizeTaskStatus } from '@/constants/taskStatus';
 
 // Helper para formatear días de recurrencia
 const formatRecurrenceText = (weekdays: number[]) => {
@@ -125,65 +125,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         }
     };
 
-    const getDifficultyLabel = (difficulty: string) => {
-        switch (difficulty?.toLowerCase()) {
-            case 'easy': return 'Easy';
-            case 'medium': return 'Medium';
-            case 'hard': return 'Hard';
-            default: return '';
-        }
-    };
-
-    const getStatusIcon = (status?: string) => {
-        const normalized = normalizeTaskStatus(status);
-        switch (normalized) {
-            case 'in_progress':
-                return <Loader size={13} className="text-yellow-500 animate-spin" strokeWidth={2.5} />;
-            case 'paused':
-                return <Pause size={13} className="text-blue-500 animate-pulse-slow" strokeWidth={2.5} />;
-            case 'blocked':
-                return <Circle size={13} className="text-red-500" strokeWidth={2.5} />;
-            default:
-                return null;
-        }
-    };
-
-    const getDeadlineProgress = (deadline: string) => {
-        if (!deadline) return null;
-        const date = parseDateFromString(deadline);
-        if (!date) return null;
-        const now = new Date();
-        const created = task.created_at ? new Date(task.created_at) : null;
-        const totalSpan = created ? date.getTime() - created.getTime() : 14 * 24 * 60 * 60 * 1000;
-        const elapsed = now.getTime() - (created ? created.getTime() : now.getTime());
-        const remaining = totalSpan - elapsed;
-        const pct = Math.max(0, Math.min(100, (remaining / totalSpan) * 100));
-        return pct;
-    };
-
-    const getProgressBarColor = (pct: number) => {
-        if (pct <= 15) return 'bg-red-500';
-        if (pct <= 40) return 'bg-yellow-500';
-        if (pct <= 70) return 'bg-blue-500';
-        return 'bg-green-500';
-    };
-
-    const getStatusBorderColor = (status?: string) => {
-        const config = getTaskStatusConfig(status);
-        const colorMap: Record<string, string> = {
-            'border-gray-400': '#9ca3af',
-            'border-purple-400': '#a78bfa',
-            'border-indigo-400': '#818cf8',
-            'border-cyan-400': '#22d3ee',
-            'border-yellow-500': '#eab308',
-            'border-blue-500': '#3b82f6',
-            'border-red-500': '#ef4444',
-            'border-green-500': '#22c55e',
-            'border-gray-600': '#4b5563',
-        };
-        return colorMap[config.borderColor] || '#9ca3af';
-    };
-
     const handleToggleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
@@ -225,9 +166,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     
-    const deadlineProgress = task.deadline ? getDeadlineProgress(task.deadline) : null;
-    const statusIcon = getStatusIcon(task.status);
-
     return (
         <div
             className={`group relative flex p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2.5 items-center
@@ -235,18 +173,27 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
                 ${task.completed ? 'opacity-50' : ''}
             `}
-            style={{ borderLeftWidth: '3px', borderLeftColor: getStatusBorderColor(task.status) }}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => onContextMenu(e, task)}
             tabIndex={0}
             role="listitem"
         >
-            {/* Status icon — top-right corner */}
-            {statusIcon && !task.completed && (
-                <span className="absolute top-2 right-2 flex-shrink-0 flex items-center justify-center z-10">
-                    {statusIcon}
-                </span>
-            )}
+            {/* Left side: complete toggle with separator */}
+            <div className="flex items-center self-stretch pr-2.5 mr-0.5 border-r-2 border-[var(--border-primary)] flex-shrink-0">
+                <button
+                    onClick={handleToggleClick}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
+                    aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                >
+                    {task.completed ? (
+                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
+                    ) : (
+                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
+                    )}
+                </button>
+            </div>
 
             {/* Contenido principal */}
             <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
@@ -257,7 +204,39 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     </div>
                 )}
 
-                {/* Row 1: Title + difficulty badge */}
+                {/* Row 1: Date / time / days remaining — above the title */}
+                <div className="w-full">
+                    {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
+                        <div className="flex items-center justify-between gap-2 text-base w-full">
+                            <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
+                                <Zap size={14} className="flex-shrink-0 opacity-70" />
+                                <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
+                            </span>
+                            {task.start_at && (
+                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
+                                    <Clock size={14} className="opacity-60" />
+                                    {formatTimeRange(task.start_at, task.end_at)}
+                                </span>
+                            )}
+                        </div>
+                    ) : task.deadline && task.deadline !== '' ? (
+                        <div className="flex items-center justify-between gap-2 text-base w-full">
+                            <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
+                                <Clock size={14} className="flex-shrink-0" />
+                                <span className="truncate">{formatDateShort(task.deadline)}</span>
+                            </span>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {task.start_at && (
+                                    <span className="text-[var(--text-secondary)] flex items-center gap-1">
+                                        {formatTimeRange(task.start_at, task.end_at)}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-base">No deadline</span>}
+                </div>
+
+                {/* Row 2: Title + deadline badge */}
                 <div className="flex items-center gap-1.5 min-w-0">
                     <span
                         className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
@@ -284,50 +263,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     )}
                 </div>
 
-                {/* Row 2: Date / time / days remaining — full width with justify-between */}
-                <div className="w-full">
-                    {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
-                        <div className="flex items-center justify-between gap-2 text-sm w-full">
-                            <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
-                                <Zap size={13} className="flex-shrink-0 opacity-70" />
-                                <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
-                            </span>
-                            {task.start_at && (
-                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
-                                    <Clock size={12} className="opacity-60" />
-                                    {formatTimeRange(task.start_at, task.end_at)}
-                                </span>
-                            )}
-                        </div>
-                    ) : task.deadline && task.deadline !== '' ? (
-                        <div className="flex items-center justify-between gap-2 text-sm w-full">
-                            <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
-                                <Clock size={13} className="flex-shrink-0" />
-                                <span className="truncate">{formatDateShort(task.deadline)}</span>
-                            </span>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                {task.start_at && (
-                                    <span className="text-[var(--text-secondary)] flex items-center gap-1">
-                                        {formatTimeRange(task.start_at, task.end_at)}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-sm">No deadline</span>}
-                </div>
-
-                {/* Row 3: Progress bar */}
-                {deadlineProgress !== null && !task.completed && (
-                    <div className="h-1.5 w-full rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                        <div
-                            className={`h-full rounded-full transition-all duration-300 ${getProgressBarColor(deadlineProgress)}`}
-                            style={{ width: `${deadlineProgress}%` }}
-                        />
-                    </div>
-                )}
+                {/* Row 3: Status selector (hidden once completed) */}
+                {!task.completed && <TaskStatusPicker task={task} />}
             </div>
 
-            {/* Right side: complete button + hover actions */}
+            {/* Right side: hover actions */}
             <div className="flex items-center justify-center gap-0.5 flex-shrink-0">
                 {/* Hover quick actions */}
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -352,21 +292,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         </button>
                     )}
                 </div>
-
-                {/* Complete toggle button */}
-                <button
-                    onClick={handleToggleClick}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
-                    aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
-                >
-                    {task.completed ? (
-                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
-                    ) : (
-                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
-                    )}
-                </button>
             </div>
         </div>
     );

@@ -1,10 +1,10 @@
 import { BarChart3, BookOpen, Calendar, ChevronLeft, ChevronRight, CircleCheckBig, LayoutDashboard, ListTodo, Menu, Timer, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import SettingsButton from './SettingsButton';
 import { supabase } from '@/utils/supabaseClient';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useFriendManagement } from '@/hooks/useFriendManagement';
@@ -16,7 +16,6 @@ const Navbar = () => {
   const { isLoggedIn, user } = useAuth();
   const { activePage, navigateTo, navOrder, setNavOrder, isNavCollapsed, toggleNavCollapse } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
-  const tasks = useTasksOnly();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
@@ -125,7 +124,6 @@ const Navbar = () => {
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, item: any) => {
-    setIsDragging(true);
     setDraggedItem(item);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -146,7 +144,6 @@ const Navbar = () => {
 
     const draggedIndex = navOrder.findIndex(item => item.page === draggedItem.page);
     if (draggedIndex === dropIndex) {
-      setIsDragging(false);
       setDraggedItem(null);
       setDragOverIndex(null);
       return;
@@ -157,13 +154,11 @@ const Navbar = () => {
     newOrder.splice(dropIndex, 0, draggedItem);
     
     setNavOrder(newOrder);
-    setIsDragging(false);
     setDraggedItem(null);
     setDragOverIndex(null);
   };
 
   const handleDragEnd = () => {
-    setIsDragging(false);
     setDraggedItem(null);
     setDragOverIndex(null);
   };
@@ -180,26 +175,62 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-[10001] p-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      {/* Top bar (sm + md) */}
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 z-[10000] bg-[var(--bg-primary)] border-b border-[var(--border-primary)] flex items-center px-3 gap-2">
+        <span className="font-bold text-lg shrink-0 select-none">
+          <span className="text-[var(--text-primary)]">U</span>
+          <span className="text-[var(--accent-primary)]">T</span>
+        </span>
+
+        {/* md: centered section nav */}
+        <div className="hidden md:flex flex-1 items-center justify-center gap-1">
+          {allNavItems.map(({ page, label }) => {
+            const Icon = iconMap[page as keyof typeof iconMap];
+            return (
+              <button
+                key={page}
+                onClick={() => handleNavigate(page)}
+                onMouseEnter={() => preloadPage(page)}
+                className={`p-2 rounded-lg flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                  isActive(page)
+                    ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                }`}
+                title={label}
+                aria-label={label}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="hidden min-[860px]:inline leading-none">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="ml-auto md:ml-0 flex items-center gap-1">
+          <div className="hidden md:block">
+            <SettingsButton iconOnly />
+          </div>
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+      </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-[10000]"
+          className="lg:hidden fixed inset-0 bg-black/50 z-[10001]"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <nav
-        className={`fixed inset-y-0 left-0 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-[10000] flex flex-col transition-[width,transform] duration-300 ${
+        className={`fixed inset-y-0 left-0 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-[10002] flex flex-col transition-[width,transform] duration-300 ${
           mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full'
         } ${isNavCollapsed ? 'lg:translate-x-0 lg:w-20' : 'lg:translate-x-0 lg:w-64'}`}
         data-tour="navbar"
@@ -269,7 +300,7 @@ const Navbar = () => {
                       title={label}
                     >
                       <Icon className="w-5 h-5 lg:w-6 lg:h-6 flex-shrink-0" />
-                      <span className={`font-medium leading-none ${isExpanded ? 'block text-sm' : 'text-[9px] lg:text-[10px] mt-0.5'}`}>
+                      <span className={`font-medium leading-none ${isExpanded ? 'block text-sm' : 'text-xs mt-0.5'}`}>
                         {label}
                       </span>
                     </button>

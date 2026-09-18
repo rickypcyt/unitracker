@@ -11,6 +11,7 @@ type Note = {
   description: string;
   date?: string;
   created_at?: string;
+  last_edited?: string;
 };
 
 interface NotesDirectoryProps {
@@ -23,27 +24,52 @@ interface NotesDirectoryProps {
   onDelete?: (note: Note) => void;
 }
 
-const getDateKey = (note: Note): string => note.date || note.created_at?.slice(0, 10) || 'undated';
+const getMonthKey = (note: Note): string => {
+  const raw = note.created_at ?? note.date;
+  if (!raw) return 'undated';
+  const dateOnly = raw.match(/^(\d{4})-(\d{2})-\d{2}$/);
+  const parsed = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, 1)
+    : new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return 'undated';
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`;
+};
 
-const getDateLabel = (dateKey: string): string => {
-  if (dateKey === 'undated') return 'Undated notes';
-  const [year, month, day] = dateKey.split('-').map(Number);
-  if (!year || !month || !day) return dateKey;
+const getMonthLabel = (monthKey: string): string => {
+  if (monthKey === 'undated') return 'Undated notes';
+  const [year, month] = monthKey.split('-').map(Number);
+  if (!year || !month) return monthKey;
 
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-    weekday: 'long',
+  return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
     month: 'long',
-    day: 'numeric',
     year: 'numeric',
   });
 };
 
-const getShortDateLabel = (dateKey: string): string => {
-  if (dateKey === 'undated') return 'No date';
-  const [year, month, day] = dateKey.split('-').map(Number);
-  if (!year || !month || !day) return dateKey;
+const getShortDateLabel = (note: Note): string => {
+  const raw = note.created_at ?? note.date;
+  if (!raw) return 'No date';
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return 'No date';
 
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+  return parsed.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const getEditedLabel = (note: Note): string | null => {
+  if (!note.last_edited) return null;
+  const edited = new Date(note.last_edited);
+  if (Number.isNaN(edited.getTime())) return null;
+
+  const rawCreated = note.created_at ?? note.date;
+  const created = rawCreated ? new Date(rawCreated) : null;
+  if (created && !Number.isNaN(created.getTime()) && edited.toDateString() === created.toDateString()) {
+    return null;
+  }
+
+  return edited.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   });
@@ -96,19 +122,19 @@ const NotesDirectory = ({
     ? assignmentGroups.find(([assignment]) => assignment === selectedAssignment)?.[1] ?? []
     : [];
 
-  const activeDateGroups = useMemo(() => {
+  const activeMonthGroups = useMemo(() => {
     const groups = new Map<string, Note[]>();
     activeAssignmentNotes.forEach(note => {
-      const dateKey = getDateKey(note);
-      const group = groups.get(dateKey) ?? [];
+      const monthKey = getMonthKey(note);
+      const group = groups.get(monthKey) ?? [];
       group.push(note);
-      groups.set(dateKey, group);
+      groups.set(monthKey, group);
     });
 
-    return [...groups.entries()].sort(([firstDate], [secondDate]) => {
-      if (firstDate === 'undated') return 1;
-      if (secondDate === 'undated') return -1;
-      return secondDate.localeCompare(firstDate);
+    return [...groups.entries()].sort(([firstMonth], [secondMonth]) => {
+      if (firstMonth === 'undated') return 1;
+      if (secondMonth === 'undated') return -1;
+      return secondMonth.localeCompare(firstMonth);
     });
   }, [activeAssignmentNotes]);
 
@@ -125,7 +151,7 @@ const NotesDirectory = ({
         <div className="mb-6 h-11 w-full animate-pulse rounded-xl bg-[var(--bg-secondary)]" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="aspect-square animate-pulse rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
+            <div key={index} className="h-24 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
           ))}
         </div>
       </div>
@@ -202,43 +228,47 @@ const NotesDirectory = ({
           <p className="text-sm text-[var(--text-secondary)]">No notes match your search.</p>
         </div>
       ) : selectedAssignment ? (
-        <section className="rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-3 sm:p-5">
-          <div className="space-y-6">
-            {activeDateGroups.map(([dateKey, dateNotes]) => (
-              <div key={dateKey}>
-                <div className="mb-3 flex items-center gap-2 border-b border-[var(--border-primary)] pb-2">
+        <section>
+          <div className="space-y-8">
+            {activeMonthGroups.map(([monthKey, monthNotes]) => (
+              <div key={monthKey}>
+                <div className="mb-3 flex items-center gap-2 pb-1">
                   <Calendar size={15} className="text-[var(--accent-primary)]" />
-                  <h2 className="text-sm font-semibold capitalize text-[var(--text-primary)]">{getDateLabel(dateKey)}</h2>
-                  <span className="text-xs text-[var(--text-secondary)]">{dateNotes.length}</span>
+                  <h2 className="text-base font-semibold text-[var(--text-primary)]">{getMonthLabel(monthKey)}</h2>
+                  <span className="text-xs text-[var(--text-secondary)]">{monthNotes.length}</span>
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {dateNotes.map(note => {
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {monthNotes.map(note => {
               const noteKey = note.id || `${note.title}-${note.date}`;
               return (
                 <article
                   key={noteKey}
                   onClick={() => onNoteSelect?.(note.id || noteKey)}
-                  className={`group cursor-pointer rounded-xl border-2 bg-[var(--bg-primary)] p-4 transition-all hover:-translate-y-0.5 hover:border-[var(--accent-primary)]/60 hover:shadow-lg ${selectedNoteId === note.id ? 'border-[var(--accent-primary)]' : 'border-[var(--border-primary)]'}`}
+                  className={`group cursor-pointer rounded-xl border-2 bg-[var(--bg-primary)] p-3 transition-colors hover:border-[var(--accent-primary)]/60 ${selectedNoteId === note.id ? 'border-[var(--accent-primary)]' : 'border-[var(--border-primary)]'}`}
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <FileText size={17} className="flex-shrink-0 text-[var(--accent-primary)]" />
-                      <h2 className="truncate font-semibold text-[var(--text-primary)]">{note.title}</h2>
-                    </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="line-clamp-2 break-words text-sm font-semibold text-[var(--text-primary)]">{note.title}</h2>
                     {onDelete && (
                       <button
                         onClick={event => { event.stopPropagation(); onDelete(note); }}
-                        className="rounded-md p-1.5 text-[var(--text-secondary)] opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100"
+                        className="-mr-1 -mt-1 flex-shrink-0 rounded-md p-1 text-[var(--text-secondary)] transition-colors hover:bg-red-500/10 hover:text-red-500"
                         aria-label={`Delete ${note.title}`}
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} />
                       </button>
                     )}
                   </div>
-                  <p className="line-clamp-4 text-sm leading-relaxed text-[var(--text-secondary)]">{getPreview(note.description)}</p>
-                  <div className="mt-5 flex items-center justify-between gap-2 border-t border-[var(--border-primary)] pt-3 text-xs text-[var(--text-secondary)]">
-                    <span className="truncate rounded-full bg-[var(--accent-primary)]/10 px-2 py-1 text-[var(--accent-primary)]">{note.assignment || 'Unassigned'}</span>
-                    <span>{getShortDateLabel(getDateKey(note))}</span>
+                  <div className="mt-2 space-y-0.5 text-xs text-[var(--text-secondary)]">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={12} className="flex-shrink-0" />
+                      <span className="truncate">Created {getShortDateLabel(note)}</span>
+                    </div>
+                    {getEditedLabel(note) && (
+                      <div className="flex items-center gap-1.5">
+                        <FileText size={12} className="flex-shrink-0" />
+                        <span className="truncate">Edited {getEditedLabel(note)}</span>
+                      </div>
+                    )}
                   </div>
                 </article>
               );
@@ -254,7 +284,7 @@ const NotesDirectory = ({
             <button
               key={assignment}
               onClick={() => setSelectedAssignment(assignment)}
-              className="group flex aspect-square flex-col rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-left transition-all hover:-translate-y-1 hover:border-[var(--accent-primary)]/60 hover:shadow-xl"
+              className="group flex aspect-square flex-col rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-left"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">

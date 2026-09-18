@@ -4,7 +4,7 @@ import { deleteLap, updateLap } from '@/store/LapActions';
 import { format, parseISO } from 'date-fns';
 
 import BaseModal from '@/modals/BaseModal';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import type { Lap } from '@/types/lap';
 
 interface SessionDetailsModalProps {

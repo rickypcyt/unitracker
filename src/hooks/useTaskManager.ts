@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { parseDateForDB } from '@/utils/timeUtils';
 import { supabase } from '@/utils/supabaseClient';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { toggleTaskStatus } from "@/store/TaskActions";
 
 // Constant for the "All" workspace

@@ -5,7 +5,7 @@ import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { StudyService, SessionTaskService } from '@/services/StudyService';
 import { TaskService } from '@/services/TaskService';
 

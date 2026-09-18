@@ -4,6 +4,7 @@ import { useDeleteTaskSuccess, useTasks, useUpdateTaskSuccess } from '@/store/ap
 
 import BaseModal from '@/modals/BaseModal';
 import DeleteCompletedModal from '@/modals/DeleteTasksPop';
+import { getTaskStatusConfig } from '@/constants/taskStatus';
 import type { Task } from '@/types/taskStorage';
 
 const pluralize = (count: number, suffix: string = 's') => (count === 1 ? '' : suffix);
@@ -100,6 +101,27 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
     [selectedAssignmentTasks]
   );
 
+  // Pending: soonest deadline first, no deadline last
+  const sortedPendingTasks = useMemo(() => {
+    const getDeadline = (task: Task) => (task.deadline ?? (task as any).due_date ?? null) as string | null;
+    return [...pendingTasks].sort((a, b) => {
+      const da = getDeadline(a);
+      const db = getDeadline(b);
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return new Date(da).getTime() - new Date(db).getTime();
+    });
+  }, [pendingTasks]);
+
+  // Completed: most recently completed first
+  const sortedCompletedTasks = useMemo(
+    () => [...completedTasks].sort(
+      (a, b) => new Date(b.completed_at ?? 0).getTime() - new Date(a.completed_at ?? 0).getTime()
+    ),
+    [completedTasks]
+  );
+
   const formatDueDate = (task: Task) => {
     const source = (task.deadline ?? (task as any).due_date ?? null) as string | null;
     if (!source) return null;
@@ -139,211 +161,192 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                 <p className="text-[var(--text-secondary)] mt-2">Create tasks with assignments to see them here</p>
               </div>
             ) : (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-1/2 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {assignments.map((assignment) => {
-                      const assignmentTasks = tasks.filter((task: Task) => task.assignment === assignment);
-                      const completedCount = assignmentTasks.filter((task: Task) => task.completed).length;
-                      const pendingCount = assignmentTasks.length - completedCount;
+              <div className="flex flex-col lg:flex-row gap-5">
+                <div className="lg:w-2/5 space-y-2">
+                  {assignments.map((assignment) => {
+                    const assignmentTasks = tasks.filter((task: Task) => task.assignment === assignment);
+                    const completedCount = assignmentTasks.filter((task: Task) => task.completed).length;
+                    const pendingCount = assignmentTasks.length - completedCount;
 
-                      const isSelected = selectedAssignment === assignment;
+                    const isSelected = selectedAssignment === assignment;
 
-                      return (
-                        <div
-                          key={assignment}
-                          className={`bg-[var(--bg-secondary)] border ${
-                            isSelected
-                              ? 'border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)]/10'
-                              : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-md'
-                          } transition-all duration-300 cursor-pointer rounded-lg p-4 flex items-center gap-4`}
-                          onClick={() => setSelectedAssignment(assignment)}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                              {editingAssignment?.originalName === assignment ? (
-                                <div className="flex-1 flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    className="flex-1 bg-transparent border-b border-[var(--accent-primary)] text-[var(--text-primary)] focus:outline-none"
-                                    value={editingAssignment.name}
-                                    onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
-                                      } else if (e.key === 'Escape') {
-                                        cancelEditing();
-                                      }
-                                    }}
-                                    autoFocus
-                                  />
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
-                                    }}
-                                    className="text-green-500 hover:text-green-400 p-1"
-                                    title="Save changes"
-                                  >
-                                    <Check size={16} />
-                                  </button>
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      cancelEditing();
-                                    }}
-                                    className="text-red-500 hover:text-red-400 p-1"
-                                    title="Cancel"
-                                  >
-                                    <X size={16} />
-                                  </button>
-                                </div>
-                              ) : (
-                                <h3 className="font-semibold text-[var(--text-primary)] text-lg truncate">
-                                  {assignment}
-                                </h3>
-                              )}
-                              {editingAssignment?.originalName !== assignment && (
+                    return (
+                      <div
+                        key={assignment}
+                        className={`bg-[var(--bg-secondary)] border-2 ${
+                          isSelected
+                            ? 'border-[var(--accent-primary)] shadow-md shadow-[var(--accent-primary)]/10'
+                            : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/60 hover:shadow-sm'
+                        } transition-all duration-200 cursor-pointer rounded-xl p-3.5`}
+                        onClick={() => setSelectedAssignment(assignment)}
+                      >
+                        {editingAssignment?.originalName === assignment ? (
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              className="flex-1 min-w-0 bg-transparent border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] font-semibold focus:outline-none"
+                              value={editingAssignment.name}
+                              onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
+                                } else if (e.key === 'Escape') {
+                                  cancelEditing();
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateAssignment(editingAssignment.originalName, editingAssignment.name);
+                              }}
+                              className="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                              title="Save changes"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                cancelEditing();
+                              }}
+                              className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                              title="Cancel"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="min-w-0 truncate font-semibold text-[var(--text-primary)]">
+                                {assignment}
+                              </h3>
+                              <div className="flex flex-shrink-0 items-center gap-0.5">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     startEditing(assignment);
                                   }}
-                                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors"
-                                  title="Edit assignment name"
+                                  className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                                  title="Rename assignment"
                                 >
-                                  <Edit2 size={16} />
+                                  <Edit2 size={15} />
                                 </button>
-                              )}
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-4 text-sm">
-                              <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-                                <span className="font-medium">{assignmentTasks.length} total</span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteAssignment(assignment);
+                                  }}
+                                  className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                  title="Delete assignment and all its tasks"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="font-medium">{pendingCount} pending</span>
-                              </div>
-                              {completedCount > 0 && (
-                                <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full"></div>
-                                  <span className="font-medium">{completedCount} done</span>
-                                </div>
-                              )}
                             </div>
-                          </div>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteAssignment(assignment);
-                            }}
-                            className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10"
-                            title="Delete assignment and all its tasks"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
+
+                            <div className="mt-1.5 flex items-center gap-3 text-xs text-[var(--text-secondary)]">
+                              <span className="font-medium">{assignmentTasks.length} task{pluralize(assignmentTasks.length)}</span>
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                                {pendingCount} pending
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                {completedCount} done
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
-                <div className="lg:w-1/2">
-                  <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg p-5 h-full min-h-[320px] space-y-6">
+                <div className="lg:w-3/5">
+                  <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl p-4 sm:p-5 h-full min-h-[320px] flex flex-col">
                     {selectedAssignment ? (
                       <>
-                        <div>
-                          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
                             {selectedAssignment}
                           </h3>
                           <p className="text-sm text-[var(--text-secondary)]">
-                            {selectedAssignmentTasks.length} task{pluralize(selectedAssignmentTasks.length)} in total · {pendingTasks.length} pending · {completedTasks.length} completed
+                            {selectedAssignmentTasks.length} task{pluralize(selectedAssignmentTasks.length)} · {pendingTasks.length} pending · {completedTasks.length} done
                           </p>
                         </div>
 
-                        <section className="space-y-3">
-                          <header className="flex items-center justify-between">
-                            <h4 className="text-sm font-semibold uppercase tracking-wide text-green-400">Pending</h4>
-                            <span className="text-xs text-[var(--text-secondary)]">{pendingTasks.length}</span>
-                          </header>
-                          {pendingTasks.length === 0 ? (
-                            <p className="text-sm text-[var(--text-secondary)]">No pending tasks for this assignment. Great job!</p>
-                          ) : (
-                            <ul className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                              {pendingTasks.map((task) => {
-                                const dueLabel = formatDueDate(task);
-                                return (
-                                  <li
-                                    key={task.id}
-                                    className="border-2 border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/80 hover:border-[var(--accent-primary)] transition-colors"
-                                  >
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="space-y-1">
-                                        <p className="font-medium text-[var(--text-primary)] text-sm sm:text-base truncate">
-                                          {task.title || 'Untitled task'}
-                                        </p>
-                                        {task.assignment && (
-                                          <p className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">
-                                            {task.assignment}
-                                          </p>
+                        <div className="space-y-5">
+                          <section>
+                            <header className="mb-2 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                              <h4 className="text-xs font-semibold uppercase tracking-wide text-[var(--accent-primary)]">Pending</h4>
+                              <span className="text-xs text-[var(--text-secondary)]">{pendingTasks.length}</span>
+                            </header>
+                            {pendingTasks.length === 0 ? (
+                              <p className="text-sm text-[var(--text-secondary)]">No pending tasks. Nice!</p>
+                            ) : (
+                              <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                                {sortedPendingTasks.map((task) => {
+                                  const dueLabel = formatDueDate(task);
+                                  const statusCfg = task.status ? getTaskStatusConfig(task.status) : null;
+                                  const showStatus = statusCfg && statusCfg.id !== 'todo';
+                                  return (
+                                    <li
+                                      key={task.id}
+                                      className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/80 px-3 py-2"
+                                    >
+                                      <span className="min-w-0 truncate text-sm font-medium text-[var(--text-primary)]">
+                                        {task.title || 'Untitled task'}
+                                      </span>
+                                      <span className="flex flex-shrink-0 items-center gap-2 text-xs">
+                                        {showStatus && (
+                                          <span className={statusCfg.textColor}>{statusCfg.label}</span>
                                         )}
-                                        {task.status && (
-                                          <p className="text-xs text-[var(--text-secondary)]">Status: {task.status}</p>
+                                        {dueLabel && (
+                                          <span className="font-medium text-[var(--accent-primary)] whitespace-nowrap">
+                                            Due {dueLabel}
+                                          </span>
                                         )}
-                                      </div>
-                                      {dueLabel && (
-                                        <span className="text-xs font-medium text-[var(--accent-primary)] whitespace-nowrap">
-                                          Due {dueLabel}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </section>
+                                      </span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                          </section>
 
-                        <section className="space-y-3">
-                          <header className="flex items-center justify-between">
-                            <h4 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-secondary)]">Completed</h4>
-                            <span className="text-xs text-[var(--text-secondary)]">{completedTasks.length}</span>
-                          </header>
-                          {completedTasks.length === 0 ? (
-                            <p className="text-sm text-[var(--text-secondary)]">No completed tasks yet. Keep going!</p>
-                          ) : (
-                            <ul className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                              {completedTasks.map((task) => {
-                                const dueLabel = formatDueDate(task);
-                                return (
+                          <section>
+                            <header className="mb-2 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <h4 className="text-xs font-semibold uppercase tracking-wide text-emerald-400">Completed</h4>
+                              <span className="text-xs text-[var(--text-secondary)]">{completedTasks.length}</span>
+                            </header>
+                            {completedTasks.length === 0 ? (
+                              <p className="text-sm text-[var(--text-secondary)]">No completed tasks yet.</p>
+                            ) : (
+                              <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                {sortedCompletedTasks.map((task) => (
                                   <li
                                     key={task.id}
-                                    className="border-2 border-[var(--border-primary)] rounded-md p-3 bg-[var(--bg-primary)]/50">
-                                    <div className="flex items-start justify-between gap-3">
-                                      <div className="space-y-1">
-                                        <p className="font-medium text-[var(--text-secondary)] text-sm sm:text-base line-through truncate">
-                                          {task.title || 'Untitled task'}
-                                        </p>
-                                        {task.completed_at && (
-                                          <p className="text-xs text-[var(--text-secondary)]">
-                                            Completed {new Date(task.completed_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                          </p>
-                                        )}
-                                      </div>
-                                      {dueLabel && (
-                                        <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">
-                                          Due {dueLabel}
-                                        </span>
-                                      )}
-                                    </div>
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-primary)]/60 bg-[var(--bg-primary)]/40 px-3 py-2"
+                                  >
+                                    <span className="min-w-0 truncate text-sm text-[var(--text-secondary)] line-through">
+                                      {task.title || 'Untitled task'}
+                                    </span>
+                                    {task.completed_at && (
+                                      <span className="flex-shrink-0 text-xs text-[var(--text-secondary)] whitespace-nowrap">
+                                        {new Date(task.completed_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                      </span>
+                                    )}
                                   </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </section>
+                                ))}
+                              </ul>
+                            )}
+                          </section>
+                        </div>
                       </>
                     ) : (
                       <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-[var(--text-secondary)]">

@@ -1,30 +1,28 @@
-import { CheckCircle2, Flame, ListChecks, Timer } from 'lucide-react';
+import { BookOpen, CheckCircle2, Flame, Timer } from 'lucide-react';
 import { ReactElement, useEffect, useState } from 'react';
 import { useLaps, useTasksOnly } from '@/store/appStore';
 
-import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import usePomodorosToday from '@/hooks/usePomodorosToday';
 import type { Lap } from '@/types/lap';
 import type { Task } from '@/schemas/task';
 
 interface StatData {
   todayMinutes: number;
+  yesterdayMinutes: number;
   weekMinutes: number;
   monthMinutes: number;
   yearMinutes: number;
-  doneToday: number;
-  doneWeek: number;
-  doneMonth: number;
-  doneYear: number;
+  lastYearMinutes: number;
+  sessionsToday: number;
+  sessionsYesterday: number;
+  sessionsWeek: number;
+  sessionsMonth: number;
+  sessionsYear: number;
+  sessionsLastYear: number;
   longestStreak: number;
-  avgPerDay: number;
-  totalTasks: number;
   pomodoros: number;
-  pomodoroMinutes: number;
-  pomodorosToday: number;
 }
 
 function durationToMinutes(duration: string | undefined): number {
@@ -39,101 +37,87 @@ function formatMinutesToHHMM(minutes: number): string {
   return `${h}:${m.toString().padStart(2, '0')}`;
 }
 
-function useTaskStats(tasks: Task[]): { doneToday: number; doneWeek: number; doneMonth: number; doneYear: number } {
+function useLapStats(laps: Lap[]) {
   // Obtener fechas en la zona horaria local
   const now = new Date();
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrowLocal = new Date(todayLocal);
   tomorrowLocal.setDate(todayLocal.getDate() + 1);
-  
+  const yesterdayLocal = new Date(todayLocal);
+  yesterdayLocal.setDate(todayLocal.getDate() - 1);
+
   // Calcular inicio de la semana (lunes)
   const weekStart = new Date(todayLocal);
   weekStart.setDate(todayLocal.getDate() - todayLocal.getDay() + (todayLocal.getDay() === 0 ? -6 : 1));
-  
+
   // Obtener año y mes actual
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
-  
-  let doneToday = 0, doneWeek = 0, doneMonth = 0, doneYear = 0;
 
-  tasks.forEach(task => {
-    if (task.completed && task.completed_at) {
-      const completedDate = new Date(task.completed_at);
-      
-      // Verificar si la tarea se completó hoy
-      if (completedDate >= todayLocal && completedDate < tomorrowLocal) {
-        doneToday++;
-      }
-      
-      // Verificar si la tarea se completó esta semana
-      if (completedDate >= weekStart) {
-        doneWeek++;
-      }
-      
-      // Verificar si la tarea se completó este mes
-      if (completedDate.getFullYear() === currentYear && 
-          completedDate.getMonth() === currentMonth) {
-        doneMonth++;
-      }
-      
-      // Verificar si la tarea se completó este año
-      if (completedDate.getFullYear() === currentYear) {
-        doneYear++;
-      }
-    }
-  });
-  return { doneToday, doneWeek, doneMonth, doneYear };
-}
-
-function useLapStats(laps: Lap[]): { todayMinutes: number; weekMinutes: number; monthMinutes: number; yearMinutes: number } {
-  // Obtener fechas en la zona horaria local
-  const now = new Date();
-  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrowLocal = new Date(todayLocal);
-  tomorrowLocal.setDate(todayLocal.getDate() + 1);
-  
-  // Calcular inicio de la semana (lunes)
-  const weekStart = new Date(todayLocal);
-  weekStart.setDate(todayLocal.getDate() - todayLocal.getDay() + (todayLocal.getDay() === 0 ? -6 : 1));
-  
-  // Obtener año y mes actual
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  
-  let todayMinutes = 0, weekMinutes = 0, monthMinutes = 0, yearMinutes = 0;
+  const stats = {
+    todayMinutes: 0,
+    yesterdayMinutes: 0,
+    weekMinutes: 0,
+    monthMinutes: 0,
+    yearMinutes: 0,
+    lastYearMinutes: 0,
+    sessionsToday: 0,
+    sessionsYesterday: 0,
+    sessionsWeek: 0,
+    sessionsMonth: 0,
+    sessionsYear: 0,
+    sessionsLastYear: 0,
+  };
 
   laps.forEach(lap => {
     if (!lap.created_at) return;
-    
+
     // Usar created_at como fecha principal
     const lapDate = new Date(lap.created_at);
-    
+
     // Obtener la duración del campo duration (ya en formato HH:MM:SS)
     const minutes = durationToMinutes(lap.duration);
-    
+    const lapYear = lapDate.getFullYear();
+    const lapMonth = lapDate.getMonth();
+
     // Verificar si la sesión es de hoy
     if (lapDate >= todayLocal && lapDate < tomorrowLocal) {
-      todayMinutes += minutes;
+      stats.todayMinutes += minutes;
+      stats.sessionsToday += 1;
     }
-    
+
+    // Verificar si la sesión es de ayer
+    if (lapDate >= yesterdayLocal && lapDate < todayLocal) {
+      stats.yesterdayMinutes += minutes;
+      stats.sessionsYesterday += 1;
+    }
+
     // Verificar si la sesión es de esta semana
     if (lapDate >= weekStart) {
-      weekMinutes += minutes;
+      stats.weekMinutes += minutes;
+      stats.sessionsWeek += 1;
     }
-    
+
     // Verificar si la sesión es de este mes
-    if (lapDate.getFullYear() === currentYear && 
-        lapDate.getMonth() === currentMonth) {
-      monthMinutes += minutes;
+    if (lapYear === currentYear && lapMonth === currentMonth) {
+      stats.monthMinutes += minutes;
+      stats.sessionsMonth += 1;
     }
-    
+
     // Verificar si la sesión es de este año
-    if (lapDate.getFullYear() === currentYear) {
-      yearMinutes += minutes;
+    if (lapYear === currentYear) {
+      stats.yearMinutes += minutes;
+      stats.sessionsYear += 1;
+    }
+
+    // Verificar si la sesión es del año pasado
+    if (lapYear === currentYear - 1) {
+      stats.lastYearMinutes += minutes;
+      stats.sessionsLastYear += 1;
     }
   });
-  
-  return { todayMinutes, weekMinutes, monthMinutes, yearMinutes };
+
+  return stats;
 }
 
 function hasCompletedAt(task: Task): task is Task & { completed_at: string } {
@@ -160,19 +144,6 @@ function getLongestStreak(tasks: Task[]): number {
   return maxStreak;
 }
 
-function getAveragePerDay(laps: Lap[]): number {
-  if (!laps.length) return 0;
-  const days = new Set(laps.map(lap => getLocalDateString(new Date(lap.created_at))));
-  const totalMinutes = laps.reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
-  return days.size ? totalMinutes / days.size : 0;
-}
-
-function getPomodoroMinutes(laps: Lap[]): number {
-  return laps
-    .filter(lap => lap.type === 'pomodoro' || (lap.name && lap.name.toLowerCase().includes('pomo')))
-    .reduce((acc, lap) => acc + durationToMinutes(lap.duration), 0);
-}
-
 function usePomodorosAllTime(userId: string | undefined): number {
   const [total, setTotal] = useState(0);
 
@@ -197,78 +168,104 @@ function usePomodorosAllTime(userId: string | undefined): number {
   return total;
 }
 
+const timePeriods: { key: keyof Pick<StatData, 'todayMinutes' | 'yesterdayMinutes' | 'weekMinutes' | 'monthMinutes' | 'yearMinutes' | 'lastYearMinutes'>; label: string }[] = [
+  { key: 'todayMinutes', label: 'Today' },
+  { key: 'yesterdayMinutes', label: 'Yesterday' },
+  { key: 'weekMinutes', label: 'This Week' },
+  { key: 'monthMinutes', label: 'This Month' },
+  { key: 'yearMinutes', label: 'This Year' },
+  { key: 'lastYearMinutes', label: 'Last Year' },
+];
+
+const sessionPeriods: { key: keyof Pick<StatData, 'sessionsToday' | 'sessionsYesterday' | 'sessionsWeek' | 'sessionsMonth' | 'sessionsYear' | 'sessionsLastYear'>; label: string }[] = [
+  { key: 'sessionsToday', label: 'Today' },
+  { key: 'sessionsYesterday', label: 'Yesterday' },
+  { key: 'sessionsWeek', label: 'This Week' },
+  { key: 'sessionsMonth', label: 'This Month' },
+  { key: 'sessionsYear', label: 'This Year' },
+  { key: 'sessionsLastYear', label: 'Last Year' },
+];
+
 const Statistics = (): ReactElement => {
   const tasks = useTasksOnly();
   const { laps } = useLaps();
   const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();
-  const { doneToday, doneWeek, doneMonth, doneYear } = useTaskStats(tasks);
-  const { todayMinutes, weekMinutes, monthMinutes, yearMinutes } = useLapStats(laps);
+  const lapStats = useLapStats(laps);
   const longestStreak = getLongestStreak(tasks);
-  const avgPerDay = getAveragePerDay(laps);
-  const totalTasks = tasks.filter((t: Task) => t.completed).length;
-  const pomodoroMinutes = getPomodoroMinutes(laps);
-
-  // Pomodoros completados hoy (de la base de datos)
-  const { total: pomodorosToday } = usePomodorosToday(user?.id);
 
   // Pomodoros completados all time (de la base de datos)
   const pomodorosAllTime = usePomodorosAllTime(user?.id);
 
   const statData: StatData = {
-    todayMinutes, weekMinutes, monthMinutes, yearMinutes,
-    doneToday, doneWeek, doneMonth, doneYear,
-    longestStreak, avgPerDay, totalTasks, pomodoros: pomodorosAllTime,
-    pomodoroMinutes,
-    pomodorosToday,
+    ...lapStats,
+    longestStreak,
+    pomodoros: pomodorosAllTime,
   };
 
   const statsData = isDemo ? demoStats : statData;
-
-  const selected = { minutes: statsData.weekMinutes, done: statsData.doneWeek, label: 'This Week' };
 
   return (
     <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-4 px-5 rounded-2xl shadow-sm">
       <div className="mb-4">
         <h2 className="text-base font-bold text-[var(--text-primary)] sm:text-lg">Study Statistics</h2>
-        <p className="text-xs text-[var(--text-secondary)]">Weekly overview</p>
+        <p className="text-xs text-[var(--text-secondary)]">Overview</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-            <Timer size={18} className="text-[var(--accent-primary)]" />
-            <span className="text-xs font-medium">Study Time</span>
+      {/* Study time */}
+      <div className="mb-2 flex items-center gap-2 text-[var(--text-secondary)]">
+        <Timer size={16} className="text-[var(--accent-primary)]" />
+        <span className="text-xs font-semibold uppercase tracking-wide">Study Time</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
+        {timePeriods.map(({ key, label }) => (
+          <div
+            key={key}
+            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+          >
+            <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
+            <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
+              {formatMinutesToHHMM(statsData[key])}h
+            </span>
           </div>
-          <div className="text-lg font-bold text-[var(--text-primary)]">{formatMinutesToHHMM(selected.minutes)}</div>
-          <div className="text-xs text-[var(--text-secondary)]">hours</div>
-        </div>
+        ))}
+      </div>
 
-        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-            <ListChecks size={18} className="text-green-500" />
-            <span className="text-xs font-medium">Tasks Done</span>
+      {/* Sessions */}
+      <div className="mb-2 flex items-center gap-2 text-[var(--text-secondary)]">
+        <BookOpen size={16} className="text-[var(--accent-primary)]" />
+        <span className="text-xs font-semibold uppercase tracking-wide">Sessions</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
+        {sessionPeriods.map(({ key, label }) => (
+          <div
+            key={key}
+            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+          >
+            <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
+            <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">
+              {statsData[key]}
+            </span>
           </div>
-          <div className="text-lg font-bold text-[var(--text-primary)]">{selected.done}</div>
-          <div className="text-xs text-[var(--text-secondary)]">in this week</div>
-        </div>
+        ))}
+      </div>
 
-        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-            <CheckCircle2 size={18} className="text-red-500" />
+      {/* Pomodoros + Streak */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
+            <CheckCircle2 size={15} className="text-red-500" />
             <span className="text-xs font-medium">Pomodoros</span>
           </div>
-          <div className="text-lg font-bold text-[var(--text-primary)]">{statsData.pomodoros ?? 0}</div>
-          <div className="text-xs text-[var(--text-secondary)]">total</div>
+          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.pomodoros ?? 0}</span>
         </div>
 
-        <div className="flex flex-col gap-1 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-            <Flame size={18} className="text-orange-500" />
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
+            <Flame size={15} className="text-orange-500" />
             <span className="text-xs font-medium">Max Streak</span>
           </div>
-          <div className="text-lg font-bold text-[var(--text-primary)]">{statsData.longestStreak}</div>
-          <div className="text-xs text-[var(--text-secondary)]">days</div>
+          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.longestStreak}</span>
         </div>
       </div>
     </div>

@@ -256,10 +256,10 @@
 /* Responsive design for mobile */
 @media (max-width: 768px) {
   .df-event-title { 
-    font-size: 10px; 
+    font-size: 12px; 
   }
   .df-time-label { 
-    font-size: 10px; 
+    font-size: 12px; 
   }
 }
 
@@ -1019,12 +1019,19 @@ h1 {
   border-color: #22c55e;
 }
 
-/* Modern time adjustment buttons */
+/* Modern time adjustment buttons — same size as .timer-ctrl-btn */
 .timer-adjust-btn {
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  white-space: nowrap;
   background-color: var(--bg-secondary);
   color: var(--text-secondary);
   border: 1px solid var(--border-primary);
@@ -1035,7 +1042,7 @@ h1 {
 .timer-adjust-btn:hover:not(:disabled) {
   color: var(--accent-primary);
   border-color: var(--accent-primary);
-  background-color: var(--accent-primary)/5;
+  background-color: rgba(30, 144, 255, 0.08);
 }
 
 .timer-adjust-btn:disabled {
@@ -1220,6 +1227,27 @@ h1 {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Elegant minimal gray scrollbar — opt-in via .custom-scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--border-primary) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
 /* Remove Tiptap/ProseMirror focus border */
 .ProseMirror-focused {
   outline: none !important;
@@ -1296,33 +1324,33 @@ h1 {
   @apply text-[var(--accent-primary)];
 }
 
-.react-hot-toast-container,
-.react-hot-toast {
+.Toastify__toast-container {
   z-index: 999999 !important;
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
 }
-.react-hot-toast {
-  pointer-events: auto;
+.Toastify__toast-container--top-right {
+  top: 3.5rem !important; /* clear the top bar on mobile/tablet */
+}
+@media (min-width: 1024px) {
+  .Toastify__toast-container--top-right {
+    top: 1em !important;
+  }
 }
 
 /* Pomodoro toast variants */
-.react-hot-toast[data-pomo-type='work'] {
+.Toastify__toast.pomo-toast-work {
   background: var(--accent-primary) !important;
   color: #fff !important;
   border: 1px solid var(--accent-primary) !important;
   box-shadow: 0 4px 24px rgba(0,0,0,0.18) !important;
   font-weight: 600 !important;
 }
-.react-hot-toast[data-pomo-type='work'] .react-hot-toast-dismiss,
-.react-hot-toast[data-pomo-type='work'] > div {
+.Toastify__toast.pomo-toast-work .Toastify__close-button,
+.Toastify__toast.pomo-toast-work .Toastify__progress-bar {
   color: #fff !important;
+  background: #fff !important;
 }
 
-.react-hot-toast[data-pomo-type='break'] {
+.Toastify__toast.pomo-toast-break {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
   border: 1.5px solid #22c55e !important;
@@ -1330,28 +1358,12 @@ h1 {
   font-weight: 500 !important;
 }
 
-.react-hot-toast[data-pomo-type='longBreak'] {
+.Toastify__toast.pomo-toast-longBreak {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
   border: 1.5px solid #3b82f6 !important;
   box-shadow: 0 4px 24px rgba(59,130,246,0.15) !important;
   font-weight: 500 !important;
-}
-
-.react-hot-toast-container[data-y="top"][data-x="right"],
-.react-hot-toast[data-y="top"][data-x="right"] {
-  margin-top: 64px !important;
-}
-/* Add bottom margin for toasts (especially on mobile) */
-.react-hot-toast-container,
-.react-hot-toast {
-  margin-top: 1.5rem !important; /* mt-6 */
-}
-@media (min-width: 640px) {
-  .react-hot-toast-container,
-  .react-hot-toast {
-    margin-top: 2.5rem !important; /* mt-10 */
-  }
 }
 
 /* =========================
@@ -1461,7 +1473,7 @@ h1 {
   gap: 0.375rem;
   padding: 0.25rem 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1483,7 +1495,7 @@ h1 {
 
 /* Status badges inside panel labels */
 .timer-status-badge {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1513,13 +1525,29 @@ h1 {
 }
 
 .timer-status-pomo-break {
-  color: #22c55e;
-  background-color: rgba(34, 197, 94, 0.12);
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.12);
 }
 
 .timer-status-pomo-long {
   color: #3b82f6;
   background-color: rgba(59, 130, 246, 0.12);
+}
+
+/* Pomodoro break ring — red, pulsating */
+@keyframes pomo-ring-pulse {
+  0%, 100% {
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+  }
+  50% {
+    stroke-opacity: 0.4;
+    filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.65));
+  }
+}
+
+.pomo-ring-pulse {
+  animation: pomo-ring-pulse 1.4s ease-in-out infinite;
 }
 
 .dashboard-noise-card {
@@ -1541,7 +1569,7 @@ h1 {
   }
 
   .recharts-cartesian-axis-tick-value {
-    font-size: 11px !important;
+    font-size: 12px !important;
   }
 
   .recharts-bar-rectangle {
@@ -1560,7 +1588,7 @@ h1 {
   }
 
   .recharts-cartesian-axis-tick-value {
-    font-size: 10px !important;
+    font-size: 11px !important;
   }
 }
 
@@ -1654,6 +1682,36 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+/* Scratchpad: borderless writing area — the card owns the border */
+.scratchpad-textarea {
+  border: none !important;
+  box-shadow: none !important;
+}
+.scratchpad-textarea:focus,
+.scratchpad-textarea:focus-visible {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Minimum readable size: remap text-xs (12px) up to text-sm scale (14px) */
+.text-xs {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+@media (min-width: 640px) {
+  .sm\:text-xs { font-size: 0.875rem; line-height: 1.25rem; }
+}
+@media (min-width: 768px) {
+  .md\:text-xs { font-size: 0.875rem; line-height: 1.25rem; }
+}
+@media (min-width: 1024px) {
+  .lg\:text-xs { font-size: 0.875rem; line-height: 1.25rem; }
+}
+@media (min-width: 1280px) {
+  .xl\:text-xs { font-size: 0.875rem; line-height: 1.25rem; }
 }
 
 svg.lucide {

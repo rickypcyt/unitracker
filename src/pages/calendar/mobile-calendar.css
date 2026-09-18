@@ -61,11 +61,11 @@
   
   /* Text adjustments */
   .calendar-view .text-xs {
-    font-size: 10px;
+    font-size: 12px;
   }
   
   .calendar-view .text-sm {
-    font-size: 12px;
+    font-size: 13px;
   }
   
   /* Calendar cells */
@@ -134,11 +134,11 @@
   }
   
   .calendar-view .text-xs {
-    font-size: 9px;
+    font-size: 11px;
   }
   
   .calendar-view .text-sm {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 

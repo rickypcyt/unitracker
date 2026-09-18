@@ -10,9 +10,10 @@ import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
 // import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
 import SectionTitle from '@/components/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
+import { requestDesktopPermission, showDesktopNotification } from '@/utils/desktopNotifications';
 import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import { updateLap } from '@/store/LapActions';
 // import { useAuth } from '@/hooks/useAuth'; // Not used
 import useEventListener from '@/hooks/useEventListener';
@@ -189,32 +190,7 @@ const saveLocalPomoState = (state: LocalPomoState) => {
 // NOTIFICATION HELPERS
 // ============================================================================
 
-const showNotification = (title: string, options: NotificationOptions) => {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
-    return;
-  }
-  const opts = {
-    ...options,
-    icon: '/assets/apple-touch-icon-removebg-preview.png',
-    silent: false,
-    vibrate: [200, 100, 200]
-  };
-  const createNotification = () => {
-    try {
-      const n = new Notification(title, opts);
-      setTimeout(() => n.close(), 5000);
-      n.onclick = () => {
-        window.focus();
-        n.close();
-      };
-    } catch (error) {
-      console.error('[Pomodoro] ❌ Error creating notification:', error);
-    }
-  };
-  if (Notification.permission === 'granted') {
-    createNotification();
-  } else {}
-};
+const showNotification = showDesktopNotification;
 
 // ============================================================================
 // CUSTOM HOOKS
@@ -663,25 +639,9 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     const toastType = isWork ? willTakeLongBreak ? 'longBreak' : 'break' : 'work';
     const toastMsg = isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break!' : 'Work session complete! Time for a break!' : "Break is over! Let's get back to work!";
     toast(toastMsg, {
-      duration: 4000,
-      style: {
-        borderRadius: '12px',
-        padding: '12px 16px',
-        fontSize: '14px',
-      },
-      ariaProps: {
-        role: 'status',
-        'aria-live': 'polite',
-      },
-    } as any);
-    // Tag the toast element with data-pomo-type for CSS styling
-    setTimeout(() => {
-      const toastEls = document.querySelectorAll('.react-hot-toast');
-      const lastToast = toastEls[toastEls.length - 1];
-      if (lastToast && !lastToast.getAttribute('data-pomo-type')) {
-        lastToast.setAttribute('data-pomo-type', toastType);
-      }
-    }, 0);
+      autoClose: 4000,
+      className: `pomo-toast-${toastType}`,
+    });
     showNotification(notifTitle, {
       body: notifBody,
       icon: '/assets/android-chrome-192x192.png',
@@ -691,6 +651,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     });
   }, [pomoState.workSessionsBeforeLongBreak, currentModeConfig, alarmEnabled, incrementPomodoroCount]);
   const handleStart = useCallback((baseTimestamp?: number, fromSync?: boolean) => {
+    void requestDesktopPermission();
     const now = baseTimestamp || Date.now();
     const modeDuration = currentModeConfig?.[pomoState.currentMode] || 1500;
     setLocalPomoState(prev => {
@@ -733,7 +694,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
 
       // Calculate the remaining time based on elapsed time
       const currentModeDuration = currentModeConfig?.[prev.currentMode] || 1500;
-      const remainingTime = Math.max(0, currentModeDuration - elapsed);
+      // When synced, timeLeft is driven by studyTimerTimeUpdate — keep it as-is
+      const remainingTime = syncPomodoroWithTimer ? prev.timeLeft : Math.max(0, currentModeDuration - elapsed);
       return {
         ...prev,
         isRunning: false,
@@ -938,7 +900,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     const ts = event?.detail?.baseTimestamp || Date.now();
     if (lastSyncTimestamp === ts) return;
     setLastSyncTimestamp(ts);
-    if (action === 'start' && !pomoState.isRunning) handleStart(ts, true);else if (action === 'stop' && pomoState.isRunning) handleStop(true);else if (action === 'reset') handleReset(true);
+    if (action === 'start' && !pomoState.isRunning) handleStart(ts, true);else if (action === 'stop') handleStop(true);else if (action === 'reset') handleReset(true);
   }, [syncPomodoroWithTimer, lastSyncTimestamp, pomoState.isRunning, handleStart, handleStop, handleReset]);
 
   // ============================================================================
@@ -1051,9 +1013,39 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
     isRunning: boolean;
   }>) => {
     if (!syncPomodoroWithTimer) return;
-    if (pomoState.manuallyPaused) return;
     const studyTime = Math.floor(event.detail.time);
+    const prevStudyTime = latestStudyTimeRef.current;
     latestStudyTimeRef.current = studyTime;
+    const studyIsRunning = event.detail.isRunning === true;
+
+    // On mount the StudyTimer broadcasts its restored state once. With no
+    // active session that's {time: 0, isRunning: false} — a state
+    // announcement, not a reset. Ignore it so the persisted pomodoro time
+    // survives a refresh instead of snapping back to the full mode duration.
+    if (studyTime === 0 && !studyIsRunning && prevStudyTime === 0) return;
+
+    // Mirror the StudyTimer's pause state: a refresh while paused must not
+    // leave the pomodoro looking resumed (manuallyPaused is persisted)
+    if (!studyIsRunning && studyTime > 0) {
+      if (!pomoState.manuallyPaused || pomoState.isRunning) {
+        setLocalPomoState(prev => ({
+          ...prev,
+          isRunning: false,
+          lastStart: null,
+          manuallyPaused: true
+        }));
+      }
+      return;
+    }
+    if (studyIsRunning && pomoState.manuallyPaused) {
+      // Study resumed — clear the paused flag and keep syncing this tick
+      setLocalPomoState(prev => ({
+        ...prev,
+        isRunning: true,
+        lastStart: Date.now(),
+        manuallyPaused: false
+      }));
+    }
     const workDuration = currentModeConfig?.work || 3000;
     const breakDuration = currentModeConfig?.break || 600;
     const longBreakDuration = currentModeConfig?.longBreak || 1800;
@@ -1312,7 +1304,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
           const secs = roundedSeconds % 60;
           const modeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
           const progress = Math.max(0, Math.min(1, 1 - pomoState.timeLeft / modeDuration));
-          const ringColor = pomoState.currentMode === 'work' ? '#ef4444' : pomoState.currentMode === 'break' ? '#22c55e' : '#3b82f6';
+          const isBreak = pomoState.currentMode !== 'work';
+          const ringColor = '#ef4444';
           const isPaused = pomoState.manuallyPaused;
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
@@ -1325,11 +1318,11 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
                   stroke={ringColor} strokeWidth="5" strokeLinecap="round"
                   strokeDasharray={isPaused ? circumference * 0.25 : circumference}
                   strokeDashoffset={isPaused ? circumference * 0.5 : circumference * (1 - progress)}
-                  className={`transition-[stroke-dasharray,stroke-dashoffset] duration-300 ${isPaused ? 'animate-spin origin-center' : ''}`}
+                  className={`transition-[stroke-dasharray,stroke-dashoffset] duration-300 ${isPaused ? 'animate-spin origin-center' : isBreak ? 'pomo-ring-pulse' : ''}`}
                   style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className={`absolute inset-0 flex flex-col items-center justify-center ${isBreak && !isPaused ? 'animate-pulse' : ''}`}>
                 <div className="flex items-center gap-0.5">
                   <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
                     {mins.toString().padStart(2, '0')}
@@ -1339,7 +1332,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
                     {secs.toString().padStart(2, '0')}
                   </span>
                 </div>
-                <span className="text-[9px] font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
                   {pomoState.currentMode === 'work' ? 'Focus' : pomoState.currentMode === 'break' ? 'Break' : 'Long Break'}
                 </span>
               </div>
@@ -1349,7 +1342,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
       </div>
 
       {/* Timer Controls with side adjustment buttons */}
-      <div className="flex justify-center items-center gap-2 mt-auto shrink-0 pb-2">
+      <div className="flex flex-wrap justify-center items-center gap-1.5 mt-auto shrink-0 pb-2">
         {!syncPomodoroWithTimer && <>
             <div className="flex gap-1">
               {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>

@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 
 import BaseModal from "@/modals/BaseModal";
 import ReactSlider from "react-slider";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
 
 // -------------------------
@@ -47,6 +47,9 @@ const SOUND_THEMES = {
     activeRing: "ring-amber-500/30",
     badge: "bg-amber-500/10",
     badgeText: "text-amber-600 dark:text-amber-400",
+    thumb: "bg-amber-500 focus:ring-amber-500/40",
+    buttonHover:
+      "hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400",
   },
   rain: {
     iconBg: "bg-blue-500/10",
@@ -56,6 +59,9 @@ const SOUND_THEMES = {
     activeRing: "ring-blue-500/30",
     badge: "bg-blue-500/10",
     badgeText: "text-blue-600 dark:text-blue-400",
+    thumb: "bg-blue-500 focus:ring-blue-500/40",
+    buttonHover:
+      "hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400",
   },
   ocean: {
     iconBg: "bg-cyan-500/10",
@@ -65,6 +71,9 @@ const SOUND_THEMES = {
     activeRing: "ring-cyan-500/30",
     badge: "bg-cyan-500/10",
     badgeText: "text-cyan-600 dark:text-cyan-400",
+    thumb: "bg-cyan-500 focus:ring-cyan-500/40",
+    buttonHover:
+      "hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400",
   },
 };
 
@@ -141,7 +150,7 @@ function SoundControl({
 
           <ReactSlider
             className="h-2 w-full bg-[var(--border-primary)] rounded-full"
-            thumbClassName="h-5 w-5 rounded-full bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+            thumbClassName={`h-5 w-5 rounded-full ${theme.thumb} border-2 border-[var(--bg-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2`}
             trackClassName="h-2 rounded-full"
             renderTrack={(
               props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>
@@ -174,7 +183,7 @@ function SoundControl({
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 ${
             isPlaying
               ? `${theme.iconBg} ${theme.iconText}`
-              : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--accent-primary)]/10 hover:text-[var(--accent-primary)]"
+              : `bg-[var(--bg-secondary)] text-[var(--text-secondary)] ${theme.buttonHover}`
           }`}
         >
           {isPlaying ? (
@@ -522,17 +531,7 @@ export default function NoiseGenerator() {
             }`}
             aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={anySoundPlaying ? "pause" : "play"}
-                initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.5, rotate: 90 }}
-                transition={{ duration: 0.2 }}
-              >
-                {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
-              </motion.div>
-            </AnimatePresence>
+            {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
             <span className="hidden sm:inline">
               {anySoundPlaying ? "Pause all" : "Play all"}
             </span>

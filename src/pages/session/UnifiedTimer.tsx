@@ -135,22 +135,22 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   const renderActions = (id: TimerId) => {
     if (id === "study") {
       return (
-        <button onClick={openStudySettings} className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure session" title="Options">
-          <MoreVertical size={14} />
+        <button onClick={openStudySettings} className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure session" title="Options">
+          <MoreVertical size={18} />
         </button>
       );
     }
     if (id === "pomodoro") {
       return (
         <>
-          <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1 rounded-md hover:bg-red-500/10 transition-colors" aria-label="Toggle sync" title={syncPomodoro ? "Sync ON" : "Sync OFF"}>
-            {syncPomodoro ? <RefreshCw size={14} className="text-red-500" /> : <RefreshCwOff size={14} className="text-[var(--text-secondary)]" />}
+          <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1.5 rounded-md hover:bg-red-500/10 transition-colors" aria-label="Toggle sync" title={syncPomodoro ? "Sync ON" : "Sync OFF"}>
+            {syncPomodoro ? <RefreshCw size={18} className="text-red-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
-          <button onClick={openPomoSettings} className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure pomodoro" title="Options">
-            <MoreVertical size={14} />
+          <button onClick={openPomoSettings} className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure pomodoro" title="Options">
+            <MoreVertical size={18} />
           </button>
-          <button onClick={togglePomoAlarm} className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={pomoAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
-            {pomoAlarm ? <Bell size={14} /> : <BellOff size={14} />}
+          <button onClick={togglePomoAlarm} className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={pomoAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
+            {pomoAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
       );
@@ -158,11 +158,11 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     if (id === "countdown") {
       return (
         <>
-          <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1 rounded-md hover:bg-green-500/10 transition-colors" aria-label="Toggle sync" title={syncCountdown ? "Sync ON" : "Sync OFF"}>
-            {syncCountdown ? <RefreshCw size={14} className="text-green-500" /> : <RefreshCwOff size={14} className="text-[var(--text-secondary)]" />}
+          <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1.5 rounded-md hover:bg-green-500/10 transition-colors" aria-label="Toggle sync" title={syncCountdown ? "Sync ON" : "Sync OFF"}>
+            {syncCountdown ? <RefreshCw size={18} className="text-green-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
-          <button onClick={toggleCountdownAlarm} className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={countdownAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
-            {countdownAlarm ? <Bell size={14} /> : <BellOff size={14} />}
+          <button onClick={toggleCountdownAlarm} className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={countdownAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
+            {countdownAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
       );
@@ -173,7 +173,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   return (
     <div className="flex flex-col gap-3">
       {/* Timer Panels */}
-      <div className="grid gap-2 place-items-center justify-center grid-cols-1 md:grid-cols-[repeat(3,minmax(0,24rem))]">
+      <div className="grid gap-2 place-items-center justify-center grid-cols-1 lg:grid-cols-[repeat(3,minmax(0,24rem))]">
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;
@@ -192,8 +192,8 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               }`}
             >
               <div className={`timer-panel-label ${config.labelClass}`}>
-                <GripVertical size={12} className="opacity-40 cursor-grab" />
-                <Icon size={14} />
+                <GripVertical size={16} className="opacity-40 cursor-grab" />
+                <Icon size={18} />
                 <span>{config.label}</span>
                 <div className="flex items-center gap-0.5 ml-auto">
                   {renderActions(id)}

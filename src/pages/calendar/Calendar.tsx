@@ -1,6 +1,7 @@
 import "./mobile-calendar.css";
 import { handleDateDoubleClick, handleTouchEnd } from "./utils/calendarUtils";
 import CalendarHeader from "./components/CalendarHeader";
+import DayContextMenu from "./components/DayContextMenu";
 import DayView from "./components/DayView";
 import LoginPromptModal from "@/modals/LoginPromptModal";
 import MonthView from "./components/MonthView";
@@ -9,6 +10,7 @@ import TaskForm from "@/pages/tasks/TaskForm";
 import TaskViewModal from "@/modals/TaskViewModal";
 import WeekView from "./components/WeekView";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 import { useCalendarData } from "./hooks/useCalendarData";
 import { useCalendarKeyboard } from "./hooks/useCalendarKeyboard";
 import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
@@ -97,6 +99,47 @@ const Calendar = ({
     setSelectedTask(task);
     setShowTaskForm(true);
   };
+
+  // Right-click context menu on days / time slots
+  const [dayContextMenu, setDayContextMenu] = useState<{
+    x: number;
+    y: number;
+    date: Date;
+    hour?: number;
+  } | null>(null);
+
+  const openDayContextMenu = (e: React.MouseEvent, date: Date, hour?: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDayContextMenu({ x: e.clientX, y: e.clientY, date: new Date(date), hour });
+  };
+
+  const handleCreateEvent = () => {
+    if (!dayContextMenu) return;
+    const { date, hour } = dayContextMenu;
+    setDayContextMenu(null);
+    setSelectedTask(null);
+    if (hour === undefined) {
+      handleDateDoubleClick(new Date(date), isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm);
+      return;
+    }
+    if (!isLoggedIn) return setIsLoginPromptOpen(true);
+    const newDate = new Date(date);
+    newDate.setHours(hour, 0, 0, 0);
+    setSelectedDate(newDate);
+    setFocusedDate(newDate);
+    sessionStorage.setItem('calendarTaskHour', hour.toString());
+    setShowTaskForm(true);
+  };
+
+  const isPastMenuDay = (() => {
+    if (!dayContextMenu || dayContextMenu.hour !== undefined) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const menuDay = new Date(dayContextMenu.date);
+    menuDay.setHours(0, 0, 0, 0);
+    return menuDay < today;
+  })();
   const deleteTaskSuccess = useDeleteTaskSuccess();
   const handleDeleteTask = (task: Task) => {
     // Eliminar la tarea del estado local inmediatamente
@@ -115,11 +158,11 @@ const Calendar = ({
 
         {/* View Content */}
         <div className={`flex-1 relative ${view === 'month' ? '' : ''}`}>
-          {view === 'week' ? <WeekView currentDate={currentDate} isLoggedIn={isLoggedIn} getTasksWithDeadline={getTasksWithDeadline} setSelectedDate={setSelectedDate} setFocusedDate={setFocusedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} setSelectedTask={setSelectedTask} setViewingTask={setViewingTask} handleEditTask={handleEditTask} onTaskContextMenu={(e, task) => {
+          {view === 'week' ? <WeekView currentDate={currentDate} isLoggedIn={isLoggedIn} getTasksWithDeadline={getTasksWithDeadline} setSelectedDate={setSelectedDate} setFocusedDate={setFocusedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} setSelectedTask={setSelectedTask} setViewingTask={setViewingTask} handleEditTask={handleEditTask} onDayContextMenu={openDayContextMenu} onTaskContextMenu={(e, task) => {
           e.preventDefault();
           // Context menu logic here - for now just show task details
           setViewingTask(task);
-        }} /> : view === 'day' ? <DayView selectedDate={selectedDate} isLoggedIn={isLoggedIn} getTasksForDayAndHour={getTasksForDayAndHour} setSelectedDate={setSelectedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} /> : <MonthView calendarDays={calendarDays} hasTasksWithDeadline={hasTasksWithDeadline} getTasksWithDeadline={getTasksWithDeadline} getStudiedHoursForDate={getStudiedHoursForDate} handleDateClick={handleDateClick} handleDateDoubleClick={date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)} handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm))} />}
+        }} /> : view === 'day' ? <DayView selectedDate={selectedDate} isLoggedIn={isLoggedIn} getTasksForDayAndHour={getTasksForDayAndHour} setSelectedDate={setSelectedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} onDayContextMenu={openDayContextMenu} /> : <MonthView calendarDays={calendarDays} hasTasksWithDeadline={hasTasksWithDeadline} getTasksWithDeadline={getTasksWithDeadline} getStudiedHoursForDate={getStudiedHoursForDate} handleDateClick={handleDateClick} handleDateDoubleClick={date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)} handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm))} onDayContextMenu={openDayContextMenu} />}
         </div>
 
         {/* Modals */}
@@ -132,8 +175,10 @@ const Calendar = ({
         setSelectedTask(null);
       }} />}
         <LoginPromptModal isOpen={isLoginPromptOpen} onClose={() => setIsLoginPromptOpen(false)} />
+        {/* Day context menu (right-click) */}
+        {dayContextMenu && <DayContextMenu x={dayContextMenu.x} y={dayContextMenu.y} date={dayContextMenu.date} hour={dayContextMenu.hour} disabled={isPastMenuDay} onClose={() => setDayContextMenu(null)} onCreateEvent={handleCreateEvent} />}
         {/* Task View Modal */}
-        {viewingTask && <TaskViewModal isOpen={!!viewingTask} onClose={() => setViewingTask(null)} task={viewingTask} onEdit={handleEditTask} onDelete={handleDeleteTask} />}
+        {viewingTask && <TaskViewModal isOpen={!!viewingTask} onClose={() => setViewingTask(null)} task={{ ...viewingTask, deadline: viewingTask.deadline ?? undefined, due_date: viewingTask.due_date ?? undefined }} onEdit={handleEditTask} onDelete={handleDeleteTask} />}
       </div>
     </div>;
 };

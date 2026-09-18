@@ -295,7 +295,7 @@ const AllTasks: React.FC<AllTasksProps> = ({
                       >
                         {assignment}
                       </h4>
-                      <span className="shrink-0 text-[11px] font-medium tabular-nums text-[var(--text-secondary)] bg-[var(--bg-secondary)]/80 px-1.5 py-0.5 rounded-md">
+                      <span className="shrink-0 text-xs font-medium tabular-nums text-[var(--text-secondary)] bg-[var(--bg-secondary)]/80 px-1.5 py-0.5 rounded-md">
                         {count}
                       </span>
                     </div>

@@ -28,6 +28,7 @@ interface WeekViewProps {
   setViewingTask: (task: any) => void;
   handleEditTask: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
+  onDayContextMenu: (e: React.MouseEvent, date: Date, hour?: number) => void;
 }
 
 const WeekView = ({
@@ -42,6 +43,7 @@ const WeekView = ({
   setViewingTask,
   handleEditTask,
   onTaskContextMenu,
+  onDayContextMenu,
 }: WeekViewProps) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeTask, setActiveTask] = useState<any>(null);
@@ -69,7 +71,7 @@ const WeekView = ({
   useEffect(() => {
     if (scrollRef.current) {
       const currentHour = new Date().getHours();
-      const scrollPosition = Math.max(0, (currentHour - 2) * 60);
+      const scrollPosition = Math.max(0, (currentHour - 6 - 2) * 60);
       scrollRef.current.scrollTop = scrollPosition;
     }
   }, []);
@@ -88,7 +90,7 @@ const WeekView = ({
 
   const PIXELS_PER_MINUTE = 1;
   const MINUTES_PER_HOUR = 60;
-  const VISIBLE_START_HOUR = 0;
+  const VISIBLE_START_HOUR = 6;
   const VISIBLE_END_HOUR = 24;
   const VISIBLE_START_MINUTES = VISIBLE_START_HOUR * MINUTES_PER_HOUR;
 
@@ -254,21 +256,25 @@ const WeekView = ({
       modifiers={[restrictToWindowEdges]}
     >
       <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border-2 border-[var(--border-primary)]">
+        {/* Scrollable content: vertical + horizontal on small screens */}
+        <div className="flex-1 overflow-auto" ref={scrollRef}>
+          <div className="min-w-[560px]">
         {/* Sticky header */}
-        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)] px-2 pt-3 pb-2 flex-shrink-0">
+        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)] px-2 pt-3 pb-2">
           <div className="grid grid-cols-8 gap-1">
-            <div className="text-[11px] text-[var(--text-secondary)] font-medium p-1.5" />
+            <div className="text-xs text-[var(--text-secondary)] font-medium p-1.5" />
             {weekDays.map((day, i) => {
               const isToday = isSameDay(day, new Date());
               return (
                 <div
                   key={i}
-                  className={`text-center py-1.5 px-1 rounded-lg transition-colors ${
+                  className={`text-center py-1.5 px-1 rounded-lg transition-colors border-l border-[var(--border-primary)]/50 ${
                     isToday ? "bg-[var(--accent-primary)]/8" : ""
                   }`}
+                  onContextMenu={(e) => onDayContextMenu(e, day)}
                 >
                   <div
-                    className={`text-[11px] sm:text-xs font-medium tracking-wide uppercase ${
+                    className={`text-xs sm:text-xs font-medium tracking-wide uppercase ${
                       isToday
                         ? "text-[var(--accent-primary)]"
                         : "text-[var(--text-secondary)]"
@@ -277,9 +283,9 @@ const WeekView = ({
                     {day.toLocaleDateString("en", { weekday: "short" })}
                   </div>
                   <div
-                    className={`text-sm sm:text-base flex items-center justify-center mx-auto mt-1 font-semibold ${
+                    className={`text-base sm:text-lg flex items-center justify-center mx-auto mt-1 font-semibold ${
                       isToday
-                        ? "w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--accent-primary)] text-white"
+                        ? "w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[var(--accent-primary)] text-white"
                         : "text-[var(--text-primary)]"
                     }`}
                   >
@@ -292,7 +298,7 @@ const WeekView = ({
         </div>
 
         {/* Time grid */}
-        <div className="flex-1 overflow-auto px-2 pb-3" ref={scrollRef}>
+        <div className="px-2 pb-3">
           <div className="relative">
             {/* Spanning tasks (>1h) */}
             {(() => {
@@ -401,7 +407,7 @@ const WeekView = ({
                       })}`}
                     >
                       {!isMobile && task.assignment && (
-                        <div className="text-[10px] text-[var(--accent-primary)] truncate font-medium mb-0.5">
+                        <div className="text-xs text-[var(--accent-primary)] truncate font-medium mb-0.5">
                           {task.assignment}
                         </div>
                       )}
@@ -409,7 +415,7 @@ const WeekView = ({
                         {task.title || "Sin título"}
                       </div>
                       {!isMobile && (
-                        <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">
+                        <div className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
                           {occurrenceStart.toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -430,10 +436,10 @@ const WeekView = ({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="grid grid-cols-8 gap-1 relative border-t border-[var(--border-primary)]/60"
+                className="grid grid-cols-8 gap-x-1 relative border-t border-[var(--border-primary)]/40"
               >
                 {/* Hour label */}
-                <div className="text-[11px] text-[var(--text-secondary)] pt-1 pr-2 text-right font-medium tabular-nums">
+                <div className="text-xs text-[var(--text-secondary)] pt-1 pr-2 text-right font-medium tabular-nums">
                   {format12Hour(hour)}
                 </div>
 
@@ -495,7 +501,8 @@ const WeekView = ({
                       key={i}
                       id={dropZoneKey}
                       className={`
-                        cursor-pointer min-h-[60px] transition-colors relative overflow-hidden rounded-md
+                        cursor-pointer min-h-[60px] transition-colors relative overflow-hidden
+                        border-l border-[var(--border-primary)]/50
                         ${
                           hoveredSlot?.key === dropZoneKey
                             ? "bg-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]/25"
@@ -512,6 +519,15 @@ const WeekView = ({
                             : ""
                         }
                       `}
+                      onContextMenu={(e) => {
+                        if (
+                          (e.target as HTMLElement).closest(
+                            "[data-calendar-task]"
+                          )
+                        )
+                          return;
+                        onDayContextMenu(e, day, hour);
+                      }}
                       onDoubleClick={(e) => {
                         if (
                           (e.target as HTMLElement).closest(
@@ -567,12 +583,6 @@ const WeekView = ({
                         </div>
                       )}
 
-                      {/* Half-hour divider */}
-                      <div
-                        className="absolute left-1 right-1 border-t border-dashed border-[var(--border-primary)]/50 pointer-events-none"
-                        style={{ top: "30px", zIndex: 1 }}
-                      />
-
                       {/* Single-hour task */}
                       {singleHourTask && (
                         <div
@@ -619,7 +629,7 @@ const WeekView = ({
                           )}`}
                         >
                           {!isMobile && singleHourTask.task.assignment && (
-                            <div className="text-[10px] text-[var(--accent-primary)] truncate font-medium mb-0.5">
+                            <div className="text-xs text-[var(--accent-primary)] truncate font-medium mb-0.5">
                               {singleHourTask.task.assignment}
                             </div>
                           )}
@@ -627,7 +637,7 @@ const WeekView = ({
                             {singleHourTask.task.title || "Sin título"}
                           </div>
                           {!isMobile && (
-                            <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">
+                            <div className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
                               {singleHourTask.occurrenceStart.toLocaleTimeString(
                                 [],
                                 { hour: "2-digit", minute: "2-digit" }
@@ -648,6 +658,8 @@ const WeekView = ({
             ))}
           </div>
         </div>
+          </div>
+        </div>
       </div>
 
       <DragOverlay>
@@ -657,7 +669,7 @@ const WeekView = ({
               {activeTask.title || "Sin título"}
             </div>
             {activeTask.assignment && (
-              <div className="text-[11px] text-[var(--accent-primary)] truncate mt-0.5">
+              <div className="text-xs text-[var(--accent-primary)] truncate mt-0.5">
                 {activeTask.assignment}
               </div>
             )}

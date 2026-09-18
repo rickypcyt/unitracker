@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import type { Task } from "@/types/taskStorage";
 import { supabase } from "@/utils/supabaseClient";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 interface User {
     id: string;

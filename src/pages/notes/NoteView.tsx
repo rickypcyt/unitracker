@@ -290,32 +290,68 @@ const NoteView: React.FC<NoteViewProps> = ({
   // Render view mode
   return (
     <div className="h-full flex flex-col relative">
-      {/* Note Header with inline properties */}
-      <div className="px-4 sm:px-6 py-4 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
-        {/* Back button - top left */}
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm font-medium mb-3"
-            title="Back to notes"
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Back</span>
-          </button>
-        )}
-        <div className="flex items-center justify-between gap-4 mb-3">
-          {/* Left spacer to center title */}
-          <div className="flex-shrink-0 w-24 hidden sm:block" />
-          {/* Centered title */}
+      {/* Note Header - single line: metadata left, title centered, actions right */}
+      <div className="px-3 sm:px-6 py-3 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+          {/* Left: Back + metadata */}
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="flex flex-shrink-0 items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors font-medium"
+                title="Back to notes"
+              >
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            )}
+
+            {/* Assignment */}
+            <div className="hidden md:flex items-center gap-1.5 min-w-0">
+              <span className="text-[var(--text-secondary)] whitespace-nowrap">Assignment:</span>
+              <input
+                type="text"
+                value={assignment}
+                onChange={(e) => setAssignment(e.target.value)}
+                className={`min-w-0 w-24 lg:w-36 font-medium bg-transparent border-none focus:outline-none focus:ring-0 ${
+                  !assignment || assignment.trim() === ''
+                    ? 'text-red-400 placeholder-red-400'
+                    : 'text-[var(--accent-primary)]'
+                }`}
+                placeholder="Add here"
+              />
+            </div>
+
+            {/* Date */}
+            <div className="hidden sm:flex items-center gap-1.5">
+              <Calendar size={14} className="text-[var(--text-secondary)]" />
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-[var(--text-primary)]"
+              />
+            </div>
+
+            {/* Last edited */}
+            {note.last_edited && (
+              <span className="hidden lg:inline whitespace-nowrap text-[var(--text-secondary)] italic">
+                Last edited {new Date(note.last_edited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
+          </div>
+
+          {/* Center: Title */}
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 text-xl sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
+            className="w-36 sm:w-64 lg:w-96 text-lg sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
             placeholder="Note Title"
           />
+
           {/* Right: Save + Delete */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
             <button
               onClick={handleSave}
               disabled={!hasUnsavedChanges || isSaving}
@@ -332,43 +368,6 @@ const NoteView: React.FC<NoteViewProps> = ({
               <Trash2 size={16} />
             </button>
           </div>
-        </div>
-
-        {/* Inline metadata bar */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-          {/* Assignment */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[var(--text-secondary)]">Assignment:</span>
-            <input
-              type="text"
-              value={assignment}
-              onChange={(e) => setAssignment(e.target.value)}
-              className={`font-medium bg-transparent border-none focus:outline-none focus:ring-0 w-32 sm:w-40 ${
-                !assignment || assignment.trim() === ''
-                  ? 'text-red-400 placeholder-red-400'
-                  : 'text-[var(--accent-primary)]'
-              }`}
-              placeholder="Add here"
-            />
-          </div>
-
-          {/* Date */}
-          <div className="flex items-center gap-1.5">
-            <Calendar size={14} className="text-[var(--text-secondary)]" />
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-[var(--text-primary)]"
-            />
-          </div>
-
-          {/* Last edited */}
-            {note.last_edited && (
-              <span className="text-[var(--text-secondary)] italic">
-                Last edited {new Date(note.last_edited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            )}
         </div>
       </div>
 

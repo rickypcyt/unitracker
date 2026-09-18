@@ -18,6 +18,65 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "2.1.0",
+    date: "September 18, 2026",
+    time: "9:00 AM",
+    type: "minor",
+    changes: {
+      added: [
+        "Finish Session button (green check) next to play/pause in the Study Timer",
+        "Habits tracker now shows the day number inside every cell with weekday names, streak, best streak, weekly count, and total per habit",
+        "Journal notes for future days are now editable (marked with a dashed border) and the full week is always visible",
+        "Manage Completed Tasks rebuilt as a scrollable history grouped by month with restore-to-pending, inline rename, and persistent delete",
+        "Completed Tasks on the Tasks page are grouped by month with per-month counts",
+        "Calendar month view renders each day as an individual card with hover lift and accent selection border",
+        "Noise Generator slider thumbs and play-button hovers now use each sound's theme color (amber, blue, cyan)",
+        "Circular checkbox in the Scratchpad matching the task check style"
+      ],
+      improved: [
+        "Notes directory uses compact tiles showing only title plus created/edited dates, with an always-visible delete button",
+        "Note view header condensed into a single line: back, assignment, date and last-edited on the left, centered title, actions on the right",
+        "Scratchpad lines render as plain text without input borders, and the checkbox button toggles the current line instead of appending",
+        "Session pause history shows most recent pause first, highlights the ongoing pause, and displays total paused time",
+        "Manage Assignments reorganized into a compact assignment list with semantic pending/done colors and a cleaner detail panel sorted by due and completion dates",
+        "Manage Sessions month detail replaced nested week/day/session cards with a flat scrollable list of session rows",
+        "Tasks empty state is larger, vertically centered, and the settings button is labeled 'Task Page Settings'",
+        "Completed tasks sort newest to oldest and no longer show the status picker",
+        "Task status picker now highlights the selected status with the accent border",
+        "Study Timer controls split into time adjustments on the left and action buttons on the right",
+        "Habits page is now responsive: compact stat cards in a 4-column row from small screens up, tracker on top and journal notes below on mobile/tablet, side by side on desktop",
+        "Journal note rows show full weekday names (e.g. 'Wednesday 17')",
+        "Week navigation moved to the top of the Habits page as a pill control with a matching New Habit button",
+        "Future days in the habits tracker stay fully visible with only the checkbox square dimmed",
+        "Calendar month view now fills the available height with equal rows instead of oversized square cells on medium screens",
+        "Workspace selector on the Tasks page only shows on mobile — the floating footer already displays the workspace on larger screens",
+        "New Habit button uses an outline style consistent with other secondary actions",
+        "Study Time 'h' suffix in Stats uses normal text size",
+        "Month headers in Notes no longer underlined",
+        "Completed scratchpad items stay readable in secondary color instead of a faint strikethrough"
+      ],
+      fixed: [
+        "Pomodoro resuming after a refresh while synchronized — it now stays paused like the Study Timer",
+        "Pomodoro resetting to the full mode duration on refresh — the Study Timer's initial state broadcast no longer wipes the saved time",
+        "Scratchpad circle checkbox and completed timestamp being nearly invisible due to opacity on hex color variables",
+        "Completed task edits doing nothing and deletions not persisting to the database",
+        "Task page settings and quick-add buttons being covered by the navbar and floating footer",
+        "Calendar task viewer type error when a task had a null due date"
+      ],
+      removed: [
+        "Daily completion summary row from the Habits tracker",
+        "'Show previous days' toggle in habit journal notes",
+        "Note body preview and large icon from note cards",
+        "Bottom footer bar from the note viewer",
+        "Duplicate 'Done' column in the task status board",
+        "'Saved locally · stays between sessions' hint in the Scratchpad",
+        "Check icon overlay on completed habit cells — completed days now show just the accent fill",
+        "Progress bar inside Manage Assignments cards",
+        "PDF export buttons and the Import Tasks section in Data settings"
+      ]
+    }
+  },
+  {
     version: "2.0.2",
     date: "September 9, 2026",
     time: "12:00 PM",

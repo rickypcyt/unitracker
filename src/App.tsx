@@ -9,7 +9,8 @@ import FloatingFooter from "@/components/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
 import PageLoader from "@/components/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
-import { Toaster } from "react-hot-toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import TourManager from "./components/TourManager";
 import Settings from "@/modals/Settings";
 
@@ -20,6 +21,7 @@ const BlogListPage = lazy(() => import("@/pages/landing/BlogListPage"));
 const BlogPostPage = lazy(() => import("@/pages/landing/BlogPostPage"));
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
+import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
 import { useFriendManagement } from "@/hooks/useFriendManagement";
 import { useWorkspaceLoader } from "@/hooks/useWorkspaceLoader";
 
@@ -152,7 +154,7 @@ const PageContent: FC = () => {
       <Sidebar />
       <div className="min-w-0 flex-1 relative lg:pl-16">
         <Suspense fallback={<PageLoader />}>
-          <div className="px-4 py-4 sm:px-6 lg:px-8 2xl:px-12 overflow-x-hidden">
+          <div className="px-4 pb-4 pt-[4.5rem] lg:pt-4 sm:px-6 lg:px-8 2xl:px-12 overflow-x-hidden">
             {activePage === 'session' && <SessionPage />}
 
             {activePage === 'tasks' && (
@@ -302,6 +304,12 @@ const App: FC = () => {
             console.error("Notification permission request failed:", error);
           }
         }
+      } else if (Notification.permission === "denied") {
+        // Warn once per session that desktop notifications won't fire
+        if (!sessionStorage.getItem("notificationsBlockedWarned")) {
+          sessionStorage.setItem("notificationsBlockedWarned", "true");
+          warnNotificationsBlocked();
+        }
       }
     };
 
@@ -334,18 +342,15 @@ const App: FC = () => {
 
   return (
     <>
-      <Toaster
+      <ToastContainer
         position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: "#333",
-            color: "#fff",
-            padding: "16px",
-            borderRadius: "8px",
-            border: "2px solid var(--border-primary)",
-            marginTop: "16px",
-          },
+        autoClose={3000}
+        toastStyle={{
+          background: "var(--bg-secondary)",
+          color: "var(--text-primary)",
+          padding: "12px 16px",
+          borderRadius: "8px",
+          border: "2px solid var(--border-primary)",
         }}
       />
       <NoiseProvider>

@@ -12,7 +12,7 @@ import SectionTitle from '@/components/SectionTitle';
 import SessionSummaryModal from '@/modals/SessionSummaryModal';
 import StartSessionModal from '@/modals/StartSessionModal';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import useEventListener from '@/hooks/useEventListener';
 import {
   useStudyState,

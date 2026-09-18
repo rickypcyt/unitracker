@@ -1,5 +1,6 @@
 import { CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
 import React, { useMemo } from 'react';
+import { format } from 'date-fns';
 
 import { TaskList } from './TaskList';
 
@@ -26,19 +27,28 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
   onViewTask,
   onTaskContextMenu,
 }) => {
-  const groupedByAssignment = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
-    completedTasks.forEach((task: any) => {
-      const assignment = task.assignment || "No assignment";
-      if (!grouped[assignment]) grouped[assignment] = [];
-      grouped[assignment].push(task);
-    });
-    return grouped;
+  const tasksByMonth = useMemo(() => {
+    const getTime = (task: any): number => {
+      const raw = task.completed_at ?? task.updated_at ?? task.created_at ?? task.date;
+      const time = raw ? new Date(raw).getTime() : NaN;
+      return Number.isNaN(time) ? 0 : time;
+    };
+    const sorted = [...completedTasks].sort((a, b) => getTime(b) - getTime(a));
+    // Already sorted desc — group consecutive tasks sharing a month
+    const groups: { label: string; tasks: any[] }[] = [];
+    for (const task of sorted) {
+      const raw = task.completed_at ?? task.updated_at ?? task.created_at ?? task.date;
+      const d = raw ? new Date(raw) : null;
+      const label = d && !Number.isNaN(d.getTime()) ? format(d, 'MMMM yyyy') : 'Unknown';
+      const last = groups[groups.length - 1];
+      if (last && last.label === label) {
+        last.tasks.push(task);
+      } else {
+        groups.push({ label, tasks: [task] });
+      }
+    }
+    return groups;
   }, [completedTasks]);
-
-  const assignmentNames = Object.keys(groupedByAssignment).sort((a, b) =>
-    a.localeCompare(b)
-  );
 
   if (completedTasks.length === 0) {
     return null;
@@ -78,40 +88,33 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
         )}
       </div>
 
-      {/* Collapsible task list grouped by assignment */}
+      {/* Collapsible task list sorted most recent first */}
       <div
         className={`relative transition-all duration-200 hide-scrollbar pb-2 mb-4`}
         style={{
           display: showCompleted ? 'block' : 'none',
         }}
       >
-        <div className="flex-1 min-h-0 space-y-3">
-          {assignmentNames.map((assignment) => {
-            const group = groupedByAssignment[assignment] || [];
-            return (
-              <div key={assignment}>
-                <div className="flex items-center gap-1.5 mb-1.5 px-1">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500/60" />
-                  <span className="text-xs font-medium text-[var(--text-secondary)]">
-                    {assignment}
-                    <span className="text-[var(--text-secondary)] opacity-60 ml-1.5">
-                      ({group.length})
-                    </span>
-                  </span>
-                </div>
-                <TaskList
-                  tasks={group}
-                  assignment={assignment}
-                  onTaskToggle={onTaskToggle}
-                  onTaskDelete={onTaskDelete}
-                  onEditTask={onEditTask}
-                  onViewTask={onViewTask}
-                  onTaskContextMenu={onTaskContextMenu}
-                />
-              </div>
-            );
-          })}
-        </div>
+        {tasksByMonth.map((group) => (
+          <div key={group.label}>
+            <div className="flex items-center gap-2 px-1 pt-2 pb-1 select-none">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                {group.label}
+              </span>
+              <span className="text-xs text-[var(--text-secondary)]">
+                {group.tasks.length} task{group.tasks.length === 1 ? '' : 's'}
+              </span>
+            </div>
+            <TaskList
+              tasks={group.tasks}
+              onTaskToggle={onTaskToggle}
+              onTaskDelete={onTaskDelete}
+              onEditTask={onEditTask}
+              onViewTask={onViewTask}
+              onTaskContextMenu={onTaskContextMenu}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
