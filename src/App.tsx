@@ -1,5 +1,5 @@
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { FC, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { FC, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { NavigationProvider, PAGE_PATHS, useNavigation } from "@/navbar/NavigationContext";
 import { useAuthActions, useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from "@/store/appStore";
 import type { Workspace } from "@/types/workspace";
@@ -14,11 +14,6 @@ import "react-toastify/dist/ReactToastify.css";
 import TourManager from "./components/TourManager";
 import Settings from "@/modals/Settings";
 
-// Lazy load landing pages for better initial bundle
-const PricingPage = lazy(() => import("@/pages/landing/PricingPage"));
-const ComparePage = lazy(() => import("@/pages/landing/ComparePage"));
-const BlogListPage = lazy(() => import("@/pages/landing/BlogListPage"));
-const BlogPostPage = lazy(() => import("@/pages/landing/BlogPostPage"));
 import UserModal from "@/modals/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
@@ -358,10 +353,6 @@ const App: FC = () => {
           <UserModalGate />
           <Routes>
             <Route path="/" element={<RootRoute />} />
-            <Route path="/pricing" element={<Suspense fallback={<PageLoader fullScreen />}><PricingPage /></Suspense>} />
-            <Route path="/compare" element={<Suspense fallback={<PageLoader fullScreen />}><ComparePage /></Suspense>} />
-            <Route path="/blog" element={<Suspense fallback={<PageLoader fullScreen />}><BlogListPage /></Suspense>} />
-            <Route path="/blog/:slug" element={<Suspense fallback={<PageLoader fullScreen />}><BlogPostPage /></Suspense>} />
             <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />
             <Route path={PAGE_PATHS.session} element={<AppRoute />} />
             <Route path={PAGE_PATHS.tasks} element={<AppRoute />} />

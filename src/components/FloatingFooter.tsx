@@ -108,79 +108,22 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] max-w-[calc(100%-1rem)]">
         <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-[var(--border-primary)]/70 bg-[var(--bg-primary)]/70 backdrop-blur-[12px] shadow-[0_12px_30px_rgba(15,23,42,0.35)] text-[var(--text-secondary)]">
           {/* Workspace selector with task badge */}
-          <div className="relative">
-            <button
-              onClick={() => setShowWorkspaceMenu(prev => !prev)}
-              className="flex items-center gap-2 hover:text-[var(--text-primary)] transition-colors"
-              aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Click to open workspace selector.`}
-              aria-expanded={showWorkspaceMenu}
-              title={activeWorkspace?.name || 'Select Workspace'}
-            >
-              {(() => {
-                const IconComp = iconOptions[activeWorkspace?.icon || 'Briefcase'] || Briefcase;
-                return <IconComp className="w-4 h-4" />;
-              })()}
-              <span className="hidden sm:inline text-sm font-medium">
-                {activeWorkspace?.name || 'Select Workspace'}
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showWorkspaceMenu ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* Upward workspace menu */}
-            {showWorkspaceMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-[-1]"
-                  onClick={() => setShowWorkspaceMenu(false)}
-                />
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl overflow-hidden">
-                  <div className="max-h-64 overflow-y-auto py-1">
-                    {[{
-                      id: 'all',
-                      name: 'All',
-                      icon: 'Workflow',
-                      taskCount: workspaces.reduce((sum, ws) => sum + (ws.taskCount || 0), 0),
-                    }, ...workspaces].map((ws) => {
-                      const isActive = activeWorkspace?.id === ws.id;
-                      const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
-                      return (
-                        <button
-                          key={ws.id}
-                          onClick={() => {
-                            setShowWorkspaceMenu(false);
-                            try { localStorage.setItem('activeWorkspaceId', ws.id.toString()); } catch {}
-                            onSelectWorkspace?.(ws);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                            isActive
-                              ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
-                          }`}
-                        >
-                          <IconComp className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
-                          <span className="flex-1 min-w-0 truncate text-sm font-medium">{ws.name}</span>
-                          {(ws.taskCount ?? 0) > 0 && (
-                            <span className="text-xs text-[var(--text-secondary)]">{ws.taskCount}</span>
-                          )}
-                          {isActive && <Check className="w-4 h-4 flex-shrink-0 text-[var(--accent-primary)]" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowWorkspaceMenu(false);
-                      setShowWorkspaceModal(true);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 border-t border-[var(--border-primary)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-                  >
-                    <Settings2 className="w-4 h-4" />
-                    Manage workspaces
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          <button
+            onClick={() => setShowWorkspaceMenu(prev => !prev)}
+            className="flex items-center gap-2 hover:text-[var(--text-primary)] transition-colors"
+            aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Click to open workspace selector.`}
+            aria-expanded={showWorkspaceMenu}
+            title={activeWorkspace?.name || 'Select Workspace'}
+          >
+            {(() => {
+              const IconComp = iconOptions[activeWorkspace?.icon || 'Briefcase'] || Briefcase;
+              return <IconComp className="w-4 h-4" />;
+            })()}
+            <span className="hidden sm:inline text-sm font-medium">
+              {activeWorkspace?.name || 'Select Workspace'}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showWorkspaceMenu ? 'rotate-180' : ''}`} />
+          </button>
 
           <span className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
 
@@ -255,7 +198,62 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
           </button>
         </div>
       </div>
-      
+
+      {/* Upward workspace menu — fixed to viewport so it stays centered on mobile */}
+      {showWorkspaceMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setShowWorkspaceMenu(false)}
+          />
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] w-64 max-w-[calc(100vw-2rem)] rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl overflow-hidden">
+            <div className="max-h-64 overflow-y-auto py-1">
+              {[{
+                id: 'all',
+                name: 'All',
+                icon: 'Workflow',
+                taskCount: workspaces.reduce((sum, ws) => sum + (ws.taskCount || 0), 0),
+              }, ...workspaces].map((ws) => {
+                const isActive = activeWorkspace?.id === ws.id;
+                const IconComp = iconOptions[ws.icon || 'Briefcase'] || Briefcase;
+                return (
+                  <button
+                    key={ws.id}
+                    onClick={() => {
+                      setShowWorkspaceMenu(false);
+                      try { localStorage.setItem('activeWorkspaceId', ws.id.toString()); } catch {}
+                      onSelectWorkspace?.(ws);
+                    }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                      isActive
+                        ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
+                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    <IconComp className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+                    <span className="flex-1 min-w-0 truncate text-sm font-medium">{ws.name}</span>
+                    {(ws.taskCount ?? 0) > 0 && (
+                      <span className="text-xs text-[var(--text-secondary)]">{ws.taskCount}</span>
+                    )}
+                    {isActive && <Check className="w-4 h-4 flex-shrink-0 text-[var(--accent-primary)]" />}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                setShowWorkspaceMenu(false);
+                setShowWorkspaceModal(true);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 border-t border-[var(--border-primary)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              <Settings2 className="w-4 h-4" />
+              Manage workspaces
+            </button>
+          </div>
+        </>
+      )}
+
       {/* Workspace Modal */}
       <WorkspaceModal
         isOpen={showWorkspaceModal}

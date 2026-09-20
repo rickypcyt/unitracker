@@ -189,10 +189,10 @@ const useTheme = () => {
   const handleCloseWelcome = () => {
     setShowWelcomeModal(false);
     localStorage.setItem("hasSeenWelcomeModal", "true");
-    // Automatically show theme selection modal after a short delay
+    // Automatically show accent color modal after a short delay
     setTimeout(() => {
-      if (!localStorage.getItem("hasSeenThemeSelectionModal")) {
-        setShowThemeSelectionModal(true);
+      if (!localStorage.getItem("hasSeenAccentColorModal")) {
+        setShowAccentColorModal(true);
       }
     }, 200);
   };

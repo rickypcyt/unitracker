@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -8,13 +8,10 @@ import {
   CheckCircle2,
   Download,
   Github,
-  Lock,
   NotebookPen,
-  RefreshCw,
   Sparkles,
   Timer,
-  Users,
-  Zap,
+  WifiOff,
 } from 'lucide-react';
 import Pomodoro from '@/pages/session/Pomodoro';
 import StudyTimer from '@/pages/session/StudyTimer';
@@ -53,27 +50,32 @@ const features = [
   },
 ];
 
-const valueProps = [
+const values = [
   {
     icon: Sparkles,
     title: 'Free forever',
-    desc: 'No ads, no tracking, no paywalls. Open source on GitHub.',
+    desc: 'No ads, no subscriptions, no paywalls.',
+  },
+  {
+    icon: Github,
+    title: 'Open source',
+    desc: 'MIT licensed. Audit, fork, or contribute on GitHub.',
+  },
+  {
+    icon: WifiOff,
+    title: 'Offline-first',
+    desc: 'Works fully offline. Syncs when you reconnect.',
   },
   {
     icon: Download,
     title: 'Your data',
-    desc: 'Export or import CSV, PDF, JSON, Notion, Todoist, Google.',
-  },
-  {
-    icon: Timer,
-    title: 'Works offline',
-    desc: 'Use the app offline as a PWA; sync when you reconnect.',
+    desc: 'Export anytime in CSV, PDF, or JSON. No lock-in.',
   },
 ];
 
-// ─── Real Component Wrappers for Landing ────────────────────────────────────
+// ─── Real Component Showcase ────────────────────────────────────────────────
 
-const TimerShowcase = () => {
+const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode }) => {
   return (
     <div className="rounded-2xl ring-1 ring-inset ring-white/10 bg-[var(--bg-secondary)] overflow-hidden shadow-2xl shadow-black/40">
       <div className="flex items-center gap-2 px-4 h-9 border-b border-white/5 bg-black/30">
@@ -82,203 +84,21 @@ const TimerShowcase = () => {
           <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
           <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Timer</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — {title}</span>
       </div>
       <div className="p-4 max-h-[500px] overflow-y-auto">
-        <Pomodoro hideHeader />
+        {children}
       </div>
     </div>
   );
 };
 
-const StudyTimerShowcase = () => {
-  return (
-    <div className="rounded-2xl ring-1 ring-inset ring-white/10 bg-[var(--bg-secondary)] overflow-hidden shadow-2xl shadow-black/40">
-      <div className="flex items-center gap-2 px-4 h-9 border-b border-white/5 bg-black/30">
-        <div className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-        </div>
-        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — Study Timer</span>
-      </div>
-      <div className="p-4 max-h-[500px] overflow-y-auto">
-        <StudyTimer hideHeader />
-      </div>
-    </div>
-  );
-};
-
-const AppIframeShowcase = ({ page }: { page: string }) => {
-  return (
-    <div className="rounded-2xl ring-1 ring-inset ring-white/10 bg-[var(--bg-secondary)] overflow-hidden shadow-2xl shadow-black/40">
-      <div className="flex items-center gap-2 px-4 h-9 border-b border-white/5 bg-black/30">
-        <div className="flex gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-        </div>
-        <span className="text-xs text-[var(--text-secondary)] ml-2 font-mono">UniTracker — {page}</span>
-      </div>
-      <iframe
-        src={`/app`}
-        className="w-full h-[500px] border-0"
-        title={`UniTracker ${page}`}
-        loading="lazy"
-      />
-    </div>
-  );
-};
-
-// ─── Static Section (replaces PinnedSection) ─────────────────────────────────
-
-const StaticSection = ({
-  label,
-  title,
-  description,
-  children,
-  reverse = false,
-}: {
-  label: string;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-  reverse?: boolean;
-}) => {
-  return (
-    <section className="py-fluid-section border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-fluid">
-        <div className={`grid lg:grid-cols-2 gap-12 items-center ${reverse ? 'lg:grid-flow-col-dense' : ''}`}>
-          <div className={reverse ? 'lg:col-start-2' : ''}>
-            <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">{label}</p>
-            <h2 className="text-fluid-h2 font-heading font-semibold mb-4">{title}</h2>
-            <p className="text-fluid-lead text-[var(--text-secondary)] mb-6">{description}</p>
-          </div>
-          <div className={reverse ? 'lg:col-start-1 lg:row-start-1' : ''}>
-            {children}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// ─── Tabbed Section (Sync / Collab / Encryption) ─────────────────────────────
-
-const TabSection = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const tabs = [
-    {
-      icon: RefreshCw,
-      label: 'Sync',
-      title: 'Your data, everywhere',
-      desc: 'Real-time sync across devices. No manual refresh needed.',
-      features: ['Real-time sync', 'Offline edits', 'Cloud backup'],
-    },
-    {
-      icon: Users,
-      label: 'Collaborate',
-      title: 'Work together',
-      desc: 'Share tasks and focus sessions with friends or teammates.',
-      features: ['Shared boards', 'Activity feed', 'Group sessions'],
-    },
-    {
-      icon: Lock,
-      label: 'Private',
-      title: 'Yours, always',
-      desc: 'End-to-end encrypted sync. We cannot read your data.',
-      features: ['End-to-end encryption', 'No tracking', 'Full export'],
-    },
-  ];
-  const active = tabs[activeTab]!;
-
-  return (
-    <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
-      {/* Tab list */}
-      <div className="relative">
-        <div className="space-y-1">
-          {tabs.map((tab, i) => (
-            <button
-              key={tab.label}
-              onClick={() => setActiveTab(i)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 ${
-                i === activeTab
-                  ? 'bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/30'
-                  : 'hover:bg-white/5 ring-1 ring-inset ring-white/5'
-              }`}
-            >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                i === activeTab ? 'bg-[var(--accent-primary)]/20' : 'bg-white/5'
-              }`}>
-                <tab.icon className={`w-4 h-4 ${i === activeTab ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
-              </div>
-              <div>
-                <span className={`text-sm font-semibold ${i === activeTab ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                  {tab.label}
-                </span>
-                <p className="text-xs text-[var(--text-secondary)]/70 mt-0.5">{tab.title}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <div className="rounded-2xl ring-1 ring-inset ring-white/5 bg-[var(--bg-secondary)]/30 p-6 sm:p-8 min-h-[300px]">
-        <div key={activeTab} className="animate-um-rise">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
-              <active.icon className="w-5 h-5 text-[var(--accent-primary)]" />
-            </div>
-            <h3 className="text-xl font-semibold text-[var(--text-primary)]">{active.title}</h3>
-          </div>
-          <p className="text-[var(--text-secondary)] text-base leading-relaxed mb-6">{active.desc}</p>
-          <ul className="space-y-3">
-            {active.features.map((feat) => (
-              <li key={feat} className="flex items-center gap-3 text-sm text-[var(--text-primary)]">
-                <CheckCircle2 className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
-                {feat}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── Stats Section (Todoist-inspired big numbers) ───────────────────────────
-
-const StatsSection = () => {
-  const stats = [
-    { icon: Github, value: 'Open', label: 'Source from day one' },
-    { icon: Users, value: 'Built', label: 'In public, for everyone' },
-    { icon: Sparkles, value: 'Free', label: 'Forever, no paywalls' },
-    { icon: Timer, value: 'Offline', label: 'First, sync second' },
-  ];
-
-  return (
-    <section className="py-fluid-section border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-fluid">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl ring-1 ring-inset ring-white/5 bg-white/[0.02] p-6 text-center hover:ring-white/10 transition-all"
-            >
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/10 flex items-center justify-center mb-4 mx-auto">
-                <s.icon className="w-6 h-6 text-[var(--accent-primary)]" />
-              </div>
-              <p className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] font-heading tabular-nums">
-                {s.value}
-              </p>
-              <p className="text-sm text-[var(--text-secondary)] mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+// Resets onboarding flags so entering the app replays welcome → color → login
+const startOnboarding = () => {
+  try {
+    ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal', 'hasSeenAccentColorModal', 'hasSeenLoginModal']
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {}
 };
 
 const LandingPage = () => {
@@ -317,22 +137,7 @@ const LandingPage = () => {
         }
         .animate-um-rise { animation: um-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-        @keyframes card-shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .card-shimmer {
-          background-image: linear-gradient(
-            105deg,
-            transparent 40%,
-            rgba(255, 255, 255, 0.03) 50%,
-            transparent 60%
-          );
-          background-size: 200% 100%;
-          animation: card-shimmer 4s ease-in-out infinite;
-        }
-
-        /* Shiny button effect (Todoist-inspired) */
+        /* Shiny button effect */
         .shiny-btn {
           position: relative;
           overflow: hidden;
@@ -373,12 +178,12 @@ const LandingPage = () => {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .animate-um-rise, .animate-ping, .card-shimmer, .shiny-btn .shine-overlay { animation: none !important; }
+          .animate-um-rise, .animate-ping, .shiny-btn .shine-overlay { animation: none !important; }
         }
       `}</style>
 
       <div
-        className="h-screen overflow-y-auto overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-[var(--bg-primary)] text-[var(--text-primary)]"
       >
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg-primary)]/80 border-b border-white/5">
@@ -389,19 +194,6 @@ const LandingPage = () => {
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-1">
-              {[
-                { to: '/pricing', label: 'Support' },
-                { to: '/compare', label: 'Compare' },
-                { to: '/blog', label: 'Blog' },
-              ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all"
-                >
-                  {item.label}
-                </Link>
-              ))}
               <a
                 href="https://github.com/rickypcyt/unitracker"
                 target="_blank"
@@ -420,7 +212,8 @@ const LandingPage = () => {
               </Link>
               <Link
                 to="/app"
-                className="shiny-btn text-sm font-semibold px-4 py-2 rounded-xl bg-[var(--accent-primary)] text-white hover:brightness-110 hover:shadow-lg hover:shadow-[var(--accent-primary)]/25 transition-all active:scale-95"
+                onClick={startOnboarding}
+                className="shiny-btn text-sm font-semibold px-4 py-2 rounded-xl ring-1 ring-inset ring-[var(--accent-primary)]/60 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-all active:scale-95"
               >
                 Get started free
                 <span className="shine-overlay" />
@@ -453,18 +246,22 @@ const LandingPage = () => {
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <Link
                     to="/app"
-                    className="shiny-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--accent-primary)] text-white font-semibold text-base hover:brightness-110 hover:shadow-lg hover:shadow-[var(--accent-primary)]/25 transition-all active:scale-95"
+                    onClick={startOnboarding}
+                    className="shiny-btn inline-flex items-center gap-2 px-6 py-3 rounded-xl ring-1 ring-inset ring-[var(--accent-primary)]/60 text-[var(--accent-primary)] font-semibold text-base hover:bg-[var(--accent-primary)]/10 transition-all active:scale-95"
                   >
                     Get started free
                     <ArrowRight className="w-5 h-5" />
                     <span className="shine-overlay" />
                   </Link>
-                  <Link
-                    to="/pricing"
+                  <a
+                    href="https://github.com/rickypcyt/unitracker"
+                    target="_blank"
+                    rel="noopener"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl ring-1 ring-inset ring-white/10 font-semibold text-base hover:bg-white/5 transition-colors"
                   >
-                    Support the project
-                  </Link>
+                    <Github className="w-5 h-5" />
+                    View on GitHub
+                  </a>
                 </div>
 
                 <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-[var(--text-secondary)]">
@@ -477,58 +274,9 @@ const LandingPage = () => {
               </div>
 
               <div className="animate-um-rise" style={{ animationDelay: '120ms' }}>
-                <TimerShowcase />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Principles */}
-        <section className="py-fluid-section border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-fluid">
-            <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-14 items-center">
-              <dl className="space-y-8">
-                <div>
-                  <dt className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/20 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-[var(--accent-primary)]" />
-                    </div>
-                    <h3 className="text-fluid-h3 font-semibold">No tab switching. No scattered notes. Just work.</h3>
-                  </dt>
-                  <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    Timer, tasks, and notes in one window.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/20 flex items-center justify-center">
-                      <Lock className="w-5 h-5 text-[var(--accent-primary)]" />
-                    </div>
-                    <h3 className="text-fluid-h3 font-semibold">Private by default</h3>
-                  </dt>
-                  <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    Your data stays on your device. Encrypted sync. No tracking.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/20 flex items-center justify-center">
-                      <Github className="w-5 h-5 text-[var(--accent-primary)]" />
-                    </div>
-                    <h3 className="text-fluid-h3 font-semibold">Yours to keep</h3>
-                  </dt>
-                  <dd className="text-[var(--text-secondary)] text-fluid-lead pl-13">
-                    MIT licensed. Fork, audit, contribute. Export anytime.
-                  </dd>
-                </div>
-              </dl>
-
-              {/* Large logo/visual */}
-              <div className="hidden lg:flex items-center justify-center">
-                <div className="relative">
-                  <div className="absolute inset-0 opacity-20 blur-2xl" style={{ background: 'radial-gradient(circle, var(--accent-primary) 0%, transparent 70%)' }} />
-                  <span className="font-heading text-6xl font-bold tracking-tight text-[var(--accent-primary)] relative">Uni<span className="text-[var(--text-primary)]">Tracker</span></span>
-                </div>
+                <ShowcaseFrame title="Timer">
+                  <Pomodoro hideHeader />
+                </ShowcaseFrame>
               </div>
             </div>
           </div>
@@ -538,7 +286,7 @@ const LandingPage = () => {
         <section className="py-fluid-section border-t border-white/5">
           <div className="max-w-7xl mx-auto px-fluid">
             <div className="mb-14 max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Connected, not stacked</p>
+              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Everything in one place</p>
               <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
                 Tools that talk to each other
               </h2>
@@ -584,31 +332,27 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Showcase — Real Components */}
-        <StaticSection
-          label="Focus"
-          title="Real Pomodoro. Real countdown."
-          description="The real Pomodoro from the app. Try it — it works right here."
-        >
-          <TimerShowcase />
-        </StaticSection>
-
-        <StaticSection
-          label="Track"
-          title="Every session, logged automatically."
-          description="Focus sessions log automatically. Your time is tracked without manual entry."
-          reverse
-        >
-          <StudyTimerShowcase />
-        </StaticSection>
-
-        <StaticSection
-          label="Organize"
-          title="Tasks, calendar, analytics — live."
-          description="The real app inside an iframe. Everything you track is connected."
-        >
-          <AppIframeShowcase page="Tasks & Calendar" />
-        </StaticSection>
+        {/* Live demo — Study Timer */}
+        <section className="py-fluid-section border-t border-white/5">
+          <div className="max-w-7xl mx-auto px-fluid">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="lg:order-2">
+                <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Live demo</p>
+                <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
+                  Every session, logged automatically
+                </h2>
+                <p className="text-fluid-lead text-[var(--text-secondary)]">
+                  This is the real study timer from the app — try it. Sessions log to your calendar and stats without manual entry.
+                </p>
+              </div>
+              <div className="lg:order-1">
+                <ShowcaseFrame title="Study Timer">
+                  <StudyTimer hideHeader />
+                </ShowcaseFrame>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* How UniTracker fits your day */}
         <section className="py-fluid-section border-t border-white/5 bg-white/[0.02]">
@@ -663,26 +407,7 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Stats — Big numbers (Todoist-inspired) */}
-        <StatsSection />
-
-        {/* Sync securely — Tabbed Section */}
-        <section className="py-fluid-section border-t border-white/5 bg-white/[0.02]">
-          <div className="max-w-7xl mx-auto px-fluid">
-            <div className="mb-14 max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Sync & collaborate</p>
-              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
-                Your data, secured and synced
-              </h2>
-              <p className="text-fluid-lead text-[var(--text-secondary)]">
-                Real-time sync across devices, collaborative sessions, and end-to-end encryption. Your data stays yours.
-              </p>
-            </div>
-            <TabSection />
-          </div>
-        </section>
-
-      {/* Why UniTracker */}
+        {/* Why UniTracker */}
         <section className="py-fluid-section border-t border-white/5">
           <div className="max-w-7xl mx-auto px-fluid">
             <div className="mb-14 max-w-2xl">
@@ -694,8 +419,8 @@ const LandingPage = () => {
                 No data selling, no ads, no paywalls. The code is public.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {valueProps.map((v) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {values.map((v) => (
                 <div
                   key={v.title}
                   className="rounded-2xl ring-1 ring-inset ring-white/5 bg-white/[0.02] p-6"
@@ -722,7 +447,8 @@ const LandingPage = () => {
               </p>
               <Link
                 to="/app"
-                className="shiny-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--accent-primary)] text-white font-bold text-lg hover:brightness-110 hover:shadow-lg hover:shadow-[var(--accent-primary)]/25 transition-all active:scale-95"
+                onClick={startOnboarding}
+                className="shiny-btn inline-flex items-center gap-2 px-8 py-4 rounded-xl ring-1 ring-inset ring-[var(--accent-primary)]/60 text-[var(--accent-primary)] font-bold text-lg hover:bg-[var(--accent-primary)]/10 transition-all active:scale-95"
               >
                 Try UniTracker free
                 <ArrowRight className="w-5 h-5" />
@@ -731,61 +457,6 @@ const LandingPage = () => {
               <p className="mt-6 text-sm text-[var(--text-secondary)]">
                 No credit card required · Free forever · Open source
               </p>
-          </div>
-        </section>
-
-        {/* Community cards */}
-        <section className="py-fluid-section border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-fluid">
-            <div className="mb-10 max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.14em] text-[var(--accent-primary)] mb-3">Community</p>
-              <h2 className="text-fluid-h2 font-heading font-semibold mb-4">
-                Built in public, for everyone
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {[
-                {
-                  icon: Github,
-                  title: 'Open Source',
-                  desc: 'Contribute, report bugs, or read the code.',
-                  link: 'https://github.com/rickypcyt/unitracker',
-                  linkLabel: 'View on GitHub',
-                },
-                {
-                  icon: Users,
-                  title: 'Community',
-                  desc: 'Shape UniTracker with your feedback.',
-                  link: '/app',
-                  linkLabel: 'Join free',
-                },
-                {
-                  icon: Sparkles,
-                  title: 'Roadmap',
-                  desc: 'Vote and see what we are building next.',
-                  link: '/blog',
-                  linkLabel: 'Read the blog',
-                },
-              ].map((c) => (
-                <a
-                  key={c.title}
-                  href={c.link}
-                  target={c.link.startsWith('http') ? '_blank' : undefined}
-                  rel={c.link.startsWith('http') ? 'noopener' : undefined}
-                  className="group rounded-2xl ring-1 ring-inset ring-white/5 bg-white/[0.02] p-6 hover:ring-white/10 transition-all"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/10 ring-1 ring-inset ring-[var(--accent-primary)]/10 flex items-center justify-center mb-4 group-hover:bg-[var(--accent-primary)]/20 transition-colors">
-                    <c.icon className="w-5 h-5 text-[var(--accent-primary)]" />
-                  </div>
-                  <h3 className="text-fluid-h3 font-semibold mb-2">{c.title}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">{c.desc}</p>
-                  <span className="inline-flex items-center gap-1.5 text-sm text-[var(--accent-primary)] font-medium group-hover:gap-2.5 transition-all">
-                    {c.linkLabel}
-                    <ArrowRight className="w-4 h-4" />
-                  </span>
-                </a>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -814,10 +485,7 @@ const LandingPage = () => {
               <div>
                 <p className="text-xs uppercase tracking-wider text-[var(--text-secondary)]/50 mb-3">Product</p>
                 <ul className="space-y-2">
-                  <li><Link to="/pricing" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Support UniTracker</Link></li>
-                  <li><Link to="/compare" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Compare</Link></li>
-                  <li><Link to="/blog" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Blog</Link></li>
-                  <li><Link to="/app" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Get started</Link></li>
+                  <li><Link to="/app" onClick={startOnboarding} className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Get started</Link></li>
                 </ul>
               </div>
 

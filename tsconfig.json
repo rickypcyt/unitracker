@@ -39,10 +39,8 @@
     "alwaysStrict": true,
 
     /* Paths */
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     
     /* Type checking */
