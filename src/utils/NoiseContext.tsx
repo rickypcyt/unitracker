@@ -65,6 +65,8 @@ class AudioEngine {
   private static instance: AudioEngine;
   private masterGain: Tone.Gain | null = null;
   private masterLimiter: Tone.Limiter | null = null;
+  private reverbSend: Tone.Gain | null = null;
+  private sharedReverb: Tone.Reverb | null = null;
   private initialized = false;
 
   static getInstance(): AudioEngine {
@@ -124,6 +126,13 @@ class AudioEngine {
         // The limiter prevents digital clipping when several sounds sum.
         this.masterLimiter = new Tone.Limiter(-1).toDestination();
         this.masterGain = new Tone.Gain(1).connect(this.masterLimiter);
+
+        // One shared reverb bus: generating the impulse response is expensive,
+        // so it happens once here instead of inside every sound start.
+        this.reverbSend = new Tone.Gain(1);
+        this.sharedReverb = new Tone.Reverb({ decay: 3, wet: 1 });
+        this.reverbSend.connect(this.sharedReverb);
+        this.sharedReverb.connect(this.masterLimiter);
       }
 
       this.initialized = true;
@@ -139,6 +148,11 @@ class AudioEngine {
     return this.masterGain;
   }
 
+  getReverbSend(): Tone.ToneAudioNode {
+    if (!this.reverbSend) throw new Error("AudioEngine is not initialized");
+    return this.reverbSend;
+  }
+
   isReady(): boolean {
     return this.initialized && Tone.context?.state === "running";
   }
@@ -146,8 +160,12 @@ class AudioEngine {
   dispose(): void {
     this.masterGain?.dispose();
     this.masterLimiter?.dispose();
+    this.reverbSend?.dispose();
+    this.sharedReverb?.dispose();
     this.masterGain = null;
     this.masterLimiter = null;
+    this.reverbSend = null;
+    this.sharedReverb = null;
     this.initialized = false;
   }
 }
@@ -277,11 +295,10 @@ class RainSoundNode extends BaseSoundNode {
   constructor(volume: number) {
     super(volume);
 
-    const reverb = new Tone.Reverb({
-      decay: 2.5,
-      wet: 0.3,
-      preDelay: 0.01,
-    }).connect(AudioEngine.getInstance().getMasterOut());
+    const engine = AudioEngine.getInstance();
+    const masterOut = engine.getMasterOut();
+    // ~0.3 wet — send gain preserves the original wet/dry ratio (w / (1 - w))
+    const wetGain = new Tone.Gain(0.43).connect(engine.getReverbSend());
 
     // Background rain bed — steady filtered pink noise
     const backgroundRain = new Tone.Noise("pink").start();
@@ -291,13 +308,15 @@ class RainSoundNode extends BaseSoundNode {
 
     backgroundRain.connect(backgroundFilter);
     backgroundFilter.connect(this.backgroundGain);
-    this.backgroundGain.connect(reverb);
+    this.backgroundGain.connect(masterOut);
+    this.backgroundGain.connect(wetGain);
 
     // Subtle high-frequency pink layer for texture
     const topPinkNoise = new Tone.Noise("pink").start();
     this.topPinkGain = new Tone.Gain(volume * 0.075);
     topPinkNoise.connect(this.topPinkGain);
-    this.topPinkGain.connect(reverb);
+    this.topPinkGain.connect(masterOut);
+    this.topPinkGain.connect(wetGain);
 
     [
       backgroundRain,
@@ -305,7 +324,7 @@ class RainSoundNode extends BaseSoundNode {
       this.backgroundGain,
       topPinkNoise,
       this.topPinkGain,
-      reverb,
+      wetGain,
     ].forEach((node) => this.registerNode(node));
   }
 
@@ -327,16 +346,17 @@ class OceanWavesNode extends BaseSoundNode {
   constructor(volume: number) {
     super(volume);
 
-    this.masterGain = new Tone.Gain(0).connect(
-      AudioEngine.getInstance().getMasterOut()
-    );
-    const reverb = new Tone.Reverb({
-      decay: 4,
-      wet: 0.4,
-      preDelay: 0.15,
-    }).connect(this.masterGain);
+    const engine = AudioEngine.getInstance();
+    this.masterGain = new Tone.Gain(0).connect(engine.getMasterOut());
+    this.outputGain = new Tone.Gain(0).connect(this.masterGain);
 
-    this.outputGain = new Tone.Gain(0).connect(reverb);
+    // Shared reverb send (~0.4 wet) tapped after masterGain so it follows
+    // volume, with a short delay to keep ocean's pre-delay character.
+    const wetGain = new Tone.Gain(0.67);
+    const wetDelay = new Tone.Delay(0.14);
+    this.masterGain.connect(wetGain);
+    wetGain.connect(wetDelay);
+    wetDelay.connect(engine.getReverbSend());
 
     // Create wave modulation LFOs
     const primaryWaveLFO = new Tone.LFO(0.06, 0.5, 0.9).start();
@@ -357,7 +377,8 @@ class OceanWavesNode extends BaseSoundNode {
     this.createSplashes(this.outputGain);
 
     this.registerNode(this.masterGain);
-    this.registerNode(reverb);
+    this.registerNode(wetGain);
+    this.registerNode(wetDelay);
     this.registerNode(this.outputGain);
     this.registerNode(primaryWaveLFO);
     this.registerNode(secondaryWaveLFO);
