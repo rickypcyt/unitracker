@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, GripVertical, MoreVertical, RefreshCw, RefreshCwOff, Timer as TimerIcon, Watch } from "lucide-react";
+import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, MoreVertical, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import Countdown from "./Countdown";
@@ -21,6 +21,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   const [draggedId, setDraggedId] = useState<TimerId | null>(null);
   const [dragOverId, setDragOverId] = useState<TimerId | null>(null);
   const dragIdRef = useRef<TimerId | null>(null);
+  const [studyMenuOpen, setStudyMenuOpen] = useState(false);
 
   // Sync state from store
   const syncPomodoro = useAppStore(s => s.syncSettings.syncPomodoroWithTimer);
@@ -134,10 +135,50 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
 
   const renderActions = (id: TimerId) => {
     if (id === "study") {
+      const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-left";
+      const itemIcon = "text-[var(--text-secondary)]";
       return (
-        <button onClick={openStudySettings} className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure session" title="Options">
-          <MoreVertical size={18} />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setStudyMenuOpen(v => !v)}
+            className="p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+            aria-label="Session menu" title="Session menu" aria-expanded={studyMenuOpen} aria-haspopup="menu"
+          >
+            <MoreVertical size={18} />
+          </button>
+          {studyMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setStudyMenuOpen(false)} aria-hidden />
+              <div className="absolute right-0 top-full z-50 mt-1 w-44 py-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-lg" role="menu">
+                <button
+                  onClick={() => { window.dispatchEvent(new CustomEvent("study-add-lap")); setStudyMenuOpen(false); }}
+                  className={menuItem} role="menuitem"
+                >
+                  <Flag size={15} className="text-[var(--accent-primary)]" /> Add lap note
+                </button>
+                <button
+                  onClick={() => { openStudySettings(); setStudyMenuOpen(false); }}
+                  className={menuItem} role="menuitem"
+                >
+                  <Settings size={15} className={itemIcon} /> Session options
+                </button>
+                <div className="my-1 border-t border-[var(--border-primary)]" />
+                <button
+                  onClick={() => { window.dispatchEvent(new CustomEvent("study-exit-session")); setStudyMenuOpen(false); }}
+                  className={menuItem} role="menuitem"
+                >
+                  <LogOut size={15} className={itemIcon} /> Exit session
+                </button>
+                <button
+                  onClick={() => { window.dispatchEvent(new CustomEvent("study-delete-session")); setStudyMenuOpen(false); }}
+                  className={`${menuItem} !text-red-500`} role="menuitem"
+                >
+                  <Trash2 size={15} /> Delete session
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       );
     }
     if (id === "pomodoro") {

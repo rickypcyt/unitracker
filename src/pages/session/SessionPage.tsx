@@ -68,17 +68,17 @@ const SessionPage = memo(() => {
       </Helmet>
       <div className="w-full session-page px-4 sm:px-6 py-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
         <div className="w-full max-w-[73rem] mx-auto flex flex-col gap-4">
-          {/* Top: Timers full width */}
-          <div className="w-full" data-tour="session-timer">
-            <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
-          </div>
-
-          {/* Noise Generator + Scratchpad */}
+          {/* Top: Noise Generator + Scratchpad */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+            <ScratchPad />
             <div className="dashboard-noise-card w-full">
               <NoiseGenerator />
             </div>
-            <ScratchPad />
+          </div>
+
+          {/* Timers full width */}
+          <div className="w-full" data-tour="session-timer">
+            <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </div>
         </div>
       </div>

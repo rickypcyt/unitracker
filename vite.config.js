@@ -110,6 +110,7 @@ export default defineConfig(({ command, mode }) => {
           },
           devOptions: {
             enabled: true,
+            suppressWarnings: true,
           },
         }),
       // Bundle analyzer solo cuando se solicita explícitamente

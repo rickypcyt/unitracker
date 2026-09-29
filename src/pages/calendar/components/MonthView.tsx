@@ -29,7 +29,7 @@ const MonthView = ({
   onDayContextMenu,
 }: MonthViewProps) => {
   return (
-    <div className="w-full mt-1 sm:mt-2 relative flex-1 min-h-0 overflow-hidden">
+    <div className="w-full mt-1 sm:mt-2 relative flex-1 min-h-0 overflow-y-auto">
       <div className="h-full w-full max-w-4xl mx-auto flex flex-col min-h-[200px] sm:min-h-[240px]">
         {/* Weekdays */}
         <div className="mb-1 grid w-full flex-shrink-0 grid-cols-7 justify-items-center">
@@ -44,10 +44,7 @@ const MonthView = ({
         </div>
 
         {/* Days */}
-        <div
-          className="grid w-full flex-1 min-h-0 grid-cols-7 gap-2 sm:gap-3"
-          style={{ gridTemplateRows: `repeat(${Math.ceil(calendarDays.length / 7)}, minmax(0, 1fr))` }}
-        >
+        <div className="grid w-full grid-cols-7 gap-2 sm:gap-3">
           {calendarDays.map((dayObj, index) => {
             const dayTasks =
               dayObj.currentMonth && hasTasksWithDeadline(dayObj.date)
@@ -90,7 +87,7 @@ const MonthView = ({
                 className={`
                   select-none cursor-pointer
                   flex flex-col items-center
-                  w-full h-full min-h-0 overflow-hidden rounded-xl p-1.5 sm:p-2
+                  w-full aspect-square min-h-0 overflow-hidden rounded-xl p-1.5 sm:p-2
                   border-2 shadow-sm transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                   ${

@@ -1,4 +1,4 @@
-import { Check, Clock, Flag, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
@@ -261,6 +261,15 @@ const StudyTimer = ({
     window.addEventListener("study-open-settings", handler);
     return () => window.removeEventListener("study-open-settings", handler);
   }, [currentSessionId, updateModal]);
+
+  // Listen for lap add from the panel dropdown menu
+  useEffect(() => {
+    const handler = () => {
+      if (currentSessionId) handleLapButton();
+    };
+    window.addEventListener("study-add-lap", handler);
+    return () => window.removeEventListener("study-add-lap", handler);
+  });
 
   // Listen for exit session from SessionPage header
   useEffect(() => {
@@ -1157,7 +1166,7 @@ const StudyTimer = ({
           );
         })()}
 
-        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[220px] text-left">
+        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[220px] text-left">
             <div className="font-semibold mb-1">Session Title</div>
             <div>{studyState.sessionTitle || summaryData.title || "No Session"}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -1254,21 +1263,21 @@ const StudyTimer = ({
         </div>
       )}
 
-      {/* Controls: time adjustments left, actions right */}
-      <div className="flex flex-wrap justify-between items-center gap-1.5 mt-auto shrink-0 pb-2">
-        <div className="flex gap-1">
-          {timeAdjustmentButtons.map(({
+      {/* Controls: all in a single centered row */}
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pb-2">
+        <div className="flex gap-1 shrink-0">
+          {timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
             label
-          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={adjustment < 0 ? `Subtract ${Math.abs(adjustment / 60)} minutes` : `Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 shrink-0">
           {!isSynced && <>
               <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
-                <RotateCcw size={18} className="text-[var(--text-secondary)]" />
+                <RotateCcw size={18} />
               </button>
 
               {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
@@ -1288,17 +1297,15 @@ const StudyTimer = ({
               <Check size={18} className="text-emerald-400" />
             </button>
           )}
+        </div>
 
-          {currentSessionId && (
-            <button
-              onClick={handleLapButton}
-              className={`timer-ctrl-btn ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
-              aria-label="Add lap note"
-              title="Add lap note"
-            >
-              <Flag size={18} className={lapInputOpen ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} />
-            </button>
-          )}
+        <div className="flex gap-1 shrink-0">
+          {timeAdjustmentButtons.filter(({ adjustment }) => adjustment > 0).map(({
+            adjustment,
+            label
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
+              {label}
+            </button>)}
         </div>
       </div>
 

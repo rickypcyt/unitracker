@@ -1350,7 +1350,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
                 </button>)}
             </div>
             <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
-              <RotateCcw size={18} className="text-[var(--text-secondary)]" />
+              <RotateCcw size={18} />
             </button>
             {!isPomodoroRunning ? <button onClick={() => handleStart()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Start timer">
                 <Play size={18} />

@@ -54,6 +54,7 @@ interface NoiseContextType {
   startSound: (index: number) => Promise<void>;
   stopSound: (index: number) => void;
   setVolume: (index: number, volume: number) => Promise<void>;
+  setMaxVolume: (index: number, maxVolume: number) => void;
   toggleAllSounds: () => Promise<void>;
   isInitialized: boolean;
   initializeAudio: () => Promise<boolean>;
@@ -63,6 +64,7 @@ interface NoiseContextType {
 class AudioEngine {
   private static instance: AudioEngine;
   private masterGain: Tone.Gain | null = null;
+  private masterLimiter: Tone.Limiter | null = null;
   private initialized = false;
 
   static getInstance(): AudioEngine {
@@ -76,6 +78,11 @@ class AudioEngine {
     if (this.initialized) return true;
 
     try {
+      // Large output buffer — ambient noise doesn't need ~10ms latency, and
+      // bigger render chunks survive CPU spikes that would otherwise underrun.
+      // Must happen before any Tone.context access creates the default context.
+      Tone.setContext(new Tone.Context({ latencyHint: "playback" }));
+
       if (!Tone.context || Tone.context.state !== "running") {
         let resolved = false;
 
@@ -113,7 +120,10 @@ class AudioEngine {
       }
 
       if (!this.masterGain) {
-        this.masterGain = new Tone.Gain(1).toDestination();
+        // Single shared output chain: masterGain → limiter → destination.
+        // The limiter prevents digital clipping when several sounds sum.
+        this.masterLimiter = new Tone.Limiter(-1).toDestination();
+        this.masterGain = new Tone.Gain(1).connect(this.masterLimiter);
       }
 
       this.initialized = true;
@@ -124,13 +134,20 @@ class AudioEngine {
     }
   }
 
+  getMasterOut(): Tone.ToneAudioNode {
+    if (!this.masterGain) throw new Error("AudioEngine is not initialized");
+    return this.masterGain;
+  }
+
   isReady(): boolean {
     return this.initialized && Tone.context?.state === "running";
   }
 
   dispose(): void {
     this.masterGain?.dispose();
+    this.masterLimiter?.dispose();
     this.masterGain = null;
+    this.masterLimiter = null;
     this.initialized = false;
   }
 }
@@ -219,12 +236,10 @@ class BrownNoiseNode extends BaseSoundNode {
       knee: 6,
     });
 
-    const limiter = new Tone.Limiter(-6).toDestination();
-
     this.outputGain = new Tone.Gain(volume * 0.4)
       .connect(smoothingFilter)
       .connect(compressor)
-      .connect(limiter);
+      .connect(AudioEngine.getInstance().getMasterOut());
 
     deepBrown.chain(deepFilter, this.deepGain, this.outputGain);
     mainBrown.chain(mainFilter, this.mainGain, this.outputGain);
@@ -246,7 +261,6 @@ class BrownNoiseNode extends BaseSoundNode {
       smoothingFilter,
       compressor,
       this.outputGain,
-      limiter,
     ].forEach((node) => this.registerNode(node));
   }
 
@@ -257,54 +271,19 @@ class BrownNoiseNode extends BaseSoundNode {
 }
 
 class RainSoundNode extends BaseSoundNode {
-  private mainGain: Tone.Gain;
   private backgroundGain: Tone.Gain;
   private topPinkGain: Tone.Gain;
 
   constructor(volume: number) {
     super(volume);
 
-    const noise = new Tone.Noise("white").start();
-    const highpass = new Tone.Filter(1500, "highpass");
-    highpass.Q.value = 0.3;
-    
-    const envelope = new Tone.AmplitudeEnvelope({
-      attack: 0.01,
-      decay: 0.08,
-      sustain: 0,
-      release: 0.03,
-    });
-
     const reverb = new Tone.Reverb({
       decay: 2.5,
       wet: 0.3,
       preDelay: 0.01,
-    }).toDestination();
+    }).connect(AudioEngine.getInstance().getMasterOut());
 
-    this.mainGain = new Tone.Gain(volume * 1.3).connect(reverb);
-
-    noise.connect(highpass);
-    highpass.connect(envelope);
-    envelope.connect(this.mainGain);
-
-    // Additional pink noise layer on top
-    const topPinkNoise = new Tone.Noise("pink").start();
-    this.topPinkGain = new Tone.Gain(volume * 0.075);
-    topPinkNoise.connect(this.topPinkGain);
-    this.topPinkGain.connect(reverb);
-
-    const scheduleRainDrops = (time: number): void => {
-      const interval = Math.random() * 0.25 + 0.05;
-      envelope.triggerAttackRelease(0.1, time);
-
-      const nextDropTime = time + interval;
-      if (nextDropTime < Tone.now() + 60) {
-        Tone.Transport.schedule(scheduleRainDrops, nextDropTime);
-      }
-    };
-
-    Tone.Transport.schedule(scheduleRainDrops, Tone.now());
-
+    // Background rain bed — steady filtered pink noise
     const backgroundRain = new Tone.Noise("pink").start();
     const backgroundFilter = new Tone.Filter(800, "lowpass");
     backgroundFilter.Q.value = 0.4;
@@ -314,16 +293,18 @@ class RainSoundNode extends BaseSoundNode {
     backgroundFilter.connect(this.backgroundGain);
     this.backgroundGain.connect(reverb);
 
+    // Subtle high-frequency pink layer for texture
+    const topPinkNoise = new Tone.Noise("pink").start();
+    this.topPinkGain = new Tone.Gain(volume * 0.075);
+    topPinkNoise.connect(this.topPinkGain);
+    this.topPinkGain.connect(reverb);
+
     [
-      noise,
-      highpass,
-      envelope,
-      topPinkNoise,
-      this.topPinkGain,
       backgroundRain,
       backgroundFilter,
       this.backgroundGain,
-      this.mainGain,
+      topPinkNoise,
+      this.topPinkGain,
       reverb,
     ].forEach((node) => this.registerNode(node));
   }
@@ -332,15 +313,8 @@ class RainSoundNode extends BaseSoundNode {
     this.volume = volume;
     const isMuted = volume === 0;
 
-    if (isMuted) {
-      this.setGainWithRamp(this.mainGain, 0);
-      this.setGainWithRamp(this.backgroundGain, 0);
-      this.setGainWithRamp(this.topPinkGain, 0);
-    } else {
-      this.setGainWithRamp(this.mainGain, volume * 1.3);
-      this.setGainWithRamp(this.backgroundGain, volume * 0.5);
-      this.setGainWithRamp(this.topPinkGain, volume * 0.075);
-    }
+    this.setGainWithRamp(this.backgroundGain, isMuted ? 0 : volume * 0.5);
+    this.setGainWithRamp(this.topPinkGain, isMuted ? 0 : volume * 0.075);
   }
 }
 
@@ -353,9 +327,11 @@ class OceanWavesNode extends BaseSoundNode {
   constructor(volume: number) {
     super(volume);
 
-    this.masterGain = new Tone.Gain(0).toDestination();
+    this.masterGain = new Tone.Gain(0).connect(
+      AudioEngine.getInstance().getMasterOut()
+    );
     const reverb = new Tone.Reverb({
-      decay: 8,
+      decay: 4,
       wet: 0.4,
       preDelay: 0.15,
     }).connect(this.masterGain);
@@ -625,6 +601,26 @@ class SoundStorage {
   static setIsPlaying(key: string, isPlaying: boolean): void {
     localStorage.setItem(`${key}IsPlaying`, isPlaying.toString());
   }
+
+  static getMaxVolume(key: string, index: number, defaultValue: number): number {
+    const stored = localStorage.getItem(`${key}MaxVolume`);
+    if (stored !== null) {
+      const parsed = parseFloat(stored);
+      if (!isNaN(parsed)) return parsed;
+    }
+    // Migrate the old component-level "noiseMaxVolumes" array if present
+    try {
+      const legacy = JSON.parse(localStorage.getItem("noiseMaxVolumes") ?? "null");
+      if (Array.isArray(legacy) && typeof legacy[index] === "number") {
+        return legacy[index];
+      }
+    } catch {}
+    return defaultValue;
+  }
+
+  static setMaxVolume(key: string, maxVolume: number): void {
+    localStorage.setItem(`${key}MaxVolume`, maxVolume.toString());
+  }
 }
 
 // ==================== CONTEXT ====================
@@ -636,12 +632,12 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const [sounds, setSounds] = useState<Sound[]>(() =>
-    SOUND_CONFIGS.map((config) => ({
+    SOUND_CONFIGS.map((config, index) => ({
       key: config.key,
       label: config.label,
       icon: config.icon,
       min: config.min,
-      max: config.max,
+      max: SoundStorage.getMaxVolume(config.key, index, config.max),
       defaultVolume: config.defaultVolume,
       volume: SoundStorage.getVolume(config.key, config.defaultVolume),
       isPlaying: SoundStorage.getIsPlaying(config.key),
@@ -740,15 +736,53 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
     [sounds, startSound]
   );
 
+  const setMaxVolume = useCallback(
+    (index: number, maxVolume: number): void => {
+      const sound = sounds[index];
+      const config = SOUND_CONFIGS[index];
+      if (!sound || !config || !isFinite(maxVolume)) return;
+
+      const clampedMax = Math.max(0.1, maxVolume);
+      const newVolume = Math.min(sound.volume, clampedMax);
+
+      setSounds((prev) =>
+        prev.map((s, i) =>
+          i === index ? { ...s, max: clampedMax, volume: newVolume } : s
+        )
+      );
+
+      SoundStorage.setMaxVolume(sound.key, clampedMax);
+
+      // Clamp the live node if the current volume exceeds the new max —
+      // handled here instead of via setVolume so it never auto-starts sound.
+      if (newVolume !== sound.volume) {
+        SoundStorage.setVolume(sound.key, newVolume);
+        const node = soundNodes.current.get(sound.key);
+        if (node && sound.isPlaying) {
+          node.setVolume(newVolume * config.volumeMultiplier);
+        }
+      }
+    },
+    [sounds]
+  );
+
   const toggleAllSounds = useCallback(async (): Promise<void> => {
     const allPlaying = sounds.every((s) => s.isPlaying);
 
     if (allPlaying) {
       sounds.forEach((_, i) => stopSound(i));
     } else {
-      await Promise.all(
-        sounds.map((s, i) => (!s.isPlaying ? startSound(i) : Promise.resolve()))
-      );
+      // Stagger starts so heavy graphs (reverb impulse responses, noise banks)
+      // are not all built on the same frame — that spike caused audio underruns.
+      sounds
+        .map((s, i) => ({ s, i }))
+        .filter(({ s }) => !s.isPlaying)
+        .forEach(({ i }, order) => {
+          setTimeout(
+            () => void startSound(i).catch(console.error),
+            order * 150
+          );
+        });
     }
   }, [sounds, startSound, stopSound]);
 
@@ -767,6 +801,7 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
         startSound,
         stopSound,
         setVolume,
+        setMaxVolume,
         toggleAllSounds,
         isInitialized,
         initializeAudio,

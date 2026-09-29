@@ -922,7 +922,7 @@ const Countdown: React.FC<CountdownProps> = ({
             <button onClick={() => handleTimeAdjustment(-900)} className="timer-adjust-btn" aria-label="Subtract 15 minutes">-15</button>
           </div>
           <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
-            <RotateCcw size={18} className="text-[var(--text-secondary)]" />
+            <RotateCcw size={18} />
           </button>
           {isCountdownRunning ? <button onClick={() => handlePlayPause()} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Pause countdown">
               <Pause size={18} />

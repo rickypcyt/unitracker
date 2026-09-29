@@ -7,7 +7,7 @@ import {
   SlidersHorizontal,
   Waves,
 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import BaseModal from "@/modals/BaseModal";
 import ReactSlider from "react-slider";
@@ -204,16 +204,12 @@ function NoiseSettingsModal({
   isOpen,
   onClose,
   sounds,
-  setVolume,
-  maxVolumes,
-  setMaxVolumes,
+  setMaxVolume,
 }: {
   isOpen: boolean;
   onClose: () => void;
   sounds: ReturnType<typeof useNoise>["sounds"];
-  setVolume: (index: number, volume: number) => void;
-  maxVolumes: number[];
-  setMaxVolumes: React.Dispatch<React.SetStateAction<number[]>>;
+  setMaxVolume: (index: number, maxVolume: number) => void;
 }) {
   const [selectedPresets, setSelectedPresets] = useState<[number, number, number]>([0, 0, 0]);
 
@@ -387,13 +383,10 @@ function NoiseSettingsModal({
                   min={0.1}
                   max={5}
                   step={0.1}
-                  value={maxVolumes[idx]}
+                  value={sound.max}
                   onChange={(e) => {
                     const value = parseFloat(e.target.value);
-                    setMaxVolumes((vols) =>
-                      vols.map((v, i) => (i === idx ? value : v))
-                    );
-                    if (sound.volume > value) setVolume(idx, value);
+                    if (!isNaN(value)) setMaxVolume(idx, value);
                   }}
                   className="w-20 px-3 py-1.5 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
                 />
@@ -445,6 +438,7 @@ export default function NoiseGenerator() {
     startSound,
     stopSound,
     setVolume,
+    setMaxVolume,
     isInitialized,
     initializeAudio,
   } = useNoise();
@@ -464,27 +458,14 @@ export default function NoiseGenerator() {
         }
       });
     } else {
-      // Start all sounds
+      // Stagger starts so the audio graphs aren't all built on the same frame
       sounds.forEach((_sound, idx) => {
-        startSound(idx);
+        if (!_sound.isPlaying) {
+          setTimeout(() => void startSound(idx).catch(console.error), idx * 150);
+        }
       });
     }
   }, [anySoundPlaying, sounds, startSound, stopSound, isInitialized, initializeAudio]);
-
-  // Max volumes
-  const [maxVolumes, setMaxVolumes] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem("noiseMaxVolumes");
-      const arr = saved ? JSON.parse(saved) : null;
-      if (Array.isArray(arr) && arr.length === 3) return arr;
-    } catch {}
-    return [4, 4, 4];
-  });
-
-  useEffect(
-    () => localStorage.setItem("noiseMaxVolumes", JSON.stringify(maxVolumes)),
-    [maxVolumes]
-  );
 
   const handleStart = useCallback(
     async (index: number) => {
@@ -572,7 +553,7 @@ export default function NoiseGenerator() {
               isPlaying={sound.isPlaying}
               start={() => handleStart(idx)}
               stop={() => stopSound(idx)}
-              max={maxVolumes[idx] || 4}
+              max={sound.max}
             />
           </motion.div>
         ))}
@@ -583,9 +564,7 @@ export default function NoiseGenerator() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         sounds={sounds}
-        setVolume={setVolume}
-        maxVolumes={maxVolumes}
-        setMaxVolumes={setMaxVolumes}
+        setMaxVolume={setMaxVolume}
       />
     </div>
   );
