@@ -1,4 +1,5 @@
 import { memo, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useUi } from "@/store/appStore";
 
 import { Helmet } from "react-helmet-async";
@@ -45,6 +46,16 @@ const SessionPage = memo(() => {
     }
   }, [isSynced, isRunning, resetKey]);
 
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
     <>
       <Helmet>
@@ -67,20 +78,27 @@ const SessionPage = memo(() => {
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
       <div className="w-full session-page px-4 sm:px-6 lg:px-2 py-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
-        <div className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4"
+        >
           {/* Top: Noise Generator + Scratchpad */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-            <ScratchPad />
-            <div className="dashboard-noise-card w-full">
+            <motion.div variants={item} className="h-full">
+              <ScratchPad />
+            </motion.div>
+            <motion.div variants={item} className="dashboard-noise-card w-full h-full">
               <NoiseGenerator />
-            </div>
+            </motion.div>
           </div>
 
           {/* Timers full width */}
-          <div className="w-full" data-tour="session-timer">
+          <motion.div variants={item} className="w-full" data-tour="session-timer">
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </>
   );
