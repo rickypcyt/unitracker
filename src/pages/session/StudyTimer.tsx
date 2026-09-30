@@ -1,4 +1,4 @@
-import { Check, Clock, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, Clock, Flag, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/study-timer/useStudySync";
 import { useStudyTimer } from "@/hooks/useTimers";
 import { useAppStore, useSessionSyncSettings } from "@/store/appStore";
@@ -94,8 +94,10 @@ const devLog = (..._args: unknown[]) => {
 
 const formatPauseDuration = (seconds: number): string => {
   const s = Math.max(0, Math.round(seconds));
-  const m = Math.floor(s / 60);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
   const remS = s % 60;
+  if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}m ${remS.toString().padStart(2, "0")}s`;
   if (m > 0) return `${m}m ${remS.toString().padStart(2, "0")}s`;
   return `${remS}s`;
 };
@@ -1264,7 +1266,7 @@ const StudyTimer = ({
       )}
 
       {/* Controls: all in a single centered row */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pb-2">
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2">
         <div className="flex gap-1 shrink-0">
           {timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
@@ -1280,6 +1282,17 @@ const StudyTimer = ({
                 <RotateCcw size={18} />
               </button>
 
+              {currentSessionId && (
+                <button
+                  onClick={handleLapButton}
+                  className={`timer-ctrl-btn ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
+                  aria-label="Add lap note"
+                  title="Add lap note"
+                >
+                  <Flag size={18} className={lapInputOpen ? 'text-[var(--accent-primary)]' : ''} />
+                </button>
+              )}
+
               {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
                   <Play size={18} />
                 </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary" aria-label="Pause timer" title="Pause timer">
@@ -1288,14 +1301,25 @@ const StudyTimer = ({
             </>}
 
           {currentSessionId && (
-            <button
-              onClick={() => updateModal("isFinishModalOpen", true)}
-              className="timer-ctrl-btn"
-              aria-label="Finish session"
-              title="Finish session"
-            >
-              <Check size={18} className="text-emerald-400" />
-            </button>
+            <>
+              <button
+                onClick={() => updateModal("isFinishModalOpen", true)}
+                className="timer-ctrl-btn"
+                aria-label="Finish session"
+                title="Finish session"
+              >
+                <Check size={18} className="text-emerald-400" />
+              </button>
+
+              <button
+                onClick={() => updateModal("isDeleteModalOpen", true)}
+                className="timer-ctrl-btn"
+                aria-label="Cancel session"
+                title="Cancel session"
+              >
+                <X size={18} className="text-red-400" />
+              </button>
+            </>
           )}
         </div>
 

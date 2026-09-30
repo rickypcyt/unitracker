@@ -1311,6 +1311,11 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
           const circumference = 2 * Math.PI * radius;
           return (
             <div className="relative w-32 h-32">
+              {!syncPomodoroWithTimer && (
+                <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+                  <RotateCcw size={18} />
+                </button>
+              )}
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle
@@ -1342,22 +1347,21 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
       </div>
 
       {/* Timer Controls with side adjustment buttons */}
-      <div className="flex flex-wrap justify-center items-center gap-1.5 mt-auto shrink-0 pb-2">
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2">
         {!syncPomodoroWithTimer && <>
-            <div className="flex gap-1">
+            <div className="flex gap-1 shrink-0">
               {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>
                   {adj / 60}
                 </button>)}
             </div>
-            <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
-              <RotateCcw size={18} />
-            </button>
-            {!isPomodoroRunning ? <button onClick={() => handleStart()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Start timer">
-                <Play size={18} />
-              </button> : <button onClick={() => handleStop()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Pause timer">
-                <Pause size={18} />
-              </button>}
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1 shrink-0">
+              {!isPomodoroRunning ? <button onClick={() => handleStart()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Start timer">
+                  <Play size={18} />
+                </button> : <button onClick={() => handleStop()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Pause timer">
+                  <Pause size={18} />
+                </button>}
+            </div>
+            <div className="flex gap-1 shrink-0">
               {[300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Add ${adj / 60} minutes`}>
                   +{adj / 60}
                 </button>)}

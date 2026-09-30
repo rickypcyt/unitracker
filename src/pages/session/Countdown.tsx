@@ -821,6 +821,11 @@ const Countdown: React.FC<CountdownProps> = ({
             const ringColor = '#22c55e';
             return (
               <div className="relative w-32 h-32">
+                {!(isSynced || syncCountdownWithTimer) && (
+                  <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+                    <RotateCcw size={18} />
+                  </button>
+                )}
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                   <circle
@@ -862,6 +867,11 @@ const Countdown: React.FC<CountdownProps> = ({
           })()
         ) : (
           <div className="relative w-32 h-32">
+            {!(isSynced || syncCountdownWithTimer) && (
+              <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+                <RotateCcw size={18} />
+              </button>
+            )}
             <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
               <circle cx="60" cy="60" r={52} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
             </svg>
@@ -916,20 +926,19 @@ const Countdown: React.FC<CountdownProps> = ({
         )}
       </div>
 
-      {!(isSynced || syncCountdownWithTimer) && <div className="flex flex-wrap justify-center items-center gap-1.5 mt-auto shrink-0 pb-2">
-          <div className="flex gap-1">
+      {!(isSynced || syncCountdownWithTimer) && <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2">
+          <div className="flex gap-1 shrink-0">
             <button onClick={() => handleTimeAdjustment(-1800)} className="timer-adjust-btn" aria-label="Subtract 30 minutes">-30</button>
             <button onClick={() => handleTimeAdjustment(-900)} className="timer-adjust-btn" aria-label="Subtract 15 minutes">-15</button>
           </div>
-          <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer">
-            <RotateCcw size={18} />
-          </button>
-          {isCountdownRunning ? <button onClick={() => handlePlayPause()} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Pause countdown">
-              <Pause size={18} />
-            </button> : <button onClick={() => handlePlayPause()} disabled={calculateSeconds(baselineTimeRef.current) === 0} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Start countdown">
-              <Play size={18} />
-            </button>}
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1 shrink-0">
+            {isCountdownRunning ? <button onClick={() => handlePlayPause()} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Pause countdown">
+                <Pause size={18} />
+              </button> : <button onClick={() => handlePlayPause()} disabled={calculateSeconds(baselineTimeRef.current) === 0} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Start countdown">
+                <Play size={18} />
+              </button>}
+          </div>
+          <div className="flex gap-1 shrink-0">
             <button onClick={() => handleTimeAdjustment(900)} className="timer-adjust-btn" aria-label="Add 15 minutes">+15</button>
             <button onClick={() => handleTimeAdjustment(1800)} className="timer-adjust-btn" aria-label="Add 30 minutes">+30</button>
           </div>

@@ -214,7 +214,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   return (
     <div className="flex flex-col gap-3">
       {/* Timer Panels */}
-      <div className="grid gap-2 place-items-center justify-center grid-cols-1 lg:grid-cols-[repeat(3,minmax(0,24rem))]">
+      <div className="grid gap-2 w-full grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))] lg:[&>*:nth-child(3)]:col-span-2 lg:[&>*:nth-child(3)]:justify-self-center lg:[&>*:nth-child(3)]:max-w-[24rem] xl:[&>*:nth-child(3)]:col-span-1 xl:[&>*:nth-child(3)]:max-w-none">
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;
