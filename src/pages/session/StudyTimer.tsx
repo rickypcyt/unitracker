@@ -640,7 +640,7 @@ const StudyTimer = ({
       time: 0,
       sessionStatus: preserveSession ? studyState.sessionStatus : "inactive",
       lastPausedAt: null,
-      pauseHistory: preserveSession ? studyState.pauseHistory : []
+      pauseHistory: []
     });
     setStudyRunning(false);
     setStudyTimerState("stopped");
@@ -657,10 +657,10 @@ const StudyTimer = ({
         isRunning: false
       }
     }));
-  }, [studyState.sessionStatus, studyState.pauseHistory, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
+  }, [studyState.sessionStatus, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
 
   // ── Core controls ─────────────────────────────────────────────────────────
-  const start = useCallback(async (baseTimestamp: number, fromSync = false, seedTime?: number) => {
+  const start = useCallback(async (baseTimestamp: number, fromSync = false, seedTime?: number, pauseHistoryOverride?: PauseEntry[]) => {
     if (isStudyRunningRedux) return;
     if (!isLoggedIn) {
       updateModal("isLoginPromptOpen", true);
@@ -679,7 +679,7 @@ const StudyTimer = ({
       timeAtStart: currentTime,
       time: currentTime,
       sessionStatus: "active",
-      pauseHistory: closeLastPauseEntry(studyState.pauseHistory),
+      pauseHistory: pauseHistoryOverride ?? closeLastPauseEntry(studyState.pauseHistory),
       lastPausedAt: null
     });
     setStudyRunning(true);
@@ -770,7 +770,9 @@ const StudyTimer = ({
       timeAtStart: duration,
       isRunning: false,
       lastStart: null,
-      sessionStatus: "active"
+      sessionStatus: "active",
+      pauseHistory: [],
+      lastPausedAt: null
     });
     updateTimerTime(duration, false);
     const savedRaw = getFromLocalStorage<string | null>(STORAGE_KEYS.STUDY_TIMER_STATE, null, false);
@@ -953,6 +955,8 @@ const StudyTimer = ({
       const stateUpdates: Partial<StudyState> = {
         sessionStatus: "active",
         time: initialSeconds,
+        pauseHistory: [],
+        lastPausedAt: null,
         sessionTitle: title || studyState.sessionTitle || "",
         sessionDescription: description || studyState.sessionDescription || ""
       };
@@ -960,7 +964,7 @@ const StudyTimer = ({
       if (typeof syncPomo === "boolean") setSyncPomodoroWithTimer(syncPomo);
       if (typeof syncCountdown === "boolean") setSyncCountdownWithTimer(syncCountdown);
       updateModal("isStartModalOpen", false);
-      start(Date.now(), true, initialSeconds);
+      start(Date.now(), true, initialSeconds, []);
     } catch (e) {
       console.error("[StudyTimer] Error in handleStartSession:", e);
       toast.error("Could not start the session.");
@@ -1000,7 +1004,7 @@ const StudyTimer = ({
       }
       updateSessionId(sessionId);
       updateModal("isSessionsModalOpen", false);
-      start(Date.now(), true, initialSeconds);
+      start(Date.now(), true, initialSeconds, []);
     } catch (error) {
       console.error("[StudyTimer] Error in handleSessionSelected:", error);
       toast.error("Error starting session");
