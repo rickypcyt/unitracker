@@ -1,7 +1,7 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useFriendManagement } from "@/hooks/useFriendManagement";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
 import { useWorkspace } from "@/store/appStore";
-import { SettingsContent } from "@/modals/Settings";
+import { SettingsContent } from "@/modals/settings/Settings";
 
 const SettingsPage = () => {
   const { user } = useAuth();

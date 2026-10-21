@@ -1,7 +1,7 @@
 import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 interface Note {
   id?: string;

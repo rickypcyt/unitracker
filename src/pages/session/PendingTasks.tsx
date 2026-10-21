@@ -2,13 +2,13 @@ import { ArrowRight, CalendarDays, CheckCircle2, Circle, EyeOff, ListTodo, Penci
 import { useEffect, useMemo } from 'react';
 import { format, isBefore, isToday, isValid, parseISO, startOfDay } from 'date-fns';
 import { track } from '@vercel/analytics';
-import { useAuth } from '@/hooks/useAuth';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useSessionTaskActions } from '@/hooks/useSessionTaskActions';
-import { useNavigation } from '@/navbar/NavigationContext';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useLocalStorage } from '@/hooks/common/useLocalStorage';
+import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
+import { useNavigation } from '@/navigation/NavigationContext';
 import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
 import { demoTasks } from '@/utils/demoData';
-import ActionTooltip from '@/components/ActionTooltip';
+import ActionTooltip from '@/components/ui/ActionTooltip';
 import type { Task } from '@/schemas/task';
 
 const getDueDate = (task: Task) => {
@@ -60,18 +60,18 @@ const PendingTasks = () => {
 
   return (
     <section aria-labelledby="pending-tasks-title" className="w-full h-full rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <ListTodo size={18} className="text-[var(--accent-primary)]" />
           </div>
-          <h3 id="pending-tasks-title" className="text-base sm:text-lg font-semibold text-[var(--text-primary)]">Pending Tasks</h3>
-          <span className="text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
+          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">Pending Tasks</h3>
+          <span className="shrink-0 text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
         </div>
-        <div className="ml-auto flex items-center gap-2 shrink-0">
+        <div className="ml-auto flex flex-row-reverse sm:flex-row items-center gap-2 shrink-0">
           <ActionTooltip content="Create a new task in your current workspace.">
-            <button onClick={() => editTask(null)} aria-label="New task" className="min-h-11 flex items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-semibold bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20">
-              <Plus size={18} /><span>New task</span>
+            <button onClick={() => editTask(null)} aria-label="New task" className="min-h-11 min-w-11 flex items-center justify-center gap-1.5 rounded-lg px-2 sm:px-3 text-sm font-semibold bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20">
+              <Plus size={18} /><span className="hidden sm:inline">New task</span>
             </button>
           </ActionTooltip>
           <ActionTooltip content="Open Tasks to manage the tasks in your workspace.">

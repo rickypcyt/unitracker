@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useTasks, useWorkspace } from '@/store/appStore';
 import { demoTasks } from '@/utils/demoData';
 import DayTasksPopover from './DayTasksPopover';

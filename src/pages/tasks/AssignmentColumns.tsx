@@ -1,5 +1,5 @@
 import { AssignmentCard } from './AssignmentCard';
-import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
+import type { ColumnCount } from '@/modals/tasks/TaskPageSettingsModal';
 import React from 'react';
 
 interface AssignmentColumnsProps {

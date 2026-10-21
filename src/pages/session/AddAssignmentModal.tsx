@@ -1,7 +1,7 @@
 import { BookOpen } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import BaseModal from '@/modals/BaseModal';
+import BaseModal from '@/modals/shared/BaseModal';
 
 interface AddAssignmentModalProps {
   existingAssignments: string[];

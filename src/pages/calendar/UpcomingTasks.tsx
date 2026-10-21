@@ -1,10 +1,10 @@
 import { CalendarClock, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTasksOnly, useTasksLoading, useWorkspace } from '@/store/appStore';
-import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
-import { useAuth } from '@/hooks/useAuth';
+import { ALL_WORKSPACE_ID } from '@/hooks/tasks/useTaskBoard';
+import { useAuth } from '@/hooks/auth/useAuth';
 import TaskForm from '@/pages/tasks/TaskForm';
-import TaskViewModal from '@/modals/TaskViewModal';
+import TaskViewModal from '@/modals/tasks/TaskViewModal';
 
 const UpcomingTasks = ({ limit = 8 }: { limit?: number }) => {
   const tasks = useTasksOnly();

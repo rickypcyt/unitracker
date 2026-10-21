@@ -1,5 +1,5 @@
 import AIPreviewModal from './AIPreviewModal';
-import BaseModal from '@/modals/BaseModal';
+import BaseModal from '@/modals/shared/BaseModal';
 import { addTask } from '@/store/TaskActions';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';

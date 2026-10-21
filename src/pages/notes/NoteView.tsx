@@ -3,7 +3,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 
 
 import MobileNotesSelector from './MobileNotesSelector';
 
-const MarkdownWysiwyg = lazy(() => import('../../MarkdownWysiwyg'));
+const MarkdownWysiwyg = lazy(() => import('@/components/editor/MarkdownWysiwyg'));
 
 // Loading component for the editor
 const EditorLoader: React.FC = () => (

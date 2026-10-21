@@ -1,7 +1,7 @@
 import { BookOpen, Calendar, FileText, Folder, Plus, Search, Sparkles, Tag } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import NotesCreateModal from '../../modals/NotesCreateModal';
+import NotesCreateModal from '@/modals/notes/NotesCreateModal';
 import { getLocalDateString } from '@/utils/dateUtils';
 
 interface WelcomeViewProps {

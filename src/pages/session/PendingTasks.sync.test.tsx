@@ -4,10 +4,10 @@ import PendingTasks from './PendingTasks';
 import { useAppStore } from '../../store/appStore';
 
 vi.mock('@/utils/supabaseClient', () => ({ supabase: {} }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true, isAuthLoading: false, user: { id: 'user-1' } }) }));
-vi.mock('@/navbar/NavigationContext', () => ({ useNavigation: () => ({ navigateTo: vi.fn() }) }));
+vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true, isAuthLoading: false, user: { id: 'user-1' } }) }));
+vi.mock('@/navigation/NavigationContext', () => ({ useNavigation: () => ({ navigateTo: vi.fn() }) }));
 vi.mock('@vercel/analytics', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/useSessionTaskActions', () => ({ useSessionTaskActions: () => ({ busy: null, editTask: vi.fn(), toggleTask: vi.fn(), requestDelete: vi.fn(), modals: null }) }));
+vi.mock('@/hooks/session/useSessionTaskActions', () => ({ useSessionTaskActions: () => ({ busy: null, editTask: vi.fn(), toggleTask: vi.fn(), requestDelete: vi.fn(), modals: null }) }));
 
 const original = { id: 'task-1', title: 'Physics exam', completed: false, completed_at: null, deadline: '2030-02-01', workspace_id: 'ws-1' };
 

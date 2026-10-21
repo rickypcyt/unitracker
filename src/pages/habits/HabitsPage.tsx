@@ -2,13 +2,13 @@ import { ChevronLeft, ChevronRight, Flame, Plus, Target, TrendingUp, Trophy } fr
 import { memo, useEffect, useMemo, useState } from 'react';
 
 import { Habit } from '../../types/common';
-import EmptyState from '@/components/EmptyState';
-import HabitCreateModal from '../../modals/HabitCreateModal';
-import HabitEditModal from '../../modals/HabitEditModal';
+import EmptyState from '@/components/ui/EmptyState';
+import HabitCreateModal from '@/modals/habits/HabitCreateModal';
+import HabitEditModal from '@/modals/habits/HabitEditModal';
 import { Helmet } from "react-helmet-async";
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import { useHabits } from '../../hooks/useHabits';
+import { useHabits } from '@/hooks/habits/useHabits';
 
 const calculateStreak = (completions: Record<string, boolean>): { current: number; best: number } => {
   const today = new Date();

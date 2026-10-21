@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { AssignmentSortMenu } from "@/components/AssignmentSortMenu";
+import { AssignmentSortMenu } from "@/pages/tasks/components/AssignmentSortMenu";
 import { CheckCircle2, ChevronDown, ChevronRight } from "lucide-react";
-import { QuickDatePicker } from "@/modals/QuickDatePicker";
+import { QuickDatePicker } from "@/modals/shared/QuickDatePicker";
 import RecurringTasksToggle from "@/pages/calendar/RecurringTasksToggle";
 import { Task } from "@/types/taskStorage";
 import TaskFilter from "@/pages/calendar/TaskFilter";
 import TaskForm from "@/pages/tasks/TaskForm";
 import { TaskItem } from "@/pages/tasks/TaskItem";
-import { TaskListMenu } from "@/modals/TaskListMenu";
+import { TaskListMenu } from "@/modals/tasks/TaskListMenu";
 import WorkspaceSelector from "@/pages/calendar/WorkspaceSelector";
-import { useTaskManager } from "@/hooks/useTaskManager";
+import { useTaskManager } from "@/hooks/tasks/useTaskManager";
 
 interface ContextMenuState {
   x: number;

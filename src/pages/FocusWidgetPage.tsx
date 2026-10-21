@@ -1,16 +1,16 @@
 import { Coffee, Plus, X } from "lucide-react";
-import { formatStudyTime, useStudyTimer } from "@/hooks/useTimers";
+import { formatStudyTime, useStudyTimer } from "@/hooks/session/useTimers";
 import { useEffect, useState } from "react";
 
-import SessionsModal from "@/modals/TodaysSessionsModal";
-import StartSessionModal from "@/modals/StartSessionModal";
+import SessionsModal from "@/modals/session/TodaysSessionsModal";
+import StartSessionModal from "@/modals/session/StartSessionModal";
 import { formatDateShort } from "@/utils/dateUtils";
 import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { useAppStore } from "@/store/appStore";
-import { useNavigation } from "@/navbar/NavigationContext";
+import { useNavigation } from "@/navigation/NavigationContext";
 import { useNoise } from "@/utils/NoiseContext";
-import { useStudyTimerState } from "@/hooks/study-timer/useStudyTimerState";
+import { useStudyTimerState } from "@/hooks/session/useStudyTimerState";
 
 const FocusWidgetPage = () => {
   const { navigateTo } = useNavigation();

@@ -1,14 +1,14 @@
 import { BookOpen, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFetchTasks, useTasksOnly, useTasksLoading, useWorkspace } from '@/store/appStore';
-import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigation } from '@/navbar/NavigationContext';
+import { ALL_WORKSPACE_ID } from '@/hooks/tasks/useTaskBoard';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useNavigation } from '@/navigation/NavigationContext';
 
 import AddAssignmentModal from './AddAssignmentModal';
-import LoginPromptModal from '@/modals/LoginPromptModal';
+import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
-import WorkspaceCreateModal from '@/modals/WorkspaceCreateModal';
+import WorkspaceCreateModal from '@/modals/workspaces/WorkspaceCreateModal';
 
 type AssignmentSummary = {
   name: string;

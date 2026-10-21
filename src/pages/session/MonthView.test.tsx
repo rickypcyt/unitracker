@@ -4,7 +4,7 @@ import MonthView, { getDayTasks } from './MonthView';
 import type { Task } from '../../schemas/task';
 
 const mocks = vi.hoisted(() => ({ tasks: [] as Task[], currentWorkspace: null as { id: string } | null }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true }) }));
+vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true }) }));
 vi.mock('@/store/appStore', () => ({ useTasks: () => ({ tasks: mocks.tasks }), useWorkspace: () => ({ currentWorkspace: mocks.currentWorkspace }) }));
 vi.mock('./DayTasksPopover', () => ({ default: ({ day, tasks }: { day: Date | null; tasks: Task[] }) => day ? <div role="dialog">{tasks.map(task => <span key={task.id}>{task.title}</span>)}</div> : null }));
 

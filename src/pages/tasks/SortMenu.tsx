@@ -1,4 +1,4 @@
-import BaseMenu from '@/modals/BaseMenu';
+import BaseMenu from '@/modals/shared/BaseMenu';
 
 interface SortMenuProps {
   x: number;

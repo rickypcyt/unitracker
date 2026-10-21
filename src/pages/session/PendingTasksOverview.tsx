@@ -1,8 +1,8 @@
 import { ChevronRight, CircleDot, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTasksOnly, useTasksLoading, useWorkspace } from '@/store/appStore';
-import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
-import { useNavigation } from '@/navbar/NavigationContext';
+import { ALL_WORKSPACE_ID } from '@/hooks/tasks/useTaskBoard';
+import { useNavigation } from '@/navigation/NavigationContext';
 
 const PendingTasksOverview = ({ limit = 6 }: { limit?: number }) => {
   const tasks = useTasksOnly();

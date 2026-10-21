@@ -1,6 +1,6 @@
 import { CheckCircle2, Clock, Flame, Timer } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import { useLaps, useTasksOnly } from '@/store/appStore';
 import { supabase } from '@/utils/supabaseClient';
 

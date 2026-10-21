@@ -1,11 +1,10 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useAppStore, useWorkspace } from '@/store/appStore';
 
-import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
+import { ALL_WORKSPACE_ID } from '@/hooks/tasks/useTaskBoard';
 import Calendar, { } from '@/pages/calendar/Calendar';
 import { Helmet } from 'react-helmet-async';
 import { RecurringTasksProvider } from '@/pages/calendar/RecurringTasksContext';
-import UpcomingTasks from '@/pages/calendar/UpcomingTasks';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLocation } from 'react-router-dom';
 
@@ -67,7 +66,7 @@ const CalendarPage = memo(() => {
       </Helmet>
       
       <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
-        <div className="grid w-full grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.8fr)]">
+        <div className="w-full">
           {/* Calendar - month view only */}
           <div className="min-w-0">
             <Calendar
@@ -77,9 +76,6 @@ const CalendarPage = memo(() => {
             />
           </div>
 
-          <aside className="min-w-0">
-            <UpcomingTasks limit={8} />
-          </aside>
         </div>
       </div>
     </RecurringTasksProvider>

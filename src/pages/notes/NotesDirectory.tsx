@@ -1,7 +1,7 @@
 import { Calendar, ChevronLeft, FileText, FolderOpen, Plus, Search, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import NotesCreateModal from '../../modals/NotesCreateModal';
+import NotesCreateModal from '@/modals/notes/NotesCreateModal';
 import { getLocalDateString } from '@/utils/dateUtils';
 
 type Note = {

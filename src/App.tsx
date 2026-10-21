@@ -1,24 +1,24 @@
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/auth/useAuth";
 import { FC, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { NavigationProvider, PAGE_PATHS, useNavigation } from "@/navbar/NavigationContext";
+import { NavigationProvider, PAGE_PATHS, useNavigation } from "@/navigation/NavigationContext";
 import { useAuthActions, useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from "@/store/appStore";
 import type { Workspace } from "@/types/workspace";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
-import FloatingFooter from "@/components/FloatingFooter";
+import FloatingFooter from "@/components/layout/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
-import PageLoader from "@/components/PageLoader";
+import PageLoader from "@/components/ui/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import TourManager from "./components/TourManager";
-import Settings from "@/modals/Settings";
+import TourManager from "@/components/onboarding/TourManager";
+import Settings from "@/modals/settings/Settings";
 
-import UserModal from "@/modals/UserModal";
+import UserModal from "@/modals/auth/UserModal";
 import { supabase } from "@/utils/supabaseClient";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
-import { useFriendManagement } from "@/hooks/useFriendManagement";
-import { useWorkspaceLoader } from "@/hooks/useWorkspaceLoader";
+import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
+import { useWorkspaceLoader } from "@/hooks/workspaces/useWorkspaceLoader";
 
 // Direct imports for stacked pages
 import CalendarPage from "@/pages/calendar/CalendarPage";
@@ -29,7 +29,7 @@ import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
-import Navbar from "@/components/Sidebar";
+import Navbar from "@/components/layout/Sidebar";
 
 // Preload map: import functions for each page to enable hover-based preloading
 const preloadMap: Record<string, () => Promise<unknown>> = {

@@ -12,7 +12,7 @@ import { Activity, Clock, Mail, TrendingUp, Users } from 'lucide-react';
 
 import EmailConfigPanel from './EmailConfigPanel';
 import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 interface Profile {
   id: string;

@@ -1,0 +1,286 @@
+import { Calendar, CheckCircle2, Circle, Clock, Edit, Tag, Trash2 } from "lucide-react";
+import { formatDate, formatLongDateTime, fromNow } from "@/utils/dateUtils";
+
+import BaseModal from "@/modals/shared/BaseModal";
+import React from "react";
+import { getTaskStatusConfig } from "@/constants/taskStatus";
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  completed_at: string | null;
+  created_at?: string;
+  updated_at?: string;
+  deadline?: string;
+  due_date?: string;
+  difficulty?: string;
+  assignment?: string;
+  status?: string;
+  recurrence_type?: 'none' | 'weekly' | null;
+  recurrence_weekdays?: number[] | null;
+  start_at?: string | null;
+  end_at?: string | null;
+  activetask?: boolean;
+  [key: string]: unknown;
+}
+interface TaskViewModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  task: Task;
+  onEdit: (task: Task) => void;
+  onDelete?: (task: Task) => void;
+}
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const TaskViewModal: React.FC<TaskViewModalProps> = ({
+  isOpen,
+  onClose,
+  task,
+  onEdit,
+  onDelete
+}) => {
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'text-[#00FF41]';
+      case 'medium':
+        return 'text-[#00BFFF]';
+      case 'hard':
+        return 'text-[#FF003C]';
+      default:
+        return 'text-[var(--text-secondary)]';
+    }
+  };
+  const getStatusInfo = (status?: string) => {
+    const config = getTaskStatusConfig(status);
+    return {
+      label: config.label,
+      color: `${config.textColor} ${config.bgColor}/10 ${config.borderColor}`
+    };
+  };
+  const getDifficultyBgColor = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'bg-green-500/20 border-green-500/30';
+      case 'medium':
+        return 'bg-blue-500/20 border-blue-500/30';
+      case 'hard':
+        return 'bg-red-500/20 border-red-500/30';
+      default:
+        return 'bg-[var(--bg-secondary)] border-[var(--border-primary)]';
+    }
+  };
+  const to12Hour = (time24: string | null | undefined): string => {
+    if (!time24) return '';
+    try {
+      let hours = 0;
+      let minutes = 0;
+
+      // Handle ISO date format: '2026-02-09T17:00:00+00:00'
+      if (time24.includes('T')) {
+        const timePart = time24.split('T')[1]; // '17:00:00+00:00'
+        if (!timePart) return '';
+
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle timestamptz format: '2026-02-09 10:00:00+00'
+      else if (time24.includes(' ')) {
+        const timePart = time24.split(' ')[1]; // '10:00:00+00'
+        if (!timePart) return '';
+
+        // Remove timezone info if present
+        const cleanTimePart = timePart.split('+')[0]?.split('-')[0];
+        if (!cleanTimePart) return '';
+        const parts = cleanTimePart.split(':').map(Number);
+        hours = parts[0] ?? 0;
+        minutes = parts[1] ?? 0;
+      }
+      // Handle simple time format: "HH:MM" or "HH:MM:SS"
+      else {
+        const time = time24.slice(0, 5);
+        const [h, m] = time.split(':').map(Number);
+        hours = h ?? 0;
+        minutes = m ?? 0;
+      }
+
+      // Validate hours and minutes
+      if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        console.warn('Invalid time values in to12Hour:', time24, {
+          hours,
+          minutes
+        });
+        return '';
+      }
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+      return `${String(displayHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    } catch (error) {
+      console.warn('Error in to12Hour:', time24, error);
+      return '';
+    }
+  };
+  const isRecurring = task.recurrence_type === 'weekly' && Array.isArray(task.recurrence_weekdays) && task.recurrence_weekdays.length > 0;
+  return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-3xl" padding="none" showHeader={false}>
+      <div className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
+        {/* Header */}
+        <div className="p-6 border-b border-[var(--border-primary)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-[var(--text-primary)]">Task Details</h2>
+            <div className="flex items-center gap-3">
+              {task.completed ? <div className="px-3 py-1 rounded-full text-sm font-medium border bg-green-500/20 text-green-400 border-green-500/30">
+                  Completed
+                </div> : task.status ? <div className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusInfo(task.status).color}`}>
+                  {getStatusInfo(task.status).label}
+                </div> : <div className="px-3 py-1 rounded-full text-sm font-medium border bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                  Pending
+                </div>}
+              {task.activetask && <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400 border-2 border-blue-500/30">
+                  Active
+                </div>}
+              {isRecurring && <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-500/20 text-purple-400 border-2 border-purple-500/30">
+                  Recurring
+                </div>}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} />
+              <span>Created {task.created_at ? fromNow(task.created_at) : 'Unknown'}</span>
+            </div>
+            {(task.deadline || task.due_date) && <div className="flex items-center gap-2">
+                <Clock size={16} />
+                <span>Due {fromNow(task.deadline || task.due_date)}</span>
+              </div>}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+          {/* Basic Info */}
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Tag size={18} className="text-[var(--accent-primary)]" />
+              Basic Information
+            </h3>
+            <div className="grid grid-cols-2 gap-6">
+              {/* First Row: Title and Assignment */}
+              <div>
+                <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Title</label>
+                <p className="text-[var(--text-primary)] text-lg font-medium">{task.title}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Assignment</label>
+                <p className="text-[var(--text-primary)] font-semibold capitalize">{task.assignment || 'No assignment'}</p>
+              </div>
+              
+              {/* Second Row: Difficulty and Status */}
+              <div>
+                <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Difficulty</label>
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${getDifficultyBgColor(task.difficulty || 'medium')}`}>
+                  <Circle size={16} className={getDifficultyColor(task.difficulty || 'medium')} />
+                  <span className={`font-medium capitalize ${getDifficultyColor(task.difficulty || 'medium')}`}>
+                    {task.difficulty || 'Medium'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Status</label>
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusInfo(task.status).color}`}>
+                  <div className="w-2 h-2 rounded-full bg-current"></div>
+                  <span className="font-medium">
+                    {getStatusInfo(task.status).label}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          {task.description && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Description</h3>
+              <div className="prose prose-invert max-w-none text-[var(--text-primary)]" dangerouslySetInnerHTML={{
+            __html: task.description
+          }} />
+            </div>}
+
+          {/* Schedule Info */}
+          <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+              <Clock size={18} className="text-[var(--accent-primary)]" />
+              Schedule
+            </h3>
+            <div className="space-y-3">
+              {isRecurring ? <>
+                  <div>
+                    <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Recurrence</label>
+                    <p className="text-[var(--text-primary)]">
+                      Every {task.recurrence_weekdays?.map(d => WEEKDAY_LABELS[d ?? 0]).join(', ')}
+                    </p>
+                  </div>
+                  {task.start_at && task.end_at && <div>
+                      <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Time</label>
+                      <p className="text-[var(--text-primary)]">
+                        {to12Hour(task.start_at)} - {to12Hour(task.end_at)}
+                      </p>
+                    </div>}
+                </> : <div>
+                  <label className="text-sm font-medium text-[var(--text-secondary)] block mb-1">Deadline</label>
+                  <p className="text-[var(--text-primary)]">
+                    {task.deadline || task.due_date ? formatDate(task.deadline || task.due_date) : 'No deadline'}
+                  </p>
+                  {/* Show time if available */}
+                  {task.start_at && <p className="text-[var(--text-secondary)] text-sm mt-1">
+                      Time: {to12Hour(task.start_at)}
+                      {task.end_at && ` - ${to12Hour(task.end_at)}`}
+                    </p>}
+                </div>}
+            </div>
+          </div>
+
+          {/* Completion Info */}
+          {task.completed && task.completed_at && <div className="bg-[var(--bg-primary)] rounded-xl p-5 border-2 border-[var(--border-primary)]">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-green-400" />
+                Completed
+              </h3>
+              <p className="text-[var(--text-secondary)] text-sm">
+                Completed on {formatLongDateTime(task.completed_at)}
+              </p>
+            </div>}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="p-6 border-t border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+          <div className="flex items-center justify-between gap-3">
+            {onDelete && <button onClick={() => {
+            onDelete(task);
+            onClose();
+          }} className="px-4 py-2 rounded-lg border-2 border-red-500 text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-2">
+                <Trash2 size={18} />
+                <span>Delete</span>
+              </button>}
+            <div className="flex items-center gap-3 ml-auto">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+                Close
+              </button>
+              <button onClick={() => {
+              onEdit(task);
+              onClose();
+            }} className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors flex items-center gap-2">
+                <Edit size={18} />
+                <span>Edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </BaseModal>;
+};
+export default TaskViewModal;

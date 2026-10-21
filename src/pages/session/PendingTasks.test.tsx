@@ -10,19 +10,19 @@ const mocks = vi.hoisted(() => ({
   save: vi.fn(), remove: vi.fn(), updateTask: vi.fn(), deleteTask: vi.fn(),
   currentWorkspace: null as { id: string } | null,
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true, isAuthLoading: false }) }));
+vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ isLoggedIn: true, isAuthLoading: false }) }));
 vi.mock('@/store/appStore', () => ({
   useAppStore: { getState: () => ({ updateTask: mocks.updateTask, deleteTask: mocks.deleteTask }) },
   useTasks: () => mocks.state,
   useFetchTasks: () => mocks.fetchTasks,
   useWorkspace: () => ({ workspaces: [], currentWorkspace: mocks.currentWorkspace }),
 }));
-vi.mock('@/navbar/NavigationContext', () => ({ useNavigation: () => ({ navigateTo: mocks.navigateTo }) }));
+vi.mock('@/navigation/NavigationContext', () => ({ useNavigation: () => ({ navigateTo: mocks.navigateTo }) }));
 vi.mock('@vercel/analytics', () => ({ track: vi.fn() }));
 vi.mock('@/services/TaskService', () => ({ TaskService: { updateTask: mocks.save, deleteTask: mocks.remove } }));
 vi.mock('@/pages/tasks/TaskFormManager', () => ({ default: ({ initialTask }: { initialTask: Task | null }) => <div>{initialTask ? `Editing ${initialTask.title}` : 'Creating new task'}</div> }));
-vi.mock('@/modals/DeleteTasksPop', () => ({ default: ({ onConfirm }: { onConfirm: () => void }) => <button onClick={onConfirm}>Confirm deletion</button> }));
-vi.mock('@/modals/LoginPromptModal', () => ({ default: () => null }));
+vi.mock('@/modals/tasks/DeleteTasksPop', () => ({ default: ({ onConfirm }: { onConfirm: () => void }) => <button onClick={onConfirm}>Confirm deletion</button> }));
+vi.mock('@/modals/auth/LoginPromptModal', () => ({ default: () => null }));
 
 const task = (id: string, fields: Partial<Task> = {}): Task => ({ id, title: id, completed: false, completed_at: null, ...fields });
 
@@ -39,6 +39,16 @@ describe('PendingTasks', () => {
     render(<PendingTasks />);
     fireEvent.click(screen.getByRole('button', { name: 'New task' }));
     expect(screen.getByText('Creating new task')).toBeInTheDocument();
+  });
+
+  it('keeps the mobile create action compact and at the right edge of the heading', () => {
+    render(<PendingTasks />);
+    const create = screen.getByRole('button', { name: 'New task' });
+    const heading = screen.getByRole('heading', { name: 'Pending Tasks' });
+    expect(screen.getByText('New task')).toHaveClass('hidden', 'sm:inline');
+    expect(create).toHaveClass('min-w-11');
+    expect(create.parentElement?.parentElement).toHaveClass('ml-auto', 'flex-row-reverse', 'sm:flex-row');
+    expect(heading.parentElement?.parentElement).toHaveClass('flex-nowrap');
   });
 
   it('includes overdue tasks, exams and undated tasks, excluding completed tasks', () => {

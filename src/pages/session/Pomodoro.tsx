@@ -6,9 +6,9 @@ import { useAppStore, usePomodoroModes, useUiActions } from '@/store/appStore';
 // import { POMODORO_CONFIG, POMODORO_SOUNDS } from '../../constants/pomodoro';
 import { POMODORO_SOUNDS } from '../../constants/pomodoro';
 import type { PomodoroModeType } from '../../types/pomodoro';
-import PomodoroSettingsModal from '@/modals/PomodoroSettingsModal';
+import PomodoroSettingsModal from '@/modals/session/PomodoroSettingsModal';
 // import { SYNC_EVENTS } from '@/hooks/study-timer/useStudySync'; // Not used
-import SectionTitle from '@/components/SectionTitle';
+import SectionTitle from '@/components/ui/SectionTitle';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { requestDesktopPermission, showDesktopNotification } from '@/utils/desktopNotifications';
 import { supabase } from '@/utils/supabaseClient';
@@ -16,7 +16,7 @@ import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
 import { updateLap } from '@/store/LapActions';
 // import { useAuth } from '@/hooks/useAuth'; // Not used
-import useEventListener from '@/hooks/useEventListener';
+import useEventListener from '@/hooks/common/useEventListener';
 
 // import usePomodorosToday from '@/hooks/usePomodorosToday'; // Not used
 

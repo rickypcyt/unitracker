@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   updateTask: vi.fn(), deleteTask: vi.fn(), save: vi.fn(), remove: vi.fn(), fetch: vi.fn(),
   isLoggedIn: true,
 }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isLoggedIn: mocks.isLoggedIn }) }));
+vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ isLoggedIn: mocks.isLoggedIn }) }));
 vi.mock('@/store/appStore', () => ({
   useAppStore: { getState: () => ({ updateTask: mocks.updateTask, deleteTask: mocks.deleteTask }) },
   useFetchTasks: () => mocks.fetch,
@@ -14,8 +14,8 @@ vi.mock('@/store/appStore', () => ({
 vi.mock('@/services/TaskService', () => ({ TaskService: { updateTask: mocks.save, deleteTask: mocks.remove } }));
 vi.mock('@vercel/analytics', () => ({ track: vi.fn() }));
 vi.mock('@/pages/tasks/TaskFormManager', () => ({ default: ({ initialDeadline }: { initialDeadline: string }) => <div role="dialog">Editor {initialDeadline}</div> }));
-vi.mock('@/modals/DeleteTasksPop', () => ({ default: ({ onConfirm }: { onConfirm: () => void }) => <button onClick={onConfirm}>Confirm deletion</button> }));
-vi.mock('@/modals/LoginPromptModal', () => ({ default: () => <div>Login required</div> }));
+vi.mock('@/modals/tasks/DeleteTasksPop', () => ({ default: ({ onConfirm }: { onConfirm: () => void }) => <button onClick={onConfirm}>Confirm deletion</button> }));
+vi.mock('@/modals/auth/LoginPromptModal', () => ({ default: () => <div>Login required</div> }));
 
 const task = { id: 'exam', title: 'Physics exam', completed: false, completed_at: null, deadline: '2026-10-21', description: 'Chapter 3' };
 const props = { day: new Date(2026, 9, 21), tasks: [task], onClose: vi.fn() };

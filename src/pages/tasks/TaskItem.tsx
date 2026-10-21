@@ -168,7 +168,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     return (
         <div
-            className={`group relative flex p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2.5 items-center
+            className={`group relative grid grid-cols-[minmax(0,1fr)_auto] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
                 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
                 ${task.completed ? 'opacity-50' : ''}
@@ -178,8 +178,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             tabIndex={0}
             role="listitem"
         >
-            {/* Left side: complete toggle with separator */}
-            <div className="flex items-center self-stretch pr-2.5 mr-0.5 border-r-2 border-[var(--border-primary)] flex-shrink-0">
+            {/* Right side: complete toggle + actions (always visible) */}
+            <div className="col-start-2 row-start-1 flex items-center gap-0.5 self-center flex-shrink-0">
                 <button
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -193,10 +193,30 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
                     )}
                 </button>
+                <button
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                    title="Edit task"
+                    aria-label="Edit task"
+                >
+                    <Pencil size={16} />
+                </button>
+                {onDelete && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                        title="Delete task"
+                        aria-label="Delete task"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                )}
             </div>
 
             {/* Contenido principal */}
-            <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="col-start-1 row-start-1 min-w-0 flex flex-col justify-center gap-0.5">
                 {/* Assignment above title when showAssignment is true (calendar view) */}
                 {showAssignment && task.assignment && (
                     <div className="text-[var(--accent-primary)] text-base font-semibold capitalize mb-0.5">
@@ -207,7 +227,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 {/* Row 1: Date / time / days remaining — above the title */}
                 <div className="w-full">
                     {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
-                        <div className="flex items-center justify-between gap-2 text-base w-full">
+                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
                             <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
                                 <Zap size={14} className="flex-shrink-0 opacity-70" />
                                 <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
@@ -220,10 +240,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             )}
                         </div>
                     ) : task.deadline && task.deadline !== '' ? (
-                        <div className="flex items-center justify-between gap-2 text-base w-full">
+                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
                             <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
                                 <Clock size={14} className="flex-shrink-0" />
                                 <span className="truncate">{formatDateShort(task.deadline)}</span>
+                                <span className="flex-shrink-0 whitespace-nowrap text-xs font-medium">({getTimeRemainingString(task.deadline)})</span>
                             </span>
                             <div className="flex items-center gap-2 flex-shrink-0">
                                 {task.start_at && (
@@ -233,13 +254,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                                 )}
                             </div>
                         </div>
-                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-base">No deadline</span>}
+                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-xs sm:text-base">No deadline</span>}
                 </div>
 
                 {/* Row 2: Title + deadline badge */}
                 <div className="flex items-center gap-1.5 min-w-0">
                     <span
-                        className={`block font-medium text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
                             task.completed
                                 ? "line-through text-[var(--text-secondary)]"
                                 : "text-[var(--text-primary)]"
@@ -248,51 +269,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     >
                         {task.title}
                     </span>
-                    {task.deadline && task.deadline !== '' && task.recurrence_type !== 'weekly' && (
-                        <span className={`flex-shrink-0 text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                            isTaskForToday(task.deadline)
-                                ? 'bg-green-500/10 text-green-500'
-                                : getDeadlineColor(task.deadline) === 'text-red-500'
-                                ? 'bg-red-500/10 text-red-500'
-                                : getDeadlineColor(task.deadline) === 'text-yellow-500'
-                                ? 'bg-yellow-500/10 text-yellow-500'
-                                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
-                        }`}>
-                            {getTimeRemainingString(task.deadline)}
-                        </span>
-                    )}
                 </div>
 
-                {/* Row 3: Status selector (hidden once completed) */}
-                {!task.completed && <TaskStatusPicker task={task} />}
             </div>
 
-            {/* Right side: hover actions */}
-            <div className="flex items-center justify-center gap-0.5 flex-shrink-0">
-                {/* Hover quick actions */}
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                        title="Edit task"
-                        aria-label="Edit task"
-                    >
-                        <Pencil size={16} />
-                    </button>
-                    {onDelete && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
-                            title="Delete task"
-                            aria-label="Delete task"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                    )}
-                </div>
-            </div>
+            {/* Row 3: Status selector (hidden once completed) */}
+            {!task.completed && <TaskStatusPicker task={task} />}
         </div>
     );
 };

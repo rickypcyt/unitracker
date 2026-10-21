@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import LoginPromptModal from "@/modals/LoginPromptModal";
+import LoginPromptModal from "@/modals/auth/LoginPromptModal";
 import { Task } from "./task";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { getTaskStatusConfig } from "@/constants/taskStatus";
 
 interface TaskSelectionPanelProps {

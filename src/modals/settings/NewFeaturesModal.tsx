@@ -1,0 +1,157 @@
+import { useEffect } from 'react';
+import BaseModal from '@/modals/shared/BaseModal';
+import { changelogData } from '@/data/changelog';
+
+interface NewFeaturesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onMarkAsSeen?: () => void;
+}
+
+const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalProps) => {
+
+  useEffect(() => {
+    if (isOpen && onMarkAsSeen) {
+      onMarkAsSeen();
+    }
+  }, [isOpen, onMarkAsSeen]);
+
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Release Notes"
+      maxWidth="max-w-4xl"
+    >
+      <div className="space-y-6">
+        
+        {/* Changelog Entries */}
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+          {changelogData.map((entry, index) => (
+            <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-5 bg-[var(--bg-secondary)]/30">
+              {/* Version Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h4 className="text-lg font-semibold text-[var(--text-primary)]">
+                    {entry.date}
+                  </h4>
+                </div>
+                <span className="text-sm text-gray-500">
+                  {entry.time}
+                </span>
+              </div>
+
+              {/* Changes */}
+              <div className="space-y-3">
+                {entry.changes.added && entry.changes.added.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full"></span>
+                      Added
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.added.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {entry.changes.improved && entry.changes.improved.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></span>
+                      Improved
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.improved.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {entry.changes.fixed && entry.changes.fixed.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></span>
+                      Fixed
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.fixed.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {entry.changes.soon && entry.changes.soon.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full"></span>
+                      Coming Soon
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.soon.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)]">
+                          - {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {entry.changes.removed && entry.changes.removed.length > 0 && (
+                  <div>
+                    <h5 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full"></span>
+                      Removed
+                    </h5>
+                    <ul className="space-y-1 ml-0">
+                      {entry.changes.removed.map((change, i) => (
+                        <li key={i} className="text-sm text-[var(--text-secondary)] line-through">
+                          {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-[var(--border-primary)] pt-4">
+          <div className="flex flex-col gap-4 items-center">
+            <p className="text-sm text-[var(--text-secondary)] text-center">
+              For detailed technical documentation, visit our GitHub repository.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => window.open('https://github.com/rickypcyt/unitracker', '_blank')}
+                className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+              >
+                View on GitHub
+              </button>
+              <button
+                onClick={onClose}
+                className="px-6 py-3 text-base font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </BaseModal>
+  );
+};
+
+export default NewFeaturesModal;

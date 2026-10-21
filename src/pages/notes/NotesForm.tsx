@@ -1,4 +1,4 @@
-import { FormActions, FormButton, FormInput } from "../../modals/FormElements";
+import { FormActions, FormButton, FormInput } from "@/modals/shared/FormElements";
 import React, { useEffect, useMemo, useState } from "react";
 interface Note {
   id?: string;

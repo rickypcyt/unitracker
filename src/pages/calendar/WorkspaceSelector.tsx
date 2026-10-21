@@ -1,7 +1,7 @@
 import { BookOpen, Briefcase, ChevronDown, Coffee, FolderOpen, Gamepad2, Heart, Home, Music, Plane, ShoppingBag, Smartphone, Star, Target, Trophy, Umbrella, User, Users, Wifi, Workflow, Zap } from 'lucide-react';
 import { useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
-import { ALL_WORKSPACE_ID } from '@/hooks/useTaskBoard';
+import { ALL_WORKSPACE_ID } from '@/hooks/tasks/useTaskBoard';
 import { useState } from 'react';
 
 interface WorkspaceSelectorProps {

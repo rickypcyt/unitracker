@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import CalendarExport from '@/components/CalendarExport';
+import CalendarExport from './CalendarExport';
 import type { Task } from '@/types/taskStorage';
 
 type ViewType = 'month' | 'week' | 'day';

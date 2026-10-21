@@ -1,6 +1,6 @@
 import { CheckCircle2, Circle, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { useSessionTaskActions } from '@/hooks/useSessionTaskActions';
+import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
 import type { Task } from '@/schemas/task';
 
 interface Props {

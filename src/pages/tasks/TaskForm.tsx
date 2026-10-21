@@ -5,14 +5,14 @@ import { Calendar, Check, ChevronDown, ChevronUp, Sparkles, Wand2 } from 'lucide
 import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useEffect, useRef, useState } from 'react';
 
-import AutocompleteInput from '@/modals/AutocompleteInput';
-import BaseModal from '@/modals/BaseModal';
+import AutocompleteInput from '@/modals/shared/AutocompleteInput';
+import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
 import LocalWorkspaceSelector from './LocalWorkspaceSelector';
-import MarkdownWysiwyg from '@/MarkdownWysiwyg';
-import { StatusSelector } from '@/components/StatusSelector';
-import { useAuth } from '@/hooks/useAuth';
-import { useFormState } from '@/hooks/useFormState';
+import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
+import { StatusSelector } from '@/pages/tasks/components/StatusSelector';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useFormState } from '@/hooks/common/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
@@ -438,7 +438,7 @@ const TaskForm = ({
         <div className="flex gap-2">
           {DIFFICULTY_OPTIONS.map(option => {
             const isSelected = option.value === formData.difficulty;
-            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? `ring-1 ring-current ${option.color} bg-[var(--bg-secondary)]` : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
+            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? `ring-2 ring-current ${option.color} bg-[var(--bg-secondary)]` : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
               <span className={`w-2 h-2 rounded-full ${option.value === 'easy' ? 'bg-[#00FF41]' : option.value === 'medium' ? 'bg-[#00BFFF]' : 'bg-[#FF003C]'}`} />
               {option.label}
               {isSelected && <Check size={14} className={option.color} />}

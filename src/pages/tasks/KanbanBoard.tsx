@@ -1,26 +1,26 @@
-import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/useTaskBoard';
+import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/tasks/useTaskBoard';
 import { ClipboardCheck, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
-import type { ColumnCount } from '@/modals/TaskPageSettingsModal';
-import type { ViewMode } from '@/modals/TaskPageSettingsModal';
+import type { ColumnCount } from '@/modals/tasks/TaskPageSettingsModal';
+import type { ViewMode } from '@/modals/tasks/TaskPageSettingsModal';
 import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
 import { StatusBoard } from '@/pages/tasks/StatusBoard';
 // @ts-nocheck - Temporalmente deshabilitado para evitar errores de tipo masivos
-import DeleteCompletedModal from '@/modals/DeleteTasksPop';
-import LoginPromptModal from '@/modals/LoginPromptModal';
-import { QuickDatePicker } from '@/modals/QuickDatePicker';
+import DeleteCompletedModal from '@/modals/tasks/DeleteTasksPop';
+import LoginPromptModal from '@/modals/auth/LoginPromptModal';
+import { QuickDatePicker } from '@/modals/shared/QuickDatePicker';
 import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
-import { TaskListMenu } from '@/modals/TaskListMenu';
-import TaskViewModal from '@/modals/TaskViewModal';
-import WorkspaceSelectionModal from '@/modals/WorkspaceSelectionModal';
+import { TaskListMenu } from '@/modals/tasks/TaskListMenu';
+import TaskViewModal from '@/modals/tasks/TaskViewModal';
+import WorkspaceSelectionModal from '@/modals/workspaces/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
-import { usePinnedColumns } from '@/hooks/usePinnedColumns';
+import { usePinnedColumns } from '@/hooks/tasks/usePinnedColumns';
 
 interface ColumnMenuState {
   assignmentId: string;

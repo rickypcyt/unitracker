@@ -1,10 +1,10 @@
 import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import SectionTitle from '@/components/SectionTitle';
+import SectionTitle from '@/components/ui/SectionTitle';
 import { requestDesktopPermission, showDesktopNotification } from '@/utils/desktopNotifications';
 import { useAppStore } from '@/store/appStore';
-import useEventListener from '@/hooks/useEventListener';
+import useEventListener from '@/hooks/common/useEventListener';
 
 type Field = 'hours' | 'minutes';
 const fields: Field[] = ['hours', 'minutes'];

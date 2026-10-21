@@ -155,5 +155,7 @@ export const demoStats = {
   sessionsYear: 180,
   sessionsLastYear: 140,
   longestStreak: 4,
+  currentStreak: 2,
   pomodoros: 15,
+  tasksDone: 42,
 };

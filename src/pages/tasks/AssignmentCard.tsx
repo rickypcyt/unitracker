@@ -2,8 +2,8 @@ import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
-import ColumnDropdownMenu from '@/components/ColumnDropdownMenu';
-import { ColumnMenu } from '@/modals/ColumnMenu';
+import ColumnDropdownMenu from '@/pages/tasks/components/ColumnDropdownMenu';
+import { ColumnMenu } from '@/modals/tasks/ColumnMenu';
 import { parseDateFromString } from '@/utils/dateUtils';
 
 interface AssignmentCardProps {

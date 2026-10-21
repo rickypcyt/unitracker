@@ -9,13 +9,13 @@ import {
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
-import DeleteSessionModal from "@/modals/DeleteSessionModal";
-import SessionDetailsModal from "@/modals/SessionDetailsModal";
+import DeleteSessionModal from "@/modals/session/DeleteSessionModal";
+import SessionDetailsModal from "@/modals/session/SessionDetailsModal";
 import { deleteLap } from "@/store/LapActions";
 import { formatDateShort } from "@/utils/dateUtils";
-import { getMonthYear } from "@/hooks/useTimers";
+import { getMonthYear } from "@/hooks/session/useTimers";
 import { toast } from "react-toastify";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import useDemoMode from "@/utils/useDemoMode";
 import { useLaps } from "@/store/appStore";
 import type { Lap } from "@/types/lap";

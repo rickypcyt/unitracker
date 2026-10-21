@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 
-import BaseMenu from "@/modals/BaseMenu";
+import BaseMenu from "@/modals/shared/BaseMenu";
 import { format12Hour } from "../utils/calendarUtils";
 
 interface DayContextMenuProps {

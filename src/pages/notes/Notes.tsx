@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import DeleteNoteModal from '../../modals/DeleteNoteModal';
+import DeleteNoteModal from '@/modals/notes/DeleteNoteModal';
 import { Helmet } from "react-helmet-async";
-import LoginPromptModal from '../../modals/LoginPromptModal';
+import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import NoteView from './NoteView';
 import NotesDirectory from './NotesDirectory';
 import { demoNotes } from '@/utils/demoData';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { NoteService } from '@/services/NoteService';
 

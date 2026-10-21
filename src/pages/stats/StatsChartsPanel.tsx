@@ -99,12 +99,12 @@ const PeriodSelector = ({
   period: 'week' | 'month' | 'year';
   onChange: (period: 'week' | 'month' | 'year') => void;
 }) => (
-  <div className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
+  <div className="flex w-full sm:w-auto items-center justify-between gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
     {(['week', 'month', 'year'] as const).map(option => (
       <button
         key={option}
         onClick={() => onChange(option)}
-        className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors sm:px-3 sm:text-sm ${
+        className={`flex-1 sm:flex-none rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors sm:px-3 sm:text-sm ${
           period === option
             ? 'bg-[var(--accent-primary)] text-white'
             : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
@@ -134,7 +134,7 @@ const StatsChartsPanel = memo(() => {
       const lapDate = getLocalDateString(new Date(lap.created_at));
       if (!lapDate) return acc;
 
-      const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+      const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
       acc[lapDate] = (acc[lapDate] || 0) + minutes;
       return acc;
     }, {} as Record<string, number>);
@@ -171,7 +171,7 @@ const StatsChartsPanel = memo(() => {
         const lapDate = getLocalDateString(lapDateObj);
         if (!lapDate) return acc;
 
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
         acc[lapDate] = (acc[lapDate] || 0) + minutes;
       }
       return acc;
@@ -203,7 +203,7 @@ const StatsChartsPanel = memo(() => {
       const lapDate = new Date(lap.created_at);
       if (lapDate.getFullYear() === shownYear) {
         const month = lapDate.getMonth();
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
         monthlyMinutes[month] = (monthlyMinutes[month] || 0) + minutes;
       }
     });

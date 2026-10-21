@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import React, { useCallback, useState } from "react";
 
-import BaseModal from "@/modals/BaseModal";
+import BaseModal from "@/modals/shared/BaseModal";
 import ReactSlider from "react-slider";
 import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";

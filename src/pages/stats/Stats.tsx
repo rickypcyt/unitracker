@@ -1,9 +1,9 @@
-import { BookOpen, CheckCircle2, Flame, Timer } from 'lucide-react';
+import { BookOpen, CheckCircle2, Flame, ListChecks, Timer, Zap } from 'lucide-react';
 import { ReactElement, useEffect, useState } from 'react';
 import { useLaps, useTasksOnly } from '@/store/appStore';
 
 import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import type { Lap } from '@/types/lap';
 import type { Task } from '@/schemas/task';
@@ -22,7 +22,9 @@ interface StatData {
   sessionsYear: number;
   sessionsLastYear: number;
   longestStreak: number;
+  currentStreak: number;
   pomodoros: number;
+  tasksDone: number;
 }
 
 function durationToMinutes(duration: string | undefined): number {
@@ -144,6 +146,23 @@ function getLongestStreak(tasks: Task[]): number {
   return maxStreak;
 }
 
+function getCurrentStreak(tasks: Task[]): number {
+  const days = new Set(
+    tasks
+      .filter((t): t is Task & { completed_at: string } => t.completed && hasCompletedAt(t))
+      .map(t => new Date(t.completed_at).setHours(0, 0, 0, 0))
+  );
+  if (days.size === 0) return 0;
+  let cursor = new Date().setHours(0, 0, 0, 0);
+  if (!days.has(cursor)) cursor -= 86400000;
+  let streak = 0;
+  while (days.has(cursor)) {
+    streak++;
+    cursor -= 86400000;
+  }
+  return streak;
+}
+
 function usePomodorosAllTime(userId: string | undefined): number {
   const [total, setTotal] = useState(0);
 
@@ -193,6 +212,8 @@ const Statistics = (): ReactElement => {
   const { isDemo, demoStats } = useDemoMode();
   const lapStats = useLapStats(laps);
   const longestStreak = getLongestStreak(tasks);
+  const currentStreak = getCurrentStreak(tasks);
+  const tasksDone = tasks.filter(t => t.completed).length;
 
   // Pomodoros completados all time (de la base de datos)
   const pomodorosAllTime = usePomodorosAllTime(user?.id);
@@ -200,7 +221,9 @@ const Statistics = (): ReactElement => {
   const statData: StatData = {
     ...lapStats,
     longestStreak,
+    currentStreak,
     pomodoros: pomodorosAllTime,
+    tasksDone,
   };
 
   const statsData = isDemo ? demoStats : statData;
@@ -266,6 +289,22 @@ const Statistics = (): ReactElement => {
             <span className="text-xs font-medium">Max Streak</span>
           </div>
           <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.longestStreak}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
+            <Zap size={15} className="text-yellow-500" />
+            <span className="text-xs font-medium">Current Streak</span>
+          </div>
+          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.currentStreak}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
+            <ListChecks size={15} className="text-green-500" />
+            <span className="text-xs font-medium">Tasks Done</span>
+          </div>
+          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.tasksDone}</span>
         </div>
       </div>
     </div>

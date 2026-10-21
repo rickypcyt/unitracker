@@ -3,7 +3,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Calendar, Check, Pencil, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import BaseModal from '@/modals/BaseModal';
+import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
 import { getLocalDateString } from '@/utils/dateUtils';
 

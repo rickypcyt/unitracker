@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 // Hook para detectar demo mode y proveer datos demo
 export default function useDemoMode() {

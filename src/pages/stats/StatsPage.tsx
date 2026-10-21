@@ -5,8 +5,8 @@ import { Helmet } from "react-helmet-async";
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import { fetchLaps } from '@/store/LapActions';
-import { useAuth } from '@/hooks/useAuth';
-import { useLapRealtimeSubscription } from '@/hooks/useLapRealtimeSubscription';
+import { useAuth } from '@/hooks/auth/useAuth';
+import { useLapRealtimeSubscription } from '@/hooks/session/useLapRealtimeSubscription';
 import { useLocation } from 'react-router-dom';
 
 const StatsPage = memo(() => {

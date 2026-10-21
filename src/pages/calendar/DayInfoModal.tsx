@@ -1,6 +1,6 @@
 import { CheckCircle2, Clock } from "lucide-react";
 
-import BaseModal from "@/modals/BaseModal";
+import BaseModal from "@/modals/shared/BaseModal";
 import { formatDate } from "@/utils/dateUtils";
 
 interface DayInfoModalProps {
