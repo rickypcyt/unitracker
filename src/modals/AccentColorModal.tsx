@@ -20,7 +20,15 @@ const ACCENT_COLORS = [
 const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentColorSelect }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#0A84FF');
+  const [originalColor] = useState(() => localStorage.getItem('accentPalette') || '#0A84FF');
+  const [selectedColor, setSelectedColor] = useState(originalColor);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent-primary', selectedColor);
+    return () => {
+      document.documentElement.style.setProperty('--accent-primary', localStorage.getItem('accentPalette') || originalColor);
+    };
+  }, [selectedColor, originalColor]);
 
   // Close on click outside or Escape
   useEffect(() => {
@@ -46,15 +54,13 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    onAccentColorSelect(color);
-    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--accent-primary)] w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
       >
@@ -86,8 +92,9 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
             <button
               key={color.value}
               onClick={() => handleColorSelect(color.value)}
+              aria-pressed={selectedColor.toLowerCase() === color.value.toLowerCase()}
               className={`group relative p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
-                selectedColor === color.value
+                selectedColor.toLowerCase() === color.value.toLowerCase()
                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                   : 'border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50'
               }`}
@@ -101,7 +108,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               </div>
               
               {/* Selected indicator */}
-              {selectedColor === color.value && (
+              {selectedColor.toLowerCase() === color.value.toLowerCase() && (
                 <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
                   <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                 </div>
@@ -121,12 +128,18 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
         </div>
         
         {/* Skip option */}
-        <div className="flex justify-center relative z-10">
+        <div className="flex flex-col items-center gap-4 relative z-10">
+          <button
+            onClick={() => onAccentColorSelect(selectedColor)}
+            className="rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+          >
+            Choose as accent color
+          </button>
           <button
             onClick={onClose}
             className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
           >
-            Use default color
+            Keep current color
           </button>
         </div>
       </div>

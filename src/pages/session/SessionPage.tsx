@@ -85,7 +85,7 @@ const SessionPage = memo(() => {
           className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4"
         >
           {/* Top: Noise Generator + Scratchpad */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+          <div className="order-2 lg:order-1 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
             <motion.div variants={item} className="h-full">
               <ScratchPad />
             </motion.div>
@@ -95,7 +95,7 @@ const SessionPage = memo(() => {
           </div>
 
           {/* Timers full width */}
-          <motion.div variants={item} className="w-full" data-tour="session-timer">
+          <motion.div variants={item} className="order-1 lg:order-2 w-full" data-tour="session-timer">
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </motion.div>
         </motion.div>

@@ -23,7 +23,7 @@ const parseLine = (line: string) => {
   return {
     type: "checkbox" as const,
     checked,
-    text: checked && timeMatch ? timeMatch[1] : body,
+    text: checked && timeMatch ? timeMatch[1] ?? body : body,
     doneAt: checked && timeMatch ? timeMatch[2] : null,
   };
 };
@@ -98,7 +98,7 @@ const ScratchPad = memo(() => {
 
   return (
     <div className="w-full h-full min-h-[220px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center pb-3">
+      <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_1fr] items-center gap-x-3 pb-3">
         <div className="flex items-center gap-2 justify-self-start">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <StickyNote size={18} className="text-[var(--accent-primary)]" />
@@ -109,14 +109,14 @@ const ScratchPad = memo(() => {
         </div>
         <button
           onClick={insertCheckbox}
-          className="justify-self-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/10 transition-colors"
+          className="justify-self-end sm:justify-self-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/10 transition-colors"
           title="Insert checkbox"
           aria-label="Insert checkbox"
         >
           <CheckSquare size={15} />
           Insert checkbox
         </button>
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="col-span-2 sm:col-span-1 flex items-center gap-2 justify-self-end">
           {lineCount > 0 && (
             <span className="text-xs text-[var(--text-secondary)] tabular-nums">
               {lineCount} line{lineCount !== 1 ? "s" : ""}

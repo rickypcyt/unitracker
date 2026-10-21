@@ -363,7 +363,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               onDragOver={(e) => handleDragOver(e, id)}
               onDrop={(e) => handleDrop(e, id)}
               onDragEnd={handleDragEnd}
-              className={`timer-panel w-full h-72 ${config.panelClass} ${
+              className={`timer-panel w-full h-72 ${id === "study" ? "order-1" : id === "pomodoro" ? "order-2" : "order-3"} lg:order-none ${config.panelClass} ${
                 draggedId === id ? "timer-panel-dragging" : ""
               } ${
                 dragOverId === id ? "timer-panel-drag-over" : ""

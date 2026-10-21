@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 import { useAuth } from "./useAuth";
 
@@ -14,8 +14,19 @@ declare global {
 type Theme = 'light' | 'dark';
 type ThemePreference = 'light' | 'dark' | 'auto';
 
+const subscribeAccent = (onChange: () => void) => {
+  window.addEventListener('accentPaletteChange', onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    window.removeEventListener('accentPaletteChange', onChange);
+    window.removeEventListener('storage', onChange);
+  };
+};
+
+const getAccentPalette = () => localStorage.getItem('accentPalette') || '#0A84FF';
+
 const useTheme = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isAuthLoading } = useAuth();
 
   // Función para detectar el tema del sistema
   const getSystemTheme = (): Theme => {
@@ -56,9 +67,12 @@ const useTheme = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
 
-  const [accentPalette, setAccentPalette] = useState(
-    typeof window !== 'undefined' ? localStorage.getItem("accentPalette") || "#0A84FF" : "#0A84FF"
-  );
+  const accentPalette = useSyncExternalStore(subscribeAccent, getAccentPalette, () => '#0A84FF');
+  const setAccentPalette = useCallback((color: string) => {
+    localStorage.setItem('accentPalette', color);
+    document.documentElement.style.setProperty('--accent-primary', color);
+    window.dispatchEvent(new Event('accentPaletteChange'));
+  }, []);
 
   // Show tour for demo users after welcome modal closes
   useEffect(() => {
@@ -83,6 +97,9 @@ const useTheme = () => {
   // Update login modal state when authentication changes
   useEffect(() => {
     if (isLoggedIn) {
+      setShowWelcomeModal(false);
+      setShowThemeSelectionModal(false);
+      setShowAccentColorModal(false);
       setShowLoginModal(false);
       localStorage.setItem("hasSeenLoginModal", "true");
 
@@ -361,10 +378,10 @@ const useTheme = () => {
     currentTheme,
     themePreference,
     accentPalette,
-    showWelcomeModal,
-    showThemeSelectionModal,
-    showAccentColorModal,
-    showLoginModal,
+    showWelcomeModal: !isAuthLoading && !isLoggedIn && showWelcomeModal,
+    showThemeSelectionModal: !isAuthLoading && !isLoggedIn && showThemeSelectionModal,
+    showAccentColorModal: !isAuthLoading && !isLoggedIn && showAccentColorModal,
+    showLoginModal: !isAuthLoading && !isLoggedIn && showLoginModal,
     showTour,
     handleCloseWelcome,
     handleCloseThemeSelection,

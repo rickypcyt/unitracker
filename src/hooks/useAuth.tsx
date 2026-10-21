@@ -24,18 +24,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
+    let authEventReceived = false;
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active || authEventReceived) return;
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
       setIsAuthLoading(false);
       if (session?.user) ensureProfile(session.user);
     }).catch(() => {
-      setIsAuthLoading(false);
+      if (active && !authEventReceived) setIsAuthLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      authEventReceived = true;
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
       setIsAuthLoading(false);
@@ -44,7 +49,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loginWithGoogle = async () => {

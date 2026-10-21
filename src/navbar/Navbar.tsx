@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, ChevronLeft, ChevronRight, CircleCheckBig, LayoutDashboard, ListTodo, Menu, Timer, X } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, ChevronLeft, ChevronRight, CircleCheckBig, LayoutDashboard, ListTodo, Timer, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
@@ -183,7 +183,7 @@ const Navbar = () => {
         </span>
 
         {/* md: centered section nav */}
-        <div className="hidden md:flex flex-1 items-center justify-center gap-1">
+        <div role="navigation" aria-label="Main navigation" className="flex flex-1 min-w-0 items-center md:justify-center gap-1 overflow-x-auto overscroll-x-contain">
           {allNavItems.map(({ page, label }) => {
             const Icon = iconMap[page as keyof typeof iconMap];
             return (
@@ -191,13 +191,14 @@ const Navbar = () => {
                 key={page}
                 onClick={() => handleNavigate(page)}
                 onMouseEnter={() => preloadPage(page)}
-                className={`p-2 rounded-lg flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                className={`min-w-11 min-h-11 shrink-0 p-2 rounded-lg flex items-center justify-center gap-1.5 text-sm font-medium transition-colors ${
                   isActive(page)
                     ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
                 }`}
                 title={label}
                 aria-label={label}
+                aria-current={isActive(page) ? 'page' : undefined}
               >
                 <Icon className="w-5 h-5" />
                 <span className="hidden min-[860px]:inline leading-none">{label}</span>
@@ -206,17 +207,8 @@ const Navbar = () => {
           })}
         </div>
 
-        <div className="ml-auto md:ml-0 flex items-center gap-1">
-          <div className="hidden md:block">
-            <SettingsButton iconOnly />
-          </div>
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+        <div className="shrink-0 flex items-center">
+          <SettingsButton iconOnly />
         </div>
       </div>
 
@@ -230,7 +222,7 @@ const Navbar = () => {
 
       {/* Sidebar */}
       <nav
-        className={`fixed inset-y-0 left-0 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-[10002] flex flex-col transition-[width,transform] duration-300 ${
+        className={`fixed inset-y-0 left-0 bg-[var(--bg-primary)] border-r border-[var(--border-primary)] z-[10002] hidden lg:flex flex-col transition-[width,transform] duration-300 ${
           mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full'
         } ${isNavCollapsed ? 'lg:translate-x-0 lg:w-20' : 'lg:translate-x-0 lg:w-64'}`}
         data-tour="navbar"

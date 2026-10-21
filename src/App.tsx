@@ -318,9 +318,11 @@ const App: FC = () => {
   // -------------------------
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      if (window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches) return;
       touchStartX.current = e.changedTouches[0]?.screenX || 0;
     };
     const handleTouchEnd = (e: TouchEvent) => {
+      if (window.matchMedia('(max-width: 1023px), (pointer: coarse)').matches) return;
       touchEndX.current = e.changedTouches[0]?.screenX || 0;
       const diff = touchEndX.current - touchStartX.current;
       if (Math.abs(diff) > 60) swipeNavigate(diff, navigate);

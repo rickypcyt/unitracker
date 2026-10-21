@@ -70,7 +70,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         ref={modalRef}
         className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
-        }`}
+        } max-h-[calc(100dvh-1.5rem)] overflow-y-auto`}
       >
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-primary)]/5 via-transparent to-[var(--accent-primary)]/10 pointer-events-none" />
@@ -85,30 +85,30 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         
         {/* Header Section */}
         <div className="flex flex-col items-center mb-4 sm:mb-6 relative z-10">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4 px-8 text-center">
             Unlock Your Full Potential
           </h2>
           
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] text-center leading-relaxed px-3 sm:px-0 max-w-lg">
+          <p className="hidden sm:block text-base text-[var(--text-secondary)] text-center leading-relaxed max-w-lg">
             Sign in to sync your data across devices and unlock powerful features that will transform your productivity
           </p>
         </div>
         
         {/* Benefits Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 relative z-10">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 relative z-10">
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30"
+              className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3 p-3 sm:p-4 text-center sm:text-left rounded-xl bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30"
             >
               <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <benefit.icon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-sm sm:text-base text-[var(--text-primary)] mb-1">
+                <h3 className="font-semibold text-sm sm:text-base text-[var(--text-primary)] sm:mb-1">
                   {benefit.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
+                <p className="hidden sm:block text-sm text-[var(--text-secondary)]">
                   {benefit.description}
                 </p>
               </div>
@@ -118,14 +118,14 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
 
         {/* Supabase Info Section */}
         <div className="mb-4 sm:mb-6 relative z-10">
-          <div className="bg-[var(--bg-secondary)]/20 rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)]/30">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="bg-[var(--bg-secondary)]/20 rounded-xl p-3 sm:p-5 border-2 border-[var(--border-primary)]/30">
+            <div className="flex items-center gap-3 sm:mb-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
                 <Database className="w-5 h-5 text-green-500" />
               </div>
               <div>
                 <h3 className="font-semibold text-[var(--text-primary)]">Powered by Supabase OAuth</h3>
-                <p className="text-sm text-[var(--text-secondary)]">Enterprise-grade authentication trusted by thousands</p>
+                <p className="hidden sm:block text-sm text-[var(--text-secondary)]">Enterprise-grade authentication trusted by thousands</p>
               </div>
             </div>
           </div>
