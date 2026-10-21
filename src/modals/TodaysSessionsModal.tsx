@@ -250,7 +250,7 @@ const SessionsModal = ({
               Finish All Sessions
             </button>}
           <div className="flex space-x-3 ml-auto">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
               Cancel
             </button>
             <button onClick={() => {

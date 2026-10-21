@@ -7,6 +7,7 @@ import WorkspaceModal from '@/modals/WorkspaceModal';
 import { useNavigation } from '@/navbar/NavigationContext';
 import { useStudyState } from '@/store/appStore';
 import useTheme from '@/hooks/useTheme';
+import { useSessionTaskActions } from '@/hooks/useSessionTaskActions';
 
 interface FloatingFooterProps {
   workspaces?: (Workspace & { taskCount?: number })[];
@@ -66,6 +67,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
   const { currentTheme, toggleTheme } = useTheme();
   const { navigateTo } = useNavigation();
+  const { editTask, modals } = useSessionTaskActions('floating');
   const studyState = useStudyState();
   const [studyTime, setStudyTime] = useState(0);
 
@@ -95,10 +97,8 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
   }, [showWorkspaceMenu]);
 
   const handleQuickAddTask = () => {
-    navigateTo('tasks');
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('quickAddTask'));
-    }, 300);
+    setShowWorkspaceMenu(false);
+    editTask(null);
   };
 
   const showSessionTimer = studyState.isRunning || studyTime > 0;
@@ -268,6 +268,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
         friends={friends}
         {...(currentUserId && { currentUserId })}
       />
+      {modals}
     </>
   );
 };

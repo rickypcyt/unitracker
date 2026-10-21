@@ -5,6 +5,8 @@ import { useUi } from "@/store/appStore";
 import { Helmet } from "react-helmet-async";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import ScratchPad from "@/pages/session/ScratchPad";
+import PendingTasks from "@/pages/session/PendingTasks";
+import MonthView from "@/pages/session/MonthView";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
 
 const SessionPage = memo(() => {
@@ -85,19 +87,27 @@ const SessionPage = memo(() => {
           className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4"
         >
           {/* Top: Noise Generator + Scratchpad */}
-          <div className="order-2 lg:order-1 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-            <motion.div variants={item} className="h-full">
-              <ScratchPad />
-            </motion.div>
+          <div className="order-3 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
             <motion.div variants={item} className="dashboard-noise-card w-full h-full">
               <NoiseGenerator />
+            </motion.div>
+            <motion.div variants={item} className="h-full">
+              <ScratchPad />
             </motion.div>
           </div>
 
           {/* Timers full width */}
-          <motion.div variants={item} className="order-1 lg:order-2 w-full" data-tour="session-timer">
+          <motion.div variants={item} className="order-1 w-full" data-tour="session-timer">
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </motion.div>
+          <div className="order-2 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
+            <motion.div variants={item} className="min-w-0">
+              <PendingTasks />
+            </motion.div>
+            <motion.div variants={item} className="min-w-0">
+              <MonthView />
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </>

@@ -1790,6 +1790,8 @@ select:focus-visible {
 /* Scratchpad: borderless writing area — the card owns the border */
 .scratchpad-textarea {
   border: none !important;
+  border-radius: 0 !important;
+  padding-inline: 0.125rem;
   box-shadow: none !important;
 }
 .scratchpad-textarea:focus,
