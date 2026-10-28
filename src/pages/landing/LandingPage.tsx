@@ -182,7 +182,7 @@ const LandingPage = () => {
               </ShowcaseFrame>
             </div>
             <p className="mt-4 text-xs text-[var(--text-secondary)]">
-              Live demos — press play, go offline, watch it keep running.
+              Live demos — turn on “Sync Pomodoro” and control both timers from one.
             </p>
           </div>
         </section>
