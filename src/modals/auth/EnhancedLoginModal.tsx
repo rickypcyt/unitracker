@@ -13,24 +13,17 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
   const [isAnimating, setIsAnimating] = useState(false);
   const { loginWithGoogle } = useAuth();
 
-  // Close on click outside or Escape
+  // Close only on Escape — clicks outside must not dismiss onboarding modals
   useEffect(() => {
-    const handleClick = (e: MouseEvent): void => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
     const handleEsc = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleEsc);
-    
+
     // Trigger animation on mount
     setTimeout(() => setIsAnimating(true), 100);
-    
+
     return () => {
-      document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleEsc);
     };
   }, [onClose]);

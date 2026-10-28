@@ -204,21 +204,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     </div>
                 )}
 
-                {/* Row 1: Title */}
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <span
-                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
-                            task.completed
-                                ? "line-through text-[var(--text-secondary)]"
-                                : "text-[var(--text-primary)]"
-                        }`}
-                        title={task.title}
-                    >
-                        {task.title}
-                    </span>
-                </div>
-
-                {/* Row 2: Date / time / days remaining + actions */}
+                {/* Row 1: Date / time / days remaining + actions */}
                 <div className="w-full flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                     {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
@@ -271,6 +257,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             </button>
                         )}
                     </div>
+                </div>
+
+                {/* Row 2: Title */}
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                            task.completed
+                                ? "line-through text-[var(--text-secondary)]"
+                                : "text-[var(--text-primary)]"
+                        }`}
+                        title={task.title}
+                    >
+                        {task.title}
+                    </span>
                 </div>
 
             </div>

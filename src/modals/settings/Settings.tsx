@@ -475,10 +475,9 @@ const Settings: React.FC<SettingsProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title=""
+      title="Settings"
       maxWidth="max-w-2xl"
       padding="none"
-      showHeader={false}
     >
       <SettingsContent
         friends={friends}

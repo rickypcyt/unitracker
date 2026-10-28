@@ -30,24 +30,17 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
     };
   }, [selectedColor, originalColor]);
 
-  // Close on click outside or Escape
+  // Close only on Escape — clicks outside must not dismiss onboarding modals
   useEffect(() => {
-    const handleClick = (e: MouseEvent): void => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
     const handleEsc = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') onClose();
     };
-    document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleEsc);
-    
+
     // Trigger animation on mount
     setTimeout(() => setIsAnimating(true), 100);
-    
+
     return () => {
-      document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleEsc);
     };
   }, [onClose]);
@@ -76,62 +69,62 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
         </button>
         
         {/* Header Section */}
-        <div className="flex flex-col items-center mb-6 sm:mb-8 relative z-10">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4 text-center">
+        <div className="flex flex-col items-center mb-4 sm:mb-8 relative z-10">
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2 sm:mb-4 text-center">
             Choose your accent color
           </h2>
-          
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] text-center leading-relaxed px-3 sm:px-0">
+
+          <p className="text-xs sm:text-base text-[var(--text-secondary)] text-center leading-relaxed px-3 sm:px-0">
             Pick a color that reflects your style
           </p>
         </div>
-        
+
         {/* Color Options */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10 mb-6 sm:mb-8">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 relative z-10 mb-4 sm:mb-8">
           {ACCENT_COLORS.map((color) => (
             <button
               key={color.value}
               onClick={() => handleColorSelect(color.value)}
               aria-pressed={selectedColor.toLowerCase() === color.value.toLowerCase()}
-              className={`group relative p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
+              className={`group relative p-2 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
                 selectedColor.toLowerCase() === color.value.toLowerCase()
                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                   : 'border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50'
               }`}
             >
               {/* Color preview */}
-              <div className="flex items-center justify-center mb-3">
+              <div className="flex items-center justify-center mb-1.5 sm:mb-3">
                 <div
-                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="w-8 h-8 sm:w-14 sm:h-14 rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110"
                   style={{ backgroundColor: color.value }}
                 />
               </div>
-              
+
               {/* Selected indicator */}
               {selectedColor.toLowerCase() === color.value.toLowerCase() && (
-                <div className="absolute top-2 right-2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
-                  <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                <div className="absolute top-1 right-1 sm:top-2 sm:right-2 w-4 h-4 sm:w-7 sm:h-7 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
+                  <Check className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-white" />
                 </div>
               )}
-              
+
               {/* Color info */}
               <div className="text-center">
-                <h3 className="font-bold text-sm sm:text-base text-[var(--text-primary)] mb-1">
+                <h3 className="font-bold text-[10px] sm:text-base text-[var(--text-primary)] sm:mb-1 leading-tight truncate">
                   {color.name}
                 </h3>
-                <p className="text-xs text-[var(--text-secondary)]">
+                <p className="hidden sm:block text-xs text-[var(--text-secondary)]">
                   {color.description}
                 </p>
               </div>
             </button>
           ))}
         </div>
-        
+
         {/* Skip option */}
-        <div className="flex flex-col items-center gap-4 relative z-10">
+        <div className="flex flex-col items-center gap-3 sm:gap-4 relative z-10">
           <button
             onClick={() => onAccentColorSelect(selectedColor)}
-            className="rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+            className="rounded-xl bg-[var(--accent-primary)] px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
           >
             Choose as accent color
           </button>

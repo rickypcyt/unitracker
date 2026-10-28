@@ -13,9 +13,9 @@ const CalendarPage = memo(() => {
   const { isDemo, demoTasks } = useDemoMode();
   const realTasks = useAppStore((state) => state.tasks.tasks);
   const { currentWorkspace: activeWorkspace } = useWorkspace();
-  const [view, setView] = useState<'month' | 'week' | 'day'>(() => {
+  const [view, setView] = useState<'month' | 'week'>(() => {
     const savedView = localStorage.getItem('calendarView');
-    return savedView === 'week' || savedView === 'day' ? savedView : 'month';
+    return savedView === 'week' ? 'week' : 'month';
   });
 
   const isVisible = location.pathname === '/calendar';
@@ -38,7 +38,7 @@ const CalendarPage = memo(() => {
     }
   }, [isVisible]);
 
-  const handleViewChange = (nextView: 'month' | 'week' | 'day') => {
+  const handleViewChange = (nextView: 'month' | 'week') => {
     setView(nextView);
     localStorage.setItem('calendarView', nextView);
   };

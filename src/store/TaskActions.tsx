@@ -2,8 +2,13 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAppStore } from '@/store/appStore';
 import { TaskService } from '@/services/TaskService';
 
-// Cache duration in milliseconds (5 minutes)
-const CACHE_DURATION = 5 * 60 * 1000;
+// Cache duration in milliseconds (1 minute — tasks refresh periodically, not on every page visit)
+const CACHE_DURATION = 60 * 1000;
+
+// Per-workspace task cache so navigating back to a page doesn't refetch
+const tasksCache = new Map<string, { tasks: any[]; lastFetch: number }>();
+
+const invalidateTasksCache = () => tasksCache.clear();
 
 // Track ongoing requests to prevent duplicates
 const ongoingRequests = new Map<string, Promise<any>>();
@@ -18,8 +23,6 @@ function saveTasksToLocalStorage(tasks: any[]) {
 }
 
 export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = false) => {
-  const { tasks: taskState } = useAppStore.getState();
-
   const requestKey = `${workspaceId || 'all'}-${forceRefresh ? 'force' : 'cached'}`;
 
   if (ongoingRequests.has(requestKey)) {
@@ -32,14 +35,24 @@ export const fetchTasks = async (workspaceId?: string, forceRefresh: boolean = f
         tasks: { ...state.tasks, loading: true }
       }));
 
-      if (!forceRefresh && !workspaceId && taskState.isCached && taskState.lastFetch && Date.now() - taskState.lastFetch < CACHE_DURATION) {
+      const cacheKey = workspaceId || 'all';
+      const cacheHit = tasksCache.get(cacheKey);
+      if (!forceRefresh && cacheHit && Date.now() - cacheHit.lastFetch < CACHE_DURATION) {
         useAppStore.setState(state => ({
-          tasks: { ...state.tasks, loading: false, tasks: taskState.tasks }
+          tasks: {
+            ...state.tasks,
+            loading: false,
+            tasks: cacheHit.tasks,
+            error: null,
+            isCached: true,
+            lastFetch: cacheHit.lastFetch
+          }
         }));
         return;
       }
 
       const combinedTasks = await TaskService.fetchTasks(workspaceId);
+      tasksCache.set(cacheKey, { tasks: combinedTasks, lastFetch: Date.now() });
 
       useAppStore.setState(state => ({
         tasks: {
@@ -105,6 +118,7 @@ export const addTask = async (newTask: any) => {
     };
 
     const data = await TaskService.createTask(taskWithUser);
+    invalidateTasksCache();
     addTaskToStore(data);
     saveTasksToLocalStorage([...taskState.tasks, data]);
     return data;
@@ -131,6 +145,7 @@ export const toggleTaskStatus = async (id: any, completed: any) => {
 
     const data = await TaskService.toggleComplete(id, completed);
 
+    invalidateTasksCache();
     updateTask(id, data);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -145,6 +160,7 @@ export const deleteTask = async (id: any) => {
 
   try {
     await TaskService.deleteTask(id);
+    invalidateTasksCache();
     deleteTaskFromStore(id);
     saveTasksToLocalStorage(taskState.tasks.filter(t => t.id !== id));
   } catch (error) {
@@ -175,6 +191,7 @@ export const updateTaskAction = async (task: any) => {
     };
 
     const data = await TaskService.updateTask(task.id, updateData);
+    invalidateTasksCache();
     updateTask(task.id, data);
     const updatedTasks = taskState.tasks.map(t => t.id === data.id ? data : t);
     saveTasksToLocalStorage(updatedTasks);

@@ -11,7 +11,8 @@ import {
   Timer,
   WifiOff,
 } from 'lucide-react';
-import { PomodoroDemo, StudyTimerDemo } from './LandingDemos';
+import Pomodoro from '@/pages/session/Pomodoro';
+import StudyTimer from '@/pages/session/StudyTimer';
 
 const features = [
   { icon: Timer, label: 'Pomodoro & study timer' },
@@ -110,7 +111,7 @@ const LandingPage = () => {
         }
       `}</style>
 
-      <div className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <div className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-[var(--bg-primary)] text-[var(--text-primary)] pb-16">
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg-primary)]/80 border-b border-white/5">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -175,14 +176,18 @@ const LandingPage = () => {
             {/* Live demos */}
             <div className="animate-um-rise grid md:grid-cols-2 gap-5 max-w-4xl mx-auto text-left" style={{ animationDelay: '120ms' }}>
               <ShowcaseFrame title="Pomodoro">
-                <PomodoroDemo />
+                <div className="max-h-[420px] overflow-y-auto">
+                  <Pomodoro hideHeader />
+                </div>
               </ShowcaseFrame>
               <ShowcaseFrame title="Study Timer">
-                <StudyTimerDemo />
+                <div className="max-h-[420px] overflow-y-auto">
+                  <StudyTimer hideHeader />
+                </div>
               </ShowcaseFrame>
             </div>
             <p className="mt-4 text-xs text-[var(--text-secondary)]">
-              Live demos — turn on “Sync Pomodoro” and control both timers from one.
+              The real timers — press play and try them.
             </p>
           </div>
         </section>

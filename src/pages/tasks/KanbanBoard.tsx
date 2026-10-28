@@ -412,28 +412,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   // Show loading when tasks are loading or workspace is changing
   if (tasksLoading || workspaceChanging) {
     return (
-      <div className="px-4 py-6 space-y-4">
-        {/* Skeleton columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] p-3">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="h-4 w-4 rounded bg-[var(--bg-primary)] animate-pulse" />
-                <div className="h-4 w-24 rounded bg-[var(--bg-primary)] animate-pulse" />
-                <div className="h-3 w-12 rounded bg-[var(--bg-primary)] animate-pulse" />
-              </div>
-              <div className="h-1 w-full rounded-full bg-[var(--bg-primary)] animate-pulse mb-3" />
-              {[0, 1].map(j => (
-                <div key={j} className="flex items-center gap-2 p-2.5 rounded-xl bg-[var(--bg-primary)] mb-2">
-                  <div className="h-4 w-4 rounded-full bg-[var(--bg-primary)] animate-pulse" />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-3/4 rounded bg-[var(--bg-secondary)] animate-pulse" />
-                    <div className="h-2 w-1/2 rounded bg-[var(--bg-secondary)] animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
+      <div className="flex items-center justify-center py-6 min-h-[20vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
+          <p className="text-[var(--text-secondary)]">Loading tasks...</p>
         </div>
       </div>
     );

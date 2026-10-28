@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import type { Task } from '@/types/taskStorage';
 
-type ViewType = 'month' | 'week' | 'day';
+type ViewType = 'month' | 'week';
 
 interface CalendarHeaderProps {
   view: ViewType;
@@ -13,8 +13,6 @@ interface CalendarHeaderProps {
   goToNextMonth: () => void;
   goToPreviousWeek: () => void;
   goToNextWeek: () => void;
-  goToPreviousDay: () => void;
-  goToNextDay: () => void;
   goToToday: () => void;
   tasks?: Task[] | undefined;
 }
@@ -22,35 +20,12 @@ interface CalendarHeaderProps {
 const CalendarHeader = ({
   view,
   currentDate,
-  selectedDate,
   onViewChange,
   goToPreviousMonth,
   goToNextMonth,
   goToPreviousWeek,
   goToNextWeek,
-  goToPreviousDay,
-  goToNextDay,
 }: CalendarHeaderProps) => {
-  const renderDayHeader = () => {
-    const isCurrentDay = new Date().toDateString() === selectedDate.toDateString();
-    const weekdayLong = selectedDate.toLocaleDateString('en', { weekday: 'long' });
-    const weekdayShort = selectedDate.toLocaleDateString('en', { weekday: 'short' });
-    const dayOfMonth = selectedDate.getDate();
-
-    return (
-      <div className={`text-lg sm:text-lg font-semibold mx-2 ${
-        isCurrentDay ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
-      }`}>
-        <span className="sm:hidden">
-          {`${weekdayShort} ${dayOfMonth}`}
-        </span>
-        <span className="hidden sm:inline">
-          {`${weekdayLong} ${dayOfMonth}`}
-        </span>
-      </div>
-    );
-  };
-
   const renderWeekHeader = () => {
     const startOfWeek = new Date(currentDate);
     const day = startOfWeek.getDay();
@@ -104,19 +79,18 @@ const CalendarHeader = ({
     <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto items-stretch md:items-center gap-3 md:gap-8 py-2 md:py-4 px-2 md:px-6">
       <div className="order-2 md:order-1 flex w-full md:w-1/3 items-center justify-between md:justify-center gap-2 md:gap-4">
         <button 
-          onClick={view === 'day' ? goToPreviousDay : (view === 'week' ? goToPreviousWeek : goToPreviousMonth)}
+          onClick={view === 'week' ? goToPreviousWeek : goToPreviousMonth}
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
           aria-label="Previous"
         >
           <ChevronLeft size={16} className="sm:size-base" />
         </button>
         <div className="flex-1 md:flex-none text-center px-2 md:px-0">
-          {view === 'day' && renderDayHeader()}
           {view === 'week' && renderWeekHeader()}
           {view === 'month' && renderMonthHeader()}
         </div>
         <button 
-          onClick={view === 'day' ? goToNextDay : (view === 'week' ? goToNextWeek : goToNextMonth)}
+          onClick={view === 'week' ? goToNextWeek : goToNextMonth}
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
           aria-label="Next"
         >
@@ -126,9 +100,9 @@ const CalendarHeader = ({
       
       <div className="order-1 md:order-2 flex w-full md:w-1/3 justify-center">
         {/* View Switcher */}
-        <div className="flex rounded-md overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
+        <div className="flex w-full sm:w-auto rounded-md overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
           <button
-            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
+            className={`flex-1 px-2 sm:px-4 py-2 sm:py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
               view === 'month'
                 ? 'text-[var(--accent-primary)]'
                 : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
@@ -141,7 +115,7 @@ const CalendarHeader = ({
             )}
           </button>
           <button
-            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
+            className={`flex-1 px-2 sm:px-4 py-2 sm:py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
               view === 'week'
                 ? 'text-[var(--accent-primary)]'
                 : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
@@ -150,19 +124,6 @@ const CalendarHeader = ({
           >
             Week
             {view === 'week' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
-            )}
-          </button>
-          <button
-            className={`flex-1 px-2 sm:px-4 py-1.5 text-sm sm:text-base font-medium border-l border-[var(--border-primary)] transition-colors relative whitespace-nowrap touch-manipulation ${
-              view === 'day'
-                ? 'text-[var(--accent-primary)]'
-                : 'text-[var(--text-primary)] hover:text-[var(--accent-primary)]'
-            }`}
-            onClick={() => onViewChange('day')}
-          >
-            Day
-            {view === 'day' && (
               <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-primary)]"></div>
             )}
           </button>

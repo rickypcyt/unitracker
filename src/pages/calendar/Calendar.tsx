@@ -2,7 +2,6 @@ import "./mobile-calendar.css";
 import { handleDateDoubleClick, handleTouchEnd } from "./utils/calendarUtils";
 import CalendarHeader from "./components/CalendarHeader";
 import DayContextMenu from "./components/DayContextMenu";
-import DayView from "./components/DayView";
 import LoginPromptModal from "@/modals/auth/LoginPromptModal";
 import MonthView from "./components/MonthView";
 import type { Task } from "@/types/taskStorage";
@@ -17,11 +16,11 @@ import { useCalendarNavigation } from "./hooks/useCalendarNavigation";
 import { useCalendarState } from "./hooks/useCalendarState";
 import { useDeleteTaskSuccess } from "@/store/appStore";
 interface CalendarProps {
-  view?: 'month' | 'week' | 'day';
-  onViewChange?: (view: 'month' | 'week' | 'day') => void;
+  view?: 'month' | 'week';
+  onViewChange?: (view: 'month' | 'week') => void;
   tasks?: Task[]; // Optional filtered tasks
 }
-type ViewType = 'month' | 'week' | 'day';
+type ViewType = 'month' | 'week';
 const Calendar = ({
   view = 'month' as ViewType,
   onViewChange,
@@ -53,7 +52,6 @@ const Calendar = ({
 
   // Data management
   const {
-    getTasksForDayAndHour,
     getTasksWithDeadline,
     getStudiedHoursForDate,
     hasTasksWithDeadline,
@@ -72,8 +70,6 @@ const Calendar = ({
     goToNextMonth,
     goToPreviousWeek,
     goToNextWeek,
-    goToPreviousDay,
-    goToNextDay,
     goToToday,
     handleDateClick
   } = useCalendarNavigation({
@@ -154,7 +150,7 @@ const Calendar = ({
   return <div className="w-full h-full flex flex-col">
       <div className={`maincard p-0 pt-4 pb-4 relative w-full transition-all duration-300 calendar-view flex flex-col h-full ${view === 'month' ? '' : 'flex-1'}`}>
         {/* Calendar Header with navigation and view switcher */}
-        <CalendarHeader view={view} currentDate={currentDate} selectedDate={selectedDate} onViewChange={onViewChange || (() => {})} goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} goToPreviousWeek={goToPreviousWeek} goToNextWeek={goToNextWeek} goToPreviousDay={goToPreviousDay} goToNextDay={goToNextDay} goToToday={goToToday} tasks={filteredTasks || []} />
+        <CalendarHeader view={view} currentDate={currentDate} selectedDate={selectedDate} onViewChange={onViewChange || (() => {})} goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} goToPreviousWeek={goToPreviousWeek} goToNextWeek={goToNextWeek} goToToday={goToToday} tasks={filteredTasks || []} />
 
         {/* View Content */}
         <div className={`flex-1 relative ${view === 'month' ? '' : ''}`}>
@@ -162,7 +158,7 @@ const Calendar = ({
           e.preventDefault();
           // Context menu logic here - for now just show task details
           setViewingTask(task);
-        }} /> : view === 'day' ? <DayView selectedDate={selectedDate} isLoggedIn={isLoggedIn} getTasksForDayAndHour={getTasksForDayAndHour} setSelectedDate={setSelectedDate} setShowTaskForm={setShowTaskForm} setIsLoginPromptOpen={setIsLoginPromptOpen} onDayContextMenu={openDayContextMenu} /> : <MonthView calendarDays={calendarDays} hasTasksWithDeadline={hasTasksWithDeadline} getTasksWithDeadline={getTasksWithDeadline} getStudiedHoursForDate={getStudiedHoursForDate} handleDateClick={handleDateClick} handleDateDoubleClick={date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)} handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm))} onDayContextMenu={openDayContextMenu} />}
+        }} /> : <MonthView calendarDays={calendarDays} hasTasksWithDeadline={hasTasksWithDeadline} getTasksWithDeadline={getTasksWithDeadline} getStudiedHoursForDate={getStudiedHoursForDate} handleDateClick={handleDateClick} handleDateDoubleClick={date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm)} handleTouchEnd={(e, date) => handleTouchEnd(e, date, lastTap, setLastTap, date => handleDateDoubleClick(date, isLoggedIn, setSelectedDate, setIsLoginPromptOpen, setShowTaskForm))} onDayContextMenu={openDayContextMenu} />}
         </div>
 
         {/* Modals */}

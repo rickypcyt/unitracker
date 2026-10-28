@@ -1,5 +1,5 @@
 import { Calendar, ChevronLeft, FileText, FolderOpen, Plus, Search, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import NotesCreateModal from '@/modals/notes/NotesCreateModal';
 import { getLocalDateString } from '@/utils/dateUtils';
@@ -90,7 +90,16 @@ const NotesDirectory = ({
   onDelete,
 }: NotesDirectoryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<string | null>(() => {
+    try { return sessionStorage.getItem('notesSelectedAssignment'); } catch { return null; }
+  });
+
+  useEffect(() => {
+    try {
+      if (selectedAssignment) sessionStorage.setItem('notesSelectedAssignment', selectedAssignment);
+      else sessionStorage.removeItem('notesSelectedAssignment');
+    } catch {}
+  }, [selectedAssignment]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const filteredNotes = useMemo(() => {
@@ -103,6 +112,13 @@ const NotesDirectory = ({
       getPreview(note.description).toLowerCase().includes(query),
     );
   }, [notes, searchQuery]);
+
+  // Clear a persisted selection if that assignment no longer exists
+  useEffect(() => {
+    if (loading || !selectedAssignment || notes.length === 0) return;
+    const exists = notes.some(n => (n.assignment || 'Unassigned') === selectedAssignment);
+    if (!exists) setSelectedAssignment(null);
+  }, [loading, notes, selectedAssignment]);
 
   const assignmentGroups = useMemo(() => {
     const groups = new Map<string, Note[]>();
@@ -159,7 +175,7 @@ const NotesDirectory = ({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 sm:p-6">
+    <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -237,7 +253,7 @@ const NotesDirectory = ({
                   <h2 className="text-base font-semibold text-[var(--text-primary)]">{getMonthLabel(monthKey)}</h2>
                   <span className="text-xs text-[var(--text-secondary)]">{monthNotes.length}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {monthNotes.map(note => {
               const noteKey = note.id || `${note.title}-${note.date}`;
               return (
