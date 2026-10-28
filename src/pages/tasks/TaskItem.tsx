@@ -168,7 +168,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     return (
         <div
-            className={`group relative grid grid-cols-[auto_minmax(0,1fr)_auto] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
+            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
                 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
                 ${task.completed ? 'opacity-50' : ''}
@@ -195,30 +195,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 </button>
             </div>
 
-            {/* Right side: actions (always visible) */}
-            <div className="col-start-3 row-start-1 flex items-center gap-0.5 self-center flex-shrink-0">
-                <button
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                    title="Edit task"
-                    aria-label="Edit task"
-                >
-                    <Pencil size={16} />
-                </button>
-                {onDelete && (
-                    <button
-                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
-                        title="Delete task"
-                        aria-label="Delete task"
-                    >
-                        <Trash2 size={16} />
-                    </button>
-                )}
-            </div>
-
             {/* Contenido principal */}
             <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-0.5">
                 {/* Assignment above title when showAssignment is true (calendar view) */}
@@ -242,10 +218,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     </span>
                 </div>
 
-                {/* Row 2: Date / time / days remaining */}
-                <div className="w-full">
+                {/* Row 2: Date / time / days remaining + actions */}
+                <div className="w-full flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
                     {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
-                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
                             <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
                                 <Zap size={14} className="flex-shrink-0 opacity-70" />
                                 <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
@@ -258,21 +235,42 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             )}
                         </div>
                     ) : task.deadline && task.deadline !== '' ? (
-                        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
                             <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
                                 <Clock size={14} className="flex-shrink-0" />
                                 <span className="truncate">{formatDateShort(task.deadline)}</span>
                                 <span className="flex-shrink-0 whitespace-nowrap text-xs font-medium">({getTimeRemainingString(task.deadline)})</span>
                             </span>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                                {task.start_at && (
-                                    <span className="text-[var(--text-secondary)] flex items-center gap-1">
-                                        {formatTimeRange(task.start_at, task.end_at)}
-                                    </span>
-                                )}
-                            </div>
+                            {task.start_at && (
+                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
+                                    {formatTimeRange(task.start_at, task.end_at)}
+                                </span>
+                            )}
                         </div>
                     ) : <span className="text-[var(--text-secondary)] opacity-60 text-xs sm:text-base">No deadline</span>}
+                    </div>
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                            title="Edit task"
+                            aria-label="Edit task"
+                        >
+                            <Pencil size={16} />
+                        </button>
+                        {onDelete && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                                title="Delete task"
+                                aria-label="Delete task"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
             </div>

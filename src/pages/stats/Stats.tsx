@@ -1,12 +1,9 @@
-import { BookOpen, CheckCircle2, Flame, ListChecks, Timer, Zap } from 'lucide-react';
-import { ReactElement, useEffect, useState } from 'react';
-import { useLaps, useTasksOnly } from '@/store/appStore';
+import { BookOpen, Timer } from 'lucide-react';
+import { ReactElement } from 'react';
+import { useLaps } from '@/store/appStore';
 
-import { supabase } from '@/utils/supabaseClient';
-import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import type { Lap } from '@/types/lap';
-import type { Task } from '@/schemas/task';
 
 interface StatData {
   todayMinutes: number;
@@ -21,10 +18,6 @@ interface StatData {
   sessionsMonth: number;
   sessionsYear: number;
   sessionsLastYear: number;
-  longestStreak: number;
-  currentStreak: number;
-  pomodoros: number;
-  tasksDone: number;
 }
 
 function durationToMinutes(duration: string | undefined): number {
@@ -122,71 +115,6 @@ function useLapStats(laps: Lap[]) {
   return stats;
 }
 
-function hasCompletedAt(task: Task): task is Task & { completed_at: string } {
-  return typeof task.completed_at === 'string' && task.completed_at.length > 0;
-}
-
-function getLongestStreak(tasks: Task[]): number {
-  const completed = tasks
-    .filter((t): t is Task & { completed_at: string } => t.completed && hasCompletedAt(t))
-    .map(t => new Date(t.completed_at).setHours(0,0,0,0))
-    .sort((a, b) => a - b);
-  if (completed.length === 0) return 0;
-  let streak = 1, maxStreak = 1;
-  for (let i = 1; i < completed.length; i++) {
-    const current = completed[i];
-    const previous = completed[i-1];
-    if (current && previous && current - previous === 86400000) {
-      streak++;
-      maxStreak = Math.max(maxStreak, streak);
-    } else if (current && previous && current !== previous) {
-      streak = 1;
-    }
-  }
-  return maxStreak;
-}
-
-function getCurrentStreak(tasks: Task[]): number {
-  const days = new Set(
-    tasks
-      .filter((t): t is Task & { completed_at: string } => t.completed && hasCompletedAt(t))
-      .map(t => new Date(t.completed_at).setHours(0, 0, 0, 0))
-  );
-  if (days.size === 0) return 0;
-  let cursor = new Date().setHours(0, 0, 0, 0);
-  if (!days.has(cursor)) cursor -= 86400000;
-  let streak = 0;
-  while (days.has(cursor)) {
-    streak++;
-    cursor -= 86400000;
-  }
-  return streak;
-}
-
-function usePomodorosAllTime(userId: string | undefined): number {
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    if (!userId) {
-      setTotal(0);
-      return;
-    }
-    const fetchAllTime = async (): Promise<void> => {
-      const { data, error } = await supabase
-        .from('study_laps')
-        .select('pomodoros_completed')
-        .eq('user_id', userId);
-      if (!error && data) {
-        const sum = data.reduce((acc: number, row: { pomodoros_completed?: number }) => acc + (row.pomodoros_completed || 0), 0);
-        setTotal(sum);
-      }
-    };
-    fetchAllTime();
-  }, [userId]);
-
-  return total;
-}
-
 const timePeriods: { key: keyof Pick<StatData, 'todayMinutes' | 'yesterdayMinutes' | 'weekMinutes' | 'monthMinutes' | 'yearMinutes' | 'lastYearMinutes'>; label: string }[] = [
   { key: 'todayMinutes', label: 'Today' },
   { key: 'yesterdayMinutes', label: 'Yesterday' },
@@ -206,27 +134,11 @@ const sessionPeriods: { key: keyof Pick<StatData, 'sessionsToday' | 'sessionsYes
 ];
 
 const Statistics = (): ReactElement => {
-  const tasks = useTasksOnly();
   const { laps } = useLaps();
-  const { user } = useAuth();
   const { isDemo, demoStats } = useDemoMode();
   const lapStats = useLapStats(laps);
-  const longestStreak = getLongestStreak(tasks);
-  const currentStreak = getCurrentStreak(tasks);
-  const tasksDone = tasks.filter(t => t.completed).length;
 
-  // Pomodoros completados all time (de la base de datos)
-  const pomodorosAllTime = usePomodorosAllTime(user?.id);
-
-  const statData: StatData = {
-    ...lapStats,
-    longestStreak,
-    currentStreak,
-    pomodoros: pomodorosAllTime,
-    tasksDone,
-  };
-
-  const statsData = isDemo ? demoStats : statData;
+  const statsData = isDemo ? demoStats : lapStats;
 
   return (
     <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-4 px-5 rounded-2xl shadow-sm">
@@ -273,40 +185,6 @@ const Statistics = (): ReactElement => {
         ))}
       </div>
 
-      {/* Pomodoros + Streak */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-            <CheckCircle2 size={15} className="text-red-500" />
-            <span className="text-xs font-medium">Pomodoros</span>
-          </div>
-          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.pomodoros ?? 0}</span>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-            <Flame size={15} className="text-orange-500" />
-            <span className="text-xs font-medium">Max Streak</span>
-          </div>
-          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.longestStreak}</span>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-            <Zap size={15} className="text-yellow-500" />
-            <span className="text-xs font-medium">Current Streak</span>
-          </div>
-          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.currentStreak}</span>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
-            <ListChecks size={15} className="text-green-500" />
-            <span className="text-xs font-medium">Tasks Done</span>
-          </div>
-          <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">{statsData.tasksDone}</span>
-        </div>
-      </div>
     </div>
   );
 };

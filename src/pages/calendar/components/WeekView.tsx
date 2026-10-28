@@ -245,7 +245,7 @@ const WeekView = ({
 
   // Shared task block styles
   const taskBlockClass =
-    "text-[var(--text-primary)] text-xs sm:text-[13px] px-2 py-1.5 rounded-md truncate pointer-events-auto cursor-pointer transition-all border-l-[3px] border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 absolute z-10 hover:bg-[var(--accent-primary)]/15 hover:cursor-grab active:cursor-grabbing";
+    "text-[var(--text-primary)] text-[10px] sm:text-[13px] px-1 py-0.5 sm:px-2 sm:py-1.5 rounded-md truncate pointer-events-auto cursor-pointer transition-all border-l-[3px] border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 absolute z-10 hover:bg-[var(--accent-primary)]/15 hover:cursor-grab active:cursor-grabbing";
 
   return (
     <DndContext
@@ -258,23 +258,23 @@ const WeekView = ({
       <div className="flex flex-col bg-[var(--bg-primary)] rounded-xl relative overflow-hidden h-full border-2 border-[var(--border-primary)]">
         {/* Scrollable content: vertical + horizontal on small screens */}
         <div className="flex-1 overflow-auto" ref={scrollRef}>
-          <div className="min-w-[560px]">
+          <div className="min-w-0 sm:min-w-[560px]">
         {/* Sticky header */}
-        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)] px-2 pt-3 pb-2">
-          <div className="grid grid-cols-8 gap-1">
+        <div className="sticky top-0 z-20 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-primary)] px-1 sm:px-2 pt-3 pb-2">
+          <div className="grid grid-cols-[1.75rem_repeat(7,minmax(0,1fr))] sm:grid-cols-8 gap-0.5 sm:gap-1">
             <div className="text-xs text-[var(--text-secondary)] font-medium p-1.5" />
             {weekDays.map((day, i) => {
               const isToday = isSameDay(day, new Date());
               return (
                 <div
                   key={i}
-                  className={`text-center py-1.5 px-1 rounded-lg transition-colors border-l border-[var(--border-primary)]/50 ${
+                  className={`text-center py-1 px-0.5 sm:py-1.5 sm:px-1 rounded-lg transition-colors border-l border-[var(--border-primary)]/50 ${
                     isToday ? "bg-[var(--accent-primary)]/8" : ""
                   }`}
                   onContextMenu={(e) => onDayContextMenu(e, day)}
                 >
                   <div
-                    className={`text-xs sm:text-xs font-medium tracking-wide uppercase ${
+                    className={`text-[10px] sm:text-xs font-medium tracking-wide uppercase ${
                       isToday
                         ? "text-[var(--accent-primary)]"
                         : "text-[var(--text-secondary)]"
@@ -283,7 +283,7 @@ const WeekView = ({
                     {day.toLocaleDateString("en", { weekday: "short" })}
                   </div>
                   <div
-                    className={`text-base sm:text-lg flex items-center justify-center mx-auto mt-1 font-semibold ${
+                    className={`text-sm sm:text-lg flex items-center justify-center mx-auto mt-0.5 sm:mt-1 font-semibold ${
                       isToday
                         ? "text-[var(--accent-primary)]"
                         : "text-[var(--text-primary)]"
@@ -298,7 +298,7 @@ const WeekView = ({
         </div>
 
         {/* Time grid */}
-        <div className="px-2 pb-3">
+        <div className="px-1 sm:px-2 pb-3">
           <div className="relative">
             {/* Spanning tasks (>1h) */}
             {(() => {
@@ -377,9 +377,13 @@ const WeekView = ({
                       id={task.id.toString()}
                       className={taskBlockClass}
                       style={{
-                        left: `${(dayIndex + 1) * 12.5 + 0.5}%`,
+                        left: isMobile
+                          ? `calc(1.75rem + ${dayIndex} * (100% - 1.75rem) / 7 + 2px)`
+                          : `${(dayIndex + 1) * 12.5 + 0.5}%`,
                         top: `${topPosition + 9}px`,
-                        width: `11.5%`,
+                        width: isMobile
+                          ? `calc((100% - 1.75rem) / 7 - 4px)`
+                          : `11.5%`,
                         height: `${blockHeight}px`,
                       }}
                       onClick={(e) => {
@@ -436,10 +440,10 @@ const WeekView = ({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="grid grid-cols-8 gap-x-1 relative border-t border-[var(--border-primary)]/40"
+                className="grid grid-cols-[1.75rem_repeat(7,minmax(0,1fr))] sm:grid-cols-8 gap-x-0.5 sm:gap-x-1 relative border-t border-[var(--border-primary)]/40"
               >
                 {/* Hour label */}
-                <div className="text-xs text-[var(--text-secondary)] pt-1 pr-2 text-right font-medium tabular-nums">
+                <div className="text-[10px] sm:text-xs text-[var(--text-secondary)] pt-1 pr-0.5 sm:pr-2 text-right font-medium tabular-nums">
                   {format12Hour(hour)}
                 </div>
 

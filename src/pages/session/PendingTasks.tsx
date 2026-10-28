@@ -112,7 +112,10 @@ const PendingTasks = () => {
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
+                  <ActionTooltip content="Open the task editor to modify its details or due date.">
+                    <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
+                  </ActionTooltip>
+                  <div className="mt-0.5 flex items-center justify-between gap-1">
                     <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
                       <CalendarDays size={13} />
                       {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
@@ -129,9 +132,6 @@ const PendingTasks = () => {
                       </ActionTooltip>
                     </div>
                   </div>
-                  <ActionTooltip content="Open the task editor to modify its details or due date.">
-                    <button onClick={() => editTask(task)} className="mt-0.5 block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
-                  </ActionTooltip>
                 </div>
               </li>
             );

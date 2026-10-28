@@ -120,171 +120,188 @@ const DayView = ({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Resolve all tasks for the day, dedupe, sort, and lay out overlapping
+  // events into columns (Google Calendar style)
+  const seen = new Set<string>();
+  const dayTasks = hours
+    .flatMap((hour) => getTasksForDayAndHour(selectedDate, hour))
+    .map((task) => ({ task, ...resolveTaskTiming(task, selectedDate) }))
+    .filter(
+      ({ task, start }) =>
+        !Number.isNaN(start.getTime()) &&
+        !seen.has(String(task.id)) &&
+        seen.add(String(task.id))
+    )
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
+
+  const laidOut: Array<{
+    task: any;
+    start: Date;
+    end: Date;
+    col: number;
+    cols: number;
+  }> = [];
+  let group: typeof dayTasks = [];
+  let groupEnd = -Infinity;
+  const flushGroup = () => {
+    const colEnds: number[] = [];
+    const assignments = new Map<any, number>();
+    group.forEach((item) => {
+      let col = colEnds.findIndex((t) => t <= item.start.getTime());
+      if (col === -1) {
+        col = colEnds.length;
+        colEnds.push(0);
+      }
+      colEnds[col] = item.end.getTime();
+      assignments.set(item, col);
+    });
+    const cols = Math.max(colEnds.length, 1);
+    group.forEach((item) =>
+      laidOut.push({ ...item, col: assignments.get(item) ?? 0, cols })
+    );
+    group = [];
+  };
+  dayTasks.forEach((item) => {
+    if (group.length > 0 && item.start.getTime() >= groupEnd) flushGroup();
+    group.push(item);
+    groupEnd = Math.max(groupEnd, item.end.getTime());
+  });
+  flushGroup();
+
+  const openTaskFormAt = (minutesFromVisibleStart: number) => {
+    const totalMinutes =
+      VISIBLE_START_HOUR * MINUTES_PER_HOUR +
+      clamp(minutesFromVisibleStart, 0, (VISIBLE_END_HOUR - VISIBLE_START_HOUR) * MINUTES_PER_HOUR - 1);
+    const newDate = new Date(selectedDate);
+    newDate.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60, 0, 0);
+    setSelectedDate(newDate);
+    if (!isLoggedIn) return setIsLoginPromptOpen(true);
+    setShowTaskForm(true);
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl relative min-h-0 h-full overflow-hidden">
       {/* Time grid */}
       <div className="flex-1 overflow-auto" ref={scrollRef}>
-        <div className="relative px-2 pb-4">
-          {hours.map((hour) => {
-            const isCurrentHour = isCurrentDay && hour === currentHour;
+        <div className="relative px-1.5 sm:px-2 pb-4">
+          {/* Hour rows: labels + grid lines */}
+          {hours.map((hour) => (
+            <div
+              key={hour}
+              className="grid grid-cols-[44px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative"
+            >
+              <div className="text-[10px] sm:text-xs text-[var(--text-secondary)] -mt-2 pr-1.5 sm:pr-2 text-right font-medium tabular-nums bg-[var(--bg-primary)] w-fit ml-auto px-1 relative z-10">
+                {format12Hour(hour)}
+              </div>
+              <div className="h-[60px] border-t border-[var(--border-primary)]/40" />
+            </div>
+          ))}
 
-            const tasksStartingThisHour = getTasksForDayAndHour(
-              selectedDate,
-              hour
-            )
-              .map((task) => {
-                const { start, end } = resolveTaskTiming(task, selectedDate);
-                return { task, start, end };
-              })
-              .filter(
-                ({ start }) =>
-                  start.getHours() === hour && !Number.isNaN(start.getTime())
-              )
-              .sort((a, b) => a.start.getTime() - b.start.getTime());
+          {/* Events layer over the slot column */}
+          <div className="absolute top-0 bottom-4 left-[44px] sm:left-[64px] right-1.5 sm:right-2">
+            {/* Click target */}
+            <div
+              className="absolute inset-0 cursor-pointer"
+              onContextMenu={(e) => {
+                if ((e.target as HTMLElement).closest("[data-calendar-task]"))
+                  return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const hour =
+                  VISIBLE_START_HOUR +
+                  Math.floor((e.clientY - rect.top) / 60);
+                onDayContextMenu(
+                  e,
+                  selectedDate,
+                  clamp(hour, VISIBLE_START_HOUR, VISIBLE_END_HOUR - 1)
+                );
+              }}
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest("[data-calendar-task]"))
+                  return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                openTaskFormAt(e.clientY - rect.top);
+              }}
+            />
 
-            return (
-              <div
-                key={hour}
-                className="grid grid-cols-[56px_1fr] sm:grid-cols-[64px_1fr] gap-0 relative border-t border-[var(--border-primary)]/40"
-              >
-                {/* Hour label */}
-                <div className="text-xs sm:text-xs text-[var(--text-secondary)] -mt-2 pr-2 text-right font-medium tabular-nums bg-[var(--bg-primary)] w-fit ml-auto px-1 relative z-10">
-                  {format12Hour(hour)}
-                </div>
-
-                {/* Slot */}
+            {/* Current time line */}
+            {isCurrentDay &&
+              currentMinutesFromStart >=
+                VISIBLE_START_HOUR * MINUTES_PER_HOUR && (
                 <div
-                  className="cursor-pointer min-h-[60px] transition-colors relative overflow-visible rounded-md hover:bg-[var(--bg-secondary)]/40"
-                  onContextMenu={(e) => {
-                    if (
-                      (e.target as HTMLElement).closest("[data-calendar-task]")
-                    )
-                      return;
-                    onDayContextMenu(e, selectedDate, hour);
-                  }}
-                  onDoubleClick={(e) => {
-                    if (
-                      (e.target as HTMLElement).closest("[data-calendar-task]")
-                    )
-                      return;
-                    const newDate = new Date(selectedDate);
-                    newDate.setHours(hour, 0, 0, 0);
-                    setSelectedDate(newDate);
-                    if (!isLoggedIn) return setIsLoginPromptOpen(true);
-                    setShowTaskForm(true);
-                  }}
-                  onClick={(e) => {
-                    if (
-                      (e.target as HTMLElement).closest("[data-calendar-task]")
-                    )
-                      return;
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const y = e.clientY - rect.top;
-                    const minutes = clamp(
-                      Math.round((y / rect.height) * MINUTES_PER_HOUR),
+                  className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
+                  style={{
+                    top: `${clamp(
+                      currentMinutesFromStart -
+                        VISIBLE_START_HOUR * MINUTES_PER_HOUR,
                       0,
-                      MINUTES_PER_HOUR - 1
-                    );
-                    const newDate = new Date(selectedDate);
-                    newDate.setHours(hour, minutes, 0, 0);
-                    setSelectedDate(newDate);
+                      (VISIBLE_END_HOUR - VISIBLE_START_HOUR) *
+                        MINUTES_PER_HOUR
+                    )}px`,
+                  }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] shrink-0 -ml-1" />
+                  <div className="flex-1 h-[2px] bg-[var(--accent-primary)] rounded-full" />
+                </div>
+              )}
+
+            {/* Task blocks */}
+            {laidOut.map(({ task, start, end, col, cols }) => {
+              const startMinutes = minutesFromStartOfDay(start);
+              const topOffset = clamp(
+                startMinutes - VISIBLE_START_HOUR * MINUTES_PER_HOUR,
+                0,
+                (VISIBLE_END_HOUR - VISIBLE_START_HOUR) * MINUTES_PER_HOUR
+              );
+              const durationMinutes = Math.max(
+                20,
+                Math.round((end.getTime() - start.getTime()) / (1000 * 60))
+              );
+              const blockHeight = Math.max(24, durationMinutes * PIXELS_PER_MINUTE);
+
+              const timeLabel = `${start.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} – ${end.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}`;
+
+              return (
+                <div
+                  key={task.id}
+                  data-calendar-task
+                  className="absolute z-10 rounded-md border-l-[3px] border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)] text-[11px] sm:text-[13px] px-1.5 sm:px-2 py-1 sm:py-1.5 transition-colors hover:bg-[var(--accent-primary)]/15 overflow-hidden"
+                  style={{
+                    left: `calc(${(col / cols) * 100}% + 2px)`,
+                    width: `calc(${100 / cols}% - 4px)`,
+                    top: `${topOffset}px`,
+                    height: `${blockHeight}px`,
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setSelectedDate(new Date(start));
                     if (!isLoggedIn) return setIsLoginPromptOpen(true);
                     setShowTaskForm(true);
                   }}
-                  title={`Click to set time at ${format12Hour(hour)}`}
+                  title={`${task.title ?? "Task"} ${timeLabel}`}
                 >
-                  {/* Current time indicator */}
-                  {isCurrentHour && (
-                    <div
-                      className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
-                      style={{
-                        top: `${
-                          clamp(
-                            currentMinutesFromStart - hour * MINUTES_PER_HOUR,
-                            0,
-                            MINUTES_PER_HOUR
-                          ) * PIXELS_PER_MINUTE
-                        }px`,
-                        width: "calc(100% + 6px)",
-                        left: "-3px",
-                      }}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] shrink-0" />
-                      <div className="flex-1 h-[2px] bg-[var(--accent-primary)] rounded-full" />
+                  {task.assignment && (
+                    <div className="text-[10px] sm:text-xs text-[var(--accent-primary)] truncate font-medium">
+                      {task.assignment}
                     </div>
                   )}
-
-                  {/* Tasks */}
-                  {tasksStartingThisHour.map(
-                    ({ task, start, end }, taskIndex) => {
-                      const minutesFromDayStart = minutesFromStartOfDay(start);
-                      const minutesIntoHour = clamp(
-                        minutesFromDayStart - hour * MINUTES_PER_HOUR,
-                        0,
-                        MINUTES_PER_HOUR
-                      );
-                      const topOffset = minutesIntoHour * PIXELS_PER_MINUTE;
-                      const durationMinutesRaw = Math.round(
-                        (end.getTime() - start.getTime()) / (1000 * 60)
-                      );
-                      const durationMinutes = Math.max(30, durationMinutesRaw);
-                      const blockHeight = Math.max(
-                        28,
-                        durationMinutes * PIXELS_PER_MINUTE
-                      );
-                      const leftOffset = Math.min(taskIndex * 12, 48);
-
-                      const timeLabel = `${start.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })} – ${end.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}`;
-
-                      return (
-                        <div
-                          key={task.id}
-                          data-calendar-task
-                          className="absolute z-10 rounded-md border-l-[3px] border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--text-primary)] text-xs sm:text-[13px] px-2 py-1.5 transition-colors hover:bg-[var(--accent-primary)]/15"
-                          style={{
-                            left: `${4 + leftOffset}px`,
-                            right: "4px",
-                            top: `${topOffset}px`,
-                            height: `${blockHeight}px`,
-                          }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            const startDate = new Date(start);
-                            setSelectedDate(startDate);
-                            if (!isLoggedIn) {
-                              setIsLoginPromptOpen(true);
-                              return;
-                            }
-                            setShowTaskForm(true);
-                          }}
-                          title={`${task.title ?? "Task"} ${timeLabel}`}
-                        >
-                          {task.assignment && (
-                            <div className="text-xs text-[var(--accent-primary)] truncate font-medium mb-0.5">
-                              {task.assignment}
-                            </div>
-                          )}
-                          <div className="font-medium truncate leading-snug">
-                            {task.title || "Sin título"}
-                          </div>
-                          <div className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
-                            {timeLabel}
-                          </div>
-                        </div>
-                      );
-                    }
+                  <div className="font-medium truncate leading-snug">
+                    {task.title || "Sin título"}
+                  </div>
+                  {blockHeight >= 40 && (
+                    <div className="text-[10px] sm:text-xs text-[var(--text-secondary)] truncate">
+                      {timeLabel}
+                    </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
-
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

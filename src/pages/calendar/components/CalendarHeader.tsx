@@ -91,7 +91,7 @@ const CalendarHeader = ({
       }`}
     >
       <span className="sm:hidden">
-        {monthName.slice(0, 3)} {currentDate.getFullYear().toString().slice(2)}
+        {monthName.slice(0, 3)} {currentDate.getFullYear()}
       </span>
       <span className="hidden sm:inline">
         {monthName} {currentDate.getFullYear()}
@@ -102,7 +102,7 @@ const CalendarHeader = ({
 
   return (
     <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto items-stretch md:items-center gap-3 md:gap-8 py-2 md:py-4 px-2 md:px-6">
-      <div className="order-1 flex w-full md:w-1/3 items-center justify-between md:justify-start gap-2 md:gap-4">
+      <div className="order-2 md:order-1 flex w-full md:w-1/3 items-center justify-between md:justify-center gap-2 md:gap-4">
         <button 
           onClick={view === 'day' ? goToPreviousDay : (view === 'week' ? goToPreviousWeek : goToPreviousMonth)}
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
@@ -110,7 +110,7 @@ const CalendarHeader = ({
         >
           <ChevronLeft size={16} className="sm:size-base" />
         </button>
-        <div className="flex-1 md:flex-none text-center md:text-left px-2 md:px-0">
+        <div className="flex-1 md:flex-none text-center px-2 md:px-0">
           {view === 'day' && renderDayHeader()}
           {view === 'week' && renderWeekHeader()}
           {view === 'month' && renderMonthHeader()}
@@ -124,7 +124,7 @@ const CalendarHeader = ({
         </button>
       </div>
       
-      <div className="order-2 flex w-full md:w-1/3 justify-center">
+      <div className="order-1 md:order-2 flex w-full md:w-1/3 justify-center">
         {/* View Switcher */}
         <div className="flex rounded-md overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
           <button
