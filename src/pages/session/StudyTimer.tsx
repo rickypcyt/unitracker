@@ -1270,26 +1270,26 @@ const StudyTimer = ({
       )}
 
       {/* Controls: all in a single centered row */}
-      <div className="grid grid-cols-[repeat(5,auto)] sm:flex sm:flex-nowrap justify-center items-center gap-1 sm:gap-x-2 mt-auto shrink-0 pt-2 pb-2">
-        <div className="contents sm:flex sm:gap-1 sm:shrink-0">
-          {timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
+      <div className="grid grid-cols-[repeat(5,auto)] justify-center items-center gap-1 mt-auto shrink-0 pt-2 pb-2 mb-3">
+        <div className="flex gap-1 col-start-2 row-start-1 row-span-2 items-center justify-center">
+          {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
             label
-          }, index) => <button key={label} onClick={() => adjustTime(adjustment)} className={`timer-adjust-btn col-start-1 ${index === 0 ? 'row-start-1' : 'row-start-2'} sm:col-auto sm:row-auto`} aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>
 
-        <div className="contents sm:flex sm:items-center sm:gap-1 sm:shrink-0">
+        <div className="contents">
           {!isSynced && <>
-              <button onClick={() => reset()} className="timer-ctrl-btn col-start-4 row-start-2 sm:col-auto sm:row-auto" aria-label="Reset timer" title="Reset timer">
+              {currentSessionId && <button onClick={() => reset()} className="timer-ctrl-btn col-start-1 row-start-1" aria-label="Reset timer" title="Reset timer">
                 <RotateCcw size={18} />
-              </button>
+              </button>}
 
               {currentSessionId && (
                 <button
                   onClick={handleLapButton}
-                  className={`timer-ctrl-btn col-start-5 row-start-2 sm:col-auto sm:row-auto ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
+                  className={`timer-ctrl-btn col-start-1 row-start-2 ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
                   aria-label="Add lap note"
                   title="Add lap note"
                 >
@@ -1297,9 +1297,9 @@ const StudyTimer = ({
                 </button>
               )}
 
-              {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1 sm:col-auto sm:row-auto sm:row-span-1 sm:mx-0" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
+              {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
                   <Play size={18} />
-                </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1 sm:col-auto sm:row-auto sm:row-span-1 sm:mx-0" aria-label="Pause timer" title="Pause timer">
+                </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1" aria-label="Pause timer" title="Pause timer">
                   <Pause size={18} />
                 </button>}
             </>}
@@ -1308,7 +1308,7 @@ const StudyTimer = ({
             <>
               <button
                 onClick={() => updateModal("isFinishModalOpen", true)}
-                className="timer-ctrl-btn col-start-4 row-start-1 sm:col-auto sm:row-auto"
+                className="timer-ctrl-btn col-start-5 row-start-1"
                 aria-label="Finish session"
                 title="Finish session"
               >
@@ -1317,7 +1317,7 @@ const StudyTimer = ({
 
               <button
                 onClick={() => updateModal("isDeleteModalOpen", true)}
-                className="timer-ctrl-btn col-start-5 row-start-1 sm:col-auto sm:row-auto"
+                className="timer-ctrl-btn col-start-5 row-start-2"
                 aria-label="Cancel session"
                 title="Cancel session"
               >
@@ -1327,11 +1327,11 @@ const StudyTimer = ({
           )}
         </div>
 
-        <div className="contents sm:flex sm:gap-1 sm:shrink-0">
-          {timeAdjustmentButtons.filter(({ adjustment }) => adjustment > 0).map(({
+        <div className="flex gap-1 col-start-4 row-start-1 row-span-2 items-center justify-center">
+          {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment > 0).map(({
             adjustment,
             label
-          }, index) => <button key={label} onClick={() => adjustTime(adjustment)} className={`timer-adjust-btn col-start-2 ${index === 0 ? 'row-start-1' : 'row-start-2'} sm:col-auto sm:row-auto`} aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>

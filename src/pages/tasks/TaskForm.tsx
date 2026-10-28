@@ -1,16 +1,14 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, Check, ChevronDown, ChevronUp, Sparkles, Wand2 } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Sparkles, Wand2 } from 'lucide-react';
 import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useEffect, useRef, useState } from 'react';
 
 import AutocompleteInput from '@/modals/shared/AutocompleteInput';
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
-import LocalWorkspaceSelector from './LocalWorkspaceSelector';
 import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
-import { StatusSelector } from '@/pages/tasks/components/StatusSelector';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFormState } from '@/hooks/common/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
@@ -63,9 +61,18 @@ const TaskForm = ({
     currentWorkspace: activeWorkspace
   } = workspace;
   const datePickerRef = useRef<any>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+
+  useEffect(() => {
+    const check = () => setIsMobileViewport(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Local workspace state for this task only
-  const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
+  const [selectedWorkspace] = useState(() => {
     // If current workspace is "All", select the first available workspace instead
     if (activeWorkspace?.id === 'all' && workspaces && workspaces.length > 0) {
       return workspaces[0];
@@ -74,7 +81,7 @@ const TaskForm = ({
   });
 
   // Status state
-  const [selectedStatus, setSelectedStatus] = useState(initialTask?.status || 'todo');
+  const [selectedStatus] = useState(initialTask?.status || 'todo');
   const typedUser = user as any;
   const getInitialRecurrence = () => {
     if (initialTask?.recurrence_type === 'weekly' && Array.isArray(initialTask?.recurrence_weekdays)) return initialTask.recurrence_weekdays;
@@ -438,19 +445,58 @@ const TaskForm = ({
         <div className="flex gap-2">
           {DIFFICULTY_OPTIONS.map(option => {
             const isSelected = option.value === formData.difficulty;
-            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? `ring-2 ring-current ${option.color} bg-[var(--bg-secondary)]` : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
-              <span className={`w-2 h-2 rounded-full ${option.value === 'easy' ? 'bg-[#00FF41]' : option.value === 'medium' ? 'bg-[#00BFFF]' : 'bg-[#FF003C]'}`} />
+            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? option.color : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? option.color.replace('text-', 'border-') : 'border-[var(--border-primary)]'}`}>
+                {isSelected && <span className={`w-2 h-2 rounded-full ${option.value === 'easy' ? 'bg-[#00FF41]' : option.value === 'medium' ? 'bg-[#00BFFF]' : 'bg-[#FF003C]'}`} />}
+              </span>
               {option.label}
-              {isSelected && <Check size={14} className={option.color} />}
             </button>;
           })}
         </div>
         {displayErrors.difficulty && <p className="mt-1 text-sm text-red-500">{displayErrors.difficulty}</p>}
       </div>;
   };
+  const clearDeadline = () => {
+    handleChange('deadline', '');
+    handleChange('start_at', null);
+    handleChange('end_at', null);
+    setDisplayStartTime('');
+    setDisplayEndTime('');
+  };
+  const setDeadlineToday = () => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    handleChange('deadline', `${day}/${month}/${year}`);
+    // Clear time when setting to today to avoid invalid time combinations
+    handleChange('start_at', null);
+    handleChange('end_at', null);
+    setDisplayStartTime('');
+    setDisplayEndTime('');
+  };
+  // Convert stored DD/MM/YYYY (or ISO) deadline to YYYY-MM-DD for <input type="date">
+  const deadlineToIso = (): string => {
+    const d = formData.deadline;
+    if (!d) return '';
+    if (d.includes('/')) {
+      const [day, month, year] = d.split('/');
+      return `${year}-${month}-${day}`;
+    }
+    const match = d.match(/^(\d{4}-\d{2}-\d{2})/);
+    return match?.[1] ?? '';
+  };
   const renderDatePicker = () => <div className="w-full">
       <div className="relative flex items-center w-full">
-        <DatePicker id="deadline" ref={datePickerRef} selected={getSelectedDate()} onChange={(date: Date | null) => {
+        {isMobileViewport ? <input id="deadline" type="date" value={deadlineToIso()} onChange={e => {
+        const iso = e.target.value; // YYYY-MM-DD
+        if (iso) {
+          const [year, month, day] = iso.split('-');
+          handleChange('deadline', `${day}/${month}/${year}`);
+        } else {
+          clearDeadline();
+        }
+      }} className={`w-full pl-12 pr-10 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} /> : <DatePicker id="deadline" ref={datePickerRef} selected={getSelectedDate()} onChange={(date: Date | null) => {
         if (date) {
           // Convert to DD/MM/YYYY format for display
           const day = String(date.getDate()).padStart(2, '0');
@@ -458,38 +504,17 @@ const TaskForm = ({
           const year = date.getFullYear();
           handleChange('deadline', `${day}/${month}/${year}`);
         } else {
-          handleChange('deadline', '');
-          handleChange('start_at', null);
-          handleChange('end_at', null);
-          setDisplayStartTime('');
-          setDisplayEndTime('');
+          clearDeadline();
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full cursor-pointer" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full cursor-pointer pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />
-        <button type="button" onClick={() => {
-        handleChange('deadline', '');
-        handleChange('start_at', null);
-        handleChange('end_at', null);
-        setDisplayStartTime('');
-        setDisplayEndTime('');
-      }} className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors" tabIndex={-1} title="Clear deadline" style={{
+      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />}
+        <button type="button" onClick={clearDeadline} className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors" tabIndex={-1} title="Clear deadline" style={{
         zIndex: 2
       }}>
           <span className="text-xl font-bold leading-none">×</span>
         </button>
-        <button type="button" onClick={() => {
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        handleChange('deadline', `${day}/${month}/${year}`);
-        // Clear time when setting to today to avoid invalid time combinations
-        handleChange('start_at', null);
-        handleChange('end_at', null);
-        setDisplayStartTime('');
-        setDisplayEndTime('');
-      }} className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer" tabIndex={-1} title="Set to today">
+        <button type="button" onClick={setDeadlineToday} className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer" tabIndex={-1} title="Set to today">
           <Calendar size={20} />
         </button>
       </div>
@@ -587,6 +612,14 @@ const TaskForm = ({
     }
   }, [formData.deadline, handleChange, isEditingExistingTask]);
 
+  // Auto-grow title textarea to fit its content
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [formData.title]);
+
   // Focus on date field when focusOnDate is true
   useEffect(() => {
     if (focusOnDate && datePickerRef.current) {
@@ -641,7 +674,13 @@ const TaskForm = ({
     return <div className="w-full">
         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Start time</label>
         <div className="relative flex items-center w-full">
-          <input type="text" value={displayStartTime} onChange={e => {
+          {isMobileViewport ? <input type="time" value={formData.start_at ? formData.start_at.slice(0, 5) : ''} onChange={e => {
+          const v = e.target.value; // HH:MM (24h)
+          setIsManualTimeUpdate(true);
+          handleChange('start_at', v ? `${v}:00` : null);
+          setDisplayStartTime(v ? to12Hour(v) : '');
+          setTimeout(() => setIsManualTimeUpdate(false), 100);
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all" /> : <><input type="text" value={displayStartTime} onChange={e => {
           setRecurrenceError(null);
           setDisplayStartTime(e.target.value);
         }} onBlur={e => {
@@ -664,7 +703,7 @@ const TaskForm = ({
             <button type="button" onClick={decrementStartTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Decrease time">
               <ChevronDown size={14} />
             </button>
-          </div>
+          </div></>}
         </div>
         {displayErrors.start_at && <p className="mt-1 text-base text-red-500">{displayErrors.start_at}</p>}
       </div>;
@@ -709,7 +748,13 @@ const TaskForm = ({
     return <div className="w-full">
         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">End time (Time Limit/Deadline)</label>
         <div className="relative flex items-center w-full">
-          <input type="text" value={displayEndTime} onChange={e => {
+          {isMobileViewport ? <input type="time" value={formData.end_at ? formData.end_at.slice(0, 5) : ''} onChange={e => {
+          const v = e.target.value;
+          setIsManualTimeUpdate(true);
+          handleChange('end_at', v ? `${v}:00` : null);
+          setDisplayEndTime(v ? to12Hour(v) : '');
+          setTimeout(() => setIsManualTimeUpdate(false), 100);
+        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all" /> : <><input type="text" value={displayEndTime} onChange={e => {
           setRecurrenceError(null);
           setDisplayEndTime(e.target.value);
         }} onBlur={e => {
@@ -732,7 +777,7 @@ const TaskForm = ({
             <button type="button" onClick={decrementEndTime} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors p-0.5" title="Decrease time">
               <ChevronDown size={14} />
             </button>
-          </div>
+          </div></>}
         </div>
         {displayErrors.end_at && <p className="mt-1 text-base text-red-500">{displayErrors.end_at}</p>}
       </div>;
@@ -745,7 +790,7 @@ const TaskForm = ({
         const activeElement = document.activeElement;
 
         // Check if focused on text inputs (title, assignment, time inputs)
-        const isTextInput = activeElement instanceof HTMLInputElement && (activeElement.type === 'text' || activeElement.type === 'time');
+        const isTextInput = (activeElement instanceof HTMLInputElement && (activeElement.type === 'text' || activeElement.type === 'time')) || activeElement?.id === 'title';
 
         // Check if focused in description editor (TipTap/ProseMirror)
         const isInDescription = activeElement instanceof HTMLElement && (activeElement.classList?.contains('ProseMirror') || activeElement.closest('.ProseMirror') !== null);
@@ -758,16 +803,6 @@ const TaskForm = ({
         }
       }
     }}>
-        {/* Workspace and Status Selectors */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <LocalWorkspaceSelector selectedWorkspace={selectedWorkspace} onWorkspaceChange={setSelectedWorkspace} />
-          </div>
-          <div>
-            <StatusSelector selectedStatus={selectedStatus} onStatusChange={setSelectedStatus} />
-          </div>
-        </div>
-
         {/* Main Content - Single Column */}
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Title and Subject */}
@@ -776,7 +811,7 @@ const TaskForm = ({
               <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Title
               </label>
-              <input id="title" type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} required placeholder="Enter task title" />
+              <textarea id="title" ref={titleRef} rows={1} value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all resize-none overflow-hidden`} required placeholder="Enter task title" />
               {displayErrors.title && <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>}
             </div>
 
@@ -801,7 +836,7 @@ const TaskForm = ({
 
           {/* Difficulty and Date */}
           <div className="space-y-4">
-            {!formData.isRecurring ? <div className="grid grid-cols-2 gap-4">
+            {!formData.isRecurring ? <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Date</label>
                   {renderDatePicker()}

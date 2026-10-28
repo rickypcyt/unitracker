@@ -152,6 +152,12 @@
   z-index: 99999 !important;
 }
 
+/* Mobile portal overlay (withPortal) */
+.react-datepicker__portal {
+  z-index: 99999 !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
 /* Ensure the calendar wrapper has proper background */
 .react-datepicker__wrapper {
   background-color: var(--bg-primary) !important;

@@ -279,33 +279,21 @@ const NotesDirectory = ({
           </div>
         </section>
       ) : (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {assignmentGroups.map(([assignment, assignmentNotes]) => (
             <button
               key={assignment}
               onClick={() => setSelectedAssignment(assignment)}
-              className="group flex aspect-square flex-col rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-left"
+              className="group flex items-center gap-3 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-3 text-left transition-colors hover:border-[var(--accent-primary)]/60"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                  <FolderOpen size={20} />
-                </div>
-                <span className="rounded-full bg-[var(--bg-primary)] px-2.5 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-                  {assignmentNotes.length}
-                </span>
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                <FolderOpen size={18} />
               </div>
-              <div className="mt-4">
-                <h2 className="font-semibold capitalize text-[var(--text-primary)]">{assignment}</h2>
-                <p className="mt-1 text-xs text-[var(--text-secondary)]">Open assignment</p>
-              </div>
-              <div className="mt-auto space-y-2 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3">
-                {assignmentNotes.slice(0, 3).map(note => (
-                  <div key={note.id || note.title} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                    <FolderOpen size={13} className="flex-shrink-0 text-[var(--accent-primary)]" />
-                    <span className="truncate">{note.title}</span>
-                  </div>
-                ))}
-                {assignmentNotes.length > 3 && <p className="text-xs text-[var(--accent-primary)]">+{assignmentNotes.length - 3} more notes</p>}
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate font-semibold capitalize text-[var(--text-primary)]">{assignment}</h2>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {assignmentNotes.length} note{assignmentNotes.length === 1 ? '' : 's'}
+                </p>
               </div>
             </button>
           ))}

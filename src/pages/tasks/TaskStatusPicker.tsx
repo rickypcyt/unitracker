@@ -55,12 +55,12 @@ const TaskStatusPicker = ({ task }: TaskStatusPickerProps) => {
     <div
       role="group"
       aria-label="Task status"
-      className="col-span-2 row-start-2 flex flex-nowrap gap-1 sm:gap-1.5 min-w-0 w-full overflow-x-auto pb-0.5"
+      className="col-start-2 col-span-2 row-start-2 flex flex-nowrap gap-1 sm:gap-1.5 min-w-0 w-full overflow-x-auto pb-0.5"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      {TASK_STATUSES.map((s) => {
+      {TASK_STATUSES.filter((s) => s.id !== 'completed').map((s) => {
         const selected = s.id === current;
         return (
           <button

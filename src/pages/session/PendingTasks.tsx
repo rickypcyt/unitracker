@@ -29,7 +29,7 @@ const PendingTasks = () => {
   const userKey = user?.id || 'demo';
   const ignored = Array.isArray(ignoredByUser?.[userKey]) ? ignoredByUser[userKey]! : [];
   const { tasks, loading, error } = useTasks();
-  const { workspaces, currentWorkspace } = useWorkspace();
+  const { currentWorkspace } = useWorkspace();
   const fetchTasks = useFetchTasks();
   const { navigateTo } = useNavigation();
   const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : demoTasks).filter(task =>
@@ -102,38 +102,34 @@ const PendingTasks = () => {
           <p className="text-sm">{hiddenCount ? 'All pending tasks are ignored. Restore them above to show them again.' : "You're all caught up. No pending tasks."}</p>
         </div>
       ) : (
-        <ul className="max-h-80 overflow-y-auto custom-scrollbar divide-y divide-[var(--border-primary)]">
+        <ul className="max-h-80 overflow-y-auto custom-scrollbar space-y-2">
           {pending.map(task => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
-            const workspace = workspaces.find(item => item.id === task.workspace_id);
             return (
-              <li key={task.id} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <div className="flex flex-1 items-start gap-2 min-w-0">
-                  <ActionTooltip content="Mark this task as completed. It will leave the pending list.">
-                    <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-11 min-w-11 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
-                  </ActionTooltip>
-                  <div className="min-w-0 flex-1">
+              <li key={task.id} className="flex items-start gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-2 py-2">
+                <ActionTooltip content="Mark this task as completed. It will leave the pending list.">
+                  <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
+                </ActionTooltip>
+                <div className="min-w-0 flex-1">
+                  <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
+                    <CalendarDays size={13} />
+                    {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
+                  </span>
                   <ActionTooltip content="Open the task editor to modify its details or due date.">
-                    <button onClick={() => editTask(task)} className="text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
+                    <button onClick={() => editTask(task)} className="mt-0.5 block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
                   </ActionTooltip>
-                  {(task.assignment || workspace) && <p className="text-xs text-[var(--text-secondary)] mt-1 break-words">{[workspace?.name, task.assignment].filter(Boolean).join(' · ')}</p>}
+                  <div className="mt-1 flex items-center justify-end">
+                    <ActionTooltip content="Modify the task title, details, status or due date.">
+                      <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={`Edit ${task.title}`} className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                    </ActionTooltip>
+                    <ActionTooltip content="Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.">
+                      <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={`Ignore ${task.title}`} className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                    </ActionTooltip>
+                    <ActionTooltip content="Delete this task. You will be asked to confirm before it is removed.">
+                      <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={`Delete ${task.title}`} className="p-2 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+                    </ActionTooltip>
                   </div>
-                </div>
-                <span className={`flex items-center gap-1.5 text-xs shrink-0 ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
-                  <CalendarDays size={14} />
-                  {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
-                </span>
-                <div className="flex items-center justify-end shrink-0">
-                  <ActionTooltip content="Modify the task title, details, status or due date.">
-                    <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={`Edit ${task.title}`} className="p-3 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
-                  </ActionTooltip>
-                  <ActionTooltip content="Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.">
-                    <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={`Ignore ${task.title}`} className="p-3 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
-                  </ActionTooltip>
-                  <ActionTooltip content="Delete this task. You will be asked to confirm before it is removed.">
-                    <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={`Delete ${task.title}`} className="p-3 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
-                  </ActionTooltip>
                 </div>
               </li>
             );

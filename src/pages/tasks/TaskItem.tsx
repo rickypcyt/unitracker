@@ -168,7 +168,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     return (
         <div
-            className={`group relative grid grid-cols-[minmax(0,1fr)_auto] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
+            className={`group relative grid grid-cols-[auto_minmax(0,1fr)_auto] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
                 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
                 hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
                 ${task.completed ? 'opacity-50' : ''}
@@ -178,8 +178,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             tabIndex={0}
             role="listitem"
         >
-            {/* Right side: complete toggle + actions (always visible) */}
-            <div className="col-start-2 row-start-1 flex items-center gap-0.5 self-center flex-shrink-0">
+            {/* Left side: complete toggle */}
+            <div className="col-start-1 row-start-1 flex items-center self-center flex-shrink-0">
                 <button
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -193,6 +193,10 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
                     )}
                 </button>
+            </div>
+
+            {/* Right side: actions (always visible) */}
+            <div className="col-start-3 row-start-1 flex items-center gap-0.5 self-center flex-shrink-0">
                 <button
                     onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -216,7 +220,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             </div>
 
             {/* Contenido principal */}
-            <div className="col-start-1 row-start-1 min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-0.5">
                 {/* Assignment above title when showAssignment is true (calendar view) */}
                 {showAssignment && task.assignment && (
                     <div className="text-[var(--accent-primary)] text-base font-semibold capitalize mb-0.5">
@@ -224,7 +228,21 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     </div>
                 )}
 
-                {/* Row 1: Date / time / days remaining — above the title */}
+                {/* Row 1: Title */}
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                            task.completed
+                                ? "line-through text-[var(--text-secondary)]"
+                                : "text-[var(--text-primary)]"
+                        }`}
+                        title={task.title}
+                    >
+                        {task.title}
+                    </span>
+                </div>
+
+                {/* Row 2: Date / time / days remaining */}
                 <div className="w-full">
                     {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
                         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
@@ -255,20 +273,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             </div>
                         </div>
                     ) : <span className="text-[var(--text-secondary)] opacity-60 text-xs sm:text-base">No deadline</span>}
-                </div>
-
-                {/* Row 2: Title + deadline badge */}
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <span
-                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
-                            task.completed
-                                ? "line-through text-[var(--text-secondary)]"
-                                : "text-[var(--text-primary)]"
-                        }`}
-                        title={task.title}
-                    >
-                        {task.title}
-                    </span>
                 </div>
 
             </div>

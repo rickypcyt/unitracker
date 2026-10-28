@@ -198,14 +198,14 @@ const StartSessionModal = ({
               {/* Timer Sync Options */}
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-[var(--text-primary)]">Timer Options</h4>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-nowrap gap-2">
                   <button
                     type="button"
                     onClick={() => setSyncPomo(v => !v)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                       syncPomo
-                        ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--bg-primary)]"
-                        : "border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-primary)]"
+                        ? "border-2 border-[#ef4444] text-[#ef4444] bg-[var(--bg-primary)]"
+                        : "border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[#ef4444]/50 bg-[var(--bg-primary)]"
                     }`}
                   >
                     <Timer size={15} />
@@ -215,10 +215,10 @@ const StartSessionModal = ({
                   <button
                     type="button"
                     onClick={() => setSyncCountdown(v => !v)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                       syncCountdown
-                        ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--bg-primary)]"
-                        : "border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]/50 bg-[var(--bg-primary)]"
+                        ? "border-2 border-[#22c55e] text-[#22c55e] bg-[var(--bg-primary)]"
+                        : "border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[#22c55e]/50 bg-[var(--bg-primary)]"
                     }`}
                   >
                     <Clock size={15} />
@@ -233,14 +233,6 @@ const StartSessionModal = ({
 
         {/* Action Section */}
         <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-6 py-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl font-medium text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
-            aria-label="Cancel and close modal"
-          >
-            Cancel
-          </button>
           <button
             type="button"
             onClick={handleStart}

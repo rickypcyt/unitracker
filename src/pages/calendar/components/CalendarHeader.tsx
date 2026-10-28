@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import CalendarExport from './CalendarExport';
 import type { Task } from '@/types/taskStorage';
 
 type ViewType = 'month' | 'week' | 'day';
@@ -31,7 +30,6 @@ const CalendarHeader = ({
   goToNextWeek,
   goToPreviousDay,
   goToNextDay,
-  tasks,
 }: CalendarHeaderProps) => {
   const renderDayHeader = () => {
     const isCurrentDay = new Date().toDateString() === selectedDate.toDateString();
@@ -40,7 +38,7 @@ const CalendarHeader = ({
     const dayOfMonth = selectedDate.getDate();
 
     return (
-      <div className={`text-sm sm:text-lg font-semibold mx-2 ${
+      <div className={`text-lg sm:text-lg font-semibold mx-2 ${
         isCurrentDay ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
       }`}>
         <span className="sm:hidden">
@@ -171,10 +169,6 @@ const CalendarHeader = ({
         </div>
       </div>
       
-      {/* Export Button */}
-      <div className="order-3 flex w-full md:w-1/3 justify-center">
-        {tasks && <CalendarExport tasks={tasks} className="w-full md:w-auto md:mx-auto" />}
-      </div>
     </div>
   );
 };

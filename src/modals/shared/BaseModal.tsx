@@ -231,7 +231,7 @@ const BaseModal = ({
           </header>
         )}
 
-        <main className={`flex-1 overflow-y-auto ${contentClassName}`.trim()}>
+        <main className={`flex-1 min-h-0 overflow-y-auto ${contentClassName}`.trim()}>
           {children}
         </main>
       </div>
