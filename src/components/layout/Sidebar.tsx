@@ -20,8 +20,8 @@ const Navbar = () => {
         <span className="text-[var(--accent-primary)]">T<span className="hidden lg:inline">racker</span></span>
       </button>
 
-      <nav aria-label="Main navigation" className="min-w-0 overflow-x-auto overscroll-x-contain hide-scrollbar">
-        <div className="flex w-max min-w-full items-center justify-center gap-0.5 sm:gap-1">
+      <nav aria-label="Main navigation" className="min-w-0 h-full overflow-x-auto overscroll-x-contain hide-scrollbar">
+        <div className="flex w-max min-w-full h-full items-center justify-center gap-0.5 sm:gap-1">
         {navItems.map(({ page, label, icon: Icon }) => (
           <button
             key={page}

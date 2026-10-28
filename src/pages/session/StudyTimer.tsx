@@ -1113,7 +1113,7 @@ const StudyTimer = ({
           return (
             <div className="relative w-32 h-32">
               {currentSessionId && !isSynced && (
-                <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 flex flex-col gap-2">
+                <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 flex gap-2">
                   <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
                     <RotateCcw size={18} />
                   </button>
@@ -1128,7 +1128,7 @@ const StudyTimer = ({
                 </div>
               )}
               {currentSessionId && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 flex flex-col gap-2">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 flex gap-2">
                   <button
                     onClick={() => updateModal("isFinishModalOpen", true)}
                     className="timer-ctrl-btn"
