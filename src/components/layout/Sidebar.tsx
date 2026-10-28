@@ -21,12 +21,12 @@ const Navbar = () => {
       </button>
 
       <nav aria-label="Main navigation" className="min-w-0 overflow-x-auto overscroll-x-contain hide-scrollbar">
-        <div className="flex w-max min-w-full items-center justify-center gap-1">
+        <div className="flex w-max min-w-full items-center justify-center gap-0.5 sm:gap-1">
         {navItems.map(({ page, label, icon: Icon }) => (
           <button
             key={page}
             onClick={() => navigateTo(page)}
-            className={`min-w-11 min-h-11 shrink-0 flex items-center justify-center gap-2 rounded-lg px-2 lg:px-4 text-sm font-bold transition-colors ${
+            className={`min-w-9 min-h-11 sm:min-w-11 shrink-0 flex items-center justify-center gap-2 rounded-lg px-1.5 sm:px-2 lg:px-4 text-sm font-bold transition-colors ${
               activePage === page
                 ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'

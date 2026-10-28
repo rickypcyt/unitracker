@@ -1112,6 +1112,41 @@ const StudyTimer = ({
           const hourProgress = secondsInHour / 3600;
           return (
             <div className="relative w-32 h-32">
+              {currentSessionId && !isSynced && (
+                <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 flex flex-col gap-2">
+                  <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
+                    <RotateCcw size={18} />
+                  </button>
+                  <button
+                    onClick={handleLapButton}
+                    className={`timer-ctrl-btn ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
+                    aria-label="Add lap note"
+                    title="Add lap note"
+                  >
+                    <Flag size={18} className={lapInputOpen ? 'text-[var(--accent-primary)]' : ''} />
+                  </button>
+                </div>
+              )}
+              {currentSessionId && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 flex flex-col gap-2">
+                  <button
+                    onClick={() => updateModal("isFinishModalOpen", true)}
+                    className="timer-ctrl-btn"
+                    aria-label="Finish session"
+                    title="Finish session"
+                  >
+                    <Check size={18} className="text-emerald-400" />
+                  </button>
+                  <button
+                    onClick={() => updateModal("isDeleteModalOpen", true)}
+                    className="timer-ctrl-btn"
+                    aria-label="Cancel session"
+                    title="Cancel session"
+                  >
+                    <X size={18} className="text-red-400" />
+                  </button>
+                </div>
+              )}
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle
@@ -1269,9 +1304,9 @@ const StudyTimer = ({
         </div>
       )}
 
-      {/* Controls: all in a single centered row */}
-      <div className="grid grid-cols-[repeat(5,auto)] justify-center items-center gap-1 mt-auto shrink-0 pt-2 pb-2 mb-3">
-        <div className="flex gap-1 col-start-2 row-start-1 row-span-2 items-center justify-center">
+      {/* Controls: adjustments + play/pause in a single centered row */}
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2 mb-3">
+        <div className="flex gap-1 shrink-0">
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
             label
@@ -1280,54 +1315,13 @@ const StudyTimer = ({
             </button>)}
         </div>
 
-        <div className="contents">
-          {!isSynced && <>
-              {currentSessionId && <button onClick={() => reset()} className="timer-ctrl-btn col-start-1 row-start-1" aria-label="Reset timer" title="Reset timer">
-                <RotateCcw size={18} />
-              </button>}
+        {!isSynced && (!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
+            <Play size={18} />
+          </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Pause timer" title="Pause timer">
+            <Pause size={18} />
+          </button>)}
 
-              {currentSessionId && (
-                <button
-                  onClick={handleLapButton}
-                  className={`timer-ctrl-btn col-start-1 row-start-2 ${lapInputOpen ? 'border-[var(--accent-primary)]' : ''}`}
-                  aria-label="Add lap note"
-                  title="Add lap note"
-                >
-                  <Flag size={18} className={lapInputOpen ? 'text-[var(--accent-primary)]' : ''} />
-                </button>
-              )}
-
-              {!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
-                  <Play size={18} />
-                </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary col-start-3 row-start-1 row-span-2 mx-1" aria-label="Pause timer" title="Pause timer">
-                  <Pause size={18} />
-                </button>}
-            </>}
-
-          {currentSessionId && (
-            <>
-              <button
-                onClick={() => updateModal("isFinishModalOpen", true)}
-                className="timer-ctrl-btn col-start-5 row-start-1"
-                aria-label="Finish session"
-                title="Finish session"
-              >
-                <Check size={18} className="text-emerald-400" />
-              </button>
-
-              <button
-                onClick={() => updateModal("isDeleteModalOpen", true)}
-                className="timer-ctrl-btn col-start-5 row-start-2"
-                aria-label="Cancel session"
-                title="Cancel session"
-              >
-                <X size={18} className="text-red-400" />
-              </button>
-            </>
-          )}
-        </div>
-
-        <div className="flex gap-1 col-start-4 row-start-1 row-span-2 items-center justify-center">
+        <div className="flex gap-1 shrink-0">
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment > 0).map(({
             adjustment,
             label

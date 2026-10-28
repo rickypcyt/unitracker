@@ -86,7 +86,7 @@ const MonthView = ({
                 }}
                 className={`
                   select-none cursor-pointer
-                  flex flex-col items-center
+                  flex flex-col items-center self-start
                   w-full aspect-square min-h-0 overflow-hidden rounded-xl p-1.5 sm:p-2
                   border-2 shadow-sm transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
@@ -94,7 +94,7 @@ const MonthView = ({
                     isSelected
                       ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-md'
                       : isToday
-                      ? 'border-[var(--accent-primary)]/60 bg-[var(--accent-primary)]/5'
+                      ? 'border-[var(--accent-primary)]/60 bg-[var(--bg-primary)]'
                       : dayObj.currentMonth
                       ? 'border-[var(--border-primary)] bg-[var(--bg-primary)] hover:border-[var(--accent-primary)]/50 hover:shadow-md hover:-translate-y-0.5'
                       : 'border-[var(--border-primary)]/30 bg-transparent opacity-40 shadow-none'

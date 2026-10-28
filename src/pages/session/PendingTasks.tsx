@@ -107,29 +107,31 @@ const PendingTasks = () => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
             return (
-              <li key={task.id} className="flex items-start gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-2 py-2">
+              <li key={task.id} className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-2 py-2">
                 <ActionTooltip content="Mark this task as completed. It will leave the pending list.">
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
                 <div className="min-w-0 flex-1">
-                  <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
-                    <CalendarDays size={13} />
-                    {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
-                  </span>
+                  <div className="flex items-center justify-between gap-1">
+                    <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
+                      <CalendarDays size={13} />
+                      {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
+                    </span>
+                    <div className="flex items-center shrink-0">
+                      <ActionTooltip content="Modify the task title, details, status or due date.">
+                        <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={`Edit ${task.title}`} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                      </ActionTooltip>
+                      <ActionTooltip content="Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.">
+                        <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={`Ignore ${task.title}`} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                      </ActionTooltip>
+                      <ActionTooltip content="Delete this task. You will be asked to confirm before it is removed.">
+                        <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={`Delete ${task.title}`} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+                      </ActionTooltip>
+                    </div>
+                  </div>
                   <ActionTooltip content="Open the task editor to modify its details or due date.">
                     <button onClick={() => editTask(task)} className="mt-0.5 block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
                   </ActionTooltip>
-                  <div className="mt-1 flex items-center justify-end">
-                    <ActionTooltip content="Modify the task title, details, status or due date.">
-                      <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={`Edit ${task.title}`} className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
-                    </ActionTooltip>
-                    <ActionTooltip content="Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.">
-                      <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={`Ignore ${task.title}`} className="p-2 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
-                    </ActionTooltip>
-                    <ActionTooltip content="Delete this task. You will be asked to confirm before it is removed.">
-                      <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={`Delete ${task.title}`} className="p-2 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
-                    </ActionTooltip>
-                  </div>
                 </div>
               </li>
             );

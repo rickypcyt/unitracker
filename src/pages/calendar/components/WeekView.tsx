@@ -285,7 +285,7 @@ const WeekView = ({
                   <div
                     className={`text-base sm:text-lg flex items-center justify-center mx-auto mt-1 font-semibold ${
                       isToday
-                        ? "w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[var(--accent-primary)] text-white"
+                        ? "text-[var(--accent-primary)]"
                         : "text-[var(--text-primary)]"
                     }`}
                   >

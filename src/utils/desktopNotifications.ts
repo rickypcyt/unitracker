@@ -11,8 +11,15 @@ export const getDesktopPermission = (): DesktopPermission => {
   return Notification.permission;
 };
 
+const isMobileDevice = () =>
+  typeof window !== "undefined" &&
+  (window.matchMedia?.("(pointer: coarse)").matches ||
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
+
 /** Warn the user that notifications are blocked — throttled so it doesn't spam. */
 export const warnNotificationsBlocked = () => {
+  // Desktop notifications don't exist on mobile — don't nag the user there.
+  if (isMobileDevice()) return;
   if (Date.now() - lastBlockedWarning < 60_000) return;
   lastBlockedWarning = Date.now();
   toast.error(

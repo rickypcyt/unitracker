@@ -79,7 +79,7 @@ const SessionPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/session" />
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
-      <div className="w-full session-page px-4 sm:px-6 lg:px-2 py-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
+      <div className="w-full session-page px-4 sm:px-6 lg:px-2 pt-4 pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
         <motion.div
           variants={container}
           initial="hidden"

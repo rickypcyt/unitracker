@@ -505,7 +505,7 @@ export default function NoiseGenerator() {
         <div className="flex items-center gap-2">
           <button
             onClick={handlePlayPauseAll}
-            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-full text-sm font-medium transition-all ${
               anySoundPlaying
                 ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
                 : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
