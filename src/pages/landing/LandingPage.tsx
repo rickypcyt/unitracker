@@ -50,17 +50,53 @@ const LandingPage = () => {
   return (
     <>
       <Helmet>
-        <title>UniTracker - Free Time & Task Management App | Pomodoro Timer</title>
+        <title>UniTracker - Free Pomodoro Timer & Task Manager | Open Source</title>
         <meta
           name="description"
-          content="Pomodoro timer, tasks, calendar, and analytics in one free, open source app. Works offline, syncs when you're back."
+          content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline, syncs when you're back. No ads, no subscriptions."
         />
+        <meta
+          name="keywords"
+          content="pomodoro timer, free task manager, study timer, time tracker, productivity app, open source pomodoro, offline task app"
+        />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://unitracker.me/" />
+
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://unitracker.me/" />
-        <meta property="og:title" content="UniTracker - Free Time & Task Management App" />
-        <meta property="og:description" content="Pomodoro timer, tasks, calendar, and analytics in one free, open source app." />
+        <meta property="og:title" content="UniTracker - Free Pomodoro Timer & Task Manager" />
+        <meta property="og:description" content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline." />
         <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta property="og:site_name" content="UniTracker" />
+        <meta property="og:locale" content="en_US" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://unitracker.me/" />
+        <meta name="twitter:title" content="UniTracker - Free Pomodoro Timer & Task Manager" />
+        <meta name="twitter:description" content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline." />
+        <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
+        <meta name="twitter:site" content="@UniTrackerApp" />
+
+        {/* Structured data — rich result eligibility */}
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'UniTracker',
+          url: 'https://unitracker.me/',
+          applicationCategory: 'ProductivityApplication',
+          operatingSystem: 'Web',
+          description:
+            'Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline, syncs when you reconnect.',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+          featureList:
+            'Pomodoro timer, study timer, task management, calendar, time analytics, notes, habits, offline-first, cloud sync',
+        })}</script>
       </Helmet>
 
       <style>{`
