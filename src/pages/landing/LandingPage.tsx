@@ -12,6 +12,7 @@ import {
   Timer,
   WifiOff,
 } from 'lucide-react';
+import Countdown from '@/pages/session/Countdown';
 import Pomodoro from '@/pages/session/Pomodoro';
 import StudyTimer from '@/pages/session/StudyTimer';
 
@@ -32,7 +33,7 @@ const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode
         <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
         <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
       </div>
-      <span className="text-[11px] text-white/40 ml-2 font-mono">unitracker/{title}</span>
+      <span className="text-[11px] text-white/40 ml-2">unitracker/{title}</span>
     </div>
     <div className="p-3 max-h-[420px] overflow-y-auto">
       {children}
@@ -41,7 +42,7 @@ const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode
 );
 
 const Eyebrow = ({ children }: { children: ReactNode }) => (
-  <p className="font-mono text-sm sm:text-base uppercase tracking-[0.2em] text-[var(--accent-primary)] mb-4">
+  <p className="text-sm sm:text-base uppercase tracking-[0.2em] font-semibold text-[var(--accent-primary)] mb-4">
     {children}
   </p>
 );
@@ -122,8 +123,8 @@ const LandingPage = () => {
         {/* Nav — minimal, hairline */}
         <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.08]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-            <Link to="/" className="font-heading text-[15px] font-bold tracking-tight text-[var(--accent-primary)]">
-              UniTracker
+            <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
+              <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
             </Link>
             <div className="flex items-center gap-2">
               <a
@@ -197,12 +198,15 @@ const LandingPage = () => {
             <p className="text-white/50 text-sm mb-8 max-w-md">
               These are the actual components from the app. Press play — enable sync and control both from one.
             </p>
-            <div className="grid md:grid-cols-2 gap-4 max-w-4xl">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl">
+              <ShowcaseFrame title="study-timer">
+                <StudyTimer hideHeader />
+              </ShowcaseFrame>
               <ShowcaseFrame title="pomodoro">
                 <Pomodoro hideHeader fresh />
               </ShowcaseFrame>
-              <ShowcaseFrame title="study-timer">
-                <StudyTimer hideHeader />
+              <ShowcaseFrame title="countdown">
+                <Countdown hideHeader />
               </ShowcaseFrame>
             </div>
           </div>
@@ -252,7 +256,7 @@ const LandingPage = () => {
         {/* Footer — minimal hairline */}
         <footer className="border-t border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <span className="font-mono text-xs text-white/40">unitracker © 2026 · MIT</span>
+            <span className="text-xs text-white/40">unitracker © 2026 · MIT</span>
             <div className="flex items-center gap-5 text-[13px] text-white/40">
               <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a>
               <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="hover:text-white transition-colors">Issues</a>

@@ -283,6 +283,12 @@ export default defineConfig(({ command, mode }) => {
     preview: {
       port: 3000,
       host: true
+    },
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      globals: true,
+      include: ['src/**/*.test.{ts,tsx}'],
     }
   };
 });
