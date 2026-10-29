@@ -25,7 +25,7 @@ const features = [
 ];
 
 const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode }) => (
-  <div className="rounded-xl border border-white/10 bg-[#0b0b0f] overflow-hidden">
+  <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden">
     <div className="flex items-center gap-2 px-4 h-9 border-b border-white/[0.06]">
       <div className="flex gap-1.5">
         <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
@@ -41,7 +41,7 @@ const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode
 );
 
 const Eyebrow = ({ children }: { children: ReactNode }) => (
-  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--accent-primary)] mb-4">
+  <p className="font-mono text-sm sm:text-base uppercase tracking-[0.2em] text-[var(--accent-primary)] mb-4">
     {children}
   </p>
 );
@@ -118,12 +118,12 @@ const LandingPage = () => {
         }
       `}</style>
 
-      <div className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-[#0a0a0d] text-[#e4e4e7] pb-16 antialiased">
+      <div className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-black text-[#e4e4e7] pb-16 antialiased">
         {/* Nav — minimal, hairline */}
-        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0a0d]/80 border-b border-white/[0.06]">
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.08]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-            <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
-              Uni<span className="text-[var(--accent-primary)]">Tracker</span>
+            <Link to="/" className="font-heading text-[15px] font-bold tracking-tight text-[var(--accent-primary)]">
+              UniTracker
             </Link>
             <div className="flex items-center gap-2">
               <a
@@ -137,7 +137,7 @@ const LandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-md bg-white text-black hover:bg-white/90 transition-colors"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
               >
                 Get started
               </Link>
@@ -148,8 +148,12 @@ const LandingPage = () => {
         {/* Hero — Resend style: eyebrow, tight headline, minimal CTAs */}
         <section className="relative overflow-hidden">
           <div
-            className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[500px] opacity-[0.10] blur-3xl"
+            className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[500px] opacity-[0.14] blur-3xl"
             style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }}
+          />
+          <div
+            className="pointer-events-none absolute top-40 -left-40 w-[400px] h-[400px] opacity-[0.07] blur-3xl"
+            style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 70%)' }}
           />
           <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-14">
             <div className="animate-um-rise max-w-2xl">
@@ -164,7 +168,7 @@ const LandingPage = () => {
                 <Link
                   to="/app"
                   onClick={startOnboarding}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
                 >
                   Start for free
                   <ArrowRight className="w-4 h-4" />
@@ -237,7 +241,7 @@ const LandingPage = () => {
             <Link
               to="/app"
               onClick={startOnboarding}
-              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               Get started
               <ArrowRight className="w-4 h-4" />

@@ -115,28 +115,21 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   return (
     <>
         <div className="flex flex-col w-full min-w-0 overflow-hidden" style={{ height: 'min(85dvh, 42rem)' }}>
-          {/* Header */}
-          <div className="relative flex items-center justify-center px-6 pt-5 pb-3">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-              Settings
-            </h2>
-          </div>
-
           {/* Tab bar */}
-          <div role="group" aria-label="Settings sections" className="grid grid-cols-3 sm:flex shrink-0 items-stretch sm:items-center sm:justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 border-b border-[var(--border-primary)]/50">
+          <div role="group" aria-label="Settings sections" className="flex shrink-0 items-stretch sm:items-center sm:justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-[var(--border-primary)]/50">
             {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
                 aria-pressed={activeTab === id}
-                className={`min-w-0 sm:flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors relative ${
+                className={`shrink-0 sm:flex-1 sm:shrink flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors relative ${
                   activeTab === id
                     ? "bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50"
                 }`}
               >
                 <Icon size={16} className="shrink-0" />
-                <span className="min-w-0 break-words text-center">{label}</span>
+                <span className="whitespace-nowrap text-center">{label}</span>
                 {id === "whatsNew" && hasNewChanges && (
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
                 )}
@@ -478,6 +471,7 @@ const Settings: React.FC<SettingsProps> = ({
       title="Settings"
       maxWidth="max-w-2xl"
       padding="none"
+      className="overflow-hidden"
     >
       <SettingsContent
         friends={friends}
