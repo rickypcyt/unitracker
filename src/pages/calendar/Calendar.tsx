@@ -148,7 +148,7 @@ const Calendar = ({
     // Por ahora, solo eliminamos del estado local
   };
   return <div className="w-full h-full flex flex-col">
-      <div className={`maincard p-0 pt-4 pb-4 relative w-full transition-all duration-300 calendar-view flex flex-col h-full ${view === 'month' ? '' : 'flex-1'}`}>
+      <div className={`maincard p-0 pt-4 pb-6 sm:pb-8 relative w-full transition-all duration-300 calendar-view flex flex-col h-full ${view === 'month' ? '' : 'flex-1'}`}>
         {/* Calendar Header with navigation and view switcher */}
         <CalendarHeader view={view} currentDate={currentDate} selectedDate={selectedDate} onViewChange={onViewChange || (() => {})} goToPreviousMonth={goToPreviousMonth} goToNextMonth={goToNextMonth} goToPreviousWeek={goToPreviousWeek} goToNextWeek={goToNextWeek} goToToday={goToToday} tasks={filteredTasks || []} />
 

@@ -308,7 +308,7 @@ const HabitsPage = memo(() => {
           content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
         />
       </Helmet>
-      <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 overflow-hidden">
+      <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 pb-24 sm:pb-8 overflow-hidden">
       {/* Week navigation + New Habit */}
       <div className="flex items-center justify-between gap-3 mt-4 mb-4">
         <div className="flex items-center gap-0.5 rounded-full border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] px-1.5 py-1 shadow-sm">

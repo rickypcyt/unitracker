@@ -195,7 +195,7 @@ const LandingPage = () => {
             </p>
             <div className="grid md:grid-cols-2 gap-4 max-w-4xl">
               <ShowcaseFrame title="pomodoro">
-                <Pomodoro hideHeader />
+                <Pomodoro hideHeader fresh />
               </ShowcaseFrame>
               <ShowcaseFrame title="study-timer">
                 <StudyTimer hideHeader />

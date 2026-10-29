@@ -83,18 +83,27 @@ const sounds = loadSounds();
 // STORAGE HELPERS
 // ============================================================================
 
-const loadLocalPomoState = (): LocalPomoState => {
+const loadLocalPomoState = (fresh = false): LocalPomoState => {
   const today = getLocalDateString();
 
   // Always get the authoritative daily count from localStorage first
   const authoritativeDailyCount = parseInt(localStorage.getItem(`pomodoroDailyCount_${today}`) || '0', 10);
   const authoritativeSessionCount = parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10);
   const savedState = localStorage.getItem('pomodoroState');
-  if (!savedState) {
-    // No saved state - use DEFAULT_STATE but ensure count matches authoritative values
+  if (!savedState || fresh) {
+    // No saved state (or fresh demo mode) - use DEFAULT_STATE but keep user's mode
     const defaultState = {
       ...DEFAULT_STATE
     };
+
+    // Fresh mode: keep the user's configured mode/index but start at full duration
+    if (fresh && savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        defaultState.modeIndex = safeNumber(parsed.modeIndex, DEFAULT_STATE.modeIndex);
+        defaultState.currentMode = ['work', 'break', 'longBreak'].includes(parsed.currentMode) ? parsed.currentMode : 'work';
+      } catch {}
+    }
 
     // Limpiar modos antiguos del localStorage si existen
     try {
@@ -105,9 +114,9 @@ const loadLocalPomoState = (): LocalPomoState => {
         if (hasOldModes) {
           localStorage.removeItem('pomodoroModes');
         } else {
-          const defaultModeConfig = modes[DEFAULT_STATE.modeIndex];
-          if (defaultModeConfig && defaultModeConfig[DEFAULT_STATE.currentMode]) {
-            defaultState.timeLeft = defaultModeConfig[DEFAULT_STATE.currentMode];
+          const defaultModeConfig = modes[defaultState.modeIndex];
+          if (defaultModeConfig && defaultModeConfig[defaultState.currentMode]) {
+            defaultState.timeLeft = defaultModeConfig[defaultState.currentMode];
           }
         }
       }
@@ -243,8 +252,9 @@ const useMidnightReset = (onReset: () => void) => {
 
 interface PomodoroProps {
   hideHeader?: boolean;
+  fresh?: boolean;
 }
-const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
+const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }) => {
   // const { user }: { user: import('@supabase/supabase-js').User | null } = useAuth(); // Not used
   const {
     syncSettings,
@@ -258,7 +268,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
 
   // Use Zustand store for modes
   const modes = usePomodoroModes();
-  const [pomoState, setLocalPomoState] = useState<LocalPomoState>(loadLocalPomoState);
+  const [pomoState, setLocalPomoState] = useState<LocalPomoState>(() => loadLocalPomoState(fresh));
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
   const [localResetKey, setLocalResetKey] = useState(0);
@@ -967,9 +977,9 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false }) => {
   // EFFECTS
   // ============================================================================
 
-  // Save pomoState to localStorage
+  // Save pomoState to localStorage (skipped in fresh demo mode)
   useEffect(() => {
-    saveLocalPomoState(pomoState);
+    if (!fresh) saveLocalPomoState(pomoState);
     // Emit event for SessionPage to detect changes
     window.dispatchEvent(new CustomEvent('pomodoroStateUpdate', {
       detail: pomoState

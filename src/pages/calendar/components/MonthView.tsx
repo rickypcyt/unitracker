@@ -85,9 +85,9 @@ const MonthView = ({
                   handleDateClick(dayObj.date);
                 }}
                 className={`
-                  select-none cursor-pointer
+                  relative select-none cursor-pointer
                   flex flex-col items-center self-start
-                  w-full aspect-square min-h-0 overflow-hidden rounded-xl p-1.5 sm:p-2
+                  w-full aspect-square min-h-0 rounded-xl p-1.5 sm:p-2
                   border-2 shadow-sm transition-all duration-150
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                   ${
@@ -108,6 +108,35 @@ const MonthView = ({
                   </span>
                 )}
 
+                {/* iOS-style task badge, top-right corner */}
+                {taskCount > 0 && (
+                  <div className="group/badge absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10">
+                    <span className="flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] sm:text-[11px] font-bold leading-none tabular-nums shadow-sm">
+                      {taskCount > 9 ? '9+' : taskCount}
+                    </span>
+
+                    {/* Task titles tooltip on hover */}
+                    <div className="pointer-events-none absolute top-full right-0 z-50 mt-1.5 hidden w-40 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-2 shadow-lg group-hover/badge:block">
+                      <div className="space-y-1">
+                        {dayTasks.slice(0, 5).map((task: any, i: number) => (
+                          <div
+                            key={task.id ?? i}
+                            className="flex items-center gap-1.5 text-left text-xs text-[var(--text-primary)]"
+                          >
+                            <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--accent-primary)]" />
+                            <span className="truncate">{task.title || 'Untitled task'}</span>
+                          </div>
+                        ))}
+                        {taskCount > 5 && (
+                          <div className="text-left text-xs text-[var(--text-secondary)]">
+                            +{taskCount - 5} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex-1 flex flex-col items-center justify-center gap-1">
                   {/* Day number */}
                   <span
@@ -125,42 +154,6 @@ const MonthView = ({
                     {dayObj.date.getDate()}
                   </span>
 
-                  {/* Task dots below the number */}
-                  {taskCount > 0 && (
-                    <div className="group/dots relative flex gap-1">
-                      {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
-                        <span
-                          key={i}
-                          className="w-2 h-2 rounded-full bg-[var(--accent-primary)]"
-                        />
-                      ))}
-                      {taskCount > 3 && (
-                        <span className="text-xs leading-none text-[var(--text-secondary)]">
-                          +{taskCount - 3}
-                        </span>
-                      )}
-
-                      {/* Task titles tooltip on hover */}
-                      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 hidden w-40 -translate-x-1/2 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-2 shadow-lg group-hover/dots:block">
-                        <div className="space-y-1">
-                          {dayTasks.slice(0, 5).map((task: any, i: number) => (
-                            <div
-                              key={task.id ?? i}
-                              className="flex items-center gap-1.5 text-left text-xs text-[var(--text-primary)]"
-                            >
-                              <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--accent-primary)]" />
-                              <span className="truncate">{task.title || 'Untitled task'}</span>
-                            </div>
-                          ))}
-                          {taskCount > 5 && (
-                            <div className="text-left text-xs text-[var(--text-secondary)]">
-                              +{taskCount - 5} more
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             );

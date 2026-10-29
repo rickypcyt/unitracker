@@ -178,22 +178,20 @@ const NotesDirectory = ({
     <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-primary)]">Notes</p>
+          <div className="mt-1 flex items-center gap-1">
             {selectedAssignment && (
               <button
                 onClick={() => setSelectedAssignment(null)}
-                className="rounded-lg p-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+                className="-ml-1.5 rounded-lg p-1 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
                 aria-label="Back to assignments"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={22} />
               </button>
             )}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-primary)]">Notes</p>
-              <h1 className="mt-1 text-2xl font-bold text-[var(--text-primary)]">
-                {selectedAssignment || 'Your study library'}
-              </h1>
-            </div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] truncate">
+              {selectedAssignment || 'Your study library'}
+            </h1>
           </div>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
             {selectedAssignment ? `${activeAssignmentNotes.length} note${activeAssignmentNotes.length === 1 ? '' : 's'} in this assignment` : 'Choose an assignment to open its notes.'}

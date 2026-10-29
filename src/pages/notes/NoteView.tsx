@@ -258,7 +258,7 @@ const NoteView: React.FC<NoteViewProps> = ({
         </div>
 
         {/* Note Title Header */}
-        <div className="px-4 py-3 bg-[var(--bg-primary)]">
+        <div className="sticky top-0 z-30 px-4 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-primary)]">
           <input
             type="text"
             value={title}
@@ -282,6 +282,8 @@ const NoteView: React.FC<NoteViewProps> = ({
               />
             </Suspense>
           </div>
+          <div className="mx-4 sm:mx-6 border-t border-[var(--border-primary)]/60" />
+          <div className="h-20" />
         </div>
       </div>
     );
@@ -290,9 +292,9 @@ const NoteView: React.FC<NoteViewProps> = ({
   // Render view mode
   return (
     <div className="h-full flex flex-col relative">
-      {/* Note Header - single line: metadata left, title centered, actions right */}
-      <div className="px-3 sm:px-6 py-3 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+      {/* Note Header — sticky: back left, title center, actions right */}
+      <div className="sticky top-0 z-30 px-3 sm:px-6 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-primary)]">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-4">
           {/* Left: Back + metadata */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             {onBack && (
@@ -346,7 +348,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-36 sm:w-64 lg:w-96 text-lg sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
+            className="w-full min-w-0 truncate text-lg sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
             placeholder="Note Title"
           />
 
@@ -385,6 +387,8 @@ const NoteView: React.FC<NoteViewProps> = ({
             />
           </Suspense>
         </div>
+        <div className="mx-4 sm:mx-6 border-t border-[var(--border-primary)]/60" />
+        <div className="h-20" />
       </div>
 
       {/* Mobile Notes Selector */}
