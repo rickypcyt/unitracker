@@ -92,7 +92,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   }[columnCount];
 
   return (
-    <div className="flex justify-center w-full">
+    <div className="flex flex-col justify-center w-full">
       <div className={`grid ${gridColsClass} mx-auto gap-4 w-full`}>
         {fixedColumns.map((column) => (
           <div
@@ -122,8 +122,12 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
             />
           </div>
         ))}
-        {children}
       </div>
+      {children && (
+        <div className="mx-auto mt-4 w-full max-w-7xl">
+          {children}
+        </div>
+      )}
     </div>
   );
 };

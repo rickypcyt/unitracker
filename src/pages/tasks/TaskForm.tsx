@@ -1,7 +1,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import '@/pages/calendar/datepicker-overrides.css';
 
-import { Calendar, ChevronDown, ChevronUp, Sparkles, Wand2 } from 'lucide-react';
+import { Calendar, CheckSquare, ChevronDown, ChevronUp, Sparkles, Square, Wand2 } from 'lucide-react';
 import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
 import { useEffect, useRef, useState } from 'react';
 
@@ -446,9 +446,7 @@ const TaskForm = ({
           {DIFFICULTY_OPTIONS.map(option => {
             const isSelected = option.value === formData.difficulty;
             return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSelected ? option.color : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
-              <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? option.color.replace('text-', 'border-') : 'border-[var(--border-primary)]'}`}>
-                {isSelected && <span className={`w-2 h-2 rounded-full ${option.value === 'easy' ? 'bg-[#00FF41]' : option.value === 'medium' ? 'bg-[#00BFFF]' : 'bg-[#FF003C]'}`} />}
-              </span>
+              {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
               {option.label}
             </button>;
           })}
@@ -806,7 +804,7 @@ const TaskForm = ({
         {/* Main Content - Single Column */}
         <div className="max-w-2xl mx-auto space-y-4">
           {/* Title and Subject */}
-          <div className={`${initialAssignment ? '' : 'grid grid-cols-1 lg:grid-cols-2 gap-4'}`}>
+          <div className="grid grid-cols-1 gap-4">
             <div className={initialAssignment ? '' : ''}>
               <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
                 Title
@@ -823,8 +821,19 @@ const TaskForm = ({
               </div>}
           </div>
 
-          {/* Description */}
-          <div className="min-h-[120px]">
+          {/* Description — Tab moves focus out of the editor instead of indenting */}
+          <div className="min-h-[120px]" onKeyDown={e => {
+            if (e.key !== 'Tab') return;
+            const target = e.target as HTMLElement;
+            if (!target.closest('.ProseMirror')) return;
+            e.preventDefault();
+            const focusables = Array.from(document.querySelectorAll<HTMLElement>(
+              '.BaseModal [role="dialog"] input:not([type="hidden"]):not([disabled]), .BaseModal [role="dialog"] textarea:not([disabled]), .BaseModal [role="dialog"] button:not([disabled]), .BaseModal [role="dialog"] [tabindex="0"]'
+            )).filter(el => el.offsetParent !== null);
+            const idx = focusables.indexOf(target);
+            const next = focusables[idx + (e.shiftKey ? -1 : 1)] ?? focusables[e.shiftKey ? focusables.length - 1 : 0];
+            next?.focus();
+          }}>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
               Description (Supports Markdown)
             </label>
@@ -841,10 +850,23 @@ const TaskForm = ({
                   <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Date</label>
                   {renderDatePicker()}
                 </div>
+                {/* Time fields — right below Date */}
+                {formData.deadline && <div>
+                    {renderEndTimeInput()}
+                  </div>}
                 <div>
                   {renderDifficultySelector()}
                 </div>
-              </div> : <div>
+              </div> : <div className="space-y-4">
+                {/* Recurring tasks always show start/end time */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    {renderStartTimeInput()}
+                  </div>
+                  <div>
+                    {renderEndTimeInput()}
+                  </div>
+                </div>
                 {renderDifficultySelector()}
               </div>}
 
@@ -852,22 +874,6 @@ const TaskForm = ({
             <div>
               {renderRecurrenceSection()}
             </div>
-
-            {/* Time fields */}
-            {formData.isRecurring ?
-          // For recurring tasks, always show both start and end time
-          <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  {renderStartTimeInput()}
-                </div>
-                <div>
-                  {renderEndTimeInput()}
-                </div>
-              </div> :
-          // For non-recurring tasks, only show time limit if date is selected
-          formData.deadline && <div className="mb-4">
-                  {renderEndTimeInput()}
-                </div>}
           </div>
         </div>
 

@@ -1315,9 +1315,13 @@ const StudyTimer = ({
             </button>)}
         </div>
 
-        {!isSynced && (!isStudyRunningRedux ? <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label={currentSessionId ? "Resume timer" : "Start session"} title={currentSessionId ? "Resume timer" : "Start session"}>
-            <Play size={18} />
-          </button> : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Pause timer" title="Pause timer">
+        {!isSynced && (!isStudyRunningRedux ? (
+          !currentSessionId ? <button onClick={() => start(Date.now(), false)} className="mx-1 shrink-0 px-4 py-1.5 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] text-xs font-semibold whitespace-nowrap hover:bg-[var(--accent-primary)]/10 transition-colors" aria-label="Start new session">
+              Start new session
+            </button> : <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Resume timer" title="Resume timer">
+              <Play size={18} />
+            </button>
+        ) : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Pause timer" title="Pause timer">
             <Pause size={18} />
           </button>)}
 

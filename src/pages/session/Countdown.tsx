@@ -108,6 +108,27 @@ const Countdown: React.FC<CountdownProps> = ({
   }) => hours * 3600 + minutes * 60 + seconds;
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
   const [pausedSecondsLeft, setPausedSecondsLeft] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Native time input (iOS/Android wheel picker) — updates the countdown baseline
+  const handleNativeTimeChange = (value: string) => {
+    const [h, m] = value.split(':').map(Number);
+    const updated = {
+      hours: Number.isFinite(h) ? h : 0,
+      minutes: Number.isFinite(m) ? m : 0,
+      seconds: 0
+    };
+    setInitialTime(updated);
+    baselineTimeRef.current = updated;
+    writeBaseline(updated);
+  };
   // Refs para inferir pausa/reanudación desde studyTimerTimeUpdate
   const lastStudyElapsedRef = useRef<number | null>(null);
   // Ref para detectar cambios en isStudyRunningRedux
@@ -876,6 +897,15 @@ const Countdown: React.FC<CountdownProps> = ({
               <circle cx="60" cy="60" r={52} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {isMobile ? (
+                <input
+                  type="time"
+                  value={`${pad(baselineTimeRef.current.hours, 'hours')}:${pad(baselineTimeRef.current.minutes, 'minutes')}`}
+                  onChange={(e) => handleNativeTimeChange(e.target.value)}
+                  className="bg-transparent text-2xl font-mono font-bold tabular-nums text-[var(--text-primary)] border-none outline-none focus:ring-0 text-center"
+                  aria-label="Set countdown duration"
+                />
+              ) : (
               <div className="flex items-center gap-0.5">
                 {fields.map((field, idx) => {
                 let value;
@@ -921,6 +951,7 @@ const Countdown: React.FC<CountdownProps> = ({
                   </React.Fragment>;
               })}
               </div>
+              )}
             </div>
           </div>
         )}
