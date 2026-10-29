@@ -111,7 +111,7 @@ const MonthView = ({
                 {/* iOS-style task badge, top-right corner */}
                 {taskCount > 0 && (
                   <div className="group/badge absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10">
-                    <span className="flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] sm:text-[11px] font-bold leading-none tabular-nums shadow-sm">
+                    <span className="flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 rounded-full bg-[var(--accent-primary)] text-white text-[10px] sm:text-[11px] font-bold leading-none tabular-nums shadow-sm">
                       {taskCount > 9 ? '9+' : taskCount}
                     </span>
 

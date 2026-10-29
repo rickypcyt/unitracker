@@ -1,6 +1,8 @@
 import { memo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useUi } from "@/store/appStore";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { LogIn } from "lucide-react";
 
 import { Helmet } from "react-helmet-async";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
@@ -11,6 +13,7 @@ import UnifiedTimer from "@/pages/session/UnifiedTimer";
 
 const SessionPage = memo(() => {
   const ui = useUi();
+  const { isLoggedIn, loginWithGoogle } = useAuth();
   const isSynced = ui.isSynced;
   const isRunning = ui.isRunning;
   const resetKey = ui.resetKey;
@@ -98,6 +101,15 @@ const SessionPage = memo(() => {
 
           {/* Timers full width */}
           <motion.div variants={item} className="order-1 w-full" data-tour="session-timer">
+            {!isLoggedIn && (
+              <button
+                onClick={() => loginWithGoogle()}
+                className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] py-2.5 text-sm font-semibold text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+              >
+                <LogIn size={16} />
+                Log in to sync your sessions
+              </button>
+            )}
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </motion.div>
           <div className="order-2 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
