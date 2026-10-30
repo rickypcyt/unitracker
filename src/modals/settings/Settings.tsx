@@ -77,7 +77,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   const { user, isLoggedIn, loginWithGoogle, logout } = useAuth() as {
     user: any;
     isLoggedIn: boolean;
-    loginWithGoogle: () => Promise<void>;
+    loginWithGoogle: () => Promise<boolean>;
     logout: () => Promise<void>;
   };
   const effectiveUserId = currentUserId ?? user?.id ?? "";

@@ -28,10 +28,20 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
     };
   }, [onClose]);
 
-  const handleLogin = () => {
-    loginWithGoogle();
-    onLogin();
-    onClose();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
+    // On success the browser redirects to Google — no need to close.
+    // On failure we keep the modal open so the error toast is visible.
+    const ok = await loginWithGoogle();
+    if (ok) {
+      onLogin();
+      onClose();
+    } else {
+      setIsLoggingIn(false);
+    }
   };
 
   const benefits = [
@@ -128,9 +138,10 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         <div className="flex flex-col gap-3 sm:gap-4 relative z-10">
           <button
             onClick={handleLogin}
-            className="w-full group px-4 sm:px-6 py-3 sm:py-4 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3"
+            disabled={isLoggingIn}
+            className="w-full group px-4 sm:px-6 py-3 sm:py-4 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-60"
           >
-            Sign in with Google
+            {isLoggingIn ? 'Redirecting to Google...' : 'Sign in with Google'}
           </button>
           
           <button

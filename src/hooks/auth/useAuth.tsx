@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   isAuthLoading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (): Promise<boolean> => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -64,9 +64,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       });
       if (error) throw error;
+      return true;
     } catch (error) {
       console.error('Error logging in:', error instanceof Error ? error.message : 'Unknown error');
       toast.error('Error logging in with Google');
+      return false;
     }
   };
 

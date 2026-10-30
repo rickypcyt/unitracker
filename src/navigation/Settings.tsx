@@ -30,7 +30,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
   const tasks = useAppStore((state) => state.tasks.tasks);
   const { isLoggedIn, loginWithGoogle, logout } = useAuth() as {
     isLoggedIn: boolean;
-    loginWithGoogle: () => Promise<void>;
+    loginWithGoogle: () => Promise<boolean>;
     logout: () => Promise<void>;
     user: User | null;
   };

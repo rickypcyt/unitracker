@@ -260,7 +260,7 @@ const SessionsModal = ({
               onStartNewSession();
             }
           }} className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors">
-              Start New Session
+              New
             </button>
           </div>
         </div>

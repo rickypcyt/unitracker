@@ -42,9 +42,9 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
         </p>
         <div className="flex flex-col gap-3">
           <button
-            onClick={() => {
-              loginWithGoogle();
-              onClose();
+            onClick={async () => {
+              const ok = await loginWithGoogle();
+              if (ok) onClose();
             }}
             className="w-full px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
           >

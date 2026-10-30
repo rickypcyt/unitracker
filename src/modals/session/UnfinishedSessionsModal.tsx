@@ -149,7 +149,7 @@ const UnfinishedSessionsModal = ({
             <button onClick={() => {
             onSessionResumed('');
           }} className="px-4 border-2 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors">
-              Start New Session
+              New
             </button>
           </div>
         </div>

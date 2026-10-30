@@ -50,7 +50,7 @@ const Eyebrow = ({ children }: { children: ReactNode }) => (
 // Resets onboarding flags so entering the app replays welcome → color → login
 const startOnboarding = () => {
   try {
-    ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal', 'hasSeenAccentColorModal', 'hasSeenLoginModal']
+    ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal', 'hasSeenAccentColorModal']
       .forEach((k) => localStorage.removeItem(k));
   } catch {}
 };
