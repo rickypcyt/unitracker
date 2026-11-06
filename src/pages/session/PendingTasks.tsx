@@ -112,6 +112,9 @@ const PendingTasks = () => {
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
                 <div className="min-w-0 flex-1">
+                  {task.assignment && (
+                    <span className="block text-xs font-semibold text-[var(--accent-primary)] capitalize truncate">{task.assignment}</span>
+                  )}
                   <ActionTooltip content="Open the task editor to modify its details or due date.">
                     <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
                   </ActionTooltip>
