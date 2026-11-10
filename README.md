@@ -1,5 +1,7 @@
 # UniTracker
 
+![UniTracker — track your study streak](docs/banner.png)
+
 **6 apps in 1 — replace your entire productivity stack.**
 
 UniTracker is a free, open-source, all-in-one app that combines a Pomodoro timer, task manager, calendar, analytics, notes, and habit tracker into a single, cohesive experience. Track your time across every area — work, study, personal projects — all in one place, accessible from any device. No more jumping between tabs or paying for multiple subscriptions.
@@ -15,6 +17,7 @@ UniTracker is a free, open-source, all-in-one app that combines a Pomodoro timer
 - **Study Timer** — Track total focus time across sessions in any area.
 - **Countdown Timer** — Set a target time and count down with alarm support.
 - **Timer Sync** — Link timers together so starting one starts the others.
+- **Desktop Notifications** — Get alerted when a timer finishes, even in the background.
 
 ### Task Management
 - **Kanban Board** — Drag-and-drop tasks organized by assignment with pinning, sorting, and difficulty levels.
@@ -29,6 +32,7 @@ UniTracker is a free, open-source, all-in-one app that combines a Pomodoro timer
 ### Analytics
 - **Time Stats** — Visualize tracked hours, pomodoros completed, and session frequency.
 - **Streaks** — Track daily consistency and build momentum.
+- **Shareable Streak Cards** — Export your study streak as a branded PNG and share it on Discord, WhatsApp, or anywhere.
 - **Productivity Trends** — Charts powered by Recharts and Chart.js.
 
 ### Notes & Habits
@@ -40,8 +44,14 @@ UniTracker is a free, open-source, all-in-one app that combines a Pomodoro timer
 - **Sound Presets** — Save and load your favorite sound combinations.
 - **Audio Synthesis** — All sounds generated in-browser using Tone.js — no audio files needed.
 
+### Scratchpad
+- **Quick Notes** — A zero-friction notepad on the session page for brain dumps.
+- **Checklists** — Turn any line into a checkbox and check items off as you go.
+- **Persistent** — Saved locally on every keystroke and synced to your account — it never disappears unless you clear it.
+
 ### Other
 - **Dark Mode** — Full theme support with CSS custom properties.
+- **Custom Accent Color** — Pick the app's accent color to make it yours.
 - **Offline Support** — Install as a PWA and use without a connection. Data syncs when you're back online.
 - **Data Export** — Export your data as CSV, PDF, or JSON.
 - **Cross-Platform** — Web, Android (via Capacitor), and installable PWA.
@@ -83,7 +93,7 @@ UniTracker is built as a single-page application with lazy-loaded routes for opt
 - **`src/hooks/`** — Custom hooks for auth, task board logic, and friend management.
 - **`src/modals/`** — Reusable modal components built on a shared `BaseModal` pattern.
 - **`src/utils/`** — Supabase client, noise context, and utility functions.
-- **`src/navbar/`** — Navigation system with context-based routing.
+- **`src/navigation/`** — Navigation system with context-based routing.
 - **`api/`** — Serverless API routes (OpenRouter for AI, email sending via Resend).
 
 The app uses a **CSS custom property theming system** defined in `src/index.css` that supports light/dark modes through `--bg-primary`, `--bg-secondary`, `--text-primary`, `--accent-primary`, and more — ensuring consistent styling across all components.
@@ -155,7 +165,7 @@ unitracker/
 │   ├── hooks/           # Custom React hooks
 │   ├── modals/          # Modal components
 │   ├── utils/           # Utilities (Supabase, noise, etc.)
-│   ├── navbar/          # Navigation system
+│   ├── navigation/      # Navigation system
 │   └── constants/       # App constants & config
 ├── api/                 # Serverless functions (AI, email)
 ├── e2e/                 # Playwright E2E tests
@@ -170,7 +180,7 @@ unitracker/
 UniTracker has been in continuous development since December 2024. Upcoming priorities include:
 
 - iOS support via Capacitor
-- Collaborative focus sessions with friends
+- Live collaborative focus sessions
 - Advanced analytics with custom date ranges
 - Note templates and linking
 - Calendar integrations beyond Google

@@ -5,6 +5,7 @@ import ChartCard from './ChartCard';
 import StatsChart from './StatsChart';
 import { getLocalDateString } from '@/utils/dateUtils';
 import useDemoMode from '@/utils/useDemoMode';
+import { useAccentColor } from '@/hooks/settings/useAccentColor';
 import { useLaps } from '@/store/appStore';
 
 const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -51,16 +52,6 @@ function getISOWeekNumber(date: Date) {
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
 }
-
-const getAccentColor = () => getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') || '#1E90FF';
-
-let cachedAccentColor: string | null = null;
-const getCachedAccentColor = () => {
-  if (!cachedAccentColor) {
-    cachedAccentColor = getAccentColor();
-  }
-  return cachedAccentColor;
-};
 
 interface PeriodNavProps {
   label: string;
@@ -119,7 +110,7 @@ const PeriodSelector = ({
 const StatsChartsPanel = memo(() => {
   const { laps } = useLaps();
   const { isDemo } = useDemoMode();
-  const accentColor = getCachedAccentColor();
+  const accentColor = useAccentColor();
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   // Week

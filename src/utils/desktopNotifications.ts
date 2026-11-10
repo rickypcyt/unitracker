@@ -1,4 +1,4 @@
-import { toast } from "react-toastify";
+import { useNotificationPromptStore } from "@/store/notificationPromptStore";
 
 let lastBlockedWarning = 0;
 
@@ -22,10 +22,7 @@ export const warnNotificationsBlocked = () => {
   if (isMobileDevice()) return;
   if (Date.now() - lastBlockedWarning < 60_000) return;
   lastBlockedWarning = Date.now();
-  toast.error(
-    "Desktop notifications are blocked. Enable them for this site in your browser settings to get timer alerts.",
-    { autoClose: 6000 }
-  );
+  useNotificationPromptStore.getState().open();
 };
 
 /**

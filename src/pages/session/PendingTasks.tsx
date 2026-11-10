@@ -113,7 +113,7 @@ const PendingTasks = () => {
                 </ActionTooltip>
                 <div className="min-w-0 flex-1">
                   {task.assignment && (
-                    <span className="block text-xs font-semibold text-[var(--accent-primary)] capitalize truncate">{task.assignment}</span>
+                    <span className="block mb-1 text-xs font-semibold leading-tight text-[var(--accent-primary)] capitalize truncate">{task.assignment}</span>
                   )}
                   <ActionTooltip content="Open the task editor to modify its details or due date.">
                     <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>

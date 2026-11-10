@@ -25,8 +25,10 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent-primary', selectedColor);
+    window.dispatchEvent(new Event('accentPaletteChange'));
     return () => {
       document.documentElement.style.setProperty('--accent-primary', localStorage.getItem('accentPalette') || originalColor);
+      window.dispatchEvent(new Event('accentPaletteChange'));
     };
   }, [selectedColor, originalColor]);
 

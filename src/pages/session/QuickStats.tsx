@@ -1,48 +1,16 @@
-import { CheckCircle2, Clock, Flame, Timer } from 'lucide-react';
+import { CheckCircle2, Clock, Flame, Share2, Timer } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
+import ShareStreakModal from '@/modals/session/ShareStreakModal';
 import { useLaps, useTasksOnly } from '@/store/appStore';
+import { durationToSeconds, formatHours, getStreakStats } from '@/utils/streak';
 import { supabase } from '@/utils/supabaseClient';
-
-const durationToSeconds = (duration?: string | number | null): number => {
-  if (!duration) return 0;
-  if (typeof duration === 'number') return duration;
-  if (/^\d+$/.test(duration)) return parseInt(duration, 10);
-  const parts = duration.split(':');
-  if (parts.length !== 3) return 0;
-  return Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
-};
-
-const formatHours = (seconds: number): string => {
-  const h = Math.floor(seconds / 3600);
-  if (h >= 100) return `${h}h`;
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-};
-
-function getLongestStreak(tasks: any[]): number {
-  const completed = tasks
-    .filter(t => t.completed && t.completed_at)
-    .map(t => new Date(t.completed_at).setHours(0, 0, 0, 0))
-    .sort((a, b) => a - b);
-  if (completed.length === 0) return 0;
-  let streak = 1, maxStreak = 1;
-  for (let i = 1; i < completed.length; i++) {
-    if (completed[i]! - completed[i - 1]! === 86400000) {
-      streak++;
-      maxStreak = Math.max(maxStreak, streak);
-    } else if (completed[i] !== completed[i - 1]) {
-      streak = 1;
-    }
-  }
-  return maxStreak;
-}
 
 const QuickStats = () => {
   const { user } = useAuth();
   const { laps } = useLaps();
   const tasks = useTasksOnly();
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const [pomodorosAllTime, setPomodorosAllTime] = useState(0);
 
@@ -67,7 +35,10 @@ const QuickStats = () => {
   const stats = useMemo(() => {
     const totalStudySeconds = (laps || []).reduce((acc: number, lap: any) => acc + durationToSeconds(lap.duration), 0);
     const tasksDone = tasks.filter(t => t.completed).length;
-    const streak = getLongestStreak(tasks);
+    const streak = getStreakStats([
+      ...laps.map(lap => lap.created_at),
+      ...tasks.filter(t => t.completed).map(t => t.completed_at),
+    ]).current;
     return {
       pomodoros: pomodorosAllTime,
       studyTime: totalStudySeconds,
@@ -111,7 +82,18 @@ const QuickStats = () => {
     <div className="w-full dashboard-noise-card" style={{ padding: 'clamp(0.75rem, 0.6rem + 0.6vw, 1.25rem)' }}>
       <div className="grid grid-cols-2 sm:grid-cols-4" style={{ gap: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}>
         {cards.map(card => (
-          <div key={card.label} className="dashboard-stat-card">
+          <div key={card.label} className="dashboard-stat-card relative">
+            {card.label === 'Current Streak' && stats.streak > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(true)}
+                className="absolute top-2 right-2 p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                title="Share your streak"
+                aria-label="Share your streak"
+              >
+                <Share2 size={14} />
+              </button>
+            )}
             <div className="flex items-center gap-2 mb-1">
               <div className={`p-1.5 rounded-lg ${card.bg}`}>
                 {card.icon}
@@ -129,6 +111,7 @@ const QuickStats = () => {
           </div>
         ))}
       </div>
+      <ShareStreakModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
     </div>
   );
 };

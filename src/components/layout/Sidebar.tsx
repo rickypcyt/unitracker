@@ -2,12 +2,12 @@ import { BarChart3, BookOpen, Calendar, CheckCircle2, Clock, Notebook, Settings 
 import { useNavigation } from '@/navigation/NavigationContext';
 
 const navItems = [
-  { page: 'session', label: 'Study', icon: Clock },
-  { page: 'tasks', label: 'Tasks', icon: CheckCircle2 },
   { page: 'calendar', label: 'Planning', icon: Calendar },
-  { page: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { page: 'tasks', label: 'Tasks', icon: CheckCircle2 },
+  { page: 'session', label: 'Study', icon: Clock },
   { page: 'habits', label: 'Journal', icon: Notebook },
   { page: 'notes', label: 'Notes', icon: BookOpen },
+  { page: 'analytics', label: 'Analytics', icon: BarChart3 },
 ] as const;
 
 const Navbar = () => {

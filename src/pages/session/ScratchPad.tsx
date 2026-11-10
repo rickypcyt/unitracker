@@ -1,5 +1,8 @@
 import { CheckCircle2, CheckSquare, Circle, Eraser, StickyNote } from "lucide-react";
-import { memo, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+
+import { useAuth } from "@/hooks/auth/useAuth";
+import { supabase } from "@/utils/supabaseClient";
 
 const STORAGE_KEY = "unitracker.scratchpad";
 
@@ -8,6 +11,14 @@ const loadNote = () => {
     return localStorage.getItem(STORAGE_KEY) ?? "";
   } catch {
     return "";
+  }
+};
+
+const saveLocal = (value: string) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, value);
+  } catch {
+    // storage full or unavailable — keep in-memory only
   }
 };
 
@@ -29,16 +40,61 @@ const parseLine = (line: string) => {
 };
 
 const ScratchPad = memo(() => {
+  const { user } = useAuth();
   const [text, setText] = useState(loadNote);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const lastFocusedIndexRef = useRef(0);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const remoteDisabledRef = useRef(false);
+
+  const remoteSave = async (userId: string, value: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ scratchpad: value })
+      .eq("id", userId);
+    // Column missing or request failed — stay local-only from here on
+    if (error) remoteDisabledRef.current = true;
+  };
+
+  // Pull the user's saved note on login; migrate the local one if the cloud copy is empty
+  useEffect(() => {
+    if (!user?.id || remoteDisabledRef.current) return;
+    let cancelled = false;
+    void (async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("scratchpad")
+        .eq("id", user.id)
+        .single();
+      if (cancelled) return;
+      if (error) {
+        remoteDisabledRef.current = true;
+        return;
+      }
+      const remote = (data?.scratchpad as string | null) ?? "";
+      if (remote) {
+        if (remote !== loadNote()) {
+          setText(remote);
+          saveLocal(remote);
+        }
+      } else {
+        const local = loadNote();
+        if (local) await remoteSave(user.id, local);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const handleChange = (value: string) => {
     setText(value);
-    try {
-      localStorage.setItem(STORAGE_KEY, value);
-    } catch {
-      // storage full or unavailable — keep in-memory only
+    saveLocal(value);
+    if (user?.id && !remoteDisabledRef.current) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        void remoteSave(user.id, value);
+      }, 800);
     }
   };
 
@@ -84,9 +140,18 @@ const ScratchPad = memo(() => {
     if (e.key === "Enter") {
       e.preventDefault();
       const next = [...lines];
-      next.splice(index + 1, 0, "");
-      handleChange(next.join("\n"));
-      requestAnimationFrame(() => inputRefs.current[index + 1]?.focus());
+      if (parsed.type === "checkbox" && parsed.text === "") {
+        // Enter on an empty checkbox exits the list — strip the marker
+        next[index] = "";
+        handleChange(next.join("\n"));
+      } else {
+        next.splice(index + 1, 0, parsed.type === "checkbox" ? "[ ] " : "");
+        handleChange(next.join("\n"));
+        requestAnimationFrame(() => inputRefs.current[index + 1]?.focus());
+      }
+    } else if (e.key === "Backspace" && parsed.text === "" && parsed.type === "checkbox" && lines.length === 1) {
+      e.preventDefault();
+      updateLine(index, "");
     } else if (e.key === "Backspace" && parsed.text === "" && lines.length > 1) {
       e.preventDefault();
       const next = [...lines];

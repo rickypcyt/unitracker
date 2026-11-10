@@ -91,10 +91,10 @@ const SessionPage = memo(() => {
         >
           {/* Top: Noise Generator + Scratchpad */}
           <div className="order-3 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-            <motion.div variants={item} className="dashboard-noise-card w-full h-full">
+            <motion.div variants={item} className="order-2 lg:order-1 dashboard-noise-card w-full h-full">
               <NoiseGenerator />
             </motion.div>
-            <motion.div variants={item} className="h-full">
+            <motion.div variants={item} className="order-1 lg:order-2 h-full">
               <ScratchPad />
             </motion.div>
           </div>

@@ -15,6 +15,7 @@ import TourManager from "@/components/onboarding/TourManager";
 import Settings from "@/modals/settings/Settings";
 
 import UserModal from "@/modals/auth/UserModal";
+import NotificationPromptModal from "@/modals/NotificationPromptModal";
 import { supabase } from "@/utils/supabaseClient";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
 import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
@@ -353,6 +354,7 @@ const App: FC = () => {
       <NoiseProvider>
         <AuthProvider>
           <UserModalGate />
+          <NotificationPromptModal />
           <Routes>
             <Route path="/" element={<RootRoute />} />
             <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />

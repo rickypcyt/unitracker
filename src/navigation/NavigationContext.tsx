@@ -34,12 +34,12 @@ const PATH_PAGES: Record<string, Page> = Object.entries(PAGE_PATHS).reduce(
 );
 
 const DEFAULT_NAV_ORDER = [
-  { page: 'session' as Page, icon: null, label: 'Study' },
-  { page: 'tasks' as Page, icon: null, label: 'Tasks' },
   { page: 'calendar' as Page, icon: null, label: 'Planning' },
-  { page: 'analytics' as Page, icon: null, label: 'Analytics' },
+  { page: 'tasks' as Page, icon: null, label: 'Tasks' },
+  { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'habits' as Page, icon: null, label: 'Journal' },
   { page: 'notes' as Page, icon: null, label: 'Notes' },
+  { page: 'analytics' as Page, icon: null, label: 'Analytics' },
 ];
 
 export const NavigationProvider = ({ children }: { children: React.ReactNode }) => {
@@ -63,27 +63,13 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
-  // Load nav order from localStorage on mount
+  // Nav order is fixed — clean up the legacy persisted custom order
   useEffect(() => {
-    const savedOrder = localStorage.getItem('navbarOrder');
-    if (savedOrder) {
-      try {
-        const parsedOrder = JSON.parse(savedOrder);
-        // Validate that the saved order has the correct structure
-        if (Array.isArray(parsedOrder) && parsedOrder.every(item => 
-          item.page && item.label && DEFAULT_NAV_ORDER.some(defaultItem => defaultItem.page === item.page)
-        )) {
-          setNavOrderState(parsedOrder);
-        }
-      } catch (error) {
-        console.error('Error parsing navbar order from localStorage:', error);
-      }
-    }
+    localStorage.removeItem('navbarOrder');
   }, []);
 
   const setNavOrder = useCallback((newOrder: Array<{ page: Page; icon: any; label: string }>) => {
     setNavOrderState(newOrder);
-    localStorage.setItem('navbarOrder', JSON.stringify(newOrder));
   }, []);
 
   const navigateTo = useCallback((page: Page) => {

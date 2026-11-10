@@ -990,19 +990,27 @@ h1 {
 }
 
 /* Primary action — larger, accent-bordered, still ghost */
+/* Study-specific primary button - UnitTracker blue */
 .timer-ctrl-btn-primary {
   width: 3rem;
   height: 3rem;
-  color: var(--accent-primary);
-  border: 2px solid var(--accent-primary);
+  color: #0A84FF;
+  border: 2px solid #0A84FF;
   border-radius: 9999px;
 }
 
 .timer-ctrl-btn-primary:hover:not(:disabled) {
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
-  background-color: color-mix(in srgb, var(--accent-primary) 12%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: #0A84FF;
+  border-color: #0A84FF;
+  background-color: rgba(10, 132, 255, 0.12);
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+}
+
+/* Study panel secondary controls (reset, flag, finish, cancel) - blue hover */
+.timer-panel-study .timer-ctrl-btn:hover:not(:disabled) {
+  color: #0A84FF;
+  border-color: #0A84FF;
+  background-color: rgba(10, 132, 255, 0.1);
 }
 
 /* Pomodoro-specific primary button - red */

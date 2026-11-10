@@ -69,6 +69,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.12",
     "highlight.js": "^11.11.1",
+    "html-to-image": "^1.11.13",
     "html-to-text": "^10.0.0",
     "lucide-react": "^0.563.0",
     "react": "^18.3.1",

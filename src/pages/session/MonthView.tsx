@@ -24,10 +24,13 @@ const MonthView = () => {
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   );
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [popoverTop, setPopoverTop] = useState(0);
+  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const openDay = (day: Date, button: HTMLButtonElement) => {
     setSelectedDay(day);
-    setPopoverTop(button.offsetTop + button.offsetHeight + 2);
+    setPopoverPos({
+      top: button.offsetTop + button.offsetHeight + 4,
+      left: button.offsetLeft + button.offsetWidth / 2,
+    });
   };
   const sectionRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,15 +83,15 @@ const MonthView = () => {
               aria-current={isToday(day) ? 'date' : undefined}
               aria-haspopup="dialog"
               aria-expanded={selectedDay?.getTime() === day.getTime()}
-              className={`relative flex items-center justify-center h-8 rounded-lg text-sm hover:ring-1 hover:ring-[var(--accent-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)] ${isToday(day) ? 'bg-[var(--accent-primary)] text-white font-semibold' : isSameMonth(day, month) ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] opacity-40'}`}
+              className={`group relative flex items-center justify-center w-full aspect-square rounded-lg text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)] ${isToday(day) ? 'text-[var(--accent-primary)]' : isSameMonth(day, month) ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] opacity-40'}`}
             >
-              <time dateTime={format(day, 'yyyy-MM-dd')}>{format(day, 'd')}</time>
-              {dayTasks.length > 0 && <span aria-hidden="true" className={`absolute bottom-0.5 h-1 w-1 rounded-full ${isToday(day) ? 'bg-white' : 'bg-[var(--accent-primary)]'}`} />}
+              <time dateTime={format(day, 'yyyy-MM-dd')} className={`flex items-center justify-center w-12 h-12 rounded-md leading-none ${isToday(day) ? 'font-bold ring-1 ring-[var(--accent-primary)]' : 'group-hover:ring-1 group-hover:ring-[var(--accent-primary)]'}`}>{format(day, 'd')}</time>
+              {dayTasks.length > 0 && <span aria-hidden="true" className="absolute bottom-0.5 h-1 w-1 rounded-full bg-[var(--accent-primary)]" />}
             </button>
           );
         })}
       </div>
-      <DayTasksPopover top={popoverTop} day={selectedDay} tasks={selectedDay ? getDayTasks(source, selectedDay) : []} onClose={() => setSelectedDay(null)} />
+      <DayTasksPopover top={popoverPos.top} left={popoverPos.left} day={selectedDay} tasks={selectedDay ? getDayTasks(source, selectedDay) : []} onClose={() => setSelectedDay(null)} />
     </section>
   );
 };
