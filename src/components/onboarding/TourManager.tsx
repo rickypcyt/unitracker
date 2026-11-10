@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 
 import AccentColorModal from '@/modals/settings/AccentColorModal';
 import EnhancedLoginModal from '@/modals/auth/EnhancedLoginModal';
+import FirstTaskPrompt from '@/components/onboarding/FirstTaskPrompt';
 import ThemeManager from '@/components/settings/ThemeManager';
 import WelcomeModal from '@/modals/auth/WelcomeModal';
 import useTheme from '@/hooks/settings/useTheme';
@@ -43,6 +44,7 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
           onLogin={handleLogin}
         />
       )}
+      <FirstTaskPrompt />
     </>
   );
 };

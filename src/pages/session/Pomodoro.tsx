@@ -1011,7 +1011,10 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
       pomodoroToday: 0
     }));
   }, []));
-  const lastCountedCycleRef = useRef<number>(0); // track último ciclo contado
+  // Restaurado desde localStorage para que un refresh no vuelva a notificar/contar ciclos ya completados
+  const lastCountedCycleRef = useRef<number>(
+    parseInt(localStorage.getItem('pomodorosThisSession') || '0', 10) || 0
+  ); // track último ciclo contado
   const latestStudyTimeRef = useRef<number>(0); // último tiempo reportado por StudyTimer para validaciones
   const hasSyncedFromStudyRef = useRef<boolean>(true); // por defecto no saltar el primer ciclo; sólo al reanudar se arma
   const resumeUntilTsRef = useRef<number>(0); // ventana para suprimir notificaciones/sonidos tras reanudar
@@ -1107,7 +1110,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
     const newTimeLeft = currentModeDuration - timeInCurrentMode;
 
     // Si el usuario retrocede el tiempo con media controls, ajustar el conteo hacia abajo
-    if (expectedCompletedPomodoros < (lastCountedCycleRef.current || 0)) {
+    // (sólo si el studyTime realmente retrocedió en este mount — evita decrementos falsos tras refresh)
+    if (expectedCompletedPomodoros < (lastCountedCycleRef.current || 0) && studyTime < prevStudyTime) {
       const delta = (lastCountedCycleRef.current || 0) - expectedCompletedPomodoros;
       if (delta > 0) {
         decrementPomodoroCount(delta);

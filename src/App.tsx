@@ -7,6 +7,8 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import FloatingFooter from "@/components/layout/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
+import IndiaLandingPage from "@/pages/landing/IndiaLandingPage";
+import i18n from "@/i18n";
 import PageLoader from "@/components/ui/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
 import { ToastContainer } from "react-toastify";
@@ -18,6 +20,8 @@ import UserModal from "@/modals/auth/UserModal";
 import NotificationPromptModal from "@/modals/NotificationPromptModal";
 import { supabase } from "@/utils/supabaseClient";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
+import { captureReferralParams } from "@/utils/referral";
+import { track } from "@vercel/analytics";
 import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
 import { useWorkspaceLoader } from "@/hooks/workspaces/useWorkspaceLoader";
 
@@ -192,13 +196,49 @@ const PageContent: FC = () => {
   );
 };
 
-const AppRoute: FC = () => (
-  <NavigationProvider>
-    <TourManager>
-      <PageContent />
-    </TourManager>
-  </NavigationProvider>
-);
+const AppRoute: FC = () => {
+  // Ask for notification permission only inside the app — never on landing pages
+  useEffect(() => {
+    const requestNotificationPermission = async (): Promise<void> => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (!("Notification" in window)) {
+        return;
+      }
+
+      if (Notification.permission === "default") {
+        const permissionRequested = localStorage.getItem("notificationPermissionRequested");
+
+        if (!permissionRequested) {
+          try {
+            await Notification.requestPermission();
+            localStorage.setItem("notificationPermissionRequested", "true");
+          } catch (error) {
+            console.error("Notification permission request failed:", error);
+          }
+        }
+      } else if (Notification.permission === "denied") {
+        // Warn once per session that desktop notifications won't fire
+        if (!sessionStorage.getItem("notificationsBlockedWarned")) {
+          sessionStorage.setItem("notificationsBlockedWarned", "true");
+          warnNotificationsBlocked();
+        }
+      }
+    };
+
+    requestNotificationPermission();
+  }, []);
+
+  return (
+    <NavigationProvider>
+      <TourManager>
+        <PageContent />
+      </TourManager>
+    </NavigationProvider>
+  );
+};
 
 // -------------------------
 // Supabase auth sync
@@ -255,7 +295,13 @@ const UserModalGate: FC = () => {
   }, [isLoggedIn, user]);
 
   return (
-    <UserModal isOpen={showUserModal} onClose={() => setShowUserModal(false)} />
+    <UserModal
+      isOpen={showUserModal}
+      onClose={() => {
+        setShowUserModal(false);
+        window.dispatchEvent(new Event('userModalClosed'));
+      }}
+    />
   );
 };
 
@@ -264,6 +310,15 @@ const RootRoute: FC = () => {
 
   if (isAuthLoading) return <PageLoader fullScreen />;
   return isLoggedIn ? <Navigate to={PAGE_PATHS.session} replace /> : <LandingPage />;
+};
+
+// Dedicated language URLs (/es, /hi) — forces the locale so each version
+// is indexable by search engines with its own canonical + hreflang
+const LocalizedLanding: FC<{ lang: "es" | "hi" }> = ({ lang }) => {
+  useEffect(() => {
+    void i18n.changeLanguage(lang);
+  }, [lang]);
+  return <LandingPage />;
 };
 
 // -------------------------
@@ -276,42 +331,16 @@ const App: FC = () => {
 
   useSupabaseAuthSync();
 
-  // -------------------------
-  // Notifications & keyboard
-  // -------------------------
+  // Capture ?ref= / utm_* params once per session-load and report to Vercel Analytics
   useEffect(() => {
-    const requestNotificationPermission = async (): Promise<void> => {
-      if (typeof window === "undefined") {
-        return;
-      }
-
-      if (!("Notification" in window)) {
-        return;
-      }
-
-      if (Notification.permission === "default") {
-        const permissionRequested = localStorage.getItem("notificationPermissionRequested");
-
-        if (!permissionRequested) {
-          try {
-            await Notification.requestPermission();
-            localStorage.setItem("notificationPermissionRequested", "true");
-          } catch (error) {
-            console.error("Notification permission request failed:", error);
-          }
-        }
-      } else if (Notification.permission === "denied") {
-        // Warn once per session that desktop notifications won't fire
-        if (!sessionStorage.getItem("notificationsBlockedWarned")) {
-          sessionStorage.setItem("notificationsBlockedWarned", "true");
-          warnNotificationsBlocked();
-        }
-      }
-    };
-
-    requestNotificationPermission();
-
-    return () => {};
+    const referral = captureReferralParams();
+    if (referral) {
+      track("referral_landing", {
+        ref: referral.ref ?? "",
+        utm_source: referral.utm_source ?? "",
+        utm_campaign: referral.utm_campaign ?? "",
+      });
+    }
   }, []);
 
   // -------------------------
@@ -357,6 +386,9 @@ const App: FC = () => {
           <NotificationPromptModal />
           <Routes>
             <Route path="/" element={<RootRoute />} />
+            <Route path="/es" element={<LocalizedLanding lang="es" />} />
+            <Route path="/hi" element={<LocalizedLanding lang="hi" />} />
+            <Route path="/india" element={<IndiaLandingPage />} />
             <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />
             <Route path={PAGE_PATHS.session} element={<AppRoute />} />
             <Route path={PAGE_PATHS.tasks} element={<AppRoute />} />

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { LogIn } from "lucide-react";
 
 import { Helmet } from "react-helmet-async";
+import { useTranslation } from "react-i18next";
 import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import ScratchPad from "@/pages/session/ScratchPad";
 import PendingTasks from "@/pages/session/PendingTasks";
@@ -12,6 +13,7 @@ import MonthView from "@/pages/session/MonthView";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
 
 const SessionPage = memo(() => {
+  const { t } = useTranslation();
   const ui = useUi();
   const { isLoggedIn, loginWithGoogle } = useAuth();
   const isSynced = ui.isSynced;
@@ -107,7 +109,7 @@ const SessionPage = memo(() => {
                 className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] py-2.5 text-sm font-semibold text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 <LogIn size={16} />
-                Log in to sync your sessions
+                {t("session.loginToSync")}
               </button>
             )}
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />

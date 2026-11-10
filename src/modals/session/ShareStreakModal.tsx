@@ -4,6 +4,7 @@ import { toPng } from 'html-to-image';
 import { toast } from 'react-toastify';
 
 import StreakCard, { STREAK_CARD_HEIGHT, STREAK_CARD_WIDTH } from '@/components/share/StreakCard';
+import WhatsAppIcon from '@/components/share/WhatsAppIcon';
 import BaseModal from '@/modals/shared/BaseModal';
 import { useLaps, useTasksOnly } from '@/store/appStore';
 import { durationToSeconds, formatHours, getStreakStats } from '@/utils/streak';
@@ -174,8 +175,20 @@ const ShareStreakModal = ({ isOpen, onClose }: ShareStreakModalProps) => {
         </button>
       </div>
 
+      <a
+        href={`https://wa.me/?text=${encodeURIComponent(
+          `${stats.streak}-day study streak on UniTracker! Track your study time free at https://unitracker.me`,
+        )}`}
+        target="_blank"
+        rel="noopener"
+        className={`${buttonClass} mt-2 w-full bg-[#25D366] text-white hover:opacity-90`}
+      >
+        <WhatsAppIcon size={16} />
+        Share on WhatsApp
+      </a>
+
       <p className="text-xs text-[var(--text-secondary)] mt-3 text-center">
-        Tip: copy the image, then paste it straight into Discord or WhatsApp.
+        Tip: copy the image above too — paste it into the WhatsApp chat to show your streak card.
       </p>
     </BaseModal>
   );

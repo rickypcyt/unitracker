@@ -1,0 +1,263 @@
+{
+  "india": {
+    "nav": {
+      "getStarted": "शुरू करें",
+      "github": "GitHub"
+    },
+    "hero": {
+      "eyebrow": "// भारतीय students के लिए free study app",
+      "title": "JEE, NEET और boards की तैयारी स्मार्ट तरीके से।",
+      "subtitle": "Pomodoro timer, task manager, calendar और study analytics — लंबी तैयारी के घंटों के लिए बनाया गया। हमेशा free, किसी भी phone पर offline चलता है।",
+      "cta": "Free में शुरू करें",
+      "share": "WhatsApp पर share करें",
+      "shareMessage": "एक free study app मिली — JEE/NEET/boards की तैयारी के लिए Pomodoro timer, tasks और analytics. No ads, offline चलता है: https://unitracker.me/india"
+    },
+    "timers": {
+      "eyebrow": "// Live, screenshots नहीं",
+      "title": "असली timers, यहीं पर।",
+      "subtitle": "ये app के असली components हैं। Play दबाएं — sync चालू करके दोनों को एक से control करें।",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "exams": {
+      "eyebrow": "// आपकी exam के लिए बनाया गया",
+      "title": "चाहे जिसकी भी तैयारी हो।",
+      "jee": {
+        "title": "JEE और NEET",
+        "desc": "लंबे study blocks, subject-wise घंटे और revision consistency track करें — Physics, Chemistry, Maths और Biology में।"
+      },
+      "boards": {
+        "title": "CBSE और board exams",
+        "desc": "अपना timetable बनाएं, syllabus को tasks में तोड़ें और exam date से पहले daily targets पूरे करें।"
+      },
+      "college": {
+        "title": "College और university",
+        "desc": "Assignments, deadlines, notes और habits — semester exams के लिए सब कुछ एक जगह।"
+      },
+      "upsc": {
+        "title": "UPSC और सरकारी exams",
+        "desc": "महीनों की तैयारी में असली study hours मापें। Streaks आपकी routine को honest रखती हैं।"
+      }
+    },
+    "features": {
+      "eyebrow": "// Students क्यों switch करते हैं",
+      "title": "Indian study life के लिए बनाया गया।",
+      "offline": {
+        "title": "Offline चलता है",
+        "desc": "Hostel की खराब Wi-Fi या सफर में? सब कुछ चलता रहता है और बाद में sync होता है।"
+      },
+      "free": {
+        "title": "बिल्कुल free",
+        "desc": "No ads, no subscriptions, no paywall. MIT license के तहत open source।"
+      },
+      "light": {
+        "title": "Phone पर हल्का",
+        "desc": "किसी भी Android पर browser में चलता है — बड़ा download नहीं, storage नहीं खाता।"
+      },
+      "streaks": {
+        "title": "Streaks और analytics",
+        "desc": "हर subject के असली घंटे देखें और अपनी daily study streak ज़िंदा रखें।"
+      }
+    },
+    "faq": {
+      "eyebrow": "// सवाल",
+      "title": "अक्सर पूछे जाने वाले सवाल।",
+      "items": [
+        {
+          "q": "क्या भारत के students के लिए UniTracker free है?",
+          "a": "हाँ — हमेशा के लिए बिल्कुल free। No ads, no subscriptions, और paywall के पीछे कोई feature नहीं। यह open source है (MIT license)।"
+        },
+        {
+          "q": "क्या मैं इसे JEE या NEET की तैयारी के लिए use कर सकता हूँ?",
+          "a": "बिल्कुल। Focused study blocks के लिए Pomodoro timer use करें, हर chapter के लिए tasks बनाएं, और analytics में देखें कि आप Physics, Chemistry, Maths या Biology को हफ्ते में कितने असली घंटे देते हैं।"
+        },
+        {
+          "q": "क्या ये बिना internet के चलता है?",
+          "a": "हाँ। UniTracker offline-first है — बिना connection के हर feature काम करता है और online आने पर cloud से sync होता है। Hostels और कम connectivity वाले areas के लिए perfect।"
+        },
+        {
+          "q": "क्या मुझे app download करनी होगी?",
+          "a": "कोई download ज़रूरी नहीं — किसी भी phone या laptop के browser में चलता है। App जैसा experience चाहिए तो Chrome से PWA install भी कर सकते हैं।"
+        },
+        {
+          "q": "ये बाकी study apps से अलग कैसे है?",
+          "a": "सब कुछ एक जगह: Pomodoro, study timer, tasks, calendar, notes, habits और analytics। कुछ भी distract नहीं करता — no feed, no ads, no premium की जद्दोजहद।"
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "// अभी शुरू करें",
+      "title": "30 seconds में tracking शुरू।",
+      "subtitle": "हमेशा free · No ads · Open source",
+      "button": "शुरू करें"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "home": "English home",
+      "issues": "Issues",
+      "getStarted": "शुरू करें"
+    }
+  },
+  "landing": {
+    "nav": {
+      "github": "GitHub",
+      "getStarted": "शुरू करें"
+    },
+    "hero": {
+      "eyebrow": "// Free और open source",
+      "title1": "एक app",
+      "title2": "आपके study time के लिए।",
+      "subtitle": "Pomodoro, tasks, calendar और analytics — आपके रास्ते में न आने के लिए designed। Offline चलता है, वापस आने पर sync होता है।",
+      "cta": "Free में शुरू करें"
+    },
+    "timers": {
+      "eyebrow": "// Live, screenshots नहीं",
+      "title": "असली timers, यहीं पर।",
+      "subtitle": "ये app के असली components हैं। Play दबाएं — sync चालू करके दोनों को एक से control करें।",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "features": {
+      "eyebrow": "// सब कुछ एक जगह",
+      "title": "कम juggling, ज़्यादा study।",
+      "pomodoro": { "label": "Pomodoro और study timer", "desc": "Focus sessions जो खुद log होती हैं।" },
+      "tasks": { "label": "Tasks", "desc": "Deadlines, priorities, statuses।" },
+      "calendar": { "label": "Calendar", "desc": "Week और month views, drag-and-drop।" },
+      "analytics": { "label": "Analytics", "desc": "देखें आपके घंटे असल में कहां जाते हैं।" },
+      "notes": { "label": "Notes और habits", "desc": "Markdown notes साथ daily streaks।" },
+      "offline": { "label": "Offline-first", "desc": "बिना internet के सब कुछ चलता है।" }
+    },
+    "cta": {
+      "eyebrow": "// अभी शुरू करें",
+      "title": "30 seconds में tracking।",
+      "subtitle": "हमेशा free · No ads · Open source",
+      "button": "शुरू करें"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "india": "India",
+      "issues": "Issues",
+      "getStarted": "शुरू करें"
+    }
+  },
+  "common": {
+    "save": "सेव करें",
+    "cancel": "रद्द करें",
+    "delete": "डिलीट करें",
+    "close": "बंद करें",
+    "edit": "एडिट करें",
+    "today": "आज",
+    "loading": "लोड हो रहा है…",
+    "retry": "फिर कोशिश करें",
+    "overdue": "समय निकल गया",
+    "noDueDate": "कोई deadline नहीं"
+  },
+  "nav": {
+    "planning": "प्लानिंग",
+    "tasks": "टास्क",
+    "study": "स्टडी",
+    "journal": "जर्नल",
+    "notes": "नोट्स",
+    "analytics": "एनालिटिक्स",
+    "settings": "सेटिंग्स",
+    "home": "UniTracker होम"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "tabs": {
+      "appearance": "अपीयरेंस",
+      "account": "अकाउंट",
+      "data": "डेटा",
+      "whatsNew": "नया क्या है",
+      "about": "बारे में"
+    },
+    "theme": {
+      "label": "थीम",
+      "light": "लाइट",
+      "system": "सिस्टम",
+      "dark": "डार्क"
+    },
+    "accentColor": "एक्सेंट कलर",
+    "custom": "कस्टम",
+    "timezone": "टाइमज़ोन",
+    "language": "भाषा",
+    "account": {
+      "userProfile": "यूज़र प्रोफ़ाइल",
+      "addFriends": "दोस्त जोड़ें",
+      "manageFriends": "दोस्त manage करें",
+      "notSignedIn": "साइन इन नहीं है",
+      "signInToSync": "अपना डेटा sync करने के लिए साइन इन करें",
+      "googleAccount": "Google अकाउंट",
+      "loggedIn": "लॉग इन है",
+      "logIn": "लॉग इन",
+      "logOut": "लॉग आउट"
+    },
+    "data": {
+      "manageAssignments": "Assignments manage करें",
+      "manageSessions": "Study sessions manage करें",
+      "manageCompletedTasks": "Completed tasks manage करें"
+    },
+    "changelog": {
+      "added": "जोड़ा गया",
+      "improved": "बेहतर",
+      "fixed": "ठीक किया गया",
+      "comingSoon": "जल्द आ रहा है"
+    },
+    "about": {
+      "theStory": "कहानी",
+      "aboutMe": "मेरे बारे में",
+      "getInTouch": "संपर्क करें"
+    }
+  },
+  "session": {
+    "loginToSync": "अपनी sessions sync करने के लिए लॉग इन करें",
+    "monthView": {
+      "title": "महीने का व्यू",
+      "today": "आज"
+    },
+    "pendingTasks": {
+      "title": "Pending tasks",
+      "newTask": "नया task",
+      "newTaskTooltip": "अपने current workspace में नया task बनाएं।",
+      "viewTasks": "Tasks देखें",
+      "viewTasksTooltip": "अपने workspace के tasks manage करने के लिए Tasks खोलें।",
+      "restoreIgnored": "Ignored वापस लाएं ({{count}})",
+      "restoreIgnoredTooltip": "इस workspace के ignored tasks फिर से दिखाएं। उनका status नहीं बदला है।",
+      "error": "Tasks refresh नहीं हो सके। उपलब्ध tasks दिखा रहे हैं।",
+      "retry": "Tasks फिर लोड करें",
+      "retryTooltip": "Task list फिर से refresh करने की कोशिश करें।",
+      "loading": "Tasks लोड हो रहे हैं…",
+      "allCaughtUp": "सब complete है। कोई pending task नहीं।",
+      "allIgnored": "सारे pending tasks ignored हैं। उन्हें दोबारा देखने के लिए ऊपर से restore करें।",
+      "completeAria": "{{title}} complete करें",
+      "editAria": "{{title}} edit करें",
+      "ignoreAria": "{{title}} ignore करें",
+      "deleteAria": "{{title}} delete करें",
+      "completeTooltip": "इस task को completed मार्क करें। यह pending list से हट जाएगा।",
+      "editTooltip": "Details या due date बदलने के लिए task editor खोलें।",
+      "modifyTooltip": "Task का title, details, status या due date बदलें।",
+      "ignoreTooltip": "इस task को सिर्फ Pending Tasks से छिपाएं। Delete या complete नहीं होगा। दोबारा दिखाने के लिए Restore ignored use करें।",
+      "deleteTooltip": "यह task delete करें। हटाने से पहले confirm मांगा जाएगा।"
+    },
+    "scratchpad": {
+      "title": "Scratchpad",
+      "insertCheckbox": "Checkbox डालें",
+      "clearNote": "नोट साफ करें",
+      "placeholder": "मन में क्या है? यहां लिखें…",
+      "taskPlaceholder": "Task…",
+      "markDone": "Done मार्क करें",
+      "markNotDone": "Not done मार्क करें",
+      "lines_one": "{{count}} लाइन",
+      "lines_other": "{{count}} लाइनें"
+    },
+    "noise": {
+      "title": "Noise Generator",
+      "settings": "Noise generator सेटिंग्स",
+      "playAll": "सब चलाएं",
+      "pauseAll": "सब रोकें",
+      "modalTitle": "Noise सेटिंग्स"
+    }
+  }
+}

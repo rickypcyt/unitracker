@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
   BarChart3,
@@ -12,18 +14,19 @@ import {
   Timer,
   WifiOff,
 } from 'lucide-react';
+import LanguageToggle from '@/components/ui/LanguageToggle';
 import Countdown from '@/pages/session/Countdown';
 import Pomodoro from '@/pages/session/Pomodoro';
 import StudyTimer from '@/pages/session/StudyTimer';
 
 const features = [
-  { icon: Timer, label: 'Pomodoro & study timer', desc: 'Focus sessions that log themselves.' },
-  { icon: CheckCircle2, label: 'Tasks', desc: 'Deadlines, priorities, statuses.' },
-  { icon: Calendar, label: 'Calendar', desc: 'Week and month views, drag-and-drop.' },
-  { icon: BarChart3, label: 'Analytics', desc: 'See where your hours actually go.' },
-  { icon: NotebookPen, label: 'Notes & habits', desc: 'Markdown notes plus daily streaks.' },
-  { icon: WifiOff, label: 'Offline-first', desc: 'Everything works without internet.' },
-];
+  { icon: Timer, key: 'pomodoro' },
+  { icon: CheckCircle2, key: 'tasks' },
+  { icon: Calendar, key: 'calendar' },
+  { icon: BarChart3, key: 'analytics' },
+  { icon: NotebookPen, key: 'notes' },
+  { icon: WifiOff, key: 'offline' },
+] as const;
 
 const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode }) => (
   <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden">
@@ -48,7 +51,7 @@ const Eyebrow = ({ children }: { children: ReactNode }) => (
 );
 
 // Resets onboarding flags so entering the app replays welcome → color → login
-const startOnboarding = () => {
+export const startOnboarding = () => {
   try {
     ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal', 'hasSeenAccentColorModal']
       .forEach((k) => localStorage.removeItem(k));
@@ -56,35 +59,68 @@ const startOnboarding = () => {
 };
 
 const LandingPage = () => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? i18n.language;
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    return () => {
+      document.documentElement.lang = 'en';
+    };
+  }, [lang]);
+
+  const metaTitle =
+    lang === 'es'
+      ? 'UniTracker - Temporizador Pomodoro y Gestor de Tareas Gratis | Open Source'
+      : lang === 'hi'
+        ? 'UniTracker - Free Pomodoro Timer और Task Manager | Open Source'
+        : 'UniTracker - Free Pomodoro Timer & Task Manager | Open Source';
+  const metaDescription =
+    lang === 'es'
+      ? 'Temporizador Pomodoro, gestor de tareas, calendario y analíticas de estudio gratis en una app open source. Funciona offline, sincroniza al volver. Sin anuncios ni suscripciones.'
+      : lang === 'hi'
+        ? 'एक open source app में free Pomodoro timer, task manager, calendar और study analytics। Offline चलता है, reconnect पर sync होता है। No ads, no subscriptions।'
+        : 'Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline, syncs when you\'re back. No ads, no subscriptions.';
+
+  // Dedicated URL per language so each version can be indexed separately
+  const canonicalPath = lang === 'es' ? '/es' : lang === 'hi' ? '/hi' : '/';
+  const canonicalUrl = `https://unitracker.me${canonicalPath}`;
+  const ogLocale = lang === 'es' ? 'es_ES' : lang === 'hi' ? 'hi_IN' : 'en_US';
+
   return (
     <>
       <Helmet>
-        <title>UniTracker - Free Pomodoro Timer & Task Manager | Open Source</title>
+        <html lang={lang} />
+        <title>{metaTitle}</title>
         <meta
           name="description"
-          content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline, syncs when you're back. No ads, no subscriptions."
+          content={metaDescription}
         />
         <meta
           name="keywords"
           content="pomodoro timer, free task manager, study timer, time tracker, productivity app, open source pomodoro, offline task app"
         />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://unitracker.me/" />
+        <link rel="canonical" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="en" href="https://unitracker.me/" />
+        <link rel="alternate" hrefLang="es" href="https://unitracker.me/es" />
+        <link rel="alternate" hrefLang="hi" href="https://unitracker.me/hi" />
+        <link rel="alternate" hrefLang="x-default" href="https://unitracker.me/" />
 
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://unitracker.me/" />
-        <meta property="og:title" content="UniTracker - Free Pomodoro Timer & Task Manager" />
-        <meta property="og:description" content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline." />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content="https://unitracker.me/assets/og-image.png" />
         <meta property="og:site_name" content="UniTracker" />
-        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale" content={ogLocale} />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://unitracker.me/" />
-        <meta name="twitter:title" content="UniTracker - Free Pomodoro Timer & Task Manager" />
-        <meta name="twitter:description" content="Free Pomodoro timer, task manager, calendar, and study analytics in one open source app. Works offline." />
+        <meta name="twitter:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content="https://unitracker.me/assets/og-image.png" />
         <meta name="twitter:site" content="@UniTrackerApp" />
 
@@ -127,20 +163,21 @@ const LandingPage = () => {
               <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
             </Link>
             <div className="flex items-center gap-2">
+              <LanguageToggle langs={['en', 'es']} />
               <a
                 href="https://github.com/rickypcyt/unitracker"
                 target="_blank"
                 rel="noopener"
                 className="hidden sm:flex px-3 py-1.5 rounded-md text-[13px] font-medium text-white/50 hover:text-white transition-colors items-center gap-1.5"
               >
-                <Github className="w-3.5 h-3.5" /> GitHub
+                <Github className="w-3.5 h-3.5" /> {t('landing.nav.github')}
               </a>
               <Link
                 to="/app"
                 onClick={startOnboarding}
                 className="text-[13px] font-semibold px-4 py-1.5 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
               >
-                Get started
+                {t('landing.nav.getStarted')}
               </Link>
             </div>
           </div>
@@ -158,12 +195,12 @@ const LandingPage = () => {
           />
           <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-14">
             <div className="animate-um-rise max-w-2xl">
-              <Eyebrow>// Free & open source</Eyebrow>
+              <Eyebrow>{t('landing.hero.eyebrow')}</Eyebrow>
               <h1 className="text-[2.5rem] sm:text-6xl font-heading font-bold mb-5 tracking-[-0.03em] leading-[1.05]">
-                One app for<br />your study time.
+                {t('landing.hero.title1')}<br />{t('landing.hero.title2')}
               </h1>
               <p className="text-base sm:text-lg text-white/50 max-w-lg mb-8 leading-relaxed">
-                Pomodoro, tasks, calendar, and analytics — designed to stay out of your way. Works offline, syncs when you're back.
+                {t('landing.hero.subtitle')}
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <Link
@@ -171,7 +208,7 @@ const LandingPage = () => {
                   onClick={startOnboarding}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
                 >
-                  Start for free
+                  {t('landing.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
@@ -191,21 +228,21 @@ const LandingPage = () => {
         {/* Live timers */}
         <section className="border-t border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>// Live, not screenshots</Eyebrow>
+            <Eyebrow>{t('landing.timers.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-2">
-              The real timers, right here.
+              {t('landing.timers.title')}
             </h2>
             <p className="text-white/50 text-sm mb-8 max-w-md">
-              These are the actual components from the app. Press play — enable sync and control both from one.
+              {t('landing.timers.subtitle')}
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl">
-              <ShowcaseFrame title="study-timer">
+              <ShowcaseFrame title={t('landing.timers.studyTimer')}>
                 <StudyTimer hideHeader />
               </ShowcaseFrame>
-              <ShowcaseFrame title="pomodoro">
+              <ShowcaseFrame title={t('landing.timers.pomodoro')}>
                 <Pomodoro hideHeader fresh />
               </ShowcaseFrame>
-              <ShowcaseFrame title="countdown">
+              <ShowcaseFrame title={t('landing.timers.countdown')}>
                 <Countdown hideHeader />
               </ShowcaseFrame>
             </div>
@@ -215,19 +252,19 @@ const LandingPage = () => {
         {/* Features — hairline grid, Resend style */}
         <section className="border-t border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>// Everything in one place</Eyebrow>
+            <Eyebrow>{t('landing.features.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
-              Less juggling, more studying.
+              {t('landing.features.title')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-white/[0.06]">
               {features.map((f) => (
                 <div
-                  key={f.label}
+                  key={f.key}
                   className="border-b border-r border-white/[0.06] p-6 hover:bg-white/[0.03] transition-colors group"
                 >
                   <f.icon className="w-4 h-4 text-[var(--accent-primary)] mb-4" />
-                  <h3 className="text-sm font-semibold text-white/90 mb-1">{f.label}</h3>
-                  <p className="text-[13px] text-white/45 leading-relaxed">{f.desc}</p>
+                  <h3 className="text-sm font-semibold text-white/90 mb-1">{t(`landing.features.${f.key}.label`)}</h3>
+                  <p className="text-[13px] text-white/45 leading-relaxed">{t(`landing.features.${f.key}.desc`)}</p>
                 </div>
               ))}
             </div>
@@ -237,17 +274,17 @@ const LandingPage = () => {
         {/* Final CTA */}
         <section className="border-t border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
-            <Eyebrow>// Start now</Eyebrow>
+            <Eyebrow>{t('landing.cta.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-4xl font-heading font-bold tracking-tight mb-3">
-              Tracking in 30 seconds.
+              {t('landing.cta.title')}
             </h2>
-            <p className="text-white/50 text-sm mb-8">Free forever · No ads · Open source</p>
+            <p className="text-white/50 text-sm mb-8">{t('landing.cta.subtitle')}</p>
             <Link
               to="/app"
               onClick={startOnboarding}
               className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
             >
-              Get started
+              {t('landing.cta.button')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -256,12 +293,13 @@ const LandingPage = () => {
         {/* Footer — minimal hairline */}
         <footer className="border-t border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <span className="text-xs text-white/40">unitracker © 2026 · MIT</span>
+            <span className="text-xs text-white/40">{t('landing.footer.copyright')}</span>
             <div className="flex items-center gap-5 text-[13px] text-white/40">
+              <Link to="/india" className="hover:text-white transition-colors">{t('landing.footer.india')}</Link>
               <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a>
-              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="hover:text-white transition-colors">Issues</a>
+              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="hover:text-white transition-colors">{t('landing.footer.issues')}</a>
               <Link to="/app" onClick={startOnboarding} className="hover:text-white transition-colors flex items-center gap-0.5">
-                Get started <ChevronRight className="w-3 h-3" />
+                {t('landing.footer.getStarted')} <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
           </div>

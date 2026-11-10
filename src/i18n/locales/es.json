@@ -1,0 +1,281 @@
+{
+  "india": {
+    "nav": {
+      "getStarted": "Empezar",
+      "github": "GitHub"
+    },
+    "hero": {
+      "eyebrow": "// App de estudio gratuita para estudiantes de India",
+      "title": "Estudia mejor para JEE, NEET y exámenes finales.",
+      "subtitle": "Temporizador Pomodoro, gestor de tareas, calendario y analíticas de estudio — pensado para largas horas de preparación. Gratis para siempre, funciona offline en cualquier teléfono.",
+      "cta": "Empezar gratis",
+      "share": "Compartir en WhatsApp",
+      "shareMessage": "Encontré esta app de estudio gratuita — temporizador Pomodoro, tareas y analíticas para preparar JEE/NEET/exámenes. Sin anuncios, funciona offline: https://unitracker.me/india"
+    },
+    "timers": {
+      "eyebrow": "// En vivo, no capturas",
+      "title": "Los temporizadores reales, aquí mismo.",
+      "subtitle": "Son los componentes reales de la app. Dale a play — activa sync y controla ambos desde uno.",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "exams": {
+      "eyebrow": "// Hecha para tu examen",
+      "title": "Lo que sea que estés preparando.",
+      "jee": {
+        "title": "JEE y NEET",
+        "desc": "Registra bloques largos de estudio, horas por materia y constancia de repaso en Physics, Chemistry, Maths y Biology."
+      },
+      "boards": {
+        "title": "CBSE y exámenes finales",
+        "desc": "Planifica tu horario, divide el temario en tareas y cumple tus objetivos diarios antes del examen."
+      },
+      "college": {
+        "title": "Universidad",
+        "desc": "Entregas, fechas límite, notas y hábitos — todo para los exámenes de semestre en un solo lugar."
+      },
+      "upsc": {
+        "title": "UPSC y oposiciones",
+        "desc": "Mide las horas reales de estudio a lo largo de meses de preparación. Las rachas mantienen tu rutina honesta."
+      }
+    },
+    "features": {
+      "eyebrow": "// Por qué los estudiantes se cambian",
+      "title": "Hecha para la vida de estudio en India.",
+      "offline": {
+        "title": "Funciona offline",
+        "desc": "¿Wi-Fi de residencia irregular o de viaje? Todo sigue funcionando y sincroniza después."
+      },
+      "free": {
+        "title": "Completamente gratis",
+        "desc": "Sin anuncios, sin suscripciones, sin paywall. Open source con licencia MIT."
+      },
+      "light": {
+        "title": "Ligera en tu teléfono",
+        "desc": "Corre en el navegador de cualquier Android — sin descarga pesada, sin comerse tu almacenamiento."
+      },
+      "streaks": {
+        "title": "Rachas y analíticas",
+        "desc": "Mira tus horas reales por materia y mantén viva tu racha diaria de estudio."
+      }
+    },
+    "faq": {
+      "eyebrow": "// Preguntas",
+      "title": "Preguntas frecuentes.",
+      "items": [
+        {
+          "q": "¿UniTracker es gratis para estudiantes de India?",
+          "a": "Sí — completamente gratis, para siempre. Sin anuncios, sin suscripciones y sin funciones tras un paywall. Es open source (licencia MIT)."
+        },
+        {
+          "q": "¿Puedo usarla para preparar JEE o NEET?",
+          "a": "Claro. Usa el temporizador Pomodoro para bloques de estudio enfocados, crea tareas por capítulo y revisa las analíticas para ver cuántas horas reales dedicas a Physics, Chemistry, Maths o Biology cada semana."
+        },
+        {
+          "q": "¿Funciona sin internet?",
+          "a": "Sí. UniTracker es offline-first — cada función trabaja sin conexión y sincroniza con la nube cuando vuelves a estar online. Ideal para residencias y zonas con poca conectividad."
+        },
+        {
+          "q": "¿Necesito descargar una app?",
+          "a": "No hace falta descargar nada — funciona en el navegador de cualquier teléfono u ordenador. También puedes instalarla como PWA desde Chrome para una experiencia tipo app."
+        },
+        {
+          "q": "¿En qué se diferencia de otras apps de estudio?",
+          "a": "Todo está en un solo lugar: Pomodoro, temporizador de estudio, tareas, calendario, notas, hábitos y analíticas. Nada te distrae — sin feed, sin anuncios, sin insistencia de premium."
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "// Empieza ahora",
+      "title": "Registrando en 30 segundos.",
+      "subtitle": "Gratis para siempre · Sin anuncios · Open source",
+      "button": "Empezar"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "home": "Página en inglés",
+      "issues": "Issues",
+      "getStarted": "Empezar"
+    }
+  },
+  "landing": {
+    "nav": {
+      "github": "GitHub",
+      "getStarted": "Empezar"
+    },
+    "hero": {
+      "eyebrow": "// Gratis y open source",
+      "title1": "Una app para",
+      "title2": "tu tiempo de estudio.",
+      "subtitle": "Pomodoro, tareas, calendario y analíticas — diseñada para no estorbar. Funciona offline, sincroniza cuando vuelves.",
+      "cta": "Empezar gratis"
+    },
+    "timers": {
+      "eyebrow": "// En vivo, no capturas",
+      "title": "Los temporizadores reales, aquí mismo.",
+      "subtitle": "Son los componentes reales de la app. Dale a play — activa sync y controla ambos desde uno.",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "features": {
+      "eyebrow": "// Todo en un lugar",
+      "title": "Menos malabares, más estudio.",
+      "pomodoro": {
+        "label": "Pomodoro y temporizador de estudio",
+        "desc": "Sesiones de enfoque que se registran solas."
+      },
+      "tasks": {
+        "label": "Tareas",
+        "desc": "Fechas límite, prioridades, estados."
+      },
+      "calendar": {
+        "label": "Calendario",
+        "desc": "Vistas semana y mes, arrastrar y soltar."
+      },
+      "analytics": {
+        "label": "Analíticas",
+        "desc": "Mira a dónde van realmente tus horas."
+      },
+      "notes": {
+        "label": "Notas y hábitos",
+        "desc": "Notas en Markdown más rachas diarias."
+      },
+      "offline": {
+        "label": "Offline-first",
+        "desc": "Todo funciona sin internet."
+      }
+    },
+    "cta": {
+      "eyebrow": "// Empieza ahora",
+      "title": "Registrando en 30 segundos.",
+      "subtitle": "Gratis para siempre · Sin anuncios · Open source",
+      "button": "Empezar"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "india": "India",
+      "issues": "Issues",
+      "getStarted": "Empezar"
+    }
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "edit": "Editar",
+    "today": "Hoy",
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "overdue": "Vencida",
+    "noDueDate": "Sin fecha límite"
+  },
+  "nav": {
+    "planning": "Planificación",
+    "tasks": "Tareas",
+    "study": "Estudio",
+    "journal": "Diario",
+    "notes": "Notas",
+    "analytics": "Analíticas",
+    "settings": "Ajustes",
+    "home": "Inicio de UniTracker"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "tabs": {
+      "appearance": "Apariencia",
+      "account": "Cuenta",
+      "data": "Datos",
+      "whatsNew": "Novedades",
+      "about": "Acerca de"
+    },
+    "theme": {
+      "label": "Tema",
+      "light": "Claro",
+      "system": "Sistema",
+      "dark": "Oscuro"
+    },
+    "accentColor": "Color de acento",
+    "custom": "Personalizado",
+    "timezone": "Zona horaria",
+    "language": "Idioma",
+    "account": {
+      "userProfile": "Perfil de usuario",
+      "addFriends": "Añadir amigos",
+      "manageFriends": "Gestionar amigos",
+      "notSignedIn": "Sin sesión",
+      "signInToSync": "Inicia sesión para sincronizar tus datos",
+      "googleAccount": "Cuenta de Google",
+      "loggedIn": "Sesión iniciada",
+      "logIn": "Entrar",
+      "logOut": "Salir"
+    },
+    "data": {
+      "manageAssignments": "Gestionar asignaturas",
+      "manageSessions": "Gestionar sesiones de estudio",
+      "manageCompletedTasks": "Gestionar tareas completadas"
+    },
+    "changelog": {
+      "added": "Añadido",
+      "improved": "Mejorado",
+      "fixed": "Corregido",
+      "comingSoon": "Próximamente"
+    },
+    "about": {
+      "theStory": "La historia",
+      "aboutMe": "Sobre mí",
+      "getInTouch": "Contacto"
+    }
+  },
+  "session": {
+    "loginToSync": "Inicia sesión para sincronizar tus sesiones",
+    "monthView": {
+      "title": "Vista del mes",
+      "today": "Hoy"
+    },
+    "pendingTasks": {
+      "title": "Tareas pendientes",
+      "newTask": "Nueva tarea",
+      "newTaskTooltip": "Crea una tarea nueva en tu workspace actual.",
+      "viewTasks": "Ver tareas",
+      "viewTasksTooltip": "Abre Tareas para gestionar las tareas de tu workspace.",
+      "restoreIgnored": "Restaurar ignoradas ({{count}})",
+      "restoreIgnoredTooltip": "Vuelve a mostrar las tareas ignoradas de este workspace. Su estado no ha cambiado.",
+      "error": "No se pudieron actualizar las tareas. Mostrando las disponibles.",
+      "retry": "Reintentar cargar tareas",
+      "retryTooltip": "Intenta actualizar la lista de tareas otra vez.",
+      "loading": "Cargando tareas…",
+      "allCaughtUp": "Estás al día. No hay tareas pendientes.",
+      "allIgnored": "Todas las tareas pendientes están ignoradas. Restauralas arriba para verlas de nuevo.",
+      "completeAria": "Completar {{title}}",
+      "editAria": "Editar {{title}}",
+      "ignoreAria": "Ignorar {{title}}",
+      "deleteAria": "Eliminar {{title}}",
+      "completeTooltip": "Marca esta tarea como completada. Saldrá de la lista de pendientes.",
+      "editTooltip": "Abre el editor de tareas para modificar sus detalles o fecha límite.",
+      "modifyTooltip": "Modifica el título, detalles, estado o fecha límite de la tarea.",
+      "ignoreTooltip": "Oculta esta tarea solo de Tareas pendientes. No se elimina ni se completa. Usa Restaurar ignoradas para verla otra vez.",
+      "deleteTooltip": "Elimina esta tarea. Se te pedirá confirmar antes de borrarla."
+    },
+    "scratchpad": {
+      "title": "Bloc de notas",
+      "insertCheckbox": "Insertar checkbox",
+      "clearNote": "Borrar nota",
+      "placeholder": "¿Qué tienes en mente? Suéltalo aquí…",
+      "taskPlaceholder": "Tarea…",
+      "markDone": "Marcar como hecha",
+      "markNotDone": "Marcar como no hecha",
+      "lines_one": "{{count}} línea",
+      "lines_other": "{{count}} líneas"
+    },
+    "noise": {
+      "title": "Generador de ruido",
+      "settings": "Ajustes del generador de ruido",
+      "playAll": "Reproducir todo",
+      "pauseAll": "Pausar todo",
+      "modalTitle": "Ajustes de ruido"
+    }
+  }
+}

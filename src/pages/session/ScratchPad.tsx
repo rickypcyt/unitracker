@@ -2,6 +2,7 @@ import { CheckCircle2, CheckSquare, Circle, Eraser, StickyNote } from "lucide-re
 import { memo, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/utils/supabaseClient";
 
 const STORAGE_KEY = "unitracker.scratchpad";
@@ -41,6 +42,7 @@ const parseLine = (line: string) => {
 
 const ScratchPad = memo(() => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [text, setText] = useState(loadNote);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const lastFocusedIndexRef = useRef(0);
@@ -169,30 +171,30 @@ const ScratchPad = memo(() => {
             <StickyNote size={18} className="text-[var(--accent-primary)]" />
           </div>
           <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
-            Scratchpad
+            {t('session.scratchpad.title')}
           </h3>
         </div>
         <button
           onClick={insertCheckbox}
           className="justify-self-end sm:justify-self-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/10 transition-colors"
-          title="Insert checkbox"
-          aria-label="Insert checkbox"
+          title={t('session.scratchpad.insertCheckbox')}
+          aria-label={t('session.scratchpad.insertCheckbox')}
         >
           <CheckSquare size={15} />
-          Insert checkbox
+          {t('session.scratchpad.insertCheckbox')}
         </button>
         <div className="col-span-2 sm:col-span-1 flex items-center gap-2 justify-self-end">
           {lineCount > 0 && (
             <span className="text-xs text-[var(--text-secondary)] tabular-nums">
-              {lineCount} line{lineCount !== 1 ? "s" : ""}
+              {t('session.scratchpad.lines', { count: lineCount })}
             </span>
           )}
           {text && (
             <button
               onClick={() => handleChange("")}
               className="p-2 rounded-full text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
-              title="Clear note"
-              aria-label="Clear note"
+              title={t('session.scratchpad.clearNote')}
+              aria-label={t('session.scratchpad.clearNote')}
             >
               <Eraser size={18} />
             </button>
@@ -207,7 +209,7 @@ const ScratchPad = memo(() => {
             value=""
             onChange={(e) => handleChange(e.target.value)}
             onFocus={() => { lastFocusedIndexRef.current = 0; }}
-            placeholder="What's on your mind? Dump it here…"
+            placeholder={t('session.scratchpad.placeholder')}
             spellCheck={false}
             className="scratchpad-textarea w-full bg-transparent text-base leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none"
           />
@@ -221,7 +223,7 @@ const ScratchPad = memo(() => {
                     type="button"
                     onClick={() => toggleCheckbox(i, parsed)}
                     className="flex-shrink-0 cursor-pointer flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-110 focus:outline-none"
-                    aria-label={parsed.checked ? "Mark as not done" : "Mark as done"}
+                    aria-label={parsed.checked ? t('session.scratchpad.markNotDone') : t('session.scratchpad.markDone')}
                   >
                     {parsed.checked ? (
                       <CheckCircle2 size={19} strokeWidth={2.2} className="text-[var(--accent-primary)]" />
@@ -243,7 +245,7 @@ const ScratchPad = memo(() => {
                     onKeyDown={(e) => handleLineKeyDown(e, i, parsed)}
                     onFocus={() => { lastFocusedIndexRef.current = i; }}
                     spellCheck={false}
-                    placeholder="Task…"
+                    placeholder={t('session.scratchpad.taskPlaceholder')}
                     className={`scratchpad-textarea flex-1 min-w-0 bg-transparent text-base leading-relaxed focus:outline-none placeholder:text-[var(--text-secondary)]/50 ${
                       parsed.checked
                         ? "text-[var(--text-secondary)]"
@@ -267,7 +269,7 @@ const ScratchPad = memo(() => {
                 onKeyDown={(e) => handleLineKeyDown(e, i, parsed)}
                 onFocus={() => { lastFocusedIndexRef.current = i; }}
                 spellCheck={false}
-                placeholder={i === 0 ? "What's on your mind? Dump it here…" : ""}
+                placeholder={i === 0 ? t('session.scratchpad.placeholder') : ''}
                 className="scratchpad-textarea w-full bg-transparent text-base leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none py-0.5"
               />
             );

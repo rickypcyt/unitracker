@@ -8,6 +8,7 @@ import {
   Waves,
 } from "lucide-react";
 import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import BaseModal from "@/modals/shared/BaseModal";
 import ReactSlider from "react-slider";
@@ -211,6 +212,7 @@ function NoiseSettingsModal({
   sounds: ReturnType<typeof useNoise>["sounds"];
   setMaxVolume: (index: number, maxVolume: number) => void;
 }) {
+  const { t } = useTranslation();
   const [selectedPresets, setSelectedPresets] = useState<[number, number, number]>([0, 0, 0]);
 
   // Tipos para los presets
@@ -338,7 +340,7 @@ function NoiseSettingsModal({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Noise Settings"
+      title={t('session.noise.modalTitle')}
       maxWidth="max-w-lg"
     >
       <div className="space-y-5">
@@ -432,6 +434,7 @@ function NoiseSettingsModal({
 // NoiseGenerator main
 // -------------------------
 export default function NoiseGenerator() {
+  const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
     sounds,
@@ -498,7 +501,7 @@ export default function NoiseGenerator() {
               <Headphones size={18} className="text-[var(--accent-primary)]" />
             </div>
             <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
-              Noise Generator
+              {t('session.noise.title')}
             </h3>
           </div>
 
@@ -510,18 +513,18 @@ export default function NoiseGenerator() {
                 ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
                 : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
             }`}
-            aria-label={anySoundPlaying ? "Pause all sounds" : "Play all sounds"}
+            aria-label={anySoundPlaying ? t('session.noise.pauseAll') : t('session.noise.playAll')}
           >
             {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
             <span className="hidden sm:inline">
-              {anySoundPlaying ? "Pause all" : "Play all"}
+              {anySoundPlaying ? t('session.noise.pauseAll') : t('session.noise.playAll')}
             </span>
           </button>
 
           <button
             className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
             onClick={() => setIsSettingsOpen(true)}
-            aria-label="Noise generator settings"
+            aria-label={t('session.noise.settings')}
           >
             <SlidersHorizontal size={20} />
           </button>

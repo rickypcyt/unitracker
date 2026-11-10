@@ -10,6 +10,7 @@ import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
 import { demoTasks } from '@/utils/demoData';
 import ActionTooltip from '@/components/ui/ActionTooltip';
 import type { Task } from '@/schemas/task';
+import { useTranslation } from 'react-i18next';
 
 const getDueDate = (task: Task) => {
   const value = task.deadline || task.due_date;
@@ -24,6 +25,7 @@ export const getPendingTasks = (tasks: Task[]) => tasks
 
 const PendingTasks = () => {
   const { isLoggedIn, isAuthLoading, user } = useAuth();
+  const { t } = useTranslation();
   const { busy, editTask, toggleTask, requestDelete, modals } = useSessionTaskActions('pending');
   const [ignoredByUser, setIgnoredByUser] = useLocalStorage<Record<string, string[]>>('session.pendingTasks.ignored', {});
   const userKey = user?.id || 'demo';
@@ -65,41 +67,41 @@ const PendingTasks = () => {
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <ListTodo size={18} className="text-[var(--accent-primary)]" />
           </div>
-          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">Pending Tasks</h3>
+          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
           <span className="shrink-0 text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
         </div>
         <div className="ml-auto flex flex-row-reverse sm:flex-row items-center gap-2 shrink-0">
-          <ActionTooltip content="Create a new task in your current workspace.">
-            <button onClick={() => editTask(null)} aria-label="New task" className="min-h-11 min-w-11 flex items-center justify-center gap-1.5 rounded-lg px-2 sm:px-3 text-sm font-semibold bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20">
-              <Plus size={18} /><span className="hidden sm:inline">New task</span>
+          <ActionTooltip content={t('session.pendingTasks.newTaskTooltip')}>
+            <button onClick={() => editTask(null)} aria-label={t('session.pendingTasks.newTask')} className="min-h-11 min-w-11 flex items-center justify-center gap-1.5 rounded-lg px-2 sm:px-3 text-sm font-semibold bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20">
+              <Plus size={18} /><span className="hidden sm:inline">{t('session.pendingTasks.newTask')}</span>
             </button>
           </ActionTooltip>
-          <ActionTooltip content="Open Tasks to manage the tasks in your workspace.">
-            <button onClick={openTasks} aria-label="View all tasks" className="min-h-11 flex items-center gap-1 text-sm text-[var(--accent-primary)] shrink-0">
-              <span className="hidden sm:inline">View tasks</span><ArrowRight size={18} />
+          <ActionTooltip content={t('session.pendingTasks.viewTasksTooltip')}>
+            <button onClick={openTasks} aria-label={t('session.pendingTasks.viewTasks')} className="min-h-11 flex items-center gap-1 text-sm text-[var(--accent-primary)] shrink-0">
+              <span className="hidden sm:inline">{t('session.pendingTasks.viewTasks')}</span><ArrowRight size={18} />
             </button>
           </ActionTooltip>
         </div>
       </div>
       {hiddenCount > 0 && (
-        <ActionTooltip content="Show the ignored tasks in this workspace again. Their status has not changed.">
-          <button onClick={restoreIgnored} className="mb-3 min-h-11 text-xs text-[var(--accent-primary)]">Restore ignored ({hiddenCount})</button>
+        <ActionTooltip content={t('session.pendingTasks.restoreIgnoredTooltip')}>
+          <button onClick={restoreIgnored} className="mb-3 min-h-11 text-xs text-[var(--accent-primary)]">{t('session.pendingTasks.restoreIgnored', { count: hiddenCount })}</button>
         </ActionTooltip>
       )}
       {isLoggedIn && error && (
         <div role="alert" className="flex items-center justify-between gap-2 text-sm text-[var(--text-secondary)] mb-3">
-          <span>Could not refresh tasks. Showing available tasks.</span>
-          <ActionTooltip content="Try refreshing the task list again.">
-            <button onClick={() => void fetchTasks(undefined, true)} aria-label="Retry loading tasks" className="p-3 shrink-0"><RefreshCw size={16} /></button>
+          <span>{t('session.pendingTasks.error')}</span>
+          <ActionTooltip content={t('session.pendingTasks.retryTooltip')}>
+            <button onClick={() => void fetchTasks(undefined, true)} aria-label={t('session.pendingTasks.retry')} className="p-3 shrink-0"><RefreshCw size={16} /></button>
           </ActionTooltip>
         </div>
       )}
       {isAuthLoading || (isLoggedIn && loading && pending.length === 0) ? (
-        <p role="status" className="py-6 text-center text-sm text-[var(--text-secondary)]">Loading tasks…</p>
+        <p role="status" className="py-6 text-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
       ) : pending.length === 0 ? (
         <div className="py-6 flex flex-col items-center gap-2 text-[var(--text-secondary)]">
           <CheckCircle2 size={24} className="text-[var(--accent-primary)]" />
-          <p className="text-sm">{hiddenCount ? 'All pending tasks are ignored. Restore them above to show them again.' : "You're all caught up. No pending tasks."}</p>
+          <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
         <ul className="max-h-80 overflow-y-auto custom-scrollbar space-y-2">
@@ -108,30 +110,30 @@ const PendingTasks = () => {
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
             return (
               <li key={task.id} className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-2 py-2">
-                <ActionTooltip content="Mark this task as completed. It will leave the pending list.">
-                  <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={`Complete ${task.title}`} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
+                <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
+                  <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
                 <div className="min-w-0 flex-1">
                   {task.assignment && (
                     <span className="block mb-1 text-xs font-semibold leading-tight text-[var(--accent-primary)] capitalize truncate">{task.assignment}</span>
                   )}
-                  <ActionTooltip content="Open the task editor to modify its details or due date.">
+                  <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
                     <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
                   </ActionTooltip>
                   <div className="mt-0.5 flex items-center justify-between gap-1">
                     <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
                       <CalendarDays size={13} />
-                      {due ? `${overdue ? 'Overdue · ' : ''}${isToday(due) ? 'Today' : format(due, 'MMM d, yyyy')}` : 'No due date'}
+                      {due ? `${overdue ? `${t('common.overdue')} · ` : ''}${isToday(due) ? t('common.today') : format(due, 'MMM d, yyyy')}` : t('common.noDueDate')}
                     </span>
                     <div className="flex items-center shrink-0">
-                      <ActionTooltip content="Modify the task title, details, status or due date.">
-                        <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={`Edit ${task.title}`} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                      <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
+                        <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
                       </ActionTooltip>
-                      <ActionTooltip content="Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.">
-                        <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={`Ignore ${task.title}`} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                      <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
+                        <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
                       </ActionTooltip>
-                      <ActionTooltip content="Delete this task. You will be asked to confirm before it is removed.">
-                        <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={`Delete ${task.title}`} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+                      <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
+                        <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
                       </ActionTooltip>
                     </div>
                   </div>

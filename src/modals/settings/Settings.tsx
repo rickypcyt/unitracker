@@ -3,6 +3,7 @@ import {
   Clock,
   Database,
   Info,
+  Languages,
   List,
   Monitor,
   Moon,
@@ -13,6 +14,9 @@ import {
   Users,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import LanguageToggle from "@/components/ui/LanguageToggle";
 
 import { ACCENT_COLORS } from "@/utils/theme";
 import AddFriendModal from "@/modals/friends/AddFriendModal";
@@ -53,12 +57,12 @@ interface SettingsContentProps {
 
 type Tab = "appearance" | "account" | "data" | "whatsNew" | "about";
 
-const TAB_CONFIG: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "account", label: "Account", icon: User },
-  { id: "data", label: "Data", icon: Database },
-  { id: "whatsNew", label: "What's New", icon: Sparkles },
-  { id: "about", label: "About", icon: Info },
+const TAB_CONFIG: { id: Tab; icon: React.ComponentType<any> }[] = [
+  { id: "appearance", icon: Palette },
+  { id: "account", icon: User },
+  { id: "data", icon: Database },
+  { id: "whatsNew", icon: Sparkles },
+  { id: "about", icon: Info },
 ];
 
 const SettingsContent: React.FC<SettingsContentProps> = ({
@@ -89,6 +93,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   const [showSessionsModal, setShowSessionsModal] = useState(false);
   const [showCompletedTasksModal, setShowCompletedTasksModal] = useState(false);
   const { hasNewChanges, markAsSeen } = useChangelog();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (activeTab === "whatsNew" && markAsSeen) {
@@ -110,14 +115,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
     }
   };
 
-  const selectedAccentName = ACCENT_COLORS.find((c) => c.value === accentPalette)?.name || "Custom";
+  const selectedAccentName = ACCENT_COLORS.find((c) => c.value === accentPalette)?.name || t("settings.custom");
 
   return (
     <>
         <div className="flex flex-col w-full min-w-0 overflow-hidden" style={{ height: 'min(85dvh, 42rem)' }}>
           {/* Tab bar */}
           <div role="group" aria-label="Settings sections" className="flex shrink-0 items-stretch sm:items-center sm:justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-[var(--border-primary)]/50">
-            {TAB_CONFIG.map(({ id, label, icon: Icon }) => (
+            {TAB_CONFIG.map(({ id, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
@@ -129,7 +134,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 }`}
               >
                 <Icon size={16} className="shrink-0" />
-                <span className="whitespace-nowrap text-center">{label}</span>
+                <span className="whitespace-nowrap text-center">{t(`settings.tabs.${id}`)}</span>
                 {id === "whatsNew" && hasNewChanges && (
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
                 )}
@@ -145,7 +150,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     {themePreference === "auto" ? <Monitor size={18} className="text-[var(--text-secondary)]" /> : currentTheme === "dark" ? <Moon size={18} className="text-[var(--text-secondary)]" /> : <Sun size={18} className="text-[var(--text-secondary)]" />}
-                    <span className="text-sm font-medium text-[var(--text-primary)]">Theme</span>
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.theme.label")}</span>
                   </div>
                   <div className="relative">
                     <div className="w-full h-11 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
@@ -168,7 +173,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         aria-label="Light theme"
                       >
                         <Sun size={17} className={themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"}`}>Light</span>
+                        <span className={`text-sm ${themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.light")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("auto")}
@@ -176,7 +181,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         aria-label="System theme"
                       >
                         <Monitor size={17} className={themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"}`}>System</span>
+                        <span className={`text-sm ${themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.system")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("dark")}
@@ -184,7 +189,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         aria-label="Dark theme"
                       >
                         <Moon size={17} className={themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"}`}>Dark</span>
+                        <span className={`text-sm ${themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.dark")}</span>
                       </button>
                     </div>
                   </div>
@@ -195,7 +200,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Palette size={18} className="text-[var(--text-secondary)]" />
-                      <span className="text-sm font-medium text-[var(--text-primary)]">Accent Color</span>
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.accentColor")}</span>
                     </div>
                     <span className="text-xs text-[var(--text-secondary)]">{selectedAccentName}</span>
                   </div>
@@ -218,11 +223,20 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   </div>
                 </div>
 
+                {/* Language */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Languages size={18} className="text-[var(--text-secondary)]" />
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.language")}</span>
+                  </div>
+                  <LanguageToggle langs={["en", "es", "hi"]} />
+                </div>
+
                 {/* Timezone */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Clock size={18} className="text-[var(--text-secondary)]" />
-                    <span className="text-sm font-medium text-[var(--text-primary)]">Timezone</span>
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.timezone")}</span>
                   </div>
                   <TimezoneSelector showCurrentTime={true} className="w-full" />
                 </div>
@@ -238,21 +252,21 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <User size={20} className="text-[var(--accent-primary)]" />
-                    User Profile
+                    {t("settings.account.userProfile")}
                   </button>
                   <button
                     onClick={() => setShowAddFriendModal(true)}
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <Users size={20} className="text-[var(--accent-primary)]" />
-                    Add Friends
+                    {t("settings.account.addFriends")}
                   </button>
                   <button
                     onClick={() => setShowFriendsModal(true)}
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <Users size={20} className="text-[var(--accent-primary)]" />
-                    Manage Friends
+                    {t("settings.account.manageFriends")}
                   </button>
                 </div>
 
@@ -263,10 +277,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                      {isLoggedIn ? user?.email || "Logged in" : "Not signed in"}
+                      {isLoggedIn ? user?.email || t("settings.account.loggedIn") : t("settings.account.notSignedIn")}
                     </p>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {isLoggedIn ? "Google account" : "Sign in to sync your data"}
+                      {isLoggedIn ? t("settings.account.googleAccount") : t("settings.account.signInToSync")}
                     </p>
                   </div>
                   {isLoggedIn ? (
@@ -274,14 +288,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                       onClick={handleLogout}
                       className="px-3 py-1.5 text-xs font-medium text-red-500 border-2 border-red-500/30 rounded-lg hover:bg-red-500/10 transition-colors"
                     >
-                      Log Out
+                      {t("settings.account.logOut")}
                     </button>
                   ) : (
                     <button
                       onClick={loginWithGoogle}
                       className="px-3 py-1.5 text-xs font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)]/30 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
                     >
-                      Log In
+                      {t("settings.account.logIn")}
                     </button>
                   )}
                 </div>
@@ -296,21 +310,21 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <List size={20} className="text-[var(--accent-primary)]" />
-                    Manage Assignments
+                    {t("settings.data.manageAssignments")}
                   </button>
                   <button
                     onClick={() => setShowSessionsModal(true)}
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <Clock size={20} className="text-[var(--accent-primary)]" />
-                    Manage Study Sessions
+                    {t("settings.data.manageSessions")}
                   </button>
                   <button
                     onClick={() => setShowCompletedTasksModal(true)}
                     className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
                     <CheckCircle size={20} className="text-[var(--accent-primary)]" />
-                    Manage Completed Tasks
+                    {t("settings.data.manageCompletedTasks")}
                   </button>
                 </div>
 
@@ -403,19 +417,19 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             {activeTab === "about" && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">The Story</h3>
+                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.theStory")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     UniTracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">About Me</h3>
+                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.aboutMe")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                     Hi! I'm Ricky, the creator of UniTracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">Get in Touch</h3>
+                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.getInTouch")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-2">
                     I'm always open to feedback, suggestions, or just a friendly chat about the app. Whether you've found a bug, have a feature request, or want to share your experience, I'd love to hear from you!
                   </p>
@@ -462,13 +476,14 @@ const Settings: React.FC<SettingsProps> = ({
   onRemoveFriend,
   currentUserId,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Settings"
+      title={t("settings.title")}
       maxWidth="max-w-2xl"
       padding="none"
       className="overflow-hidden"

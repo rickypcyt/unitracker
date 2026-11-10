@@ -1,0 +1,281 @@
+{
+  "india": {
+    "nav": {
+      "getStarted": "Get started",
+      "github": "GitHub"
+    },
+    "hero": {
+      "eyebrow": "// Free study app for Indian students",
+      "title": "Study smarter for JEE, NEET & boards.",
+      "subtitle": "Pomodoro timer, task manager, calendar and study analytics — built for long preparation hours. Free forever, works offline on any phone.",
+      "cta": "Start for free",
+      "share": "Share on WhatsApp",
+      "shareMessage": "Found this free study app — Pomodoro timer, tasks & analytics for JEE/NEET/boards prep. No ads, works offline: https://unitracker.me/india"
+    },
+    "timers": {
+      "eyebrow": "// Live, not screenshots",
+      "title": "The real timers, right here.",
+      "subtitle": "These are the actual components from the app. Press play — enable sync and control both from one.",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "exams": {
+      "eyebrow": "// Built for your exam",
+      "title": "Whatever you're preparing for.",
+      "jee": {
+        "title": "JEE & NEET",
+        "desc": "Track long study blocks, subject-wise hours, and revision consistency across Physics, Chemistry, Maths and Biology."
+      },
+      "boards": {
+        "title": "CBSE & board exams",
+        "desc": "Plan your timetable, break the syllabus into tasks, and hit your daily targets before the exam date."
+      },
+      "college": {
+        "title": "College & university",
+        "desc": "Assignments, deadlines, notes and habits — everything for semester exams in one place."
+      },
+      "upsc": {
+        "title": "UPSC & govt exams",
+        "desc": "Measure real study hours over months of preparation. Streaks keep your routine honest."
+      }
+    },
+    "features": {
+      "eyebrow": "// Why students switch",
+      "title": "Made for Indian study life.",
+      "offline": {
+        "title": "Works offline",
+        "desc": "Patchy hostel Wi-Fi or travelling? Everything keeps working and syncs later."
+      },
+      "free": {
+        "title": "Completely free",
+        "desc": "No ads, no subscriptions, no paywall. Open source under the MIT license."
+      },
+      "light": {
+        "title": "Light on your phone",
+        "desc": "Runs in the browser on any Android — no big download, no storage eaten."
+      },
+      "streaks": {
+        "title": "Streaks & analytics",
+        "desc": "See your real hours per subject and keep your daily study streak alive."
+      }
+    },
+    "faq": {
+      "eyebrow": "// Questions",
+      "title": "Frequently asked.",
+      "items": [
+        {
+          "q": "Is UniTracker free for students in India?",
+          "a": "Yes — completely free, forever. No ads, no subscriptions, and no features locked behind a paywall. It's open source (MIT license)."
+        },
+        {
+          "q": "Can I use it for JEE or NEET preparation?",
+          "a": "Absolutely. Use the Pomodoro timer for focused study blocks, create tasks per chapter, and check analytics to see how many real hours you give to Physics, Chemistry, Maths or Biology each week."
+        },
+        {
+          "q": "Does it work without internet?",
+          "a": "Yes. UniTracker is offline-first — every feature works without a connection and syncs to the cloud when you're back online. Ideal for hostels and low-connectivity areas."
+        },
+        {
+          "q": "Do I need to download an app?",
+          "a": "No download needed — it runs in your browser on any phone or laptop. You can also install it as a PWA from Chrome for an app-like experience."
+        },
+        {
+          "q": "How is it different from other study apps?",
+          "a": "Everything is in one place: Pomodoro, study timer, tasks, calendar, notes, habits and analytics. Nothing distracts you — no feed, no ads, no premium nagging."
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "// Start now",
+      "title": "Tracking in 30 seconds.",
+      "subtitle": "Free forever · No ads · Open source",
+      "button": "Get started"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "home": "English home",
+      "issues": "Issues",
+      "getStarted": "Get started"
+    }
+  },
+  "landing": {
+    "nav": {
+      "github": "GitHub",
+      "getStarted": "Get started"
+    },
+    "hero": {
+      "eyebrow": "// Free & open source",
+      "title1": "One app for",
+      "title2": "your study time.",
+      "subtitle": "Pomodoro, tasks, calendar, and analytics — designed to stay out of your way. Works offline, syncs when you're back.",
+      "cta": "Start for free"
+    },
+    "timers": {
+      "eyebrow": "// Live, not screenshots",
+      "title": "The real timers, right here.",
+      "subtitle": "These are the actual components from the app. Press play — enable sync and control both from one.",
+      "studyTimer": "study-timer",
+      "pomodoro": "pomodoro",
+      "countdown": "countdown"
+    },
+    "features": {
+      "eyebrow": "// Everything in one place",
+      "title": "Less juggling, more studying.",
+      "pomodoro": {
+        "label": "Pomodoro & study timer",
+        "desc": "Focus sessions that log themselves."
+      },
+      "tasks": {
+        "label": "Tasks",
+        "desc": "Deadlines, priorities, statuses."
+      },
+      "calendar": {
+        "label": "Calendar",
+        "desc": "Week and month views, drag-and-drop."
+      },
+      "analytics": {
+        "label": "Analytics",
+        "desc": "See where your hours actually go."
+      },
+      "notes": {
+        "label": "Notes & habits",
+        "desc": "Markdown notes plus daily streaks."
+      },
+      "offline": {
+        "label": "Offline-first",
+        "desc": "Everything works without internet."
+      }
+    },
+    "cta": {
+      "eyebrow": "// Start now",
+      "title": "Tracking in 30 seconds.",
+      "subtitle": "Free forever · No ads · Open source",
+      "button": "Get started"
+    },
+    "footer": {
+      "copyright": "unitracker © 2026 · MIT",
+      "india": "India",
+      "issues": "Issues",
+      "getStarted": "Get started"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "edit": "Edit",
+    "today": "Today",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "overdue": "Overdue",
+    "noDueDate": "No due date"
+  },
+  "nav": {
+    "planning": "Planning",
+    "tasks": "Tasks",
+    "study": "Study",
+    "journal": "Journal",
+    "notes": "Notes",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "home": "UniTracker home"
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "appearance": "Appearance",
+      "account": "Account",
+      "data": "Data",
+      "whatsNew": "What's New",
+      "about": "About"
+    },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "system": "System",
+      "dark": "Dark"
+    },
+    "accentColor": "Accent Color",
+    "custom": "Custom",
+    "timezone": "Timezone",
+    "language": "Language",
+    "account": {
+      "userProfile": "User Profile",
+      "addFriends": "Add Friends",
+      "manageFriends": "Manage Friends",
+      "notSignedIn": "Not signed in",
+      "signInToSync": "Sign in to sync your data",
+      "googleAccount": "Google account",
+      "loggedIn": "Logged in",
+      "logIn": "Log In",
+      "logOut": "Log Out"
+    },
+    "data": {
+      "manageAssignments": "Manage Assignments",
+      "manageSessions": "Manage Study Sessions",
+      "manageCompletedTasks": "Manage Completed Tasks"
+    },
+    "changelog": {
+      "added": "Added",
+      "improved": "Improved",
+      "fixed": "Fixed",
+      "comingSoon": "Coming Soon"
+    },
+    "about": {
+      "theStory": "The Story",
+      "aboutMe": "About Me",
+      "getInTouch": "Get in Touch"
+    }
+  },
+  "session": {
+    "loginToSync": "Log in to sync your sessions",
+    "monthView": {
+      "title": "Month View",
+      "today": "Today"
+    },
+    "pendingTasks": {
+      "title": "Pending Tasks",
+      "newTask": "New task",
+      "newTaskTooltip": "Create a new task in your current workspace.",
+      "viewTasks": "View tasks",
+      "viewTasksTooltip": "Open Tasks to manage the tasks in your workspace.",
+      "restoreIgnored": "Restore ignored ({{count}})",
+      "restoreIgnoredTooltip": "Show the ignored tasks in this workspace again. Their status has not changed.",
+      "error": "Could not refresh tasks. Showing available tasks.",
+      "retry": "Retry loading tasks",
+      "retryTooltip": "Try refreshing the task list again.",
+      "loading": "Loading tasks…",
+      "allCaughtUp": "You're all caught up. No pending tasks.",
+      "allIgnored": "All pending tasks are ignored. Restore them above to show them again.",
+      "completeAria": "Complete {{title}}",
+      "editAria": "Edit {{title}}",
+      "ignoreAria": "Ignore {{title}}",
+      "deleteAria": "Delete {{title}}",
+      "completeTooltip": "Mark this task as completed. It will leave the pending list.",
+      "editTooltip": "Open the task editor to modify its details or due date.",
+      "modifyTooltip": "Modify the task title, details, status or due date.",
+      "ignoreTooltip": "Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.",
+      "deleteTooltip": "Delete this task. You will be asked to confirm before it is removed."
+    },
+    "scratchpad": {
+      "title": "Scratchpad",
+      "insertCheckbox": "Insert checkbox",
+      "clearNote": "Clear note",
+      "placeholder": "What's on your mind? Dump it here…",
+      "taskPlaceholder": "Task…",
+      "markDone": "Mark as done",
+      "markNotDone": "Mark as not done",
+      "lines_one": "{{count}} line",
+      "lines_other": "{{count}} lines"
+    },
+    "noise": {
+      "title": "Noise Generator",
+      "settings": "Noise generator settings",
+      "playAll": "Play all",
+      "pauseAll": "Pause all",
+      "modalTitle": "Noise Settings"
+    }
+  }
+}

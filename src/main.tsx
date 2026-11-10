@@ -3,6 +3,7 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "@/index.css";
+import "@/i18n";
 
 import * as Sentry from "@sentry/react";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";

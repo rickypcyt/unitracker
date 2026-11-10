@@ -2,7 +2,9 @@ import { ReactNode, createContext, useContext, useEffect, useState } from 'react
 
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabaseClient';
+import { getStoredReferral } from '@/utils/referral';
 import { toast } from 'react-toastify';
+import { track } from '@vercel/analytics';
 
 interface AuthContextType {
   user: User | null;
@@ -157,16 +159,40 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Asegura que el perfil existe en la tabla profiles
   async function ensureProfile(user: User) {
     if (!user?.id || !user?.email) return;
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', user.id)
-      .single();
-    if (!data && !error) {
+      .maybeSingle();
+    if (!data) {
+      // Ignora el error: el perfil puede ya existir por un trigger de DB
       await supabase.from('profiles').insert({
         id: user.id,
         email: user.email,
       });
+    }
+
+    // Signup attribution — fires once per session, only for fresh accounts
+    const isNewUser =
+      Date.now() - new Date(user.created_at).getTime() < 15 * 60 * 1000;
+    const trackedKey = `signup_tracked_${user.id}`;
+    if (!isNewUser || sessionStorage.getItem(trackedKey)) return;
+    sessionStorage.setItem(trackedKey, '1');
+
+    const referral = getStoredReferral();
+    track('signup', {
+      ref: referral?.ref ?? 'direct',
+      utm_source: referral?.utm_source ?? '',
+    });
+
+    // Persists only if the `referrer` column exists:
+    //   alter table public.profiles add column if not exists referrer text;
+    const referrer = referral?.ref ?? referral?.utm_source;
+    if (referrer) {
+      await supabase
+        .from('profiles')
+        .update({ referrer })
+        .eq('id', user.id);
     }
   }
 
