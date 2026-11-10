@@ -109,7 +109,7 @@ const PendingTasks = () => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
             return (
-              <li key={task.id} className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-2 py-2">
+              <li key={task.id} className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
                 <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
@@ -120,23 +120,23 @@ const PendingTasks = () => {
                   <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
                     <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
                   </ActionTooltip>
-                  <div className="mt-0.5 flex items-center justify-between gap-1">
+                  <div className="mt-0.5 flex items-center gap-1">
                     <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
                       <CalendarDays size={13} />
                       {due ? `${overdue ? `${t('common.overdue')} · ` : ''}${isToday(due) ? t('common.today') : format(due, 'MMM d, yyyy')}` : t('common.noDueDate')}
                     </span>
-                    <div className="flex items-center shrink-0">
-                      <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
-                        <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
-                      </ActionTooltip>
-                      <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
-                        <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
-                      </ActionTooltip>
-                      <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
-                        <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
-                      </ActionTooltip>
-                    </div>
                   </div>
+                </div>
+                <div className="flex items-center shrink-0">
+                  <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
+                    <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                  </ActionTooltip>
+                  <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
+                    <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                  </ActionTooltip>
+                  <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
+                    <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+                  </ActionTooltip>
                 </div>
               </li>
             );
