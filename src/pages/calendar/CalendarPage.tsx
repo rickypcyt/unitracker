@@ -65,7 +65,7 @@ const CalendarPage = memo(() => {
         <link rel="canonical" href="https://unitracker.me/calendar" />
       </Helmet>
       
-      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4">
+      <div className="w-full px-1 sm:px-2 md:px-2 lg:px-4 session-page mt-2 sm:mt-4 pb-24 sm:pb-4">
         <div className="w-full">
           {/* Calendar - month view only */}
           <div className="min-w-0">

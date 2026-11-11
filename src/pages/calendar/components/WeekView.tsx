@@ -268,7 +268,7 @@ const WeekView = ({
               return (
                 <div
                   key={i}
-                  className={`text-center py-1 px-0.5 sm:py-1.5 sm:px-1 rounded-lg transition-colors border-l border-[var(--border-primary)]/50 ${
+                  className={`text-center py-1 px-0.5 sm:py-1.5 sm:px-1 transition-colors border border-[var(--border-primary)] ${
                     isToday ? "bg-[var(--accent-primary)]/8" : ""
                   }`}
                   onContextMenu={(e) => onDayContextMenu(e, day)}
@@ -440,7 +440,7 @@ const WeekView = ({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="grid grid-cols-[1.75rem_repeat(7,minmax(0,1fr))] sm:grid-cols-8 gap-x-0.5 sm:gap-x-1 relative border-t border-[var(--border-primary)]/40"
+                className="grid grid-cols-[1.75rem_repeat(7,minmax(0,1fr))] sm:grid-cols-8 gap-x-0.5 sm:gap-x-1 relative"
               >
                 {/* Hour label */}
                 <div className="text-[10px] sm:text-xs text-[var(--text-secondary)] pt-1 pr-0.5 sm:pr-2 text-right font-medium tabular-nums">
@@ -506,7 +506,7 @@ const WeekView = ({
                       id={dropZoneKey}
                       className={`
                         cursor-pointer min-h-[60px] transition-colors relative overflow-hidden
-                        border-l border-[var(--border-primary)]/50
+                        border border-[var(--border-primary)]
                         ${
                           hoveredSlot?.key === dropZoneKey
                             ? "bg-[var(--accent-primary)]/10 ring-1 ring-[var(--accent-primary)]/25"

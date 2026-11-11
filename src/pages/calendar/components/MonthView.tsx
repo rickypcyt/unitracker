@@ -29,14 +29,14 @@ const MonthView = ({
   onDayContextMenu,
 }: MonthViewProps) => {
   return (
-    <div className="w-full mt-1 sm:mt-2 relative flex-1 min-h-0 overflow-y-auto">
-      <div className="h-full w-full max-w-4xl mx-auto flex flex-col min-h-[200px] sm:min-h-[240px]">
+    <div className="w-full mt-0 sm:mt-2 relative flex-1 min-h-0 overflow-y-auto">
+      <div className="h-full w-full max-w-4xl mx-auto flex flex-col min-h-[200px] sm:min-h-[240px] rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] p-2 sm:p-3">
         {/* Weekdays */}
         <div className="mb-1 grid w-full flex-shrink-0 grid-cols-7 justify-items-center">
           {weekdays.map((day, index) => (
             <div
               key={index}
-              className="flex h-7 w-full items-center justify-center text-center text-xs font-medium uppercase text-[var(--text-secondary)] sm:h-8 sm:text-sm"
+              className="flex h-5 w-full items-center justify-center text-center text-xs font-medium uppercase text-[var(--text-secondary)] sm:h-8 sm:text-sm"
             >
               {day}
             </div>
@@ -96,7 +96,7 @@ const MonthView = ({
                       : isToday
                       ? 'border-[var(--accent-primary)]/60 bg-[var(--bg-primary)]'
                       : dayObj.currentMonth
-                      ? 'border-[var(--border-primary)] bg-[var(--bg-primary)] hover:border-[var(--accent-primary)]/50 hover:shadow-md hover:-translate-y-0.5'
+                      ? 'border-[var(--border-primary)] bg-[var(--bg-primary)]'
                       : 'border-[var(--border-primary)]/30 bg-transparent opacity-40 shadow-none'
                   }
                 `}
@@ -111,9 +111,7 @@ const MonthView = ({
                 {/* iOS-style task badge, top-right corner */}
                 {taskCount > 0 && (
                   <div className="group/badge absolute top-1 right-1 sm:top-1.5 sm:right-1.5 z-10">
-                    <span className="flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-[18px] sm:h-[20px] px-1 rounded-full bg-[var(--accent-primary)] text-white text-[10px] sm:text-[11px] font-bold leading-none tabular-nums shadow-sm">
-                      {taskCount > 9 ? '9+' : taskCount}
-                    </span>
+                    <span className="block w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[var(--accent-primary)] shadow-sm" />
 
                     {/* Task titles tooltip on hover */}
                     <div className="pointer-events-none absolute top-full right-0 z-50 mt-1.5 hidden w-40 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-2 shadow-lg group-hover/badge:block">
@@ -140,7 +138,7 @@ const MonthView = ({
                 <div className="flex-1 flex flex-col items-center justify-center gap-1">
                   {/* Day number */}
                   <span
-                    className={`text-lg sm:text-xl font-medium leading-none
+                    className={`text-sm sm:text-xl font-medium leading-none
                       ${
                         isToday
                           ? 'text-[var(--accent-primary)] font-bold'

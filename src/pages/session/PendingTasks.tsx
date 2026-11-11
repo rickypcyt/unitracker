@@ -61,7 +61,7 @@ const PendingTasks = () => {
   };
 
   return (
-    <section aria-labelledby="pending-tasks-title" className="w-full rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+    <section aria-labelledby="pending-tasks-title" className="w-full h-full flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
       <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
@@ -97,19 +97,19 @@ const PendingTasks = () => {
         </div>
       )}
       {isAuthLoading || (isLoggedIn && loading && pending.length === 0) ? (
-        <p role="status" className="py-6 text-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
+        <p role="status" className="flex-1 py-6 flex items-center justify-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
       ) : pending.length === 0 ? (
-        <div className="py-6 flex flex-col items-center gap-2 text-[var(--text-secondary)]">
+        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)]">
           <CheckCircle2 size={24} className="text-[var(--accent-primary)]" />
           <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
-        <ul className="max-h-80 overflow-y-auto custom-scrollbar space-y-2">
+        <ul className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col space-y-2">
           {pending.map(task => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
             return (
-              <li key={task.id} className="flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
+              <li key={task.id} className="grow shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
                 <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>

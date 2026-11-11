@@ -21,6 +21,7 @@ type BaseModalProps = {
   fullWidthOnMd?: boolean;
   padding?: 'none' | 'sm' | 'md' | 'lg' | string;
   maxHeight?: string;
+  height?: string;
   backdropBlur?: boolean;
 };
 
@@ -57,6 +58,7 @@ const BaseModal = ({
   fullWidthOnMd = false,
   padding = "md",
   maxHeight = "max-h-[90vh]",
+  height = "h-auto",
   backdropBlur = true,
 }: BaseModalProps) => {
   const lastActiveElement = useRef<HTMLElement | null>(null);
@@ -173,7 +175,7 @@ const BaseModal = ({
     bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] 
     sm:border-2 rounded-lg sm:rounded-xl 
     ${paddingClass} w-full ${maxWidth} mx-auto ${className} 
-    shadow-xl ${maxHeight} h-auto
+    shadow-xl ${maxHeight} ${height}
     pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] 
     flex flex-col
     ${fullWidthOnMd ? 'md:max-w-[85%]' : ''}
@@ -190,7 +192,7 @@ const BaseModal = ({
   `.trim();
 
   const closeButtonClasses = `
-    shrink-0 -mr-1 p-2 sm:p-2.5 rounded-md 
+    shrink-0 mr-3 p-2 sm:p-2.5 rounded-md 
     text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
     hover:bg-[var(--bg-secondary)]
   `.trim();

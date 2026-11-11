@@ -17,6 +17,17 @@ interface CalendarHeaderProps {
   tasks?: Task[] | undefined;
 }
 
+const getWeekNumber = (date: Date) => {
+  const startOfWeek = new Date(date);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const oneJan = new Date(startOfWeek.getFullYear(), 0, 1);
+  const numberOfDays = Math.floor((startOfWeek.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+  return Math.ceil((startOfWeek.getDay() + 1 + numberOfDays) / 7);
+};
+
 const CalendarHeader = ({
   view,
   currentDate,
@@ -33,13 +44,8 @@ const CalendarHeader = ({
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-    // Get ISO week number
-    const oneJan = new Date(startOfWeek.getFullYear(), 0, 1);
-    const numberOfDays = Math.floor((startOfWeek.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
-    const weekNumber = Math.ceil((startOfWeek.getDay() + 1 + numberOfDays) / 7);
+    const weekNumber = getWeekNumber(currentDate);
+    const monthName = monthNames[currentDate.getMonth()] || '';
 
     const isCurrentWeekVisible = isCurrentWeek(startOfWeek);
 
@@ -47,7 +53,12 @@ const CalendarHeader = ({
       <div className={`text-sm sm:text-lg font-semibold mx-2 ${
         isCurrentWeekVisible ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
       }`}>
-        Week {weekNumber}
+        <span className="sm:hidden">
+          {monthName.slice(0, 3)} {currentDate.getFullYear()} · Week {weekNumber}
+        </span>
+        <span className="hidden sm:inline">
+          {monthName} {currentDate.getFullYear()} · Week {weekNumber}
+        </span>
       </div>
     );
   };
@@ -55,6 +66,7 @@ const CalendarHeader = ({
   const renderMonthHeader = () => {
   const monthIndex = currentDate.getMonth();
   const monthName = monthNames[monthIndex] || '';
+  const weekNumber = getWeekNumber(currentDate);
   
   return (
     <div
@@ -66,18 +78,18 @@ const CalendarHeader = ({
       }`}
     >
       <span className="sm:hidden">
-        {monthName.slice(0, 3)} {currentDate.getFullYear()}
+        {monthName.slice(0, 3)} {currentDate.getFullYear()} · Week {weekNumber}
       </span>
       <span className="hidden sm:inline">
-        {monthName} {currentDate.getFullYear()}
+        {monthName} {currentDate.getFullYear()} · Week {weekNumber}
       </span>
     </div>
   );
 };
 
   return (
-    <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto items-stretch md:items-center gap-3 md:gap-8 py-2 md:py-4 px-2 md:px-6">
-      <div className="order-2 md:order-1 flex w-full md:w-1/3 items-center justify-between md:justify-center gap-2 md:gap-4">
+    <div className="flex flex-col md:flex-row w-full max-w-5xl mx-auto items-stretch md:items-center gap-3 md:gap-8 py-2 md:py-4 px-0 md:px-6">
+      <div className="order-1 flex w-full md:w-1/3 items-center justify-between md:justify-center gap-2 md:gap-4">
         <button 
           onClick={view === 'week' ? goToPreviousWeek : goToPreviousMonth}
           className="p-2 sm:p-0 hover:bg-[var(--bg-secondary)]/30 rounded-md sm:rounded-none transition-colors touch-manipulation"
@@ -98,9 +110,9 @@ const CalendarHeader = ({
         </button>
       </div>
       
-      <div className="order-1 md:order-2 flex w-full md:w-1/3 justify-center">
+      <div className="order-2 flex w-full md:w-1/3 justify-center">
         {/* View Switcher */}
-        <div className="flex w-full sm:w-auto rounded-md overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
+        <div className="flex w-full sm:w-auto rounded-xl overflow-hidden border-2 border-[var(--border-primary)] text-xs sm:text-base">
           <button
             className={`flex-1 px-2 sm:px-4 py-2 sm:py-1.5 text-sm sm:text-base font-medium transition-colors relative whitespace-nowrap touch-manipulation ${
               view === 'month'

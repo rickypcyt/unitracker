@@ -119,9 +119,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 
   return (
     <>
-        <div className="flex flex-col w-full min-w-0 overflow-hidden" style={{ height: 'min(85dvh, 42rem)' }}>
+        <div className="flex flex-col w-full h-full min-w-0 overflow-hidden">
           {/* Tab bar */}
-          <div role="group" aria-label="Settings sections" className="flex shrink-0 items-stretch sm:items-center sm:justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-[var(--border-primary)]/50">
+          <div role="group" aria-label="Settings sections" className="flex shrink-0 w-full items-stretch sm:items-center justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-[var(--border-primary)]/50">
             {TAB_CONFIG.map(({ id, icon: Icon }) => (
               <button
                 key={id}
@@ -335,7 +335,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             )}
 
             {activeTab === "whatsNew" && (
-              <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+              <div className="space-y-4">
                 {changelogData.map((entry, index) => (
                   <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]/30">
                     <div className="flex items-center justify-between mb-3">
@@ -486,6 +486,7 @@ const Settings: React.FC<SettingsProps> = ({
       title={t("settings.title")}
       maxWidth="max-w-2xl"
       padding="none"
+      height="h-[min(85dvh,42rem)]"
       className="overflow-hidden"
     >
       <SettingsContent
