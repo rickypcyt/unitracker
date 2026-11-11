@@ -1,6 +1,7 @@
 import type { Task } from '@/types/taskStorage';
 import type { Lap } from '@/types/lap';
 import type { StatsExportData } from './csvExport';
+import { formatHMS } from './timeUtils';
 
 // -------------------------
 // PDF export via print window
@@ -111,7 +112,7 @@ export function exportSessionsPDF(laps: Lap[]): void {
 // -------------------------
 
 export function exportStatsPDF(data: StatsExportData): void {
-  const formatMin = (m: number) => `${Math.floor(m / 60)}h ${m % 60}m`;
+  const formatMin = (m: number) => formatHMS(m * 60);
 
   const statCards = [
     { label: 'Total Study', value: formatMin(data.totalStudyMinutes) },

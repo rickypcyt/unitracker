@@ -3,6 +3,7 @@ import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import DeleteSessionModal from './DeleteSessionModal';
+import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
 import { motion } from 'framer-motion';
 import { StudyService } from '@/services/StudyService';
 
@@ -81,14 +82,7 @@ const SessionsModal = ({
       const session = unfinishedSessions.find(s => s.id === sessionId);
       if (!session) return;
       const seconds = Math.floor((new Date().getTime() - new Date(session.started_at).getTime()) / 1000);
-      const toHMS = (totalSeconds: number) => {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(s / 3600).toString().padStart(2, '0');
-        const m = Math.floor(s % 3600 / 60).toString().padStart(2, '0');
-        const sec = (s % 60).toString().padStart(2, '0');
-        return `${h}:${m}:${sec}`;
-      };
-      const duration = toHMS(seconds);
+      const duration = formatHMS(seconds);
       await StudyService.finishSession(sessionId, duration, now);
 
       // Refresh both lists
@@ -192,7 +186,7 @@ const SessionsModal = ({
               <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
-                  <span>Duration: {session.duration || '00:00:00'}</span>
+                  <span>Duration: {formatDurationHMS(session.duration)}</span>
                 </div>
                 {session.tasks_completed !== undefined && session.tasks_completed > 0 && <div className="flex items-center gap-1">
                     <CheckCircle size={14} />

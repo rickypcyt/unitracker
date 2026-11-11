@@ -13,6 +13,7 @@ import DeleteSessionModal from "@/modals/session/DeleteSessionModal";
 import SessionDetailsModal from "@/modals/session/SessionDetailsModal";
 import { deleteLap } from "@/store/LapActions";
 import { formatDateShort } from "@/utils/dateUtils";
+import { durationToSeconds, formatDurationHMS, formatHMS } from "@/utils/timeUtils";
 import { getMonthYear } from "@/hooks/session/useTimers";
 import { toast } from "react-toastify";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -147,8 +148,7 @@ const StudySessions: React.FC = () => {
 
     const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
         const getTotalMinutes = (duration: string): number => {
-            const [h, m] = duration.split(":");
-            return parseInt(h || "0", 10) * 60 + parseInt(m || "0", 10);
+            return Math.round(durationToSeconds(duration) / 60);
         };
 
         const totalSessions = lapsOfMonth.length;
@@ -166,9 +166,7 @@ const StudySessions: React.FC = () => {
     };
 
     const formatMinutesToHHMM = (minutes: number): string => {
-        const h = Math.floor(minutes / 60);
-        const m = minutes % 60;
-        return `${h}:${m.toString().padStart(2, "0")}`;
+        return formatHMS(minutes * 60);
     };
 
     // Right-click handler for session
@@ -285,7 +283,7 @@ const StudySessions: React.FC = () => {
                                                     </div>
                                                     <div className="flex items-center gap-1 text-[var(--text-secondary)]">
                                                         <Clock size={14} />
-                                                        <span>{lap.duration}</span>
+                                                        <span>{formatDurationHMS(lap.duration)}</span>
                                                     </div>
                                                     {lap.tasks_completed > 0 && (
                                                         <div className="flex items-center gap-1 text-[var(--text-secondary)]">

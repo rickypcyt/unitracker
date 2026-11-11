@@ -17,15 +17,12 @@ import {
 } from '@/utils/dataImport';
 import { exportSessionsPDF, exportStatsPDF, exportTasksPDF } from '@/utils/pdfExport';
 import { supabase } from '@/utils/supabaseClient';
+import { durationToSeconds } from '@/utils/timeUtils';
 import type { Task } from '@/schemas/task';
 import type { Lap } from '@/types/lap';
 
 function durationToMinutes(duration: string | undefined): number {
-  if (!duration) return 0;
-  const parts = duration.split(':');
-  const h = parseInt(parts[0] || '0');
-  const m = parseInt(parts[1] || '0');
-  return h * 60 + m;
+  return Math.round(durationToSeconds(duration) / 60);
 }
 
 function computeStatsData(tasks: Task[], laps: Lap[]): StatsExportData {

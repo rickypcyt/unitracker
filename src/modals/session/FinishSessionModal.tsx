@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
+import { formatHMS } from '@/utils/timeUtils';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
@@ -146,13 +147,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
       console.error('Error removing task from session:', err);
     });
   };
-  const formatDuration = (totalSeconds: number): string => {
-    const roundedSeconds = Math.round(totalSeconds);
-    const hours = Math.floor(roundedSeconds / 3600);
-    const minutes = Math.floor(roundedSeconds % 3600 / 60);
-    const seconds = roundedSeconds % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  };
+  const formatDuration = (totalSeconds: number): string => formatHMS(totalSeconds);
   const getDurationFromTimer = (): string => {
     // Try to get current duration from StudyTimer state
     try {

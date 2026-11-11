@@ -4,6 +4,7 @@ import { memo, useMemo, useState } from 'react';
 import ChartCard from './ChartCard';
 import StatsChart from './StatsChart';
 import { getLocalDateString } from '@/utils/dateUtils';
+import { durationToSeconds, formatHMS } from '@/utils/timeUtils';
 import useDemoMode from '@/utils/useDemoMode';
 import { useAccentColor } from '@/hooks/settings/useAccentColor';
 import { useLaps } from '@/store/appStore';
@@ -15,9 +16,7 @@ const monthLabels = [
 ];
 
 function formatMinutesToHHMM(minutes: number) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}:${m.toString().padStart(2, '0')}`;
+  return formatHMS(minutes * 60);
 }
 
 function getMonday(date: Date, offset = 0) {
@@ -125,7 +124,7 @@ const StatsChartsPanel = memo(() => {
       const lapDate = getLocalDateString(new Date(lap.created_at));
       if (!lapDate) return acc;
 
-      const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
+      const minutes = Math.round(durationToSeconds(lap.duration) / 60);
       acc[lapDate] = (acc[lapDate] || 0) + minutes;
       return acc;
     }, {} as Record<string, number>);
@@ -162,7 +161,7 @@ const StatsChartsPanel = memo(() => {
         const lapDate = getLocalDateString(lapDateObj);
         if (!lapDate) return acc;
 
-        const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         acc[lapDate] = (acc[lapDate] || 0) + minutes;
       }
       return acc;
@@ -194,7 +193,7 @@ const StatsChartsPanel = memo(() => {
       const lapDate = new Date(lap.created_at);
       if (lapDate.getFullYear() === shownYear) {
         const month = lapDate.getMonth();
-        const minutes = parseInt(lap.duration.split(':')[0] ?? '0', 10) * 60 + parseInt(lap.duration.split(':')[1] ?? '0', 10);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         monthlyMinutes[month] = (monthlyMinutes[month] || 0) + minutes;
       }
     });

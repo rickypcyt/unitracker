@@ -1,4 +1,4 @@
-import { Bell, BellOff, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
+import { Bell, BellOff, Check, Pause, Pencil, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/ui/SectionTitle';
@@ -6,11 +6,12 @@ import { requestDesktopPermission, showDesktopNotification } from '@/utils/deskt
 import { useAppStore } from '@/store/appStore';
 import useEventListener from '@/hooks/common/useEventListener';
 
-type Field = 'hours' | 'minutes';
-const fields: Field[] = ['hours', 'minutes'];
+type Field = 'hours' | 'minutes' | 'seconds';
+const fields: Field[] = ['hours', 'minutes', 'seconds'];
 const fieldMax: Record<Field, number> = {
   hours: 23,
-  minutes: 59
+  minutes: 59,
+  seconds: 59
 };
 const pad = (n: number, field: Field) => {
   const max = fieldMax[field];
@@ -72,6 +73,7 @@ const Countdown: React.FC<CountdownProps> = ({
   const [focusedField, setFocusedField] = useState<Field | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCountdownRunning, setIsCountdownRunning] = useState(false);
+  const [isEditingTime, setIsEditingTime] = useState(false);
   const [endTimestamp, setEndTimestamp] = useState<number | null>(null); // Igual que Pomodoro: fin esperado
   // Eliminamos fieldPrevValue y fieldOverwrite
   const [alarmEnabled, setAlarmEnabled] = useState(() => {
@@ -95,7 +97,8 @@ const Countdown: React.FC<CountdownProps> = ({
   };
   const inputRefs = useRef<Record<Field, React.RefObject<HTMLInputElement | null>>>({
     hours: React.createRef<HTMLInputElement>(),
-    minutes: React.createRef<HTMLInputElement>()
+    minutes: React.createRef<HTMLInputElement>(),
+    seconds: React.createRef<HTMLInputElement>()
   });
   const calculateSeconds = ({
     hours,
@@ -129,6 +132,7 @@ const Countdown: React.FC<CountdownProps> = ({
       const initialLeft = Math.max(0, total);
       setSecondsLeft(initialLeft);
       setIsCountdownRunning(true);
+      setIsEditingTime(false);
       // Persistencia como en Pomodoro/StudyTimer
       try {
         localStorage.setItem('countdownState', 'running');
@@ -199,6 +203,7 @@ const Countdown: React.FC<CountdownProps> = ({
       const endTs = now + pausedSecondsLeft * 1000;
       setEndTimestamp(endTs);
       setIsCountdownRunning(true);
+      setIsEditingTime(false);
       // Asegurar que el UI muestre inmediatamente el tiempo restante correcto
       setSecondsLeft(pausedSecondsLeft);
       setPausedSecondsLeft(null);
@@ -212,6 +217,12 @@ const Countdown: React.FC<CountdownProps> = ({
       } catch {}
     }
   }, [pausedSecondsLeft]);
+
+  const handleEditTime = useCallback(() => {
+    if (isCountdownRunning) handlePause(false);
+    setIsEditingTime(true);
+    setTimeout(() => inputRefs.current.hours?.current?.focus(), 0);
+  }, [isCountdownRunning, handlePause]);
 
   // Lógica común cuando el countdown llega a cero (desde interval o visibilitychange)
   const handleFinish = useCallback(() => {
@@ -235,6 +246,7 @@ const Countdown: React.FC<CountdownProps> = ({
   }, [isCountdownRunning, alarmEnabled]);
   const handleReset = useCallback((fromSync = false) => {
     setIsCountdownRunning(false);
+    setIsEditingTime(false);
     setSecondsLeft(0);
     setEndTimestamp(null);
     setPausedSecondsLeft(null);
@@ -673,7 +685,14 @@ const Countdown: React.FC<CountdownProps> = ({
     const clean = value.replace(/\D/g, ''); // Solo números
     let val = parseInt(clean, 10);
     if (isNaN(val)) val = 0;
-    const current = baselineTimeRef.current;
+    // Editando en pausa: los campos muestran el restante, no el baseline
+    const current = pausedSecondsLeft !== null
+      ? {
+          hours: Math.floor(pausedSecondsLeft / 3600),
+          minutes: Math.floor(pausedSecondsLeft % 3600 / 60),
+          seconds: pausedSecondsLeft % 60
+        }
+      : baselineTimeRef.current;
     const updated = {
       ...current,
       [field]: Math.min(Math.max(val, 0), fieldMax[field])
@@ -682,7 +701,13 @@ const Countdown: React.FC<CountdownProps> = ({
     setInitialTime(updated);
     localStorage.setItem('countdownLastTime', JSON.stringify(updated));
     writeBaseline(updated);
-  }, [isCountdownRunning]);
+    if (pausedSecondsLeft !== null) {
+      const newRemaining = calculateSeconds(updated);
+      setPausedSecondsLeft(newRemaining);
+      setSecondsLeft(newRemaining);
+      try { localStorage.setItem('countdownPausedLeft', String(newRemaining)); } catch {}
+    }
+  }, [isCountdownRunning, pausedSecondsLeft]);
   const navigateField = useCallback((direction: number, currentIdx: number) => {
     const nextIdx = (currentIdx + direction + fields.length) % fields.length;
     const nextField = fields[nextIdx];
@@ -737,7 +762,13 @@ const Countdown: React.FC<CountdownProps> = ({
     let val = parseInt(e.target.value.replace(/\D/g, ''), 10);
     if (isNaN(val)) val = 0;
     if (val > fieldMax[field]) val = fieldMax[field];
-    const base = baselineTimeRef.current;
+    const base = pausedSecondsLeft !== null
+      ? {
+          hours: Math.floor(pausedSecondsLeft / 3600),
+          minutes: Math.floor(pausedSecondsLeft % 3600 / 60),
+          seconds: pausedSecondsLeft % 60
+        }
+      : baselineTimeRef.current;
     const safe = {
       ...base,
       [field]: val
@@ -746,6 +777,12 @@ const Countdown: React.FC<CountdownProps> = ({
     if (!isCountdownRunning) {
       baselineTimeRef.current = safe;
       writeBaseline(safe);
+      if (pausedSecondsLeft !== null) {
+        const newRemaining = calculateSeconds(safe);
+        setPausedSecondsLeft(newRemaining);
+        setSecondsLeft(newRemaining);
+        try { localStorage.setItem('countdownPausedLeft', String(newRemaining)); } catch {}
+      }
     }
     setFocusedField(null);
   };
@@ -806,9 +843,9 @@ const Countdown: React.FC<CountdownProps> = ({
         </button>
       </div>}
 
-      {/* Timer display - circular ring when running or paused, editable inputs when stopped */}
+      {/* Timer display - circular ring when running or paused, editable inputs when stopped or editing */}
       <div className="flex-1 flex items-center justify-center py-2">
-        {isCountdownRunning || pausedSecondsLeft !== null ? (
+        {isCountdownRunning || (pausedSecondsLeft !== null && !isEditingTime) ? (
           (() => {
             const isPaused = !isCountdownRunning && pausedSecondsLeft !== null;
             const total = calculateSeconds(baselineTimeRef.current);
@@ -826,6 +863,11 @@ const Countdown: React.FC<CountdownProps> = ({
                     <RotateCcw size={18} />
                   </button>
                 )}
+                {!(isSynced || syncCountdownWithTimer) && (
+                  <button onClick={handleEditTime} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Edit countdown time" title="Edit time">
+                    <Pencil size={18} />
+                  </button>
+                )}
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                   <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                   <circle
@@ -837,29 +879,23 @@ const Countdown: React.FC<CountdownProps> = ({
                     style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div
+                  className={`absolute inset-0 flex flex-col items-center justify-center ${!(isSynced || syncCountdownWithTimer) ? 'cursor-pointer' : ''}`}
+                  onClick={!(isSynced || syncCountdownWithTimer) ? handleEditTime : undefined}
+                  title={!(isSynced || syncCountdownWithTimer) ? 'Click to edit time' : undefined}
+                >
                   <div className="flex items-center gap-0.5">
-                    {h > 0 ? (
-                      <>
-                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
-                          {h.toString().padStart(2, '0')}
-                        </span>
-                        <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
-                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
-                          {m.toString().padStart(2, '0')}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
-                          {m.toString().padStart(2, '0')}
-                        </span>
-                        <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
-                        <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
-                          {s.toString().padStart(2, '0')}
-                        </span>
-                      </>
-                    )}
+                    <span className="text-sm font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                      {h.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-xs font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                    <span className="text-sm font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                      {m.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-xs font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                    <span className="text-sm font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                      {s.toString().padStart(2, '0')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -872,6 +908,11 @@ const Countdown: React.FC<CountdownProps> = ({
                 <RotateCcw size={18} />
               </button>
             )}
+            {isEditingTime && (
+              <button onClick={() => setIsEditingTime(false)} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Done editing time" title="Done">
+                <Check size={18} />
+              </button>
+            )}
             <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
               <circle cx="60" cy="60" r={52} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
             </svg>
@@ -882,20 +923,25 @@ const Countdown: React.FC<CountdownProps> = ({
                 if (isCountdownRunning) {
                   const h = Math.floor(secondsLeft / 3600);
                   const m = Math.floor(secondsLeft % 3600 / 60);
+                  const s = secondsLeft % 60;
                   if (field === 'hours') value = pad(h, 'hours');
                   if (field === 'minutes') value = pad(m, 'minutes');
+                  if (field === 'seconds') value = pad(s, 'seconds');
                 } else {
-                  let h = 0, m = 0;
+                  let h = 0, m = 0, s = 0;
                   if (pausedSecondsLeft !== null) {
                     h = Math.floor(pausedSecondsLeft / 3600);
                     m = Math.floor(pausedSecondsLeft % 3600 / 60);
+                    s = pausedSecondsLeft % 60;
                   } else {
                     const base = baselineTimeRef.current;
                     h = base.hours;
                     m = base.minutes;
+                    s = base.seconds;
                   }
                   if (field === 'hours') value = pad(h, 'hours');
                   if (field === 'minutes') value = pad(m, 'minutes');
+                  if (field === 'seconds') value = pad(s, 'seconds');
                 }
                 const isFocused = focusedField === field && !isRunningGlobal;
                 return <React.Fragment key={field}>
@@ -910,14 +956,13 @@ const Countdown: React.FC<CountdownProps> = ({
                       onBlur={e => handleBlur(field, e)}
                       onChange={e => handleInputChange(field, e.target.value)}
                       onKeyDown={e => handleInputKeyDown(e, field)}
-                      className={`w-8 text-center text-2xl font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
-                        isFocused ? 'text-green-500' : isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
+                      className={`countdown-time-input w-6 text-center text-base font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
+                        isFocused || isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
                       }`}
                       tabIndex={idx + 1}
-                      style={{ letterSpacing: '0.05em' }}
                       disabled={isCountdownRunning}
                     />
-                    {field !== 'minutes' && <span className="text-xl font-mono font-bold leading-none text-[var(--text-secondary)]">:</span>}
+                    {idx < fields.length - 1 && <span className="text-sm font-mono font-bold leading-none text-[var(--text-secondary)]">:</span>}
                   </React.Fragment>;
               })}
               </div>

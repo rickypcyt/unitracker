@@ -1,6 +1,7 @@
 import { Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { getLocalDateString } from '@/utils/dateUtils';
+import { durationToSeconds, formatHMS } from '@/utils/timeUtils';
 import { useLaps } from '@/store/appStore';
 import { useMemo } from 'react';
 
@@ -18,14 +19,14 @@ const StatsInsights = () => {
     const thisWeekMinutes = laps
       .filter(lap => new Date(lap.created_at) >= thisWeek)
       .reduce((acc, lap) => {
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         return acc + minutes;
       }, 0);
     
     const lastWeekMinutes = laps
       .filter(lap => new Date(lap.created_at) >= lastWeek && new Date(lap.created_at) < thisWeek)
       .reduce((acc, lap) => {
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         return acc + minutes;
       }, 0);
     
@@ -48,7 +49,7 @@ const StatsInsights = () => {
 
     // Calculate total study time
     const totalMinutes = laps.reduce((acc, lap) => {
-      const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+      const minutes = Math.round(durationToSeconds(lap.duration) / 60);
       return acc + minutes;
     }, 0);
 
@@ -57,7 +58,7 @@ const StatsInsights = () => {
     laps.forEach(lap => {
       const date = getLocalDateString(new Date(lap.created_at));
       if (date) {
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         dailyMinutes[date] = (dailyMinutes[date] || 0) + minutes;
       }
     });
@@ -85,7 +86,7 @@ const StatsInsights = () => {
         return lapDate.getMonth() === currentMonth && lapDate.getFullYear() === currentYear;
       })
       .reduce((acc, lap) => {
-        const minutes = parseInt(lap.duration.split(':')[0]) * 60 + parseInt(lap.duration.split(':')[1]);
+        const minutes = Math.round(durationToSeconds(lap.duration) / 60);
         return acc + minutes;
       }, 0);
 
@@ -101,11 +102,7 @@ const StatsInsights = () => {
     };
   }, [laps, weeklyTrend]);
 
-  const formatMinutesToHM = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m}m`;
-  };
+  const formatMinutesToHM = (minutes: number) => formatHMS(minutes * 60);
 
   const getTrendIcon = (trend: 'up' | 'down' | 'neutral') => {
     switch (trend) {

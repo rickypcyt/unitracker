@@ -6,6 +6,7 @@ import BaseModal from '@/modals/shared/BaseModal';
 import DeleteSessionModal from './DeleteSessionModal';
 import SessionDetailsModal from './SessionDetailsModal';
 import { getMonthYear } from '@/hooks/session/useTimers';
+import { durationToSeconds, formatDurationHMS, formatHMS } from '@/utils/timeUtils';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
@@ -256,22 +257,18 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
   // Calculate statistics for a month
   interface MonthStats {
     totalSessions: number;
-    totalMinutes: number;
+    totalSeconds: number;
     avgDuration: number;
   }
   const getMonthStats = (lapsOfMonth: Lap[]): MonthStats => {
-    const getTotalMinutes = (duration: string): number => {
-      const [h, m] = duration.split(':');
-      return parseInt(h || '0', 10) * 60 + parseInt(m || '0', 10);
-    };
     const totalSessions = lapsOfMonth.length;
-    const totalMinutes = lapsOfMonth.reduce((acc: number, lap: Lap) => {
-      return acc + getTotalMinutes(lap.duration);
+    const totalSeconds = lapsOfMonth.reduce((acc: number, lap: Lap) => {
+      return acc + durationToSeconds(lap.duration);
     }, 0);
-    const avgDuration = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
+    const avgDuration = totalSessions > 0 ? Math.round(totalSeconds / totalSessions) : 0;
     return {
       totalSessions,
-      totalMinutes,
+      totalSeconds,
       avgDuration
     };
   };
@@ -372,8 +369,6 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
               const monthLaps = selectedMonth && groupedLaps[selectedMonth] ? groupedLaps[selectedMonth] : [];
               const monthStats = getMonthStats(monthLaps);
               const weeksData = groupSessionsByWeeks(monthLaps, selectedMonth || undefined);
-              const totalHours = Math.floor(monthStats.totalMinutes / 60);
-              const totalMins = monthStats.totalMinutes % 60;
               return <div className="space-y-6 pb-6">
                       {/* Month Statistics Header */}
                       <div className="bg-gradient-to-r from-[var(--accent-primary)/10] to-[var(--accent-primary)/5]  rounded-2xl mb-6">
@@ -392,7 +387,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
                             </div>
                             <p className="text-2xl font-bold text-[var(--text-primary)]">
-                              {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
+                              {formatHMS(monthStats.totalSeconds)}
                             </p>
                           </div>
                           
@@ -401,7 +396,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                               <Zap size={16} className="text-[var(--accent-primary)]" />
                               <span className="text-sm text-[var(--text-secondary)] font-medium">Avg Duration</span>
                             </div>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.avgDuration}m</p>
+                            <p className="text-2xl font-bold text-[var(--text-primary)]">{formatHMS(monthStats.avgDuration)}</p>
                           </div>
                           
                           <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
@@ -454,7 +449,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                           </div>
                                           <div className="flex flex-shrink-0 items-center gap-1.5">
                                             <span className="text-sm font-mono text-[var(--text-secondary)]">
-                                              {lap.duration}
+                                              {formatDurationHMS(lap.duration)}
                                             </span>
                                             <button onClick={e => {
                                       e.stopPropagation();
@@ -542,8 +537,6 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                       lapsOfMonth
                     }) => {
                       const stats = getMonthStats(lapsOfMonth);
-                      const totalHours = Math.floor(stats.totalMinutes / 60);
-                      const totalMins = stats.totalMinutes % 60;
                       return <div key={monthYear} className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl p-5 border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" onClick={() => setSelectedMonth(monthYear)}>
                                   <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[var(--accent-primary)/20] to-transparent rounded-bl-full opacity-50"></div>
                                   <div className="relative z-10">
@@ -563,7 +556,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                             <Clock size={16} className="text-[var(--accent-primary)]" />
                                           </div>
                                           <span className="font-mono font-bold text-[var(--text-primary)]">
-                                            {totalHours > 0 ? `${totalHours}h ` : ''}{totalMins}m
+                                            {formatHMS(stats.totalSeconds)}
                                           </span>
                                         </div>
                                       </div>
@@ -574,7 +567,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                           <div className="w-6 h-6 bg-[var(--bg-primary)] rounded flex items-center justify-center">
                                             <Zap size={14} className="text-[var(--accent-primary)]" />
                                           </div>
-                                          <span className="font-bold text-[var(--text-primary)]">{stats.avgDuration}m</span>
+                                          <span className="font-bold text-[var(--text-primary)]">{formatHMS(stats.avgDuration)}</span>
                                         </div>
                                       </div>
                                     </div>

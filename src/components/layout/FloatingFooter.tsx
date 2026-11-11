@@ -8,6 +8,7 @@ import { useNavigation } from '@/navigation/NavigationContext';
 import { useStudyState } from '@/store/appStore';
 import useTheme from '@/hooks/settings/useTheme';
 import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
+import { formatHMS } from '@/utils/timeUtils';
 
 interface FloatingFooterProps {
   workspaces?: (Workspace & { taskCount?: number })[];
@@ -44,13 +45,6 @@ const iconOptions: { [key: string]: React.ComponentType<any> } = {
   Workflow,
 };
 
-const formatTime = (seconds: number): string => {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-};
 
 const FloatingFooter: React.FC<FloatingFooterProps> = ({
   workspaces = [],
@@ -164,7 +158,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
               >
                 <span className={`w-2 h-2 rounded-full ${studyState.isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-[var(--text-secondary)]'}`} />
                 <span className="text-xs font-mono tabular-nums text-[var(--text-primary)]">
-                  {formatTime(studyTime)}
+                  {formatHMS(studyTime)}
                 </span>
               </button>
             </>

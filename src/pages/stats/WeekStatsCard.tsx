@@ -21,7 +21,7 @@ interface WeekStatsCardProps {
 const WeekStatsCard = ({ data, accentColor, shownWeekNumber, weekOffset, setWeekOffset, handleWeekPrevious, handleWeekNext, isDemo = false }: WeekStatsCardProps): ReactElement => {
   // Asegura que siempre haya 7 elementos, uno por cada día de la semana
   const weekData = weekDayInitials.map((label, idx) => {
-    const d = data && data[idx] ? data[idx] : { minutes: 0, hoursLabel: '0:00', date: '', dayName: label };
+    const d = data && data[idx] ? data[idx] : { minutes: 0, hoursLabel: '00:00:00', date: '', dayName: label };
     return {
       ...d,
       dayName: label,

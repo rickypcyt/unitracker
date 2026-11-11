@@ -1,3 +1,5 @@
+import { durationToSeconds as parseDurationToSeconds, formatHMS } from './timeUtils';
+
 const dayKey = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -40,22 +42,10 @@ export const getStreakStats = (
   return { current, best };
 };
 
-export const durationToSeconds = (duration?: string | number | null): number => {
-  if (!duration) return 0;
-  if (typeof duration === 'number') return duration;
-  if (/^\d+$/.test(duration)) return parseInt(duration, 10);
-  const parts = duration.split(':');
-  if (parts.length !== 3) return 0;
-  return Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
-};
+export const durationToSeconds = (duration?: string | number | null): number =>
+  parseDurationToSeconds(duration);
 
-export const formatHours = (seconds: number): string => {
-  const h = Math.floor(seconds / 3600);
-  if (h >= 100) return `${h}h`;
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-};
+export const formatHours = (seconds: number): string => formatHMS(seconds);
 
 export interface StreakTier {
   min: number;

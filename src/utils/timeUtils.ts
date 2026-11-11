@@ -1,5 +1,32 @@
 // Time utility functions shared between components
 
+// Format a duration given in seconds as "HH:MM:SS" (hours always shown, may exceed 24)
+export function formatHMS(totalSeconds: number): string {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const hh = Math.floor(s / 3600);
+  const mm = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+// Parse a duration value to seconds. Accepts "H:MM", "HH:MM:SS", or a bare number of seconds.
+export function durationToSeconds(duration?: string | number | null): number {
+  if (duration === null || duration === undefined || duration === '') return 0;
+  if (typeof duration === 'number') return Number.isFinite(duration) ? duration : 0;
+  const trimmed = duration.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
+  const parts = trimmed.split(':').map(Number);
+  if (parts.some(n => !Number.isFinite(n))) return 0;
+  if (parts.length === 3) return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0);
+  if (parts.length === 2) return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60;
+  return 0;
+}
+
+// Normalize any stored duration ("H:MM", "HH:MM:SS", bare seconds) to "HH:MM:SS"
+export function formatDurationHMS(duration?: string | number | null): string {
+  return formatHMS(durationToSeconds(duration));
+}
+
 // Convert 24h format (HH:MM) or timestamptz to 12h AM/PM format
 export function to12Hour(time24: string): string {
   if (!time24) return '';

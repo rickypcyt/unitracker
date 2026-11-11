@@ -19,6 +19,7 @@ import useEventListener from "@/hooks/common/useEventListener";
 import { useSessionId } from "@/hooks/session/useSessionId";
 import { useStudyTimerState, type StudyState } from "@/hooks/session/useStudyTimerState";
 import type { PauseEntry } from "@/schemas/timer";
+import { formatHMS } from "@/utils/timeUtils";
 import { getLocalDateString } from "@/utils/dateUtils";
 import { StudyService, type SessionLap } from "@/services/StudyService";
 import { TaskService } from "@/services/TaskService";
@@ -81,37 +82,15 @@ const parseHms = (hms?: string | null): number => {
 };
 
 /** Converts total seconds to "HH:MM:SS". */
-const formatDuration = (totalSeconds: number): string => {
-  const s = Math.max(0, Math.round(totalSeconds));
-  const hh = Math.floor(s / 3600);
-  const mm = Math.floor(s % 3600 / 60);
-  const sec = s % 60;
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-};
+const formatDuration = (totalSeconds: number): string => formatHMS(totalSeconds);
 const devLog = (..._args: unknown[]) => {
   if (isDev) {}
 };
 
-const formatPauseDuration = (seconds: number): string => {
-  const s = Math.max(0, Math.round(seconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const remS = s % 60;
-  if (h > 0) return `${h}h ${m.toString().padStart(2, "0")}m ${remS.toString().padStart(2, "0")}s`;
-  if (m > 0) return `${m}m ${remS.toString().padStart(2, "0")}s`;
-  return `${remS}s`;
-};
+const formatPauseDuration = (seconds: number): string => formatHMS(seconds);
 
-/** Compact elapsed label for session laps: "15:24" or "1:02:33". */
-const formatLapElapsed = (totalSeconds: number): string => {
-  const s = Math.max(0, Math.round(totalSeconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor(s % 3600 / 60);
-  const sec = s % 60;
-  return h > 0
-    ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
-    : `${m}:${String(sec).padStart(2, "0")}`;
-};
+/** Elapsed label for session laps in "HH:MM:SS". */
+const formatLapElapsed = (totalSeconds: number): string => formatHMS(totalSeconds);
 
 const formatPauseTime = (timestamp: number): string =>
   new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -1160,47 +1139,27 @@ const StudyTimer = ({
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="flex items-center gap-0.5">
-                  {h > 0 ? (
-                    <>
-                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {h.toString().padStart(2, '0')}
-                      </span>
-                      <span className={`text-base font-mono font-bold leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'
-                      }`}>:</span>
-                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {m.toString().padStart(2, '0')}
-                      </span>
-                      <span className={`text-base font-mono font-bold leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'
-                      }`}>:</span>
-                      <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {s.toString().padStart(2, '0')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {m.toString().padStart(2, '0')}
-                      </span>
-                      <span className={`text-xl font-mono font-bold leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'
-                      }`}>:</span>
-                      <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${
-                        isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
-                      }`}>
-                        {s.toString().padStart(2, '0')}
-                      </span>
-                    </>
-                  )}
+                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                    isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
+                  }`}>
+                    {h.toString().padStart(2, '0')}
+                  </span>
+                  <span className={`text-base font-mono font-bold leading-none ${
+                    isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'
+                  }`}>:</span>
+                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                    isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
+                  }`}>
+                    {m.toString().padStart(2, '0')}
+                  </span>
+                  <span className={`text-base font-mono font-bold leading-none ${
+                    isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'
+                  }`}>:</span>
+                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${
+                    isStudyRunningRedux ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'
+                  }`}>
+                    {s.toString().padStart(2, '0')}
+                  </span>
                 </div>
               </div>
             </div>

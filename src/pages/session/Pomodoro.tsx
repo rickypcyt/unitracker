@@ -1314,7 +1314,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
       <div className="relative w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current pomodoro time">
         {(() => {
           const roundedSeconds = Math.round(pomoState.timeLeft);
-          const mins = Math.floor(roundedSeconds / 60);
+          const hrs = Math.floor(roundedSeconds / 3600);
+          const mins = Math.floor((roundedSeconds % 3600) / 60);
           const secs = roundedSeconds % 60;
           const modeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
           const progress = Math.max(0, Math.min(1, 1 - pomoState.timeLeft / modeDuration));
@@ -1343,17 +1344,18 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
               </svg>
               <div className={`absolute inset-0 flex flex-col items-center justify-center ${isBreak && !isPaused ? 'animate-pulse' : ''}`}>
                 <div className="flex items-center gap-0.5">
-                  <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                  <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                    {hrs.toString().padStart(2, '0')}
+                  </span>
+                  <span className="text-base font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                  <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
                     {mins.toString().padStart(2, '0')}
                   </span>
-                  <span className="text-xl font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
-                  <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
+                  <span className="text-base font-mono font-bold leading-none" style={{ color: ringColor }}>:</span>
+                  <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
                     {secs.toString().padStart(2, '0')}
                   </span>
                 </div>
-                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
-                  {pomoState.currentMode === 'work' ? 'Focus' : pomoState.currentMode === 'break' ? 'Break' : 'Long Break'}
-                </span>
               </div>
             </div>
           );

@@ -115,7 +115,8 @@ export const PomodoroDemo = () => {
   });
 
   const rounded = Math.round(timeLeft);
-  const mins = Math.floor(rounded / 60);
+  const hrs = Math.floor(rounded / 3600);
+  const mins = Math.floor((rounded % 3600) / 60);
   const secs = rounded % 60;
   const progress = Math.max(0, Math.min(1, 1 - timeLeft / modeDuration));
   const isBreak = mode !== 'work';
@@ -137,11 +138,15 @@ export const PomodoroDemo = () => {
           )}
           <Ring progress={progress} color={POMO_RED} spinning={isPaused && running === false && timeLeft !== modeDuration}>
             <div className={`flex items-center gap-0.5 ${isBreak && !isPaused ? 'animate-pulse' : ''}`}>
-              <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: POMO_RED }}>
+              <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: POMO_RED }}>
+                {hrs.toString().padStart(2, '0')}
+              </span>
+              <span className="text-base font-mono font-bold leading-none" style={{ color: POMO_RED }}>:</span>
+              <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: POMO_RED }}>
                 {mins.toString().padStart(2, '0')}
               </span>
-              <span className="text-xl font-mono font-bold leading-none" style={{ color: POMO_RED }}>:</span>
-              <span className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: POMO_RED }}>
+              <span className="text-base font-mono font-bold leading-none" style={{ color: POMO_RED }}>:</span>
+              <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: POMO_RED }}>
                 {secs.toString().padStart(2, '0')}
               </span>
             </div>
@@ -282,31 +287,17 @@ export const StudyTimerDemo = () => {
           )}
           <Ring progress={hourProgress} color="var(--accent-primary)" spinning={paused}>
             <div className="flex items-center gap-0.5">
-              {h > 0 ? (
-                <>
-                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {h.toString().padStart(2, '0')}
-                  </span>
-                  <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
-                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {m.toString().padStart(2, '0')}
-                  </span>
-                  <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
-                  <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {s.toString().padStart(2, '0')}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {m.toString().padStart(2, '0')}
-                  </span>
-                  <span className={`text-xl font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
-                  <span className={`text-2xl font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {s.toString().padStart(2, '0')}
-                  </span>
-                </>
-              )}
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                {h.toString().padStart(2, '0')}
+              </span>
+              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                {m.toString().padStart(2, '0')}
+              </span>
+              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                {s.toString().padStart(2, '0')}
+              </span>
             </div>
           </Ring>
         </div>

@@ -103,8 +103,7 @@ function SoundControl({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
-      className={`relative rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-lg ${
+      className={`relative rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 ${
         isPlaying
           ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
           : "border-[var(--border-primary)]"

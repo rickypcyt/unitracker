@@ -944,6 +944,12 @@ h1 {
   outline-offset: 2px;
 }
 
+.countdown-time-input:focus,
+.countdown-time-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* High Contrast Mode */
 @media (forced-colors: active) {
   .layout-item {

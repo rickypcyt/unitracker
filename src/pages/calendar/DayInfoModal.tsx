@@ -52,7 +52,7 @@ const DayInfoModal = ({ isOpen, onClose, date, tasks, studiedHours }: DayInfoMod
               <div>
                 <div className="text-sm text-[var(--text-secondary)] font-medium">Study Time</div>
                 <div className="text-xl font-bold text-[var(--text-primary)]">
-                  {studiedHours || 0}h
+                  {studiedHours || '00:00:00'}
                 </div>
               </div>
             </div>

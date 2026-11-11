@@ -114,7 +114,7 @@ const SessionPage = memo(() => {
             )}
             <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
           </motion.div>
-          <div className="order-2 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
+          <div className="order-2 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-start">
             <motion.div variants={item} className="min-w-0">
               <PendingTasks />
             </motion.div>

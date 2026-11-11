@@ -54,8 +54,8 @@ const MonthView = ({
 
             const studiedHours = dayObj.currentMonth
               ? getStudiedHoursForDate(dayObj.date)
-              : '0';
-            const hasStudied = studiedHours !== '0' && studiedHours !== '0.0';
+              : '00:00:00';
+            const hasStudied = studiedHours !== '00:00:00';
 
             const isToday = !!dayObj.isToday && dayObj.currentMonth;
             const isSelected = !!dayObj.isSelected;
@@ -66,7 +66,7 @@ const MonthView = ({
                 role="button"
                 tabIndex={dayObj.currentMonth ? 0 : -1}
                 aria-label={`${dayObj.date.toLocaleDateString()}${
-                  hasStudied ? `, ${studiedHours}h estudiadas` : ''
+                  hasStudied ? `, ${studiedHours} estudiadas` : ''
                 }${taskCount > 0 ? `, ${taskCount} tarea${taskCount > 1 ? 's' : ''}` : ''}`}
                 aria-current={dayObj.isToday ? 'date' : undefined}
                 onClick={() => handleDateClick(dayObj.date)}
@@ -104,7 +104,7 @@ const MonthView = ({
                 {/* Studied time pinned to the top of the cell */}
                 {dayObj.currentMonth && hasStudied && (
                   <span className="text-[10px] sm:text-xs font-medium text-[var(--text-secondary)] tracking-tight leading-none whitespace-nowrap pt-0.5">
-                    <span className="hidden sm:inline">Time Studied: </span>{studiedHours}h
+                    <span className="hidden sm:inline">Time Studied: </span>{studiedHours}
                   </span>
                 )}
 

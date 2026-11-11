@@ -1,6 +1,7 @@
 import { CheckCircle2, Clock } from 'lucide-react';
 
 import { formatDate } from '@/utils/dateUtils';
+import { formatHMS } from '@/utils/timeUtils';
 
 interface DayTooltipProps {
   date: Date;
@@ -23,7 +24,7 @@ const DayTooltip = ({ date, tasks, studiedHours }: DayTooltipProps) => {
         </div>
         <div className="flex items-center gap-2 text-neutral-300">
           <Clock size={16} className="text-[var(--accent-primary)]" />
-          <span>{studiedHours || 0} hours studied</span>
+          <span>{formatHMS((studiedHours || 0) * 3600)} studied</span>
         </div>
       </div>
       {/* Arrow */}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { SYNC_EVENTS } from '@/utils/constants';
+import { durationToSeconds, formatDurationHMS } from '@/utils/timeUtils';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { motion } from 'framer-motion';
 import { useLaps } from '@/store/appStore';
@@ -34,53 +35,14 @@ const TodaysSession = () => {
     };
   }, [refreshData]);
 
-  // Format duration from HH:MM:SS to a human-readable format
-  const formatDuration = (duration?: string | null): string => {
-    if (!duration) return '0m';
-
-    // If it's already a number string (seconds), convert to minutes
-    if (/^\d+$/.test(duration)) {
-      const seconds = parseInt(duration, 10);
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor(seconds % 3600 / 60);
-      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-    }
-
-    // Handle HH:MM:SS format
-    const parts = duration?.split(':') || [];
-    if (parts.length !== 3) return '0m';
-    const hh = parseInt(parts[0] || '0', 10) || 0;
-    const mm = parseInt(parts[1] || '0', 10) || 0;
-    const ss = parseInt(parts[2] || '0', 10) || 0;
-    if (isNaN(hh) || isNaN(mm) || isNaN(ss)) return '0m';
-    const totalMinutes = hh * 60 + mm + Math.round(ss / 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-  };
-
-  // Convert HH:MM:SS to seconds
-  const durationToSeconds = (duration?: string | null): number => {
-    if (!duration) return 0;
-
-    // If it's already a number string, return it as number
-    if (/^\d+$/.test(duration)) {
-      return parseInt(duration, 10);
-    }
-
-    // Parse HH:MM:SS format
-    const parts = duration?.split(':') || [];
-    if (parts.length !== 3) return 0;
-    const [hh = 0, mm = 0, ss = 0] = parts.map(Number);
-    if (isNaN(hh) || isNaN(mm) || isNaN(ss)) return 0;
-    return hh * 3600 + mm * 60 + ss;
-  };
+  // Format any duration (seconds or "HH:MM[:SS]" string) as "HH:MM:SS"
+  const formatDuration = (duration?: string | null): string => formatDurationHMS(duration);
 
   // Memoize all derived state to prevent unnecessary recalculations
   const TODAY_CACHE_KEY = 'today_stats_cache_v1';
   const [stableMetrics, setStableMetrics] = useState({
     todaysPomodoros: 0,
-    totalStudyTimeFormatted: '0m'
+    totalStudyTimeFormatted: '00:00:00'
   });
 
   // Initialize from cache on mount to avoid 0 flicker after hard refresh
@@ -150,8 +112,8 @@ const TodaysSession = () => {
     const arraysEmpty = lapsLen === 0;
     if (arraysEmpty) return; // keep previous stable metrics
 
-    const isZeroOnly = todaysPomodoros === 0 && totalStudyTimeFormatted === '0m';
-    const prevIsZeroOnly = stableMetrics.todaysPomodoros === 0 && stableMetrics.totalStudyTimeFormatted === '0m';
+    const isZeroOnly = todaysPomodoros === 0 && totalStudyTimeFormatted === '00:00:00';
+    const prevIsZeroOnly = stableMetrics.todaysPomodoros === 0 && stableMetrics.totalStudyTimeFormatted === '00:00:00';
     // If current calc is zero-only but previous had non-zero values, do not overwrite
     if (isZeroOnly && !prevIsZeroOnly) return;
     setStableMetrics({
@@ -165,7 +127,7 @@ const TodaysSession = () => {
     const lapsLen = laps?.length ?? 0;
     const arraysEmpty = lapsLen === 0;
     if (arraysEmpty) return;
-    const isZeroOnly = todaysPomodoros === 0 && totalStudyTimeFormatted === '0m';
+    const isZeroOnly = todaysPomodoros === 0 && totalStudyTimeFormatted === '00:00:00';
     // Only cache zero-only if there was no previous cache (first load of the day)
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
@@ -219,7 +181,7 @@ const TodaysSession = () => {
   };
 
   // UI-safe values to prevent flicker during transient fetch states
-  const displayStudyTime = totalStudyTimeFormatted && totalStudyTimeFormatted !== '0m' ? totalStudyTimeFormatted : stableMetrics.totalStudyTimeFormatted;
+  const displayStudyTime = totalStudyTimeFormatted && totalStudyTimeFormatted !== '00:00:00' ? totalStudyTimeFormatted : stableMetrics.totalStudyTimeFormatted;
   const displayPomodoros = typeof todaysPomodoros === 'number' && todaysPomodoros > 0 ? todaysPomodoros : stableMetrics.todaysPomodoros;
   return <div className="w-full space-y-4 md:space-y-5 relative">
       {/* Header */}

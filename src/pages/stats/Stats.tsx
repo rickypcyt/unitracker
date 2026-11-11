@@ -3,6 +3,7 @@ import { ReactElement } from 'react';
 import { useLaps } from '@/store/appStore';
 
 import useDemoMode from '@/utils/useDemoMode';
+import { durationToSeconds, formatHMS } from '@/utils/timeUtils';
 import type { Lap } from '@/types/lap';
 
 interface StatData {
@@ -21,15 +22,11 @@ interface StatData {
 }
 
 function durationToMinutes(duration: string | undefined): number {
-  if (!duration) return 0;
-  const [h, m] = duration.split(':');
-  return parseInt(h || '0') * 60 + parseInt(m || '0');
+  return Math.round(durationToSeconds(duration) / 60);
 }
 
-function formatMinutesToHHMM(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}:${m.toString().padStart(2, '0')}`;
+function formatMinutesToHMS(minutes: number): string {
+  return formatHMS(minutes * 60);
 }
 
 function useLapStats(laps: Lap[]) {
@@ -160,7 +157,7 @@ const Statistics = (): ReactElement => {
           >
             <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
             <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
-              {formatMinutesToHHMM(statsData[key])}h
+              {formatMinutesToHMS(statsData[key])}
             </span>
           </div>
         ))}

@@ -4,6 +4,7 @@ import { deleteLap, updateLap } from '@/store/LapActions';
 import { format, parseISO } from 'date-fns';
 
 import BaseModal from '@/modals/shared/BaseModal';
+import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
 import { toast } from 'react-toastify';
 import type { Lap } from '@/types/lap';
 
@@ -55,27 +56,13 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
     };
 
     const formatDuration = (duration: string) => {
-        // Check if duration is in HH:MM:SS format
         if (duration && duration.includes(':')) {
-            const parts = duration.split(':');
-            const hours = parseInt(parts[0] || '0') || 0;
-            const minutes = parseInt(parts[1] || '0') || 0;
-            
-            if (hours === 0) {
-                return `${minutes} minutes`;
-            } else if (minutes === 0) {
-                return `${hours} hours`;
-            } else {
-                return `${hours} hours and ${minutes} minutes`;
-            }
+            return formatDurationHMS(duration);
         }
-        
+
         // Fallback for original format (total minutes)
-        const totalMinutes = parseInt(duration || '0');
-        if (totalMinutes < 60) return `${totalMinutes} minutes`;
-        const hours = Math.floor(totalMinutes / 60);
-        const remainingMinutes = totalMinutes % 60;
-        return remainingMinutes > 0 ? `${hours} hours and ${remainingMinutes} minutes` : `${hours} hours`;
+        const totalMinutes = parseInt(duration || '0') || 0;
+        return formatHMS(totalMinutes * 60);
     };
 
     const formatDate = (dateString: string) => {

@@ -6,6 +6,7 @@ import {
 import { useCallback, useMemo } from 'react';
 
 import type { Task } from '@/types/taskStorage';
+import { durationToSeconds, formatHMS } from '@/utils/timeUtils';
 import { isSameDay } from 'date-fns';
 import { useAppStore } from '@/store/appStore';
 
@@ -89,20 +90,19 @@ export const useCalendarData = ({ currentDate, selectedDate, tasks: filteredTask
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
 
-      const totalMinutes = laps.reduce((total, lap) => {
+      const totalSeconds = laps.reduce((total, lap) => {
         if (!lap.duration || lap.duration === "00:00:00") return total;
 
         const lapDate = new Date(lap.created_at);
         lapDate.setHours(0, 0, 0, 0);
 
         if (isSameDay(lapDate, targetDate)) {
-          const [h, m] = lap.duration.split(":").map(Number);
-          return total + (h ?? 0) * 60 + (m ?? 0);
+          return total + durationToSeconds(lap.duration);
         }
         return total;
       }, 0);
 
-      return (totalMinutes / 60).toFixed(1);
+      return formatHMS(totalSeconds);
     },
     [laps]
   );

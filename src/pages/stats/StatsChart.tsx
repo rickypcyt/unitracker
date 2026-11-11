@@ -3,12 +3,11 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { getLocalDateString } from '@/utils/dateUtils';
+import { formatHMS } from '@/utils/timeUtils';
 import { useTasksOnly } from '@/store/appStore';
 
 function formatMinutesToHMText(minutes: number) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}h ${m}m`;
+  return formatHMS(minutes * 60);
 }
 
 // Compact label for Y axis: integer hours like "2h"

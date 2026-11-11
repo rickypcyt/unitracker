@@ -61,7 +61,7 @@ const PendingTasks = () => {
   };
 
   return (
-    <section aria-labelledby="pending-tasks-title" className="w-full h-full rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+    <section aria-labelledby="pending-tasks-title" className="w-full rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
       <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">

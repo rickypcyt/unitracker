@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+import { durationToSeconds, formatHMS } from "@/utils/timeUtils";
 import { useAppStore } from "@/store/appStore";
 
 // Hook corregido para StudyTimer
@@ -98,30 +99,13 @@ export function usePomoTimer(callback: (remaining: number) => void, duration: nu
   }, [isRunning, duration, initialRemaining, syncTimers, setStudyRunning]);
 }
 
-// Format time in seconds to "Xh Ym" format
+// Format time in seconds to "HH:MM:SS" format
 export const formatStudyTime = (totalSeconds: number | string, roundUp: boolean = false): string => {
   try {
-    // If input is a string in HH:MM:SS format, convert it to seconds first
-    let seconds = 0;
-    if (typeof totalSeconds === 'string') {
-      const parts = totalSeconds.split(':');
-      if (parts.length === 3) {
-        const [hh, mm, ss] = parts.map(Number);
-        if (hh !== undefined && mm !== undefined && ss !== undefined) {
-          seconds = hh * 3600 + mm * 60 + ss;
-        }
-      } else {
-        seconds = Number(totalSeconds) || 0;
-      }
-    } else {
-      seconds = Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
-    }
-    
-    const hours = Math.floor(seconds / 3600);
-    const remainingSeconds = seconds % 3600;
-    const minutes = Math.floor(remainingSeconds / 60);
-    const secs = Math.floor(remainingSeconds % 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const seconds = typeof totalSeconds === 'string'
+      ? durationToSeconds(totalSeconds)
+      : Math.max(0, roundUp ? Math.ceil(totalSeconds) : Math.floor(totalSeconds));
+    return formatHMS(seconds);
   } catch (error) {
     console.error('Error formatting study time:', error);
     return '00:00:00';
@@ -132,12 +116,10 @@ export const formatPomoTime = (totalSeconds: number, roundUp: boolean = false) =
   try {
     // Ensure totalSeconds is a valid number
     const s = Math.max(0, Math.floor(roundUp ? Math.ceil(totalSeconds) : totalSeconds));
-    const minutes = Math.floor(s / 60);
-    const seconds = Math.floor(s % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return formatHMS(s);
   } catch (error) {
     console.error('Error formatting pomo time:', error);
-    return '00:00';
+    return '00:00:00';
   }
 };
 
