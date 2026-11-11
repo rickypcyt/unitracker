@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import NotesCreateModal from '@/modals/notes/NotesCreateModal';
 import { getLocalDateString } from '@/utils/dateUtils';
+import { useTranslation } from 'react-i18next';
 
 interface WelcomeViewProps {
   onCreateNote: (assignment?: string) => void;
@@ -15,8 +16,8 @@ interface WelcomeViewProps {
 }
 
 // Simple markdown renderer for preview
-const renderMarkdownPreview = (text: string, maxLength: number = 200): string => {
-  if (!text) return 'No description';
+const renderMarkdownPreview = (text: string, maxLength: number = 200, emptyLabel: string = 'No description'): string => {
+  if (!text) return emptyLabel;
   
   // Remove HTML tags first
   let cleanText = text.replace(/<[^>]*>/g, '');
@@ -52,6 +53,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   onNoteSelect, 
   selectedNoteId, 
   }) => {
+  const { t, i18n } = useTranslation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [modalAssignment, setModalAssignment] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,12 +71,12 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
   const notesByAssignmentFiltered = useMemo(() => {
     const grouped: Record<string, any[]> = {};
     filteredNotes.forEach(note => {
-      const assignment = note.assignment || 'Unassigned';
+      const assignment = note.assignment || t('notes.unassigned');
       if (!grouped[assignment]) grouped[assignment] = [];
       grouped[assignment].push(note);
     });
     return grouped;
-  }, [filteredNotes]);
+  }, [filteredNotes, t]);
   
   const handleOpenCreateModal = (assignment?: string) => {
     setModalAssignment(assignment || '');
@@ -100,14 +102,14 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
               <BookOpen size={20} className="text-[var(--accent-primary)]" />
-              Notes ({notes.length})
+              {t('notes.titleWithCount', { count: notes.length })}
             </h2>
             <button
               onClick={() => handleOpenCreateModal()}
               className="inline-flex items-center justify-center gap-1.5 px-3 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
             >
               <Plus size={16} />
-              New
+              {t('notes.newNote')}
             </button>
           </div>
           {notes.length > 0 && (
@@ -117,7 +119,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes..."
+                placeholder={t('notes.searchPlaceholderShort')}
                 className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
               />
             </div>
@@ -130,14 +132,14 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-                <p className="text-[var(--text-secondary)] text-sm">Loading notes...</p>
+                <p className="text-[var(--text-secondary)] text-sm">{t('notes.loadingNotes')}</p>
               </div>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <div className="text-red-500 mb-4 text-sm">{error}</div>
-                <p className="text-[var(--text-secondary)] text-sm">Failed to load notes</p>
+                <p className="text-[var(--text-secondary)] text-sm">{t('notes.loadFailed')}</p>
               </div>
             </div>
           ) : notes.length === 0 ? (
@@ -147,23 +149,23 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                   <div className="absolute inset-0 bg-[var(--accent-primary)]/20 blur-2xl rounded-full"></div>
                   <FileText className="relative mx-auto w-16 h-16 text-[var(--accent-primary)] opacity-80" />
                 </div>
-                <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Welcome to Notes</h3>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">{t('notes.welcomeTitle')}</h3>
                 <p className="text-[var(--text-secondary)] mb-6 leading-relaxed text-sm">
-                  Start organizing your thoughts and ideas. Create your first note to get started.
+                  {t('notes.welcomeDesc')}
                 </p>
                 <button
                   onClick={() => handleOpenCreateModal()}
                   className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
                 >
                   <Plus size={18} />
-                  Create your first note
+                  {t('notes.createFirstNote')}
                 </button>
               </div>
             </div>
           ) : Object.keys(notesByAssignmentFiltered).length === 0 ? (
             <div className="text-center py-16 px-6">
               <Search className="mx-auto mb-3 w-10 h-10 text-[var(--text-secondary)] opacity-40" />
-              <p className="text-[var(--text-secondary)] text-sm">No notes match your search</p>
+              <p className="text-[var(--text-secondary)] text-sm">{t('notes.noMatch')}</p>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
@@ -180,7 +182,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                     <button
                       onClick={() => handleOpenCreateModal(assignment)}
                       className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-all duration-200 hover:scale-110"
-                      title={`Create new note in ${assignment}`}
+                      title={t('notes.createNoteInAssignment', { assignment })}
                     >
                       <Plus size={15} />
                     </button>
@@ -204,12 +206,12 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                                 {note.title}
                               </h4>
                               <div className="text-[var(--text-secondary)] text-xs leading-relaxed line-clamp-2">
-                                {renderMarkdownPreview(note.description, 100)}
+                                {renderMarkdownPreview(note.description, 100, t('notes.emptyNote'))}
                               </div>
                             </div>
                             <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)] flex-shrink-0 mt-0.5">
                               <Calendar size={11} />
-                              <span>{note.date ? new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</span>
+                              <span>{note.date ? new Date(note.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) : ''}</span>
                             </div>
                           </div>
                         </div>
@@ -243,25 +245,25 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
 
               {/* Title */}
               <p className="text-[var(--text-secondary)] text-center mb-8 leading-relaxed">
-                Create rich markdown notes, organize by assignments, and access your study materials anywhere.
+                {t('notes.heroDesc')}
               </p>
 
               {/* Feature highlights */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Sparkles className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Rich Markdown</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">Format with bold, italic, lists</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{t('notes.featureMarkdown')}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">{t('notes.featureMarkdownDesc')}</p>
                 </div>
                 <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Folder className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Organized</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">Group notes by assignment</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{t('notes.featureOrganized')}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">{t('notes.featureOrganizedDesc')}</p>
                 </div>
                 <div className="text-center p-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
                   <Tag className="mx-auto mb-2 w-6 h-6 text-[var(--accent-primary)]" />
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Searchable</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1">Find notes instantly</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{t('notes.featureSearchable')}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">{t('notes.featureSearchableDesc')}</p>
                 </div>
               </div>
 
@@ -272,7 +274,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                   className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-xl hover:bg-[var(--accent-primary)]/10 hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
                 >
                   <Plus size={18} />
-                  Create your first note
+                  {t('notes.createFirstNote')}
                 </button>
               </div>
             </div>
@@ -288,7 +290,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search notes by title, assignment, or content..."
+                  placeholder={t('notes.searchPlaceholder')}
                   className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
                 />
               </div>
@@ -298,7 +300,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
               {Object.keys(notesByAssignmentFiltered).length === 0 ? (
                 <div className="text-center py-20">
                   <Search className="mx-auto mb-3 w-12 h-12 text-[var(--text-secondary)] opacity-40" />
-                  <p className="text-[var(--text-secondary)]">No notes match your search</p>
+                  <p className="text-[var(--text-secondary)]">{t('notes.noMatch')}</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -308,7 +310,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-[var(--border-primary)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/5 transition-all duration-200 text-sm font-medium"
                   >
                     <Plus size={18} />
-                    New Note
+                    {t('notes.newNote')}
                   </button>
 
                   {Object.entries(notesByAssignmentFiltered).map(([assignment, assignmentNotes]) => (
@@ -327,7 +329,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                         <button
                           onClick={() => handleOpenCreateModal(assignment)}
                           className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-all duration-200 hover:scale-110"
-                          title={`Create new note in ${assignment}`}
+                          title={t('notes.createNoteInAssignment', { assignment })}
                         >
                           <Plus size={15} />
                         </button>
@@ -356,11 +358,11 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)] flex-shrink-0">
                                   <Calendar size={11} />
-                                  <span>{note.date ? new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</span>
+                                  <span>{note.date ? new Date(note.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) : ''}</span>
                                 </div>
                               </div>
                               <p className="text-xs text-[var(--text-secondary)] line-clamp-2 pl-6">
-                                {renderMarkdownPreview(note.description, 150)}
+                                {renderMarkdownPreview(note.description, 150, t('notes.emptyNote'))}
                               </p>
                             </div>
                           );

@@ -1,8 +1,10 @@
 import { ChevronDown, ChevronRight, FileText, Folder, Plus, Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 // Utility function to get time ago string
-const getTimeAgo = (dateStr: string | null | undefined): string => {
+const getTimeAgo = (dateStr: string | null | undefined, t: TFunction, locale: string): string => {
   if (!dateStr) return '';
 
   const now = new Date();
@@ -12,12 +14,12 @@ const getTimeAgo = (dateStr: string | null | undefined): string => {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffMins < 1) return t('notes.timeJustNow');
+  if (diffMins < 60) return t('notes.timeMinutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('notes.timeHoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('notes.timeDaysAgo', { count: diffDays });
 
-  return date.toLocaleDateString();
+  return date.toLocaleDateString(locale);
 };
 
 interface Note {
@@ -48,6 +50,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   onNoteSelect,
   onCreateNote,
 }) => {
+  const { t, i18n } = useTranslation();
   // Get initial state from localStorage
   const getInitialState = (): Set<string> => {
     try {
@@ -93,7 +96,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
       }
       
       seenNotes.add(noteId);
-      const assignment = note.assignment || 'Unassigned';
+      const assignment = note.assignment || t('notes.unassigned');
       if (!grouped[assignment]) {
         grouped[assignment] = [];
       }
@@ -101,7 +104,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     });
 
     return grouped;
-  }, [notes]);
+  }, [notes, t]);
 
   const toggleAssignment = (assignment: string) => {
     const newExpanded = new Set(expandedAssignments);
@@ -136,7 +139,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search notes..."
+            placeholder={t('notes.searchPlaceholderShort')}
             className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
           />
         </div>
@@ -147,7 +150,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
           <div className="text-center py-8">
             <FileText className="mx-auto mb-2 w-8 h-8 text-[var(--text-secondary)] opacity-50" />
             <p className="text-sm text-[var(--text-secondary)]">
-              {searchQuery ? 'No notes match your search' : 'No notes yet'}
+              {searchQuery ? t('notes.noMatch') : t('notes.noNotesYet')}
             </p>
           </div>
         ) : (
@@ -177,7 +180,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                   <button
                     onClick={() => onCreateNote(assignment)}
                     className="px-2.5 py-2.5 bg-[var(--bg-primary)] border-l border-[var(--border-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-                    title={`Create new note for "${assignment}"`}
+                    title={t('notes.createNoteInAssignment', { assignment })}
                   >
                     <Plus size={14} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" />
                   </button>
@@ -204,7 +207,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                               </h4>
                               <div className="mt-0.5">
                                 <p className="text-xs text-[var(--text-secondary)]">
-                                  Updated {getTimeAgo(note.last_edited)}
+                                  {t('notes.updated', { time: getTimeAgo(note.last_edited, t, i18n.language) })}
                                 </p>
                               </div>
                             </div>
@@ -223,10 +226,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
         <button
           onClick={() => onCreateNote()}
           className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-medium"
-          aria-label="Create note"
+          aria-label={t('notes.createNote')}
         >
           <Plus size={16} className="text-[var(--accent-primary)]" />
-          <span>Create note</span>
+          <span>{t('notes.createNote')}</span>
         </button>
       </div>
     </div>

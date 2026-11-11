@@ -1,5 +1,6 @@
 import { Bell, BellOff, MousePointerClick } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 
 import BaseModal from '@/modals/shared/BaseModal';
@@ -7,6 +8,7 @@ import { useNotificationPromptStore } from '@/store/notificationPromptStore';
 import { getDesktopPermission } from '@/utils/desktopNotifications';
 
 const NotificationPromptModal = () => {
+  const { t } = useTranslation();
   const { isOpen, close } = useNotificationPromptStore();
   // When the browser has hard-blocked us, the only fix is the site settings UI.
   const [showHelp, setShowHelp] = useState(false);
@@ -23,7 +25,7 @@ const NotificationPromptModal = () => {
     try {
       const result = await Notification.requestPermission();
       if (result === 'granted') {
-        toast.success('Notifications enabled — you\'ll get timer alerts.');
+        toast.success(t('notifications.enabled'));
         close();
       } else {
         setShowHelp(true);
@@ -34,30 +36,29 @@ const NotificationPromptModal = () => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={close} title="Turn on notifications">
+    <BaseModal isOpen={isOpen} onClose={close} title={t('notifications.title')}>
       <div className="flex flex-col items-center text-center">
         <div className="w-14 h-14 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
           <Bell size={28} className="text-[var(--accent-primary)]" />
         </div>
         <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-          Get an alert when your pomodoro, break, or countdown finishes — even
-          when UniTracker is in the background or on another tab.
+          {t('notifications.description')}
         </p>
 
         {showHelp && (
           <div className="w-full mt-4 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-left">
             <div className="flex items-center gap-2 mb-2 text-[var(--text-primary)]">
               <BellOff size={16} />
-              <span className="text-sm font-semibold">Notifications are blocked for this site</span>
+              <span className="text-sm font-semibold">{t('notifications.blockedTitle')}</span>
             </div>
             <ol className="text-sm text-[var(--text-secondary)] space-y-1.5 list-decimal list-inside">
               <li className="flex items-start gap-1.5">
                 <MousePointerClick size={15} className="mt-0.5 shrink-0" />
-                <span>Click the lock / tune icon in your browser's address bar</span>
+                <span>{t('notifications.step1')}</span>
               </li>
-              <li>Open <strong>Site settings</strong></li>
-              <li>Set <strong>Notifications</strong> to <strong>Allow</strong></li>
-              <li>Reload this page</li>
+              <li><Trans i18nKey="notifications.step2" components={{ strong: <strong /> }} /></li>
+              <li><Trans i18nKey="notifications.step3" components={{ strong: <strong /> }} /></li>
+              <li>{t('notifications.step4')}</li>
             </ol>
           </div>
         )}
@@ -69,7 +70,7 @@ const NotificationPromptModal = () => {
           onClick={close}
           className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
         >
-          Not now
+          {t('notifications.notNow')}
         </button>
         {!showHelp && (
           <button
@@ -77,7 +78,7 @@ const NotificationPromptModal = () => {
             onClick={handleEnable}
             className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold bg-[var(--accent-primary)] text-white hover:opacity-90 transition-colors"
           >
-            Turn on notifications
+            {t('notifications.title')}
           </button>
         )}
       </div>

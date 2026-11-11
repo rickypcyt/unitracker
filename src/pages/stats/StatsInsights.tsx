@@ -1,6 +1,7 @@
 import { Calendar, Clock, Target, TrendingDown, TrendingUp } from 'lucide-react';
 
 import { getLocalDateString } from '@/utils/dateUtils';
+import i18n from '@/i18n';
 import { durationToSeconds, formatHMS } from '@/utils/timeUtils';
 import { useLaps } from '@/store/appStore';
 import { useMemo } from 'react';
@@ -117,7 +118,7 @@ const StatsInsights = () => {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
   };
 
   return (

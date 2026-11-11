@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import AutocompleteInput from "@/modals/shared/AutocompleteInput";
 import BaseModal from "@/modals/shared/BaseModal";
 import { supabase } from "@/utils/supabaseClient";
+import { useTranslation } from "react-i18next";
 import { useAppStore, useWorkspace } from "@/store/appStore";
 import { StudyService } from "@/services/StudyService";
 import { ALL_WORKSPACE_ID } from "@/hooks/tasks/useTaskBoard";
@@ -26,6 +27,7 @@ const StartSessionModal = ({
   onClose,
   onStart
 }: StartSessionModalProps) => {
+  const { t } = useTranslation();
   const {
     syncSettings
   } = useAppStore();
@@ -51,12 +53,12 @@ const StartSessionModal = ({
   const validateForm = useCallback(() => {
     const titleValid = sessionTitle.trim().length > 0;
     if (!titleValid) {
-      setTitleError("Session title is required");
+      setTitleError(t("session.startSession.titleRequired"));
     } else {
       setTitleError("");
     }
     return titleValid;
-  }, [sessionTitle]);
+  }, [sessionTitle, t]);
   useEffect(() => {
     setIsFormValid(sessionTitle.trim().length > 0 && !titleError);
   }, [sessionTitle, titleError]);
@@ -135,7 +137,7 @@ const StartSessionModal = ({
   // Initial data fetch when modal opens is now handled in the main useEffect above
 
   if (!isOpen) return null;
-  return <BaseModal isOpen={isOpen} onClose={onClose} title="Start Session" className="w-full px-4 sm:px-5" maxWidth="max-w-2xl" fullWidthOnMd={false}>
+  return <BaseModal isOpen={isOpen} onClose={onClose} title={t("session.startSession.title")} className="w-full px-4 sm:px-5" maxWidth="max-w-2xl" fullWidthOnMd={false}>
       <div className="space-y-6 w-full max-w-2xl mx-auto">
           {/* Session Details Section */}
           <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
@@ -143,42 +145,42 @@ const StartSessionModal = ({
               <div className="p-2 bg-[var(--accent-primary)]/10 rounded-lg">
                 <Target size={20} className="text-[var(--accent-primary)]" />
               </div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Session Details</h3>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">{t("session.startSession.details")}</h3>
             </div>
             
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label htmlFor="session-title" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-                    Session Title <span className="text-red-500">*</span>
+                    {t("session.startSession.sessionTitle")} <span className="text-red-500">*</span>
                   </label>
                   <FormInput id="session-title" label="" value={sessionTitle} onChange={value => {
                   setSessionTitle(value);
                   if (titleError && value.trim()) {
                     setTitleError("");
                   }
-                }} error={titleError} required placeholder="e.g., Algebra Homework" className="text-base" />
+                }} error={titleError} required placeholder={t("session.startSession.titlePlaceholder")} className="text-base" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="assignment" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-                    Assignment (optional)
+                    {t("session.startSession.assignmentOptional")}
                   </label>
-                  <AutocompleteInput id="assignment" value={assignment} onChange={setAssignment} placeholder="e.g., Math" suggestions={[]} />
+                  <AutocompleteInput id="assignment" value={assignment} onChange={setAssignment} placeholder={t("session.startSession.assignmentPlaceholder")} suggestions={[]} />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <label htmlFor="session-description" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-                  Description (optional)
+                  {t("session.startSession.descriptionOptional")}
                 </label>
-                <FormTextarea id="session-description" label="" value={sessionDescription} onChange={setSessionDescription} error="" placeholder="Add notes about what you want to accomplish..." className="w-full resize-none" rows={3} />
+                <FormTextarea id="session-description" label="" value={sessionDescription} onChange={setSessionDescription} error="" placeholder={t("session.startSession.descriptionPlaceholder")} className="w-full resize-none" rows={3} />
               </div>
 
               {/* Workspace selector */}
               <div className="space-y-2">
                 <label htmlFor="workspace" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
                   <Folder size={14} className="text-[var(--text-secondary)]" />
-                  Workspace (optional)
+                  {t("session.startSession.workspaceOptional")}
                 </label>
                 <select
                   id="workspace"
@@ -186,7 +188,7 @@ const StartSessionModal = ({
                   onChange={(e) => setWorkspaceId(e.target.value || null)}
                   className="w-full px-3 py-2.5 rounded-lg bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
                 >
-                  <option value="">No workspace</option>
+                  <option value="">{t("session.startSession.noWorkspace")}</option>
                   {workspaces.map((ws) => (
                     <option key={ws.id} value={ws.id}>
                       {ws.name}
@@ -197,7 +199,7 @@ const StartSessionModal = ({
 
               {/* Timer Sync Options */}
               <div className="space-y-3">
-                <h4 className="text-sm font-medium text-[var(--text-primary)]">Timer Options</h4>
+                <h4 className="text-sm font-medium text-[var(--text-primary)]">{t("session.startSession.timerOptions")}</h4>
                 <div className="flex flex-nowrap gap-2">
                   <button
                     type="button"
@@ -242,14 +244,14 @@ const StartSessionModal = ({
                 ? "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] cursor-not-allowed"
                 : "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
             }`}
-            aria-label={isSubmitting ? "Starting session" : "Start session"}
+            aria-label={isSubmitting ? t("session.startSession.startingAria") : t("session.startSession.startSessionAria")}
           >
             {isSubmitting ? <>
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-primary)] border-t-transparent" aria-hidden="true"></div>
-                <span>Starting...</span>
+                <span>{t("session.startSession.starting")}</span>
               </> : <>
                 <Play size={18} />
-                <span>Start Session</span>
+                <span>{t("session.startSession.startSession")}</span>
               </>}
           </button>
         </div>

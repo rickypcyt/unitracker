@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface MonthViewProps {
   calendarDays: Array<{
@@ -16,8 +17,6 @@ interface MonthViewProps {
   onDayContextMenu: (e: React.MouseEvent, date: Date) => void;
 }
 
-const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 const MonthView = ({
   calendarDays,
   hasTasksWithDeadline,
@@ -28,6 +27,11 @@ const MonthView = ({
   handleTouchEnd,
   onDayContextMenu,
 }: MonthViewProps) => {
+  const { i18n } = useTranslation();
+  const monday = new Date(2024, 0, 1); // known Monday
+  const weekdays = Array.from({ length: 7 }, (_, i) =>
+    new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i).toLocaleDateString(i18n.language, { weekday: 'narrow' })
+  );
   return (
     <div className="w-full mt-0 sm:mt-2 relative flex-1 min-h-0 overflow-y-auto">
       <div className="h-full w-full max-w-4xl mx-auto flex flex-col min-h-[200px] sm:min-h-[240px] rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] p-2 sm:p-3">

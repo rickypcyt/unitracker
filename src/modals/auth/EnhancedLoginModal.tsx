@@ -1,5 +1,6 @@
 import { Cloud, Database, Lock, Rocket, Users, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from '@/hooks/auth/useAuth';
 
@@ -9,6 +10,7 @@ interface EnhancedLoginModalProps {
 }
 
 const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogin }) => {
+  const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const { loginWithGoogle } = useAuth();
@@ -45,26 +47,10 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
   };
 
   const benefits = [
-    {
-      icon: Cloud,
-      title: "Cloud Sync",
-      description: "Access your data from anywhere, on any device"
-    },
-    {
-      icon: Database,
-      title: "Secure Storage",
-      description: "Your data is safely stored and encrypted"
-    },
-    {
-      icon: Users,
-      title: "Cross-Device",
-      description: "Seamlessly sync between phone, tablet, and computer"
-    },
-    {
-      icon: Rocket,
-      title: "Real-time Updates",
-      description: "Instant sync across all your devices"
-    }
+    { icon: Cloud, title: t('auth.login.cloudTitle'), description: t('auth.login.cloudDesc') },
+    { icon: Database, title: t('auth.login.secureTitle'), description: t('auth.login.secureDesc') },
+    { icon: Users, title: t('auth.login.crossTitle'), description: t('auth.login.crossDesc') },
+    { icon: Rocket, title: t('auth.login.realtimeTitle'), description: t('auth.login.realtimeDesc') }
   ];
 
   return (
@@ -89,11 +75,11 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         {/* Header Section */}
         <div className="flex flex-col items-center mb-4 sm:mb-6 relative z-10">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4 px-8 text-center">
-            Unlock Your Full Potential
+            {t('auth.login.title')}
           </h2>
-          
+
           <p className="hidden sm:block text-base text-[var(--text-secondary)] text-center leading-relaxed max-w-lg">
-            Sign in to sync your data across devices and unlock powerful features that will transform your productivity
+            {t('auth.login.subtitle')}
           </p>
         </div>
         
@@ -127,8 +113,8 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
                 <Database className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h3 className="font-semibold text-[var(--text-primary)]">Powered by Supabase OAuth</h3>
-                <p className="hidden sm:block text-sm text-[var(--text-secondary)]">Enterprise-grade authentication trusted by thousands</p>
+                <h3 className="font-semibold text-[var(--text-primary)]">{t('auth.login.poweredBy')}</h3>
+                <p className="hidden sm:block text-sm text-[var(--text-secondary)]">{t('auth.login.poweredByDesc')}</p>
               </div>
             </div>
           </div>
@@ -141,14 +127,14 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
             disabled={isLoggingIn}
             className="w-full group px-4 sm:px-6 py-3 sm:py-4 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 disabled:opacity-60"
           >
-            {isLoggingIn ? 'Redirecting to Google...' : 'Sign in with Google'}
+            {isLoggingIn ? t('auth.login.redirecting') : t('auth.login.signInGoogle')}
           </button>
           
           <button
             onClick={onClose}
             className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border-2 border-[var(--border-primary)]/30 font-medium"
           >
-            Let me look around first
+            {t('auth.login.lookAround')}
           </button>
         </div>
 
@@ -156,7 +142,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
         <div className="mt-3 sm:mt-4 text-center relative z-10">
           <p className="text-xs text-[var(--text-secondary)]">
             <Lock className="w-3 h-3 inline mr-1" />
-            Your data is private and secure. We never share your information.
+            {t('auth.login.privacy')}
           </p>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { Calendar, Edit2, Save, Tag, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { capitalizeFirst } from '@/utils/dateUtils';
 
 interface Note {
   id?: string;
@@ -26,6 +28,7 @@ const InfoRow: React.FC<{ icon: React.ReactNode; label: string; value?: string |
 );
 
 const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) => {
+  const { t, i18n } = useTranslation();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingAssignment, setIsEditingAssignment] = useState(false);
   const [title, setTitle] = useState(note.title);
@@ -63,10 +66,10 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
   };
 
   const createdDisplay = note.created_at
-    ? new Date(note.created_at).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+    ? capitalizeFirst(new Date(note.created_at).toLocaleDateString(i18n.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }))
     : '-';
   const editedDisplay = note.last_edited
-    ? new Date(note.last_edited).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+    ? capitalizeFirst(new Date(note.last_edited).toLocaleDateString(i18n.language, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }))
     : '-';
 
   return (
@@ -74,11 +77,11 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
       <div className="p-4 space-y-3 overflow-y-auto">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">Title</div>
+            <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{t('notes.fieldTitle')}</div>
             <button
               onClick={() => setIsEditingTitle(true)}
               className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-              title="Edit title"
+              title={t('notes.editTitleLabel')}
             >
               <Edit2 size={12} />
             </button>
@@ -106,14 +109,14 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
                 <button
                   onClick={handleTitleSave}
                   className="p-1 rounded text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-                  title="Save"
+                  title={t('common.save')}
                 >
                   <Save size={12} />
                 </button>
                 <button
                   onClick={handleTitleCancel}
                   className="p-1 rounded text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
-                  title="Cancel"
+                  title={t('common.cancel')}
                 >
                   <X size={12} />
                 </button>
@@ -128,11 +131,11 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">Assignment</div>
+            <div className="text-xs uppercase tracking-wide text-[var(--text-secondary)]">{t('notes.assignment')}</div>
             <button
               onClick={() => setIsEditingAssignment(true)}
               className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-              title="Edit assignment"
+              title={t('notes.editAssignmentLabel')}
             >
               <Edit2 size={12} />
             </button>
@@ -154,21 +157,21 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
                 }}
                 onBlur={handleAssignmentSave}
                 className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] text-sm"
-                placeholder="Assignment"
+                placeholder={t('notes.assignmentPlaceholder')}
                 autoFocus
               />
               <div className="flex gap-1">
                 <button
                   onClick={handleAssignmentSave}
                   className="p-1 rounded text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-                  title="Save"
+                  title={t('common.save')}
                 >
                   <Save size={12} />
                 </button>
                 <button
                   onClick={handleAssignmentCancel}
                   className="p-1 rounded text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
-                  title="Cancel"
+                  title={t('common.cancel')}
                 >
                   <X size={12} />
                 </button>
@@ -181,7 +184,7 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
                 className="text-[var(--text-primary)] cursor-text hover:bg-[var(--bg-primary)] rounded px-1 py-0.5 -mx-1 -my-0.5 transition-colors"
                 onClick={() => setIsEditingAssignment(true)}
               >
-                {note.assignment || 'Unassigned'}
+                {note.assignment || t('notes.unassigned')}
               </span>
             </div>
           )}
@@ -189,8 +192,8 @@ const NotesInfoPanel: React.FC<NotesInfoPanelProps> = ({ note, onUpdateNote }) =
 
         <div className="border-t border-[var(--border-primary)] pt-3 mt-1" />
 
-        <InfoRow icon={<Calendar size={14} />} label="Created:" value={createdDisplay} />
-        <InfoRow icon={<Calendar size={14} />} label="Last edited:" value={editedDisplay} />
+        <InfoRow icon={<Calendar size={14} />} label={t('notes.createdLabel')} value={createdDisplay} />
+        <InfoRow icon={<Calendar size={14} />} label={t('notes.lastEditedLabel')} value={editedDisplay} />
       </div>
     </div>
   );

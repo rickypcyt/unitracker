@@ -4,6 +4,21 @@ interface AccentColor {
   class: string;
 }
 
+/** Maps an accent color's display name to its i18n key under `accentColors`. */
+export const accentColorI18nKey = (name: string): string =>
+  'accentColors.' +
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+(.)/g, (_, c: string) => c.toUpperCase())
+    .replace(/[^a-z0-9]/g, '');
+
+/** Maps an accent color's display name to its description i18n key. */
+export const accentColorDescI18nKey = (name: string): string => {
+  const key = accentColorI18nKey(name).slice('accentColors.'.length);
+  return 'accentColors.desc' + key.charAt(0).toUpperCase() + key.slice(1);
+};
+
 export const ACCENT_COLORS: AccentColor[] = [
   // Primary Colors (Blue first as default)
   { name: "Blue", value: "#0A84FF", class: "bg-[#0A84FF]" },

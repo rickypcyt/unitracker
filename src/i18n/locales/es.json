@@ -170,7 +170,21 @@
     "loading": "Cargando…",
     "retry": "Reintentar",
     "overdue": "Vencida",
-    "noDueDate": "Sin fecha límite"
+    "noDueDate": "Sin fecha límite",
+    "months": [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre"
+    ]
   },
   "nav": {
     "planning": "Planificación",
@@ -221,13 +235,22 @@
       "added": "Añadido",
       "improved": "Mejorado",
       "fixed": "Corregido",
-      "comingSoon": "Próximamente"
+      "comingSoon": "Próximamente",
+      "removed": "Eliminado"
     },
     "about": {
       "theStory": "La historia",
       "aboutMe": "Sobre mí",
-      "getInTouch": "Contacto"
-    }
+      "getInTouch": "Contacto",
+      "title": "Acerca de UniTracker",
+      "storyBody": "UniTracker nació en diciembre de 2024 de una idea sencilla: crear una mejor forma de gestionar tareas y trabajos universitarios. Como estudiante, noté la necesidad de una herramienta que ayudara a organizar el trabajo académico de forma más eficaz, siendo a la vez intuitiva y fácil de usar.",
+      "aboutMeBody": "¡Hola! Soy Ricky, el creador de UniTracker. Me apasiona construir herramientas que faciliten la vida de los estudiantes. Este proyecto representa mi compromiso con mejorar la experiencia académica a través de la tecnología.",
+      "getInTouchBody": "Siempre estoy abierto a comentarios, sugerencias o simplemente a charlar sobre la app. Tanto si has encontrado un bug, tienes una petición de función o quieres compartir tu experiencia, ¡me encantaría saber de ti!",
+      "thankYou": "¡Gracias por usar UniTracker! Tu apoyo y comentarios ayudan a mejorar la app."
+    },
+    "releaseNotes": "Notas de la versión",
+    "githubNote": "Para documentación técnica detallada, visita nuestro repositorio de GitHub.",
+    "viewOnGitHub": "Ver en GitHub"
   },
   "session": {
     "loginToSync": "Inicia sesión para sincronizar tus sesiones",
@@ -276,6 +299,373 @@
       "playAll": "Reproducir todo",
       "pauseAll": "Pausar todo",
       "modalTitle": "Ajustes de ruido"
+    },
+    "layout": {
+      "button": "Diseño de página",
+      "options": {
+        "default": {
+          "label": "Predeterminado",
+          "description": "Temporizadores arriba, tareas y herramientas debajo"
+        },
+        "planning": {
+          "label": "Planificación primero",
+          "description": "Tareas y calendario sobre los temporizadores"
+        },
+        "focus": {
+          "label": "Enfoque",
+          "description": "Solo el temporizador y tus tareas"
+        },
+        "compact": {
+          "label": "Compacto",
+          "description": "Todo en menos filas"
+        }
+      }
+    },
+    "studyTimer": {
+      "title": "Sesiones",
+      "headerTooltip": "Registra tus sesiones de enfoque. Inicia una sesión, elige una tarea y tu tiempo se registra automáticamente para las estadísticas.",
+      "emptyHint": "Tus sesiones aparecerán aquí. Inicia una para registrar tu tiempo de enfoque.",
+      "configureSession": "Configurar sesión",
+      "resetTimer": "Reiniciar temporizador",
+      "addLapNote": "Añadir nota de vuelta",
+      "finishSession": "Finalizar sesión",
+      "cancelSession": "Cancelar sesión",
+      "timerAria": "Tiempo de la sesión actual",
+      "sessionTitle": "Título de la sesión",
+      "noSession": "Sin sesión",
+      "lastPaused": "Última pausa: {{time}}",
+      "pauseHistory": "Historial de pausas",
+      "now": "Ahora",
+      "pauseNumber": "Pausa n.º {{count}}",
+      "ongoing": "en curso",
+      "totalPaused": "Tiempo total en pausa",
+      "lapPlaceholder": "¿Qué acaba de pasar? Ej.: empecé a escribir el informe",
+      "saveLap": "Guardar vuelta",
+      "cancelLap": "Cancelar vuelta",
+      "deleteLap": "Eliminar vuelta",
+      "startNewSession": "Iniciar nueva sesión",
+      "resumeTimer": "Reanudar temporizador",
+      "pauseTimer": "Pausar temporizador",
+      "subtractMinutes": "Restar {{count}} minutos",
+      "addMinutes": "Añadir {{count}} minutos",
+      "timeAgo": "hace {{time}}",
+      "timeAgoJoin": "{{a}} y {{b}}",
+      "hoursAgo_one": "{{count}} hora",
+      "hoursAgo_other": "{{count}} horas",
+      "minutesAgo_one": "{{count}} minuto",
+      "minutesAgo_other": "{{count}} minutos",
+      "secondsAgo_one": "{{count}} segundo",
+      "secondsAgo_other": "{{count}} segundos",
+      "toastSaveLap": "No se pudo guardar la vuelta",
+      "toastNotAuth": "Usuario no autenticado",
+      "toastFinishError": "Ocurrió un error al finalizar la sesión.",
+      "toastDeleteError": "Ocurrió un error al eliminar la sesión.",
+      "toastStartError": "No se pudo iniciar la sesión.",
+      "toastLoadError": "Error al cargar la sesión",
+      "toastStartGeneric": "Error al iniciar la sesión",
+      "toastFinishAllError": "Error al finalizar las sesiones"
+    },
+    "startSession": {
+      "title": "Iniciar sesión",
+      "details": "Detalles de la sesión",
+      "sessionTitle": "Título de la sesión",
+      "titlePlaceholder": "Ej.: Tarea de álgebra",
+      "titleRequired": "El título de la sesión es obligatorio",
+      "assignmentOptional": "Asignatura (opcional)",
+      "assignmentPlaceholder": "Ej.: Matemáticas",
+      "descriptionOptional": "Descripción (opcional)",
+      "descriptionPlaceholder": "Añade notas sobre lo que quieres lograr...",
+      "workspaceOptional": "Espacio de trabajo (opcional)",
+      "noWorkspace": "Sin espacio de trabajo",
+      "timerOptions": "Opciones del temporizador",
+      "starting": "Iniciando...",
+      "startingAria": "Iniciando sesión",
+      "startSessionAria": "Iniciar sesión",
+      "startSession": "Iniciar sesión",
+      "startTimer": "Iniciar temporizador",
+      "menuAria": "Menú de inicio de sesión"
+    },
+    "unifiedTimer": {
+      "dockTimers": "Volver a fijar los temporizadores",
+      "sessionMenu": "Menú de sesión",
+      "toggleSync": "Alternar sincronización",
+      "syncOn": "Sincronización activada",
+      "syncOff": "Sincronización desactivada",
+      "configurePomodoro": "Configurar pomodoro",
+      "options": "Opciones",
+      "disableAlarm": "Desactivar alarma",
+      "enableAlarm": "Activar alarma",
+      "toggleAlarm": "Alternar alarma",
+      "floating": "Flotante",
+      "floatAria": "Abrir temporizadores en ventana flotante",
+      "floatTitle": "Abrir temporizadores en ventana flotante",
+      "floatTimers": "Temporizadores flotantes",
+      "sessionOptions": "Opciones de sesión",
+      "exitSession": "Salir de la sesión",
+      "deleteSession": "Eliminar sesión",
+      "studyLabel": "Estudio",
+      "pomodoroLabel": "Pomodoro",
+      "countdownLabel": "Cuenta regresiva"
+    }
+  },
+  "notes": {
+    "title": "Notas",
+    "titleWithCount": "Notas ({{count}})",
+    "yourLibrary": "Tu biblioteca de estudio",
+    "chooseAssignment": "Elige una asignatura para abrir sus notas.",
+    "notesInAssignment_one": "{{count}} nota en esta asignatura",
+    "notesInAssignment_other": "{{count}} notas en esta asignatura",
+    "noteCount_one": "{{count}} nota",
+    "noteCount_other": "{{count}} notas",
+    "newNote": "Nueva nota",
+    "createNewNote": "Crear nota nueva",
+    "createNote": "Crear nota",
+    "createFirstNote": "Crea tu primera nota",
+    "createNoteInAssignment": "Crear nota nueva en {{assignment}}",
+    "searchPlaceholder": "Buscar notas por título, asignatura o contenido...",
+    "searchPlaceholderShort": "Buscar notas...",
+    "refreshError": "Mostrando tus notas guardadas. No pudimos actualizarlas ahora mismo.",
+    "emptyTitle": "Tu biblioteca está vacía",
+    "emptyDesc": "Crea tu primera nota y se organizará automáticamente por fecha.",
+    "noMatch": "Ninguna nota coincide con tu búsqueda.",
+    "noNotesYet": "Aún no hay notas",
+    "unassigned": "Sin asignatura",
+    "undated": "Notas sin fecha",
+    "noDate": "Sin fecha",
+    "emptyNote": "Nota vacía",
+    "created": "Creada el {{date}}",
+    "edited": "Editada el {{date}}",
+    "lastEdited": "Última edición {{date}}",
+    "updated": "Actualizada {{time}}",
+    "back": "Volver",
+    "backToNotes": "Volver a notas",
+    "backToAssignments": "Volver a asignaturas",
+    "assignment": "Asignatura",
+    "assignmentLabel": "Asignatura:",
+    "addHere": "Añadir aquí",
+    "noteTitlePlaceholder": "Título de la nota",
+    "assignmentPlaceholder": "Asignatura",
+    "deleteNote": "Eliminar nota",
+    "deleteAria": "Eliminar {{title}}",
+    "editNote": "Editar nota",
+    "loadingNotes": "Cargando notas...",
+    "loadFailed": "Error al cargar las notas",
+    "saving": "Guardando...",
+    "saveChanges": "Guardar cambios",
+    "createTitle": "Crear nota",
+    "editTitle": "Editar nota",
+    "fieldTitle": "Título",
+    "titlePlaceholder": "Escribe el título de la nota...",
+    "assignmentOptional": "Asignatura (opcional)",
+    "assignmentNamePlaceholder": "Escribe el nombre de la asignatura...",
+    "deleteTitle": "Eliminar nota",
+    "deleteConfirm": "¿Seguro que quieres eliminar la nota \"{{title}}\"?",
+    "deleteWarning": "Esta acción no se puede deshacer.",
+    "untitled": "Sin título",
+    "errorLoading": "Error al cargar las notas",
+    "errorUpdate": "Error al actualizar la nota",
+    "errorDelete": "Error al eliminar la nota",
+    "errorGeneric": "Ocurrió un error",
+    "loginReminder": "Recuerda iniciar sesión primero",
+    "welcomeTitle": "Bienvenido a Notas",
+    "welcomeDesc": "Empieza a organizar tus ideas. Crea tu primera nota para comenzar.",
+    "heroDesc": "Crea notas en formato markdown, organízalas por asignaturas y accede a tus materiales de estudio desde cualquier lugar.",
+    "featureMarkdown": "Markdown completo",
+    "featureMarkdownDesc": "Negrita, cursiva, listas",
+    "featureOrganized": "Organizadas",
+    "featureOrganizedDesc": "Agrupa notas por asignatura",
+    "featureSearchable": "Buscables",
+    "featureSearchableDesc": "Encuentra notas al instante",
+    "timeJustNow": "ahora mismo",
+    "timeMinutesAgo_one": "hace {{count}} minuto",
+    "timeMinutesAgo_other": "hace {{count}} minutos",
+    "timeHoursAgo_one": "hace {{count}} hora",
+    "timeHoursAgo_other": "hace {{count}} horas",
+    "timeDaysAgo_one": "hace {{count}} día",
+    "timeDaysAgo_other": "hace {{count}} días",
+    "editTitleLabel": "Editar título",
+    "editAssignmentLabel": "Editar asignatura",
+    "createdLabel": "Creada:",
+    "lastEditedLabel": "Última edición:",
+    "showLess": "Mostrar menos",
+    "showAllNotes": "Mostrar todas las notas"
+  },
+  "habits": {
+    "title": "Hábitos",
+    "newHabit": "Nuevo hábito",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "currentStreak": "Racha actual",
+    "bestStreak": "Mejor racha",
+    "thisWeek": "Esta semana",
+    "totalCompletions": "Completados totales",
+    "daysStreak": "Racha de {{count}}d",
+    "daysBest": "Mejor {{count}}d",
+    "thisWeekCount": "{{done}}/7 esta semana",
+    "totalCount": "{{count}} en total",
+    "journalNotes": "Notas del diario",
+    "addNote": "Añade una nota...",
+    "emptyTitle": "Aún no hay hábitos",
+    "emptyMessage": "Crea tu primer hábito para empezar a construir rachas diarias y seguir tu constancia.",
+    "createFirst": "Crea tu primer hábito",
+    "loginTitle": "Registra tus hábitos diarios",
+    "loginMessage": "Inicia sesión para crear hábitos, construir rachas y seguir tu progreso diario. Empieza a crear rutinas de estudio constantes hoy.",
+    "loginCta": "Inicia sesión para empezar",
+    "markAria": "Marcar {{name}} para {{date}}",
+    "unmarkAria": "Desmarcar {{name}} para {{date}}",
+    "loadingAria": "Cargando hábitos",
+    "habitName": "Nombre del hábito",
+    "habitNamePlaceholder": "Ej.: Ejercicio, leer 30 minutos...",
+    "habitNameEditPlaceholder": "Escribe el nombre del hábito...",
+    "createTitle": "Crear nuevo hábito",
+    "editTitle": "Editar hábito",
+    "create": "Crear"
+  },
+  "notifications": {
+    "title": "Activa las notificaciones",
+    "description": "Recibe una alerta cuando termine tu pomodoro, descanso o cuenta regresiva, aunque UniTracker esté en segundo plano o en otra pestaña.",
+    "blockedTitle": "Las notificaciones están bloqueadas para este sitio",
+    "step1": "Haz clic en el icono del candado / ajustes en la barra de direcciones del navegador",
+    "step2": "Abre <strong>Configuración del sitio</strong>",
+    "step3": "Cambia <strong>Notificaciones</strong> a <strong>Permitir</strong>",
+    "step4": "Recarga esta página",
+    "notNow": "Ahora no",
+    "enabled": "Notificaciones activadas: recibirás alertas del temporizador."
+  },
+  "welcome": {
+    "tagline": "Tu compañero de estudio todo en uno",
+    "subtitle": "Organiza tu tiempo, aumenta tu productividad y sigue tu progreso académico con una app bonita, moderna e intuitiva.",
+    "aiTitle": "Creación de tareas con IA",
+    "aiDesc": "Crea tareas rápidamente con asistencia de IA. Deja que nuestro sistema inteligente te ayude a organizar tus sesiones de estudio.",
+    "statsTitle": "Estadísticas semanales y mensuales",
+    "statsDesc": "Sigue tu progreso y productividad con análisis completos y visualizaciones atractivas.",
+    "calendarTitle": "Planificación con calendario",
+    "calendarDesc": "Planifica sesiones y fechas límite visualmente con nuestro sistema de calendario intuitivo.",
+    "tasksTitle": "Sistema de tareas avanzado",
+    "tasksDesc": "Organízate con el tablero kanban y gestiona tu flujo de trabajo eficientemente.",
+    "getStarted": "Empezar",
+    "footer": "Únete a miles de estudiantes mejorando su productividad"
+  },
+  "accentColors": {
+    "title": "Elige tu color de acento",
+    "subtitle": "Elige un color que refleje tu estilo",
+    "choose": "Elegir como color de acento",
+    "keep": "Mantener color actual",
+    "selectAria": "Seleccionar {{name}} como color de acento",
+    "blue": "Azul",
+    "purple": "Morado",
+    "pink": "Rosa",
+    "orange": "Naranja",
+    "green": "Verde",
+    "red": "Rojo",
+    "teal": "Verde azulado",
+    "indigo": "Añil",
+    "matrixGreen": "Verde Matrix",
+    "neonRed": "Rojo neón",
+    "deepBlue": "Azul profundo",
+    "deepGreen": "Verde profundo",
+    "rose": "Rosado",
+    "deepPurple": "Morado profundo",
+    "amber": "Ámbar",
+    "coral": "Coral",
+    "mint": "Menta",
+    "peach": "Melocotón",
+    "lavender": "Lavanda",
+    "yellow": "Amarillo",
+    "pastelPink": "Rosa pastel",
+    "descBlue": "Azul clásico",
+    "descPurple": "Morado creativo",
+    "descPink": "Rosa juguetón",
+    "descOrange": "Naranja enérgico",
+    "descGreen": "Verde fresco",
+    "descRed": "Rojo audaz",
+    "descTeal": "Verde azulado tranquilo",
+    "descIndigo": "Añil profundo"
+  },
+  "auth": {
+    "login": {
+      "title": "Desbloquea todo tu potencial",
+      "subtitle": "Inicia sesión para sincronizar tus datos entre dispositivos y desbloquear funciones potentes que transformarán tu productividad",
+      "cloudTitle": "Sincronización en la nube",
+      "cloudDesc": "Accede a tus datos desde cualquier lugar y dispositivo",
+      "secureTitle": "Almacenamiento seguro",
+      "secureDesc": "Tus datos se guardan cifrados y de forma segura",
+      "crossTitle": "Multidispositivo",
+      "crossDesc": "Sincroniza sin fricción entre móvil, tablet y ordenador",
+      "realtimeTitle": "Actualizaciones en tiempo real",
+      "realtimeDesc": "Sincronización instantánea en todos tus dispositivos",
+      "poweredBy": "Con tecnología de Supabase OAuth",
+      "poweredByDesc": "Autenticación de nivel empresarial en la que confían miles de personas",
+      "redirecting": "Redirigiendo a Google...",
+      "signInGoogle": "Iniciar sesión con Google",
+      "lookAround": "Primero quiero echar un vistazo",
+      "privacy": "Tus datos son privados y seguros. Nunca compartimos tu información.",
+      "required": "Inicio de sesión requerido",
+      "syncNote": "Al iniciar sesión se guardarán y sincronizarán tus tareas en la nube.",
+      "logInGoogle": "Iniciar sesión con Google"
+    }
+  },
+  "calendar": {
+    "dayOptions": "Opciones del día",
+    "createEvent": "Crear evento"
+  },
+  "demo": {
+    "suffix": "(demo)",
+    "workspaces": {
+      "university": "Universidad",
+      "work": "Trabajo"
+    },
+    "assignments": {
+      "advMath": "Matemáticas avanzadas",
+      "webProject": "Proyecto web"
+    },
+    "tasks": {
+      "calculus": "Resolver ejercicios de cálculo",
+      "theorems": "Repasar teoremas",
+      "restApi": "Implementar API REST"
+    },
+    "notes": {
+      "formulas": {
+        "title": "Fórmulas importantes",
+        "desc": "Integración por partes: ∫u dv = uv - ∫v du. Regla de la cadena para derivadas."
+      },
+      "meeting": {
+        "title": "Reunión con el cliente",
+        "desc": "Discutir los requisitos del nuevo módulo de pagos. Entrega: el próximo viernes."
+      },
+      "design": {
+        "title": "Ideas de diseño",
+        "desc": "Investigar patrones de diseño para mejorar la arquitectura del sistema. Considerar MVC y microservicios."
+      }
+    },
+    "sessions": {
+      "mathStudy": "Estudio de matemáticas",
+      "webProgramming": "Programación web",
+      "examPrep": "Preparación de examen",
+      "debugging": "Depuración de código",
+      "frameworkResearch": "Investigación de frameworks"
+    },
+    "habits": {
+      "study": {
+        "name": "Estudiar",
+        "desc": "Estudiar 1 hora cada mañana antes de desayunar"
+      },
+      "exercise": {
+        "name": "Ejercicio",
+        "desc": "Tomar un descanso de 15 minutos cada 2 horas de estudio"
+      },
+      "code": {
+        "name": "Programar",
+        "desc": "Revisar y refactorizar código 30 minutos al día"
+      },
+      "project": {
+        "name": "Proyecto",
+        "desc": "Planificar tareas y objetivos semanales cada domingo"
+      },
+      "reading": {
+        "name": "Lectura",
+        "desc": "Leer 2 artículos técnicos por semana"
+      }
     }
   }
 }

@@ -1,5 +1,6 @@
 import { Calendar, ChevronDown, ChevronRight, FileText, Folder, Plus, Trash2, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Note {
   id?: string;
@@ -33,6 +34,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t, i18n } = useTranslation();
   const [expandedAssignments, setExpandedAssignments] = useState<Set<string>>(new Set());
 
   // Group notes by assignment and remove duplicates
@@ -50,7 +52,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
       }
       
       seenNotes.add(noteId);
-      const assignment = note.assignment || 'Unassigned';
+      const assignment = note.assignment || t('notes.unassigned');
       if (!grouped[assignment]) {
         grouped[assignment] = [];
       }
@@ -58,7 +60,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
     });
 
     return grouped;
-  }, [notes]);
+  }, [notes, t]);
 
   const toggleAssignment = (assignment: string) => {
     const newExpanded = new Set(expandedAssignments);
@@ -84,7 +86,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-primary)]">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <FileText size={20} />
-            Notes ({notes.length})
+            {t('notes.titleWithCount', { count: notes.length })}
           </h2>
           <button
             onClick={onClose}
@@ -100,26 +102,26 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-                <p className="text-[var(--text-secondary)]">Loading notes...</p>
+                <p className="text-[var(--text-secondary)]">{t('notes.loadingNotes')}</p>
               </div>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="text-red-500 mb-4">{error}</div>
-                <p className="text-[var(--text-secondary)]">Failed to load notes</p>
+                <p className="text-[var(--text-secondary)]">{t('notes.loadFailed')}</p>
               </div>
             </div>
           ) : Object.keys(notesByAssignment).length === 0 ? (
             <div className="text-center py-8">
               <FileText className="mx-auto mb-4 w-12 h-12 text-[var(--text-secondary)] opacity-50" />
-              <p className="text-[var(--text-secondary)] mb-4">No notes yet</p>
+              <p className="text-[var(--text-secondary)] mb-4">{t('notes.noNotesYet')}</p>
               <button
                 onClick={onCreateNote}
                 className="inline-flex items-center gap-2 px-4 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 <Plus size={16} />
-                Create your first note
+                {t('notes.createFirstNote')}
               </button>
             </div>
           ) : (
@@ -171,7 +173,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
                                     <Calendar size={12} />
-                                    <span>{note.date ? new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</span>
+                                    <span>{note.date ? new Date(note.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) : ''}</span>
                                   </div>
                                   <button
                                     onClick={(e) => {
@@ -179,7 +181,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
                                       onDelete(note);
                                     }}
                                     className="p-1 rounded text-red-500 hover:bg-red-500/10 transition-colors"
-                                    title="Delete"
+                                    title={t('common.delete')}
                                   >
                                     <Trash2 size={14} />
                                   </button>
@@ -208,7 +210,7 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
               className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
             >
               <Plus size={16} />
-              Create New Note
+              {t('notes.createNewNote')}
             </button>
           </div>
         )}

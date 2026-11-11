@@ -1,6 +1,15 @@
+import i18n from '@/i18n';
+
 /**
  * Utility functions for date formatting and manipulation
  */
+
+/**
+ * Capitalizes the first letter of a string (e.g. localized weekday/month names).
+ */
+export function capitalizeFirst(str: string): string {
+  return str.replace(/\p{L}/u, (c) => c.toUpperCase());
+}
 
 /**
  * Gets the current date in local timezone as YYYY-MM-DD string
@@ -133,8 +142,8 @@ export function formatDateShort(dateStr: string | null | undefined): string {
     const [year, month, day] = dateOnly.split('-').map(Number);
     if (!year || !month || !day) return "";
     const date = new Date(year, month - 1, day);
-    const weekday = date.toLocaleString('en-US', { weekday: 'short' });
-    const monthName = date.toLocaleString('en-US', { month: 'short' });
+    const weekday = capitalizeFirst(date.toLocaleString(i18n.language, { weekday: 'short' }));
+    const monthName = date.toLocaleString(i18n.language, { month: 'short' });
     return `${weekday}, ${monthName} ${day}`;
 }
 

@@ -10,7 +10,8 @@ import {
 } from "@dnd-kit/core";
 import { getOccurrenceForDate, isRecurringTask } from "@/utils/recurrenceUtils";
 import { useEffect, useRef, useState } from "react";
-import { getLocalDateString } from "@/utils/dateUtils";
+import { capitalizeFirst, getLocalDateString } from "@/utils/dateUtils";
+import { useTranslation } from "react-i18next";
 import { handleAddTask } from "../utils/calendarUtils";
 import { isSameDay } from "date-fns";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
@@ -45,6 +46,7 @@ const WeekView = ({
   onTaskContextMenu,
   onDayContextMenu,
 }: WeekViewProps) => {
+  const { i18n } = useTranslation();
   const [isMobile, setIsMobile] = useState(false);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [draggedTaskData, setDraggedTaskData] = useState<any>(null);
@@ -280,7 +282,7 @@ const WeekView = ({
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
-                    {day.toLocaleDateString("en", { weekday: "short" })}
+                    {capitalizeFirst(day.toLocaleDateString(i18n.language, { weekday: "short" }))}
                   </div>
                   <div
                     className={`text-sm sm:text-lg flex items-center justify-center mx-auto mt-0.5 sm:mt-1 font-semibold ${

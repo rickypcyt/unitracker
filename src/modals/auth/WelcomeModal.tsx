@@ -1,11 +1,13 @@
 import { ArrowRight, BarChart2, Calendar, CheckCircle2, Clock, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface WelcomeModalProps {
   onClose: () => void;
 }
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -78,11 +80,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </div>
           
           <h2 className="font-semibold text-[var(--text-primary)] text-center bg-gradient-to-r from-[var(--text-primary)] to-[var(--accent-primary)] bg-clip-text text-transparent" style={{ fontSize: 'clamp(1rem, 0.9rem + 0.6vw, 1.5rem)', marginBottom: 'clamp(0.375rem, 0.3rem + 0.3vw, 0.75rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)' }}>
-            Your all-in-one study companion
+            {t('welcome.tagline')}
           </h2>
           
           <p className="text-[var(--text-secondary)] text-center max-w-2xl leading-relaxed" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 0.75rem)' }}>
-            Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.
+            {t('welcome.subtitle')}
           </p>
         </div>
         
@@ -94,8 +96,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                 <Clock className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>AI Task Creation</h3>
-                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>{t('welcome.aiTitle')}</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>{t('welcome.aiDesc')}</p>
               </div>
             </div>
           </div>
@@ -106,8 +108,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                 <BarChart2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Weekly & Monthly Stats</h3>
-                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Track your progress and productivity with comprehensive analytics and beautiful visualizations.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>{t('welcome.statsTitle')}</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>{t('welcome.statsDesc')}</p>
               </div>
             </div>
           </div>
@@ -118,8 +120,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                 <Calendar className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Calendar Planning</h3>
-                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Plan sessions and deadlines visually with our intuitive calendar system.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>{t('welcome.calendarTitle')}</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>{t('welcome.calendarDesc')}</p>
               </div>
             </div>
           </div>
@@ -130,8 +132,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                 <CheckCircle2 className="text-[var(--accent-primary)]" style={{ width: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)', height: 'clamp(1rem, 0.9rem + 0.4vw, 1.5rem)' }} />
               </div>
               <div>
-                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>Advanced Task System</h3>
-                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>Organize with kanban board system and manage your workflow efficiently.</p>
+                <h3 className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', marginBottom: 'clamp(0.125rem, 0.1rem + 0.1vw, 0.25rem)' }}>{t('welcome.tasksTitle')}</h3>
+                <p className="text-[var(--text-secondary)] leading-relaxed" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)' }}>{t('welcome.tasksDesc')}</p>
               </div>
             </div>
           </div>
@@ -144,12 +146,12 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
             style={{ paddingLeft: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingRight: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingTop: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', paddingBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', gap: 'clamp(0.375rem, 0.3rem + 0.3vw, 0.75rem)', minHeight: 'clamp(2.75rem, 2.5rem + 0.5vw, 3rem)' }}
             onClick={onClose}
           >
-            Get Started
+            {t('welcome.getStarted')}
             <ArrowRight className="transition-transform duration-300" style={{ width: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)' }} />
           </button>
           
           <p className="text-[var(--text-secondary)] opacity-70 text-center" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)' }}>
-            Join thousands of students improving their productivity
+            {t('welcome.footer')}
           </p>
         </div>
       </div>

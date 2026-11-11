@@ -1,6 +1,7 @@
 import BaseModal from '@/modals/shared/BaseModal';
 import NotesForm from '@/pages/notes/NotesForm';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Note {
   id?: string;
@@ -30,11 +31,12 @@ const NotesCreateModal: React.FC<NotesCreateModalProps> = ({
   initialValues, 
   isEdit = false 
 }) => {
+  const { t } = useTranslation();
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? 'Edit Note' : 'Create Note'}
+      title={isEdit ? t('notes.editTitle') : t('notes.createTitle')}
       maxWidth="max-w-lg"
     >
       <NotesForm

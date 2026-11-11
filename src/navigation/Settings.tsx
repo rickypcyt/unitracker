@@ -1,7 +1,8 @@
 import { BookOpen, LogIn, LogOut, Monitor, Moon, Settings as SettingsIcon, Sun, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { ACCENT_COLORS } from '@/utils/theme';
+import { ACCENT_COLORS, accentColorI18nKey } from '@/utils/theme';
+import { useTranslation } from 'react-i18next';
 import BaseModal from '@/modals/shared/BaseModal';
 import DeleteCompletedModal from '@/modals/tasks/DeleteTasksPop';
 import ManageAssignmentsModal from '@/modals/tasks/ManageAssignmentsModal';
@@ -24,6 +25,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
     themePreference,
     handleThemeChange,
   } = useTheme();
+  const { t } = useTranslation();
   const [showManageAssignments, setShowManageAssignments] = useState(false);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [showStudySessions, setShowStudySessions] = useState(false);
@@ -150,7 +152,7 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
 
               {/* Accent Color Section */}
               <div className="bg-[var(--bg-secondary)] p-4 rounded-lg">
-                <h4 className="text-sm font-medium mb-3 text-[var(--text-primary)]">Accent Color</h4>
+                <h4 className="text-sm font-medium mb-3 text-[var(--text-primary)]">{t('settings.accentColor')}</h4>
                 <div className="grid grid-cols-6 gap-2">
                   {ACCENT_COLORS.map((color) => (
                     <button
@@ -161,10 +163,10 @@ const Settings: React.FC<SettingsProps> = ({ isOpen, onClose }) => {
                           ? 'ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)]'
                           : 'hover:opacity-80'
                       } ${color.class}`}
-                      aria-label={`Select ${color.name} accent color`}
-                      title={color.name}
+                      aria-label={t('accentColors.selectAria', { name: t(accentColorI18nKey(color.name)) })}
+                      title={t(accentColorI18nKey(color.name))}
                     >
-                      <span className="sr-only">{color.name}</span>
+                      <span className="sr-only">{t(accentColorI18nKey(color.name))}</span>
                     </button>
                   ))}
                 </div>

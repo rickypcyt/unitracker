@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useUi } from "@/store/appStore";
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -11,6 +11,11 @@ import ScratchPad from "@/pages/session/ScratchPad";
 import PendingTasks from "@/pages/session/PendingTasks";
 import MonthView from "@/pages/session/MonthView";
 import UnifiedTimer from "@/pages/session/UnifiedTimer";
+import {
+  getSessionLayout,
+  SESSION_LAYOUT_EVENT,
+  type SessionLayoutId,
+} from "@/pages/session/sessionLayouts";
 
 const SessionPage = memo(() => {
   const { t } = useTranslation();
@@ -19,6 +24,14 @@ const SessionPage = memo(() => {
   const isSynced = ui.isSynced;
   const isRunning = ui.isRunning;
   const resetKey = ui.resetKey;
+
+  const [layout, setLayout] = useState<SessionLayoutId>(getSessionLayout);
+
+  useEffect(() => {
+    const handler = () => setLayout(getSessionLayout());
+    window.addEventListener(SESSION_LAYOUT_EVENT, handler);
+    return () => window.removeEventListener(SESSION_LAYOUT_EVENT, handler);
+  }, []);
 
 
 
@@ -63,6 +76,68 @@ const SessionPage = memo(() => {
     show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
+  const timersSection = (
+    <motion.div variants={item} className="w-full" data-tour="session-timer">
+      {!isLoggedIn && (
+        <button
+          onClick={() => loginWithGoogle()}
+          className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] py-2.5 text-sm font-semibold text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+        >
+          <LogIn size={16} />
+          {t("session.loginToSync")}
+        </button>
+      )}
+      <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
+    </motion.div>
+  );
+
+  const tasksMonthRow = (
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
+      <motion.div variants={item} className="min-w-0">
+        <PendingTasks />
+      </motion.div>
+      <motion.div variants={item} className="min-w-0">
+        <MonthView />
+      </motion.div>
+    </div>
+  );
+
+  const toolsRow = (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+      <motion.div variants={item} className="order-2 lg:order-1 dashboard-noise-card w-full h-full">
+        <NoiseGenerator />
+      </motion.div>
+      <motion.div variants={item} className="order-1 lg:order-2 h-full">
+        <ScratchPad />
+      </motion.div>
+    </div>
+  );
+
+  const tasksRow = (
+    <motion.div variants={item} className="min-w-0">
+      <PendingTasks />
+    </motion.div>
+  );
+
+  const compactRow = (
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 items-stretch">
+      <motion.div variants={item} className="min-w-0">
+        <PendingTasks />
+      </motion.div>
+      <motion.div variants={item} className="min-w-0">
+        <MonthView />
+      </motion.div>
+      <div className="min-w-0 flex flex-col gap-4">
+        <motion.div variants={item} className="dashboard-noise-card w-full">
+          <NoiseGenerator />
+        </motion.div>
+        <motion.div variants={item} className="flex-1">
+          <ScratchPad />
+        </motion.div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <Helmet>
@@ -91,37 +166,29 @@ const SessionPage = memo(() => {
           animate="show"
           className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4"
         >
-          {/* Top: Noise Generator + Scratchpad */}
-          <div className="order-3 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-            <motion.div variants={item} className="order-2 lg:order-1 dashboard-noise-card w-full h-full">
-              <NoiseGenerator />
-            </motion.div>
-            <motion.div variants={item} className="order-1 lg:order-2 h-full">
-              <ScratchPad />
-            </motion.div>
-          </div>
-
-          {/* Timers full width */}
-          <motion.div variants={item} className="order-1 w-full" data-tour="session-timer">
-            {!isLoggedIn && (
-              <button
-                onClick={() => loginWithGoogle()}
-                className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] py-2.5 text-sm font-semibold text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-              >
-                <LogIn size={16} />
-                {t("session.loginToSync")}
-              </button>
-            )}
-            <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
-          </motion.div>
-          <div className="order-2 grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
-            <motion.div variants={item} className="min-w-0">
-              <PendingTasks />
-            </motion.div>
-            <motion.div variants={item} className="min-w-0">
-              <MonthView />
-            </motion.div>
-          </div>
+          {layout === "planning" ? (
+            <>
+              {tasksMonthRow}
+              {timersSection}
+              {toolsRow}
+            </>
+          ) : layout === "focus" ? (
+            <>
+              {timersSection}
+              {tasksRow}
+            </>
+          ) : layout === "compact" ? (
+            <>
+              {timersSection}
+              {compactRow}
+            </>
+          ) : (
+            <>
+              {timersSection}
+              {tasksMonthRow}
+              {toolsRow}
+            </>
+          )}
         </motion.div>
       </div>
     </>

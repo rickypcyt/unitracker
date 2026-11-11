@@ -122,12 +122,30 @@
     "features": {
       "eyebrow": "// सब कुछ एक जगह",
       "title": "कम juggling, ज़्यादा study।",
-      "pomodoro": { "label": "Pomodoro और study timer", "desc": "Focus sessions जो खुद log होती हैं।" },
-      "tasks": { "label": "Tasks", "desc": "Deadlines, priorities, statuses।" },
-      "calendar": { "label": "Calendar", "desc": "Week और month views, drag-and-drop।" },
-      "analytics": { "label": "Analytics", "desc": "देखें आपके घंटे असल में कहां जाते हैं।" },
-      "notes": { "label": "Notes और habits", "desc": "Markdown notes साथ daily streaks।" },
-      "offline": { "label": "Offline-first", "desc": "बिना internet के सब कुछ चलता है।" }
+      "pomodoro": {
+        "label": "Pomodoro और study timer",
+        "desc": "Focus sessions जो खुद log होती हैं।"
+      },
+      "tasks": {
+        "label": "Tasks",
+        "desc": "Deadlines, priorities, statuses।"
+      },
+      "calendar": {
+        "label": "Calendar",
+        "desc": "Week और month views, drag-and-drop।"
+      },
+      "analytics": {
+        "label": "Analytics",
+        "desc": "देखें आपके घंटे असल में कहां जाते हैं।"
+      },
+      "notes": {
+        "label": "Notes और habits",
+        "desc": "Markdown notes साथ daily streaks।"
+      },
+      "offline": {
+        "label": "Offline-first",
+        "desc": "बिना internet के सब कुछ चलता है।"
+      }
     },
     "cta": {
       "eyebrow": "// अभी शुरू करें",
@@ -152,7 +170,21 @@
     "loading": "लोड हो रहा है…",
     "retry": "फिर कोशिश करें",
     "overdue": "समय निकल गया",
-    "noDueDate": "कोई deadline नहीं"
+    "noDueDate": "कोई deadline नहीं",
+    "months": [
+      "जनवरी",
+      "फ़रवरी",
+      "मार्च",
+      "अप्रैल",
+      "मई",
+      "जून",
+      "जुलाई",
+      "अगस्त",
+      "सितंबर",
+      "अक्टूबर",
+      "नवंबर",
+      "दिसंबर"
+    ]
   },
   "nav": {
     "planning": "प्लानिंग",
@@ -203,13 +235,22 @@
       "added": "जोड़ा गया",
       "improved": "बेहतर",
       "fixed": "ठीक किया गया",
-      "comingSoon": "जल्द आ रहा है"
+      "comingSoon": "जल्द आ रहा है",
+      "removed": "हटाया गया"
     },
     "about": {
       "theStory": "कहानी",
       "aboutMe": "मेरे बारे में",
-      "getInTouch": "संपर्क करें"
-    }
+      "getInTouch": "संपर्क करें",
+      "title": "UniTracker के बारे में",
+      "storyBody": "UniTracker दिसंबर 2024 में एक सरल विचार से जन्मा: विश्वविद्यालय के असाइनमेंट और टास्क को बेहतर तरीके से प्रबंधित करना। एक छात्र के रूप में, मैंने महसूस किया कि एक ऐसे टूल की ज़रूरत है जो शैक्षणिक काम को ज़्यादा प्रभावी ढंग से व्यवस्थित करने में मदद करे और साथ ही सहज व उपयोग में आसान हो।",
+      "aboutMeBody": "नमस्ते! मैं Ricky हूं, UniTracker का निर्माता। मुझे ऐसे टूल बनाने का जुनून है जो छात्रों की ज़िंदगी आसान बनाते हैं। यह प्रोजेक्ट तकनीक के माध्यम से शैक्षणिक अनुभव को बेहतर बनाने के मेरे प्रतिबद्धता को दर्शाता है।",
+      "getInTouchBody": "मैं हमेशा फीडबैक, सुझाव या ऐप के बारे में बस दोस्ताना बातचीत के लिए तैयार हूं। चाहे आपको कोई बग मिला हो, कोई फीचर सुझाना हो या अपना अनुभव साझा करना हो, मुझे आपसे सुनना अच्छा लगेगा!",
+      "thankYou": "UniTracker इस्तेमाल करने के लिए धन्यवाद! आपका समर्थन और फीडबैक इस ऐप को बेहतर बनाने में मदद करता है!"
+    },
+    "releaseNotes": "रिलीज़ नोट्स",
+    "githubNote": "विस्तृत तकनीकी दस्तावेज़ीकरण के लिए, हमारा GitHub रिपॉज़िटरी देखें।",
+    "viewOnGitHub": "GitHub पर देखें"
   },
   "session": {
     "loginToSync": "अपनी sessions sync करने के लिए लॉग इन करें",
@@ -258,6 +299,373 @@
       "playAll": "सब चलाएं",
       "pauseAll": "सब रोकें",
       "modalTitle": "Noise सेटिंग्स"
+    },
+    "layout": {
+      "button": "पेज लेआउट",
+      "options": {
+        "default": {
+          "label": "डिफ़ॉल्ट",
+          "description": "ऊपर टाइमर, नीचे टास्क और टूल्स"
+        },
+        "planning": {
+          "label": "पहले प्लानिंग",
+          "description": "टाइमर के ऊपर टास्क और कैलेंडर"
+        },
+        "focus": {
+          "label": "फ़ोकस",
+          "description": "सिर्फ़ टाइमर और आपके टास्क"
+        },
+        "compact": {
+          "label": "कॉम्पैक्ट",
+          "description": "सब कुछ कम पंक्तियों में"
+        }
+      }
+    },
+    "studyTimer": {
+      "title": "सेशन",
+      "headerTooltip": "अपने फ़ोकस सेशन ट्रैक करें। सेशन शुरू करें, कोई टास्क चुनें, और आपका समय एनालिटिक्स के लिए अपने आप लॉग हो जाएगा।",
+      "emptyHint": "आपके सेशन यहां दिखेंगे। फ़ोकस समय ट्रैक करने के लिए एक सेशन शुरू करें।",
+      "configureSession": "सेशन कॉन्फ़िगर करें",
+      "resetTimer": "टाइमर रीसेट करें",
+      "addLapNote": "लैप नोट जोड़ें",
+      "finishSession": "सेशन समाप्त करें",
+      "cancelSession": "सेशन रद्द करें",
+      "timerAria": "वर्तमान सेशन समय",
+      "sessionTitle": "सेशन शीर्षक",
+      "noSession": "कोई सेशन नहीं",
+      "lastPaused": "अंतिम ठहराव: {{time}}",
+      "pauseHistory": "ठहराव इतिहास",
+      "now": "अभी",
+      "pauseNumber": "ठहराव #{{count}}",
+      "ongoing": "जारी",
+      "totalPaused": "कुल ठहराव समय",
+      "lapPlaceholder": "अभी क्या हुआ? जैसे: रिपोर्ट लिखना शुरू किया",
+      "saveLap": "लैप सहेजें",
+      "cancelLap": "लैप रद्द करें",
+      "deleteLap": "लैप हटाएं",
+      "startNewSession": "नया सेशन शुरू करें",
+      "resumeTimer": "टाइमर फिर से शुरू करें",
+      "pauseTimer": "टाइमर रोकें",
+      "subtractMinutes": "{{count}} मिनट घटाएं",
+      "addMinutes": "{{count}} मिनट जोड़ें",
+      "timeAgo": "{{time}} पहले",
+      "timeAgoJoin": "{{a}} और {{b}}",
+      "hoursAgo_one": "{{count}} घंटा",
+      "hoursAgo_other": "{{count}} घंटे",
+      "minutesAgo_one": "{{count}} मिनट",
+      "minutesAgo_other": "{{count}} मिनट",
+      "secondsAgo_one": "{{count}} सेकंड",
+      "secondsAgo_other": "{{count}} सेकंड",
+      "toastSaveLap": "लैप सहेजा नहीं जा सका",
+      "toastNotAuth": "उपयोगकर्ता प्रमाणित नहीं है",
+      "toastFinishError": "सेशन समाप्त करते समय त्रुटि हुई।",
+      "toastDeleteError": "सेशन हटाते समय त्रुटि हुई।",
+      "toastStartError": "सेशन शुरू नहीं हो सका।",
+      "toastLoadError": "सेशन लोड करने में त्रुटि",
+      "toastStartGeneric": "सेशन शुरू करने में त्रुटि",
+      "toastFinishAllError": "सेशन समाप्त करने में त्रुटि"
+    },
+    "startSession": {
+      "title": "सेशन शुरू करें",
+      "details": "सेशन विवरण",
+      "sessionTitle": "सेशन शीर्षक",
+      "titlePlaceholder": "जैसे: अलजेब्रा होमवर्क",
+      "titleRequired": "सेशन शीर्षक आवश्यक है",
+      "assignmentOptional": "असाइनमेंट (वैकल्पिक)",
+      "assignmentPlaceholder": "जैसे: गणित",
+      "descriptionOptional": "विवरण (वैकल्पिक)",
+      "descriptionPlaceholder": "आप क्या हासिल करना चाहते हैं, उसके बारे में नोट्स जोड़ें...",
+      "workspaceOptional": "वर्कस्पेस (वैकल्पिक)",
+      "noWorkspace": "कोई वर्कस्पेस नहीं",
+      "timerOptions": "टाइमर विकल्प",
+      "starting": "शुरू हो रहा है...",
+      "startingAria": "सेशन शुरू हो रहा है",
+      "startSessionAria": "सेशन शुरू करें",
+      "startSession": "सेशन शुरू करें",
+      "startTimer": "टाइमर शुरू करें",
+      "menuAria": "सेशन शुरू करने का मेनू"
+    },
+    "unifiedTimer": {
+      "dockTimers": "टाइमर वापस डॉक करें",
+      "sessionMenu": "सेशन मेनू",
+      "toggleSync": "सिंक टॉगल करें",
+      "syncOn": "सिंक चालू",
+      "syncOff": "सिंक बंद",
+      "configurePomodoro": "पोमोडोरो कॉन्फ़िगर करें",
+      "options": "विकल्प",
+      "disableAlarm": "अलार्म बंद करें",
+      "enableAlarm": "अलार्म चालू करें",
+      "toggleAlarm": "अलार्म टॉगल करें",
+      "floating": "फ़्लोटिंग",
+      "floatAria": "टाइमर को फ़्लोटिंग विंडो में खोलें",
+      "floatTitle": "टाइमर को फ़्लोटिंग विंडो में खोलें",
+      "floatTimers": "फ़्लोटिंग टाइमर",
+      "sessionOptions": "सेशन विकल्प",
+      "exitSession": "सेशन से बाहर निकलें",
+      "deleteSession": "सेशन हटाएं",
+      "studyLabel": "अध्ययन",
+      "pomodoroLabel": "पोमोडोरो",
+      "countdownLabel": "काउंटडाउन"
+    }
+  },
+  "notes": {
+    "title": "नोट्स",
+    "titleWithCount": "नोट्स ({{count}})",
+    "yourLibrary": "आपकी स्टडी लाइब्रेरी",
+    "chooseAssignment": "नोट्स खोलने के लिए कोई असाइनमेंट चुनें।",
+    "notesInAssignment_one": "इस असाइनमेंट में {{count}} नोट",
+    "notesInAssignment_other": "इस असाइनमेंट में {{count}} नोट्स",
+    "noteCount_one": "{{count}} नोट",
+    "noteCount_other": "{{count}} नोट्स",
+    "newNote": "नया नोट",
+    "createNewNote": "नया नोट बनाएं",
+    "createNote": "नोट बनाएं",
+    "createFirstNote": "अपना पहला नोट बनाएं",
+    "createNoteInAssignment": "{{assignment}} में नया नोट बनाएं",
+    "searchPlaceholder": "शीर्षक, असाइनमेंट या सामग्री से नोट्स खोजें...",
+    "searchPlaceholderShort": "नोट्स खोजें...",
+    "refreshError": "आपके सहेजे गए नोट्स दिखाए जा रहे हैं। अभी रीफ़्रेश नहीं हो सका।",
+    "emptyTitle": "आपकी लाइब्रेरी खाली है",
+    "emptyDesc": "अपना पहला नोट बनाएं और वह तारीख के हिसाब से अपने आप व्यवस्थित हो जाएगा।",
+    "noMatch": "आपकी खोज से कोई नोट मेल नहीं खाता।",
+    "noNotesYet": "अभी कोई नोट नहीं",
+    "unassigned": "बिना असाइनमेंट",
+    "undated": "बिना तारीख के नोट्स",
+    "noDate": "कोई तारीख नहीं",
+    "emptyNote": "खाली नोट",
+    "created": "बनाया गया {{date}}",
+    "edited": "संपादित {{date}}",
+    "lastEdited": "अंतिम संपादन {{date}}",
+    "updated": "अपडेट किया गया {{time}}",
+    "back": "वापस",
+    "backToNotes": "नोट्स पर वापस जाएं",
+    "backToAssignments": "असाइनमेंट पर वापस जाएं",
+    "assignment": "असाइनमेंट",
+    "assignmentLabel": "असाइनमेंट:",
+    "addHere": "यहां जोड़ें",
+    "noteTitlePlaceholder": "नोट शीर्षक",
+    "assignmentPlaceholder": "असाइनमेंट",
+    "deleteNote": "नोट हटाएं",
+    "deleteAria": "{{title}} हटाएं",
+    "editNote": "नोट संपादित करें",
+    "loadingNotes": "नोट्स लोड हो रहे हैं...",
+    "loadFailed": "नोट्स लोड करने में विफल",
+    "saving": "सहेजा जा रहा है...",
+    "saveChanges": "बदलाव सहेजें",
+    "createTitle": "नोट बनाएं",
+    "editTitle": "नोट संपादित करें",
+    "fieldTitle": "शीर्षक",
+    "titlePlaceholder": "नोट का शीर्षक लिखें...",
+    "assignmentOptional": "असाइनमेंट (वैकल्पिक)",
+    "assignmentNamePlaceholder": "असाइनमेंट का नाम लिखें...",
+    "deleteTitle": "नोट हटाएं",
+    "deleteConfirm": "क्या आप वाकई नोट \"{{title}}\" हटाना चाहते हैं?",
+    "deleteWarning": "यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "untitled": "बिना शीर्षक",
+    "errorLoading": "नोट्स लोड करने में त्रुटि",
+    "errorUpdate": "नोट अपडेट करने में त्रुटि",
+    "errorDelete": "नोट हटाने में त्रुटि",
+    "errorGeneric": "एक त्रुटि हुई",
+    "loginReminder": "पहले लॉगिन करना याद रखें",
+    "welcomeTitle": "नोट्स में आपका स्वागत है",
+    "welcomeDesc": "अपने विचारों और आइडियाज़ को व्यवस्थित करना शुरू करें। शुरू करने के लिए अपना पहला नोट बनाएं।",
+    "heroDesc": "रिच मार्कडाउन नोट्स बनाएं, असाइनमेंट के हिसाब से व्यवस्थित करें और अपनी स्टडी सामग्री कहीं भी एक्सेस करें।",
+    "featureMarkdown": "रिच मार्कडाउन",
+    "featureMarkdownDesc": "बोल्ड, इटैलिक, लिस्ट से फ़ॉर्मैट करें",
+    "featureOrganized": "व्यवस्थित",
+    "featureOrganizedDesc": "असाइनमेंट के हिसाब से नोट्स समूहित करें",
+    "featureSearchable": "खोजने योग्य",
+    "featureSearchableDesc": "नोट्स तुरंत खोजें",
+    "timeJustNow": "अभी-अभी",
+    "timeMinutesAgo_one": "{{count}} मिनट पहले",
+    "timeMinutesAgo_other": "{{count}} मिनट पहले",
+    "timeHoursAgo_one": "{{count}} घंटे पहले",
+    "timeHoursAgo_other": "{{count}} घंटे पहले",
+    "timeDaysAgo_one": "{{count}} दिन पहले",
+    "timeDaysAgo_other": "{{count}} दिन पहले",
+    "editTitleLabel": "शीर्षक संपादित करें",
+    "editAssignmentLabel": "असाइनमेंट संपादित करें",
+    "createdLabel": "बनाया गया:",
+    "lastEditedLabel": "अंतिम संपादन:",
+    "showLess": "कम दिखाएं",
+    "showAllNotes": "सभी नोट्स दिखाएं"
+  },
+  "habits": {
+    "title": "आदतें",
+    "newHabit": "नई आदत",
+    "previousWeek": "पिछला सप्ताह",
+    "nextWeek": "अगला सप्ताह",
+    "currentStreak": "वर्तमान स्ट्रीक",
+    "bestStreak": "सर्वश्रेष्ठ स्ट्रीक",
+    "thisWeek": "इस सप्ताह",
+    "totalCompletions": "कुल पूर्णताएं",
+    "daysStreak": "{{count}} दिन की स्ट्रीक",
+    "daysBest": "सर्वश्रेष्ठ {{count}} दिन",
+    "thisWeekCount": "इस सप्ताह {{done}}/7",
+    "totalCount": "कुल {{count}}",
+    "journalNotes": "जर्नल नोट्स",
+    "addNote": "नोट जोड़ें...",
+    "emptyTitle": "अभी कोई आदत नहीं",
+    "emptyMessage": "दैनिक स्ट्रीक बनाना और अपनी नियमितता ट्रैक करना शुरू करने के लिए अपनी पहली आदत बनाएं।",
+    "createFirst": "अपनी पहली आदत बनाएं",
+    "loginTitle": "अपनी दैनिक आदतें ट्रैक करें",
+    "loginMessage": "आदतें बनाने, स्ट्रीक बनाने और अपनी दैनिक प्रगति ट्रैक करने के लिए लॉगिन करें। आज ही नियमित स्टडी रूटीन बनाना शुरू करें।",
+    "loginCta": "शुरू करने के लिए लॉगिन करें",
+    "markAria": "{{date}} के लिए {{name}} मार्क करें",
+    "unmarkAria": "{{date}} के लिए {{name}} अनमार्क करें",
+    "loadingAria": "आदतें लोड हो रही हैं",
+    "habitName": "आदत का नाम",
+    "habitNamePlaceholder": "जैसे: व्यायाम, 30 मिनट पढ़ना...",
+    "habitNameEditPlaceholder": "आदत का नाम लिखें...",
+    "createTitle": "नई आदत बनाएं",
+    "editTitle": "आदत संपादित करें",
+    "create": "बनाएं"
+  },
+  "notifications": {
+    "title": "सूचनाएं चालू करें",
+    "description": "जब आपका पोमोडोरो, ब्रेक या काउंटडाउन समाप्त हो तब अलर्ट पाएं — भले ही UniTracker बैकग्राउंड में या किसी दूसरे टैब पर हो।",
+    "blockedTitle": "इस साइट के लिए सूचनाएं ब्लॉक हैं",
+    "step1": "अपने ब्राउज़र के एड्रेस बार में लॉक / ट्यून आइकन पर क्लिक करें",
+    "step2": "<strong>साइट सेटिंग्स</strong> खोलें",
+    "step3": "<strong>सूचनाएं</strong> को <strong>अनुमति दें</strong> पर सेट करें",
+    "step4": "इस पेज को रीलोड करें",
+    "notNow": "अभी नहीं",
+    "enabled": "सूचनाएं चालू हो गईं — आपको टाइमर अलर्ट मिलेंगे।"
+  },
+  "welcome": {
+    "tagline": "आपका ऑल-इन-वन स्टडी साथी",
+    "subtitle": "एक सुंदर, आधुनिक और सहज ऐप के साथ अपना समय व्यवस्थित करें, अपनी उत्पादकता बढ़ाएं और अपनी शैक्षणिक प्रगति ट्रैक करें।",
+    "aiTitle": "AI से टास्क बनाना",
+    "aiDesc": "AI सहायता से जल्दी टास्क बनाएं। हमारा स्मार्ट सिस्टम आपकी स्टडी सेशन को व्यवस्थित करने में मदद करेगा।",
+    "statsTitle": "साप्ताहिक और मासिक आंकड़े",
+    "statsDesc": "विस्तृत एनालिटिक्स और सुंदर विज़ुअलाइज़ेशन के साथ अपनी प्रगति और उत्पादकता ट्रैक करें।",
+    "calendarTitle": "कैलेंडर योजना",
+    "calendarDesc": "हमारे सहज कैलेंडर सिस्टम से सेशन और डेडलाइन को विज़ुअली प्लान करें।",
+    "tasksTitle": "एडवांस्ड टास्क सिस्टम",
+    "tasksDesc": "कानबान बोर्ड सिस्टम से व्यवस्थित रहें और अपना वर्कफ़्लो कुशलतापूर्वक प्रबंधित करें।",
+    "getStarted": "शुरू करें",
+    "footer": "अपनी उत्पादकता सुधार रहे हज़ारों छात्रों से जुड़ें"
+  },
+  "accentColors": {
+    "title": "अपना ऐक्सेंट रंग चुनें",
+    "subtitle": "अपनी शैली दर्शाने वाला रंग चुनें",
+    "choose": "ऐक्सेंट रंग के रूप में चुनें",
+    "keep": "वर्तमान रंग रखें",
+    "selectAria": "{{name}} को ऐक्सेंट रंग के रूप में चुनें",
+    "blue": "नीला",
+    "purple": "बैंगनी",
+    "pink": "गुलाबी",
+    "orange": "नारंगी",
+    "green": "हरा",
+    "red": "लाल",
+    "teal": "टील",
+    "indigo": "इंडिगो",
+    "matrixGreen": "मैट्रिक्स हरा",
+    "neonRed": "नियॉन लाल",
+    "deepBlue": "गहरा नीला",
+    "deepGreen": "गहरा हरा",
+    "rose": "गुलाब",
+    "deepPurple": "गहरा बैंगनी",
+    "amber": "एम्बर",
+    "coral": "मूंगिया",
+    "mint": "पुदीना",
+    "peach": "आड़ू",
+    "lavender": "लैवेंडर",
+    "yellow": "पीला",
+    "pastelPink": "पेस्टल गुलाबी",
+    "descBlue": "क्लासिक नीला",
+    "descPurple": "क्रिएटिव बैंगनी",
+    "descPink": "खुशनुमा गुलाबी",
+    "descOrange": "ऊर्जावान नारंगी",
+    "descGreen": "ताज़ा हरा",
+    "descRed": "बोल्ड लाल",
+    "descTeal": "शांत टील",
+    "descIndigo": "गहरा इंडिगो"
+  },
+  "auth": {
+    "login": {
+      "title": "अपनी पूरी क्षमता अनलॉक करें",
+      "subtitle": "अपने डिवाइस पर डेटा सिंक करने और शक्तिशाली सुविधाएं अनलॉक करने के लिए साइन इन करें जो आपकी उत्पादकता बदल देंगी",
+      "cloudTitle": "क्लाउड सिंक",
+      "cloudDesc": "किसी भी डिवाइस पर, कहीं से भी अपना डेटा एक्सेस करें",
+      "secureTitle": "सुरक्षित स्टोरेज",
+      "secureDesc": "आपका डेटा सुरक्षित और एन्क्रिप्टेड रूप से सहेजा जाता है",
+      "crossTitle": "क्रॉस-डिवाइस",
+      "crossDesc": "फोन, टैबलेट और कंप्यूटर के बीच आसानी से सिंक करें",
+      "realtimeTitle": "रीयल-टाइम अपडेट",
+      "realtimeDesc": "आपके सभी डिवाइस पर तुरंत सिंक",
+      "poweredBy": "Supabase OAuth द्वारा संचालित",
+      "poweredByDesc": "एंटरप्राइज़-ग्रेड प्रमाणीकरण जिस पर हज़ारों लोग भरोसा करते हैं",
+      "redirecting": "Google पर रीडायरेक्ट हो रहा है...",
+      "signInGoogle": "Google से साइन इन करें",
+      "lookAround": "पहले मुझे देखने दें",
+      "privacy": "आपका डेटा निजी और सुरक्षित है। हम आपकी जानकारी कभी साझा नहीं करते।",
+      "required": "लॉगिन आवश्यक है",
+      "syncNote": "साइन इन करने से आपके टास्क क्लाउड डेटाबेस में सहेजे और सिंक हो जाएंगे।",
+      "logInGoogle": "Google से लॉग इन करें"
+    }
+  },
+  "calendar": {
+    "dayOptions": "दिन के विकल्प",
+    "createEvent": "इवेंट बनाएँ"
+  },
+  "demo": {
+    "suffix": "(डेमो)",
+    "workspaces": {
+      "university": "यूनिवर्सिटी",
+      "work": "काम"
+    },
+    "assignments": {
+      "advMath": "उन्नत गणित",
+      "webProject": "वेब प्रोजेक्ट"
+    },
+    "tasks": {
+      "calculus": "कैलकुलस के अभ्यास हल करें",
+      "theorems": "प्रमेय दोहराएँ",
+      "restApi": "REST API लागू करें"
+    },
+    "notes": {
+      "formulas": {
+        "title": "महत्वपूर्ण सूत्र",
+        "desc": "खंडशः समाकलन: ∫u dv = uv - ∫v du. अवकलन के लिए शृंखला नियम।"
+      },
+      "meeting": {
+        "title": "क्लाइंट मीटिंग",
+        "desc": "नए भुगतान मॉड्यूल की आवश्यकताओं पर चर्चा करें। समय सीमा: अगले शुक्रवार।"
+      },
+      "design": {
+        "title": "डिज़ाइन विचार",
+        "desc": "सिस्टम आर्किटेक्चर सुधारने के लिए डिज़ाइन पैटर्न का अध्ययन करें। MVC और माइक्रोसर्विसेज़ पर विचार करें।"
+      }
+    },
+    "sessions": {
+      "mathStudy": "गणित अध्ययन",
+      "webProgramming": "वेब प्रोग्रामिंग",
+      "examPrep": "परीक्षा की तैयारी",
+      "debugging": "कोड डीबगिंग",
+      "frameworkResearch": "फ्रेमवर्क शोध"
+    },
+    "habits": {
+      "study": {
+        "name": "अध्ययन",
+        "desc": "हर सुबह नाश्ते से पहले 1 घंटा अध्ययन करें"
+      },
+      "exercise": {
+        "name": "व्यायाम",
+        "desc": "हर 2 घंटे के अध्ययन पर 15 मिनट का ब्रेक लें"
+      },
+      "code": {
+        "name": "कोडिंग",
+        "desc": "रोज़ 30 मिनट कोड रिव्यू और रिफैक्टर करें"
+      },
+      "project": {
+        "name": "प्रोजेक्ट",
+        "desc": "हर रविवार साप्ताहिक कार्य और लक्ष्य तय करें"
+      },
+      "reading": {
+        "name": "पढ़ना",
+        "desc": "हफ़्ते में 2 तकनीकी लेख पढ़ें"
+      }
     }
   }
 }

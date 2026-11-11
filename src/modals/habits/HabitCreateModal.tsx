@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import BaseModal from '@/modals/shared/BaseModal';
 
@@ -13,6 +14,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
   onClose,
   onAdd
 }) => {
+  const { t } = useTranslation();
   const [habitName, setHabitName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +35,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Create New Habit"
+      title={t('habits.createTitle')}
       maxWidth="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -42,14 +44,14 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
             htmlFor="habitName"
             className="block text-sm font-medium text-[var(--text-primary)] mb-2"
           >
-            Habit Name
+            {t('habits.habitName')}
           </label>
           <input
             id="habitName"
             type="text"
             value={habitName}
             onChange={(e) => setHabitName(e.target.value)}
-            placeholder="E.g: Exercise, Read 30 minutes..."
+            placeholder={t('habits.habitNamePlaceholder')}
             className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
           />
@@ -61,14 +63,14 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
             onClick={handleClose}
             className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
             <button
               type="submit"
               disabled={!habitName.trim()}
               className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-            Create
+            {t('habits.create')}
           </button>
         </div>
       </form>

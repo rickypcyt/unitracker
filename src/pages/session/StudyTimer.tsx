@@ -14,6 +14,7 @@ import SessionsModal from "@/modals/session/TodaysSessionsModal";
 import StartSessionModal from "@/modals/session/StartSessionModal";
 import { supabase } from "@/utils/supabaseClient";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/auth/useAuth";
 import useEventListener from "@/hooks/common/useEventListener";
 import { useSessionId } from "@/hooks/session/useSessionId";
@@ -158,6 +159,7 @@ const StudyTimer = ({
   isSynced,
   hideHeader = false
 }: StudyTimerProps) => {
+  const { t } = useTranslation();
   const {
     isLoggedIn
   } = useAuth();
@@ -219,7 +221,7 @@ const StudyTimer = ({
       );
     } catch (error) {
       console.error("[StudyTimer] Error saving session lap:", error);
-      toast.error("Could not save lap");
+      toast.error(t('session.studyTimer.toastSaveLap'));
     }
     setLapNote("");
     setLapInputOpen(false);
@@ -780,7 +782,7 @@ const StudyTimer = ({
         data: { user }
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("User not authenticated");
+        toast.error(t('session.studyTimer.toastNotAuth'));
         return;
       }
       const startedAt = session.started_at ?? new Date(0).toISOString();
@@ -846,7 +848,7 @@ const StudyTimer = ({
       emitSyncEvent(SYNC_EVENTS.RESET_COUNTDOWN, emitTs);
     } catch (error) {
       console.error("[StudyTimer] Error finishing session:", error);
-      toast.error("An error occurred while finishing the session.");
+      toast.error(t('session.studyTimer.toastFinishError'));
     }
   }, [currentSessionId, studyState.time, studyState.sessionTitle, updateModal, reset, updateSessionId, updateStudyState, isPomodoroSync, isCountdownSync, emitSyncEvent, updateTimerTime]);
 
@@ -892,7 +894,7 @@ const StudyTimer = ({
       emitSyncEvent(SYNC_EVENTS.RESET_COUNTDOWN, emitTs);
     } catch (error) {
       console.error("[StudyTimer] Error deleting session:", error);
-      toast.error("An error occurred while deleting the session.");
+      toast.error(t('session.studyTimer.toastDeleteError'));
     }
   }, [currentSessionId, reset, updateSessionId, setCurrentSession, updateModal, updateStudyState, isPomodoroSync, isCountdownSync, emitSyncEvent, updateTimerTime]);
 
@@ -946,7 +948,7 @@ const StudyTimer = ({
       start(Date.now(), true, initialSeconds, []);
     } catch (e) {
       console.error("[StudyTimer] Error in handleStartSession:", e);
-      toast.error("Could not start the session.");
+      toast.error(t('session.studyTimer.toastStartError'));
     }
   }, [updateSessionId, updateStudyState, studyState.sessionTitle, studyState.sessionDescription, updateModal, start, setSyncPomodoroWithTimer, setSyncCountdownWithTimer]);
 
@@ -957,7 +959,7 @@ const StudyTimer = ({
       const session = await StudyService.getSessionById(sessionId);
       if (!session) {
         console.error("[StudyTimer] Error fetching session:");
-        toast.error("Error loading session");
+        toast.error(t('session.studyTimer.toastLoadError'));
         return;
       }
       await StudyService.updateLap(sessionId, {
@@ -986,7 +988,7 @@ const StudyTimer = ({
       start(Date.now(), true, initialSeconds, []);
     } catch (error) {
       console.error("[StudyTimer] Error in handleSessionSelected:", error);
-      toast.error("Error starting session");
+      toast.error(t('session.studyTimer.toastStartGeneric'));
     }
   }, [updateSessionId, updateModal, start]);
   const handleStartNewSession = useCallback(() => {
@@ -998,7 +1000,7 @@ const StudyTimer = ({
       await StudyService.finishAllUnfinishedSessions();
     } catch (error) {
       console.error("[StudyTimer] Error finishing all sessions:", error);
-      toast.error("Error finishing sessions");
+      toast.error(t('session.studyTimer.toastFinishAllError'));
     }
   }, []);
 
@@ -1038,10 +1040,18 @@ const StudyTimer = ({
     const diffHr = Math.floor(diffMin / 60);
     const min = diffMin % 60;
     const sec = diffSec % 60;
-    if (diffHr > 0) return `${diffHr} hour${diffHr > 1 ? "s" : ""}${min > 0 ? ` and ${min} minute${min > 1 ? "s" : ""} ago` : ""} ago`;
-    if (diffMin > 0) return `${diffMin} minute${diffMin !== 1 ? "s" : ""}${sec > 0 ? ` and ${sec} second${sec !== 1 ? "s" : ""} ago` : " ago"}`;
-    return `${sec} second${sec !== 1 ? "s" : ""} ago`;
-  }, [studyState.sessionStatus, studyState.lastPausedAt]);
+    if (diffHr > 0) {
+      const hr = t("session.studyTimer.hoursAgo", { count: diffHr });
+      const time = min > 0 ? t("session.studyTimer.timeAgoJoin", { a: hr, b: t("session.studyTimer.minutesAgo", { count: min }) }) : hr;
+      return t("session.studyTimer.timeAgo", { time });
+    }
+    if (diffMin > 0) {
+      const mn = t("session.studyTimer.minutesAgo", { count: diffMin });
+      const time = sec > 0 ? t("session.studyTimer.timeAgoJoin", { a: mn, b: t("session.studyTimer.secondsAgo", { count: sec }) }) : mn;
+      return t("session.studyTimer.timeAgo", { time });
+    }
+    return t("session.studyTimer.timeAgo", { time: t("session.studyTimer.secondsAgo", { count: sec }) });
+  }, [studyState.sessionStatus, studyState.lastPausedAt, t]);
 
   // ── Render ────────────────────────────────────────────────────────────────
   const timeAdjustmentButtons = [{
@@ -1063,21 +1073,21 @@ const StudyTimer = ({
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-[#0A84FF]" />
-            <SectionTitle title="Sessions" tooltip="Track your focus sessions. Start a session, pick a task, and your time is automatically logged for analytics." size="md" />
+            <SectionTitle title={t("session.studyTimer.title")} tooltip={t("session.studyTimer.headerTooltip")} size="md" />
           </div>
           {!currentSessionId && (
             <p className="text-xs text-[var(--text-secondary)] text-center">
-              Your sessions will appear here. Start one to track your focus time.
+              {t("session.studyTimer.emptyHint")}
             </p>
           )}
         </div>
-        {currentSessionId ? <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Configure session">
+        {currentSessionId ? <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={t("session.studyTimer.configureSession")}>
             <MoreVertical size={20} />
           </button> : <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[28px]" />}
       </div>}
 
       {/* Timer display - circular progress ring */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label="Current session time">
+      <div className="w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label={t("session.studyTimer.timerAria")}>
         <div className="relative group">
         {(() => {
           const totalSec = safeNumber(studyState.time);
@@ -1093,14 +1103,14 @@ const StudyTimer = ({
             <div className="relative w-32 h-32">
               {currentSessionId && !isSynced && (
                 <div className="absolute right-full top-[68%] -translate-y-1/2 mr-3 flex gap-2">
-                  <button onClick={() => reset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset timer">
+                  <button onClick={() => reset()} className="timer-ctrl-btn" aria-label={t("session.studyTimer.resetTimer")} title={t("session.studyTimer.resetTimer")}>
                     <RotateCcw size={18} />
                   </button>
                   <button
                     onClick={handleLapButton}
                     className={`timer-ctrl-btn ${lapInputOpen ? 'border-[#0A84FF]' : ''}`}
-                    aria-label="Add lap note"
-                    title="Add lap note"
+                    aria-label={t("session.studyTimer.addLapNote")}
+                    title={t("session.studyTimer.addLapNote")}
                   >
                     <Flag size={18} className={lapInputOpen ? 'text-[#0A84FF]' : ''} />
                   </button>
@@ -1111,16 +1121,16 @@ const StudyTimer = ({
                   <button
                     onClick={() => updateModal("isFinishModalOpen", true)}
                     className="timer-ctrl-btn"
-                    aria-label="Finish session"
-                    title="Finish session"
+                    aria-label={t("session.studyTimer.finishSession")}
+                    title={t("session.studyTimer.finishSession")}
                   >
                     <Check size={18} className="text-emerald-400" />
                   </button>
                   <button
                     onClick={() => updateModal("isDeleteModalOpen", true)}
                     className="timer-ctrl-btn"
-                    aria-label="Cancel session"
-                    title="Cancel session"
+                    aria-label={t("session.studyTimer.cancelSession")}
+                    title={t("session.studyTimer.cancelSession")}
                   >
                     <X size={18} className="text-red-400" />
                   </button>
@@ -1167,10 +1177,10 @@ const StudyTimer = ({
         })()}
 
         {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[220px] text-left">
-            <div className="font-semibold mb-1">Session Title</div>
-            <div>{studyState.sessionTitle || summaryData.title || "No Session"}</div>
+            <div className="font-semibold mb-1">{t("session.studyTimer.sessionTitle")}</div>
+            <div>{studyState.sessionTitle || summaryData.title || t("session.studyTimer.noSession")}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                Last paused: {getTimeSinceLastPause()}
+                {t("session.studyTimer.lastPaused", { time: getTimeSinceLastPause() })}
               </div>}
             {studyState.pauseHistory.length > 0 && (() => {
                 const totalPausedSec = studyState.pauseHistory.reduce(
@@ -1178,25 +1188,25 @@ const StudyTimer = ({
                   0
                 );
                 return <>
-                  <div className="font-semibold mt-3 mb-1">Pause history</div>
+                  <div className="font-semibold mt-3 mb-1">{t("session.studyTimer.pauseHistory")}</div>
                   <ul className="space-y-1 max-h-32 overflow-y-auto text-xs">
                     {[...studyState.pauseHistory].reverse().map((entry, idx) => {
                       const isOngoing = entry.endedAt === null;
                       const duration = isOngoing ? (Date.now() - entry.startedAt) / 1000 : (entry.durationSeconds ?? 0);
                       const pauseNumber = studyState.pauseHistory.length - idx;
                       return <li key={`${entry.startedAt}-${idx}`} className={`flex justify-between gap-3 tabular-nums ${isOngoing ? 'text-[#0A84FF] font-medium' : 'text-[var(--text-secondary)]'}`}>
-                          <span className="shrink-0">{isOngoing ? 'Now' : `Pause #${pauseNumber}`}</span>
+                          <span className="shrink-0">{isOngoing ? t("session.studyTimer.now") : t("session.studyTimer.pauseNumber", { count: pauseNumber })}</span>
                           <span>
                             {formatPauseTime(entry.startedAt)}
                             {"–"}
-                            {entry.endedAt === null ? "ongoing" : formatPauseTime(entry.endedAt)}
+                            {entry.endedAt === null ? t("session.studyTimer.ongoing") : formatPauseTime(entry.endedAt)}
                             {" · "}{formatPauseDuration(duration)}
                           </span>
                         </li>;
                     })}
                   </ul>
                   <div className="mt-2 pt-1.5 border-t border-[var(--border-primary)] flex justify-between text-xs text-[var(--text-secondary)]">
-                    <span>Total paused</span>
+                    <span>{t("session.studyTimer.totalPaused")}</span>
                     <span className="font-medium tabular-nums">{formatPauseDuration(totalPausedSec)}</span>
                   </div>
                 </>;
@@ -1222,20 +1232,20 @@ const StudyTimer = ({
               }
               if (e.key === "Escape") setLapInputOpen(false);
             }}
-            placeholder="What just happened? e.g. started writing the report"
+            placeholder={t("session.studyTimer.lapPlaceholder")}
             className="flex-1 min-w-0 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md px-2 py-1 text-xs text-[var(--text-primary)] outline-none focus:border-[#0A84FF]"
           />
           <button
             onClick={handleSaveLap}
             className="p-1.5 rounded-md text-[#0A84FF] hover:bg-[#0A84FF]/10 transition-colors"
-            aria-label="Save lap"
+            aria-label={t("session.studyTimer.saveLap")}
           >
             <Check size={16} />
           </button>
           <button
             onClick={() => setLapInputOpen(false)}
             className="p-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            aria-label="Cancel lap"
+            aria-label={t("session.studyTimer.cancelLap")}
           >
             <X size={16} />
           </button>
@@ -1254,7 +1264,7 @@ const StudyTimer = ({
               <button
                 onClick={() => handleDeleteLap(lap.id)}
                 className="ml-auto p-1 rounded opacity-0 group-hover/lap:opacity-100 text-[var(--text-secondary)] hover:text-red-500 transition-opacity shrink-0"
-                aria-label="Delete lap"
+                aria-label={t("session.studyTimer.deleteLap")}
               >
                 <X size={14} />
               </button>
@@ -1269,18 +1279,18 @@ const StudyTimer = ({
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
             label
-          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adjustment / 60)} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={t("session.studyTimer.subtractMinutes", { count: Math.abs(adjustment / 60) })} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>
 
         {!isSynced && (!isStudyRunningRedux ? (
-          !currentSessionId ? <button onClick={() => start(Date.now(), false)} className="mx-1 shrink-0 px-4 py-1.5 rounded-lg border-2 border-[#0A84FF] text-[#0A84FF] text-xs font-semibold whitespace-nowrap hover:bg-[#0A84FF]/10 transition-colors" aria-label="Start new session">
-              Start new session
-            </button> : <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Resume timer" title="Resume timer">
+          !currentSessionId ? <button onClick={() => start(Date.now(), false)} className="mx-1 shrink-0 px-4 py-1.5 rounded-lg border-2 border-[#0A84FF] text-[#0A84FF] text-xs font-semibold whitespace-nowrap hover:bg-[#0A84FF]/10 transition-colors" aria-label={t("session.studyTimer.startNewSession")}>
+              {t("session.studyTimer.startNewSession")}
+            </button> : <button onClick={() => start(Date.now(), false)} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label={t("session.studyTimer.resumeTimer")} title={t("session.studyTimer.resumeTimer")}>
               <Play size={18} />
             </button>
-        ) : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label="Pause timer" title="Pause timer">
+        ) : <button onClick={() => pause()} className="timer-ctrl-btn timer-ctrl-btn-primary mx-1 shrink-0" aria-label={t("session.studyTimer.pauseTimer")} title={t("session.studyTimer.pauseTimer")}>
             <Pause size={18} />
           </button>)}
 
@@ -1288,7 +1298,7 @@ const StudyTimer = ({
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment > 0).map(({
             adjustment,
             label
-          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={`Add ${adjustment / 60} minutes`} disabled={!currentSessionId}>
+          }) => <button key={label} onClick={() => adjustTime(adjustment)} className="timer-adjust-btn" aria-label={t("session.studyTimer.addMinutes", { count: adjustment / 60 })} disabled={!currentSessionId}>
               {label}
             </button>)}
         </div>

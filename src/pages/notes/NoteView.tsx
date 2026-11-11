@@ -1,5 +1,6 @@
 import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import MobileNotesSelector from './MobileNotesSelector';
 
@@ -44,6 +45,7 @@ const NoteView: React.FC<NoteViewProps> = ({
   onDeleteNote,
   onBack
 }) => {
+  const { t, i18n } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [description, setDescription] = useState(note.description);
@@ -203,14 +205,14 @@ const NoteView: React.FC<NoteViewProps> = ({
               className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm sm:text-base"
             >
               <X size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Cancel</span>
+              <span className="hidden sm:inline">{t('common.cancel')}</span>
               <span className="sm:hidden">✕</span>
             </button>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleDelete}
                 className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-                title="Delete note"
+                title={t('notes.deleteNote')}
               >
                 <Trash2 size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -220,7 +222,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                 className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
               >
                 <Save size={14} className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
-                <span className="hidden xs:inline">{isSaving ? 'Saving...' : 'Save'}</span>
+                <span className="hidden xs:inline">{isSaving ? t('notes.saving') : t('common.save')}</span>
                 <span className="xs:hidden">{isSaving ? '...' : '✓'}</span>
               </button>
             </div>
@@ -235,7 +237,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
-                  placeholder="Note Title"
+                  placeholder={t('notes.noteTitlePlaceholder')}
                 />
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -244,7 +246,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                   value={assignment}
                   onChange={(e) => setAssignment(e.target.value)}
                   className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors text-sm sm:text-base"
-                  placeholder="Assignment"
+                  placeholder={t('notes.assignmentPlaceholder')}
                 />
                 <input
                   type="date"
@@ -264,7 +266,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none text-xl sm:text-2xl font-bold transition-colors"
-            placeholder="Note Title"
+            placeholder={t('notes.noteTitlePlaceholder')}
           />
         </div>
 
@@ -301,16 +303,16 @@ const NoteView: React.FC<NoteViewProps> = ({
               <button
                 onClick={onBack}
                 className="flex flex-shrink-0 items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors font-medium"
-                title="Back to notes"
+                title={t('notes.backToNotes')}
               >
                 <ArrowLeft size={18} />
-                <span className="hidden sm:inline">Back</span>
+                <span className="hidden sm:inline">{t('notes.back')}</span>
               </button>
             )}
 
             {/* Assignment */}
             <div className="hidden md:flex items-center gap-1.5 min-w-0">
-              <span className="text-[var(--text-secondary)] whitespace-nowrap">Assignment:</span>
+              <span className="text-[var(--text-secondary)] whitespace-nowrap">{t('notes.assignmentLabel')}</span>
               <input
                 type="text"
                 value={assignment}
@@ -320,7 +322,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                     ? 'text-red-400 placeholder-red-400'
                     : 'text-[var(--accent-primary)]'
                 }`}
-                placeholder="Add here"
+                placeholder={t('notes.addHere')}
               />
             </div>
 
@@ -338,7 +340,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             {/* Last edited */}
             {note.last_edited && (
               <span className="hidden lg:inline whitespace-nowrap text-[var(--text-secondary)] italic">
-                Last edited {new Date(note.last_edited).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                {t('notes.lastEdited', { date: new Date(note.last_edited).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric', year: 'numeric' }) })}
               </span>
             )}
           </div>
@@ -349,7 +351,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full min-w-0 truncate text-lg sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
-            placeholder="Note Title"
+            placeholder={t('notes.noteTitlePlaceholder')}
           />
 
           {/* Right: Save + Delete */}
@@ -360,12 +362,12 @@ const NoteView: React.FC<NoteViewProps> = ({
               className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
             >
               <Save size={14} />
-              <span>{isSaving ? 'Saving...' : 'Save'}</span>
+              <span>{isSaving ? t('notes.saving') : t('common.save')}</span>
             </button>
             <button
               onClick={handleDelete}
               className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-              title="Delete note"
+              title={t('notes.deleteNote')}
             >
               <Trash2 size={16} />
             </button>

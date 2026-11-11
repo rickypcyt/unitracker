@@ -170,7 +170,21 @@
     "loading": "Loading…",
     "retry": "Retry",
     "overdue": "Overdue",
-    "noDueDate": "No due date"
+    "noDueDate": "No due date",
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
   },
   "nav": {
     "planning": "Planning",
@@ -221,13 +235,22 @@
       "added": "Added",
       "improved": "Improved",
       "fixed": "Fixed",
-      "comingSoon": "Coming Soon"
+      "comingSoon": "Coming Soon",
+      "removed": "Removed"
     },
     "about": {
       "theStory": "The Story",
       "aboutMe": "About Me",
-      "getInTouch": "Get in Touch"
-    }
+      "getInTouch": "Get in Touch",
+      "title": "About UniTracker",
+      "storyBody": "UniTracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.",
+      "aboutMeBody": "Hi! I'm Ricky, the creator of UniTracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.",
+      "getInTouchBody": "I'm always open to feedback, suggestions, or just a friendly chat about the app. Whether you've found a bug, have a feature request, or want to share your experience, I'd love to hear from you!",
+      "thankYou": "Thank you for using UniTracker! Your support and feedback help make this app better!"
+    },
+    "releaseNotes": "Release Notes",
+    "githubNote": "For detailed technical documentation, visit our GitHub repository.",
+    "viewOnGitHub": "View on GitHub"
   },
   "session": {
     "loginToSync": "Log in to sync your sessions",
@@ -276,6 +299,373 @@
       "playAll": "Play all",
       "pauseAll": "Pause all",
       "modalTitle": "Noise Settings"
+    },
+    "layout": {
+      "button": "Page layout",
+      "options": {
+        "default": {
+          "label": "Default",
+          "description": "Timers on top, tasks and tools below"
+        },
+        "planning": {
+          "label": "Planning first",
+          "description": "Tasks and calendar above the timers"
+        },
+        "focus": {
+          "label": "Focus",
+          "description": "Only the timer and your tasks"
+        },
+        "compact": {
+          "label": "Compact",
+          "description": "Everything in fewer rows"
+        }
+      }
+    },
+    "studyTimer": {
+      "title": "Sessions",
+      "headerTooltip": "Track your focus sessions. Start a session, pick a task, and your time is automatically logged for analytics.",
+      "emptyHint": "Your sessions will appear here. Start one to track your focus time.",
+      "configureSession": "Configure session",
+      "resetTimer": "Reset timer",
+      "addLapNote": "Add lap note",
+      "finishSession": "Finish session",
+      "cancelSession": "Cancel session",
+      "timerAria": "Current session time",
+      "sessionTitle": "Session Title",
+      "noSession": "No Session",
+      "lastPaused": "Last paused: {{time}}",
+      "pauseHistory": "Pause history",
+      "now": "Now",
+      "pauseNumber": "Pause #{{count}}",
+      "ongoing": "ongoing",
+      "totalPaused": "Total paused",
+      "lapPlaceholder": "What just happened? e.g. started writing the report",
+      "saveLap": "Save lap",
+      "cancelLap": "Cancel lap",
+      "deleteLap": "Delete lap",
+      "startNewSession": "Start new session",
+      "resumeTimer": "Resume timer",
+      "pauseTimer": "Pause timer",
+      "subtractMinutes": "Subtract {{count}} minutes",
+      "addMinutes": "Add {{count}} minutes",
+      "timeAgo": "{{time}} ago",
+      "timeAgoJoin": "{{a}} and {{b}}",
+      "hoursAgo_one": "{{count}} hour",
+      "hoursAgo_other": "{{count}} hours",
+      "minutesAgo_one": "{{count}} minute",
+      "minutesAgo_other": "{{count}} minutes",
+      "secondsAgo_one": "{{count}} second",
+      "secondsAgo_other": "{{count}} seconds",
+      "toastSaveLap": "Could not save lap",
+      "toastNotAuth": "User not authenticated",
+      "toastFinishError": "An error occurred while finishing the session.",
+      "toastDeleteError": "An error occurred while deleting the session.",
+      "toastStartError": "Could not start the session.",
+      "toastLoadError": "Error loading session",
+      "toastStartGeneric": "Error starting session",
+      "toastFinishAllError": "Error finishing sessions"
+    },
+    "startSession": {
+      "title": "Start Session",
+      "details": "Session Details",
+      "sessionTitle": "Session Title",
+      "titlePlaceholder": "e.g., Algebra Homework",
+      "titleRequired": "Session title is required",
+      "assignmentOptional": "Assignment (optional)",
+      "assignmentPlaceholder": "e.g., Math",
+      "descriptionOptional": "Description (optional)",
+      "descriptionPlaceholder": "Add notes about what you want to accomplish...",
+      "workspaceOptional": "Workspace (optional)",
+      "noWorkspace": "No workspace",
+      "timerOptions": "Timer Options",
+      "starting": "Starting...",
+      "startingAria": "Starting session",
+      "startSessionAria": "Start session",
+      "startSession": "Start Session",
+      "startTimer": "Start Timer",
+      "menuAria": "Start session menu"
+    },
+    "unifiedTimer": {
+      "dockTimers": "Dock timers back",
+      "sessionMenu": "Session menu",
+      "toggleSync": "Toggle sync",
+      "syncOn": "Sync ON",
+      "syncOff": "Sync OFF",
+      "configurePomodoro": "Configure pomodoro",
+      "options": "Options",
+      "disableAlarm": "Disable alarm",
+      "enableAlarm": "Enable alarm",
+      "toggleAlarm": "Toggle alarm",
+      "floating": "Floating",
+      "floatAria": "Float timers in a window",
+      "floatTitle": "Open timers in a floating window",
+      "floatTimers": "Float timers",
+      "sessionOptions": "Session options",
+      "exitSession": "Exit session",
+      "deleteSession": "Delete session",
+      "studyLabel": "Study",
+      "pomodoroLabel": "Pomodoro",
+      "countdownLabel": "Countdown"
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "titleWithCount": "Notes ({{count}})",
+    "yourLibrary": "Your study library",
+    "chooseAssignment": "Choose an assignment to open its notes.",
+    "notesInAssignment_one": "{{count}} note in this assignment",
+    "notesInAssignment_other": "{{count}} notes in this assignment",
+    "noteCount_one": "{{count}} note",
+    "noteCount_other": "{{count}} notes",
+    "newNote": "New note",
+    "createNewNote": "Create New Note",
+    "createNote": "Create note",
+    "createFirstNote": "Create your first note",
+    "createNoteInAssignment": "Create new note in {{assignment}}",
+    "searchPlaceholder": "Search notes by title, assignment, or content...",
+    "searchPlaceholderShort": "Search notes...",
+    "refreshError": "Showing your saved notes. We could not refresh them right now.",
+    "emptyTitle": "Your library is empty",
+    "emptyDesc": "Create your first note and it will be organized automatically by date.",
+    "noMatch": "No notes match your search.",
+    "noNotesYet": "No notes yet",
+    "unassigned": "Unassigned",
+    "undated": "Undated notes",
+    "noDate": "No date",
+    "emptyNote": "Empty note",
+    "created": "Created {{date}}",
+    "edited": "Edited {{date}}",
+    "lastEdited": "Last edited {{date}}",
+    "updated": "Updated {{time}}",
+    "back": "Back",
+    "backToNotes": "Back to notes",
+    "backToAssignments": "Back to assignments",
+    "assignment": "Assignment",
+    "assignmentLabel": "Assignment:",
+    "addHere": "Add here",
+    "noteTitlePlaceholder": "Note Title",
+    "assignmentPlaceholder": "Assignment",
+    "deleteNote": "Delete note",
+    "deleteAria": "Delete {{title}}",
+    "editNote": "Edit note",
+    "loadingNotes": "Loading notes...",
+    "loadFailed": "Failed to load notes",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "createTitle": "Create Note",
+    "editTitle": "Edit Note",
+    "fieldTitle": "Title",
+    "titlePlaceholder": "Enter note title...",
+    "assignmentOptional": "Assignment (optional)",
+    "assignmentNamePlaceholder": "Enter assignment name...",
+    "deleteTitle": "Delete Note",
+    "deleteConfirm": "Are you sure you want to delete the note \"{{title}}\"?",
+    "deleteWarning": "This action cannot be undone.",
+    "untitled": "Untitled",
+    "errorLoading": "Error loading notes",
+    "errorUpdate": "Error updating note",
+    "errorDelete": "Error deleting note",
+    "errorGeneric": "An error occurred",
+    "loginReminder": "Remember to login first",
+    "welcomeTitle": "Welcome to Notes",
+    "welcomeDesc": "Start organizing your thoughts and ideas. Create your first note to get started.",
+    "heroDesc": "Create rich markdown notes, organize by assignments, and access your study materials anywhere.",
+    "featureMarkdown": "Rich Markdown",
+    "featureMarkdownDesc": "Format with bold, italic, lists",
+    "featureOrganized": "Organized",
+    "featureOrganizedDesc": "Group notes by assignment",
+    "featureSearchable": "Searchable",
+    "featureSearchableDesc": "Find notes instantly",
+    "timeJustNow": "just now",
+    "timeMinutesAgo_one": "{{count}} minute ago",
+    "timeMinutesAgo_other": "{{count}} minutes ago",
+    "timeHoursAgo_one": "{{count}} hour ago",
+    "timeHoursAgo_other": "{{count}} hours ago",
+    "timeDaysAgo_one": "{{count}} day ago",
+    "timeDaysAgo_other": "{{count}} days ago",
+    "editTitleLabel": "Edit title",
+    "editAssignmentLabel": "Edit assignment",
+    "createdLabel": "Created:",
+    "lastEditedLabel": "Last edited:",
+    "showLess": "Show less",
+    "showAllNotes": "Show all notes"
+  },
+  "habits": {
+    "title": "Habits",
+    "newHabit": "New Habit",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "currentStreak": "Current Streak",
+    "bestStreak": "Best Streak",
+    "thisWeek": "This Week",
+    "totalCompletions": "Total Completions",
+    "daysStreak": "{{count}}d streak",
+    "daysBest": "{{count}}d best",
+    "thisWeekCount": "{{done}}/7 this week",
+    "totalCount": "{{count}} total",
+    "journalNotes": "Journal Notes",
+    "addNote": "Add a note...",
+    "emptyTitle": "No habits yet",
+    "emptyMessage": "Create your first habit to start building daily streaks and track your consistency over time.",
+    "createFirst": "Create your first habit",
+    "loginTitle": "Track your daily habits",
+    "loginMessage": "Log in to create habits, build streaks, and track your daily progress. Start building consistent study routines today.",
+    "loginCta": "Log in to get started",
+    "markAria": "Mark {{name}} for {{date}}",
+    "unmarkAria": "Unmark {{name}} for {{date}}",
+    "loadingAria": "Loading habits",
+    "habitName": "Habit Name",
+    "habitNamePlaceholder": "E.g: Exercise, Read 30 minutes...",
+    "habitNameEditPlaceholder": "Enter habit name...",
+    "createTitle": "Create New Habit",
+    "editTitle": "Edit Habit",
+    "create": "Create"
+  },
+  "notifications": {
+    "title": "Turn on notifications",
+    "description": "Get an alert when your pomodoro, break, or countdown finishes — even when UniTracker is in the background or on another tab.",
+    "blockedTitle": "Notifications are blocked for this site",
+    "step1": "Click the lock / tune icon in your browser's address bar",
+    "step2": "Open <strong>Site settings</strong>",
+    "step3": "Set <strong>Notifications</strong> to <strong>Allow</strong>",
+    "step4": "Reload this page",
+    "notNow": "Not now",
+    "enabled": "Notifications enabled — you'll get timer alerts."
+  },
+  "welcome": {
+    "tagline": "Your all-in-one study companion",
+    "subtitle": "Organize your time, boost your productivity, and track your academic progress with a beautiful, modern, and intuitive app.",
+    "aiTitle": "AI Task Creation",
+    "aiDesc": "Quickly create tasks with AI assistance. Let our intelligent system help you organize your study sessions efficiently.",
+    "statsTitle": "Weekly & Monthly Stats",
+    "statsDesc": "Track your progress and productivity with comprehensive analytics and beautiful visualizations.",
+    "calendarTitle": "Calendar Planning",
+    "calendarDesc": "Plan sessions and deadlines visually with our intuitive calendar system.",
+    "tasksTitle": "Advanced Task System",
+    "tasksDesc": "Organize with kanban board system and manage your workflow efficiently.",
+    "getStarted": "Get Started",
+    "footer": "Join thousands of students improving their productivity"
+  },
+  "accentColors": {
+    "title": "Choose your accent color",
+    "subtitle": "Pick a color that reflects your style",
+    "choose": "Choose as accent color",
+    "keep": "Keep current color",
+    "selectAria": "Select {{name}} accent color",
+    "blue": "Blue",
+    "purple": "Purple",
+    "pink": "Pink",
+    "orange": "Orange",
+    "green": "Green",
+    "red": "Red",
+    "teal": "Teal",
+    "indigo": "Indigo",
+    "matrixGreen": "Matrix Green",
+    "neonRed": "Neon Red",
+    "deepBlue": "Deep Blue",
+    "deepGreen": "Deep Green",
+    "rose": "Rose",
+    "deepPurple": "Deep Purple",
+    "amber": "Amber",
+    "coral": "Coral",
+    "mint": "Mint",
+    "peach": "Peach",
+    "lavender": "Lavender",
+    "yellow": "Yellow",
+    "pastelPink": "Pastel Pink",
+    "descBlue": "Classic blue",
+    "descPurple": "Creative purple",
+    "descPink": "Playful pink",
+    "descOrange": "Energetic orange",
+    "descGreen": "Fresh green",
+    "descRed": "Bold red",
+    "descTeal": "Calm teal",
+    "descIndigo": "Deep indigo"
+  },
+  "auth": {
+    "login": {
+      "title": "Unlock Your Full Potential",
+      "subtitle": "Sign in to sync your data across devices and unlock powerful features that will transform your productivity",
+      "cloudTitle": "Cloud Sync",
+      "cloudDesc": "Access your data from anywhere, on any device",
+      "secureTitle": "Secure Storage",
+      "secureDesc": "Your data is safely stored and encrypted",
+      "crossTitle": "Cross-Device",
+      "crossDesc": "Seamlessly sync between phone, tablet, and computer",
+      "realtimeTitle": "Real-time Updates",
+      "realtimeDesc": "Instant sync across all your devices",
+      "poweredBy": "Powered by Supabase OAuth",
+      "poweredByDesc": "Enterprise-grade authentication trusted by thousands",
+      "redirecting": "Redirecting to Google...",
+      "signInGoogle": "Sign in with Google",
+      "lookAround": "Let me look around first",
+      "privacy": "Your data is private and secure. We never share your information.",
+      "required": "Login Required",
+      "syncNote": "Signing in will save and sync your tasks to the cloud database.",
+      "logInGoogle": "Log in with Google"
+    }
+  },
+  "calendar": {
+    "dayOptions": "Day options",
+    "createEvent": "Create event"
+  },
+  "demo": {
+    "suffix": "(demo)",
+    "workspaces": {
+      "university": "University",
+      "work": "Work"
+    },
+    "assignments": {
+      "advMath": "Advanced Mathematics",
+      "webProject": "Web Project"
+    },
+    "tasks": {
+      "calculus": "Solve calculus exercises",
+      "theorems": "Review theorems",
+      "restApi": "Implement REST API"
+    },
+    "notes": {
+      "formulas": {
+        "title": "Important formulas",
+        "desc": "Integration by parts: ∫u dv = uv - ∫v du. Chain rule for derivatives."
+      },
+      "meeting": {
+        "title": "Client meeting",
+        "desc": "Discuss requirements for new payment module. Due: next Friday."
+      },
+      "design": {
+        "title": "Design ideas",
+        "desc": "Research design patterns to improve system architecture. Consider MVC and microservices."
+      }
+    },
+    "sessions": {
+      "mathStudy": "Math Study",
+      "webProgramming": "Web Programming",
+      "examPrep": "Exam preparation",
+      "debugging": "Code debugging",
+      "frameworkResearch": "Framework research"
+    },
+    "habits": {
+      "study": {
+        "name": "Study",
+        "desc": "Study for 1 hour every morning before breakfast"
+      },
+      "exercise": {
+        "name": "Exercise",
+        "desc": "Take a 15-minute break every 2 hours of study"
+      },
+      "code": {
+        "name": "Code",
+        "desc": "Review and refactor code for 30 minutes daily"
+      },
+      "project": {
+        "name": "Project",
+        "desc": "Plan weekly tasks and goals every Sunday"
+      },
+      "reading": {
+        "name": "Reading",
+        "desc": "Read 2 technical articles per week"
+      }
     }
   }
 }

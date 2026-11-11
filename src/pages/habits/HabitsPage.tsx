@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Flame, Plus, Target, Trophy } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Habit } from '../../types/common';
 import EmptyState from '@/components/ui/EmptyState';
@@ -9,6 +10,7 @@ import { Helmet } from "react-helmet-async";
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useHabits } from '@/hooks/habits/useHabits';
+import { capitalizeFirst } from '@/utils/dateUtils';
 
 const calculateStreak = (completions: Record<string, boolean>): { current: number; best: number } => {
   const today = new Date();
@@ -65,6 +67,7 @@ const getTotalCompleted = (completions: Record<string, boolean>): number => {
 
 
 const HabitsPage = memo(() => {
+  const { t, i18n } = useTranslation();
   const { isLoggedIn } = useAuth();
   const { demoHabits } = useDemoMode();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -263,7 +266,7 @@ const HabitsPage = memo(() => {
 
   if (loading && isLoggedIn && displayHabits.length === 0) {
     return (
-      <div className="w-full px-2 py-4 sm:px-6 md:px-8 lg:px-12 xl:px-20" aria-label="Loading habits">
+      <div className="w-full px-2 py-4 sm:px-6 md:px-8 lg:px-12 xl:px-20" aria-label={t('habits.loadingAria')}>
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-16 sm:h-20 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
@@ -280,9 +283,9 @@ const HabitsPage = memo(() => {
     return (
       <EmptyState
         icon={Target}
-        title="Track your daily habits"
-        message="Log in to create habits, build streaks, and track your daily progress. Start building consistent study routines today."
-        ctaLabel="Log in to get started"
+        title={t('habits.loginTitle')}
+        message={t('habits.loginMessage')}
+        ctaLabel={t('habits.loginCta')}
         onCtaClick={() => window.dispatchEvent(new Event('openLoginModal'))}
       />
     );
@@ -315,17 +318,17 @@ const HabitsPage = memo(() => {
           <button
             onClick={() => setWeekOffset(o => o - 1)}
             className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-            aria-label="Previous week"
+            aria-label={t('habits.previousWeek')}
           >
             <ChevronLeft size={18} />
           </button>
           <span className="text-sm sm:text-base font-semibold text-[var(--text-primary)] min-w-[140px] sm:min-w-[160px] text-center whitespace-nowrap">
-            {weekDays[0]?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {weekDays[6]?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            {capitalizeFirst(weekDays[0]?.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) ?? '')} – {capitalizeFirst(weekDays[6]?.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) ?? '')}
           </span>
           <button
             onClick={() => setWeekOffset(o => o + 1)}
             className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
-            aria-label="Next week"
+            aria-label={t('habits.nextWeek')}
           >
             <ChevronRight size={18} />
           </button>
@@ -334,7 +337,7 @@ const HabitsPage = memo(() => {
               onClick={() => setWeekOffset(0)}
               className="ml-1 px-2.5 py-1 text-xs font-semibold rounded-full text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 transition-colors"
             >
-              Today
+              {t('common.today')}
             </button>
           )}
         </div>
@@ -344,7 +347,7 @@ const HabitsPage = memo(() => {
           className="flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-full hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-semibold"
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">New Habit</span>
+          <span className="hidden sm:inline">{t('habits.newHabit')}</span>
         </button>
       </div>
 
@@ -353,25 +356,25 @@ const HabitsPage = memo(() => {
         <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
           <div className="min-w-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.topStreak}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">Current Streak</div>
+            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.currentStreak')}</div>
           </div>
         </div>
         <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
           <div className="min-w-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.bestStreak}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">Best Streak</div>
+            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.bestStreak')}</div>
           </div>
         </div>
         <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
           <div className="min-w-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.weekCompletionRate}%</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">This Week</div>
+            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.thisWeek')}</div>
           </div>
         </div>
         <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
           <div className="min-w-0">
             <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.totalCompletions}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">Total Completions</div>
+            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.totalCompletions')}</div>
           </div>
         </div>
       </div>
@@ -381,16 +384,16 @@ const HabitsPage = memo(() => {
         {displayHabits.length === 0 ? (
           <EmptyState
             icon={Target}
-            title="No habits yet"
-            message="Create your first habit to start building daily streaks and track your consistency over time."
-            ctaLabel="Create your first habit"
+            title={t('habits.emptyTitle')}
+            message={t('habits.emptyMessage')}
+            ctaLabel={t('habits.createFirst')}
             onCtaClick={() => setIsCreateModalOpen(true)}
           />
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Habits tracker (top on mobile/md, left on desktop) */}
             <div className="space-y-4 pt-2">
-              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">Habits</h3>
+              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.title')}</h3>
               {displayHabits.map((habit) => {
                 const completions = habit.completions as Record<string, boolean>;
                 const { current, best } = calculateStreak(completions);
@@ -417,17 +420,17 @@ const HabitsPage = memo(() => {
                         {current > 0 && (
                           <span className="flex items-center gap-1">
                             <Flame size={14} className="text-[var(--accent-primary)]" />
-                            {current}d streak
+                            {t('habits.daysStreak', { count: current })}
                           </span>
                         )}
                         {best > 0 && (
                           <span className="flex items-center gap-1">
                             <Trophy size={14} className="text-[var(--accent-primary)]" />
-                            {best}d best
+                            {t('habits.daysBest', { count: best })}
                           </span>
                         )}
-                        <span>{weekDone}/7 this week</span>
-                        <span>{total} total</span>
+                        <span>{t('habits.thisWeekCount', { done: weekDone })}</span>
+                        <span>{t('habits.totalCount', { count: total })}</span>
                       </div>
                     </button>
 
@@ -454,7 +457,7 @@ const HabitsPage = memo(() => {
                                   : 'text-[var(--text-secondary)]'
                               }`}
                             >
-                              {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                              {capitalizeFirst(date.toLocaleDateString(i18n.language, { weekday: 'short' }))}
                             </span>
                             <button
                               onClick={() => !isFuture && handleToggleHabitForMonth(habit.id, y, m, d)}
@@ -468,7 +471,7 @@ const HabitsPage = memo(() => {
                                   ? 'border-[var(--accent-primary)]/50 hover:border-[var(--accent-primary)] bg-[var(--accent-primary)]/5 hover:scale-105 active:scale-95'
                                   : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/60 bg-[var(--bg-secondary)] hover:scale-105 active:scale-95'
                               }`}
-                              aria-label={`${isCompleted ? 'Unmark' : 'Mark'} ${habit.name} for ${date.toLocaleDateString()}`}
+                              aria-label={t(isCompleted ? 'habits.unmarkAria' : 'habits.markAria', { name: habit.name, date: date.toLocaleDateString(i18n.language) })}
                             >
                               <span
                                 className={`text-sm sm:text-base font-bold tabular-nums ${
@@ -494,7 +497,7 @@ const HabitsPage = memo(() => {
 
             {/* Journal notes below */}
             <div className="space-y-2 pt-2">
-              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">Journal Notes</h3>
+              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.journalNotes')}</h3>
               {(() => {
                 const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -512,11 +515,11 @@ const HabitsPage = memo(() => {
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 bg-[var(--bg-secondary)] ${isFuture ? 'border-dashed border-[var(--border-primary)]' : 'border-[var(--border-primary)]'} ${isPast ? 'opacity-60' : ''}`}
                     >
                       <span className={`text-sm font-semibold w-28 flex-shrink-0 ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                        {date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric' })}
+                        {capitalizeFirst(date.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric' }))}
                       </span>
                       <input
                         type="text"
-                        placeholder="Add a note..."
+                        placeholder={t('habits.addNote')}
                         className="flex-1 px-2 py-1.5 text-base bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] disabled:cursor-not-allowed"
                         defaultValue={journalNotes[dateKey] || ''}
                         onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}

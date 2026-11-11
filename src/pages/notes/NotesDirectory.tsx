@@ -1,5 +1,6 @@
 import { Calendar, ChevronLeft, FileText, FolderOpen, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import NotesCreateModal from '@/modals/notes/NotesCreateModal';
 import { getLocalDateString } from '@/utils/dateUtils';
@@ -35,30 +36,30 @@ const getMonthKey = (note: Note): string => {
   return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`;
 };
 
-const getMonthLabel = (monthKey: string): string => {
-  if (monthKey === 'undated') return 'Undated notes';
+const getMonthLabel = (monthKey: string, locale: string, undatedLabel: string): string => {
+  if (monthKey === 'undated') return undatedLabel;
   const [year, month] = monthKey.split('-').map(Number);
   if (!year || !month) return monthKey;
 
-  return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
+  return new Date(year, month - 1, 1).toLocaleDateString(locale, {
     month: 'long',
     year: 'numeric',
   });
 };
 
-const getShortDateLabel = (note: Note): string => {
+const getShortDateLabel = (note: Note, locale: string, noDateLabel: string): string => {
   const raw = note.created_at ?? note.date;
-  if (!raw) return 'No date';
+  if (!raw) return noDateLabel;
   const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) return 'No date';
+  if (Number.isNaN(parsed.getTime())) return noDateLabel;
 
-  return parsed.toLocaleDateString('en-US', {
+  return parsed.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
   });
 };
 
-const getEditedLabel = (note: Note): string | null => {
+const getEditedLabel = (note: Note, locale: string): string | null => {
   if (!note.last_edited) return null;
   const edited = new Date(note.last_edited);
   if (Number.isNaN(edited.getTime())) return null;
@@ -69,15 +70,15 @@ const getEditedLabel = (note: Note): string | null => {
     return null;
   }
 
-  return edited.toLocaleDateString('en-US', {
+  return edited.toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
   });
 };
 
-const getPreview = (description: string): string => {
+const getPreview = (description: string, emptyLabel: string): string => {
   const plainText = description.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-  return plainText || 'Empty note';
+  return plainText || emptyLabel;
 };
 
 const NotesDirectory = ({
@@ -89,6 +90,7 @@ const NotesDirectory = ({
   selectedNoteId,
   onDelete,
 }: NotesDirectoryProps) => {
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(() => {
     try { return sessionStorage.getItem('notesSelectedAssignment'); } catch { return null; }
@@ -109,21 +111,21 @@ const NotesDirectory = ({
     return notes.filter(note =>
       note.title.toLowerCase().includes(query) ||
       note.assignment?.toLowerCase().includes(query) ||
-      getPreview(note.description).toLowerCase().includes(query),
+      getPreview(note.description, t('notes.emptyNote')).toLowerCase().includes(query),
     );
-  }, [notes, searchQuery]);
+  }, [notes, searchQuery, t]);
 
   // Clear a persisted selection if that assignment no longer exists
   useEffect(() => {
     if (loading || !selectedAssignment || notes.length === 0) return;
-    const exists = notes.some(n => (n.assignment || 'Unassigned') === selectedAssignment);
+    const exists = notes.some(n => (n.assignment || t('notes.unassigned')) === selectedAssignment);
     if (!exists) setSelectedAssignment(null);
-  }, [loading, notes, selectedAssignment]);
+  }, [loading, notes, selectedAssignment, t]);
 
   const assignmentGroups = useMemo(() => {
     const groups = new Map<string, Note[]>();
     filteredNotes.forEach(note => {
-      const assignment = note.assignment || 'Unassigned';
+      const assignment = note.assignment || t('notes.unassigned');
       const group = groups.get(assignment) ?? [];
       group.push(note);
       groups.set(assignment, group);
@@ -132,7 +134,7 @@ const NotesDirectory = ({
     return [...groups.entries()].sort(([firstAssignment], [secondAssignment]) =>
       firstAssignment.localeCompare(secondAssignment),
     );
-  }, [filteredNotes]);
+  }, [filteredNotes, t]);
 
   const activeAssignmentNotes = selectedAssignment
     ? assignmentGroups.find(([assignment]) => assignment === selectedAssignment)?.[1] ?? []
@@ -163,7 +165,7 @@ const NotesDirectory = ({
 
   if (loading && notes.length === 0) {
     return (
-      <div className="mx-auto w-full max-w-6xl p-4 sm:p-6" aria-label="Loading notes">
+      <div className="mx-auto w-full max-w-6xl p-4 sm:p-6" aria-label={t('notes.loadingNotes')}>
         <div className="mb-6 h-11 w-full animate-pulse rounded-xl bg-[var(--bg-secondary)]" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, index) => (
@@ -178,23 +180,23 @@ const NotesDirectory = ({
     <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-primary)]">Notes</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-primary)]">{t('notes.title')}</p>
           <div className="mt-1 flex items-center gap-1">
             {selectedAssignment && (
               <button
                 onClick={() => setSelectedAssignment(null)}
                 className="-ml-1.5 rounded-lg p-1 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
-                aria-label="Back to assignments"
+                aria-label={t('notes.backToAssignments')}
               >
                 <ChevronLeft size={22} />
               </button>
             )}
             <h1 className="text-2xl font-bold text-[var(--text-primary)] truncate">
-              {selectedAssignment || 'Your study library'}
+              {selectedAssignment || t('notes.yourLibrary')}
             </h1>
           </div>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            {selectedAssignment ? `${activeAssignmentNotes.length} note${activeAssignmentNotes.length === 1 ? '' : 's'} in this assignment` : 'Choose an assignment to open its notes.'}
+            {selectedAssignment ? t('notes.notesInAssignment', { count: activeAssignmentNotes.length }) : t('notes.chooseAssignment')}
           </p>
         </div>
         <button
@@ -202,7 +204,7 @@ const NotesDirectory = ({
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           <Plus size={17} />
-          New note
+          {t('notes.newNote')}
         </button>
       </div>
 
@@ -211,14 +213,14 @@ const NotesDirectory = ({
         <input
           value={searchQuery}
           onChange={event => setSearchQuery(event.target.value)}
-          placeholder="Search notes by title, assignment, or content..."
+          placeholder={t('notes.searchPlaceholder')}
           className="min-w-0 flex-1 border-none bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)] focus:ring-0"
         />
       </div>
 
       {error && notes.length > 0 && (
         <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
-          Showing your saved notes. We could not refresh them right now.
+          {t('notes.refreshError')}
         </div>
       )}
 
@@ -226,20 +228,20 @@ const NotesDirectory = ({
         <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-[var(--border-primary)] p-8 text-center">
           <div className="max-w-sm">
             <FileText className="mx-auto mb-4 h-12 w-12 text-[var(--accent-primary)]" />
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">Your library is empty</h2>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">Create your first note and it will be organized automatically by date.</p>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)]">{t('notes.emptyTitle')}</h2>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">{t('notes.emptyDesc')}</p>
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="mt-5 inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
             >
               <Plus size={17} />
-              Create first note
+              {t('notes.createFirstNote')}
             </button>
           </div>
         </div>
       ) : assignmentGroups.length === 0 ? (
         <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-[var(--border-primary)] p-8 text-center">
-          <p className="text-sm text-[var(--text-secondary)]">No notes match your search.</p>
+          <p className="text-sm text-[var(--text-secondary)]">{t('notes.noMatch')}</p>
         </div>
       ) : selectedAssignment ? (
         <section>
@@ -248,7 +250,7 @@ const NotesDirectory = ({
               <div key={monthKey}>
                 <div className="mb-3 flex items-center gap-2 pb-1">
                   <Calendar size={15} className="text-[var(--accent-primary)]" />
-                  <h2 className="text-base font-semibold text-[var(--text-primary)]">{getMonthLabel(monthKey)}</h2>
+                  <h2 className="text-base font-semibold text-[var(--text-primary)]">{getMonthLabel(monthKey, i18n.language, t('notes.undated'))}</h2>
                   <span className="text-xs text-[var(--text-secondary)]">{monthNotes.length}</span>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -266,7 +268,7 @@ const NotesDirectory = ({
                       <button
                         onClick={event => { event.stopPropagation(); onDelete(note); }}
                         className="-mr-1 -mt-1 flex-shrink-0 rounded-md p-1 text-[var(--text-secondary)] transition-colors hover:bg-red-500/10 hover:text-red-500"
-                        aria-label={`Delete ${note.title}`}
+                        aria-label={t('notes.deleteAria', { title: note.title })}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -275,12 +277,12 @@ const NotesDirectory = ({
                   <div className="mt-2 space-y-0.5 text-xs text-[var(--text-secondary)]">
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="flex-shrink-0" />
-                      <span className="truncate">Created {getShortDateLabel(note)}</span>
+                      <span className="truncate">{t('notes.created', { date: getShortDateLabel(note, i18n.language, t('notes.noDate')) })}</span>
                     </div>
-                    {getEditedLabel(note) && (
+                    {getEditedLabel(note, i18n.language) && (
                       <div className="flex items-center gap-1.5">
                         <FileText size={12} className="flex-shrink-0" />
-                        <span className="truncate">Edited {getEditedLabel(note)}</span>
+                        <span className="truncate">{t('notes.edited', { date: getEditedLabel(note, i18n.language) })}</span>
                       </div>
                     )}
                   </div>
@@ -306,7 +308,7 @@ const NotesDirectory = ({
               <div className="min-w-0 flex-1">
                 <h2 className="truncate font-semibold capitalize text-[var(--text-primary)]">{assignment}</h2>
                 <p className="text-xs text-[var(--text-secondary)]">
-                  {assignmentNotes.length} note{assignmentNotes.length === 1 ? '' : 's'}
+                  {t('notes.noteCount', { count: assignmentNotes.length })}
                 </p>
               </div>
             </button>

@@ -1,5 +1,6 @@
-// Demo data for unauthenticated users
+// Demo data for unauthenticated users — built via i18n so it follows the active language
 
+import i18n from '@/i18n';
 import { getLocalDateString } from '@/utils/dateUtils';
 
 // Utilidades para fechas relativas
@@ -14,41 +15,44 @@ const todayStr = format(today);
 const yesterdayStr = format(addDays(today, -1));
 const tomorrowStr = format(addDays(today, 1));
 
-export const demoWorkspaces = [
-  { id: 'demo-ws-1', name: 'University (demo)' },
-  { id: 'demo-ws-2', name: 'Work (demo)' },
+const t = (key: string) => i18n.t(`demo.${key}`);
+const suffix = () => ` ${t('suffix')}`;
+
+export const getDemoWorkspaces = () => [
+  { id: 'demo-ws-1', name: `${t('workspaces.university')}${suffix()}` },
+  { id: 'demo-ws-2', name: `${t('workspaces.work')}${suffix()}` },
 ];
 
-export const demoAssignments = [
-  { id: 'demo-assignment-a', name: 'Advanced Mathematics (demo)', workspace_id: 'demo-ws-1' },
-  { id: 'demo-assignment-b', name: 'Web Project (demo)', workspace_id: 'demo-ws-2' },
+export const getDemoAssignments = () => [
+  { id: 'demo-assignment-a', name: `${t('assignments.advMath')}${suffix()}`, workspace_id: 'demo-ws-1' },
+  { id: 'demo-assignment-b', name: `${t('assignments.webProject')}${suffix()}`, workspace_id: 'demo-ws-2' },
 ];
 
-export const demoTasks = [
-  { id: 'demo-task-1', title: 'Solve calculus exercises (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: false, due_date: todayStr, deadline: todayStr, created_at: todayStr, difficulty: 'medium', completed_at: null },
-  { id: 'demo-task-2', title: 'Review theorems (demo)', assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: true, due_date: yesterdayStr, deadline: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy', completed_at: yesterdayStr },
-  { id: 'demo-task-3', title: 'Implement REST API (demo)', assignment: 'demo-assignment-b', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, deadline: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
+export const getDemoTasks = () => [
+  { id: 'demo-task-1', title: `${t('tasks.calculus')}${suffix()}`, assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: false, due_date: todayStr, deadline: todayStr, created_at: todayStr, difficulty: 'medium', completed_at: null },
+  { id: 'demo-task-2', title: `${t('tasks.theorems')}${suffix()}`, assignment: 'demo-assignment-a', workspace_id: 'demo-ws-1', completed: true, due_date: yesterdayStr, deadline: yesterdayStr, created_at: yesterdayStr, difficulty: 'easy', completed_at: yesterdayStr },
+  { id: 'demo-task-3', title: `${t('tasks.restApi')}${suffix()}`, assignment: 'demo-assignment-b', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, deadline: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
 ];
 
-export const demoNotes = [
-  { id: 'demo-note-1', title: 'Important formulas (demo)', assignment: 'demo-assignment-a', description: 'Integration by parts: ∫u dv = uv - ∫v du. Chain rule for derivatives.', date: todayStr },
-  { id: 'demo-note-2', title: 'Client meeting (demo)', assignment: 'demo-assignment-b', description: 'Discuss requirements for new payment module. Due: next Friday.', date: yesterdayStr },
-  { id: 'demo-note-3', title: 'Design ideas (demo)', assignment: 'demo-assignment-a', description: 'Research design patterns to improve system architecture. Consider MVC and microservices.', date: todayStr },
+export const getDemoNotes = () => [
+  { id: 'demo-note-1', title: `${t('notes.formulas.title')}${suffix()}`, assignment: 'demo-assignment-a', description: t('notes.formulas.desc'), date: todayStr },
+  { id: 'demo-note-2', title: `${t('notes.meeting.title')}${suffix()}`, assignment: 'demo-assignment-b', description: t('notes.meeting.desc'), date: yesterdayStr },
+  { id: 'demo-note-3', title: `${t('notes.design.title')}${suffix()}`, assignment: 'demo-assignment-a', description: t('notes.design.desc'), date: todayStr },
 ];
 
-export const demoSessions = [
-  { id: 'demo-session-1', name: 'Math Study (demo)', started_at: todayStr + 'T09:00:00', ended_at: todayStr + 'T10:30:00', duration: '01:30:00', tasks_completed: 2, pomodoros_completed: 3 },
-  { id: 'demo-session-2', name: 'Web Programming (demo)', started_at: yesterdayStr + 'T14:00:00', ended_at: yesterdayStr + 'T15:00:00', duration: '01:00:00', tasks_completed: 1, pomodoros_completed: 2 },
-  { id: 'demo-session-3', name: 'Exam preparation (demo)', started_at: format(addDays(today, -7)) + 'T16:00:00', ended_at: format(addDays(today, -7)) + 'T18:00:00', duration: '02:00:00', tasks_completed: 3, pomodoros_completed: 4 },
-  { id: 'demo-session-4', name: 'Code debugging (demo)', started_at: format(addDays(today, -3)) + 'T11:00:00', ended_at: format(addDays(today, -3)) + 'T12:30:00', duration: '01:30:00', tasks_completed: 2, pomodoros_completed: 3 },
-  { id: 'demo-session-5', name: 'Framework research (demo)', started_at: format(addDays(today, -5)) + 'T08:00:00', ended_at: format(addDays(today, -5)) + 'T09:00:00', duration: '01:00:00', tasks_completed: 1, pomodoros_completed: 2 },
+export const getDemoSessions = () => [
+  { id: 'demo-session-1', name: `${t('sessions.mathStudy')}${suffix()}`, started_at: todayStr + 'T09:00:00', ended_at: todayStr + 'T10:30:00', duration: '01:30:00', tasks_completed: 2, pomodoros_completed: 3 },
+  { id: 'demo-session-2', name: `${t('sessions.webProgramming')}${suffix()}`, started_at: yesterdayStr + 'T14:00:00', ended_at: yesterdayStr + 'T15:00:00', duration: '01:00:00', tasks_completed: 1, pomodoros_completed: 2 },
+  { id: 'demo-session-3', name: `${t('sessions.examPrep')}${suffix()}`, started_at: format(addDays(today, -7)) + 'T16:00:00', ended_at: format(addDays(today, -7)) + 'T18:00:00', duration: '02:00:00', tasks_completed: 3, pomodoros_completed: 4 },
+  { id: 'demo-session-4', name: `${t('sessions.debugging')}${suffix()}`, started_at: format(addDays(today, -3)) + 'T11:00:00', ended_at: format(addDays(today, -3)) + 'T12:30:00', duration: '01:30:00', tasks_completed: 2, pomodoros_completed: 3 },
+  { id: 'demo-session-5', name: `${t('sessions.frameworkResearch')}${suffix()}`, started_at: format(addDays(today, -5)) + 'T08:00:00', ended_at: format(addDays(today, -5)) + 'T09:00:00', duration: '01:00:00', tasks_completed: 1, pomodoros_completed: 2 },
 ];
 
-export const demoHabits = [
+export const getDemoHabits = () => [
   {
     id: 'demo-habit-1',
-    name: 'Study',
-    description: 'Study for 1 hour every morning before breakfast',
+    name: t('habits.study.name'),
+    description: t('habits.study.desc'),
     frequency: 'daily',
     target_count: 7,
     current_count: 5,
@@ -66,8 +70,8 @@ export const demoHabits = [
   },
   {
     id: 'demo-habit-2',
-    name: 'Exercise',
-    description: 'Take a 15-minute break every 2 hours of study',
+    name: t('habits.exercise.name'),
+    description: t('habits.exercise.desc'),
     frequency: 'daily',
     target_count: 5,
     current_count: 3,
@@ -84,8 +88,8 @@ export const demoHabits = [
   },
   {
     id: 'demo-habit-3',
-    name: 'Code',
-    description: 'Review and refactor code for 30 minutes daily',
+    name: t('habits.code.name'),
+    description: t('habits.code.desc'),
     frequency: 'daily',
     target_count: 7,
     current_count: 4,
@@ -103,8 +107,8 @@ export const demoHabits = [
   },
   {
     id: 'demo-habit-4',
-    name: 'Project',
-    description: 'Plan weekly tasks and goals every Sunday',
+    name: t('habits.project.name'),
+    description: t('habits.project.desc'),
     frequency: 'weekly',
     target_count: 4,
     current_count: 2,
@@ -121,8 +125,8 @@ export const demoHabits = [
   },
   {
     id: 'demo-habit-5',
-    name: 'Reading',
-    description: 'Read 2 technical articles per week',
+    name: t('habits.reading.name'),
+    description: t('habits.reading.desc'),
     frequency: 'weekly',
     target_count: 8,
     current_count: 5,

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import BaseModal from '@/modals/shared/BaseModal';
 import { Habit } from '@/types/common';
 
@@ -17,6 +19,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
   onDelete,
   habit
 }) => {
+  const { t } = useTranslation();
   const [habitName, setHabitName] = useState('');
 
   useEffect(() => {
@@ -51,7 +54,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
     <BaseModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Edit Habit"
+      title={t('habits.editTitle')}
       maxWidth="max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,14 +63,14 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
             htmlFor="editHabitName"
             className="block text-sm font-medium text-[var(--text-primary)] mb-2"
           >
-            Habit Name
+            {t('habits.habitName')}
           </label>
           <input
             id="editHabitName"
             type="text"
             value={habitName}
             onChange={(e) => setHabitName(e.target.value)}
-            placeholder="Enter habit name..."
+            placeholder={t('habits.habitNameEditPlaceholder')}
             className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
           />
@@ -79,7 +82,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
             onClick={handleDelete}
             className="px-4 py-2 bg-transparent border-2 border-red-500 text-red-500 rounded-md hover:bg-red-100 hover:text-red-600 transition-colors"
           >
-            Delete
+            {t('common.delete')}
           </button>
           <div className="flex gap-3 flex-1">
             <button
@@ -87,14 +90,14 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
               onClick={handleClose}
               className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={!habitName.trim()}
               className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              {t('common.save')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import BaseModal from '@/modals/shared/BaseModal';
+import { useTranslation } from 'react-i18next';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -6,32 +7,33 @@ interface AboutModalProps {
 }
 
 const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
+  const { t } = useTranslation();
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="About UniTracker"
+      title={t('settings.about.title')}
       maxWidth="max-w-lg"
     >
       <div className="space-y-6">
         <div>
-          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">The Story</h3>
+          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">{t('settings.about.theStory')}</h3>
           <p className="text-base text-[var(--text-secondary)]">
-            UniTracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.
+            {t('settings.about.storyBody')}
           </p>
         </div>
         
         <div>
-          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">About Me</h3>
+          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">{t('settings.about.aboutMe')}</h3>
           <p className="text-base text-[var(--text-secondary)]">
-            Hi! I'm Ricky, the creator of UniTracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.
+            {t('settings.about.aboutMeBody')}
           </p>
         </div>
         
         <div>
-          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">Get in Touch</h3>
+          <h3 className="text-xl font-bold mb-2 text-[var(--text-primary)]">{t('settings.about.getInTouch')}</h3>
           <p className="text-base text-[var(--text-secondary)] mb-2">
-            I'm always open to feedback, suggestions, or just a friendly chat about the app. Whether you've found a bug, have a feature request, or want to share your experience, I'd love to hear from you!
+            {t('settings.about.getInTouchBody')}
           </p>
             <a 
             href="mailto:info@unitracker.me" 
@@ -45,7 +47,7 @@ const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
         </div>
         
         <div className="border-t border-[var(--border-primary)] pt-4 text-center text-[var(--text-secondary)] pb-2">
-            Thank you for using UniTracker! Your support and feedback help make this app better!
+            {t('settings.about.thankYou')}
         </div>
       </div>
     </BaseModal>

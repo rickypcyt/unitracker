@@ -2,6 +2,7 @@ import { BarChart3, BookOpen, Calendar, ChevronLeft, ChevronRight, CircleCheckBi
 import { useEffect, useRef, useState } from 'react';
 import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
+import SessionLayoutButton from './SessionLayoutButton';
 import SettingsButton from './SettingsButton';
 import { supabase } from '@/utils/supabaseClient';
 import { toast } from 'react-toastify';
@@ -207,7 +208,8 @@ const Navbar = () => {
           })}
         </div>
 
-        <div className="shrink-0 flex items-center">
+        <div className="shrink-0 flex items-center gap-2">
+          {activePage === 'session' && <SessionLayoutButton menuDirection="down" />}
           <SettingsButton iconOnly />
         </div>
       </div>
@@ -317,7 +319,14 @@ const Navbar = () => {
         )}
 
         {/* Settings at bottom */}
-        <div className={`h-16 flex items-center border-t border-[var(--border-primary)] flex-shrink-0 ${(!isNavCollapsed || mobileOpen) ? 'px-3 justify-start' : 'justify-center'}`}>
+        <div className={`flex items-center border-t border-[var(--border-primary)] flex-shrink-0 ${
+          (!isNavCollapsed || mobileOpen)
+            ? 'h-16 px-3 justify-start gap-2'
+            : activePage === 'session'
+              ? 'py-2 flex-col justify-center gap-1'
+              : 'h-16 justify-center'
+        }`}>
+          {activePage === 'session' && <SessionLayoutButton menuDirection="up" />}
           <SettingsButton expanded={!isNavCollapsed || mobileOpen} />
         </div>
       </nav>

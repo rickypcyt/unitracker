@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import BaseModal from '@/modals/shared/BaseModal';
-import { changelogData } from '@/data/changelog';
+import { getLocalizedChangelog } from '@/data/changelog';
 
 interface NewFeaturesModalProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface NewFeaturesModalProps {
 }
 
 const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalProps) => {
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (isOpen && onMarkAsSeen) {
@@ -20,14 +23,14 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Release Notes"
+      title={t('settings.releaseNotes')}
       maxWidth="max-w-4xl"
     >
       <div className="space-y-6">
         
         {/* Changelog Entries */}
         <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-          {changelogData.map((entry, index) => (
+          {getLocalizedChangelog(i18n.language).map((entry, index) => (
             <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-5 bg-[var(--bg-secondary)]/30">
               {/* Version Header */}
               <div className="flex items-center justify-between mb-4">
@@ -47,7 +50,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
                   <div>
                     <h5 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full"></span>
-                      Added
+                      {t('settings.changelog.added')}
                     </h5>
                     <ul className="space-y-1 ml-0">
                       {entry.changes.added.map((change, i) => (
@@ -63,7 +66,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
                   <div>
                     <h5 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></span>
-                      Improved
+                      {t('settings.changelog.improved')}
                     </h5>
                     <ul className="space-y-1 ml-0">
                       {entry.changes.improved.map((change, i) => (
@@ -79,7 +82,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
                   <div>
                     <h5 className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full"></span>
-                      Fixed
+                      {t('settings.changelog.fixed')}
                     </h5>
                     <ul className="space-y-1 ml-0">
                       {entry.changes.fixed.map((change, i) => (
@@ -95,7 +98,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
                   <div>
                     <h5 className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full"></span>
-                      Coming Soon
+                      {t('settings.changelog.comingSoon')}
                     </h5>
                     <ul className="space-y-1 ml-0">
                       {entry.changes.soon.map((change, i) => (
@@ -111,7 +114,7 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
                   <div>
                     <h5 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full"></span>
-                      Removed
+                      {t('settings.changelog.removed')}
                     </h5>
                     <ul className="space-y-1 ml-0">
                       {entry.changes.removed.map((change, i) => (
@@ -131,20 +134,20 @@ const NewFeaturesModal = ({ isOpen, onClose, onMarkAsSeen }: NewFeaturesModalPro
         <div className="border-t border-[var(--border-primary)] pt-4">
           <div className="flex flex-col gap-4 items-center">
             <p className="text-sm text-[var(--text-secondary)] text-center">
-              For detailed technical documentation, visit our GitHub repository.
+              {t('settings.githubNote')}
             </p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => window.open('https://github.com/rickypcyt/unitracker', '_blank')}
                 className="px-4 py-2 text-sm font-medium text-[var(--text-primary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
               >
-                View on GitHub
+                {t('settings.viewOnGitHub')}
               </button>
               <button
                 onClick={onClose}
                 className="px-6 py-3 text-base font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>

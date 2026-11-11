@@ -1,5 +1,8 @@
 import { Check, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { accentColorDescI18nKey, accentColorI18nKey } from "@/utils/theme";
 
 interface AccentColorModalProps {
   onClose: () => void;
@@ -18,6 +21,7 @@ const ACCENT_COLORS = [
 ];
 
 const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentColorSelect }) => {
+  const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [originalColor] = useState(() => localStorage.getItem('accentPalette') || '#0A84FF');
@@ -73,11 +77,11 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
         {/* Header Section */}
         <div className="flex flex-col items-center mb-4 sm:mb-8 relative z-10">
           <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-2 sm:mb-4 text-center">
-            Choose your accent color
+            {t('accentColors.title')}
           </h2>
 
           <p className="text-xs sm:text-base text-[var(--text-secondary)] text-center leading-relaxed px-3 sm:px-0">
-            Pick a color that reflects your style
+            {t('accentColors.subtitle')}
           </p>
         </div>
 
@@ -112,10 +116,10 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               {/* Color info */}
               <div className="text-center">
                 <h3 className="font-bold text-[10px] sm:text-base text-[var(--text-primary)] sm:mb-1 leading-tight truncate">
-                  {color.name}
+                  {t(accentColorI18nKey(color.name))}
                 </h3>
                 <p className="hidden sm:block text-xs text-[var(--text-secondary)]">
-                  {color.description}
+                  {t(accentColorDescI18nKey(color.name))}
                 </p>
               </div>
             </button>
@@ -128,13 +132,13 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
             onClick={() => onAccentColorSelect(selectedColor)}
             className="rounded-xl bg-[var(--accent-primary)] px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
           >
-            Choose as accent color
+            {t('accentColors.choose')}
           </button>
           <button
             onClick={onClose}
             className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
           >
-            Keep current color
+            {t('accentColors.keep')}
           </button>
         </div>
       </div>

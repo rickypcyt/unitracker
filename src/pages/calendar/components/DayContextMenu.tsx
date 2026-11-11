@@ -1,6 +1,8 @@
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import BaseMenu from "@/modals/shared/BaseMenu";
+import { capitalizeFirst } from "@/utils/dateUtils";
 import { format12Hour } from "../utils/calendarUtils";
 
 interface DayContextMenuProps {
@@ -22,11 +24,12 @@ const DayContextMenu = ({
   onClose,
   onCreateEvent,
 }: DayContextMenuProps) => {
-  const dateLabel = date.toLocaleDateString(undefined, {
+  const { t, i18n } = useTranslation();
+  const dateLabel = capitalizeFirst(date.toLocaleDateString(i18n.language, {
     weekday: "short",
     month: "short",
     day: "numeric",
-  });
+  }));
   const label = hour !== undefined ? `${dateLabel} · ${format12Hour(hour)}` : dateLabel;
 
   return (
@@ -34,7 +37,7 @@ const DayContextMenu = ({
       x={Math.min(x, window.innerWidth - 240)}
       y={Math.min(y, window.innerHeight - 120)}
       onClose={onClose}
-      aria-label="Day options"
+      aria-label={t('calendar.dayOptions')}
     >
       <div className="space-y-1">
         <div className="px-2 pb-1.5 text-xs font-medium text-[var(--text-secondary)]">
@@ -49,7 +52,7 @@ const DayContextMenu = ({
           className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50 disabled:opacity-40 disabled:pointer-events-none"
         >
           <Plus size={16} />
-          Create event
+          {t('calendar.createEvent')}
         </button>
       </div>
     </BaseMenu>

@@ -1,5 +1,6 @@
 import { FormActions, FormButton, FormInput } from "@/modals/shared/FormElements";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 interface Note {
   id?: string;
   title: string;
@@ -24,6 +25,7 @@ const NotesForm: React.FC<NotesFormProps> = ({
   onCancel,
   isEdit
 }) => {
+  const { t } = useTranslation();
   // Ensure initialValues is always defined with default values
   const safeInitialValues = useMemo(() => ({
     title: "",
@@ -84,19 +86,19 @@ const NotesForm: React.FC<NotesFormProps> = ({
   return <form onSubmit={handleSubmit} className="space-y-0">
       <div className="space-y-2">
         <div className="overflow-hidden">
-          <FormInput id="title" label="Title" value={form.title} onChange={handleTitleChange} placeholder="Enter note title..." required />
+          <FormInput id="title" label={t('notes.fieldTitle')} value={form.title} onChange={handleTitleChange} placeholder={t('notes.titlePlaceholder')} required />
           <div className="mt-4">
-            <FormInput id="assignment" label="Assignment (optional)" value={form.assignment} onChange={handleAssignmentChange} placeholder="Enter assignment name..." />
+            <FormInput id="assignment" label={t('notes.assignmentOptional')} value={form.assignment} onChange={handleAssignmentChange} placeholder={t('notes.assignmentNamePlaceholder')} />
           </div>
         </div>
       </div>
 
       <FormActions className="pt-4">
         {onCancel && <FormButton type="button" variant="secondary" onClick={onCancel} disabled={loading}>
-            Cancel
+            {t('common.cancel')}
           </FormButton>}
         <FormButton type="submit" variant="custom" className="border-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)]" disabled={loading}>
-          {loading ? "Saving..." : isEdit ? "Save Changes" : "Create Note"}
+          {loading ? t('notes.saving') : isEdit ? t('notes.saveChanges') : t('notes.createTitle')}
         </FormButton>
       </FormActions>
     </form>;

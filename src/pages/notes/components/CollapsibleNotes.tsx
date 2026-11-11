@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import Notes from '@/pages/notes/Notes';
+import { useTranslation } from 'react-i18next';
 
 const CollapsibleNotes = () => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -20,12 +22,12 @@ const CollapsibleNotes = () => {
         {expanded ? (
           <>
             <ChevronUp size={16} />
-            <span>Show less</span>
+            <span>{t('notes.showLess')}</span>
           </>
         ) : (
           <>
             <ChevronDown size={16} />
-            <span>Show all notes</span>
+            <span>{t('notes.showAllNotes')}</span>
           </>
         )}
       </button>

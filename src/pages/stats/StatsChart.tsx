@@ -2,7 +2,8 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { getLocalDateString } from '@/utils/dateUtils';
+import { capitalizeFirst, getLocalDateString } from '@/utils/dateUtils';
+import i18n from '@/i18n';
 import { formatHMS } from '@/utils/timeUtils';
 import { useTasksOnly } from '@/store/appStore';
 
@@ -70,16 +71,16 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   if (title === "This Month" && entry.realDay && year !== undefined && month !== undefined) {
     // Construir la fecha manualmente para evitar desfases de zona horaria
     const correctDate = new Date(parseInt(year), parseInt(month), parseInt(entry.realDay, 10));
-    dayLabel = correctDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    dayLabel = correctDate.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric' });
   } else if (title === "This Month" && date) {
     const dateObj = new Date(date);
-    dayLabel = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+    dayLabel = dateObj.toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
   } else if ((title === "This Year" || !isNaN(parseInt(title))) && date) {
     const dateObj = new Date(date);
-    dayLabel = dateObj.toLocaleDateString('en-US', { month: 'long' });
+    dayLabel = dateObj.toLocaleDateString(i18n.language, { month: 'long' });
   } else if (date) {
     const dateObj = new Date(date);
-    dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric' });
+    dayLabel = capitalizeFirst(dateObj.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric' }));
   } else {
     dayLabel = label || '';
   }

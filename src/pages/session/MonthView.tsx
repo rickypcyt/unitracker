@@ -2,13 +2,14 @@ import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useTasks, useWorkspace } from '@/store/appStore';
-import { demoTasks } from '@/utils/demoData';
+import { getDemoTasks } from '@/utils/demoData';
 import DayTasksPopover from './DayTasksPopover';
 import type { Task } from '@/schemas/task';
 import { addDays, addMonths, format, isSameMonth, isToday, isValid, parseISO, startOfMonth, startOfWeek } from 'date-fns';
 import { enUS, es, hi } from 'date-fns/locale';
 import type { Locale } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { capitalizeFirst } from '@/utils/dateUtils';
 
 const DATE_LOCALES: Record<string, Locale> = { en: enUS, es, hi };
 
@@ -23,12 +24,12 @@ const MonthView = () => {
   const { t, i18n } = useTranslation();
   const dateLocale = DATE_LOCALES[i18n.resolvedLanguage ?? i18n.language] ?? enUS;
   const weekdays = Array.from({ length: 7 }, (_, index) =>
-    format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index), 'EEE', { locale: dateLocale })
+    capitalizeFirst(format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index), 'EEE', { locale: dateLocale }))
   );
   const { isLoggedIn } = useAuth();
   const { tasks } = useTasks();
   const { currentWorkspace } = useWorkspace();
-  const source = (isLoggedIn ? tasks : demoTasks).filter(task =>
+  const source = (isLoggedIn ? tasks : getDemoTasks()).filter(task =>
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   );
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);

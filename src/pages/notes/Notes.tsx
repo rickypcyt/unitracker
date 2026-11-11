@@ -5,10 +5,11 @@ import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import NoteView from './NoteView';
 import NotesDirectory from './NotesDirectory';
-import { demoNotes } from '@/utils/demoData';
+import { getDemoNotes } from '@/utils/demoData';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { NoteService } from '@/services/NoteService';
+import { useTranslation } from 'react-i18next';
 
 interface Note {
   id?: string;
@@ -23,6 +24,7 @@ interface Note {
 
 
 const Notes: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isDemo } = useDemoMode();
   const {
@@ -49,7 +51,7 @@ const Notes: React.FC = () => {
           const data = await NoteService.fetchNotes(userId);
           setNotes(data as Note[]);
         } catch {
-          setError('Error loading notes');
+          setError(t('notes.errorLoading'));
         }
       } else {
         const saved = localStorage.getItem('notes');
@@ -115,7 +117,7 @@ const Notes: React.FC = () => {
         return newNote.id || null;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : t('notes.errorGeneric'));
       return null;
     } finally {
       setLoading(false);
@@ -144,7 +146,7 @@ const Notes: React.FC = () => {
         const data = await NoteService.updateNote(noteId, updatedNote);
         setNotes(notes.map(n => n.id === noteId ? data as Note : n));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error updating note');
+        setError(err instanceof Error ? err.message : t('notes.errorUpdate'));
       }
     } else {
       setNotes(notes.map(n => n.id === noteId ? { ...n, ...updatedNote } as Note : n));
@@ -165,13 +167,13 @@ const Notes: React.FC = () => {
       setNotes(notes.filter(n => n.id !== noteToDelete.id));
       setNoteToDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting note');
+      setError(err instanceof Error ? err.message : t('notes.errorDelete'));
     } finally {
       setLoading(false);
     }
   };
 
-  const notesToShow = isDemo ? demoNotes : notes;
+  const notesToShow = isDemo ? getDemoNotes() : notes;
 
   const handleNoteSelect = (noteId: string) => {
     setSelectedNoteId(noteId === selectedNoteId ? undefined : noteId);

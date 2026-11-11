@@ -1,5 +1,6 @@
 import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, Minimize2, MoreVertical, PictureInPicture2, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 
@@ -20,12 +21,13 @@ const getDocumentPip = (): DocumentPipApi | null =>
     : null;
 
 const TIMER_CONFIG: Record<TimerId, { label: string; icon: typeof Clock; panelClass: string; labelClass: string }> = {
-  study: { label: "Study", icon: Clock, panelClass: "timer-panel-study", labelClass: "timer-panel-label-study" },
-  pomodoro: { label: "Pomodoro", icon: TimerIcon, panelClass: "timer-panel-pomo", labelClass: "timer-panel-label-pomo" },
-  countdown: { label: "Countdown", icon: Watch, panelClass: "timer-panel-countdown", labelClass: "timer-panel-label-countdown" },
+  study: { label: "session.unifiedTimer.studyLabel", icon: Clock, panelClass: "timer-panel-study", labelClass: "timer-panel-label-study" },
+  pomodoro: { label: "session.unifiedTimer.pomodoroLabel", icon: TimerIcon, panelClass: "timer-panel-pomo", labelClass: "timer-panel-label-pomo" },
+  countdown: { label: "session.unifiedTimer.countdownLabel", icon: Watch, panelClass: "timer-panel-countdown", labelClass: "timer-panel-label-countdown" },
 };
 
 const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?: boolean }) => {
+  const { t } = useTranslation();
   const [showPomodoro, setShowPomodoro] = useState(true);
   const [showCountdown, setShowCountdown] = useState(true);
   const [order, setOrder] = useState<TimerId[]>(["pomodoro", "study", "countdown"]);
@@ -108,7 +110,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
         slot.className = "pip-timer-slot";
         const label = pip.document.createElement("div");
         label.className = `pip-slot-label pip-slot-label-${id}`;
-        label.textContent = TIMER_CONFIG[id].label;
+        label.textContent = t(TIMER_CONFIG[id].label);
         const host = pip.document.createElement("div");
         host.className = "pip-slot-host";
         slot.append(label, host);
@@ -248,7 +250,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
         <button
           onClick={closePip}
           className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-          aria-label="Dock timers back" title="Dock timers back"
+          aria-label={t("session.unifiedTimer.dockTimers")} title={t("session.unifiedTimer.dockTimers")}
         >
           <Minimize2 size={18} />
         </button>
@@ -262,7 +264,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           <button
             onClick={() => setStudyMenuOpen(v => !v)}
             className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-            aria-label="Session menu" title="Session menu" aria-expanded={studyMenuOpen} aria-haspopup="menu"
+            aria-label={t("session.unifiedTimer.sessionMenu")} title={t("session.unifiedTimer.sessionMenu")} aria-expanded={studyMenuOpen} aria-haspopup="menu"
           >
             <MoreVertical size={18} />
           </button>
@@ -274,26 +276,26 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-add-lap")); setStudyMenuOpen(false); }}
                   className={menuItem} role="menuitem"
                 >
-                  <Flag size={15} className="text-[var(--accent-primary)]" /> Add lap note
+                  <Flag size={15} className="text-[var(--accent-primary)]" /> {t("session.studyTimer.addLapNote")}
                 </button>
                 <button
                   onClick={() => { openStudySettings(); setStudyMenuOpen(false); }}
                   className={menuItem} role="menuitem"
                 >
-                  <Settings size={15} className={itemIcon} /> Session options
+                  <Settings size={15} className={itemIcon} /> {t("session.unifiedTimer.sessionOptions")}
                 </button>
                 <div className="my-1 border-t border-[var(--border-primary)]" />
                 <button
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-exit-session")); setStudyMenuOpen(false); }}
                   className={menuItem} role="menuitem"
                 >
-                  <LogOut size={15} className={itemIcon} /> Exit session
+                  <LogOut size={15} className={itemIcon} /> {t("session.unifiedTimer.exitSession")}
                 </button>
                 <button
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-delete-session")); setStudyMenuOpen(false); }}
                   className={`${menuItem} !text-red-500`} role="menuitem"
                 >
-                  <Trash2 size={15} /> Delete session
+                  <Trash2 size={15} /> {t("session.unifiedTimer.deleteSession")}
                 </button>
               </div>
             </>
@@ -304,13 +306,13 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     if (id === "pomodoro") {
       return (
         <>
-          <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1.5 rounded-full hover:bg-red-500/10 transition-colors" aria-label="Toggle sync" title={syncPomodoro ? "Sync ON" : "Sync OFF"}>
+          <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1.5 rounded-full hover:bg-red-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncPomodoro ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
             {syncPomodoro ? <RefreshCw size={18} className="text-red-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
-          <button onClick={openPomoSettings} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label="Configure pomodoro" title="Options">
+          <button onClick={openPomoSettings} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label={t("session.unifiedTimer.configurePomodoro")} title={t("session.unifiedTimer.options")}>
             <MoreVertical size={18} />
           </button>
-          <button onClick={togglePomoAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={pomoAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
+          <button onClick={togglePomoAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={pomoAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
             {pomoAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
@@ -319,10 +321,10 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     if (id === "countdown") {
       return (
         <>
-          <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1.5 rounded-full hover:bg-green-500/10 transition-colors" aria-label="Toggle sync" title={syncCountdown ? "Sync ON" : "Sync OFF"}>
+          <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1.5 rounded-full hover:bg-green-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncCountdown ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
             {syncCountdown ? <RefreshCw size={18} className="text-green-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
-          <button onClick={toggleCountdownAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={countdownAlarm ? "Disable alarm" : "Enable alarm"} aria-label="Toggle alarm">
+          <button onClick={toggleCountdownAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={countdownAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
             {countdownAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
@@ -372,7 +374,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               <div className={`timer-panel-label ${config.labelClass}`}>
                 <GripVertical size={16} className="opacity-40 cursor-grab" />
                 <Icon size={18} />
-                <span>{config.label}</span>
+                <span>{t(config.label)}</span>
                 <div className="flex items-center gap-0.5 ml-auto">
                   {renderActions(id)}
                 </div>
@@ -381,11 +383,11 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               {pipWindow ? (
                 <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2 text-xs text-[var(--text-secondary)]">
                   <PictureInPicture2 size={18} />
-                  <span>Floating</span>
+                  <span>{t("session.unifiedTimer.floating")}</span>
                   <button
                     onClick={closePip}
                     className="timer-ctrl-btn"
-                    aria-label="Dock timers back" title="Dock timers back"
+                    aria-label={t("session.unifiedTimer.dockTimers")} title={t("session.unifiedTimer.dockTimers")}
                   >
                     <Minimize2 size={16} />
                   </button>
@@ -403,10 +405,10 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           <button
             onClick={openPip}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            aria-label="Float timers in a window" title="Open timers in a floating window"
+            aria-label={t("session.unifiedTimer.floatAria")} title={t("session.unifiedTimer.floatTitle")}
           >
             <PictureInPicture2 size={14} />
-            Float timers
+            {t("session.unifiedTimer.floatTimers")}
           </button>
         </div>
       )}

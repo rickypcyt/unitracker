@@ -585,3 +585,25 @@ export const changelogData: ChangelogEntry[] = [
     }
   }
 ];
+
+// -------------------------
+// Localized changelog lookup
+// -------------------------
+
+import { changelogEs } from './changelogEs';
+import { changelogHi } from './changelogHi';
+
+const localized: Record<string, Record<string, Pick<ChangelogEntry, 'date' | 'changes'>>> = {
+  es: changelogEs,
+  hi: changelogHi,
+};
+
+/** Returns changelog entries merged with the given language's translations (falls back to English per version). */
+export const getLocalizedChangelog = (language: string): ChangelogEntry[] => {
+  const lang = language?.split('-')[0];
+  const map = (lang && localized[lang]) || {};
+  return changelogData.map((entry) => {
+    const tr = map[entry.version];
+    return tr ? { ...entry, date: tr.date, changes: tr.changes } : entry;
+  });
+};

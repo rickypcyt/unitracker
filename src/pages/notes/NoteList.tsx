@@ -2,6 +2,7 @@ import { Calendar, Pencil, Trash2 } from 'lucide-react';
 
 import React from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
+import { useTranslation } from 'react-i18next';
 
 interface Note {
   id?: string;
@@ -24,6 +25,7 @@ interface NoteListProps {
 
 const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _error, onEdit, onDelete, editingId, editForm }) => {
   const { isLoggedIn } = useAuth();
+  const { t, i18n } = useTranslation();
   // Solo mostrar el spinner si loading y aún no se sabe si hay notas (notes.length === 0)
 
 
@@ -32,11 +34,11 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _e
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <Pencil className="mx-auto mb-4 w-10 h-10 text-[var(--accent-primary)]" />
-          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">No notes yet</h3>
-          <p className="text-[var(--text-secondary)]">Create your first note to get started</p>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">{t('notes.noNotesYet')}</h3>
+          <p className="text-[var(--text-secondary)]">{t('notes.createFirstNote')}</p>
           {!isLoggedIn && (
             <p className="text-sm text-[var(--text-secondary)] opacity-70 mt-2">
-              Remember to login first
+              {t('notes.loginReminder')}
             </p>
           )}
         </div>
@@ -54,7 +56,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _e
             onDoubleClick={() => onEdit(note)}
             tabIndex={0}
             role="button"
-            aria-label="Edit note"
+            aria-label={t('notes.editNote')}
           >
             {/* Card Header */}
             <div className="mb-2 flex flex-col gap-1">
@@ -62,7 +64,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _e
                 {note.title}
               </h3>
               <span className="inline-block py-0.5 rounded-full text-sm font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] max-w-full truncate">
-                {note.assignment ?? 'None'}
+                {note.assignment ?? t('notes.unassigned')}
               </span>
             </div>
 
@@ -90,22 +92,22 @@ const NoteList: React.FC<NoteListProps> = ({ notes, loading: _loading, error: _e
             <div className="flex items-center justify-between pt-2 border-t border-[var(--border-primary)] mt-auto">
               <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                 <Calendar size={14} />
-                <span>{note.date ? new Date(note.date).toLocaleDateString() : ''}</span>
+                <span>{note.date ? new Date(note.date).toLocaleDateString(i18n.language) : ''}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   className="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
                   onClick={(e) => { e.stopPropagation(); onEdit(note); }}
-                  aria-label="Edit note"
-                  title="Edit"
+                  aria-label={t('notes.editNote')}
+                  title={t('common.edit')}
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   className="p-2 rounded-md text-red-500 hover:bg-red-500/10 transition-colors"
                   onClick={(e) => { e.stopPropagation(); onDelete(note); }}
-                  aria-label="Delete note"
-                  title="Delete"
+                  aria-label={t('notes.deleteNote')}
+                  title={t('common.delete')}
                 >
                   <Trash2 size={16} />
                 </button>

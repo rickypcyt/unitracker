@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import LanguageToggle from "@/components/ui/LanguageToggle";
 
-import { ACCENT_COLORS } from "@/utils/theme";
+import { ACCENT_COLORS, accentColorI18nKey } from "@/utils/theme";
 import AddFriendModal from "@/modals/friends/AddFriendModal";
 import BaseModal from "@/modals/shared/BaseModal";
 import DataExportImportPanel from "@/components/settings/DataExportImportPanel";
@@ -28,7 +28,7 @@ import ManageCompletedTasksModal from "@/modals/tasks/ManageCompletedTasksModal"
 import ManageSessionsModal from "@/modals/session/ManageSessionsModal";
 import TimezoneSelector from "@/components/settings/TimezoneSelector";
 import UserModal from "@/modals/auth/UserModal";
-import { changelogData } from "@/data/changelog";
+import { getLocalizedChangelog } from "@/data/changelog";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useChangelog } from "@/hooks/settings/useChangelog";
 import useTheme from "@/hooks/settings/useTheme";
@@ -93,7 +93,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
   const [showSessionsModal, setShowSessionsModal] = useState(false);
   const [showCompletedTasksModal, setShowCompletedTasksModal] = useState(false);
   const { hasNewChanges, markAsSeen } = useChangelog();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (activeTab === "whatsNew" && markAsSeen) {
@@ -115,7 +115,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
     }
   };
 
-  const selectedAccentName = ACCENT_COLORS.find((c) => c.value === accentPalette)?.name || t("settings.custom");
+  const selectedAccent = ACCENT_COLORS.find((c) => c.value === accentPalette);
+  const selectedAccentName = selectedAccent ? t(accentColorI18nKey(selectedAccent.name)) : t("settings.custom");
 
   return (
     <>
@@ -214,10 +215,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                             ? "ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)] scale-110"
                             : "hover:scale-105 hover:opacity-90"
                         } ${color.class}`}
-                        aria-label={`Select ${color.name} accent color`}
-                        title={color.name}
+                        aria-label={t("accentColors.selectAria", { name: t(accentColorI18nKey(color.name)) })}
+                        title={t(accentColorI18nKey(color.name))}
                       >
-                        <span className="sr-only">{color.name}</span>
+                        <span className="sr-only">{t(accentColorI18nKey(color.name))}</span>
                       </button>
                     ))}
                   </div>
@@ -336,7 +337,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
 
             {activeTab === "whatsNew" && (
               <div className="space-y-4">
-                {changelogData.map((entry, index) => (
+                {getLocalizedChangelog(i18n.language).map((entry, index) => (
                   <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]/30">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold text-[var(--text-primary)]">{entry.date}</h4>
@@ -347,7 +348,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         <div>
                           <h5 className="text-xs font-medium text-green-600 dark:text-green-400 mb-1.5 flex items-center gap-2">
                             <span className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full" />
-                            Added
+                            {t("settings.changelog.added")}
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.added.map((change, i) => (
@@ -360,7 +361,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         <div>
                           <h5 className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1.5 flex items-center gap-2">
                             <span className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full" />
-                            Improved
+                            {t("settings.changelog.improved")}
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.improved.map((change, i) => (
@@ -373,7 +374,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         <div>
                           <h5 className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1.5 flex items-center gap-2">
                             <span className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full" />
-                            Fixed
+                            {t("settings.changelog.fixed")}
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.fixed.map((change, i) => (
@@ -386,7 +387,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         <div>
                           <h5 className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1.5 flex items-center gap-2">
                             <span className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full" />
-                            Coming Soon
+                            {t("settings.changelog.comingSoon")}
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.soon.map((change, i) => (
@@ -399,7 +400,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         <div>
                           <h5 className="text-xs font-medium text-red-600 dark:text-red-400 mb-1.5 flex items-center gap-2">
                             <span className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full" />
-                            Removed
+                            {t("settings.changelog.removed")}
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.removed.map((change, i) => (
@@ -419,19 +420,19 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 <div>
                   <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.theStory")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    UniTracker was born in December 2024 from a simple idea: to create a better way to manage university assignments and tasks. As a student myself, I noticed the need for a tool that could help organize academic work more effectively while being intuitive and user-friendly.
+                    {t("settings.about.storyBody")}
                   </p>
                 </div>
                 <div>
                   <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.aboutMe")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    Hi! I'm Ricky, the creator of UniTracker. I'm passionate about building tools that make life easier for students. This project represents my commitment to improving the academic experience through technology.
+                    {t("settings.about.aboutMeBody")}
                   </p>
                 </div>
                 <div>
                   <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.getInTouch")}</h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-2">
-                    I'm always open to feedback, suggestions, or just a friendly chat about the app. Whether you've found a bug, have a feature request, or want to share your experience, I'd love to hear from you!
+                    {t("settings.about.getInTouchBody")}
                   </p>
                   <a
                     href="mailto:info@unitracker.me"
@@ -444,7 +445,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   </a>
                 </div>
                 <div className="border-t border-[var(--border-primary)] pt-4 text-center text-xs text-[var(--text-secondary)]">
-                  Thank you for using UniTracker! Your support and feedback help make this app better!
+                  {t("settings.about.thankYou")}
                 </div>
               </div>
             )}

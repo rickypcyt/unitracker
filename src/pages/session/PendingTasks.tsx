@@ -7,7 +7,7 @@ import { useLocalStorage } from '@/hooks/common/useLocalStorage';
 import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
 import { useNavigation } from '@/navigation/NavigationContext';
 import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
-import { demoTasks } from '@/utils/demoData';
+import { getDemoTasks } from '@/utils/demoData';
 import ActionTooltip from '@/components/ui/ActionTooltip';
 import type { Task } from '@/schemas/task';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,7 @@ const PendingTasks = () => {
   const { currentWorkspace } = useWorkspace();
   const fetchTasks = useFetchTasks();
   const { navigateTo } = useNavigation();
-  const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : demoTasks).filter(task =>
+  const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : getDemoTasks()).filter(task =>
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   )), [isLoggedIn, tasks, currentWorkspace]);
   const pending = workspacePending.filter(task => !ignored.includes(task.id));
