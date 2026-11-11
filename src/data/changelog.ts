@@ -18,6 +18,48 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "3.0.0",
+    date: "November 11, 2026",
+    time: "8:00 PM",
+    type: "major",
+    changes: {
+      added: [
+        "Full internationalization: the whole app is now available in English, Spanish and Hindi, with an India landing page and referral tracking",
+        "Top navigation bar replaces the sidebar across the entire app",
+        "Document Picture-in-Picture support for floating timer windows",
+        "Offline mutation queue: task changes apply instantly and sync automatically when the connection returns",
+        "Notification permission prompt and a Share Streak feature",
+        "Countdown time is now editable: click the digits or the pencil button to set hours, minutes and seconds directly (the timer pauses while editing)",
+        "Finish Session stats now show when the session started (time of day) and the total time spent paused",
+        "Countdown timer added to the landing page showcase, and the landing demos now mirror the real timer components",
+        "Day tasks popover in the Month view, and an assignment label above task titles in Pending Tasks",
+        "Log-in buttons on the navbar and Session page for signed-out users"
+      ],
+      improved: [
+        "Every timer and duration now displays as HH:MM:SS across the app — live timers, session modals, stats, charts, calendar, landing demos and exports — through a single shared formatting helper",
+        "Landing page redesigned with a minimal Resend-inspired look, plus comprehensive SEO metadata and structured data",
+        "Pending Tasks card now fits its content instead of stretching to match the calendar height",
+        "Month view marks days with an iOS-style badge instead of task dots",
+        "Timer controls restyled as horizontal ghost-style buttons",
+        "Rain and ocean sounds now share a reverb bus in the audio engine for a more natural mix",
+        "Session page and Unified Timer animate in with staggered fade-ins",
+        "Mobile responsiveness and form layout refined across the session, calendar, landing and tasks pages"
+      ],
+      fixed: [
+        "Pending Tasks card showing an empty black section at the bottom when the calendar was taller",
+        "Countdown editable digits showing a focus ring around each field and sitting too far apart",
+        "Mobile responsiveness and authentication state race conditions across the app",
+        "Onboarding modals could be dismissed accidentally with an outside click"
+      ],
+      removed: [
+        "Sidebar navigation — fully replaced by the top navbar",
+        "Day view from the calendar",
+        "Focus/Break/Long Break label inside the Pomodoro ring — only the time remains",
+        "Hover lift and shadow effect on Noise Generator sound cards"
+      ]
+    }
+  },
+  {
     version: "2.1.0",
     date: "September 18, 2026",
     time: "9:00 AM",

@@ -1,5 +1,6 @@
-import { AlertCircle, CheckCircle, Clock, Loader2, Target, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Loader2, Pause, Play, Target, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { format, isValid, parseISO } from 'date-fns';
 
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
@@ -148,6 +149,26 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     });
   };
   const formatDuration = (totalSeconds: number): string => formatHMS(totalSeconds);
+  const getPausedSecondsFromTimer = (): number => {
+    // Total paused time from the same persisted study timer state as the duration
+    try {
+      const savedState = localStorage.getItem('studyTimerState');
+      if (savedState) {
+        const parsed = JSON.parse(savedState);
+        const history = Array.isArray(parsed.pauseHistory) ? parsed.pauseHistory : [];
+        return history.reduce(
+          (sum: number, e: { startedAt: number; endedAt: number | null; durationSeconds: number | null }) =>
+            sum + (e.endedAt === null ? (Date.now() - e.startedAt) / 1000 : (e.durationSeconds ?? 0)),
+          0
+        );
+      }
+    } catch (e) {
+      console.warn('Could not get paused time from timer:', e);
+    }
+    return 0;
+  };
+  const startedAtDate = sessionStats?.startedAt ? parseISO(sessionStats.startedAt) : null;
+  const startedLabel = startedAtDate && isValid(startedAtDate) ? format(startedAtDate, 'HH:mm') : '—';
   const getDurationFromTimer = (): string => {
     // Try to get current duration from StudyTimer state
     try {
@@ -248,13 +269,27 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
             </div> : error ? <div className="flex items-center gap-2 text-red-500 py-2">
               <AlertCircle size={16} />
               <span className="text-sm">{error}</span>
-            </div> : sessionStats ? <div className="grid grid-cols-3 gap-4">
+            </div> : sessionStats ? <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-emerald-500 mb-1">
+                  <Play size={16} />
+                  <span className="text-2xl font-bold">{startedLabel}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Started</div>
+              </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-blue-500 mb-1">
                   <Clock size={16} />
                   <span className="text-2xl font-bold">{getDurationFromTimer()}</span>
                 </div>
                 <div className="text-sm text-[var(--text-secondary)]">Duration</div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 text-amber-500 mb-1">
+                  <Pause size={16} />
+                  <span className="text-2xl font-bold">{formatHMS(getPausedSecondsFromTimer())}</span>
+                </div>
+                <div className="text-sm text-[var(--text-secondary)]">Time Paused</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-green-500 mb-1">

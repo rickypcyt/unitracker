@@ -204,7 +204,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     </div>
                     <span className="text-xs text-[var(--text-secondary)]">{selectedAccentName}</span>
                   </div>
-                  <div className="grid grid-cols-9 gap-2">
+                  <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
                     {ACCENT_COLORS.map((color: AccentColor) => (
                       <button
                         key={color.value}

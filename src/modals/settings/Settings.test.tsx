@@ -23,14 +23,14 @@ describe('Settings mobile navigation', () => {
     const sections = screen.getByRole('group', { name: 'Settings sections' });
     expect(sections).toHaveClass('grid', 'grid-cols-3', 'sm:flex', 'shrink-0');
     expect(sections).not.toHaveClass('overflow-x-auto');
-    for (const name of ['Appearance', 'Account', 'Data', "What's New", 'About']) {
+    for (const name of ['Look', 'Account', 'Data', "What's New", 'About']) {
       expect(within(sections).getByRole('button', { name })).toHaveClass('min-w-0');
     }
   });
 
   it('selects every section directly and updates the active button', () => {
     render(<SettingsContent />);
-    for (const [name, content] of [['Account', 'User Profile'], ['Data', 'Export and import data'], ["What's New", 'Added'], ['About', 'The Story'], ['Appearance', 'Theme']] as const) {
+    for (const [name, content] of [['Account', 'User Profile'], ['Data', 'Export and import data'], ["What's New", 'Added'], ['About', 'The Story'], ['Look', 'Theme']] as const) {
       const button = screen.getByRole('button', { name });
       fireEvent.click(button);
       expect(button).toHaveAttribute('aria-pressed', 'true');

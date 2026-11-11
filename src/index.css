@@ -1538,6 +1538,11 @@ h1 {
   width: 100%;
 }
 
+.timer-panel-label-study {
+  color: #0A84FF;
+  background-color: rgba(10, 132, 255, 0.08);
+}
+
 .timer-panel-label-pomo {
   color: #ef4444;
   background-color: rgba(239, 68, 68, 0.08);

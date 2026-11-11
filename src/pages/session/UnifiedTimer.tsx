@@ -20,7 +20,7 @@ const getDocumentPip = (): DocumentPipApi | null =>
     : null;
 
 const TIMER_CONFIG: Record<TimerId, { label: string; icon: typeof Clock; panelClass: string; labelClass: string }> = {
-  study: { label: "Study", icon: Clock, panelClass: "timer-panel-study", labelClass: "" },
+  study: { label: "Study", icon: Clock, panelClass: "timer-panel-study", labelClass: "timer-panel-label-study" },
   pomodoro: { label: "Pomodoro", icon: TimerIcon, panelClass: "timer-panel-pomo", labelClass: "timer-panel-label-pomo" },
   countdown: { label: "Countdown", icon: Watch, panelClass: "timer-panel-countdown", labelClass: "timer-panel-label-countdown" },
 };
