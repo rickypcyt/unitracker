@@ -18,6 +18,25 @@ export interface ChangelogEntry {
 
 export const changelogData: ChangelogEntry[] = [
   {
+    version: "3.1.0",
+    date: "November 12, 2026",
+    time: "12:00 PM",
+    type: "minor",
+    changes: {
+      added: [
+        "Mini player: a compact floating study timer that stays on top of every window (Document Picture-in-Picture) with play/pause — opened from the Picture-in-Picture button in the Study panel header",
+        "The mini player shows every timer synced to the study timer in its own color (study blue, pomodoro red, countdown green) and widens to fit them all",
+        "Cross-tab sync: the same session stays in sync across open windows and tabs — pausing, resuming, or picking a session in one instantly updates the rest",
+        "Draggable in-app mini player for browsers without Picture-in-Picture support"
+      ],
+      improved: [
+        "Mini player styled as a minimal HUD: tabular-nums time, a tiny uppercase status line (Timer · playing/paused/no session) and ghost controls",
+        "Pomodoro break breathing is now in lockstep — the ring border and the digits pulse at the same 1.4s rhythm instead of drifting out of phase",
+        "All three timer panels keep their clocks at the same height: control rows are fixed-height and the synced Countdown reserves its row invisibly"
+      ]
+    }
+  },
+  {
     version: "3.0.0",
     date: "November 11, 2026",
     time: "8:00 PM",

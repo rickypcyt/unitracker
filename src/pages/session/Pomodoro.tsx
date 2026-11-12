@@ -1342,7 +1342,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
                   style={{ transformOrigin: '60px 60px', animationDuration: isPaused ? '2s' : undefined }}
                 />
               </svg>
-              <div className={`absolute inset-0 flex flex-col items-center justify-center ${isBreak && !isPaused ? 'animate-pulse' : ''}`}>
+              <div className={`absolute inset-0 flex flex-col items-center justify-center ${isBreak && !isPaused ? 'pomo-text-breath' : ''}`}>
                 <div className="flex items-center gap-0.5">
                   <span className="text-lg font-mono font-bold tabular-nums leading-none" style={{ color: ringColor }}>
                     {hrs.toString().padStart(2, '0')}
@@ -1362,8 +1362,8 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
         })()}
       </div>
 
-      {/* Timer Controls with side adjustment buttons */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2">
+      {/* Timer Controls with side adjustment buttons — h-16 + mb-3 match StudyTimer so all three clocks align */}
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
         {!syncPomodoroWithTimer && <>
             <div className="flex gap-1 shrink-0">
               {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>

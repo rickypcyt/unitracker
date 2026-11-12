@@ -406,6 +406,17 @@
       "studyLabel": "अध्ययन",
       "pomodoroLabel": "पोमोडोरो",
       "countdownLabel": "काउंटडाउन"
+    },
+    "miniPlayer": {
+      "open": "मिनी प्लेयर",
+      "openAria": "फ़्लोटिंग स्टडी टाइमर खोलें",
+      "openTitle": "स्टडी टाइमर को ऊपर फ़्लोटिंग रखें",
+      "backToSession": "सेशन पर वापस जाएं",
+      "close": "मिनी प्लेयर बंद करें",
+      "timer": "टाइमर",
+      "statusPlaying": "चल रहा है",
+      "statusPaused": "रुका हुआ",
+      "statusNoSession": "कोई सेशन नहीं"
     }
   },
   "notes": {

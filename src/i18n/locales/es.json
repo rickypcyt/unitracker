@@ -406,6 +406,17 @@
       "studyLabel": "Estudio",
       "pomodoroLabel": "Pomodoro",
       "countdownLabel": "Cuenta regresiva"
+    },
+    "miniPlayer": {
+      "open": "Mini reproductor",
+      "openAria": "Abrir temporizador de estudio flotante",
+      "openTitle": "Mantener el temporizador de estudio flotando encima",
+      "backToSession": "Volver a la sesión",
+      "close": "Cerrar mini reproductor",
+      "timer": "Temporizador",
+      "statusPlaying": "en curso",
+      "statusPaused": "en pausa",
+      "statusNoSession": "sin sesión"
     }
   },
   "notes": {

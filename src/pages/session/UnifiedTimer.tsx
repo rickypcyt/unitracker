@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, Minimize2, MoreVertical, PictureInPicture2, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
+import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, Minimize2, MoreVertical, PictureInPicture, PictureInPicture2, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
@@ -8,6 +8,7 @@ import Countdown from "./Countdown";
 import Pomodoro from "./Pomodoro";
 import StudyTimer from "./StudyTimer";
 import { useAppStore } from "@/store/appStore";
+import { MINI_PLAYER_OPEN_EVENT } from "@/utils/studyTimerRemote";
 
 type TimerId = "study" | "pomodoro" | "countdown";
 
@@ -260,7 +261,15 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
       const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-left";
       const itemIcon = "text-[var(--text-secondary)]";
       return (
-        <div className="relative">
+        <>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent(MINI_PLAYER_OPEN_EVENT))}
+            className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+            aria-label={t("session.miniPlayer.openAria")} title={t("session.miniPlayer.openTitle")}
+          >
+            <PictureInPicture size={18} />
+          </button>
+          <div className="relative">
           <button
             onClick={() => setStudyMenuOpen(v => !v)}
             className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
@@ -300,7 +309,8 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               </div>
             </>
           )}
-        </div>
+          </div>
+        </>
       );
     }
     if (id === "pomodoro") {

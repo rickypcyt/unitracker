@@ -406,6 +406,17 @@
       "studyLabel": "Study",
       "pomodoroLabel": "Pomodoro",
       "countdownLabel": "Countdown"
+    },
+    "miniPlayer": {
+      "open": "Mini player",
+      "openAria": "Open floating study timer",
+      "openTitle": "Keep the study timer floating on top",
+      "backToSession": "Back to session",
+      "close": "Close mini player",
+      "timer": "Timer",
+      "statusPlaying": "playing",
+      "statusPaused": "paused",
+      "statusNoSession": "no session"
     }
   },
   "notes": {

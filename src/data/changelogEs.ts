@@ -2,6 +2,22 @@ import type { ChangelogEntry } from './changelog';
 
 // Spanish translations keyed by version. Entries missing here fall back to English.
 export const changelogEs: Record<string, Pick<ChangelogEntry, 'date' | 'changes'>> = {
+  "3.1.0": {
+    date: "12 de noviembre de 2026",
+    changes: {
+      added: [
+        "Mini reproductor: un temporizador de estudio flotante y compacto que permanece encima de todas las ventanas (Document Picture-in-Picture) con play/pausa — se abre desde el botón Picture-in-Picture del encabezado del panel de Estudio",
+        "El mini reproductor muestra cada temporizador sincronizado con su propio color (azul de estudio, rojo de pomodoro, verde de cuenta regresiva) y se ensancha para acomodarlos",
+        "Sincronización entre pestañas: la misma sesión se mantiene sincronizada entre ventanas y pestañas abiertas — pausar, reanudar o elegir una sesión en una se refleja al instante en las demás",
+        "Mini reproductor arrastrable dentro de la app para navegadores sin soporte de Picture-in-Picture"
+      ],
+      improved: [
+        "Mini reproductor con estilo de HUD minimalista: hora en números tabulares, línea de estado en versalitas diminutas (Temporizador · en curso/en pausa/sin sesión) y controles ghost",
+        "La respiración del Pomodoro en el descanso ahora va al unísono — el borde del anillo y los dígitos pulsan al mismo ritmo de 1.4s en lugar de desfasarse",
+        "Los tres paneles de temporizador mantienen los relojes a la misma altura: las filas de controles tienen altura fija y la Cuenta regresiva sincronizada reserva su fila de forma invisible"
+      ]
+    }
+  },
   "3.0.0": {
     date: "11 de noviembre de 2026",
     changes: {

@@ -1,5 +1,6 @@
 import { pauseEntrySchema, type PauseEntry } from "@/schemas/timer";
-import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
+import { useAppStore } from "@/store/appStore";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 export const STORAGE_KEYS = {
   STUDY_TIMER_STATE: "studyTimerState",
@@ -97,6 +98,45 @@ export function useStudyTimerState(): [StudyState, (updates: Partial<StudyState>
 
   const updateStudyState = useCallback((updates: Partial<StudyState>) => {
     setStudyState((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  // ── Cross-tab sync ────────────────────────────────────────────────────────
+  // When another tab writes `studyTimerState`, rehydrate from it and mirror the
+  // running flag into Zustand so this tab's interval + UI follow. The guard on
+  // `time` avoids echo loops between two tabs that are both ticking.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEYS.STUDY_TIMER_STATE) return;
+      const incoming = parseStoredState(e.newValue, defaultState);
+      setStudyState(prev => {
+        const changed =
+          prev.isRunning !== incoming.isRunning ||
+          prev.sessionStatus !== incoming.sessionStatus ||
+          prev.lastStart !== incoming.lastStart ||
+          prev.timeAtStart !== incoming.timeAtStart ||
+          prev.lastPausedAt !== incoming.lastPausedAt ||
+          prev.sessionTitle !== incoming.sessionTitle ||
+          prev.sessionDescription !== incoming.sessionDescription ||
+          prev.pauseHistory.length !== incoming.pauseHistory.length ||
+          Math.abs(prev.time - incoming.time) > 1;
+        return changed ? incoming : prev;
+      });
+      const store = useAppStore.getState();
+      if (store.ui.isStudyRunning !== incoming.isRunning) {
+        store.setStudyRunning(incoming.isRunning);
+      }
+      const timerState: "running" | "paused" | "stopped" = incoming.isRunning
+        ? "running"
+        : incoming.sessionStatus === "paused"
+          ? "paused"
+          : "stopped";
+      if (store.studyTimerState !== timerState) {
+        store.setStudyTimerState(timerState);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // persist minimal state whenever it changes (call this from caller to avoid extra effect in hook)

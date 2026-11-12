@@ -1273,8 +1273,8 @@ const StudyTimer = ({
         </div>
       )}
 
-      {/* Controls: adjustments + play/pause in a single centered row */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 pt-2 pb-2 mb-3">
+      {/* Controls: adjustments + play/pause in a single centered row — h-16 keeps the clock aligned with the other panels */}
+      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
         <div className="flex gap-1 shrink-0">
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,

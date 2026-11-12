@@ -20,6 +20,7 @@ import UserModal from "@/modals/auth/UserModal";
 import NotificationPromptModal from "@/modals/NotificationPromptModal";
 import { supabase } from "@/utils/supabaseClient";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
+import { initCrossTabSync } from "@/utils/crossTabSync";
 import { captureReferralParams } from "@/utils/referral";
 import { track } from "@vercel/analytics";
 import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
@@ -34,6 +35,7 @@ import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import FloatingTimerPlayer from "@/pages/session/components/FloatingTimerPlayer";
 import Navbar from "@/components/layout/Sidebar";
 
 // Preload map: import functions for each page to enable hover-based preloading
@@ -197,6 +199,11 @@ const PageContent: FC = () => {
 };
 
 const AppRoute: FC = () => {
+  // Bridge timer sync events across open tabs/windows (BroadcastChannel)
+  useEffect(() => {
+    initCrossTabSync();
+  }, []);
+
   // Ask for notification permission only inside the app — never on landing pages
   useEffect(() => {
     const requestNotificationPermission = async (): Promise<void> => {
@@ -235,6 +242,7 @@ const AppRoute: FC = () => {
     <NavigationProvider>
       <TourManager>
         <PageContent />
+        <FloatingTimerPlayer />
       </TourManager>
     </NavigationProvider>
   );
