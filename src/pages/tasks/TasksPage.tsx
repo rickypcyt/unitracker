@@ -19,7 +19,7 @@ const TasksPage = memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [columnCount, setColumnCount] = useState<ColumnCount>(() => {
     const saved = localStorage.getItem('taskPageColumnCount');
-    return (Number(saved) as ColumnCount) || 2;
+    return (Number(saved) as ColumnCount) || 4;
   });
   const [fabPosition, setFabPosition] = useState<FabPosition>(() => {
     return (localStorage.getItem('taskPageFabPosition') as FabPosition) || 'bottom-right';
