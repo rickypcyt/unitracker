@@ -414,6 +414,7 @@
       "backToSession": "सेशन पर वापस जाएं",
       "close": "मिनी प्लेयर बंद करें",
       "timer": "टाइमर",
+      "floatTimer": "{{timer}} को अपने पॉपअप में खोलें",
       "statusPlaying": "चल रहा है",
       "statusPaused": "रुका हुआ",
       "statusNoSession": "कोई सेशन नहीं"

@@ -414,6 +414,7 @@
       "backToSession": "Volver a la sesión",
       "close": "Cerrar mini reproductor",
       "timer": "Temporizador",
+      "floatTimer": "Abrir {{timer}} en su propio popup",
       "statusPlaying": "en curso",
       "statusPaused": "en pausa",
       "statusNoSession": "sin sesión"

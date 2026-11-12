@@ -108,6 +108,25 @@ export interface SyncedTimerReading {
   seconds: number;
 }
 
+const readPomodoroConfig = (): { work: number; break: number; longBreak: number; sessionsBeforeLong: number } => {
+  const cfg = { work: 3000, break: 600, longBreak: 1800, sessionsBeforeLong: 4 };
+  try {
+    const s = JSON.parse(localStorage.getItem("pomodoroState") || "null");
+    if (s) {
+      const n = safeNumber(Number(s.workSessionsBeforeLongBreak), 4);
+      if (n > 0) cfg.sessionsBeforeLong = n;
+      const modes = JSON.parse(localStorage.getItem("pomodoroModes") || "null");
+      const m = Array.isArray(modes) ? modes[safeNumber(Number(s.modeIndex))] : null;
+      if (m) {
+        if (typeof m.work === "number" && Number.isFinite(m.work)) cfg.work = m.work;
+        if (typeof m.break === "number" && Number.isFinite(m.break)) cfg.break = m.break;
+        if (typeof m.longBreak === "number" && Number.isFinite(m.longBreak)) cfg.longBreak = m.longBreak;
+      }
+    }
+  } catch {}
+  return cfg;
+};
+
 const readPomodoroSeconds = (): number | null => {
   try {
     const raw = localStorage.getItem("pomodoroState");
@@ -120,14 +139,8 @@ const readPomodoroSeconds = (): number | null => {
 
     // Running: extrapolate remaining from the mode duration and elapsed time
     const modeKey = typeof s.currentMode === "string" ? s.currentMode : "work";
-    let duration = modeKey === "break" ? 300 : modeKey === "longBreak" ? 900 : 1500;
-    try {
-      const modes = JSON.parse(localStorage.getItem("pomodoroModes") || "null");
-      const cfg = Array.isArray(modes) ? modes[safeNumber(Number(s.modeIndex))] : null;
-      if (cfg && typeof cfg[modeKey] === "number" && Number.isFinite(cfg[modeKey])) {
-        duration = cfg[modeKey];
-      }
-    } catch {}
+    const cfg = readPomodoroConfig();
+    const duration = modeKey === "break" ? cfg.break : modeKey === "longBreak" ? cfg.longBreak : cfg.work;
     const elapsed = safeNumber(Number(s.timeAtStart)) + (Date.now() - lastStart) / 1000;
     return Math.max(0, duration - elapsed);
   } catch {
@@ -160,20 +173,178 @@ const readCountdownSeconds = (): number | null => {
   }
 };
 
+export type ExtraTimerId = "pomodoro" | "countdown";
+
+/** Read a pomodoro/countdown display value regardless of sync state. */
+export const readExtraTimerSeconds = (id: ExtraTimerId): number | null =>
+  id === "pomodoro" ? readPomodoroSeconds() : readCountdownSeconds();
+
+/**
+ * Synced pomodoro remaining time — replicates the mega-cycle walk the Pomodoro
+ * component does on `studyTimerTimeUpdate` (N work sessions, each followed by
+ * a break, a long break after the last one), so the popup shows exactly what
+ * the panel shows and flips on the same second boundary.
+ * `studyElapsed` must already be floored to display seconds.
+ */
+export const readSyncedPomodoroSeconds = (studyElapsed: number): number => {
+  const { work, break: brk, longBreak, sessionsBeforeLong } = readPomodoroConfig();
+  const megaCycle = sessionsBeforeLong * work + (sessionsBeforeLong - 1) * brk + longBreak;
+  const timeInCycle = Math.floor(studyElapsed) % megaCycle;
+
+  let mode: "work" | "break" | "longBreak" = "work";
+  let timeInMode = timeInCycle;
+  let remaining = timeInCycle;
+  for (let i = 0; i < sessionsBeforeLong; i++) {
+    if (remaining < work) {
+      mode = "work";
+      timeInMode = remaining;
+      break;
+    }
+    remaining -= work;
+    const breakDur = i === sessionsBeforeLong - 1 ? longBreak : brk;
+    if (remaining < breakDur) {
+      mode = i === sessionsBeforeLong - 1 ? "longBreak" : "break";
+      timeInMode = remaining;
+      break;
+    }
+    remaining -= breakDur;
+  }
+  const duration = mode === "work" ? work : mode === "longBreak" ? longBreak : brk;
+  return Math.max(0, duration - timeInMode);
+};
+
+/**
+ * Synced countdown remaining time — same formula the Countdown component uses:
+ * `baseline - floor(studyElapsed)`. `studyElapsed` must already be floored.
+ */
+export const readSyncedCountdownSeconds = (studyElapsed: number): number => {
+  try {
+    const b = JSON.parse(localStorage.getItem("countdownBaseline") || "null");
+    const baseline = b
+      ? safeNumber(Number(b.hours)) * 3600 + safeNumber(Number(b.minutes)) * 60 + safeNumber(Number(b.seconds))
+      : 7200;
+    return Math.max(0, baseline - Math.floor(studyElapsed));
+  } catch {
+    return 0;
+  }
+};
+
+/** Read a synced timer's value derived from the (floored) study elapsed time. */
+export const readSyncedTimerSeconds = (id: ExtraTimerId, studyElapsed: number): number =>
+  id === "pomodoro" ? readSyncedPomodoroSeconds(studyElapsed) : readSyncedCountdownSeconds(studyElapsed);
+
 /** Readings for the timers currently synced to the study timer. */
-export const readSyncedTimers = (): SyncedTimerReading[] => {
+export const readSyncedTimers = (studyElapsed: number): SyncedTimerReading[] => {
   const { syncPomodoroWithTimer, syncCountdownWithTimer } = useAppStore.getState().syncSettings;
   const readings: SyncedTimerReading[] = [];
   if (syncPomodoroWithTimer) {
-    const seconds = readPomodoroSeconds();
-    if (seconds !== null) readings.push({ id: "pomodoro", seconds });
+    readings.push({ id: "pomodoro", seconds: readSyncedPomodoroSeconds(studyElapsed) });
   }
   if (syncCountdownWithTimer) {
-    const seconds = readCountdownSeconds();
-    if (seconds !== null) readings.push({ id: "countdown", seconds });
+    readings.push({ id: "countdown", seconds: readSyncedCountdownSeconds(studyElapsed) });
   }
   return readings;
 };
+
+/** Whether a pomodoro/countdown is synced to the study timer. */
+export const isExtraTimerSynced = (id: ExtraTimerId): boolean => {
+  const { syncPomodoroWithTimer, syncCountdownWithTimer } = useAppStore.getState().syncSettings;
+  return id === "pomodoro" ? syncPomodoroWithTimer : syncCountdownWithTimer;
+};
+
+export const isExtraTimerRunning = (id: ExtraTimerId): boolean => {
+  try {
+    if (id === "pomodoro") {
+      const s = JSON.parse(localStorage.getItem("pomodoroState") || "null");
+      return s?.isRunning === true && s?.manuallyPaused !== true;
+    }
+    return localStorage.getItem("countdownState") === "running";
+  } catch {
+    return false;
+  }
+};
+
+// ── Independent (unsynced) timer controls ────────────────────────────────────
+// Same pattern as the study toggle: emit the sync event the component listens
+// to, then apply the transition ourselves if nothing handled it.
+
+const fallbackPausePomodoro = (): void => {
+  try {
+    const s = JSON.parse(localStorage.getItem("pomodoroState") || "null");
+    if (!s || s.isRunning !== true) return;
+    const lastStart = typeof s.lastStart === "number" ? s.lastStart : null;
+    const elapsed = safeNumber(Number(s.timeAtStart)) + (lastStart ? (Date.now() - lastStart) / 1000 : 0);
+    const modeKey = typeof s.currentMode === "string" ? s.currentMode : "work";
+    const cfg = readPomodoroConfig();
+    const duration = modeKey === "break" ? cfg.break : modeKey === "longBreak" ? cfg.longBreak : cfg.work;
+    localStorage.setItem("pomodoroState", JSON.stringify({
+      ...s,
+      isRunning: false,
+      timeAtStart: elapsed,
+      timeLeft: Math.max(0, duration - elapsed),
+      lastStart: null,
+      lastManualAdjustment: Date.now(),
+      manuallyPaused: true,
+    }));
+    localStorage.setItem("pomodoroIsRunning", "false");
+    useAppStore.getState().setPomoRunning(false);
+  } catch {}
+};
+
+const fallbackResumePomodoro = (): void => {
+  try {
+    const s = JSON.parse(localStorage.getItem("pomodoroState") || "null");
+    if (!s || s.isRunning === true) return;
+    const modeKey = typeof s.currentMode === "string" ? s.currentMode : "work";
+    const cfg = readPomodoroConfig();
+    const duration = modeKey === "break" ? cfg.break : modeKey === "longBreak" ? cfg.longBreak : cfg.work;
+    const timeLeft = safeNumber(Number(s.timeLeft));
+    localStorage.setItem("pomodoroState", JSON.stringify({
+      ...s,
+      isRunning: true,
+      lastStart: Date.now(),
+      timeAtStart: timeLeft > 0 && timeLeft < duration ? safeNumber(Number(s.timeAtStart)) : 0,
+      timeLeft: timeLeft > 0 ? timeLeft : duration,
+      lastManualAdjustment: Date.now(),
+      manuallyPaused: false,
+    }));
+    localStorage.setItem("pomodoroIsRunning", "true");
+    useAppStore.getState().setPomoRunning(true);
+  } catch {}
+};
+
+const fallbackPauseCountdown = (): void => {
+  const endTs = Number(localStorage.getItem("countdownEndTs"));
+  const remaining = Number.isFinite(endTs) ? Math.max(0, (endTs - Date.now()) / 1000) : 0;
+  localStorage.setItem("countdownState", "paused");
+  localStorage.setItem("countdownPausedLeft", String(remaining));
+};
+
+const fallbackResumeCountdown = (): void => {
+  const left = Number(localStorage.getItem("countdownPausedLeft"));
+  const seconds = Number.isFinite(left) && left > 0 ? left : readCountdownSeconds() ?? 0;
+  localStorage.setItem("countdownState", "running");
+  localStorage.setItem("countdownEndTs", String(Date.now() + seconds * 1000));
+};
+
+/** Toggle an unsynced pomodoro/countdown: emit its sync event, fall back if unmounted. */
+export const requestToggleExtraTimer = (id: ExtraTimerId): void => {
+  const running = isExtraTimerRunning(id);
+  emit(running
+    ? id === "pomodoro" ? SYNC_EVENTS.PAUSE_POMODORO : SYNC_EVENTS.PAUSE_COUNTDOWN
+    : id === "pomodoro" ? SYNC_EVENTS.PLAY_POMODORO : SYNC_EVENTS.PLAY_COUNTDOWN);
+  setTimeout(() => {
+    if (isExtraTimerRunning(id) !== running) return; // the component handled it
+    if (id === "pomodoro") {
+      running ? fallbackPausePomodoro() : fallbackResumePomodoro();
+    } else {
+      running ? fallbackPauseCountdown() : fallbackResumeCountdown();
+    }
+  }, 100);
+};
+
+/** Event to open/close an independent floating overlay for an unsynced timer. */
+export const EXTRA_TIMER_TOGGLE_EVENT = "extraTimerOverlay:toggle";
 
 /** How many timers the mini player will show (study + synced extras). */
 export const syncedTimerCount = (): number => {

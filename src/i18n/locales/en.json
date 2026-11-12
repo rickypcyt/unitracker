@@ -414,6 +414,7 @@
       "backToSession": "Back to session",
       "close": "Close mini player",
       "timer": "Timer",
+      "floatTimer": "Float {{timer}} in its own popup",
       "statusPlaying": "playing",
       "statusPaused": "paused",
       "statusNoSession": "no session"
