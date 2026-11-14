@@ -1,5 +1,6 @@
 import { AlertCircle, CheckCircle, Clock, Loader2, Pause, Play, Target, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { format, isValid, parseISO } from 'date-fns';
 
 import { Task } from '@/pages/tasks/task';
@@ -247,7 +248,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     }
   };
   if (!isOpen) return null;
-  return <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-sm p-4">
+  return createPortal(<div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-sm p-4">
       <div className="bg-[var(--bg-primary)] rounded-lg p-6 w-full max-w-3xl border-2 border-[var(--border-primary)] shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Finish Session</h2>
@@ -421,6 +422,6 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
       fetchSessionTasks();
       setSelectedTasks(prev => [...prev, newTaskId]);
     }} />}
-    </div>;
+    </div>, document.body);
 };
 export default FinishSessionModal;

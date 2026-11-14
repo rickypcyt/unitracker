@@ -1,9 +1,8 @@
-import { Bell, BellOff, Play, Target, Volume, Volume2, Zap } from 'lucide-react';
+import { Bell, BellOff, Clock, Play, Target, Volume, Volume2 } from 'lucide-react';
 import { useAppStore, usePomodoroModes, usePomodoroSettings } from '@/store/appStore';
 import { useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/shared/BaseModal';
-import { FormInput } from '@/modals/shared/FormElements';
 import type { PomodoroMode } from '@/store/appStore';
 import React from 'react';
 import { X } from 'lucide-react';
@@ -16,17 +15,27 @@ interface PomodoroSettingsModalProps {
   onSaveCustomMode: (mode: PomodoroMode) => void;
 }
 
+const TIME_PRESETS = {
+  work: [15, 25, 50, 60],
+  break: [3, 5, 10, 15],
+  longBreak: [10, 15, 30, 45],
+};
+
+const toMin = (seconds: number) => (seconds / 60).toString();
+
 const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, onClose, currentModeIndex, onModeChange, onSaveCustomMode }) => {
   const pomodoroModes = usePomodoroModes();
   const pomodoroSettings = usePomodoroSettings();
   const updatePomodoroSettings = useAppStore((state) => state.updatePomodoroSettings);
-  
-  const [selectedModeIndex, setSelectedModeIndex] = useState(currentModeIndex);
-  const [customWorkTime, setCustomWorkTime] = useState('');
-  const [customBreakTime, setCustomBreakTime] = useState('');
-  const [customLongBreakTime, setCustomLongBreakTime] = useState('');
-  const [isCustomModeSelected, setIsCustomModeSelected] = useState(false);
-  const [activeTab, setActiveTab] = useState<'modes' | 'settings' | 'sounds'>('modes');
+
+  const customModeIndex = pomodoroModes.length - 1;
+  const predefinedModes = pomodoroModes.slice(0, customModeIndex);
+
+  const [workMin, setWorkMin] = useState('25');
+  const [breakMin, setBreakMin] = useState('5');
+  const [longBreakMin, setLongBreakMin] = useState('15');
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'times' | 'settings' | 'sounds'>('times');
 
   const testAlarm = () => {
     if (pomodoroSettings.soundEnabled) {
@@ -36,72 +45,52 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
     }
   };
 
-  // Assume Custom mode is always the last one
-  const customModeIndex = pomodoroModes.length - 1;
-
   useEffect(() => {
     if (isOpen) {
-      setSelectedModeIndex(currentModeIndex);
-      
-      // Always load custom mode values if they exist, regardless of current mode
-      const customMode = pomodoroModes[customModeIndex];
-      
-      if (customMode) {
-        setCustomWorkTime((customMode.work / 60).toString());
-        setCustomBreakTime((customMode.break / 60).toString());
-        setCustomLongBreakTime((customMode.longBreak / 60).toString());
-      } else {
-        setCustomWorkTime('');
-        setCustomBreakTime('');
-        setCustomLongBreakTime('');
-      }
-      
-      // Check if current mode is custom (last mode)
-      const isCustom = currentModeIndex === customModeIndex;
-      setIsCustomModeSelected(isCustom);
+      const current = pomodoroModes[currentModeIndex] ?? pomodoroModes[0];
+      if (!current) return;
+      setWorkMin(toMin(current.work));
+      setBreakMin(toMin(current.break));
+      setLongBreakMin(toMin(current.longBreak));
+      setError('');
+      setActiveTab('times');
     }
-  }, [isOpen, currentModeIndex, pomodoroModes, customModeIndex]);
+  }, [isOpen, currentModeIndex, pomodoroModes]);
 
-  const handleModeSelect = (index: number) => {
-    setSelectedModeIndex(index);
-    const isCustom = index === customModeIndex;
-    setIsCustomModeSelected(isCustom);
-    
-    if (isCustom) {
-      // Load current custom mode times when selecting custom mode
-      const currentMode = pomodoroModes[customModeIndex];
-      if (currentMode) {
-        setCustomWorkTime((currentMode.work / 60).toString());
-        setCustomBreakTime((currentMode.break / 60).toString());
-        setCustomLongBreakTime((currentMode.longBreak / 60).toString());
-      }
-    }
+  const workSec = Math.round(parseFloat(workMin) * 60);
+  const breakSec = Math.round(parseFloat(breakMin) * 60);
+  const longBreakSec = Math.round(parseFloat(longBreakMin) * 60);
+
+  const matchedPresetIndex = predefinedModes.findIndex(
+    m => m.work === workSec && m.break === breakSec && m.longBreak === longBreakSec
+  );
+
+  const applyPreset = (mode: PomodoroMode) => {
+    setWorkMin(toMin(mode.work));
+    setBreakMin(toMin(mode.break));
+    setLongBreakMin(toMin(mode.longBreak));
+    setError('');
+  };
+
+  const setChip = (field: 'work' | 'break' | 'longBreak', minutes: number) => {
+    if (field === 'work') setWorkMin(minutes.toString());
+    else if (field === 'break') setBreakMin(minutes.toString());
+    else setLongBreakMin(minutes.toString());
+    setError('');
   };
 
   const handleSave = () => {
-    if (isCustomModeSelected) {
-      // Custom mode selected - validate and save custom values
-      const workTimeSeconds = customWorkTime ? parseInt(customWorkTime) * 60 : 1500; // Default to 25 min if empty
-      const breakTimeSeconds = customBreakTime ? parseInt(customBreakTime) * 60 : 300; // Default to 5 min if empty
-      const longBreakTimeSeconds = customLongBreakTime ? parseInt(customLongBreakTime) * 60 : 900; // Default to 15 min if empty
-      
-      if (!isNaN(workTimeSeconds) && !isNaN(breakTimeSeconds) && !isNaN(longBreakTimeSeconds) && 
-          workTimeSeconds > 0 && breakTimeSeconds > 0 && longBreakTimeSeconds > 0) {
-        onSaveCustomMode({ 
-          label: 'Custom', 
-          work: workTimeSeconds, 
-          break: breakTimeSeconds,
-          longBreak: longBreakTimeSeconds 
-        });
-      } else {
-        alert('Please enter valid positive numbers for all time values.');
-        return;
-      }
-    } else {
-      // Predefined mode selected - just switch to it
-      onModeChange(selectedModeIndex);
+    const valid = [workSec, breakSec, longBreakSec].every(s => Number.isFinite(s) && s > 0)
+      && workSec <= 4 * 3600 && breakSec <= 3600 && longBreakSec <= 2 * 3600;
+    if (!valid) {
+      setError('Enter valid times: work up to 4h, break up to 1h, long break up to 2h.');
+      return;
     }
-    
+    if (matchedPresetIndex >= 0) {
+      onModeChange(matchedPresetIndex);
+    } else {
+      onSaveCustomMode({ label: 'Custom', work: workSec, break: breakSec, longBreak: longBreakSec });
+    }
     onClose();
   };
 
@@ -109,12 +98,72 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
     updatePomodoroSettings({ [key]: value });
   };
 
-  // Get predefined modes (excluding custom)
-  const predefinedModes = pomodoroModes.slice(0, customModeIndex);
+  const stepValue = (field: 'work' | 'break' | 'longBreak', delta: number) => {
+    const current = parseFloat(field === 'work' ? workMin : field === 'break' ? breakMin : longBreakMin) || 0;
+    const next = Math.min(Math.max(current + delta, 1), 240);
+    setChip(field, next);
+  };
+
+  const TimeField = ({ label, value, onChange, field }: { label: string; value: string; onChange: (v: string) => void; field: 'work' | 'break' | 'longBreak' }) => (
+    <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 p-3 flex flex-col items-center">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{label}</span>
+      <div className="flex items-center gap-1.5 mt-2">
+        <button
+          type="button"
+          onClick={() => stepValue(field, -1)}
+          className="w-7 h-7 rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors flex items-center justify-center text-sm font-bold"
+          aria-label={`Decrease ${label}`}
+        >
+          −
+        </button>
+        <div className="relative w-[4.5rem]">
+          <input
+            type="number"
+            min="1"
+            value={value}
+            onChange={(e) => { onChange(e.target.value); setError(''); }}
+            className="w-full px-1 py-1.5 rounded-lg bg-transparent text-center text-2xl font-bold text-[var(--text-primary)] border border-transparent focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => stepValue(field, 1)}
+          className="w-7 h-7 rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors flex items-center justify-center text-sm font-bold"
+          aria-label={`Increase ${label}`}
+        >
+          +
+        </button>
+      </div>
+      <span className="text-[11px] text-[var(--text-secondary)] mt-0.5">minutes</span>
+      <div className="flex flex-wrap justify-center gap-1 mt-2.5">
+        {TIME_PRESETS[field].map(p => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => setChip(field, p)}
+            className={`min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
+              parseFloat(value) === p
+                ? 'bg-[var(--accent-primary)] text-white'
+                : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const tabClass = (tab: string) =>
+    `flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
+      activeTab === tab
+        ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
+        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+    }`;
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" className="lg:max-w-6xl">
-      <div className="p-6 max-h-[95vh] overflow-y-auto">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" maxWidth="max-w-lg">
+      <div className="p-6">
         <div className="relative flex items-center justify-center mb-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
             Pomodoro Settings
@@ -130,36 +179,15 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
 
         {/* Tab Navigation */}
         <div className="flex space-x-1 mb-6 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('modes')}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
-              activeTab === 'modes'
-                ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
-            <Zap size={16} />
-            Modes
+          <button onClick={() => setActiveTab('times')} className={tabClass('times')}>
+            <Clock size={16} />
+            Times
           </button>
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
-              activeTab === 'settings'
-                ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
+          <button onClick={() => setActiveTab('settings')} className={tabClass('settings')}>
             <Play size={16} />
             Behavior
           </button>
-          <button
-            onClick={() => setActiveTab('sounds')}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
-              activeTab === 'sounds'
-                ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-          >
+          <button onClick={() => setActiveTab('sounds')} className={tabClass('sounds')}>
             <Volume2 size={16} />
             Sounds
           </button>
@@ -167,101 +195,52 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
 
         {/* Tab Content */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          {activeTab === 'modes' && (
-            <>
-              <div className="space-y-6 lg:col-span-2">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Select Mode</h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    {predefinedModes.map((mode, index) => (
-                      <div
+          {activeTab === 'times' && (
+            <div className="space-y-6 lg:col-span-2">
+              <div>
+                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">Quick presets</h3>
+                <p className="text-sm text-[var(--text-secondary)] mb-3">Tap to fill the times, then tweak below.</p>
+                <div className="flex flex-wrap gap-2">
+                  {predefinedModes.map((mode, index) => {
+                    const active = matchedPresetIndex === index;
+                    return (
+                      <button
                         key={mode.label}
-                        onClick={() => handleModeSelect(index)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg ${
-                          selectedModeIndex === index && !isCustomModeSelected
-                            ? 'border-[var(--accent-primary)] shadow-md'
-                            : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
+                        type="button"
+                        onClick={() => applyPreset(mode)}
+                        className={`px-3.5 py-2 rounded-full border text-sm font-medium transition-all ${
+                          active
+                            ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]'
+                            : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]/50 hover:text-[var(--text-primary)]'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-[var(--text-primary)]">{mode.label}</h4>
-                            <p className="text-sm text-[var(--text-secondary)] mt-1">{mode.description}</p>
-                            <div className="flex gap-4 mt-2 text-sm text-[var(--text-secondary)]">
-                              <span>Work: {mode.work / 60}min</span>
-                              <span>Break: {mode.break / 60}min</span>
-                              <span>Long: {mode.longBreak / 60}min</span>
-                            </div>
-                          </div>
-                          {selectedModeIndex === index && !isCustomModeSelected && (
-                            <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)] flex-shrink-0 ml-3"></div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    <div
-                      onClick={() => handleModeSelect(customModeIndex)}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg ${
-                        isCustomModeSelected
-                          ? 'border-[var(--accent-primary)] shadow-md'
-                          : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-[var(--text-primary)]">Custom</h4>
-                          <p className="text-sm text-[var(--text-secondary)] mt-1">Your personalized settings</p>
-                        </div>
-                        {isCustomModeSelected && (
-                          <div className="w-4 h-4 rounded-full bg-[var(--accent-primary)] flex-shrink-0 ml-3"></div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                        {mode.label}
+                        <span className="ml-1.5 text-xs opacity-70 font-normal">
+                          {mode.work / 60}·{mode.break / 60}·{mode.longBreak / 60}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
 
-                {isCustomModeSelected && (
-                  <div>
-                    <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Custom Times</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                      <FormInput
-                        id="customWork"
-                        label="Work (min)"
-                        type="number"
-                        min="1"
-                        max="120"
-                        value={customWorkTime}
-                        onChange={(value: string) => setCustomWorkTime(value)}
-                        placeholder="25"
-                        error=""
-                      />
-                      <FormInput
-                        id="customBreak"
-                        label="Break (min)"
-                        type="number"
-                        min="1"
-                        max="30"
-                        value={customBreakTime}
-                        onChange={(value: string) => setCustomBreakTime(value)}
-                        placeholder="5"
-                        error=""
-                      />
-                      <FormInput
-                        id="customLongBreak"
-                        label="Long Break (min)"
-                        type="number"
-                        min="1"
-                        max="60"
-                        value={customLongBreakTime}
-                        onChange={(value: string) => setCustomLongBreakTime(value)}
-                        placeholder="15"
-                        error=""
-                      />
-                    </div>
-                  </div>
+              <div>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h3 className="text-lg font-medium text-[var(--text-primary)]">Times</h3>
+                  <span className="text-xs text-[var(--text-secondary)]">in minutes</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <TimeField label="Focus" value={workMin} onChange={setWorkMin} field="work" />
+                  <TimeField label="Break" value={breakMin} onChange={setBreakMin} field="break" />
+                  <TimeField label="Long break" value={longBreakMin} onChange={setLongBreakMin} field="longBreak" />
+                </div>
+                {matchedPresetIndex < 0 && (
+                  <p className="text-xs text-[var(--text-secondary)] mt-3 text-center">Custom combination — will be saved as your Custom mode.</p>
                 )}
               </div>
-            </>
+
+              {error && <p className="text-sm text-red-400">{error}</p>}
+            </div>
           )}
 
           {activeTab === 'settings' && (
@@ -368,7 +347,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                       {Math.round(pomodoroSettings.volume * 100)}%
                     </span>
                   </div>
-                  
+
                   <div className="mt-3">
                     <button
                       onClick={testAlarm}
@@ -396,7 +375,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
             onClick={handleSave}
             className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
           >
-            {isCustomModeSelected ? 'Save Custom Mode' : `Select ${predefinedModes[selectedModeIndex]?.label || 'Mode'}`}
+            Apply
           </button>
         </div>
       </div>
@@ -404,4 +383,4 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   );
 };
 
-export default PomodoroSettingsModal; 
+export default PomodoroSettingsModal;

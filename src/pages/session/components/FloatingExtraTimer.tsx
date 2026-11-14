@@ -50,7 +50,7 @@ const FloatingExtraTimer = ({ id, stackIndex = 0, onClose }: FloatingExtraTimerP
       <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)]/90 backdrop-blur-md text-[var(--text-primary)] shadow-xl select-none">
         <div className="flex flex-col min-w-0">
           <span
-            className={`font-mono text-[1.1rem] font-semibold tabular-nums leading-none tracking-[0.06em] ${
+            className={`font-timer-digits text-[1.1rem] font-semibold leading-none tracking-[0.06em] ${
               running ? "" : "opacity-60"
             }`}
             style={{ color }}

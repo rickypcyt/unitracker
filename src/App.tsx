@@ -27,7 +27,6 @@ import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
 import { useWorkspaceLoader } from "@/hooks/workspaces/useWorkspaceLoader";
 
 // Direct imports for stacked pages
-import CalendarPage from "@/pages/calendar/CalendarPage";
 import FocusWidgetPage from "@/pages/FocusWidgetPage";
 import HabitsPage from "@/pages/habits/HabitsPage";
 import Notes from "@/pages/notes/Notes";
@@ -42,7 +41,6 @@ import Navbar from "@/components/layout/Sidebar";
 const preloadMap: Record<string, () => Promise<unknown>> = {
   session: () => import("@/pages/session/SessionPage"),
   tasks: () => import("@/pages/tasks/TasksPage"),
-  calendar: () => import("@/pages/calendar/CalendarPage"),
   analytics: () => import("@/pages/stats/StatsPage"),
   habits: () => import("@/pages/habits/HabitsPage"),
   notes: () => import("@/pages/notes/Notes"),
@@ -67,7 +65,6 @@ export const preloadPage = (page: string) => {
 const pagesMap: Record<string, FC> = {
   session: SessionPage,
   tasks: TasksPage,
-  calendar: CalendarPage,
   analytics: StatsPage,
   habits: HabitsPage,
   notes: Notes,
@@ -162,8 +159,6 @@ const PageContent: FC = () => {
             {activePage === 'tasks' && (
               <TasksPage />
             )}
-
-            {activePage === 'calendar' && <CalendarPage />}
 
             {activePage === 'analytics' && <StatsPage />}
 
@@ -400,7 +395,6 @@ const App: FC = () => {
             <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />
             <Route path={PAGE_PATHS.session} element={<AppRoute />} />
             <Route path={PAGE_PATHS.tasks} element={<AppRoute />} />
-            <Route path={PAGE_PATHS.calendar} element={<AppRoute />} />
             <Route path={PAGE_PATHS.analytics} element={<AppRoute />} />
             <Route path={PAGE_PATHS.habits} element={<AppRoute />} />
             <Route path={PAGE_PATHS.notes} element={<AppRoute />} />
@@ -420,7 +414,7 @@ const App: FC = () => {
 // -------------------------
 // Helpers
 // -------------------------
-const navPages = ["tasks", "calendar", "session", "notes", "analytics", "habits"] as const;
+const navPages = ["tasks", "habits", "session", "notes", "analytics"] as const;
 
 const swipeNavigate = (diff: number, navigate: (path: string) => void): void => {
   const currentPage = window.localStorage.getItem("lastVisitedPage") || "session";

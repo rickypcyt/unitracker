@@ -387,6 +387,8 @@
     },
     "unifiedTimer": {
       "dockTimers": "Volver a fijar los temporizadores",
+      "statusLive": "En curso",
+      "statusStandby": "En espera",
       "sessionMenu": "Menú de sesión",
       "toggleSync": "Alternar sincronización",
       "syncOn": "Sincronización activada",
@@ -405,7 +407,13 @@
       "deleteSession": "Eliminar sesión",
       "studyLabel": "Estudio",
       "pomodoroLabel": "Pomodoro",
-      "countdownLabel": "Cuenta regresiva"
+      "countdownLabel": "Cuenta regresiva",
+      "sessionRunning": "Sesión en curso",
+      "footerStudy": "Tiempo de estudio",
+      "footerTarget": "Objetivo {{time}}",
+      "modeWork": "Trabajo",
+      "modeBreak": "Descanso",
+      "modeLongBreak": "Descanso largo"
     },
     "miniPlayer": {
       "open": "Mini reproductor",
@@ -417,7 +425,8 @@
       "floatTimer": "Abrir {{timer}} en su propio popup",
       "statusPlaying": "en curso",
       "statusPaused": "en pausa",
-      "statusNoSession": "sin sesión"
+      "statusNoSession": "sin sesión",
+      "noSessionHint": "Pulsa play para iniciar una sesión"
     }
   },
   "notes": {

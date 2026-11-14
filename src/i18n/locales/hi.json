@@ -387,6 +387,8 @@
     },
     "unifiedTimer": {
       "dockTimers": "टाइमर वापस डॉक करें",
+      "statusLive": "चालू",
+      "statusStandby": "रुका हुआ",
       "sessionMenu": "सेशन मेनू",
       "toggleSync": "सिंक टॉगल करें",
       "syncOn": "सिंक चालू",
@@ -405,7 +407,13 @@
       "deleteSession": "सेशन हटाएं",
       "studyLabel": "अध्ययन",
       "pomodoroLabel": "पोमोडोरो",
-      "countdownLabel": "काउंटडाउन"
+      "countdownLabel": "काउंटडाउन",
+      "sessionRunning": "सत्र चल रहा है",
+      "footerStudy": "अध्ययन समय",
+      "footerTarget": "लक्ष्य {{time}}",
+      "modeWork": "कार्य",
+      "modeBreak": "विराम",
+      "modeLongBreak": "लंबा विराम"
     },
     "miniPlayer": {
       "open": "मिनी प्लेयर",
@@ -417,7 +425,8 @@
       "floatTimer": "{{timer}} को अपने पॉपअप में खोलें",
       "statusPlaying": "चल रहा है",
       "statusPaused": "रुका हुआ",
-      "statusNoSession": "कोई सेशन नहीं"
+      "statusNoSession": "कोई सेशन नहीं",
+      "noSessionHint": "सेशन शुरू करने के लिए प्ले दबाएँ"
     }
   },
   "notes": {

@@ -252,9 +252,10 @@ const useMidnightReset = (onReset: () => void) => {
 
 interface PomodoroProps {
   hideHeader?: boolean;
+  hideControls?: boolean;
   fresh?: boolean;
 }
-const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }) => {
+const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = false, fresh = false }) => {
   // const { user }: { user: import('@supabase/supabase-js').User | null } = useAuth(); // Not used
   const {
     syncSettings,
@@ -1327,7 +1328,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
           return (
             <div className="relative w-32 h-32">
               {!syncPomodoroWithTimer && (
-                <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+                <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
                   <RotateCcw size={18} />
                 </button>
               )}
@@ -1363,7 +1364,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
       </div>
 
       {/* Timer Controls with side adjustment buttons — h-16 + mb-3 match StudyTimer so all three clocks align */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
+      {!hideControls && <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
         {!syncPomodoroWithTimer && <>
             <div className="flex gap-1 shrink-0">
               {[-600, -300].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Subtract ${Math.abs(adj / 60)} minutes`}>
@@ -1383,7 +1384,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, fresh = false }
                 </button>)}
             </div>
           </>}
-      </div>
+      </div>}
 
       
       {/* Settings Modal */}

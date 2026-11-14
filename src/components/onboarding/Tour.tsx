@@ -51,12 +51,6 @@ const Tour: React.FC<TourProps> = ({
     target: '[data-tour="add-task"]',
     page: 'tasks'
   }, {
-    id: 'calendar',
-    title: 'Calendar Planning',
-    content: 'See all your tasks and deadlines in a beautiful calendar view. Perfect for planning your week and visualizing your schedule!',
-    target: '[data-tour="calendar"]',
-    page: 'calendar'
-  }, {
     id: 'stats',
     title: 'Statistics Dashboard',
     content: 'Track your productivity with detailed stats and charts. See your study patterns, progress, and achievements!',

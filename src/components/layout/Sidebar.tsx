@@ -1,12 +1,11 @@
-import { BarChart3, BookOpen, Calendar, CheckCircle2, Clock, Notebook, Settings } from 'lucide-react';
+import { BarChart3, BookOpen, CheckCircle2, Clock, Notebook, Settings } from 'lucide-react';
 import { useNavigation } from '@/navigation/NavigationContext';
 import { useTranslation } from 'react-i18next';
 
 const navItems = [
-  { page: 'calendar', key: 'planning', icon: Calendar },
   { page: 'tasks', key: 'tasks', icon: CheckCircle2 },
-  { page: 'session', key: 'study', icon: Clock },
   { page: 'habits', key: 'journal', icon: Notebook },
+  { page: 'session', key: 'study', icon: Clock },
   { page: 'notes', key: 'notes', icon: BookOpen },
   { page: 'analytics', key: 'analytics', icon: BarChart3 },
 ] as const;

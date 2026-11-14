@@ -24,6 +24,10 @@ const getDocumentPip = (): DocumentPipApi | null =>
 
 const EXTRA_IDS: ExtraTimerId[] = ["pomodoro", "countdown"];
 
+// Persisted "player was open" memory so a refresh can restore it
+const MINI_PLAYER_OPEN_KEY = "miniPlayerOpen";
+const MINI_PLAYER_EXTRAS_KEY = "miniPlayerOpenExtras";
+
 /**
  * Floating mini player for the study timer.
  *
@@ -44,7 +48,14 @@ const FloatingTimerPlayer = () => {
   const { navigateTo } = useNavigation();
   const [pipHost, setPipHost] = useState<HTMLElement | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const [openExtras, setOpenExtras] = useState<Partial<Record<ExtraTimerId, boolean>>>({});
+  const [openExtras, setOpenExtras] = useState<Partial<Record<ExtraTimerId, boolean>>>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(MINI_PLAYER_EXTRAS_KEY) || "{}");
+      return typeof saved === "object" && saved !== null ? saved : {};
+    } catch {
+      return {};
+    }
+  });
   const pipRef = useRef<Window | null>(null);
 
   const pipSupported = getDocumentPip() !== null;
@@ -52,10 +63,16 @@ const FloatingTimerPlayer = () => {
   // Close the PiP window if the app itself unmounts
   useEffect(() => () => pipRef.current?.close(), []);
 
+  // Persist which extra timer overlays are open
+  useEffect(() => {
+    localStorage.setItem(MINI_PLAYER_EXTRAS_KEY, JSON.stringify(openExtras));
+  }, [openExtras]);
+
   const openPip = useCallback(async () => {
     const dpip = getDocumentPip();
     if (!dpip) {
       setOverlayOpen(true);
+      localStorage.setItem(MINI_PLAYER_OPEN_KEY, "1");
       return;
     }
     if (pipRef.current && !pipRef.current.closed) {
@@ -66,7 +83,10 @@ const FloatingTimerPlayer = () => {
       // Only one document-PiP window can exist; close the UnifiedTimer panels one
       if (dpip.window) dpip.window.close();
 
-      const pip = await dpip.requestWindow({ width: 320, height: 170 });
+      const pip = await dpip.requestWindow({
+        width: Math.min(320, window.innerWidth - 32),
+        height: Math.min(280, window.innerHeight - 32),
+      });
 
       // Copy all stylesheets so the player matches the app theme
       document.querySelectorAll("style, link[rel='stylesheet']").forEach(node => {
@@ -105,10 +125,20 @@ const FloatingTimerPlayer = () => {
         themeObserver.disconnect();
         pipRef.current = null;
         setPipHost(null);
+        // Deferred "closed by user" mark: on a real refresh the main page dies
+        // before this timeout runs, so the flag survives and we can restore.
+        // When the user closes the PiP while the app is alive, the timeout
+        // fires and forgets it — regardless of pagehide ordering.
+        window.setTimeout(() => {
+          if (!pipRef.current || pipRef.current.closed) {
+            localStorage.setItem(MINI_PLAYER_OPEN_KEY, "0");
+          }
+        }, 0);
       });
 
       pipRef.current = pip;
       setPipHost(host);
+      localStorage.setItem(MINI_PLAYER_OPEN_KEY, "1");
     } catch {
       // User dismissed the PiP request or the browser refused it
     }
@@ -119,6 +149,30 @@ const FloatingTimerPlayer = () => {
     window.addEventListener(MINI_PLAYER_OPEN_EVENT, onOpen);
     return () => window.removeEventListener(MINI_PLAYER_OPEN_EVENT, onOpen);
   }, [openPip]);
+
+  // Restore the player after a refresh if it was left open. Document-PiP needs
+  // a user gesture, so if there is none yet we retry on every click/keypress
+  // until it opens; the in-app overlay fallback needs no gesture.
+  useEffect(() => {
+    if (pipHost) return; // already open — nothing to restore
+    if (localStorage.getItem(MINI_PLAYER_OPEN_KEY) !== "1") return;
+    if (!pipSupported) {
+      setOverlayOpen(true);
+      return;
+    }
+    void openPip();
+    const restore = () => {
+      // Re-check at gesture time: if the user closed the player after mount,
+      // the flag is already "0" and we must not resurrect it.
+      if (localStorage.getItem(MINI_PLAYER_OPEN_KEY) === "1") void openPip();
+    };
+    window.addEventListener("pointerdown", restore);
+    window.addEventListener("keydown", restore);
+    return () => {
+      window.removeEventListener("pointerdown", restore);
+      window.removeEventListener("keydown", restore);
+    };
+  }, [openPip, pipSupported, pipHost]);
 
   // Toggle independent overlays for unsynced timers
   useEffect(() => {
@@ -134,6 +188,7 @@ const FloatingTimerPlayer = () => {
   const backToSession = useCallback(() => {
     pipRef.current?.close();
     setOverlayOpen(false);
+    localStorage.setItem(MINI_PLAYER_OPEN_KEY, "0");
     navigateTo("session");
     window.focus();
   }, [navigateTo]);
@@ -147,9 +202,16 @@ const FloatingTimerPlayer = () => {
         <motion.div
           drag
           dragMomentum={false}
-          className="fixed bottom-20 right-4 z-[100] w-[320px] cursor-grab active:cursor-grabbing"
+          className="fixed bottom-20 right-4 z-[100] w-[320px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] cursor-grab active:cursor-grabbing rounded-2xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)]/90 backdrop-blur-md shadow-xl"
+          style={{ resize: "both", overflow: "auto", minWidth: 240, minHeight: 120 }}
         >
-          <MiniTimerPlayer onExpand={backToSession} onClose={() => setOverlayOpen(false)} />
+          <MiniTimerPlayer
+            onExpand={backToSession}
+            onClose={() => {
+              setOverlayOpen(false);
+              localStorage.setItem(MINI_PLAYER_OPEN_KEY, "0");
+            }}
+          />
         </motion.div>
       ) : null}
       {visibleExtras.map((id, index) => (

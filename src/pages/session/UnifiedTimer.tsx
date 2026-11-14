@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, Minimize2, MoreVertical, PictureInPicture, PictureInPicture2, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
+import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, MoreVertical, PictureInPicture, RefreshCw, RefreshCwOff, Settings, Timer as TimerIcon, Trash2, Watch } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
@@ -8,18 +8,9 @@ import Countdown from "./Countdown";
 import Pomodoro from "./Pomodoro";
 import StudyTimer from "./StudyTimer";
 import { useAppStore } from "@/store/appStore";
-import { MINI_PLAYER_OPEN_EVENT } from "@/utils/studyTimerRemote";
+import { EXTRA_TIMER_TOGGLE_EVENT, MINI_PLAYER_OPEN_EVENT } from "@/utils/studyTimerRemote";
 
 type TimerId = "study" | "pomodoro" | "countdown";
-
-type DocumentPipApi = {
-  requestWindow: (options?: { width?: number; height?: number }) => Promise<Window>;
-};
-
-const getDocumentPip = (): DocumentPipApi | null =>
-  typeof window !== "undefined"
-    ? (window as unknown as { documentPictureInPicture?: DocumentPipApi }).documentPictureInPicture ?? null
-    : null;
 
 const TIMER_CONFIG: Record<TimerId, { label: string; icon: typeof Clock; panelClass: string; labelClass: string }> = {
   study: { label: "session.unifiedTimer.studyLabel", icon: Clock, panelClass: "timer-panel-study", labelClass: "timer-panel-label-study" },
@@ -37,20 +28,9 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   const dragIdRef = useRef<TimerId | null>(null);
   const [studyMenuOpen, setStudyMenuOpen] = useState(false);
 
-  // ── Floating window (Document Picture-in-Picture) ─────────────────────────
-  const [pipWindow, setPipWindow] = useState<Window | null>(null);
-  const [pipHosts, setPipHosts] = useState<Partial<Record<TimerId, HTMLElement>>>({});
+  // ── Panel hosts — timer components are portaled into these slots ──────────
   const [panelHosts, setPanelHosts] = useState<Partial<Record<TimerId, HTMLElement>>>({});
-  const pipRef = useRef<Window | null>(null);
   const hostCallbacksRef = useRef<Partial<Record<TimerId, (el: HTMLDivElement | null) => void>>>({});
-  const pipSupported = getDocumentPip() !== null;
-
-  useEffect(() => {
-    pipRef.current = pipWindow;
-  }, [pipWindow]);
-
-  // Close the floating window when leaving the page
-  useEffect(() => () => { pipRef.current?.close(); }, []);
 
   const getHostRef = useCallback((id: TimerId) => {
     let cb = hostCallbacksRef.current[id];
@@ -65,75 +45,6 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     }
     return cb;
   }, []);
-
-  const openPip = async () => {
-    const dpip = getDocumentPip();
-    if (!dpip) return;
-    if (pipWindow) { pipWindow.focus(); return; }
-    try {
-      const pip = await dpip.requestWindow({
-        width: Math.min(1200, Math.max(340, visibleTimers.length * 260 + 24)),
-        height: 320,
-      });
-
-      // Copy all stylesheets so the PiP window matches the app theme
-      document.querySelectorAll("style, link[rel='stylesheet']").forEach(node => {
-        if (node instanceof HTMLLinkElement) {
-          const link = pip.document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = node.href;
-          pip.document.head.appendChild(link);
-        } else if (node instanceof HTMLStyleElement) {
-          const style = pip.document.createElement("style");
-          style.textContent = node.textContent;
-          pip.document.head.appendChild(style);
-        }
-      });
-
-      // Mirror theme classes/vars (dark/light, accent color, colorScheme) and keep them in sync
-      const syncTheme = () => {
-        pip.document.documentElement.className = document.documentElement.className;
-        pip.document.documentElement.style.cssText = document.documentElement.style.cssText;
-      };
-      syncTheme();
-      const themeObserver = new MutationObserver(syncTheme);
-      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "style"] });
-
-      pip.document.title = "UniTracker — Timers";
-      pip.document.body.className = "pip-body";
-
-      // One labelled slot per visible timer; the timer components get portaled into these
-      const stack = pip.document.createElement("div");
-      stack.className = "pip-timer-stack";
-      const hosts: Partial<Record<TimerId, HTMLElement>> = {};
-      visibleTimers.forEach(id => {
-        const slot = pip.document.createElement("div");
-        slot.className = "pip-timer-slot";
-        const label = pip.document.createElement("div");
-        label.className = `pip-slot-label pip-slot-label-${id}`;
-        label.textContent = t(TIMER_CONFIG[id].label);
-        const host = pip.document.createElement("div");
-        host.className = "pip-slot-host";
-        slot.append(label, host);
-        stack.appendChild(slot);
-        hosts[id] = host;
-      });
-      pip.document.body.appendChild(stack);
-
-      pip.addEventListener("pagehide", () => {
-        themeObserver.disconnect();
-        setPipWindow(null);
-        setPipHosts({});
-      });
-
-      setPipHosts(hosts);
-      setPipWindow(pip);
-    } catch {
-      // User dismissed the PiP request or the browser refused it
-    }
-  };
-
-  const closePip = useCallback(() => pipWindow?.close(), [pipWindow]);
 
   // Sync state from store
   const syncPomodoro = useAppStore(s => s.syncSettings.syncPomodoroWithTimer);
@@ -246,17 +157,6 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
   };
 
   const renderActions = (id: TimerId) => {
-    if (pipWindow) {
-      return (
-        <button
-          onClick={closePip}
-          className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
-          aria-label={t("session.unifiedTimer.dockTimers")} title={t("session.unifiedTimer.dockTimers")}
-        >
-          <Minimize2 size={18} />
-        </button>
-      );
-    }
     if (id === "study") {
       const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-left";
       const itemIcon = "text-[var(--text-secondary)]";
@@ -316,6 +216,16 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     if (id === "pomodoro") {
       return (
         <>
+          {!syncPomodoro && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent(EXTRA_TIMER_TOGGLE_EVENT, { detail: { id: "pomodoro" } }))}
+              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+              aria-label={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.pomodoroLabel") })}
+              title={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.pomodoroLabel") })}
+            >
+              <PictureInPicture size={18} />
+            </button>
+          )}
           <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1.5 rounded-full hover:bg-red-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncPomodoro ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
             {syncPomodoro ? <RefreshCw size={18} className="text-red-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
@@ -331,6 +241,16 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     if (id === "countdown") {
       return (
         <>
+          {!syncCountdown && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent(EXTRA_TIMER_TOGGLE_EVENT, { detail: { id: "countdown" } }))}
+              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+              aria-label={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.countdownLabel") })}
+              title={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.countdownLabel") })}
+            >
+              <PictureInPicture size={18} />
+            </button>
+          )}
           <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1.5 rounded-full hover:bg-green-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncCountdown ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
             {syncCountdown ? <RefreshCw size={18} className="text-green-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
           </button>
@@ -365,7 +285,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;
-          const portalTarget = pipWindow ? pipHosts[id] : panelHosts[id];
+          const portalTarget = panelHosts[id];
           return (
             <motion.div
               variants={item}
@@ -389,39 +309,13 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
                   {renderActions(id)}
                 </div>
               </div>
-              <div ref={getHostRef(id)} className={pipWindow ? "hidden" : "flex-1 min-h-0 flex flex-col"} />
-              {pipWindow ? (
-                <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2 text-xs text-[var(--text-secondary)]">
-                  <PictureInPicture2 size={18} />
-                  <span>{t("session.unifiedTimer.floating")}</span>
-                  <button
-                    onClick={closePip}
-                    className="timer-ctrl-btn"
-                    aria-label={t("session.unifiedTimer.dockTimers")} title={t("session.unifiedTimer.dockTimers")}
-                  >
-                    <Minimize2 size={16} />
-                  </button>
-                </div>
-              ) : null}
+              <div ref={getHostRef(id)} className="flex-1 min-h-0 flex flex-col" />
               {portalTarget ? createPortal(renderTimer(id), portalTarget) : null}
             </motion.div>
           );
         })}
       </motion.div>
 
-      {/* Floating window toggle */}
-      {pipSupported && !pipWindow && (
-        <div className="flex justify-end">
-          <button
-            onClick={openPip}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            aria-label={t("session.unifiedTimer.floatAria")} title={t("session.unifiedTimer.floatTitle")}
-          >
-            <PictureInPicture2 size={14} />
-            {t("session.unifiedTimer.floatTimers")}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

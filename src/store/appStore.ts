@@ -761,14 +761,17 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
     },
     pomodoroTimerState: state
   })),
-  resetTimerState: () => set({
-    studyState: DEFAULT_STUDY_STATE,
+  resetTimerState: () => set(prevState => ({
+    studyState: {
+      ...DEFAULT_STUDY_STATE,
+      pauseHistory: prevState.studyState.pauseHistory
+    },
     pomodoroState: DEFAULT_POMODORO_STATE,
     countdownState: DEFAULT_COUNTDOWN_STATE,
     studyTimerState: 'stopped',
     pomodoroTimerState: 'stopped',
     countdownTimerState: 'stopped'
-  }),
+  })),
   setCurrentSession: session => set({
     activeSessionId: session?.id || null
   }),

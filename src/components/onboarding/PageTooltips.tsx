@@ -25,15 +25,6 @@ const PageTooltips: React.FC = () => {
         position="bottom"
       />
     ),
-    calendar: (
-      <ContextualTooltip
-        page="calendar"
-        targetSelector="[data-tour='calendar']"
-        title="Calendar View"
-        content="See all your tasks and deadlines in a calendar. Switch between month, week, and day views."
-        position="bottom"
-      />
-    ),
     stats: (
       <ContextualTooltip
         page="stats"

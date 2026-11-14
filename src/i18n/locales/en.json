@@ -387,6 +387,8 @@
     },
     "unifiedTimer": {
       "dockTimers": "Dock timers back",
+      "statusLive": "Live",
+      "statusStandby": "Standby",
       "sessionMenu": "Session menu",
       "toggleSync": "Toggle sync",
       "syncOn": "Sync ON",
@@ -405,7 +407,13 @@
       "deleteSession": "Delete session",
       "studyLabel": "Study",
       "pomodoroLabel": "Pomodoro",
-      "countdownLabel": "Countdown"
+      "countdownLabel": "Countdown",
+      "sessionRunning": "Session running",
+      "footerStudy": "Study time",
+      "footerTarget": "Target {{time}}",
+      "modeWork": "Work",
+      "modeBreak": "Break",
+      "modeLongBreak": "Long break"
     },
     "miniPlayer": {
       "open": "Mini player",
@@ -417,7 +425,8 @@
       "floatTimer": "Float {{timer}} in its own popup",
       "statusPlaying": "playing",
       "statusPaused": "paused",
-      "statusNoSession": "no session"
+      "statusNoSession": "no session",
+      "noSessionHint": "Press play to start a session"
     }
   },
   "notes": {

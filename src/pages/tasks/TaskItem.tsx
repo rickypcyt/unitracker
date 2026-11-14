@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock, Pencil, Trash2, Zap } from "lucide-react";
+import { CheckCircle2, Circle, Pencil, Trash2, Zap } from "lucide-react";
 import { formatDateShort, getTimeRemainingString, parseDateFromString } from '@/utils/dateUtils';
 
 import React from 'react';
@@ -166,11 +166,15 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     
+    const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-medium whitespace-nowrap";
+    const deadlineColor = task.deadline && task.deadline !== ''
+        ? (isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline))
+        : 'text-[var(--text-secondary)]';
+
     return (
         <div
-            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2 sm:p-3 rounded-lg transition-all duration-200 cursor-pointer gap-2 sm:gap-2.5 items-center
-                bg-[var(--bg-primary)] border-2 border-[var(--border-primary)]
-                hover:border-[var(--accent-primary)]/40 hover:shadow-md hover:shadow-black/30
+            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2.5 sm:p-3 rounded-xl transition-all duration-200 cursor-pointer gap-2.5 sm:gap-3 items-stretch
+                bg-[var(--bg-primary)] border border-[var(--border-primary)]
                 ${task.completed ? 'opacity-50' : ''}
             `}
             onDoubleClick={handleDoubleClick}
@@ -179,7 +183,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             role="listitem"
         >
             {/* Left side: complete toggle */}
-            <div className="col-start-1 row-start-1 flex items-center self-center flex-shrink-0">
+            <div className="col-start-1 row-start-1 flex items-center self-stretch flex-shrink-0">
                 <button
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -196,73 +200,18 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             </div>
 
             {/* Contenido principal */}
-            <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-1.5">
                 {/* Assignment above title when showAssignment is true (calendar view) */}
                 {showAssignment && task.assignment && (
-                    <div className="text-[var(--accent-primary)] text-base font-semibold capitalize mb-0.5">
+                    <div className="text-[var(--accent-primary)] text-sm font-semibold uppercase tracking-wide truncate">
                         {task.assignment}
                     </div>
                 )}
 
-                {/* Row 1: Date / time / days remaining + actions */}
+                {/* Row 1: Title + actions */}
                 <div className="w-full flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                    {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
-                            <span className="text-[var(--text-secondary)] flex items-center gap-1.5 min-w-0">
-                                <Zap size={14} className="flex-shrink-0 opacity-70" />
-                                <span className="truncate">{formatRecurrenceText(task.recurrence_weekdays)}</span>
-                            </span>
-                            {task.start_at && (
-                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
-                                    <Clock size={14} className="opacity-60" />
-                                    {formatTimeRange(task.start_at, task.end_at)}
-                                </span>
-                            )}
-                        </div>
-                    ) : task.deadline && task.deadline !== '' ? (
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-base w-full">
-                            <span className={`flex items-center gap-1.5 min-w-0 ${isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline)}`}>
-                                <Clock size={14} className="flex-shrink-0" />
-                                <span className="truncate">{formatDateShort(task.deadline)}</span>
-                                <span className="flex-shrink-0 whitespace-nowrap text-xs font-medium">({getTimeRemainingString(task.deadline)})</span>
-                            </span>
-                            {task.start_at && (
-                                <span className="text-[var(--text-secondary)] flex items-center gap-1 flex-shrink-0">
-                                    {formatTimeRange(task.start_at, task.end_at)}
-                                </span>
-                            )}
-                        </div>
-                    ) : <span className="text-[var(--text-secondary)] opacity-60 text-xs sm:text-base">No deadline</span>}
-                    </div>
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                            className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-                            title="Edit task"
-                            aria-label="Edit task"
-                        >
-                            <Pencil size={16} />
-                        </button>
-                        {onDelete && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
-                                title="Delete task"
-                                aria-label="Delete task"
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Row 2: Title */}
-                <div className="flex items-center gap-1.5 min-w-0">
                     <span
-                        className={`block font-medium text-sm sm:text-base transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                        className={`min-w-0 flex-1 font-semibold text-base leading-snug transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
                             task.completed
                                 ? "line-through text-[var(--text-secondary)]"
                                 : "text-[var(--text-primary)]"
@@ -271,6 +220,59 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     >
                         {task.title}
                     </span>
+                    <div className="flex items-center gap-0.5 flex-shrink-0 opacity-40 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            className="p-1 rounded-md hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                            title="Edit task"
+                            aria-label="Edit task"
+                        >
+                            <Pencil size={14} />
+                        </button>
+                        {onDelete && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                className="p-1 rounded-md hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                                title="Delete task"
+                                aria-label="Delete task"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Row 2: meta chips — deadline / recurrence / time */}
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 min-w-0">
+                {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
+                    <>
+                        <span className={`${chip} text-[var(--accent-primary)]`} style={{ backgroundColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
+                            <Zap size={13} className="flex-shrink-0" />
+                            <span className="truncate max-w-[12rem]">{formatRecurrenceText(task.recurrence_weekdays)}</span>
+                        </span>
+                        {task.start_at && (
+                            <span className={`${chip} text-[var(--text-secondary)] bg-[var(--bg-secondary)]`}>
+                                {formatTimeRange(task.start_at, task.end_at)}
+                            </span>
+                        )}
+                    </>
+                ) : task.deadline && task.deadline !== '' ? (
+                    <>
+                        <span className={`${chip} ${deadlineColor}`} style={{ backgroundColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
+                            <span className="truncate">{formatDateShort(task.deadline)}</span>
+                            <span className="opacity-70">· {getTimeRemainingString(task.deadline)}</span>
+                        </span>
+                        {task.start_at && (
+                            <span className={`${chip} text-[var(--text-secondary)] bg-[var(--bg-secondary)]`}>
+                                {formatTimeRange(task.start_at, task.end_at)}
+                            </span>
+                        )}
+                    </>
+                ) : (
+                    <span className={`${chip} text-[var(--text-secondary)] opacity-50`}>No deadline</span>
+                )}
                 </div>
 
             </div>

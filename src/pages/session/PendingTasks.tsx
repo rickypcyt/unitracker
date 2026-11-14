@@ -11,6 +11,7 @@ import { getDemoTasks } from '@/utils/demoData';
 import ActionTooltip from '@/components/ui/ActionTooltip';
 import type { Task } from '@/schemas/task';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 const getDueDate = (task: Task) => {
   const value = task.deadline || task.due_date;
@@ -39,6 +40,7 @@ const PendingTasks = () => {
   )), [isLoggedIn, tasks, currentWorkspace]);
   const pending = workspacePending.filter(task => !ignored.includes(task.id));
   const hiddenCount = workspacePending.length - pending.length;
+  const [currentDate] = useState(() => new Date());
 
   const ignoreTask = (task: Task) => {
     setIgnoredByUser(previous => ({ ...previous, [userKey]: [...ignored, task.id] }));
@@ -61,7 +63,7 @@ const PendingTasks = () => {
   };
 
   return (
-    <section aria-labelledby="pending-tasks-title" className="w-full h-full flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+    <section aria-labelledby="pending-tasks-title" className="w-full h-full min-h-0 overflow-hidden flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
       <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
@@ -70,17 +72,8 @@ const PendingTasks = () => {
           <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
           <span className="shrink-0 text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
         </div>
-        <div className="ml-auto flex flex-row-reverse sm:flex-row items-center gap-2 shrink-0">
-          <ActionTooltip content={t('session.pendingTasks.newTaskTooltip')}>
-            <button onClick={() => editTask(null)} aria-label={t('session.pendingTasks.newTask')} className="min-h-11 min-w-11 flex items-center justify-center gap-1.5 rounded-lg px-2 sm:px-3 text-sm font-semibold bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20">
-              <Plus size={18} /><span className="hidden sm:inline">{t('session.pendingTasks.newTask')}</span>
-            </button>
-          </ActionTooltip>
-          <ActionTooltip content={t('session.pendingTasks.viewTasksTooltip')}>
-            <button onClick={openTasks} aria-label={t('session.pendingTasks.viewTasks')} className="min-h-11 flex items-center gap-1 text-sm text-[var(--accent-primary)] shrink-0">
-              <span className="hidden sm:inline">{t('session.pendingTasks.viewTasks')}</span><ArrowRight size={18} />
-            </button>
-          </ActionTooltip>
+        <div className="shrink-0 text-xs text-[var(--text-secondary)]">
+          {format(currentDate, 'EEEE, MMM d, yyyy')}
         </div>
       </div>
       {hiddenCount > 0 && (
@@ -109,7 +102,7 @@ const PendingTasks = () => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
             return (
-              <li key={task.id} className="grow shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
+              <li key={task.id} className="shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
                 <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
                   <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
                 </ActionTooltip>
@@ -143,6 +136,7 @@ const PendingTasks = () => {
           })}
         </ul>
       )}
+
       {modals}
     </section>
   );

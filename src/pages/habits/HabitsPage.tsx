@@ -391,8 +391,8 @@ const HabitsPage = memo(() => {
           />
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Habits tracker (top on mobile/md, left on desktop) */}
-            <div className="space-y-4 pt-2">
+            {/* Habits tracker (bottom on mobile/md, right on desktop) */}
+            <div className="space-y-4 pt-2 order-2">
               <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.title')}</h3>
               {displayHabits.map((habit) => {
                 const completions = habit.completions as Record<string, boolean>;
@@ -495,8 +495,8 @@ const HabitsPage = memo(() => {
 
             </div>
 
-            {/* Journal notes below */}
-            <div className="space-y-2 pt-2">
+            {/* Journal notes (top on mobile/md, left on desktop) */}
+            <div className="space-y-2 pt-2 order-1">
               <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.journalNotes')}</h3>
               {(() => {
                 const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());

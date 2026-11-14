@@ -1,13 +1,10 @@
-import { Pause, PictureInPicture2, Play, X } from "lucide-react";
+import { Pause, Play, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
-  EXTRA_TIMER_TOGGLE_EVENT,
   getElapsedSeconds,
-  isExtraTimerRunning,
   isExtraTimerSynced,
-  readExtraTimerSeconds,
   readStudyTimerSnapshot,
   readSyncedTimerSeconds,
   requestToggleStudyTimer,
@@ -27,7 +24,6 @@ interface ExtraRow {
   label: string;
   color: string;
   seconds: number | null;
-  synced: boolean;
   running: boolean;
 }
 
@@ -58,17 +54,15 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
       setIsRunning(studyRunning);
       setHasSession(s.sessionStatus !== "inactive");
       setExtras(
-        (Object.keys(EXTRA_CONFIG) as ExtraTimerId[]).map(id => {
-          const synced = isExtraTimerSynced(id);
-          return {
+        (Object.keys(EXTRA_CONFIG) as ExtraTimerId[])
+          .filter(id => isExtraTimerSynced(id))
+          .map(id => ({
             id,
             label: t(EXTRA_CONFIG[id].labelKey),
             color: EXTRA_CONFIG[id].color,
-            seconds: synced ? readSyncedTimerSeconds(id, studySeconds) : readExtraTimerSeconds(id),
-            synced,
-            running: synced ? studyRunning : isExtraTimerRunning(id),
-          };
-        })
+            seconds: readSyncedTimerSeconds(id, studySeconds),
+            running: studyRunning,
+          }))
       );
     };
     tick();
@@ -79,10 +73,6 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
   const handleToggle = () => {
     // No session to resume → send the user to pick one instead.
     if (requestToggleStudyTimer() === "none") onExpand();
-  };
-
-  const openExtraPopup = (id: ExtraTimerId) => {
-    window.dispatchEvent(new CustomEvent(EXTRA_TIMER_TOGGLE_EVENT, { detail: { id } }));
   };
 
   const statusKey = isRunning
@@ -97,63 +87,63 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
       : "text-[var(--text-secondary)]";
 
   return (
-    <div className="flex flex-col w-full h-full px-4 py-2.5 rounded-2xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)]/90 backdrop-blur-md text-[var(--text-primary)] shadow-xl select-none">
-      {/* Extra timers — synced ones show their time; unsynced get a float button */}
+    <div className="flex flex-col gap-2 w-full h-full min-h-0 p-1.5 text-[var(--text-primary)] select-none">
+      {/* Synced timers — one rectangular card each, title on top, timer below */}
       {extras.map(row => (
-        <div key={row.id} className="flex items-center gap-2.5">
-          <span
-            className="text-[9px] font-medium uppercase tracking-[0.2em] w-16 shrink-0 truncate"
-            style={{ color: row.color }}
-          >
-            {row.label}
-          </span>
-          <span
-            className={`font-mono text-sm font-semibold tabular-nums leading-none tracking-[0.06em] ${
-              row.running ? "" : "opacity-50"
-            }`}
-            style={{ color: row.color }}
-            aria-live="off"
-          >
-            {formatHMS(row.seconds ?? 0)}
-          </span>
-          {!row.synced && (
-            <button
-              onClick={() => openExtraPopup(row.id)}
-              className="ml-auto w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-[var(--text-secondary)]/70 hover:text-[var(--text-primary)] transition-colors"
-              aria-label={t("session.miniPlayer.floatTimer", { timer: row.label })}
-              title={t("session.miniPlayer.floatTimer", { timer: row.label })}
+        <div
+          key={row.id}
+          className="flex items-center justify-between gap-2 flex-1 min-h-[3.5rem] rounded-xl border border-[var(--border-primary)]/40 bg-[var(--bg-secondary)]/30 px-3 py-1.5"
+        >
+          <div className="flex flex-col min-w-0">
+            <span
+              className="text-[9px] font-medium uppercase tracking-[0.2em] leading-tight truncate"
+              style={{ color: row.color }}
             >
-              <PictureInPicture2 size={12} />
-            </button>
-          )}
+              {row.label}
+            </span>
+            <span
+              className={`font-timer-digits text-[clamp(1rem,7.5vw,1.5rem)] font-semibold leading-tight tracking-[0.06em] ${
+                row.running ? "" : "mini-timer-paused"
+              }`}
+              style={{ color: row.color }}
+              aria-live="off"
+            >
+              {formatHMS(row.seconds ?? 0)}
+            </span>
+          </div>
         </div>
       ))}
 
-      {/* Study timer — bottom row, the only one with play/pause */}
-      <div className="flex items-end mt-auto pt-1.5">
+      {/* Study timer card — same size as the others, the only one with play/pause */}
+      <div className="flex items-center justify-between gap-2 flex-1 min-h-[3.5rem] rounded-xl border border-[var(--border-primary)]/40 bg-[var(--bg-secondary)]/30 px-3 py-1.5">
         <div className="flex flex-col min-w-0">
-          <span
-            className={`font-mono text-[1.35rem] font-semibold tabular-nums leading-none tracking-[0.08em] ${
-              isRunning ? "" : "opacity-60"
-            }`}
-            style={{ color: STUDY_COLOR }}
-            aria-live="off"
-          >
-            {formatHMS(elapsed)}
+          <span className="text-[9px] font-medium uppercase tracking-[0.2em] leading-tight text-[var(--text-secondary)] truncate">
+            {t("session.miniPlayer.timer")} <span className={statusClass}>({t(statusKey)})</span>
           </span>
-          <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.25em] text-[var(--text-secondary)]">
-            {t("session.miniPlayer.timer")}{" "}
-            <span className={statusClass}>({t(statusKey)})</span>
-          </span>
+          {hasSession ? (
+            <span
+              className={`font-timer-digits text-[clamp(1rem,7.5vw,1.5rem)] font-semibold leading-tight tracking-[0.06em] ${
+                isRunning ? "" : "mini-timer-paused"
+              }`}
+              style={{ color: STUDY_COLOR }}
+              aria-live="off"
+            >
+              {formatHMS(elapsed)}
+            </span>
+          ) : (
+            <span className="text-sm font-medium leading-tight text-[var(--text-secondary)]">
+              {t("session.miniPlayer.noSessionHint")}
+            </span>
+          )}
         </div>
-        <div className="ml-auto flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={handleToggle}
-            className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center border border-[var(--border-primary)]/60 text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
+            className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
             aria-label={isRunning ? t("session.studyTimer.pauseTimer") : t("session.studyTimer.resumeTimer")}
             title={isRunning ? t("session.studyTimer.pauseTimer") : t("session.studyTimer.resumeTimer")}
           >
-            {isRunning ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
+            {isRunning ? <Pause size={17} /> : <Play size={17} className="ml-0.5" />}
           </button>
           {onClose ? (
             <button

@@ -153,11 +153,13 @@ interface StudyTimerProps {
   onSyncChange?: (isSynced: boolean) => void;
   isSynced?: boolean | undefined;
   hideHeader?: boolean;
+  hideControls?: boolean;
 }
 const StudyTimer = ({
   onSyncChange,
   isSynced,
-  hideHeader = false
+  hideHeader = false,
+  hideControls = false
 }: StudyTimerProps) => {
   const { t } = useTranslation();
   const {
@@ -621,7 +623,7 @@ const StudyTimer = ({
       time: 0,
       sessionStatus: preserveSession ? studyState.sessionStatus : "inactive",
       lastPausedAt: null,
-      pauseHistory: []
+      pauseHistory: studyState.pauseHistory
     });
     setStudyRunning(false);
     setStudyTimerState("stopped");
@@ -638,7 +640,7 @@ const StudyTimer = ({
         isRunning: false
       }
     }));
-  }, [studyState.sessionStatus, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
+  }, [studyState.sessionStatus, studyState.pauseHistory, updateStudyState, setStudyRunning, setStudyTimerState, resetTimerState]);
 
   // ── Core controls ─────────────────────────────────────────────────────────
   const start = useCallback(async (baseTimestamp: number, fromSync = false, seedTime?: number, pauseHistoryOverride?: PauseEntry[]) => {
@@ -733,6 +735,10 @@ const StudyTimer = ({
   useEventListener(SYNC_EVENTS.RESET_TIMER, makeHandler(() => reset(true)), [reset]);
   useEventListener(SYNC_EVENTS.RESET_POMODORO, makeHandler(() => isPomodoroSync && reset(true), () => isPomodoroSync), [isPomodoroSync, reset]);
   useEventListener(SYNC_EVENTS.RESET_COUNTDOWN, makeHandler(() => isCountdownSync && reset(true), () => isCountdownSync), [isCountdownSync, reset]);
+  useEventListener("studyAdjustTime", useCallback((event: CustomEvent) => {
+    const adjustment = (event.detail as { adjustment?: number } | undefined)?.adjustment;
+    if (typeof adjustment === "number" && Number.isFinite(adjustment)) adjustTime(adjustment);
+  }, [adjustTime]));
 
   // Load accumulated session duration from event (fired by SessionsModal)
   useEventListener("loadSessionDuration", useCallback((event: CustomEvent) => {
@@ -1087,8 +1093,8 @@ const StudyTimer = ({
       </div>}
 
       {/* Timer display - circular progress ring */}
-      <div className="w-full flex-1 flex flex-col items-center justify-center py-2" role="timer" aria-label={t("session.studyTimer.timerAria")}>
-        <div className="relative group">
+      <div className="w-full flex-1 flex flex-col items-center justify-center py-2 group" role="timer" aria-label={t("session.studyTimer.timerAria")}>
+        <div className="relative">
         {(() => {
           const totalSec = safeNumber(studyState.time);
           const h = Math.floor(totalSec / 3600);
@@ -1102,7 +1108,7 @@ const StudyTimer = ({
           return (
             <div className="relative w-32 h-32">
               {currentSessionId && !isSynced && (
-                <div className="absolute right-full top-[68%] -translate-y-1/2 mr-3 flex gap-2">
+                <div className="absolute right-full top-[68%] -translate-y-1/2 mr-6 flex gap-2">
                   <button onClick={() => reset()} className="timer-ctrl-btn" aria-label={t("session.studyTimer.resetTimer")} title={t("session.studyTimer.resetTimer")}>
                     <RotateCcw size={18} />
                   </button>
@@ -1175,8 +1181,11 @@ const StudyTimer = ({
             </div>
           );
         })()}
+        </div>
 
-        {currentSessionId && <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 hidden group-hover:block bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg px-4 py-2 text-sm text-[var(--text-primary)] shadow-xl min-w-[220px] text-left">
+        {currentSessionId && <div className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 z-50 hidden group-hover:block w-max min-w-[220px] max-w-[280px]">
+            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[var(--bg-primary)] border-l-2 border-t-2 border-[var(--border-primary)]" aria-hidden="true" />
+            <div className="relative bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] shadow-2xl text-left">
             <div className="font-semibold mb-1">{t("session.studyTimer.sessionTitle")}</div>
             <div>{studyState.sessionTitle || summaryData.title || t("session.studyTimer.noSession")}</div>
             {studyState.sessionStatus === "paused" && studyState.lastPausedAt && <div className="mt-2 text-sm text-[var(--text-secondary)]">
@@ -1211,8 +1220,8 @@ const StudyTimer = ({
                   </div>
                 </>;
               })()}
+            </div>
           </div>}
-        </div>
       </div>
 
       {/* Lap note input */}
@@ -1274,7 +1283,7 @@ const StudyTimer = ({
       )}
 
       {/* Controls: adjustments + play/pause in a single centered row — h-16 keeps the clock aligned with the other panels */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
+      {!hideControls && <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
         <div className="flex gap-1 shrink-0">
           {currentSessionId && timeAdjustmentButtons.filter(({ adjustment }) => adjustment < 0).map(({
             adjustment,
@@ -1302,7 +1311,7 @@ const StudyTimer = ({
               {label}
             </button>)}
         </div>
-      </div>
+      </div>}
 
       {/* Modals */}
       <SessionsModal isOpen={modalStates.isSessionsModalOpen} onClose={() => updateModal("isSessionsModalOpen", false)} onSessionSelected={handleSessionSelected} onFinishAllSessions={handleFinishAllSessions} onStartNewSession={handleStartNewSession} />

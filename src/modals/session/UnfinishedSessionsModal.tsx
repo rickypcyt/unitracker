@@ -1,5 +1,6 @@
 import { Check, Play, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { formatDistanceToNowStrict } from 'date-fns';
 import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
@@ -76,7 +77,7 @@ const UnfinishedSessionsModal = ({
     onClose();
   };
   if (!isOpen) return null;
-  return <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  return createPortal(<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)] relative">
         <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">
           <X size={18} />
@@ -148,6 +149,6 @@ const UnfinishedSessionsModal = ({
           </div>
         </div>
       </div>
-    </div>;
+    </div>, document.body);
 };
 export default UnfinishedSessionsModal;

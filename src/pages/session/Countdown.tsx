@@ -24,11 +24,13 @@ interface CountdownProps {
   isSynced?: boolean | undefined;
   isRunning?: boolean | undefined;
   hideHeader?: boolean;
+  hideControls?: boolean;
 }
 const Countdown: React.FC<CountdownProps> = ({
   isSynced = false,
   isRunning = false,
-  hideHeader = false
+  hideHeader = false,
+  hideControls = false
 }) => {
   const {
     setCountdownState,
@@ -223,6 +225,8 @@ const Countdown: React.FC<CountdownProps> = ({
     setIsEditingTime(true);
     setTimeout(() => inputRefs.current.hours?.current?.focus(), 0);
   }, [isCountdownRunning, handlePause]);
+
+
 
   // Lógica común cuando el countdown llega a cero (desde interval o visibilitychange)
   const handleFinish = useCallback(() => {
@@ -859,7 +863,7 @@ const Countdown: React.FC<CountdownProps> = ({
             return (
               <div className="relative w-32 h-32">
                 {!(isSynced || syncCountdownWithTimer) && (
-                  <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+                  <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
                     <RotateCcw size={18} />
                   </button>
                 )}
@@ -904,7 +908,7 @@ const Countdown: React.FC<CountdownProps> = ({
         ) : (
           <div className="relative w-32 h-32">
             {!(isSynced || syncCountdownWithTimer) && (
-              <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-3" aria-label="Reset timer">
+              <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
                 <RotateCcw size={18} />
               </button>
             )}
@@ -972,7 +976,7 @@ const Countdown: React.FC<CountdownProps> = ({
       </div>
 
       {/* Controls row always rendered — stays an invisible spacer when synced so the clock keeps the same height as the other panels */}
-      <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
+      {!hideControls && <div className="flex flex-nowrap justify-center items-center gap-x-2 mt-auto shrink-0 h-16 pt-2 pb-2 mb-3">
         {!(isSynced || syncCountdownWithTimer) && <>
           <div className="flex gap-1 shrink-0">
             <button onClick={() => handleTimeAdjustment(-1800)} className="timer-adjust-btn" aria-label="Subtract 30 minutes">-30</button>
@@ -990,7 +994,7 @@ const Countdown: React.FC<CountdownProps> = ({
             <button onClick={() => handleTimeAdjustment(1800)} className="timer-adjust-btn" aria-label="Add 30 minutes">+30</button>
           </div>
         </>}
-      </div>
+      </div>}
     </div>;
 };
 export default Countdown;

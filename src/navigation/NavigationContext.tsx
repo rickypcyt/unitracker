@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-type Page = 'tasks' | 'calendar' | 'session' | 'notes' | 'analytics' | 'habits' | 'focusWidget' | 'admin';
+type Page = 'tasks' | 'session' | 'notes' | 'analytics' | 'habits' | 'focusWidget' | 'admin';
 
 interface NavigationContextType {
   activePage: Page;
@@ -20,7 +20,6 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export const PAGE_PATHS: Record<Page, string> = {
   session: '/session',
   tasks: '/tasks',
-  calendar: '/calendar',
   notes: '/notes',
   analytics: '/analytics',
   habits: '/habits',
@@ -34,10 +33,9 @@ const PATH_PAGES: Record<string, Page> = Object.entries(PAGE_PATHS).reduce(
 );
 
 const DEFAULT_NAV_ORDER = [
-  { page: 'calendar' as Page, icon: null, label: 'Planning' },
   { page: 'tasks' as Page, icon: null, label: 'Tasks' },
-  { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'habits' as Page, icon: null, label: 'Journal' },
+  { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'notes' as Page, icon: null, label: 'Notes' },
   { page: 'analytics' as Page, icon: null, label: 'Analytics' },
 ];
@@ -80,12 +78,11 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.ctrlKey) {
       const pageMap = {
-        'session': { left: 'notes', right: 'tasks' },
-        'tasks': { left: 'session', right: 'calendar' },
-        'calendar': { left: 'tasks', right: 'analytics' },
-        'analytics': { left: 'calendar', right: 'habits' },
-        'habits': { left: 'analytics', right: 'notes' },
-        'notes': { left: 'habits', right: 'session' },
+        'session': { left: 'habits', right: 'notes' },
+        'tasks': { left: 'analytics', right: 'habits' },
+        'analytics': { left: 'notes', right: 'tasks' },
+        'habits': { left: 'tasks', right: 'session' },
+        'notes': { left: 'session', right: 'analytics' },
         'focusWidget': { left: 'session', right: 'session' },
         'admin': { left: 'analytics', right: 'tasks' },
       };

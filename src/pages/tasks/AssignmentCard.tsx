@@ -211,20 +211,22 @@ export const AssignmentCard = ({
       <div
         className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar pb-2`}
         style={{
-          minHeight: '60px',
-          maxHeight: 'none',
-          overflowY: 'visible',
+          // Fixed capacity of ~4 tasks so every column has the same size;
+          // extra tasks scroll inside.
+          height: '30rem',
+          maxHeight: '30rem',
+          overflowY: 'auto',
           padding: '0 0 0.5rem 0',
           position: 'relative',
           zIndex: 1,
           display: isMinimized ? 'none' : 'block',
         }}
       >
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 h-full flex flex-col">
           {sortedTasks.length === 0 ? (
             <div
               onClick={onAddTask}
-              className="flex flex-col items-center justify-center py-6 rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
+              className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
             >
               <Plus size={20} className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] mb-1 transition-colors" />
               <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">

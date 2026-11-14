@@ -1697,6 +1697,553 @@ h1 {
   display: flex;
 }
 
+/* Dedicated typeface for floating timer digits — crisp monospaced digits
+   with tabular figures so the clock never jitters between second flips */
+.font-timer-digits {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Paused timers "breathe" so the paused state is obvious at a glance */
+@keyframes mini-timer-breath {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.mini-timer-paused {
+  animation: mini-timer-breath 3.2s ease-in-out infinite;
+}
+
+/* ─── Unified timer panel (.utp) ───────────────────────────────────────
+   One instrument-like surface with three zones. Each zone exposes its
+   color through --zone; the inner timer components are restyled here so
+   their logic stays untouched. */
+.utp {
+  position: relative;
+  border-radius: 1.25rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 12px 32px -16px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.utp-zone {
+  --zone: var(--accent-primary);
+  transition: background-color 0.3s ease;
+}
+
+/* Each zone is its own bordered tile — no internal dividers needed */
+.utp-tile {
+  aspect-ratio: 1 / 1;
+  min-height: 13.5rem;
+  border: 2px solid color-mix(in srgb, var(--zone) 55%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--zone) 2.5%, transparent);
+}
+
+.utp-zone[data-running="true"]:not([data-timer="study"]).utp-tile {
+  border-color: var(--zone);
+  box-shadow: 0 0 24px -10px color-mix(in srgb, var(--zone) 45%, transparent);
+}
+
+/* Mobile: 1:1 tiles eat the whole screen height — switch to rectangles.
+   Synced tiles are compact (digits only); unsynced ones keep extra room
+   for their own control row pinned at the bottom. */
+@media (max-width: 639px) {
+  .utp-tile[data-shared="true"] {
+    aspect-ratio: auto;
+    min-height: 7rem;
+  }
+
+  .utp-tile[data-shared="false"] {
+    aspect-ratio: auto;
+    min-height: 10.5rem;
+  }
+}
+
+.utp-zone:hover {
+  z-index: 30;
+}
+
+.utp-zone[data-drag-over="true"] {
+  background-color: color-mix(in srgb, var(--zone) 6%, transparent);
+}
+
+.utp-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 50% at 50% 48%, color-mix(in srgb, var(--zone) 16%, transparent), transparent 70%);
+  opacity: 0.25;
+  transition: opacity 0.8s ease;
+}
+
+.utp-zone[data-running="true"]:not([data-timer="study"]) .utp-glow {
+  opacity: 1;
+}
+
+.utp-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--text-primary) 9%, transparent) 1px, transparent 1.2px);
+  background-size: 14px 14px;
+  -webkit-mask-image: radial-gradient(55% 45% at 50% 48%, #000, transparent);
+  mask-image: radial-gradient(55% 45% at 50% 48%, #000, transparent);
+  opacity: 0.6;
+}
+
+/* Header */
+.utp-index {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  opacity: 0.55;
+}
+
+.utp-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.utp-label svg {
+  color: var(--zone);
+}
+
+/* Chain-link sync node — straddles the border between tiles */
+.utp-sync {
+  position: absolute;
+  z-index: 20;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  border: 2px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.utp-sync[data-edge="right"] {
+  right: -1.25rem;
+}
+
+.utp-sync[data-edge="left"] {
+  left: -1.25rem;
+}
+
+.utp-sync[data-on="true"] {
+  color: var(--text-secondary);
+  border-color: color-mix(in srgb, var(--text-primary) 30%, transparent);
+}
+
+/* Stacked layout (below sm): tiles pile vertically, so the sync node
+   moves to the top/bottom edge facing the study tile. */
+@media (max-width: 639px) {
+  .utp-sync {
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .utp-sync[data-edge="right"] {
+    right: auto;
+    bottom: -1.25rem;
+  }
+
+  .utp-sync[data-edge="left"] {
+    left: 50%;
+    top: -1.25rem;
+    transform: translateX(-50%);
+  }
+
+}
+
+.utp-zone[data-timer="pomodoro"] .utp-actions {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.utp-actions {
+  opacity: 0.6;
+  transform: translateX(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.utp:hover .utp-actions,
+.utp-actions:focus-within,
+.utp-actions:has([aria-expanded="true"]) {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .utp-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+.utp-grip {
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.utp-zone:hover .utp-grip {
+  opacity: 0.4;
+}
+
+/* Status chip */
+.utp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.25rem;
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--text-primary) 6%, transparent);
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.utp-status-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.utp-zone[data-running="true"] .utp-status {
+  color: var(--zone);
+  background: color-mix(in srgb, var(--zone) 10%, transparent);
+  border-color: color-mix(in srgb, var(--zone) 25%, transparent);
+}
+
+.utp-zone[data-running="true"] .utp-status-dot {
+  background: var(--zone);
+  opacity: 1;
+}
+
+.utp-zone[data-running="true"] .utp-status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--zone);
+  animation: utp-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes utp-ping {
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Center the whole inner timer column inside the absolutely-positioned body */
+.utp-body > div {
+  justify-content: center;
+}
+
+/* Inner timer restyle — flat digital readout inside each tile.
+   The SVG progress ring is hidden; digits sit directly on the tile and
+   per-timer controls are hidden for timers driven by the shared bar. */
+.utp-body .relative.w-32.h-32 {
+  width: 100%;
+  height: 5.25rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.utp-body .relative.w-32.h-32 > svg {
+  display: none;
+}
+
+/* Timers driven by the shared control bar hide their inner controls */
+.utp-tile[data-shared="true"] .utp-body .relative.w-32.h-32 > .absolute.right-full,
+.utp-tile[data-shared="true"] .utp-body .relative.w-32.h-32 > .absolute.left-full,
+.utp-tile[data-shared="true"] .utp-body .relative.w-32.h-32 > div.absolute.flex:not(.inset-0),
+.utp-tile[data-shared="true"] .utp-body .relative.w-32.h-32 > .absolute.timer-ctrl-btn,
+.utp-tile[data-shared="true"] .utp-body .h-16 {
+  display: none;
+}
+
+/* Unsynced timers: pin their own control row to the tile's bottom edge so
+   the digits stay absolutely centered instead of shifting up */
+.utp-tile[data-shared="false"] .utp-body .h-16 {
+  position: absolute;
+  left: 50%;
+  bottom: 0.375rem;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 0.5rem);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Unsynced timers keep compact own controls inside the tile */
+.utp-tile[data-shared="false"] .utp-body .relative.w-32.h-32 > div.absolute.flex:not(.inset-0) {
+  top: 50%;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.utp-tile[data-shared="false"] .utp-body .relative.w-32.h-32 > .absolute.right-full {
+  right: auto;
+  left: 0.625rem;
+  margin-right: 0;
+}
+
+.utp-tile[data-shared="false"] .utp-body .relative.w-32.h-32 > .absolute.left-full {
+  left: auto;
+  right: 0.625rem;
+  margin-left: 0;
+}
+
+.utp-tile[data-shared="false"] .utp-body .relative.w-32.h-32 > .absolute.timer-ctrl-btn {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
+.utp-tile[data-shared="false"] .utp-body .h-16 {
+  height: 2.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0;
+}
+
+/* Digits — the centerpiece */
+.utp-body .relative.w-32.h-32 span.font-mono,
+.utp-body .countdown-time-input {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.35rem, 1.1vw + 1rem, 1.9rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.utp-body .relative.w-32.h-32 > div.absolute.inset-0 > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+}
+
+.utp-body .relative.w-32.h-32 span.font-mono.tabular-nums {
+  font-weight: 600;
+}
+
+.utp-zone[data-running="true"] .utp-body .relative.w-32.h-32 span.font-mono.tabular-nums {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--zone) 55%, transparent);
+}
+
+.utp-body .relative.w-32.h-32 span.font-mono:not(.tabular-nums) {
+  font-weight: 400;
+  opacity: 0.35;
+  transform: translateY(-0.08em);
+}
+
+.utp-body .countdown-time-input {
+  width: 1.3em;
+  padding: 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Controls inside unsynced tiles: hairline ghost buttons */
+.utp-body .timer-ctrl-btn,
+.utp-body .timer-adjust-btn {
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
+  width: 1.875rem;
+  height: 1.875rem;
+}
+
+.utp-body .timer-adjust-btn {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.utp-body .timer-ctrl-btn:hover:not(:disabled),
+.utp-body .timer-adjust-btn:hover:not(:disabled) {
+  color: var(--zone);
+  border-color: color-mix(in srgb, var(--zone) 60%, transparent);
+  background: color-mix(in srgb, var(--zone) 10%, transparent);
+}
+
+.utp-body .timer-ctrl-btn-primary,
+.utp-body .timer-ctrl-btn-pomo,
+.utp-body .timer-ctrl-btn-countdown {
+  color: var(--zone);
+  border-width: 1.5px;
+  border-color: var(--zone);
+  background: color-mix(in srgb, var(--zone) 8%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--zone) 8%, transparent);
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.utp-body .timer-ctrl-btn-primary:hover:not(:disabled),
+.utp-body .timer-ctrl-btn-pomo:hover:not(:disabled),
+.utp-body .timer-ctrl-btn-countdown:hover:not(:disabled) {
+  border-color: var(--zone);
+  background: color-mix(in srgb, var(--zone) 16%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--zone) 12%, transparent);
+}
+
+/* ── Tile footer: progress bar + caption ────────────────────────────── */
+.utp-progress {
+  width: 70%;
+  height: 3px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  overflow: hidden;
+}
+
+.utp-progress > i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.6s linear;
+}
+
+.utp-footer {
+  margin-top: 0.55rem;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Dashboard header ───────────────────────────────────────────────── */
+.utp-head-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.utp-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--text-secondary);
+  opacity: 0.4;
+}
+
+.utp-live-dot[data-on="true"] {
+  background: #22c55e;
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+  animation: utp-live-pulse 2s infinite;
+}
+
+@keyframes utp-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ── Shared control bar ─────────────────────────────────────────────── */
+.utp-ctrl {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+  color: var(--text-secondary);
+  background: transparent;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.utp-ctrl-accent {
+  color: #0A84FF;
+  border-color: color-mix(in srgb, #0A84FF 55%, transparent);
+}
+
+.utp-ctrl-play {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0A84FF;
+  border: 2px solid #0A84FF;
+  background: color-mix(in srgb, #0A84FF 8%, transparent);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+
+.utp-ctrl-div {
+  width: 1px;
+  height: 1.75rem;
+  background: var(--border-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .utp-glow,
+  .utp-actions {
+    transition: none;
+  }
+
+  .utp-zone[data-running="true"] .utp-status-dot::after {
+    animation: none;
+  }
+}
+
 .dashboard-noise-card {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-primary);

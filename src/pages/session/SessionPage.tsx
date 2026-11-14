@@ -10,7 +10,7 @@ import NoiseGenerator from "@/pages/session/NoiseGenerator";
 import ScratchPad from "@/pages/session/ScratchPad";
 import PendingTasks from "@/pages/session/PendingTasks";
 import MonthView from "@/pages/session/MonthView";
-import UnifiedTimer from "@/pages/session/UnifiedTimer";
+import UnifiedTimerPanel from "@/pages/session/components/UnifiedTimerPanel";
 import {
   getSessionLayout,
   SESSION_LAYOUT_EVENT,
@@ -77,7 +77,7 @@ const SessionPage = memo(() => {
   };
 
   const timersSection = (
-    <motion.div variants={item} className="w-full" data-tour="session-timer">
+    <motion.div variants={item} className="w-full min-w-0 flex flex-col" data-tour="session-timer">
       {!isLoggedIn && (
         <button
           onClick={() => loginWithGoogle()}
@@ -87,7 +87,7 @@ const SessionPage = memo(() => {
           {t("session.loginToSync")}
         </button>
       )}
-      <UnifiedTimer isSynced={isSynced} isRunning={isRunning} />
+      <UnifiedTimerPanel isSynced={isSynced} isRunning={isRunning} />
     </motion.div>
   );
 
@@ -99,6 +99,30 @@ const SessionPage = memo(() => {
       <motion.div variants={item} className="min-w-0">
         <MonthView />
       </motion.div>
+    </div>
+  );
+
+  const timersMonthRow = (
+    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] gap-4 items-stretch">
+      <motion.div variants={item} className="min-w-0 h-full order-3 xl:order-1">
+        <PendingTasks />
+      </motion.div>
+      <div className="min-w-0 order-1 xl:order-2 flex flex-col gap-4 h-full">
+        <motion.div variants={item}>
+          {timersSection}
+        </motion.div>
+        <motion.div variants={item} className="flex-1 min-h-0">
+          <ScratchPad />
+        </motion.div>
+      </div>
+      <div className="min-w-0 order-2 xl:order-3 flex flex-col gap-4 h-full">
+        <motion.div variants={item} className="flex-1 min-h-0">
+          <MonthView />
+        </motion.div>
+        <motion.div variants={item} className="dashboard-noise-card w-full min-w-0 flex-1 min-h-0">
+          <NoiseGenerator />
+        </motion.div>
+      </div>
     </div>
   );
 
@@ -159,12 +183,12 @@ const SessionPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/session" />
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
-      <div className="w-full session-page px-4 sm:px-6 lg:px-2 pt-4 pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
+      <div className="w-full session-page px-4 sm:px-6 lg:px-0 pt-4 pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="w-full max-w-[73rem] 2xl:max-w-[92rem] mx-auto flex flex-col gap-4"
+          className="w-full max-w-[90rem] lg:max-w-none mx-auto flex flex-col gap-4"
         >
           {layout === "planning" ? (
             <>
@@ -184,9 +208,7 @@ const SessionPage = memo(() => {
             </>
           ) : (
             <>
-              {timersSection}
-              {tasksMonthRow}
-              {toolsRow}
+              {timersMonthRow}
             </>
           )}
         </motion.div>

@@ -186,7 +186,11 @@ export const readExtraTimerSeconds = (id: ExtraTimerId): number | null =>
  * the panel shows and flips on the same second boundary.
  * `studyElapsed` must already be floored to display seconds.
  */
-export const readSyncedPomodoroSeconds = (studyElapsed: number): number => {
+const syncedPomodoroInfo = (studyElapsed: number): {
+  mode: "work" | "break" | "longBreak";
+  duration: number;
+  remaining: number;
+} => {
   const { work, break: brk, longBreak, sessionsBeforeLong } = readPomodoroConfig();
   const megaCycle = sessionsBeforeLong * work + (sessionsBeforeLong - 1) * brk + longBreak;
   const timeInCycle = Math.floor(studyElapsed) % megaCycle;
@@ -210,7 +214,57 @@ export const readSyncedPomodoroSeconds = (studyElapsed: number): number => {
     remaining -= breakDur;
   }
   const duration = mode === "work" ? work : mode === "longBreak" ? longBreak : brk;
-  return Math.max(0, duration - timeInMode);
+  return { mode, duration, remaining: Math.max(0, duration - timeInMode) };
+};
+
+export const readSyncedPomodoroSeconds = (studyElapsed: number): number =>
+  syncedPomodoroInfo(studyElapsed).remaining;
+
+/** Pomodoro mode/duration/remaining — synced reads derive from study elapsed. */
+export const readPomodoroDisplayInfo = (syncedElapsed: number | null): {
+  mode: "work" | "break" | "longBreak";
+  duration: number;
+  remaining: number;
+} => {
+  if (syncedElapsed !== null) return syncedPomodoroInfo(syncedElapsed);
+  try {
+    const s = JSON.parse(localStorage.getItem("pomodoroState") || "null");
+    const mode: "work" | "break" | "longBreak" =
+      s?.currentMode === "break" || s?.currentMode === "longBreak" ? s.currentMode : "work";
+    const cfg = readPomodoroConfig();
+    const duration = mode === "break" ? cfg.break : mode === "longBreak" ? cfg.longBreak : cfg.work;
+    return { mode, duration, remaining: readPomodoroSeconds() ?? duration };
+  } catch {
+    const cfg = readPomodoroConfig();
+    return { mode: "work", duration: cfg.work, remaining: cfg.work };
+  }
+};
+
+export const readCountdownBaselineSeconds = (): number => {
+  try {
+    const b = JSON.parse(localStorage.getItem("countdownBaseline") || "null");
+    if (b) {
+      return (
+        safeNumber(Number(b.hours)) * 3600 +
+        safeNumber(Number(b.minutes)) * 60 +
+        safeNumber(Number(b.seconds))
+      );
+    }
+  } catch {}
+  return 7200;
+};
+
+/** Countdown total/remaining — synced reads derive from study elapsed. */
+export const readCountdownDisplayInfo = (syncedElapsed: number | null): {
+  total: number;
+  remaining: number;
+} => {
+  const total = readCountdownBaselineSeconds();
+  const remaining =
+    syncedElapsed !== null
+      ? readSyncedCountdownSeconds(syncedElapsed)
+      : readCountdownSeconds() ?? total;
+  return { total, remaining };
 };
 
 /**

@@ -1,5 +1,6 @@
 import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import { X } from "lucide-react";
 
@@ -197,7 +198,7 @@ const BaseModal = ({
     hover:bg-[var(--bg-secondary)]
   `.trim();
 
-  return (
+  return createPortal(
     <div
       data-overlay="BaseModal-v2"
       className={overlayClasses}
@@ -237,7 +238,8 @@ const BaseModal = ({
           {children}
         </main>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

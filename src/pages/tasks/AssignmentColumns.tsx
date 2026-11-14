@@ -85,10 +85,10 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   }));
 
   const gridColsClass = {
-    1: 'lg:grid-cols-1 max-w-2xl',
-    2: 'lg:grid-cols-2 max-w-4xl',
-    3: 'lg:grid-cols-3 max-w-6xl',
-    4: 'lg:grid-cols-4 max-w-7xl',
+    1: 'lg:grid-cols-1',
+    2: 'lg:grid-cols-2',
+    3: 'lg:grid-cols-3',
+    4: 'lg:grid-cols-4',
   }[columnCount];
 
   return (
@@ -122,9 +122,18 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
             />
           </div>
         ))}
+        {/* Invisible skeleton slots — reserve space for one full row so the
+            grid keeps a consistent minimum height */}
+        {Array.from({ length: Math.max(0, columnCount - fixedColumns.length) }).map((_, i) => (
+          <div
+            key={`ghost-${i}`}
+            aria-hidden
+            className="hidden lg:block w-full rounded-xl border-2 border-transparent p-3 min-h-[36rem] select-none pointer-events-none"
+          />
+        ))}
       </div>
       {children && (
-        <div className="mx-auto mt-4 w-full max-w-7xl">
+        <div className="mt-4 w-full">
           {children}
         </div>
       )}

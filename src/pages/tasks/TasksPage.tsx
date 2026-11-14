@@ -19,7 +19,7 @@ const TasksPage = memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [columnCount, setColumnCount] = useState<ColumnCount>(() => {
     const saved = localStorage.getItem('taskPageColumnCount');
-    return (Number(saved) as ColumnCount) || 4;
+    return (Number(saved) as ColumnCount) || 3;
   });
   const [fabPosition, setFabPosition] = useState<FabPosition>(() => {
     return (localStorage.getItem('taskPageFabPosition') as FabPosition) || 'bottom-right';
@@ -111,8 +111,8 @@ const TasksPage = memo(() => {
   const fabPositionClass: Record<FabPosition, string> = {
     'bottom-right': 'bottom-20 right-6 sm:bottom-6',
     'bottom-left': 'bottom-20 left-6 sm:bottom-6',
-    'top-right': 'top-20 lg:top-6 right-6',
-    'top-left': 'top-20 lg:top-6 left-6',
+    'top-right': 'top-20 right-6',
+    'top-left': 'top-20 left-6',
   };
 
   const handleCloseTaskForm = () => {
@@ -222,7 +222,7 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="w-full px-4 sm:px-6 pt-4 pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
+      <div className="w-full px-3 sm:px-3 pt-4 pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector (footer island shows the name from sm up) */}
       <div className="sm:hidden w-full mb-4">
         <WorkspaceSelector />

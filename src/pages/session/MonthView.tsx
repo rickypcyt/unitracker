@@ -65,21 +65,21 @@ const MonthView = () => {
   const days = Array.from({ length: 42 }, (_, index) => addDays(firstDay, index));
 
   return (
-    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className="relative w-full h-full rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
-      <div className="flex items-center justify-between gap-2 mb-2">
+    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className="relative w-full aspect-square xl:aspect-auto xl:h-full flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10"><CalendarDays size={18} className="text-[var(--accent-primary)]" /></div>
-          <h3 id="month-view-title" className="text-base sm:text-lg font-semibold text-[var(--text-primary)]">{t('session.monthView.title')}</h3>
+          <div className="p-1.5 rounded-lg bg-[var(--accent-primary)]/10"><CalendarDays size={16} className="text-[var(--accent-primary)]" /></div>
+          <h3 id="month-view-title" className="text-sm font-semibold text-[var(--text-primary)]">{t('session.monthView.title')}</h3>
         </div>
-        <button onClick={() => changeMonth(startOfMonth(new Date()))} className="min-h-11 px-2 text-sm text-[var(--accent-primary)]">{t('session.monthView.today')}</button>
+        <button onClick={() => changeMonth(startOfMonth(new Date()))} className="px-2 py-1 text-xs text-[var(--accent-primary)]">{t('session.monthView.today')}</button>
       </div>
-      <div className="flex items-center justify-between mb-2">
-        <button onClick={() => changeMonth(addMonths(month, -1))} aria-label="Previous month" className="p-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"><ChevronLeft size={18} /></button>
-        <p aria-live="polite" className="text-sm font-semibold text-[var(--text-primary)]">{format(month, 'MMMM yyyy', { locale: dateLocale })}</p>
-        <button onClick={() => changeMonth(addMonths(month, 1))} aria-label="Next month" className="p-3 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"><ChevronRight size={18} /></button>
+      <div className="flex items-center justify-between mb-1">
+        <button onClick={() => changeMonth(addMonths(month, -1))} aria-label="Previous month" className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"><ChevronLeft size={16} /></button>
+        <p aria-live="polite" className="text-xs font-semibold text-[var(--text-primary)]">{format(month, 'MMMM yyyy', { locale: dateLocale })}</p>
+        <button onClick={() => changeMonth(addMonths(month, 1))} aria-label="Next month" className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {weekdays.map(day => <span key={day} className="py-1 text-xs font-medium text-[var(--text-secondary)]">{day}</span>)}
+      <div className="grid flex-1 min-h-0 grid-cols-7 grid-rows-[auto_repeat(6,minmax(0,1fr))] gap-0.5 text-center">
+        {weekdays.map(day => <span key={day} className="py-0.5 text-[10px] font-medium text-[var(--text-secondary)]">{day}</span>)}
         {days.map(day => {
           const dayTasks = getDayTasks(source, day);
           return (
@@ -92,11 +92,11 @@ const MonthView = () => {
               aria-current={isToday(day) ? 'date' : undefined}
               aria-haspopup="dialog"
               aria-expanded={selectedDay?.getTime() === day.getTime()}
-              className={`group relative flex items-center justify-center w-full aspect-square rounded-lg text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)] ${isToday(day) ? 'text-[var(--accent-primary)]' : isSameMonth(day, month) ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] opacity-40'}`}
+              className={`group relative flex items-center justify-center w-full h-full rounded-md text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)] ${isToday(day) ? 'text-[var(--accent-primary)]' : isSameMonth(day, month) ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] opacity-40'}`}
             >
-              <time dateTime={format(day, 'yyyy-MM-dd')} className={`relative flex items-center justify-center w-12 h-12 rounded-md leading-none ${isToday(day) ? 'font-bold ring-1 ring-[var(--accent-primary)]' : 'group-hover:ring-1 group-hover:ring-[var(--accent-primary)]'}`}>
+              <time dateTime={format(day, 'yyyy-MM-dd')} className={`relative flex items-center justify-center w-7 h-7 rounded-md leading-none ${isToday(day) ? 'font-bold ring-1 ring-[var(--accent-primary)]' : 'group-hover:ring-1 group-hover:ring-[var(--accent-primary)]'}`}>
                 {format(day, 'd')}
-                {dayTasks.length > 0 && <span aria-hidden="true" className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" />}
+                {dayTasks.length > 0 && <span aria-hidden="true" className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" />}
               </time>
             </button>
           );
