@@ -280,7 +280,8 @@
       "editTooltip": "Details या due date बदलने के लिए task editor खोलें।",
       "modifyTooltip": "Task का title, details, status या due date बदलें।",
       "ignoreTooltip": "इस task को सिर्फ Pending Tasks से छिपाएं। Delete या complete नहीं होगा। दोबारा दिखाने के लिए Restore ignored use करें।",
-      "deleteTooltip": "यह task delete करें। हटाने से पहले confirm मांगा जाएगा।"
+      "deleteTooltip": "यह task delete करें। हटाने से पहले confirm मांगा जाएगा।",
+      "daysAgo": "{{count}} दिन पहले"
     },
     "scratchpad": {
       "title": "Scratchpad",

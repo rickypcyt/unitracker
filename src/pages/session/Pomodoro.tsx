@@ -1217,18 +1217,21 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
     }));
   });
 
-  // Internal timer for when NOT synced - using 100ms intervals and StudyTimer's elapsed time pattern
+  // Internal timer for when NOT synced - 1s ticks like StudyTimer.
+  // Deps exclude timeLeft so the interval is created once per run/pause
+  // instead of being torn down and recreated on every tick (caused flicker).
   useEffect(() => {
     if (syncPomodoroWithTimer) return; // Don't run internal timer when synced
 
     if (!pomoState.isRunning || !pomoState.lastStart) return;
 
-    // Use StudyTimer's exact elapsed time calculation: timeAtStart + ((now - lastStart) / 1000)
+    const startTs = pomoState.lastStart;
+    const baseElapsed = pomoState.timeAtStart;
+    const modeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
+
     const interval = window.setInterval(() => {
-      const now = Date.now();
-      const elapsed = pomoState.timeAtStart + (now - pomoState.lastStart!) / 1000;
-      const currentModeDuration = currentModeConfig?.[pomoState.currentMode] || (pomoState.currentMode === 'break' ? 600 : pomoState.currentMode === 'longBreak' ? 1800 : 3000);
-      const newTimeLeft = Math.max(0, currentModeDuration - elapsed);
+      const elapsed = baseElapsed + (Date.now() - startTs) / 1000;
+      const newTimeLeft = Math.max(0, modeDuration - elapsed);
       if (newTimeLeft <= 0) {
         // Stop the timer immediately to prevent multiple completion calls
         setLocalPomoState(prev => ({
@@ -1245,17 +1248,14 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
         return;
       }
 
-      // Only update if the time actually changed to prevent unnecessary re-renders
-      if (Math.abs(newTimeLeft - pomoState.timeLeft) >= 0.1) {
-        setLocalPomoState(prev => ({
-          ...prev,
-          timeLeft: newTimeLeft
-        }));
-      }
-    }, 100); // Update every 100ms for smooth display like StudyTimer
+      setLocalPomoState(prev => ({
+        ...prev,
+        timeLeft: newTimeLeft
+      }));
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [syncPomodoroWithTimer, pomoState.isRunning, pomoState.lastStart, pomoState.timeAtStart, pomoState.timeLeft, currentModeConfig, pomoState.currentMode, alarmEnabled, handlePomodoroComplete]);
+  }, [syncPomodoroWithTimer, pomoState.isRunning, pomoState.lastStart, pomoState.timeAtStart, currentModeConfig, pomoState.currentMode, alarmEnabled, handlePomodoroComplete]);
 
   // Global sync handler
   useEffect(() => {

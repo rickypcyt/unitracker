@@ -1,6 +1,6 @@
 import { ArrowRight, CalendarDays, CheckCircle2, Circle, EyeOff, ListTodo, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
-import { format, isBefore, isToday, isValid, parseISO, startOfDay } from 'date-fns';
+import { format, isBefore, isToday, isValid, parseISO, startOfDay, differenceInDays } from 'date-fns';
 import { track } from '@vercel/analytics';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useLocalStorage } from '@/hooks/common/useLocalStorage';
@@ -116,7 +116,14 @@ const PendingTasks = () => {
                   <div className="mt-0.5 flex items-center gap-1">
                     <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
                       <CalendarDays size={13} />
-                      {due ? `${overdue ? `${t('common.overdue')} · ` : ''}${isToday(due) ? t('common.today') : format(due, 'MMM d, yyyy')}` : t('common.noDueDate')}
+                      {due ? (() => {
+                        if (isToday(due)) return t('common.today');
+                        if (overdue) {
+                          const daysAgo = differenceInDays(new Date(), due);
+                          return t('session.pendingTasks.daysAgo', { count: daysAgo });
+                        }
+                        return format(due, 'EEEE, MMM d, yyyy');
+                      })() : t('common.noDueDate')}
                     </span>
                   </div>
                 </div>

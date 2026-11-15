@@ -36,9 +36,10 @@ const MonthView = () => {
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
   const openDay = (day: Date, button: HTMLButtonElement) => {
     setSelectedDay(day);
+    const rect = button.getBoundingClientRect();
     setPopoverPos({
-      top: button.offsetTop + button.offsetHeight + 4,
-      left: button.offsetLeft + button.offsetWidth / 2,
+      top: rect.bottom + 8,
+      left: rect.left + rect.width / 2,
     });
   };
   const sectionRef = useRef<HTMLElement>(null);

@@ -280,7 +280,8 @@
       "editTooltip": "Abre el editor de tareas para modificar sus detalles o fecha límite.",
       "modifyTooltip": "Modifica el título, detalles, estado o fecha límite de la tarea.",
       "ignoreTooltip": "Oculta esta tarea solo de Tareas pendientes. No se elimina ni se completa. Usa Restaurar ignoradas para verla otra vez.",
-      "deleteTooltip": "Elimina esta tarea. Se te pedirá confirmar antes de borrarla."
+      "deleteTooltip": "Elimina esta tarea. Se te pedirá confirmar antes de borrarla.",
+      "daysAgo": "hace {{count}} días"
     },
     "scratchpad": {
       "title": "Bloc de notas",

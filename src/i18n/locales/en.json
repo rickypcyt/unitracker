@@ -280,7 +280,8 @@
       "editTooltip": "Open the task editor to modify its details or due date.",
       "modifyTooltip": "Modify the task title, details, status or due date.",
       "ignoreTooltip": "Hide this task only from Pending Tasks. It is not deleted or completed. Use Restore ignored to show it again.",
-      "deleteTooltip": "Delete this task. You will be asked to confirm before it is removed."
+      "deleteTooltip": "Delete this task. You will be asked to confirm before it is removed.",
+      "daysAgo": "{{count}} days ago"
     },
     "scratchpad": {
       "title": "Scratchpad",

@@ -1,11 +1,11 @@
-import { Bell, BellOff, Clock, Play, Target, Volume, Volume2 } from 'lucide-react';
+import { Bell, BellOff, Play, Target, Volume2, X } from 'lucide-react';
 import { useAppStore, usePomodoroModes, usePomodoroSettings } from '@/store/appStore';
 import { useEffect, useState } from 'react';
+import ReactSlider from 'react-slider';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import type { PomodoroMode } from '@/store/appStore';
 import React from 'react';
-import { X } from 'lucide-react';
 
 interface PomodoroSettingsModalProps {
   isOpen: boolean;
@@ -15,13 +15,39 @@ interface PomodoroSettingsModalProps {
   onSaveCustomMode: (mode: PomodoroMode) => void;
 }
 
-const TIME_PRESETS = {
-  work: [15, 25, 50, 60],
-  break: [3, 5, 10, 15],
-  longBreak: [10, 15, 30, 45],
-};
-
 const toMin = (seconds: number) => (seconds / 60).toString();
+
+const Switch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    aria-label={label}
+    onClick={() => onChange(!checked)}
+    className={`relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0 ${checked ? 'bg-[var(--accent-primary)]' : 'bg-[var(--text-secondary)]/30'}`}
+  >
+    <span
+      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`}
+    />
+  </button>
+);
+
+const Row = ({ icon, label, hint, children }: { icon?: React.ReactNode; label: string; hint?: string; children: React.ReactNode }) => (
+  <div className="flex items-center gap-3 px-3.5 py-2.5">
+    {icon && <span className="text-[var(--accent-primary)] shrink-0">{icon}</span>}
+    <div className="flex-1 min-w-0">
+      <div className="text-sm font-medium text-[var(--text-primary)]">{label}</div>
+      {hint && <div className="text-xs text-[var(--text-secondary)]">{hint}</div>}
+    </div>
+    {children}
+  </div>
+);
+
+const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 divide-y divide-[var(--border-primary)]/60 ${className}`}>
+    {children}
+  </div>
+);
 
 const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, onClose, currentModeIndex, onModeChange, onSaveCustomMode }) => {
   const pomodoroModes = usePomodoroModes();
@@ -35,7 +61,6 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   const [breakMin, setBreakMin] = useState('5');
   const [longBreakMin, setLongBreakMin] = useState('15');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'times' | 'settings' | 'sounds'>('times');
 
   const testAlarm = () => {
     if (pomodoroSettings.soundEnabled) {
@@ -53,7 +78,6 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
       setBreakMin(toMin(current.break));
       setLongBreakMin(toMin(current.longBreak));
       setError('');
-      setActiveTab('times');
     }
   }, [isOpen, currentModeIndex, pomodoroModes]);
 
@@ -64,18 +88,12 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   const matchedPresetIndex = predefinedModes.findIndex(
     m => m.work === workSec && m.break === breakSec && m.longBreak === longBreakSec
   );
+  const isCustom = matchedPresetIndex < 0;
 
   const applyPreset = (mode: PomodoroMode) => {
     setWorkMin(toMin(mode.work));
     setBreakMin(toMin(mode.break));
     setLongBreakMin(toMin(mode.longBreak));
-    setError('');
-  };
-
-  const setChip = (field: 'work' | 'break' | 'longBreak', minutes: number) => {
-    if (field === 'work') setWorkMin(minutes.toString());
-    else if (field === 'break') setBreakMin(minutes.toString());
-    else setLongBreakMin(minutes.toString());
     setError('');
   };
 
@@ -98,74 +116,11 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
     updatePomodoroSettings({ [key]: value });
   };
 
-  const stepValue = (field: 'work' | 'break' | 'longBreak', delta: number) => {
-    const current = parseFloat(field === 'work' ? workMin : field === 'break' ? breakMin : longBreakMin) || 0;
-    const next = Math.min(Math.max(current + delta, 1), 240);
-    setChip(field, next);
-  };
-
-  const TimeField = ({ label, value, onChange, field }: { label: string; value: string; onChange: (v: string) => void; field: 'work' | 'break' | 'longBreak' }) => (
-    <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 p-3 flex flex-col items-center">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{label}</span>
-      <div className="flex items-center gap-1.5 mt-2">
-        <button
-          type="button"
-          onClick={() => stepValue(field, -1)}
-          className="w-7 h-7 rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors flex items-center justify-center text-sm font-bold"
-          aria-label={`Decrease ${label}`}
-        >
-          −
-        </button>
-        <div className="relative w-[4.5rem]">
-          <input
-            type="number"
-            min="1"
-            value={value}
-            onChange={(e) => { onChange(e.target.value); setError(''); }}
-            className="w-full px-1 py-1.5 rounded-lg bg-transparent text-center text-2xl font-bold text-[var(--text-primary)] border border-transparent focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => stepValue(field, 1)}
-          className="w-7 h-7 rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors flex items-center justify-center text-sm font-bold"
-          aria-label={`Increase ${label}`}
-        >
-          +
-        </button>
-      </div>
-      <span className="text-[11px] text-[var(--text-secondary)] mt-0.5">minutes</span>
-      <div className="flex flex-wrap justify-center gap-1 mt-2.5">
-        {TIME_PRESETS[field].map(p => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => setChip(field, p)}
-            className={`min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
-              parseFloat(value) === p
-                ? 'bg-[var(--accent-primary)] text-white'
-                : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-primary)]'
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
-  const tabClass = (tab: string) =>
-    `flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
-      activeTab === tab
-        ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
-        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-    }`;
-
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" maxWidth="max-w-lg">
-      <div className="p-6">
-        <div className="relative flex items-center justify-center mb-6">
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" maxWidth="max-w-[92vw]" className="!w-auto">
+      <div className="p-4">
+        <div className="relative flex items-center justify-center mb-3">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] text-center">
             Pomodoro Settings
           </h2>
           <button
@@ -173,207 +128,199 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
             className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Close"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-6 rounded-lg p-1">
-          <button onClick={() => setActiveTab('times')} className={tabClass('times')}>
-            <Clock size={16} />
-            Times
-          </button>
-          <button onClick={() => setActiveTab('settings')} className={tabClass('settings')}>
-            <Play size={16} />
-            Behavior
-          </button>
-          <button onClick={() => setActiveTab('sounds')} className={tabClass('sounds')}>
-            <Volume2 size={16} />
-            Sounds
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          {activeTab === 'times' && (
-            <div className="space-y-6 lg:col-span-2">
-              <div>
-                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">Quick presets</h3>
-                <p className="text-sm text-[var(--text-secondary)] mb-3">Tap to fill the times, then tweak below.</p>
-                <div className="flex flex-wrap gap-2">
-                  {predefinedModes.map((mode, index) => {
-                    const active = matchedPresetIndex === index;
-                    return (
-                      <button
-                        key={mode.label}
-                        type="button"
-                        onClick={() => applyPreset(mode)}
-                        className={`px-3.5 py-2 rounded-full border text-sm font-medium transition-all ${
-                          active
-                            ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]'
-                            : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]/50 hover:text-[var(--text-primary)]'
-                        }`}
-                      >
-                        {mode.label}
-                        <span className="ml-1.5 text-xs opacity-70 font-normal">
-                          {mode.work / 60}·{mode.break / 60}·{mode.longBreak / 60}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-baseline justify-between mb-3">
-                  <h3 className="text-lg font-medium text-[var(--text-primary)]">Times</h3>
-                  <span className="text-xs text-[var(--text-secondary)]">in minutes</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <TimeField label="Focus" value={workMin} onChange={setWorkMin} field="work" />
-                  <TimeField label="Break" value={breakMin} onChange={setBreakMin} field="break" />
-                  <TimeField label="Long break" value={longBreakMin} onChange={setLongBreakMin} field="longBreak" />
-                </div>
-                {matchedPresetIndex < 0 && (
-                  <p className="text-xs text-[var(--text-secondary)] mt-3 text-center">Custom combination — will be saved as your Custom mode.</p>
-                )}
-              </div>
-
-              {error && <p className="text-sm text-red-400">{error}</p>}
+        <div className="flex flex-col gap-3">
+          {/* Left column: Daily goal + Mode */}
+          <div className="space-y-3">
+          {/* Daily goal — hover to edit, no card */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Goal</h3>
+            <div className="flex items-center gap-3 px-1 py-1">
+              <Target size={18} className="text-[var(--accent-primary)] shrink-0" />
+              <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Daily goal</span>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                value={pomodoroSettings.dailyGoal}
+                onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
+                aria-label="Daily pomodoro goal"
+                className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-[var(--text-primary)] border border-transparent hover:border-[var(--border-primary)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
+              />
+              <span className="text-sm text-[var(--text-secondary)]">/ day</span>
             </div>
-          )}
+          </div>
 
-          {activeTab === 'settings' && (
-            <>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Auto-start Settings</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center justify-between p-3 rounded-lg">
-                      <span className="text-[var(--text-primary)]">Auto-start breaks</span>
-                      <input
-                        type="checkbox"
-                        checked={pomodoroSettings.autoStartBreak}
-                        onChange={(e) => handleSettingsChange('autoStartBreak', e.target.checked)}
-                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between p-3 rounded-lg">
-                      <span className="text-[var(--text-primary)]">Auto-start work sessions</span>
-                      <input
-                        type="checkbox"
-                        checked={pomodoroSettings.autoStartWork}
-                        onChange={(e) => handleSettingsChange('autoStartWork', e.target.checked)}
-                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Daily Goals</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 p-3 rounded-lg">
-                      <Target size={20} className="text-[var(--accent-primary)]" />
-                      <div className="flex-1">
-                        <label className="text-[var(--text-primary)]">Daily Pomodoro Goal</label>
-                        <input
-                          type="number"
-                          min="1"
-                          max="50"
-                          value={pomodoroSettings.dailyGoal}
-                          onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
-                          className="mt-1 w-20 px-2 py-1 rounded text-[var(--text-primary)] border-2 border-[var(--border-primary)]"
-                        />
+          {/* Mode presets — stacked horizontal cards */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Mode</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {predefinedModes.map((mode, index) => {
+                const active = matchedPresetIndex === index;
+                return (
+                  <button
+                    key={mode.label}
+                    type="button"
+                    onClick={() => applyPreset(mode)}
+                    className={`flex flex-col items-stretch gap-2 rounded-xl border px-3 py-3 text-left transition-all ${
+                      active
+                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-sm'
+                        : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 hover:border-[var(--accent-primary)]/40 hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    <div>
+                      <div className={`text-sm font-bold tracking-tight ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                        {mode.label}
+                      </div>
+                      <div className="text-[11px] text-[var(--text-secondary)] leading-snug mt-0.5">
+                        {mode.description}
                       </div>
                     </div>
+                    <div className="grid grid-cols-3 gap-1 pt-2 border-t border-[var(--border-primary)]/60">
+                      {([
+                        ['Focus', mode.work],
+                        ['Break', mode.break],
+                        ['Long', mode.longBreak],
+                      ] as const).map(([k, sec]) => (
+                        <div key={k} className="text-center">
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{k}</div>
+                          <div className="text-xs font-bold text-[var(--text-primary)] tabular-nums">{sec / 60}m</div>
+                        </div>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+              {isCustom && (
+                <div className="flex flex-col items-stretch gap-2 rounded-xl border border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 px-3 py-3 shadow-sm">
+                  <div>
+                    <div className="text-sm font-bold tracking-tight text-[var(--accent-primary)]">Custom</div>
+                    <div className="text-[11px] text-[var(--text-secondary)] leading-snug mt-0.5">
+                      Your personalized settings
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 pt-2 border-t border-[var(--border-primary)]/60">
+                    {([
+                      ['Focus', workMin],
+                      ['Break', breakMin],
+                      ['Long', longBreakMin],
+                    ] as const).map(([k, v]) => (
+                      <div key={k} className="text-center">
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{k}</div>
+                        <div className="text-xs font-bold text-[var(--text-primary)] tabular-nums">{v || '—'}m</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+              )}
+            </div>
+          </div>
+          </div>
 
-          {activeTab === 'sounds' && (
-            <>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Sound Settings</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center justify-between p-3 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Bell size={20} className="text-[var(--accent-primary)]" />
-                        <span className="text-[var(--text-primary)]">Timer sounds</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={pomodoroSettings.soundEnabled}
-                        onChange={(e) => handleSettingsChange('soundEnabled', e.target.checked)}
-                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                      />
-                    </label>
-                    <label className="flex items-center justify-between p-3 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <BellOff size={20} className="text-[var(--accent-primary)]" />
-                        <span className="text-[var(--text-primary)]">Browser notifications</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={pomodoroSettings.notificationEnabled}
-                        onChange={(e) => handleSettingsChange('notificationEnabled', e.target.checked)}
-                        className="w-5 h-5 rounded text-[var(--accent-primary)]"
-                      />
-                    </label>
-                  </div>
+          {/* Right column: Times + Sound */}
+          <div className="space-y-3">
+          {/* Times */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Times</h3>
+            <Card>
+              {([
+                { label: 'Focus', value: workMin, set: setWorkMin, field: 'Focus minutes' },
+                { label: 'Break', value: breakMin, set: setBreakMin, field: 'Break minutes' },
+                { label: 'Long break', value: longBreakMin, set: setLongBreakMin, field: 'Long break minutes' },
+              ] as const).map(({ label, value, set, field }) => (
+                <div key={label} className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{label}</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={value}
+                    onChange={(e) => { set(e.target.value); setError(''); }}
+                    aria-label={field}
+                    className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-[var(--text-primary)] border border-transparent hover:border-[var(--border-primary)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] w-8">min</span>
                 </div>
-              </div>
+              ))}
+            </Card>
+            {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
+          </div>
 
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">Volume</h3>
-                  <div className="flex items-center gap-3 p-3 rounded-lg">
-                    <Volume2 size={20} className="text-[var(--accent-primary)]" />
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={pomodoroSettings.volume}
-                      onChange={(e) => handleSettingsChange('volume', parseFloat(e.target.value))}
-                      className="flex-1"
-                    />
-                    <span className="text-[var(--text-primary)] w-12 text-right">
-                      {Math.round(pomodoroSettings.volume * 100)}%
-                    </span>
-                  </div>
-
-                  <div className="mt-3">
+          {/* Volume — own section, prominent slider */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Volume</h3>
+            <Card>
+              <div className="px-4 py-3">
+                <div className="flex items-center gap-3 mb-3">
+                  <Volume2 size={18} className="text-[var(--accent-primary)] shrink-0" />
+                  <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Alarm volume</span>
+                  <span className="text-sm font-bold text-[var(--accent-primary)] tabular-nums w-10 text-right">
+                    {Math.round(pomodoroSettings.volume * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ReactSlider
+                    className="h-3 flex-1 bg-[var(--border-primary)] rounded-full"
+                    thumbClassName="h-6 w-6 rounded-full bg-[var(--accent-primary)] border-[3px] border-[var(--bg-primary)] shadow-lg cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 active:scale-95 focus:outline-none"
+                    trackClassName="h-3 rounded-full"
+                    renderTrack={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>) => {
+                      const { key, ...rest } = props;
+                      return <div key={key} {...rest} className="h-3 rounded-full bg-[var(--accent-primary)]" />;
+                    }}
+                    renderThumb={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>) => {
+                      const { key, ...rest } = props;
+                      return <div key={key} {...rest} />;
+                    }}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={pomodoroSettings.volume}
+                    onChange={(v) => handleSettingsChange('volume', Array.isArray(v) ? v[0] ?? 0 : v)}
+                    aria-label="Volume"
+                  />
+                  {pomodoroSettings.soundEnabled && (
                     <button
                       onClick={testAlarm}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                      aria-label="Test sound"
+                      title="Test sound"
+                      className="shrink-0 w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center hover:bg-[var(--accent-primary)]/20 transition-colors"
                     >
-                      <Volume size={16} />
-                      Test Alarm Sound
+                      <Play size={14} className="ml-0.5" />
                     </button>
-                  </div>
+                  )}
                 </div>
               </div>
-            </>
-          )}
+            </Card>
+          </div>
+
+          {/* Sound — stacked horizontal cards */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Sound</h3>
+            <Card>
+              <Row icon={<Bell size={18} />} label="Timer sounds" hint="Play a sound when a session ends">
+                <Switch checked={pomodoroSettings.soundEnabled} onChange={(v) => handleSettingsChange('soundEnabled', v)} label="Timer sounds" />
+              </Row>
+              <Row icon={<BellOff size={18} />} label="Notifications" hint="Desktop notification when a session ends">
+                <Switch checked={pomodoroSettings.notificationEnabled} onChange={(v) => handleSettingsChange('notificationEnabled', v)} label="Notifications" />
+              </Row>
+            </Card>
+          </div>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-[var(--border-primary)] lg:col-span-2">
+        {/* Footer */}
+        <div className="flex justify-end gap-2 pt-3 mt-3 border-t border-[var(--border-primary)]">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors border-2 border-[var(--border-primary)]"
+            className="px-3.5 py-1.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="px-3.5 py-1.5 rounded-lg text-sm font-medium bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
           >
             Apply
           </button>

@@ -1735,6 +1735,7 @@ h1 {
     0 12px 32px -16px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   isolation: isolate;
+  padding-top: 1.5rem;
 }
 
 .utp-zone {
@@ -1769,10 +1770,6 @@ h1 {
     aspect-ratio: auto;
     min-height: 10.5rem;
   }
-}
-
-.utp-zone:hover {
-  z-index: 30;
 }
 
 .utp-zone[data-drag-over="true"] {
@@ -2209,7 +2206,7 @@ h1 {
 
 .utp-ctrl-accent {
   color: #0A84FF;
-  border-color: color-mix(in srgb, #0A84FF 55%, transparent);
+  border-color: #0A84FF;
 }
 
 .utp-ctrl-play {
@@ -2446,4 +2443,15 @@ svg.lucide {
   h1 {
     font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
   }
+}
+
+/* Hide number input spinners */
+input.no-spinners::-webkit-outer-spin-button,
+input.no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input.no-spinners {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

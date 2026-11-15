@@ -103,11 +103,11 @@ const SessionPage = memo(() => {
   );
 
   const timersMonthRow = (
-    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] gap-4 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] gap-4 items-stretch">
       <motion.div variants={item} className="min-w-0 h-full order-3 xl:order-1">
         <PendingTasks />
       </motion.div>
-      <div className="min-w-0 order-1 xl:order-2 flex flex-col gap-4 h-full">
+      <div className="min-w-0 order-1 xl:order-2 flex flex-col gap-4 h-full overflow-hidden">
         <motion.div variants={item}>
           {timersSection}
         </motion.div>
@@ -115,11 +115,11 @@ const SessionPage = memo(() => {
           <ScratchPad />
         </motion.div>
       </div>
-      <div className="min-w-0 order-2 xl:order-3 flex flex-col gap-4 h-full">
-        <motion.div variants={item} className="flex-1 min-h-0">
+      <div className="min-w-0 order-2 xl:order-3 flex flex-col gap-4 h-full overflow-hidden">
+        <motion.div variants={item} className="flex-1 min-h-0 overflow-hidden pb-px">
           <MonthView />
         </motion.div>
-        <motion.div variants={item} className="dashboard-noise-card w-full min-w-0 flex-1 min-h-0">
+        <motion.div variants={item} className="dashboard-noise-card w-full overflow-hidden p-3 flex-none">
           <NoiseGenerator />
         </motion.div>
       </div>

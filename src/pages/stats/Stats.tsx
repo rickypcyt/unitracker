@@ -112,23 +112,14 @@ function useLapStats(laps: Lap[]) {
   return stats;
 }
 
-const timePeriods: { key: keyof Pick<StatData, 'todayMinutes' | 'yesterdayMinutes' | 'weekMinutes' | 'monthMinutes' | 'yearMinutes' | 'lastYearMinutes'>; label: string }[] = [
-  { key: 'todayMinutes', label: 'Today' },
-  { key: 'yesterdayMinutes', label: 'Yesterday' },
-  { key: 'weekMinutes', label: 'This Week' },
-  { key: 'monthMinutes', label: 'This Month' },
-  { key: 'yearMinutes', label: 'This Year' },
-  { key: 'lastYearMinutes', label: 'Last Year' },
-];
-
-const sessionPeriods: { key: keyof Pick<StatData, 'sessionsToday' | 'sessionsYesterday' | 'sessionsWeek' | 'sessionsMonth' | 'sessionsYear' | 'sessionsLastYear'>; label: string }[] = [
-  { key: 'sessionsToday', label: 'Today' },
-  { key: 'sessionsYesterday', label: 'Yesterday' },
-  { key: 'sessionsWeek', label: 'This Week' },
-  { key: 'sessionsMonth', label: 'This Month' },
-  { key: 'sessionsYear', label: 'This Year' },
-  { key: 'sessionsLastYear', label: 'Last Year' },
-];
+const periods = [
+  { label: 'Today', timeKey: 'todayMinutes', sessionKey: 'sessionsToday' },
+  { label: 'Yesterday', timeKey: 'yesterdayMinutes', sessionKey: 'sessionsYesterday' },
+  { label: 'This Week', timeKey: 'weekMinutes', sessionKey: 'sessionsWeek' },
+  { label: 'This Month', timeKey: 'monthMinutes', sessionKey: 'sessionsMonth' },
+  { label: 'This Year', timeKey: 'yearMinutes', sessionKey: 'sessionsYear' },
+  { label: 'Last Year', timeKey: 'lastYearMinutes', sessionKey: 'sessionsLastYear' },
+] as const;
 
 const Statistics = (): ReactElement => {
   const { laps } = useLaps();
@@ -144,40 +135,23 @@ const Statistics = (): ReactElement => {
         <p className="text-xs text-[var(--text-secondary)]">Overview</p>
       </div>
 
-      {/* Study time */}
-      <div className="mb-2 flex items-center gap-2 text-[var(--text-secondary)]">
-        <Timer size={16} className="text-[var(--accent-primary)]" />
-        <span className="text-xs font-semibold uppercase tracking-wide">Study Time</span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
-        {timePeriods.map(({ key, label }) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {periods.map(({ label, timeKey, sessionKey }) => (
           <div
-            key={key}
-            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
+            key={label}
+            className="flex flex-col gap-1.5 px-3 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
           >
-            <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
-            <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums whitespace-nowrap">
-              {formatMinutesToHMS(statsData[key])}
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
+              <Timer size={13} className="text-[var(--accent-primary)]" />
+            </div>
+            <span className="text-base font-bold text-[var(--text-primary)] tabular-nums leading-none">
+              {formatMinutesToHMS(statsData[timeKey])}
             </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Sessions */}
-      <div className="mb-2 flex items-center gap-2 text-[var(--text-secondary)]">
-        <BookOpen size={16} className="text-[var(--accent-primary)]" />
-        <span className="text-xs font-semibold uppercase tracking-wide">Sessions</span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
-        {sessionPeriods.map(({ key, label }) => (
-          <div
-            key={key}
-            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
-          >
-            <span className="text-xs font-medium text-[var(--text-secondary)]">{label}</span>
-            <span className="text-sm font-bold text-[var(--text-primary)] tabular-nums">
-              {statsData[key]}
-            </span>
+            <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
+              <BookOpen size={12} className="text-[var(--accent-primary)]" />
+              <span className="tabular-nums">{statsData[sessionKey]} sessions</span>
+            </div>
           </div>
         ))}
       </div>
