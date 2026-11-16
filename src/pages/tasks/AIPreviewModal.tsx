@@ -222,6 +222,11 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                                 boundary: 'viewport',
                                 padding: 8
                               }
+                            }, {
+                              name: 'flip',
+                              options: {
+                                fallbackPlacements: []
+                              }
                             }]}
                           />
                           <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />

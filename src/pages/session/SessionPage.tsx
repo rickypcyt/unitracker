@@ -77,7 +77,7 @@ const SessionPage = memo(() => {
   };
 
   const timersSection = (
-    <motion.div variants={item} className="w-full min-w-0 flex flex-col" data-tour="session-timer">
+    <motion.div variants={item} className="w-full min-w-0 h-full flex flex-col" data-tour="session-timer">
       {!isLoggedIn && (
         <button
           onClick={() => loginWithGoogle()}

@@ -66,7 +66,7 @@ const MonthView = () => {
   const days = Array.from({ length: 42 }, (_, index) => addDays(firstDay, index));
 
   return (
-    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className="relative w-full aspect-square xl:aspect-auto xl:h-full flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3">
+    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className="relative w-full aspect-square xl:aspect-auto xl:h-full xl:max-h-[400px] flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3">
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-[var(--accent-primary)]/10"><CalendarDays size={16} className="text-[var(--accent-primary)]" /></div>

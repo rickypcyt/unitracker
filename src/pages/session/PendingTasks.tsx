@@ -23,6 +23,18 @@ export const getPendingTasks = (tasks: Task[]) => tasks
   .sort((a, b) => (getDueDate(a)?.getTime() ?? Infinity) - (getDueDate(b)?.getTime() ?? Infinity)
     || a.title.localeCompare(b.title));
 
+const groupByAssignment = (tasks: Task[]) => {
+  const groups = new Map<string, Task[]>();
+  tasks.forEach(task => {
+    const assignment = task.assignment || 'Unassigned';
+    if (!groups.has(assignment)) {
+      groups.set(assignment, []);
+    }
+    groups.get(assignment)!.push(task);
+  });
+  return Array.from(groups.entries());
+};
+
 const PendingTasks = () => {
   const { isLoggedIn, isAuthLoading, user } = useAuth();
   const { t } = useTranslation();
@@ -38,7 +50,7 @@ const PendingTasks = () => {
   )), [isLoggedIn, tasks, currentWorkspace]);
   const pending = workspacePending.filter(task => !ignored.includes(task.id));
   const hiddenCount = workspacePending.length - pending.length;
-  const [currentDate] = useState(() => new Date());
+  const groupedPending = groupByAssignment(pending);
 
   const ignoreTask = (task: Task) => {
     setIgnoredByUser(previous => ({ ...previous, [userKey]: [...ignored, task.id] }));
@@ -56,17 +68,14 @@ const PendingTasks = () => {
   }, [isLoggedIn, isAuthLoading, fetchTasks, currentWorkspace?.id]);
 
   return (
-    <section aria-labelledby="pending-tasks-title" className="w-full h-full min-h-0 overflow-hidden flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
-      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4">
+    <section aria-labelledby="pending-tasks-title" className="w-full h-full min-h-0 max-h-[700px] overflow-hidden flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4 -ml-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <ListTodo size={18} className="text-[var(--accent-primary)]" />
           </div>
           <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
           <span className="shrink-0 text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
-        </div>
-        <div className="shrink-0 text-xs text-[var(--text-secondary)]">
-          {format(currentDate, 'EEEE, MMM d, yyyy')}
         </div>
       </div>
       {hiddenCount > 0 && (
@@ -90,54 +99,63 @@ const PendingTasks = () => {
           <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
-        <ul className="hide-scrollbar overflow-y-auto flex flex-col space-y-1.5" style={{
-          maxHeight: '35rem',
+        <div className="hide-scrollbar flex-1 min-h-0 overflow-y-auto flex flex-col space-y-3" style={{
           padding: '0 0 0.5rem 0',
         }}>
-          {pending.map(task => {
-            const due = getDueDate(task);
-            const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
-            return (
-              <li key={task.id} className="shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
-                <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
-                  <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
-                </ActionTooltip>
-                <div className="min-w-0 flex-1">
-                  {task.assignment && (
-                    <span className="block mb-1 text-xs font-semibold leading-tight text-[var(--accent-primary)] capitalize truncate">{task.assignment}</span>
-                  )}
-                  <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
-                    <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
-                  </ActionTooltip>
-                  <div className="mt-0.5 flex items-center gap-1">
-                    <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
-                      <CalendarDays size={13} />
-                      {due ? (() => {
-                        if (isToday(due)) return t('common.today');
-                        if (overdue) {
-                          const daysAgo = differenceInDays(new Date(), due);
-                          return t('session.pendingTasks.daysAgo', { count: daysAgo });
-                        }
-                        return format(due, 'EEEE, MMM d, yyyy');
-                      })() : t('common.noDueDate')}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center shrink-0">
-                  <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
-                    <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
-                  </ActionTooltip>
-                  <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
-                    <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
-                  </ActionTooltip>
-                  <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
-                    <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
-                  </ActionTooltip>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+          {groupedPending.map(([assignment, tasks]) => (
+            <div key={assignment} className="flex flex-col">
+              {/* Assignment Header */}
+              <div className="mb-2">
+                <span className="text-xs font-semibold text-[var(--accent-primary)] capitalize truncate">
+                  {assignment}
+                </span>
+              </div>
+              {/* Tasks List */}
+              <ul className="flex flex-col space-y-1.5">
+                {tasks.map(task => {
+                  const due = getDueDate(task);
+                  const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
+                  return (
+                    <li key={task.id} className="shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
+                      <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
+                        <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
+                      </ActionTooltip>
+                      <div className="min-w-0 flex-1">
+                        <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
+                          <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
+                        </ActionTooltip>
+                        <div className="mt-0.5 flex items-center gap-1">
+                          <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
+                            <CalendarDays size={13} />
+                            {due ? (() => {
+                              if (isToday(due)) return t('common.today');
+                              if (overdue) {
+                                const daysAgo = differenceInDays(new Date(), due);
+                                return t('session.pendingTasks.daysAgo', { count: daysAgo });
+                              }
+                              return format(due, 'EEEE, MMM d, yyyy');
+                            })() : t('common.noDueDate')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center shrink-0">
+                        <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
+                          <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                        </ActionTooltip>
+                        <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
+                          <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                        </ActionTooltip>
+                        <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
+                          <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+                        </ActionTooltip>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       )}
 
       {modals}

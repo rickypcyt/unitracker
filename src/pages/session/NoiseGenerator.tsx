@@ -535,7 +535,7 @@ export default function NoiseGenerator() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex-1 flex flex-col gap-3 py-2"
+        className="flex flex-col gap-3 py-2"
       >
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>

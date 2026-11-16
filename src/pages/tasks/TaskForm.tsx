@@ -521,6 +521,11 @@ const TaskForm = ({
           boundary: 'viewport',
           padding: 8
         }
+      }, {
+        name: 'flip',
+        options: {
+          fallbackPlacements: []
+        }
       }]} />}
         <button type="button" onClick={clearDeadline} className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors" tabIndex={-1} title="Clear deadline" style={{
         zIndex: 2

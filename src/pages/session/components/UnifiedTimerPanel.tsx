@@ -293,7 +293,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       variants={container}
       initial="hidden"
       animate="show"
-      className="utp flex w-full flex-col"
+      className="utp flex w-full h-full flex-col"
     >
       {/* Timer tiles */}
       <div className={`relative z-10 grid flex-1 gap-3 px-4 pt-1 grid-cols-1 ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
@@ -308,6 +308,15 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
         </div>
         <span aria-hidden className="utp-ctrl-div" />
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="utp-ctrl utp-ctrl-accent"
+            onClick={() => emit(SYNC_EVENTS.RESET_TIMER)}
+            aria-label={t("session.studyTimer.resetTimer")}
+            title={t("session.studyTimer.resetTimer")}
+          >
+            <RotateCcw size={15} />
+          </button>
           <button
             type="button"
             className="utp-ctrl-play"
