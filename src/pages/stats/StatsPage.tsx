@@ -64,11 +64,11 @@ const StatsPage = memo(() => {
       </Helmet>
       <div className="w-full px-0 overflow-hidden mt-2 pb-24 sm:pb-0">
       <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
-        {/* Stats Banner at the top */}
-        
+        {/* Stats card */}
+        <Statistics />
+
         {/* Charts and other content below */}
         <div className="space-y-3">
-        <Statistics />
           <StatsChartsPanel />
         </div>
       </div>

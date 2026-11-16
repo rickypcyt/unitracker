@@ -13,18 +13,18 @@ import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFormState } from '@/hooks/common/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
-import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
+import { useDatePickerLocale, withMondayStart } from '@/hooks/useDatePickerLocale';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
 
-// Register all supported locales (date-fns v4 correct paths)
-import en from 'date-fns/locale/en-US';
-import es from 'date-fns/locale/es';
-import hi from 'date-fns/locale/hi';
+// Register all supported locales (date-fns v4 named exports)
+import { enUS } from 'date-fns/locale/en-US';
+import { es } from 'date-fns/locale/es';
+import { hi } from 'date-fns/locale/hi';
 
-registerLocale('en', en);
-registerLocale('es', es);
-registerLocale('hi', hi);
+registerLocale('en', withMondayStart(enUS));
+registerLocale('es', withMondayStart(es));
+registerLocale('hi', withMondayStart(hi));
 
 type TaskFormProps = {
   initialAssignment?: string | null;
@@ -515,7 +515,7 @@ const TaskForm = ({
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full cursor-pointer" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full cursor-pointer pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="top-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} locale={datePickerLocale.locale} popperModifiers={[{
+      }} />} popperPlacement="top-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} locale={datePickerLocale.locale} popperModifiers={[{
         name: 'preventOverflow',
         options: {
           boundary: 'viewport',

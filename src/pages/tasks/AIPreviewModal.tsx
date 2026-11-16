@@ -6,17 +6,17 @@ import { useCallback, useEffect, useState } from 'react';
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
 import { registerLocale } from 'react-datepicker';
-import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
+import { useDatePickerLocale, withMondayStart } from '@/hooks/useDatePickerLocale';
 import { getLocalDateString } from '@/utils/dateUtils';
 
-// Register all supported locales (date-fns v4 correct paths)
-import en from 'date-fns/locale/en-US';
-import es from 'date-fns/locale/es';
-import hi from 'date-fns/locale/hi';
+// Register all supported locales (date-fns v4 named exports)
+import { enUS } from 'date-fns/locale/en-US';
+import { es } from 'date-fns/locale/es';
+import { hi } from 'date-fns/locale/hi';
 
-registerLocale('en', en);
-registerLocale('es', es);
-registerLocale('hi', hi);
+registerLocale('en', withMondayStart(enUS));
+registerLocale('es', withMondayStart(es));
+registerLocale('hi', withMondayStart(hi));
 
 type AITask = {
   task?: string;
@@ -213,8 +213,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
-                            startOfWeek={1}
-                            locale={datePickerLocale}
+                            locale={datePickerLocale?.locale}
                             popperPlacement="top-start"
                             popperModifiers={[{
                               name: 'preventOverflow',

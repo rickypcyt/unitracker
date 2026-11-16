@@ -110,11 +110,10 @@ export const AssignmentCard = ({
   return (
     <div
       onDoubleClick={handleColumnDoubleClick}
-      className={`flex flex-col transition-all duration-200 relative cursor-pointer ${isMinimized ? 'h-fit' : ''} ${isMinimized ? 'minimized-column' : ''}`}
+      className={`flex flex-col transition-all duration-200 relative cursor-pointer ${isMinimized ? 'h-fit minimized-column' : 'h-full'}`}
       style={{
         minHeight: isMinimized ? 'auto' : '100px',
         padding: '0rem',
-        height: 'auto',
       }}
       data-column-id={assignment}
       data-testid={`column-${assignment}`}
@@ -123,13 +122,13 @@ export const AssignmentCard = ({
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onTogglePin}
-              className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded-lg transition-colors flex-shrink-0"
+              className="flex items-center justify-center p-1 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors flex-shrink-0"
               title={pinned ? "Unpin column" : "Pin column"}
             >
               {pinned ? (
                 <Pin size={18} className="text-[var(--accent-primary)] transition-all duration-200 fill-[var(--accent-primary)]" />
               ) : (
-                <PinOff size={18} className="text-neutral-400 hover:text-neutral-200 transition-all duration-200" />
+                <PinOff size={18} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200" />
               )}
             </button>
             {isEditing ? (
@@ -165,9 +164,6 @@ export const AssignmentCard = ({
                 {assignment}
               </h3>
             )}
-            <span className="text-sm text-[var(--text-secondary)] flex-shrink-0">
-              {tasks.length} active{completedCount > 0 && ` · ${completedCount} done`}
-            </span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <button
@@ -202,24 +198,16 @@ export const AssignmentCard = ({
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <span className="text-xs text-[var(--text-secondary)] flex-shrink-0">
-            {progressPct}% completed
-          </span>
         </div>
       )}
 
       <div
-        className={`relative space-y-1.5 transition-all duration-200 hide-scrollbar pb-2`}
+        className={`relative flex-1 min-h-0 space-y-1.5 transition-all duration-200 hide-scrollbar pb-2 ${isMinimized ? 'hidden' : ''}`}
         style={{
-          // Fixed capacity of ~4 tasks so every column has the same size;
-          // extra tasks scroll inside.
-          height: '30rem',
-          maxHeight: '30rem',
           overflowY: 'auto',
           padding: '0 0 0.5rem 0',
           position: 'relative',
           zIndex: 1,
-          display: isMinimized ? 'none' : 'block',
         }}
       >
         <div className="flex-1 min-h-0 h-full flex flex-col">

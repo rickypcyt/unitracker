@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, X } from 'lucide-react';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -45,7 +45,7 @@ const NoteView: React.FC<NoteViewProps> = ({
   onDeleteNote,
   onBack
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title);
   const [description, setDescription] = useState(note.description);
@@ -295,8 +295,8 @@ const NoteView: React.FC<NoteViewProps> = ({
   return (
     <div className="h-full flex flex-col relative">
       {/* Note Header — sticky: back left, title center, actions right */}
-      <div className="sticky top-0 z-30 px-3 sm:px-6 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-primary)]">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-4">
+      <div className="sticky top-0 z-30 px-3 sm:px-6 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
           {/* Left: Back + metadata */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             {onBack && (
@@ -310,39 +310,6 @@ const NoteView: React.FC<NoteViewProps> = ({
               </button>
             )}
 
-            {/* Assignment */}
-            <div className="hidden md:flex items-center gap-1.5 min-w-0">
-              <span className="text-[var(--text-secondary)] whitespace-nowrap">{t('notes.assignmentLabel')}</span>
-              <input
-                type="text"
-                value={assignment}
-                onChange={(e) => setAssignment(e.target.value)}
-                className={`min-w-0 w-24 lg:w-36 font-medium bg-transparent border-none focus:outline-none focus:ring-0 ${
-                  !assignment || assignment.trim() === ''
-                    ? 'text-red-400 placeholder-red-400'
-                    : 'text-[var(--accent-primary)]'
-                }`}
-                placeholder={t('notes.addHere')}
-              />
-            </div>
-
-            {/* Date */}
-            <div className="hidden sm:flex items-center gap-1.5">
-              <Calendar size={14} className="text-[var(--text-secondary)]" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="font-medium bg-transparent border-none focus:outline-none focus:ring-0 text-[var(--text-primary)]"
-              />
-            </div>
-
-            {/* Last edited */}
-            {note.last_edited && (
-              <span className="hidden lg:inline whitespace-nowrap text-[var(--text-secondary)] italic">
-                {t('notes.lastEdited', { date: new Date(note.last_edited).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric', year: 'numeric' }) })}
-              </span>
-            )}
           </div>
 
           {/* Center: Title */}
@@ -350,12 +317,19 @@ const NoteView: React.FC<NoteViewProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full min-w-0 truncate text-lg sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
+            className="w-40 min-w-0 truncate text-lg sm:w-72 sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
             placeholder={t('notes.noteTitlePlaceholder')}
           />
 
           {/* Right: Save + Delete */}
           <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+            <button
+              onClick={handleDelete}
+              className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+              title={t('notes.deleteNote')}
+            >
+              <Trash2 size={16} />
+            </button>
             <button
               onClick={handleSave}
               disabled={!hasUnsavedChanges || isSaving}
@@ -364,20 +338,13 @@ const NoteView: React.FC<NoteViewProps> = ({
               <Save size={14} />
               <span>{isSaving ? t('notes.saving') : t('common.save')}</span>
             </button>
-            <button
-              onClick={handleDelete}
-              className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-              title={t('notes.deleteNote')}
-            >
-              <Trash2 size={16} />
-            </button>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="w-full min-h-[calc(100vh-10rem)] sm:min-h-[calc(100vh-12rem)]">
+      <div className="flex-1 overflow-y-auto pb-8">
+        <div className="notes-editor-paper mx-auto w-full max-w-3xl min-h-[calc(100vh-10rem)] px-4 sm:min-h-[calc(100vh-12rem)] sm:px-6">
           <Suspense fallback={<EditorLoader />}>
             <MarkdownWysiwyg
               ref={editorRef}
@@ -389,8 +356,6 @@ const NoteView: React.FC<NoteViewProps> = ({
             />
           </Suspense>
         </div>
-        <div className="mx-4 sm:mx-6 border-t border-[var(--border-primary)]/60" />
-        <div className="h-20" />
       </div>
 
       {/* Mobile Notes Selector */}

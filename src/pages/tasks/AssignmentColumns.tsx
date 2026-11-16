@@ -97,7 +97,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
         {fixedColumns.map((column) => (
           <div
             key={column.id}
-            className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md"
+            className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md lg:aspect-square"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard
@@ -128,7 +128,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
           <div
             key={`ghost-${i}`}
             aria-hidden
-            className="hidden lg:block w-full rounded-xl border-2 border-transparent p-3 min-h-[36rem] select-none pointer-events-none"
+            className="hidden lg:block w-full rounded-xl border-2 border-transparent p-3 lg:aspect-square select-none pointer-events-none"
           />
         ))}
       </div>

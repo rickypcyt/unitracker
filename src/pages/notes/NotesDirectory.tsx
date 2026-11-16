@@ -167,9 +167,9 @@ const NotesDirectory = ({
     return (
       <div className="mx-auto w-full max-w-6xl p-4 sm:p-6" aria-label={t('notes.loadingNotes')}>
         <div className="mb-6 h-11 w-full animate-pulse rounded-xl bg-[var(--bg-secondary)]" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-24 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <div key={index} className="aspect-square animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
           ))}
         </div>
       </div>
@@ -178,33 +178,27 @@ const NotesDirectory = ({
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-primary)]">{t('notes.title')}</p>
-          <div className="mt-1 flex items-center gap-1">
-            {selectedAssignment && (
-              <button
-                onClick={() => setSelectedAssignment(null)}
-                className="-ml-1.5 rounded-lg p-1 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
-                aria-label={t('notes.backToAssignments')}
-              >
-                <ChevronLeft size={22} />
-              </button>
-            )}
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] truncate">
-              {selectedAssignment || t('notes.yourLibrary')}
-            </h1>
-          </div>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            {selectedAssignment ? t('notes.notesInAssignment', { count: activeAssignmentNotes.length }) : t('notes.chooseAssignment')}
-          </p>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {selectedAssignment && (
+            <button
+              onClick={() => setSelectedAssignment(null)}
+              className="flex-shrink-0 rounded-lg p-1 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
+              aria-label={t('notes.backToAssignments')}
+            >
+              <ChevronLeft size={22} />
+            </button>
+          )}
+          <h1 className="mb-0 truncate text-xl font-bold leading-tight text-[var(--text-primary)] sm:text-2xl">
+            {selectedAssignment || t('notes.yourLibrary')}
+          </h1>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
         >
           <Plus size={17} />
-          {t('notes.newNote')}
+          <span className="hidden sm:inline">{t('notes.newNote')}</span>
         </button>
       </div>
 
@@ -253,17 +247,17 @@ const NotesDirectory = ({
                   <h2 className="text-base font-semibold text-[var(--text-primary)]">{getMonthLabel(monthKey, i18n.language, t('notes.undated'))}</h2>
                   <span className="text-xs text-[var(--text-secondary)]">{monthNotes.length}</span>
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {monthNotes.map(note => {
               const noteKey = note.id || `${note.title}-${note.date}`;
               return (
                 <article
                   key={noteKey}
                   onClick={() => onNoteSelect?.(note.id || noteKey)}
-                  className={`group cursor-pointer rounded-xl border-2 bg-[var(--bg-primary)] p-3 transition-colors hover:border-[var(--accent-primary)]/60 ${selectedNoteId === note.id ? 'border-[var(--accent-primary)]' : 'border-[var(--border-primary)]'}`}
+                  className={`group flex cursor-pointer flex-col rounded-xl border-2 bg-[var(--bg-primary)] p-3 transition-colors hover:border-[var(--accent-primary)]/60 sm:aspect-square ${selectedNoteId === note.id ? 'border-[var(--accent-primary)]' : 'border-[var(--border-primary)]'}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h2 className="line-clamp-2 break-words text-sm font-semibold text-[var(--text-primary)]">{note.title}</h2>
+                    <h2 className="line-clamp-2 break-words text-base font-semibold leading-snug text-[var(--text-primary)]">{note.title}</h2>
                     {onDelete && (
                       <button
                         onClick={event => { event.stopPropagation(); onDelete(note); }}
@@ -274,7 +268,7 @@ const NotesDirectory = ({
                       </button>
                     )}
                   </div>
-                  <div className="mt-2 space-y-0.5 text-xs text-[var(--text-secondary)]">
+                  <div className="mt-auto space-y-1 pt-3 text-xs font-medium text-[var(--text-secondary)]">
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="flex-shrink-0" />
                       <span className="truncate">{t('notes.created', { date: getShortDateLabel(note, i18n.language, t('notes.noDate')) })}</span>
@@ -295,22 +289,20 @@ const NotesDirectory = ({
           </div>
         </section>
       ) : (
-        <section className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:gap-3">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {assignmentGroups.map(([assignment, assignmentNotes]) => (
             <button
               key={assignment}
               onClick={() => setSelectedAssignment(assignment)}
-              className="group flex items-center gap-3 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-3 text-left transition-colors hover:border-[var(--accent-primary)]/60"
+              className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-center transition-colors hover:border-[var(--accent-primary)]/60"
             >
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                <FolderOpen size={18} />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                <FolderOpen size={20} />
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate font-semibold capitalize text-[var(--text-primary)]">{assignment}</h2>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {t('notes.noteCount', { count: assignmentNotes.length })}
-                </p>
-              </div>
+              <h2 className="w-full truncate font-semibold capitalize text-[var(--text-primary)]">{assignment}</h2>
+              <p className="text-xs text-[var(--text-secondary)]">
+                {t('notes.noteCount', { count: assignmentNotes.length })}
+              </p>
             </button>
           ))}
         </section>

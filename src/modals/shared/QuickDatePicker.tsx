@@ -6,17 +6,17 @@ import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUt
 
 import DatePicker from 'react-datepicker';
 import { registerLocale } from 'react-datepicker';
-import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
+import { useDatePickerLocale, withMondayStart } from '@/hooks/useDatePickerLocale';
 import { parseDateFromString } from '@/utils/dateUtils';
 
-// Register all supported locales (date-fns v4 correct paths)
-import en from 'date-fns/locale/en-US';
-import es from 'date-fns/locale/es';
-import hi from 'date-fns/locale/hi';
+// Register all supported locales (date-fns v4 named exports)
+import { enUS } from 'date-fns/locale/en-US';
+import { es } from 'date-fns/locale/es';
+import { hi } from 'date-fns/locale/hi';
 
-registerLocale('en', en);
-registerLocale('es', es);
-registerLocale('hi', hi);
+registerLocale('en', withMondayStart(enUS));
+registerLocale('es', withMondayStart(es));
+registerLocale('hi', withMondayStart(hi));
 
 interface QuickDatePickerProps {
   task: any;
@@ -163,7 +163,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
           dayClassName={(date: Date) =>
             date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
           }
-          startOfWeek={1}
+          locale={datePickerLocale?.locale}
         />
       </div>
 

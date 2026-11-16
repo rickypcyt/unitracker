@@ -1,4 +1,3 @@
-import { BookOpen, Timer } from 'lucide-react';
 import { ReactElement } from 'react';
 import { useLaps } from '@/store/appStore';
 
@@ -29,7 +28,7 @@ function formatMinutesToHMS(minutes: number): string {
   return formatHMS(minutes * 60);
 }
 
-function useLapStats(laps: Lap[]) {
+export function useLapStats(laps: Lap[]) {
   // Obtener fechas en la zona horaria local
   const now = new Date();
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -112,7 +111,7 @@ function useLapStats(laps: Lap[]) {
   return stats;
 }
 
-const periods = [
+export const periods = [
   { label: 'Today', timeKey: 'todayMinutes', sessionKey: 'sessionsToday' },
   { label: 'Yesterday', timeKey: 'yesterdayMinutes', sessionKey: 'sessionsYesterday' },
   { label: 'This Week', timeKey: 'weekMinutes', sessionKey: 'sessionsWeek' },
@@ -120,6 +119,25 @@ const periods = [
   { label: 'This Year', timeKey: 'yearMinutes', sessionKey: 'sessionsYear' },
   { label: 'Last Year', timeKey: 'lastYearMinutes', sessionKey: 'sessionsLastYear' },
 ] as const;
+
+export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+    {periods.map(({ label, timeKey, sessionKey }) => (
+      <div
+        key={label}
+        className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] px-2 py-4 text-center"
+      >
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
+        <span className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] tabular-nums leading-none">
+          {formatMinutesToHMS(statsData[timeKey])}
+        </span>
+        <span className="text-xs text-[var(--text-secondary)] tabular-nums">
+          {statsData[sessionKey]} sessions
+        </span>
+      </div>
+    ))}
+  </div>
+);
 
 const Statistics = (): ReactElement => {
   const { laps } = useLaps();
@@ -129,34 +147,7 @@ const Statistics = (): ReactElement => {
   const statsData = isDemo ? demoStats : lapStats;
 
   return (
-    <div className="stats-banner bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] py-4 px-5 rounded-2xl shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-base font-bold text-[var(--text-primary)] sm:text-lg">Study Statistics</h2>
-        <p className="text-xs text-[var(--text-secondary)]">Overview</p>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {periods.map(({ label, timeKey, sessionKey }) => (
-          <div
-            key={label}
-            className="flex flex-col gap-1.5 px-3 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-primary)]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
-              <Timer size={13} className="text-[var(--accent-primary)]" />
-            </div>
-            <span className="text-base font-bold text-[var(--text-primary)] tabular-nums leading-none">
-              {formatMinutesToHMS(statsData[timeKey])}
-            </span>
-            <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
-              <BookOpen size={12} className="text-[var(--accent-primary)]" />
-              <span className="tabular-nums">{statsData[sessionKey]} sessions</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-    </div>
+    <StatisticsGrid statsData={statsData} />
   );
 };
 

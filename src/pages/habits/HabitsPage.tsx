@@ -312,8 +312,8 @@ const HabitsPage = memo(() => {
         />
       </Helmet>
       <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 pb-24 sm:pb-8 overflow-hidden">
-      {/* Week navigation + New Habit */}
-      <div className="flex items-center justify-between gap-3 mt-4 mb-4">
+      {/* Week navigation + stats + New Habit */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mt-4 mb-4">
         <div className="flex items-center gap-0.5 rounded-full border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] px-1.5 py-1 shadow-sm">
           <button
             onClick={() => setWeekOffset(o => o - 1)}
@@ -342,6 +342,26 @@ const HabitsPage = memo(() => {
           )}
         </div>
 
+        {/* Inline stats */}
+        <div className="flex items-center gap-x-4 sm:gap-x-6 order-3 sm:order-none w-full sm:w-auto justify-center sm:justify-start">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.topStreak}</span>
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.currentStreak')}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.bestStreak}</span>
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.bestStreak')}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.weekCompletionRate}%</span>
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.thisWeek')}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.totalCompletions}</span>
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.totalCompletions')}</span>
+          </div>
+        </div>
+
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-full hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-semibold"
@@ -349,34 +369,6 @@ const HabitsPage = memo(() => {
           <Plus size={16} />
           <span className="hidden sm:inline">{t('habits.newHabit')}</span>
         </button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-4 mb-4">
-        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
-          <div className="min-w-0">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.topStreak}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.currentStreak')}</div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
-          <div className="min-w-0">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.bestStreak}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.bestStreak')}</div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
-          <div className="min-w-0">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.weekCompletionRate}%</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.thisWeek')}</div>
-          </div>
-        </div>
-        <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 lg:p-4 flex items-center gap-2 lg:gap-3">
-          <div className="min-w-0">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--text-primary)] leading-tight">{stats.totalCompletions}</div>
-            <div className="text-xs lg:text-sm text-[var(--text-secondary)] truncate">{t('habits.totalCompletions')}</div>
-          </div>
-        </div>
       </div>
 
       {/* Weekly content */}

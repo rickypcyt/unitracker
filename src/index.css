@@ -1426,7 +1426,7 @@ h1 {
    ========================= */
 .dashboard-stat-card {
   background-color: var(--bg-primary);
-  border: 1px solid var(--border-primary);
+  border: 2px solid var(--border-primary);
   border-radius: 0.75rem;
   padding: 0.875rem 1rem;
   display: flex;
@@ -2454,4 +2454,12 @@ input.no-spinners::-webkit-inner-spin-button {
 input.no-spinners {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Notes editor — vertical margin lines on both sides */
+.notes-editor-paper {
+  background-image:
+    linear-gradient(to right, var(--border-primary) 0, var(--border-primary) 1px, transparent 1px),
+    linear-gradient(to left, var(--border-primary) 0, var(--border-primary) 1px, transparent 1px);
+  background-repeat: no-repeat;
 }
