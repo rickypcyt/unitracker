@@ -296,7 +296,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       className="utp flex w-full flex-col"
     >
       {/* Timer tiles */}
-      <div className={`relative z-10 grid flex-1 gap-3 px-4 pt-4 grid-cols-1 ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
+      <div className={`relative z-10 grid flex-1 gap-3 px-4 pt-1 grid-cols-1 ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
         {visibleTimers.map((id) => renderTile(id))}
       </div>
 

@@ -91,8 +91,7 @@ const PendingTasks = () => {
         </div>
       ) : (
         <ul className="hide-scrollbar overflow-y-auto flex flex-col space-y-1.5" style={{
-          height: '30rem',
-          maxHeight: '30rem',
+          maxHeight: '35rem',
           padding: '0 0 0.5rem 0',
         }}>
           {pending.map(task => {

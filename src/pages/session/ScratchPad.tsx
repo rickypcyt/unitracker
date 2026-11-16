@@ -164,7 +164,7 @@ const ScratchPad = memo(() => {
   };
 
   return (
-    <div className="w-full h-full min-h-[220px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col">
+    <div className="w-full h-full min-h-[220px] max-h-[400px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col overflow-hidden">
       <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_1fr] items-center gap-x-3 pb-3">
         <div className="flex items-center gap-2 justify-self-start">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">

@@ -92,7 +92,7 @@ const SessionPage = memo(() => {
   );
 
   const tasksMonthRow = (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-start">
       <motion.div variants={item} className="min-w-0">
         <PendingTasks />
       </motion.div>
@@ -116,11 +116,11 @@ const SessionPage = memo(() => {
         </motion.div>
       </div>
       <div className="min-w-0 order-2 xl:order-3 flex flex-col gap-4 h-full overflow-hidden">
-        <motion.div variants={item} className="flex-1 min-h-0 overflow-hidden pb-px">
-          <MonthView />
-        </motion.div>
         <motion.div variants={item} className="dashboard-noise-card w-full overflow-hidden p-3 flex-none">
           <NoiseGenerator />
+        </motion.div>
+        <motion.div variants={item} className="flex-1 min-h-0 overflow-hidden pb-px">
+          <MonthView />
         </motion.div>
       </div>
     </div>
@@ -144,7 +144,7 @@ const SessionPage = memo(() => {
   );
 
   const compactRow = (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start">
       <motion.div variants={item} className="min-w-0">
         <PendingTasks />
       </motion.div>
