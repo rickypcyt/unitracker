@@ -503,7 +503,13 @@ const TaskForm = ({
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full cursor-pointer" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full cursor-pointer pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} />}
+      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} popperModifiers={[{
+        name: 'preventOverflow',
+        options: {
+          boundary: 'viewport',
+          padding: 8
+        }
+      }]} />}
         <button type="button" onClick={clearDeadline} className="absolute right-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-red-500 cursor-pointer transition-colors" tabIndex={-1} title="Clear deadline" style={{
         zIndex: 2
       }}>
