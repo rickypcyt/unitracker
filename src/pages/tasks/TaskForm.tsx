@@ -8,18 +8,23 @@ import { useEffect, useRef, useState } from 'react';
 import AutocompleteInput from '@/modals/shared/AutocompleteInput';
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
-import { registerLocale, setDefaultLocale } from 'react-datepicker';
-import es from 'date-fns/locale/es';
+import { registerLocale } from 'react-datepicker';
 import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFormState } from '@/hooks/common/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
+import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
 
-// Register Spanish locale with Monday as first day of week
+// Register all supported locales
+import en from 'date-fns/locale/en';
+import es from 'date-fns/locale/es';
+import hi from 'date-fns/locale/hi';
+
+registerLocale('en', en);
 registerLocale('es', es);
-setDefaultLocale('es');
+registerLocale('hi', hi);
 
 type TaskFormProps = {
   initialAssignment?: string | null;
@@ -69,6 +74,7 @@ const TaskForm = ({
   const datePickerRef = useRef<any>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const [isMobileViewport, setIsMobileViewport] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const datePickerLocale = useDatePickerLocale();
 
   useEffect(() => {
     const check = () => setIsMobileViewport(window.innerWidth < 640);
@@ -509,7 +515,7 @@ const TaskForm = ({
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full cursor-pointer" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full cursor-pointer pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="top-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} popperModifiers={[{
+      }} />} popperPlacement="top-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} locale={datePickerLocale.locale} popperModifiers={[{
         name: 'preventOverflow',
         options: {
           boundary: 'viewport',

@@ -5,13 +5,18 @@ import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'r
 import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUtils';
 
 import DatePicker from 'react-datepicker';
-import { registerLocale, setDefaultLocale } from 'react-datepicker';
-import es from 'date-fns/locale/es';
+import { registerLocale } from 'react-datepicker';
+import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
 import { parseDateFromString } from '@/utils/dateUtils';
 
-// Register Spanish locale with Monday as first day of week
+// Register all supported locales
+import en from 'date-fns/locale/en';
+import es from 'date-fns/locale/es';
+import hi from 'date-fns/locale/hi';
+
+registerLocale('en', en);
 registerLocale('es', es);
-setDefaultLocale('es');
+registerLocale('hi', hi);
 
 interface QuickDatePickerProps {
   task: any;
@@ -25,6 +30,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   onSave
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const datePickerLocale = useDatePickerLocale();
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
     if (!task.deadline) return null;
     const parsed = parseDateFromString(task.deadline);

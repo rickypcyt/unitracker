@@ -5,13 +5,18 @@ import { useCallback, useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
-import { registerLocale, setDefaultLocale } from 'react-datepicker';
-import es from 'date-fns/locale/es';
+import { registerLocale } from 'react-datepicker';
+import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
 import { getLocalDateString } from '@/utils/dateUtils';
 
-// Register Spanish locale with Monday as first day of week
+// Register all supported locales
+import en from 'date-fns/locale/en';
+import es from 'date-fns/locale/es';
+import hi from 'date-fns/locale/hi';
+
+registerLocale('en', en);
 registerLocale('es', es);
-setDefaultLocale('es');
+registerLocale('hi', hi);
 
 type AITask = {
   task?: string;
@@ -38,6 +43,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
   const [editSubject, setEditSubject] = useState('');
   const [editDate, setEditDate] = useState<Date | null>(null);
   const [editDifficulty, setEditDifficulty] = useState<string>('medium');
+  const datePickerLocale = useDatePickerLocale();
 
   // Only update items if tasks prop changes and is different from current items
   useEffect(() => {
@@ -208,6 +214,15 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
                             startOfWeek={1}
+                            locale={datePickerLocale}
+                            popperPlacement="top-start"
+                            popperModifiers={[{
+                              name: 'preventOverflow',
+                              options: {
+                                boundary: 'viewport',
+                                padding: 8
+                              }
+                            }]}
                           />
                           <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
                         </div>
