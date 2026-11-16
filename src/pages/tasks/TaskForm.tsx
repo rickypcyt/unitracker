@@ -17,10 +17,10 @@ import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
 
-// Register all supported locales (date-fns v4 individual imports)
-import en from 'date-fns/locale/en';
-import es from 'date-fns/locale/es';
-import hi from 'date-fns/locale/hi';
+// Register all supported locales (date-fns v4 with .js extension)
+import en from 'date-fns/locale/en.js';
+import es from 'date-fns/locale/es.js';
+import hi from 'date-fns/locale/hi.js';
 
 registerLocale('en', en);
 registerLocale('es', es);
