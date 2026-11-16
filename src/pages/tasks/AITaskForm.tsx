@@ -33,6 +33,20 @@ const AITaskForm = ({
 
   // Simple cache to avoid repeated requests
   const aiCache = useRef<Map<string, any>>(new Map());
+  // Normalize whatever the model returns (object, array, or {tasks:[...]})
+  // into the raw AITask shape the preview modal expects
+  function normalizeAITasks(data: any): any[] {
+    const list = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [data];
+    return list
+      .filter((t: any) => t && typeof t === 'object')
+      .map((t: any) => ({
+        task: t.task ?? t.title ?? '',
+        description: t.description ?? '',
+        date: t.date ?? t.deadline ?? null,
+        subject: t.subject ?? t.assignment ?? '',
+        difficulty: t.difficulty ?? 'medium'
+      }));
+  }
   function mapAITaskToFormData(task: any) {
     const normalizedDate = task.date && task.date !== 'null' ? normalizeNaturalOrYMDDate(task.date) : null;
     return {
@@ -83,11 +97,10 @@ const AITaskForm = ({
         setAiError(result.error || 'Failed to generate task');
         return;
       }
-      const aiTask = result.data;
-      const mappedData = mapAITaskToFormData(aiTask);
-      // Show the AI preview modal with the generated tasks
-      if (mappedData) {
-        setAiParsedTasks([mappedData]);
+      const rawTasks = normalizeAITasks(result.data);
+      // Show the AI preview modal with the generated tasks (raw AI shape)
+      if (rawTasks.length > 0) {
+        setAiParsedTasks(rawTasks);
         setShowAIPreview(true);
       } else {
         setAiError('No valid tasks were generated');
