@@ -9,10 +9,8 @@ import { registerLocale } from 'react-datepicker';
 import { useDatePickerLocale } from '@/hooks/useDatePickerLocale';
 import { getLocalDateString } from '@/utils/dateUtils';
 
-// Register all supported locales
-import en from 'date-fns/locale/en';
-import es from 'date-fns/locale/es';
-import hi from 'date-fns/locale/hi';
+// Register all supported locales (date-fns v4 syntax)
+import { en, es, hi } from 'date-fns/locale';
 
 registerLocale('en', en);
 registerLocale('es', es);

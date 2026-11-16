@@ -2,8 +2,8 @@ import { supabase } from '@/utils/supabaseClient';
 import { useAppStore } from '@/store/appStore';
 import { TaskService } from '@/services/TaskService';
 
-// Cache duration in milliseconds (1 minute — tasks refresh periodically, not on every page visit)
-const CACHE_DURATION = 60 * 1000;
+// Cache duration in milliseconds (30 seconds — faster refresh)
+const CACHE_DURATION = 30 * 1000;
 
 // Per-workspace task cache so navigating back to a page doesn't refetch
 const tasksCache = new Map<string, { tasks: any[]; lastFetch: number }>();

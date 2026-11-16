@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -11,6 +11,7 @@ export const useWorkspaceLoader = () => {
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
   const { isDemo } = useDemoMode();
+  const hasFetchedTasksRef = useRef(false);
 
   // Load workspaces from Supabase on mount
   useEffect(() => {
@@ -49,9 +50,12 @@ export const useWorkspaceLoader = () => {
     fetchWorkspaces();
   }, [setWorkspaces, setCurrentWorkspace, isLoggedIn]);
 
-  // Fetch tasks for all workspaces to get accurate counts
+  // Fetch tasks for all workspaces only once on mount (not on every workspace change)
   useEffect(() => {
     const fetchAllTasks = async () => {
+      if (hasFetchedTasksRef.current) return;
+      hasFetchedTasksRef.current = true;
+
       try {
         await fetchTasks(undefined, true);
       } catch (error) {
@@ -59,7 +63,7 @@ export const useWorkspaceLoader = () => {
       }
     };
 
-    if (workspaces.length > 0) {
+    if (workspaces.length > 0 && !hasFetchedTasksRef.current) {
       void fetchAllTasks();
     }
   }, [workspaces.length, fetchTasks]);
@@ -71,6 +75,7 @@ export const useWorkspaceLoader = () => {
       setCurrentWorkspace(null);
       localStorage.removeItem('activeWorkspaceId');
       localStorage.removeItem('workspacesHydrated');
+      hasFetchedTasksRef.current = false;
     }
   }, [isLoggedIn, isDemo, setWorkspaces, setCurrentWorkspace]);
 };

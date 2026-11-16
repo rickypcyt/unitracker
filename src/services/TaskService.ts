@@ -11,17 +11,22 @@ export class TaskService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Usuario no autenticado');
 
-    const { data: sharedRecords, error: sharedWorkspaceError } = await supabase
-      .from('shared_workspaces')
-      .select('workspace_id, shared_by, received_by, user_id')
-      .or(`shared_by.eq.${user.id},received_by.eq.${user.id},user_id.eq.${user.id}`);
+    // Fetch shared workspaces and owned tasks in parallel
+    const [sharedRecords, ownedQueryResult] = await Promise.all([
+      supabase
+        .from('shared_workspaces')
+        .select('workspace_id, shared_by, received_by, user_id')
+        .or(`shared_by.eq.${user.id},received_by.eq.${user.id},user_id.eq.${user.id}`),
+      supabase.from('tasks').select(TASK_FIELDS).eq('user_id', user.id).order('assignment')
+    ]);
 
+    const sharedWorkspaceError = sharedRecords.error;
     if (sharedWorkspaceError) {
       console.error('fetchTasks: error fetching shared workspaces', sharedWorkspaceError);
     }
 
     const sharedWorkspaceIds = Array.from(new Set(
-      (sharedRecords ?? [])
+      (sharedRecords.data ?? [])
         .filter(record => {
           const wsId = record.workspace_id;
           if (!wsId) return false;
@@ -32,26 +37,26 @@ export class TaskService {
         .map(record => record.workspace_id)
     ));
 
-    const isAllWorkspace = workspaceId === ALL_WORKSPACE_ID;
-    const buildOwnedQuery = (fields: string) => {
-      let query = supabase.from('tasks').select(fields).eq('user_id', user.id);
-      if (workspaceId && !isAllWorkspace) {
-        query = query.eq('workspace_id', workspaceId);
-      }
-      return query.order('assignment');
-    };
-
-    const ownedQueryResult = await buildOwnedQuery(TASK_FIELDS);
     let ownedTasksData = ownedQueryResult.data as Task[] | null;
     let ownedTasksError = ownedQueryResult.error;
     if (ownedTasksError) {
       console.warn('fetchTasks: retrying with legacy task fields', ownedTasksError.message);
-      const fallbackResult = await buildOwnedQuery(TASK_FIELDS_FALLBACK);
+      const fallbackResult = await supabase
+        .from('tasks')
+        .select(TASK_FIELDS_FALLBACK)
+        .eq('user_id', user.id)
+        .order('assignment');
       ownedTasksData = fallbackResult.data as Task[] | null;
       ownedTasksError = fallbackResult.error;
     }
     if (ownedTasksError) throw ownedTasksError;
     const ownedTasks: Task[] = ownedTasksData ?? [];
+
+    // Filter owned tasks by workspace if specified
+    const isAllWorkspace = workspaceId === ALL_WORKSPACE_ID;
+    const filteredOwnedTasks = workspaceId && !isAllWorkspace
+      ? ownedTasks.filter(task => task.workspace_id === workspaceId)
+      : ownedTasks;
 
     const relevantSharedIds = workspaceId && !isAllWorkspace
       ? sharedWorkspaceIds.filter(id => id === workspaceId)
@@ -84,7 +89,7 @@ export class TaskService {
     }
 
     const taskMap = new Map<string, Task>();
-    [...ownedTasks, ...sharedTasks].forEach(task => {
+    [...filteredOwnedTasks, ...sharedTasks].forEach(task => {
       if (task?.id) taskMap.set(String(task.id), task as Task);
     });
 
