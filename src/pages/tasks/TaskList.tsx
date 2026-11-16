@@ -9,7 +9,6 @@ interface TaskListProps {
   onTaskToggle: (task: Task) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: Task) => void;
-  onViewTask?: ((task: Task) => void) | undefined;
   onTaskContextMenu: (e: React.MouseEvent, task: Task) => void;
 }
 
@@ -19,7 +18,6 @@ export const TaskList: React.FC<TaskListProps> = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
-  onViewTask,
   onTaskContextMenu,
 }) => {
   // Remove duplicate tasks by ID
@@ -42,7 +40,6 @@ export const TaskList: React.FC<TaskListProps> = ({
           onToggleCompletion={onTaskToggle}
           onTaskDelete={onTaskDelete}
           onEditTask={onEditTask}
-          {...(onViewTask && { onViewTask })}
           onTaskContextMenu={onTaskContextMenu}
         />
       ))}

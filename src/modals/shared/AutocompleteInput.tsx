@@ -11,6 +11,7 @@ interface AutocompleteInputProps {
   error?: string;
   required?: boolean;
   className?: string;
+  inputClassName?: string;
 }
 
 const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -22,12 +23,13 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   error,
   required = false,
   className = '',
+  inputClassName = '',
   ...props
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filtered, setFiltered] = useState<string[]>([]); // Explicitly type as string[]
   const [activeIndex, setActiveIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -41,8 +43,18 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     if (!showSuggestions) setActiveIndex(-1);
   }, [showSuggestions]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const resizeToContent = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+
+  useEffect(() => {
+    if (inputRef.current) resizeToContent(inputRef.current);
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
+    resizeToContent(e.target);
     onChange(val);
     if (val) {
       const filtered = suggestions.filter(s =>
@@ -61,7 +73,12 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
     setShowSuggestions(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (!showSuggestions || filtered.length === 0)) {
+      // Prevent newline insertion; let the form's onKeyDown handle submit
+      e.preventDefault();
+      return;
+    }
     if (!showSuggestions || filtered.length === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -107,10 +124,10 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
 
   return (
     <div className={`relative ${className}`}>
-      <input
+      <textarea
         id={id}
         ref={inputRef}
-        type="text"
+        rows={1}
         value={value}
         onChange={handleInputChange}
         onFocus={() => value && setShowSuggestions(true)}
@@ -119,7 +136,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         placeholder={placeholder}
         className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
           error ? 'border-red-500' : 'border-[var(--border-primary)]'
-        } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)]`}
+        } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all resize-none overflow-hidden leading-6 ${inputClassName}`}
         autoComplete="off"
         {...props}
       />

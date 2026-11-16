@@ -87,7 +87,6 @@ interface TaskItemProps {
     onToggleCompletion: (id: string) => void;
     onDelete?: (id: string) => void;
     onEditTask: (task: Task) => void;
-    onViewTask?: ((task: Task) => void) | undefined; // New: for viewing task details
     onContextMenu: (e: React.MouseEvent, task: Task) => void;
     showAssignment?: boolean;
     assignmentLeftOfDate?: boolean;
@@ -99,7 +98,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     onToggleCompletion,
     onDelete,
     onEditTask,
-    onViewTask,
     onContextMenu,
     showAssignment = false
 }) => {
@@ -134,12 +132,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
     const handleDoubleClick = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent event from bubbling to parent
-        // If onViewTask is provided, use it; otherwise fallback to onEditTask for backward compatibility
-        if (onViewTask) {
-            onViewTask(task);
-        } else {
-            onEditTask(task);
-        }
+        onEditTask(task);
     };
 
     // Helper para extraer YYYY-MM-DD de un date string sin conversión de zona horaria
@@ -201,25 +194,25 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
             {/* Contenido principal */}
             <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-1.5">
-                {/* Assignment above title when showAssignment is true (calendar view) */}
-                {showAssignment && task.assignment && (
-                    <div className="text-[var(--accent-primary)] text-sm font-semibold uppercase tracking-wide truncate">
-                        {task.assignment}
-                    </div>
-                )}
-
-                {/* Row 1: Title + actions */}
+                {/* Row 1: Assignment + Title + actions */}
                 <div className="w-full flex items-center justify-between gap-2">
-                    <span
-                        className={`min-w-0 flex-1 font-semibold text-base leading-snug transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
-                            task.completed
-                                ? "line-through text-[var(--text-secondary)]"
-                                : "text-[var(--text-primary)]"
-                        }`}
-                        title={task.title}
-                    >
-                        {task.title}
-                    </span>
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                        {showAssignment && task.assignment && (
+                            <span className="flex-shrink-0 truncate text-[var(--accent-primary)] text-sm font-semibold uppercase tracking-wide max-w-[40%]">
+                                {task.assignment}
+                            </span>
+                        )}
+                        <span
+                            className={`min-w-0 flex-1 font-semibold text-base leading-snug transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                                task.completed
+                                    ? "line-through text-[var(--text-secondary)]"
+                                    : "text-[var(--text-primary)]"
+                            }`}
+                            title={task.title}
+                        >
+                            {task.title}
+                        </span>
+                    </div>
                     <div className="flex items-center gap-0.5 flex-shrink-0 opacity-40 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                         <button
                             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}

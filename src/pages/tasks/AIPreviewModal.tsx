@@ -152,7 +152,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                     <input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm sm:text-base"
+                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm sm:text-base"
                       placeholder="Task title"
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -190,7 +190,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <input
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
                           placeholder="Description"
                         />
                       </div>
@@ -199,7 +199,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <input
                           value={editSubject}
                           onChange={(e) => setEditSubject(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
                           placeholder="Assignment/Subject"
                         />
                       </div>
@@ -209,7 +209,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                           <DatePicker
                             selected={editDate}
                             onChange={(date) => setEditDate(date)}
-                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] pr-8 text-sm"
+                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] pr-8 text-sm"
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
@@ -236,7 +236,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         <select
                           value={editDifficulty}
                           onChange={(e) => setEditDifficulty(e.target.value)}
-                          className="px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-sm"
+                          className="px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
                         >
                           <option value="easy">easy</option>
                           <option value="medium">medium</option>

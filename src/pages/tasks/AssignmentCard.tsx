@@ -16,7 +16,6 @@ interface AssignmentCardProps {
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
-  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
   onSortClick: (assignmentId: string, position: { x: number; y: number }) => void;
   columnMenu: any;
@@ -36,7 +35,6 @@ export const AssignmentCard = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
-  onViewTask,
   onTaskContextMenu,
   onSortClick,
   columnMenu,
@@ -230,7 +228,6 @@ export const AssignmentCard = ({
                 onToggleCompletion={onTaskToggle}
                 onTaskDelete={onTaskDelete}
                 onEditTask={onEditTask}
-                onViewTask={onViewTask || (() => {})}
                 onTaskContextMenu={onTaskContextMenu}
               />
             ))

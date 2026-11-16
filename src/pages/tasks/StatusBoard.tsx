@@ -11,7 +11,6 @@ interface StatusBoardProps {
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
-  onViewTask?: (task: any) => void;
   onTaskContextMenu: (e: React.MouseEvent, task: any) => void;
 }
 
@@ -30,7 +29,6 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
   onTaskToggle,
   onTaskDelete,
   onEditTask,
-  onViewTask,
   onTaskContextMenu,
 }) => {
   const columns = useMemo<StatusColumn[]>(() => {
@@ -120,7 +118,6 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
                       onToggleCompletion={onTaskToggle}
                       onTaskDelete={onTaskDelete}
                       onEditTask={onEditTask}
-                      {...(onViewTask && { onViewTask })}
                       onTaskContextMenu={onTaskContextMenu}
                     />
                   ))

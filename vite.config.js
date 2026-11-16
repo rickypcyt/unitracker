@@ -6,8 +6,59 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ command, mode }) => {
-  // Load env vars from .env files for server-side use (proxy middleware)
-  loadEnv(mode, process.cwd(), '');
+  // Load env vars from .env files for server-side use (dev middleware)
+  const env = loadEnv(mode, process.cwd(), '');
+
+  // Dev-only middleware that proxies /api/openrouter to OpenRouter
+  const openRouterDevPlugin = {
+    name: 'openrouter-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/openrouter', (req, res) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Method not allowed' }));
+          return;
+        }
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', async () => {
+          try {
+            const parsed = JSON.parse(body);
+            const apiKey = env.OPENROUTER_API_KEY;
+            if (!apiKey) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'OPENROUTER_API_KEY not set in .env.local' }));
+              return;
+            }
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'http://localhost:5173',
+              },
+              body: JSON.stringify({
+                model: parsed.model,
+                messages: parsed.messages,
+                temperature: parsed.temperature ?? 0.0,
+                stream: parsed.stream ?? false,
+              }),
+            });
+            const data = await response.text();
+            res.statusCode = response.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(data);
+          } catch (err) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: err.message }));
+          }
+        });
+      });
+    },
+  };
 
   // Disable compression for mobile builds
   const shouldDisableCompression = process.env.DISABLE_COMPRESSION === 'true' ||
@@ -20,6 +71,7 @@ export default defineConfig(({ command, mode }) => {
   
   return {
     plugins: [
+      ...(command === 'serve' ? [openRouterDevPlugin] : []),
       react(),
       // Keep the PWA virtual module available, but skip Workbox generation for fast/mobile builds.
       VitePWA({
@@ -217,55 +269,6 @@ export default defineConfig(({ command, mode }) => {
       port: 5173,
       strictPort: true,
       allowedHosts: ['.ngrok-free.app'],
-      proxy: {
-        '/api/openrouter': {
-          target: 'http://localhost:5173',
-          configure: (server) => {
-            if (!server.middlewares) return;
-            server.middlewares.use('/api/openrouter', async (req, res) => {
-              if (req.method !== 'POST') {
-                res.statusCode = 405;
-                res.end(JSON.stringify({ error: 'Method not allowed' }));
-                return;
-              }
-              let body = '';
-              req.on('data', chunk => { body += chunk; });
-              req.on('end', async () => {
-                try {
-                  const parsed = JSON.parse(body);
-                  const apiKey = process.env.OPENROUTER_API_KEY;
-                  if (!apiKey) {
-                    res.statusCode = 500;
-                    res.end(JSON.stringify({ error: 'OPENROUTER_API_KEY not set in .env.local' }));
-                    return;
-                  }
-                  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${apiKey}`,
-                      'HTTP-Referer': 'http://localhost:5173',
-                    },
-                    body: JSON.stringify({
-                      model: parsed.model,
-                      messages: parsed.messages,
-                      temperature: parsed.temperature ?? 0.0,
-                      stream: parsed.stream ?? false,
-                    }),
-                  });
-                  const data = await response.text();
-                  res.statusCode = response.status;
-                  res.setHeader('Content-Type', 'application/json');
-                  res.end(data);
-                } catch (err) {
-                  res.statusCode = 500;
-                  res.end(JSON.stringify({ error: err.message }));
-                }
-              });
-            });
-          },
-        },
-      },
       watch: {
         usePolling: false,
         interval: 50,

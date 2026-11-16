@@ -2349,18 +2349,18 @@ select:disabled {
   cursor: not-allowed;
 }
 
-input:not([type="checkbox"]):not([type="radio"]),
+:where(input:not([type="checkbox"]):not([type="radio"]),
 textarea,
-select {
+select) {
   border-width: var(--ui-border-width);
   border-color: var(--border-primary);
   border-radius: 0.75rem;
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):focus,
-textarea:focus,
-select:focus {
+:where(input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select):focus {
   border-color: var(--accent-primary);
   outline: none;
   box-shadow: 0 0 0 var(--ui-focus-width) var(--ui-focus-color);
@@ -2368,9 +2368,7 @@ select:focus {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
+:where(input, textarea, select):focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }

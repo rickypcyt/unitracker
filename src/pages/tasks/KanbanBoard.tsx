@@ -15,7 +15,6 @@ import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
 import { TaskListMenu } from '@/modals/tasks/TaskListMenu';
-import TaskViewModal from '@/modals/tasks/TaskViewModal';
 import WorkspaceSelectionModal from '@/modals/workspaces/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
 import { useAuth } from '@/hooks/auth/useAuth';
@@ -123,7 +122,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
-  const [viewingTask, setViewingTask] = useState<any>(null);
+
   const [showDeleteTaskConfirmation, setShowDeleteTaskConfirmation] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
   const [focusOnDate, setFocusOnDate] = useState(false);
@@ -281,13 +280,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   };
 
 
-  const handleViewTask = (task: any) => {
-    if (isDemo) {
-      showLoginPrompt();
-      return;
-    }
-    setViewingTask(task);
-  };
 
   const handleEditTask = (task: any) => {
     if (isDemo) {
@@ -458,7 +450,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
               onTaskToggle={handleToggleCompletion}
               onTaskDelete={handleConfirmDeleteTask}
               onEditTask={handleEditTask}
-              onViewTask={handleViewTask}
               onTaskContextMenu={handleTaskContextMenu}
             />
           </div>
@@ -497,7 +488,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
               onTaskToggle={handleToggleCompletion}
               onTaskDelete={handleConfirmDeleteTask}
               onEditTask={handleEditTask}
-              onViewTask={handleViewTask}
               onTaskContextMenu={handleTaskContextMenu}
             />
           ) : (
@@ -509,7 +499,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
             onTaskToggle={handleToggleCompletion}
             onTaskDelete={handleConfirmDeleteTask}
             onEditTask={handleEditTask}
-            onViewTask={handleViewTask}
             onTaskContextMenu={handleTaskContextMenu}
             onSortClick={handleSortClick}
             columnMenu={columnMenu}
@@ -533,7 +522,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
                 onTaskToggle={handleToggleCompletion}
                 onTaskDelete={handleConfirmDeleteTask}
                 onEditTask={handleEditTask}
-                onViewTask={handleViewTask}
                 onTaskContextMenu={handleTaskContextMenu}
               />
             )}
@@ -551,19 +539,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
           onSetTaskStatus={handleUpdateTask}
           onDeleteTask={handleConfirmDeleteTask}
           onSetDate={handleSetDate}
-        />
-      )}
-
-      {/* Task View Modal */}
-      {viewingTask && (
-        <TaskViewModal
-          isOpen={!!viewingTask}
-          onClose={() => setViewingTask(null)}
-          task={viewingTask}
-          onEdit={(task) => {
-            setViewingTask(null);
-            handleEditTask(task);
-          }}
         />
       )}
 

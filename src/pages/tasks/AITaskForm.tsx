@@ -403,11 +403,11 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         {/* Tab Selector */}
         <div className="w-full flex justify-center items-center select-none mb-4 sm:mb-4 px-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" onClick={onSwitchToManual}>
+            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" onClick={onSwitchToManual}>
               Manual
             </span>
-            <span className="text-[var(--border-primary)] font-bold text-sm sm:text-base mx-1">|</span>
-            <span className="cursor-pointer font-semibold transition-colors duration-150 text-sm sm:text-base text-[var(--accent-primary)]">
+            <span className="text-[var(--border-primary)] font-bold text-base sm:text-lg mx-2">|</span>
+            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-[var(--accent-primary)]">
               Auto (AI)
             </span>
           </div>
