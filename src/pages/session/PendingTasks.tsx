@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, CheckCircle2, Circle, EyeOff, ListTodo, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCircle2, Circle, EyeOff, ListTodo, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { format, isBefore, isToday, isValid, parseISO, startOfDay, differenceInDays } from 'date-fns';
 import { track } from '@vercel/analytics';
@@ -97,7 +97,11 @@ const PendingTasks = () => {
           <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
-        <ul className="max-h-[420px] overflow-y-auto custom-scrollbar flex flex-col space-y-2">
+        <ul className="hide-scrollbar overflow-y-auto flex flex-col space-y-1.5" style={{
+          height: '30rem',
+          maxHeight: '30rem',
+          padding: '0 0 0.5rem 0',
+        }}>
           {pending.map(task => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
@@ -143,6 +147,15 @@ const PendingTasks = () => {
           })}
         </ul>
       )}
+
+      {/* Open Tasks Button */}
+      <button
+        onClick={openTasks}
+        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors font-semibold"
+      >
+        <ArrowRight size={16} />
+        View All Tasks
+      </button>
 
       {modals}
     </section>
