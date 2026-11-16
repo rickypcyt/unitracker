@@ -470,7 +470,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
             initialTask={editingTask}
             focusOnDate={focusOnDate}
             onTaskCreated={() => {
-              fetchTasksAction(activeWorkspace?.id);
               handleCloseTaskForm();
             }}
           />

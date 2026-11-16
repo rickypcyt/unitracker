@@ -243,9 +243,6 @@ const TaskForm = ({
       if (!initialTask && saved?.id && onTaskCreated) {
         onTaskCreated(saved.id);
       }
-      if (!initialTask) {
-        window.dispatchEvent(new CustomEvent('refreshTaskList'));
-      }
 
       // Clear calendar hour after successful save
       sessionStorage.removeItem('calendarTaskHour');

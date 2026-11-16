@@ -1,4 +1,4 @@
-import { useAddTaskSuccess, useUpdateTaskSuccess, useWorkspace } from '@/store/appStore';
+import { useAddTaskSuccess, useUpdateTaskSuccess, useWorkspace, useFetchTasks } from '@/store/appStore';
 import { TaskService } from '@/services/TaskService';
 import { useCallback } from 'react';
 
@@ -62,6 +62,7 @@ type SaveArgs = {
 export function useTaskSubmit() {
   const updateTaskSuccess = useUpdateTaskSuccess();
   const addTaskSuccess = useAddTaskSuccess();
+  const fetchTasks = useFetchTasks();
   const {
     currentWorkspace: activeWorkspace
   } = useWorkspace();
@@ -202,6 +203,8 @@ export function useTaskSubmit() {
     } else {
       const data = await TaskService.createTask(taskData);
       addTaskSuccess(data);
+      // Force refresh to ensure the new task appears immediately
+      await fetchTasks(activeWorkspaceId ?? activeWorkspace?.id ?? undefined, true);
       return data;
     }
   }, [updateTaskSuccess, addTaskSuccess, activeWorkspace]);

@@ -49,13 +49,6 @@ const TasksPage = memo(() => {
       fetchTasks(activeWorkspace?.id);
     }
 
-    // Listen for the custom refresh event (triggered after task creation)
-    const handleRefreshEvent = () => {
-      fetchTasks(activeWorkspace?.id);
-    };
-
-    window.addEventListener('refreshTaskList', handleRefreshEvent);
-
     // Touch event listeners for swipe navigation between workspaces
     if (isVisible) {
       window.addEventListener('touchstart', handleTouchStart, { passive: true });
@@ -63,7 +56,6 @@ const TasksPage = memo(() => {
     }
 
     return () => {
-      window.removeEventListener('refreshTaskList', handleRefreshEvent);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
