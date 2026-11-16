@@ -5,7 +5,13 @@ import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'r
 import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUtils';
 
 import DatePicker from 'react-datepicker';
+import { registerLocale, setDefaultLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
 import { parseDateFromString } from '@/utils/dateUtils';
+
+// Register Spanish locale with Monday as first day of week
+registerLocale('es', es);
+setDefaultLocale('es');
 
 interface QuickDatePickerProps {
   task: any;
@@ -151,6 +157,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
           dayClassName={(date: Date) =>
             date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
           }
+          startOfWeek={1}
         />
       </div>
 

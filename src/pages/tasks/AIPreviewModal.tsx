@@ -5,7 +5,13 @@ import { useCallback, useEffect, useState } from 'react';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
+import { registerLocale, setDefaultLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
 import { getLocalDateString } from '@/utils/dateUtils';
+
+// Register Spanish locale with Monday as first day of week
+registerLocale('es', es);
+setDefaultLocale('es');
 
 type AITask = {
   task?: string;
@@ -201,6 +207,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
+                            startOfWeek={1}
                           />
                           <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
                         </div>

@@ -8,12 +8,18 @@ import { useEffect, useRef, useState } from 'react';
 import AutocompleteInput from '@/modals/shared/AutocompleteInput';
 import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
+import { registerLocale, setDefaultLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
 import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useFormState } from '@/hooks/common/useFormState';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
+
+// Register Spanish locale with Monday as first day of week
+registerLocale('es', es);
+setDefaultLocale('es');
 
 type TaskFormProps = {
   initialAssignment?: string | null;
@@ -503,7 +509,7 @@ const TaskForm = ({
         }
       }} dateFormat="dd/MM/yyyy" placeholderText="DD/MM/YYYY" wrapperClassName="w-full" className="w-full cursor-pointer" customInput={<input type="text" readOnly value={formData.deadline ? formatDateOnlyForDisplay(formData.deadline) : 'None'} className={`w-full cursor-pointer pl-12 pr-10 py-2 bg-[var(--bg-primary)] border ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all`} style={{
         width: '100%'
-      }} />} popperPlacement="bottom-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} popperModifiers={[{
+      }} />} popperPlacement="top-start" calendarClassName="bg-[var(--bg-primary)] border-2 border-[var(--accent-primary)] rounded-lg shadow-lg text-[var(--text-primary)]" dayClassName={(date: Date) => date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''} startOfWeek={1} popperModifiers={[{
         name: 'preventOverflow',
         options: {
           boundary: 'viewport',
