@@ -310,15 +310,6 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="utp-ctrl utp-ctrl-accent"
-            onClick={() => emit(SYNC_EVENTS.RESET_TIMER)}
-            aria-label={t("session.studyTimer.resetTimer")}
-            title={t("session.studyTimer.resetTimer")}
-          >
-            <RotateCcw size={15} />
-          </button>
-          <button
-            type="button"
             className="utp-ctrl-play"
             onClick={() => emit(studyRunning ? SYNC_EVENTS.PAUSE_TIMER : SYNC_EVENTS.PLAY_TIMER)}
             aria-label={studyRunning ? t("session.studyTimer.pauseTimer") : t("session.studyTimer.resumeTimer")}

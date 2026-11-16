@@ -863,11 +863,6 @@ const Countdown: React.FC<CountdownProps> = ({
             return (
               <div className="relative w-32 h-32">
                 {!(isSynced || syncCountdownWithTimer) && (
-                  <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
-                    <RotateCcw size={18} />
-                  </button>
-                )}
-                {!(isSynced || syncCountdownWithTimer) && (
                   <button onClick={handleEditTime} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Edit countdown time" title="Edit time">
                     <Pencil size={18} />
                   </button>
@@ -907,11 +902,6 @@ const Countdown: React.FC<CountdownProps> = ({
           })()
         ) : (
           <div className="relative w-32 h-32">
-            {!(isSynced || syncCountdownWithTimer) && (
-              <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
-                <RotateCcw size={18} />
-              </button>
-            )}
             {isEditingTime && (
               <button onClick={() => setIsEditingTime(false)} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Done editing time" title="Done">
                 <Check size={18} />

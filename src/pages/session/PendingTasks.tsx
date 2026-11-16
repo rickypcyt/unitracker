@@ -97,7 +97,7 @@ const PendingTasks = () => {
           <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
-        <ul className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col space-y-2">
+        <ul className="max-h-[420px] overflow-y-auto custom-scrollbar flex flex-col space-y-2">
           {pending.map(task => {
             const due = getDueDate(task);
             const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));

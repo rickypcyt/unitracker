@@ -143,7 +143,7 @@ const Notes: React.FC = () => {
     
     if (user) {
       try {
-        const data = await NoteService.updateNote(noteId, updatedNote);
+        const data = await NoteService.updateNote(noteId, updatedNote, user.id);
         setNotes(notes.map(n => n.id === noteId ? data as Note : n));
       } catch (err) {
         setError(err instanceof Error ? err.message : t('notes.errorUpdate'));
@@ -162,7 +162,7 @@ const Notes: React.FC = () => {
     setError(null);
     try {
       if (user) {
-        await NoteService.deleteNote(noteToDelete.id);
+        await NoteService.deleteNote(noteToDelete.id, user.id);
       }
       setNotes(notes.filter(n => n.id !== noteToDelete.id));
       setNoteToDelete(null);

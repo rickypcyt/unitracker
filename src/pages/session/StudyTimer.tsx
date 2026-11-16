@@ -1117,9 +1117,6 @@ const StudyTimer = ({
             <div className="relative w-32 h-32">
               {currentSessionId && !isSynced && (
                 <div className="absolute right-full top-[68%] -translate-y-1/2 mr-6 flex gap-2">
-                  <button onClick={() => reset()} className="timer-ctrl-btn" aria-label={t("session.studyTimer.resetTimer")}>
-                    <RotateCcw size={18} />
-                  </button>
                   <button
                     onClick={handleLapButton}
                     className={`timer-ctrl-btn ${lapInputOpen ? 'border-[#0A84FF]' : ''}`}

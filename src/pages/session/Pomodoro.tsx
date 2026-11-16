@@ -1327,11 +1327,6 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
           const circumference = 2 * Math.PI * radius;
           return (
             <div className="relative w-32 h-32">
-              {!syncPomodoroWithTimer && (
-                <button onClick={() => handleReset()} className="timer-ctrl-btn absolute right-full top-0 bottom-0 my-auto mr-6" aria-label="Reset timer">
-                  <RotateCcw size={18} />
-                </button>
-              )}
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle

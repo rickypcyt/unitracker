@@ -1,4 +1,4 @@
-import { Pause, Play, RotateCcw } from 'lucide-react';
+import { Pause, Play } from 'lucide-react';
 import { useAppStore, useTimerActions } from '@/store/appStore';
 
 const GlobalTimerControls = () => {
@@ -17,18 +17,6 @@ const GlobalTimerControls = () => {
     setStudyTimerState(newRunningState ? 'running' : 'stopped');
     setPomodoroTimerState(newRunningState ? 'running' : 'stopped');
     setCountdownTimerState(newRunningState ? 'running' : 'stopped');
-  };
-
-  const handleReset = () => {
-    // Emitir inmediatamente el reset específico de Countdown para máxima robustez
-    try {
-      const now = Date.now();
-      window.dispatchEvent(new CustomEvent('resetCountdownSync', { detail: { baseTimestamp: now } }));
-    } catch {}
-    // Resetear todos los timers via Zustand
-    setStudyTimerState('stopped');
-    setPomodoroTimerState('stopped');
-    setCountdownTimerState('stopped');
   };
 
   return (
@@ -82,15 +70,6 @@ const GlobalTimerControls = () => {
               Start All
             </>
           )}
-        </button>
-        
-        <button
-          onClick={handleReset}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors font-semibold border-2 border-[var(--border-primary)]"
-          aria-label="Reset all timers"
-        >
-          <RotateCcw size={20} />
-          Reset All
         </button>
       </div>
     </div>

@@ -76,12 +76,13 @@ const fetchHabitData = async (userId: string): Promise<HabitCache> => {
   if (existingRequest) return existingRequest;
 
   const request = (async () => {
-    const habitsData = await HabitService.fetchHabits(userId);
-    const habitIds = habitsData.map(h => h.id);
-    const completionsData = habitIds.length > 0
-      ? await HabitService.fetchCompletions(userId, habitIds) as HabitCompletion[]
-      : [];
-    const notesData = await HabitService.fetchJournalNotes(userId);
+    // Fetch habits, completions, and journal notes in parallel
+    const [habitsData, completionsData, notesData] = await Promise.all([
+      HabitService.fetchHabits(userId),
+      HabitService.fetchCompletions(userId, []),
+      HabitService.fetchJournalNotes(userId)
+    ]);
+
     const dailyNotes: Record<string, string> = {};
 
     notesData.forEach(note => {
