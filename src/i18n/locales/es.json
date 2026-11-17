@@ -106,10 +106,18 @@
     },
     "hero": {
       "eyebrow": "// Gratis y open source",
-      "title1": "Una app para",
-      "title2": "tu tiempo de estudio.",
-      "subtitle": "Pomodoro, tareas, calendario y analíticas — diseñada para no estorbar. Funciona offline, sincroniza cuando vuelves.",
-      "cta": "Empezar gratis"
+      "title1": "Termina más.",
+      "title2": "Estresa menos.",
+      "subtitle": "El tracker de estudio todo en uno: temporizadores Pomodoro, tareas, calendario y analíticas en una app rápida. Funciona offline y sincroniza cuando vuelves.",
+      "cta": "Empezar gratis",
+      "badge": "Gratis y open source · Sin anuncios",
+      "ctaSecondary": "Probar los temporizadores",
+      "trust": [
+        "Gratis para siempre",
+        "Sin anuncios",
+        "Funciona offline",
+        "Open source"
+      ]
     },
     "timers": {
       "eyebrow": "// En vivo, no capturas",
@@ -149,15 +157,67 @@
     },
     "cta": {
       "eyebrow": "// Empieza ahora",
-      "title": "Registrando en 30 segundos.",
+      "title": "Tu mejor semestre empieza hoy.",
       "subtitle": "Gratis para siempre · Sin anuncios · Open source",
-      "button": "Empezar"
+      "button": "Empezar gratis"
     },
     "footer": {
       "copyright": "unitracker © 2026 · MIT",
       "india": "India",
       "issues": "Issues",
       "getStarted": "Empezar"
+    },
+    "mock": {
+      "today": "Hoy",
+      "t1": "Terminar problemas de cálculo",
+      "t2": "Leer capítulo 4",
+      "t3": "Repasar notas de laboratorio",
+      "focus": "Sesión de enfoque",
+      "streak": "Racha de 7 días"
+    },
+    "how": {
+      "eyebrow": "// Cómo funciona",
+      "title": "Del caos a un plan en 3 pasos.",
+      "steps": [
+        {
+          "title": "Agrega tus tareas",
+          "desc": "Fechas límite, prioridades y dificultad — o deja que la IA divida un trabajo grande en tareas."
+        },
+        {
+          "title": "Inicia una sesión de enfoque",
+          "desc": "Pomodoro o temporizador libre, ligado a la tarea en la que trabajas. Las sesiones se registran solas."
+        },
+        {
+          "title": "Mira tu progreso",
+          "desc": "Rachas, estadísticas semanales y un calendario que muestra a dónde fueron tus horas."
+        }
+      ]
+    },
+    "faq": {
+      "eyebrow": "// Preguntas",
+      "title": "Respuestas rápidas.",
+      "items": [
+        {
+          "q": "¿UniTracker es realmente gratis?",
+          "a": "Sí. Sin anuncios, sin muros de pago, sin suscripciones. Es open source bajo licencia MIT."
+        },
+        {
+          "q": "¿Necesito una cuenta?",
+          "a": "Puedes probar los temporizadores de inmediato. Crea una cuenta gratis para guardar tus tareas y sincronizar entre dispositivos."
+        },
+        {
+          "q": "¿Funciona offline?",
+          "a": "Sí. Todo funciona sin internet y se sincroniza solo al reconectarte."
+        },
+        {
+          "q": "¿Puedo usarlo en el móvil?",
+          "a": "Sí. Es una web app responsive que funciona en cualquier móvil, tablet o laptop, y puedes instalarla en tu pantalla de inicio."
+        },
+        {
+          "q": "¿Mis datos son privados?",
+          "a": "Tus datos son tuyos. Puedes exportarlo todo en cualquier momento."
+        }
+      ]
     }
   },
   "common": {
@@ -639,7 +699,11 @@
     },
     "assignments": {
       "advMath": "Matemáticas avanzadas",
-      "webProject": "Proyecto web"
+      "webProject": "Proyecto web",
+      "physics": "Laboratorio de física",
+      "marketing": "Campaña de marketing",
+      "history": "Historia universal",
+      "mobileApp": "App móvil"
     },
     "tasks": {
       "calculus": "Resolver ejercicios de cálculo",
@@ -689,5 +753,55 @@
         "desc": "Leer 2 artículos técnicos por semana"
       }
     }
+  },
+  "tour": {
+    "skip": "Saltar tour",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "finish": "Listo",
+    "createTask": "Crear mi primera tarea",
+    "later": "Quizás después",
+    "step": "Paso {{current}} de {{total}}",
+    "welcome": {
+      "title": "Bienvenido a UniTracker 👋",
+      "body": "Un tour de 30 segundos y luego crearás tu primera tarea. ¿Listo?"
+    },
+    "timer": {
+      "title": "Tu temporizador de enfoque",
+      "body": "Inicia una sesión de estudio, un Pomodoro o una cuenta regresiva. El tiempo se registra solo."
+    },
+    "board": {
+      "title": "Tu tablero de tareas",
+      "body": "Las tareas avanzan por columnas según tu progreso. Todo lo demás en la app gira en torno a ellas."
+    },
+    "add": {
+      "title": "Agrega una tarea",
+      "body": "Toca este botón cuando quieras para crear una tarea — con fecha límite, dificultad, o generada por IA."
+    },
+    "done": {
+      "title": "Creemos tu primera tarea",
+      "body": "Toma 10 segundos y activa tus estadísticas, calendario y sesiones de estudio."
+    }
+  },
+  "demoTask": {
+    "title": "Prueba crear una tarea",
+    "subtitle": "Anímate. Es una tarea demo temporal para que veas cómo funciona el tablero.",
+    "placeholder": "p. ej. Estudiar para el examen de química",
+    "temp": "Temporal: desaparece al recargar la página.",
+    "create": "Crear tarea demo",
+    "doneTitle": "¡Genial, tu primera tarea! 🎉",
+    "doneBody": "Para disfrutar de la experiencia completa te recomendamos iniciar sesión con Google. Tus tareas se guardan, se sincronizan en todos tus dispositivos y desbloqueas toda la app.",
+    "keepExploring": "Seguir explorando"
+  },
+  "firstTask": {
+    "title": "Configura tu primera tarea",
+    "body": "Las tareas son el corazón de UniTracker. Las sesiones de estudio, estadísticas y planificación giran en torno a ellas. Toma menos de un minuto:",
+    "step1": "Crea un espacio de trabajo",
+    "step1Desc": "Un espacio para una materia, proyecto o área de tu vida.",
+    "step2": "Agrega tu primera tarea",
+    "step2Desc": "Con fecha límite, dificultad, o generada por IA.",
+    "startWorkspace": "Crear espacio",
+    "startTask": "Crear tarea",
+    "later": "Quizás después"
   }
 }

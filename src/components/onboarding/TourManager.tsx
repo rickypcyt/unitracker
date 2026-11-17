@@ -4,6 +4,7 @@ import AccentColorModal from '@/modals/settings/AccentColorModal';
 import EnhancedLoginModal from '@/modals/auth/EnhancedLoginModal';
 import FirstTaskPrompt from '@/components/onboarding/FirstTaskPrompt';
 import ThemeManager from '@/components/settings/ThemeManager';
+import Tour from '@/components/onboarding/Tour';
 import WelcomeModal from '@/modals/auth/WelcomeModal';
 import useTheme from '@/hooks/settings/useTheme';
 
@@ -16,6 +17,9 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
     showWelcomeModal, 
     showAccentColorModal, 
     showLoginModal,
+    showTour,
+    handleCloseTour,
+    handleTourComplete,
     handleCloseWelcome,
     handleCloseAccentColor,
     handleCloseLogin,
@@ -44,6 +48,7 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
           onLogin={handleLogin}
         />
       )}
+      <Tour isOpen={showTour} onClose={handleCloseTour} onComplete={handleTourComplete} />
       <FirstTaskPrompt />
     </>
   );

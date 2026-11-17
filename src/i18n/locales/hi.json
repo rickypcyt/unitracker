@@ -106,10 +106,18 @@
     },
     "hero": {
       "eyebrow": "// Free और open source",
-      "title1": "एक app",
-      "title2": "आपके study time के लिए।",
-      "subtitle": "Pomodoro, tasks, calendar और analytics — आपके रास्ते में न आने के लिए designed। Offline चलता है, वापस आने पर sync होता है।",
-      "cta": "Free में शुरू करें"
+      "title1": "ज़्यादा पूरा करें।",
+      "title2": "कम stress लें।",
+      "subtitle": "All-in-one study tracker: Pomodoro timers, tasks, calendar और analytics एक तेज़ app में। Offline चलता है, वापस आने पर sync होता है।",
+      "cta": "Free में शुरू करें",
+      "badge": "Free और open source · No ads",
+      "ctaSecondary": "Timers आज़माएं",
+      "trust": [
+        "हमेशा free",
+        "No ads",
+        "Offline चलता है",
+        "Open source"
+      ]
     },
     "timers": {
       "eyebrow": "// Live, screenshots नहीं",
@@ -149,15 +157,67 @@
     },
     "cta": {
       "eyebrow": "// अभी शुरू करें",
-      "title": "30 seconds में tracking।",
+      "title": "आपका सबसे अच्छा semester आज शुरू होता है।",
       "subtitle": "हमेशा free · No ads · Open source",
-      "button": "शुरू करें"
+      "button": "Free में शुरू करें"
     },
     "footer": {
       "copyright": "unitracker © 2026 · MIT",
       "india": "India",
       "issues": "Issues",
       "getStarted": "शुरू करें"
+    },
+    "mock": {
+      "today": "आज",
+      "t1": "Calculus problem set पूरा करें",
+      "t2": "Chapter 4 पढ़ें",
+      "t3": "Lab notes revise करें",
+      "focus": "Focus session",
+      "streak": "7 दिन की streak"
+    },
+    "how": {
+      "eyebrow": "// कैसे काम करता है",
+      "title": "3 steps में chaos से plan तक।",
+      "steps": [
+        {
+          "title": "अपने tasks जोड़ें",
+          "desc": "Deadlines, priorities और difficulty — या AI से बड़े assignment को tasks में तोड़वाएं।"
+        },
+        {
+          "title": "Focus session शुरू करें",
+          "desc": "Pomodoro या free study timer, उस task से जुड़ा जिस पर आप काम कर रहे हैं। Sessions खुद log होती हैं।"
+        },
+        {
+          "title": "Progress देखें",
+          "desc": "Streaks, weekly stats और calendar जो दिखाता है कि आपके घंटे कहां गए।"
+        }
+      ]
+    },
+    "faq": {
+      "eyebrow": "// सवाल",
+      "title": "जल्दी जवाब।",
+      "items": [
+        {
+          "q": "क्या UniTracker सच में free है?",
+          "a": "हां। No ads, no paywalls, no subscriptions। यह MIT license के तहत open source है।"
+        },
+        {
+          "q": "क्या account ज़रूरी है?",
+          "a": "आप तुरंत timers आज़मा सकते हैं। Tasks save करने और devices में sync के लिए free account बनाएं।"
+        },
+        {
+          "q": "क्या यह offline चलता है?",
+          "a": "हां। सब कुछ बिना internet के चलता है और reconnect होने पर अपने-आप sync हो जाता है।"
+        },
+        {
+          "q": "क्या मैं इसे phone पर use कर सकता हूं?",
+          "a": "हां। यह responsive web app है जो किसी भी phone, tablet या laptop पर चलता है, और आप इसे home screen पर install कर सकते हैं।"
+        },
+        {
+          "q": "क्या मेरा data private है?",
+          "a": "आपका data आपका है। आप कभी भी सब कुछ export कर सकते हैं।"
+        }
+      ]
     }
   },
   "common": {
@@ -639,7 +699,11 @@
     },
     "assignments": {
       "advMath": "उन्नत गणित",
-      "webProject": "वेब प्रोजेक्ट"
+      "webProject": "वेब प्रोजेक्ट",
+      "physics": "भौतिकी प्रयोगशाला",
+      "marketing": "मार्केटिंग अभियान",
+      "history": "विश्व इतिहास",
+      "mobileApp": "मोबाइल ऐप"
     },
     "tasks": {
       "calculus": "कैलकुलस के अभ्यास हल करें",
@@ -689,5 +753,55 @@
         "desc": "हफ़्ते में 2 तकनीकी लेख पढ़ें"
       }
     }
+  },
+  "tour": {
+    "skip": "Tour छोड़ें",
+    "next": "आगे",
+    "back": "पीछे",
+    "finish": "हो गया",
+    "createTask": "मेरा पहला task बनाएं",
+    "later": "बाद में",
+    "step": "Step {{current}} / {{total}}",
+    "welcome": {
+      "title": "UniTracker में स्वागत है 👋",
+      "body": "30 seconds का tour, फिर आप अपना पहला task बनाएंगे। तैयार?"
+    },
+    "timer": {
+      "title": "आपका focus timer",
+      "body": "Study session, Pomodoro या countdown शुरू करें। समय अपने-आप log होता है।"
+    },
+    "board": {
+      "title": "आपका task board",
+      "body": "Progress के साथ tasks columns में आगे बढ़ते हैं। App की बाकी सब चीज़ें इन्हीं के आसपास घूमती हैं।"
+    },
+    "add": {
+      "title": "Task जोड़ें",
+      "body": "Task बनाने के लिए कभी भी यह button दबाएं — deadline, difficulty के साथ, या AI से generate करके।"
+    },
+    "done": {
+      "title": "चलिए पहला task बनाएं",
+      "body": "सिर्फ़ 10 seconds लगते हैं, और इससे आपके stats, calendar और study sessions चालू हो जाते हैं।"
+    }
+  },
+  "demoTask": {
+    "title": "Task बनाकर देखें",
+    "subtitle": "आज़माकर देखें। यह एक temporary demo task है ताकि आप board का काम देख सकें।",
+    "placeholder": "जैसे Chemistry exam की तैयारी",
+    "temp": "Temporary: page reload करने पर हट जाएगा।",
+    "create": "Demo task बनाएं",
+    "doneTitle": "बढ़िया, आपका पहला task! 🎉",
+    "doneBody": "पूरे experience का मज़ा लेने के लिए हम Google से sign in करने की सलाह देते हैं। आपके tasks save होते हैं, सभी devices में sync होते हैं और पूरा app unlock हो जाता है।",
+    "keepExploring": "Explore करते रहें"
+  },
+  "firstTask": {
+    "title": "अपना पहला task सेट करें",
+    "body": "Tasks UniTracker का दिल हैं। Study sessions, stats और planning सब इन्हीं के आसपास घूमते हैं। एक मिनट से कम लगता है:",
+    "step1": "Workspace बनाएं",
+    "step1Desc": "किसी course, project या ज़िंदगी के हिस्से के लिए एक जगह।",
+    "step2": "पहला task जोड़ें",
+    "step2Desc": "Deadline, difficulty के साथ, या AI से generate करके।",
+    "startWorkspace": "Workspace बनाएं",
+    "startTask": "Task बनाएं",
+    "later": "बाद में"
   }
 }

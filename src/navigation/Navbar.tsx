@@ -14,7 +14,7 @@ import { useNavigation } from './NavigationContext';
 import { preloadPage } from '@/App';
 
 const Navbar = () => {
-  const { isLoggedIn, user, loginWithGoogle } = useAuth();
+  const { isLoggedIn, user, loginWithGoogle, prepareGoogleLogin } = useAuth();
   const { activePage, navigateTo, navOrder, setNavOrder, isNavCollapsed, toggleNavCollapse } = useNavigation();
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { setCurrentWorkspace, setWorkspaces } = useWorkspaceActions();
@@ -308,6 +308,7 @@ const Navbar = () => {
         {!isLoggedIn && (
           <div className={`hidden lg:flex items-center border-t border-[var(--border-primary)] flex-shrink-0 py-3 ${(!isNavCollapsed || mobileOpen) ? 'px-3 justify-start' : 'justify-center px-2'}`}>
             <button
+              onPointerEnter={() => prepareGoogleLogin?.()}
               onClick={() => loginWithGoogle()}
               className={`flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold hover:bg-[var(--accent-primary)]/10 transition-colors ${(!isNavCollapsed || mobileOpen) ? 'w-full px-3 h-11 justify-start' : 'w-12 h-12 justify-center'}`}
               title="Log in"

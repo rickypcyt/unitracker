@@ -14,8 +14,12 @@ interface LoginPromptModalProps {
 
 const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, prepareGoogleLogin } = useAuth();
   const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) prepareGoogleLogin?.();
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;

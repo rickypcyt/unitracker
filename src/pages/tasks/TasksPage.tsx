@@ -4,6 +4,8 @@ import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appSto
 
 import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
+import DemoTaskModal from '@/modals/tasks/DemoTaskModal';
+import { isDemoExplore } from '@/utils/demoExplore';
 import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
 import TaskPageSettingsModal, { type ColumnCount, type FabPosition, type ViewMode } from '@/modals/tasks/TaskPageSettingsModal';
@@ -30,6 +32,7 @@ const TasksPage = memo(() => {
   const { isLoggedIn } = useAuth();
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
+  const [showDemoTask, setShowDemoTask] = useState(false);
 
   // Use Zustand selectors
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
@@ -63,7 +66,9 @@ const TasksPage = memo(() => {
 
   const handleAddTask = () => {
     if (!isLoggedIn) {
-      setIsLoginPromptOpen(true);
+      // "Let me look around first" users can try a temporary task before being asked to sign in
+      if (isDemoExplore()) setShowDemoTask(true);
+      else setIsLoginPromptOpen(true);
       return;
     }
     if (!workspaces || workspaces.length === 0) {
@@ -269,6 +274,13 @@ const TasksPage = memo(() => {
           onWorkspaceCreated={handleWorkspaceCreated}
         />
       )}
+      <DemoTaskModal
+        isOpen={showDemoTask}
+        onClose={() => setShowDemoTask(false)}
+        workspaceId={
+          activeWorkspace?.id?.startsWith('demo-ws-') ? activeWorkspace.id : workspaces?.[0]?.id ?? 'demo-ws-1'
+        }
+      />
       {/* Login Prompt Modal */}
       <LoginPromptModal
         isOpen={isLoginPromptOpen}

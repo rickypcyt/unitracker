@@ -1,3 +1,4 @@
+import { isDemoExplore } from '@/utils/demoExplore';
 import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/tasks/useTaskBoard';
 import { ClipboardCheck, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
@@ -268,6 +269,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   const handleAddTask = (assignment: string | null = null) => {
     if (isDemo) {
+      if (isDemoExplore()) {
+        window.dispatchEvent(new Event('quickAddTask'));
+        return;
+      }
       showLoginPrompt();
       return;
     }

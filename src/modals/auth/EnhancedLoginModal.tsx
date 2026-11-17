@@ -1,3 +1,4 @@
+import { enableDemoExplore } from '@/utils/demoExplore';
 import { Cloud, Database, Lock, Rocket, Users, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,11 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
   const { t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, prepareGoogleLogin } = useAuth();
+
+  useEffect(() => {
+    prepareGoogleLogin?.();
+  }, []);
 
   // Close only on Escape — clicks outside must not dismiss onboarding modals
   useEffect(() => {
@@ -23,7 +28,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
     document.addEventListener('keydown', handleEsc);
 
     // Trigger animation on mount
-    setTimeout(() => setIsAnimating(true), 100);
+    requestAnimationFrame(() => setIsAnimating(true));
 
     return () => {
       document.removeEventListener('keydown', handleEsc);
@@ -57,7 +62,7 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-150 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[calc(100dvh-1.5rem)] overflow-y-auto`}
       >
@@ -131,7 +136,10 @@ const EnhancedLoginModal: React.FC<EnhancedLoginModalProps> = ({ onClose, onLogi
           </button>
           
           <button
-            onClick={onClose}
+            onClick={() => {
+              enableDemoExplore();
+              onClose();
+            }}
             className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-[var(--bg-secondary)]/30 text-[var(--text-primary)] rounded-xl sm:rounded-2xl border-2 border-[var(--border-primary)]/30 font-medium"
           >
             {t('auth.login.lookAround')}

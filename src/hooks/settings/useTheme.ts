@@ -74,14 +74,15 @@ const useTheme = () => {
     window.dispatchEvent(new Event('accentPaletteChange'));
   }, []);
 
-  // Show tour for demo users after welcome modal closes
+  // Start the product tour once the onboarding modals (welcome → color → login) are out of the way
   useEffect(() => {
-    if (!isLoggedIn && !showWelcomeModal && typeof window !== 'undefined' && !localStorage.getItem("hasSeenTour")) {
-      setTimeout(() => {
-        setShowTour(true);
-      }, 300);
-    }
-  }, [isLoggedIn, showWelcomeModal]);
+    if (isAuthLoading || showTour) return;
+    if (showWelcomeModal || showAccentColorModal || showLoginModal) return;
+    if (typeof window === 'undefined' || localStorage.getItem("hasSeenTour")) return;
+    // Give logged-in users a little longer so the username modal can claim the screen first
+    const timer = setTimeout(() => setShowTour(true), isLoggedIn ? 800 : 150);
+    return () => clearTimeout(timer);
+  }, [isAuthLoading, isLoggedIn, showTour, showWelcomeModal, showAccentColorModal, showLoginModal]);
 
   // Listen for 'openLoginModal' events from empty states and other components
   useEffect(() => {
@@ -102,13 +103,6 @@ const useTheme = () => {
       setShowAccentColorModal(false);
       setShowLoginModal(false);
       localStorage.setItem("hasSeenLoginModal", "true");
-
-      // Show tour for logged in users who haven't seen it
-      setTimeout(() => {
-        if (typeof window !== 'undefined' && !localStorage.getItem("hasSeenTour")) {
-          setShowTour(true);
-        }
-      }, 500);
     }
   }, [isLoggedIn]);
 
@@ -211,7 +205,7 @@ const useTheme = () => {
       if (!localStorage.getItem("hasSeenAccentColorModal")) {
         setShowAccentColorModal(true);
       }
-    }, 200);
+    }, 0);
   };
 
   const handleCloseThemeSelection = () => {
@@ -222,7 +216,7 @@ const useTheme = () => {
       if (!localStorage.getItem("hasSeenAccentColorModal")) {
         setShowAccentColorModal(true);
       }
-    }, 200);
+    }, 0);
   };
 
   const handleCloseAccentColor = () => {
@@ -233,29 +227,17 @@ const useTheme = () => {
       if (!isLoggedIn && !localStorage.getItem("hasSeenLoginModal")) {
         setShowLoginModal(true);
       }
-    }, 200);
+    }, 0);
   };
 
   const handleCloseLogin = () => {
     setShowLoginModal(false);
     localStorage.setItem("hasSeenLoginModal", "true");
-    // Show tour after login modal closes (or immediately if user is already logged in)
-    setTimeout(() => {
-      if (!localStorage.getItem("hasSeenTour")) {
-        setShowTour(true);
-      }
-    }, 200);
   };
 
   const handleLogin = () => {
     setShowLoginModal(false);
     localStorage.setItem("hasSeenLoginModal", "true");
-    // Show tour after successful login
-    setTimeout(() => {
-      if (!localStorage.getItem("hasSeenTour")) {
-        setShowTour(true);
-      }
-    }, 200);
   };
 
   const handleAccentColorSelection = (color: string) => {
@@ -268,7 +250,7 @@ const useTheme = () => {
       if (!isLoggedIn && !localStorage.getItem("hasSeenLoginModal")) {
         setShowLoginModal(true);
       }
-    }, 200);
+    }, 0);
   };
 
   const handleThemeSelection = (theme: ThemePreference) => {
@@ -280,7 +262,7 @@ const useTheme = () => {
       if (!localStorage.getItem("hasSeenAccentColorModal")) {
         setShowAccentColorModal(true);
       }
-    }, 200);
+    }, 0);
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -295,15 +277,11 @@ const useTheme = () => {
   const handleTourComplete = () => {
     setShowTour(false);
     localStorage.setItem("hasSeenTour", "true");
-
-    // Open login modal after tour completes
-    setTimeout(() => {
-      setShowLoginModal(true);
-    }, 500);
   };
 
   const resetTour = () => {
     localStorage.removeItem("hasSeenTour");
+    localStorage.removeItem("tourStep");
     setShowTour(true);
   };
 

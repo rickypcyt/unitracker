@@ -44,7 +44,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
     document.addEventListener('keydown', handleEsc);
 
     // Trigger animation on mount
-    setTimeout(() => setIsAnimating(true), 100);
+    requestAnimationFrame(() => setIsAnimating(true));
 
     return () => {
       document.removeEventListener('keydown', handleEsc);
@@ -59,7 +59,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--accent-primary)] w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--accent-primary)] w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-150 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
       >
@@ -69,9 +69,9 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-3 sm:p-2 rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-100 group active:scale-95"
         >
-          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-200" />
+          <X className="w-5 h-5 sm:w-4 sm:h-4 md:w-5 md:h-5 transition-transform duration-100" />
         </button>
         
         {/* Header Section */}
@@ -92,7 +92,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               key={color.value}
               onClick={() => handleColorSelect(color.value)}
               aria-pressed={selectedColor.toLowerCase() === color.value.toLowerCase()}
-              className={`group relative p-2 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-300 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
+              className={`group relative p-2 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-100 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
                 selectedColor.toLowerCase() === color.value.toLowerCase()
                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                   : 'border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50'
@@ -101,7 +101,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               {/* Color preview */}
               <div className="flex items-center justify-center mb-1.5 sm:mb-3">
                 <div
-                  className="w-8 h-8 sm:w-14 sm:h-14 rounded-full shadow-lg transition-transform duration-300 group-hover:scale-110"
+                  className="w-8 h-8 sm:w-14 sm:h-14 rounded-full shadow-lg transition-transform duration-100 group-hover:scale-110"
                   style={{ backgroundColor: color.value }}
                 />
               </div>
@@ -130,13 +130,13 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
         <div className="flex flex-col items-center gap-3 sm:gap-4 relative z-10">
           <button
             onClick={() => onAccentColorSelect(selectedColor)}
-            className="rounded-xl bg-[var(--accent-primary)] px-6 py-2.5 sm:py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
+            className="rounded-xl border-2 border-[var(--accent-primary)] px-6 py-2.5 sm:py-3 text-base sm:text-lg font-semibold text-[var(--accent-primary)] transition-transform active:scale-[0.98]"
           >
             {t('accentColors.choose')}
           </button>
           <button
             onClick={onClose}
-            className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200"
+            className="text-xs sm:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-100"
           >
             {t('accentColors.keep')}
           </button>

@@ -1,3 +1,4 @@
+import { useDemoUserTasks } from '@/utils/demoExplore';
 import { useCallback, useMemo } from 'react';
 import { useFetchTasks, useTasksLoading, useUpdateTaskSuccess, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
@@ -36,8 +37,9 @@ export const useTaskBoard = () => {
   }, [workspaces]);
 
   // Use tasks demo si isDemo
+  const demoUserTasks = useDemoUserTasks();
   const tasks = isDemo
-    ? demoTasks.filter(task => task.workspace_id === activeWorkspace?.id)
+    ? [...demoTasks, ...demoUserTasks].filter(task => task.workspace_id === activeWorkspace?.id)
     : realTasks;
 
   // Update filteredTasks to handle "All" workspace

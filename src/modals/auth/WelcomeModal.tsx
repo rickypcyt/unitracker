@@ -40,7 +40,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     document.addEventListener('keydown', handleEsc);
 
     // Trigger animation on mount
-    setTimeout(() => setIsAnimating(true), 100);
+    requestAnimationFrame(() => setIsAnimating(true));
 
     return () => {
       document.removeEventListener('keydown', handleEsc);
@@ -51,7 +51,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-md overflow-y-auto" style={{ padding: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.5rem)' }}>
       <div
         ref={modalRef}
-        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-4xl relative shadow-2xl overflow-hidden transition-all duration-700 transform ${
+        className={`bg-[var(--bg-primary)] rounded-2xl sm:rounded-3xl border-2 border-[var(--border-primary)]/50 w-full max-w-4xl relative shadow-2xl overflow-hidden transition-all duration-150 transform ${
           isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
         } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
         style={{ margin: 'clamp(0.25rem, 0.2rem + 0.3vw, 1rem)', padding: 'clamp(0.75rem, 0.6rem + 1vw, 2.5rem)' }}
@@ -65,10 +65,10 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 group active:scale-95"
+          className="absolute rounded-full bg-[var(--bg-secondary)]/50 hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-100 group active:scale-95"
           style={{ top: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', right: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)', padding: 'clamp(0.375rem, 0.3rem + 0.4vw, 0.75rem)' }}
         >
-          <X className="transition-transform duration-200" style={{ width: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)' }} />
+          <X className="transition-transform duration-100" style={{ width: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.5vw, 1.25rem)' }} />
         </button>
         
         {/* Header Section */}
@@ -142,12 +142,12 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
         {/* CTA Section */}
         <div className="flex flex-col items-center relative z-10" style={{ gap: 'clamp(0.5rem, 0.4rem + 0.5vw, 1rem)' }}>
           <button
-            className="group rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold cursor-pointer transition-all duration-300 transform active:scale-[0.98] flex items-center bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10"
+            className="group rounded-xl sm:rounded-2xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold cursor-pointer transition-all duration-100 transform active:scale-[0.98] flex items-center bg-gradient-to-r from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10"
             style={{ paddingLeft: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingRight: 'clamp(1rem, 0.8rem + 1vw, 3rem)', paddingTop: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', paddingBottom: 'clamp(0.5rem, 0.4rem + 0.5vw, 1.25rem)', fontSize: 'clamp(0.75rem, 0.7rem + 0.3vw, 1.125rem)', gap: 'clamp(0.375rem, 0.3rem + 0.3vw, 0.75rem)', minHeight: 'clamp(2.75rem, 2.5rem + 0.5vw, 3rem)' }}
             onClick={onClose}
           >
             {t('welcome.getStarted')}
-            <ArrowRight className="transition-transform duration-300" style={{ width: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)' }} />
+            <ArrowRight className="transition-transform duration-100" style={{ width: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)', height: 'clamp(1rem, 0.9rem + 0.3vw, 1.25rem)' }} />
           </button>
           
           <p className="text-[var(--text-secondary)] opacity-70 text-center" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.875rem)', paddingLeft: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)', paddingRight: 'clamp(0.5rem, 0.4rem + 0.3vw, 1rem)' }}>

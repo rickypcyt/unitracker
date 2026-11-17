@@ -26,6 +26,10 @@ export const getDemoWorkspaces = () => [
 export const getDemoAssignments = () => [
   { id: 'demo-assignment-a', name: `${t('assignments.advMath')}${suffix()}`, workspace_id: 'demo-ws-1' },
   { id: 'demo-assignment-b', name: `${t('assignments.webProject')}${suffix()}`, workspace_id: 'demo-ws-2' },
+  { id: 'demo-assignment-c', name: `${t('assignments.physics')}${suffix()}`, workspace_id: 'demo-ws-1' },
+  { id: 'demo-assignment-d', name: `${t('assignments.marketing')}${suffix()}`, workspace_id: 'demo-ws-2' },
+  { id: 'demo-assignment-e', name: `${t('assignments.history')}${suffix()}`, workspace_id: 'demo-ws-1' },
+  { id: 'demo-assignment-f', name: `${t('assignments.mobileApp')}${suffix()}`, workspace_id: 'demo-ws-2' },
 ];
 
 export const getDemoTasks = () => [

@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabaseClient';
@@ -11,6 +11,8 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAuthLoading: boolean;
   loginWithGoogle: () => Promise<boolean>;
+  /** Warms up the Google OAuth redirect so the click feels instant. */
+  prepareGoogleLogin: () => void;
   logout: () => Promise<void>;
 }
 
@@ -57,15 +59,44 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
+  // Pre-built OAuth URL (PKCE verifier already stored) so the click only has to redirect
+  const oauthUrlRef = useRef<{ url: string; at: number } | null>(null);
+  const OAUTH_URL_TTL_MS = 5 * 60 * 1000;
+
+  const buildGoogleUrl = async (): Promise<string> => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin, skipBrowserRedirect: true },
+    });
+    if (error || !data?.url) throw error ?? new Error('Missing OAuth URL');
+    return data.url;
+  };
+
+  const prepareGoogleLogin = () => {
+    const cached = oauthUrlRef.current;
+    if (cached && Date.now() - cached.at < OAUTH_URL_TTL_MS) return;
+    // Open connections to the auth host and Google ahead of the redirect
+    const hosts = [(import.meta.env as Record<string, string>)['VITE_SUPABASE_URL'], 'https://accounts.google.com'];
+    hosts.forEach((href) => {
+      if (!href || document.querySelector(`link[rel="preconnect"][href="${href}"]`)) return;
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = href;
+      link.crossOrigin = '';
+      document.head.appendChild(link);
+    });
+    buildGoogleUrl()
+      .then((url) => { oauthUrlRef.current = { url, at: Date.now() }; })
+      .catch(() => { oauthUrlRef.current = null; });
+  };
+
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-      if (error) throw error;
+      const cached = oauthUrlRef.current;
+      oauthUrlRef.current = null; // single use
+      const url =
+        cached && Date.now() - cached.at < OAUTH_URL_TTL_MS ? cached.url : await buildGoogleUrl();
+      window.location.assign(url);
       return true;
     } catch (error) {
       console.error('Error logging in:', error instanceof Error ? error.message : 'Unknown error');
@@ -201,6 +232,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isLoggedIn,
     isAuthLoading,
     loginWithGoogle,
+    prepareGoogleLogin,
     logout
   };
 
