@@ -3,6 +3,10 @@ import React, { useCallback, useEffect, useImperativeHandle, useState } from "re
 
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
+import { Markdown } from "@tiptap/markdown";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
+import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
+import { MarkdownPaste, detectContentType } from "./markdownPaste";
 
 interface MarkdownWysiwygProps {
   initialTitle?: string;
@@ -36,7 +40,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
           placeholder: showPlaceholder ? (placeholder || "Start writing your note...") : "",
           minHeight: "min-h-[200px] sm:min-h-[250px]",
           border: "",
-          extensions: showPlaceholder ? 
+          extensions: showPlaceholder ?
             [StarterKit, Placeholder.configure({ placeholder: placeholder || "Start writing your note..." })] :
             [StarterKit]
         };
@@ -60,8 +64,20 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
   const config = getEditorConfig();
 
   const editor = useEditor({
-    extensions: config.extensions,
+    extensions: [
+      MarkdownPaste,
+      StarterKit,
+      Markdown.configure({ markedOptions: { gfm: true } }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      ...config.extensions.filter((ext) => ext !== StarterKit),
+    ],
     content: initialBody,
+    contentType: detectContentType(initialBody),
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange?.({ title, body: html });
@@ -71,7 +87,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
   // Update editor content when initialBody changes
   useEffect(() => {
     if (editor && initialBody !== editor.getHTML()) {
-      editor.commands.setContent(initialBody);
+      editor.commands.setContent(initialBody, { contentType: detectContentType(initialBody) });
     }
   }, [editor, initialBody]);
 
