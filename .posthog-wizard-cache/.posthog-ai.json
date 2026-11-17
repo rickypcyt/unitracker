@@ -1,0 +1,5 @@
+{
+  "provider": "openrouter",
+  "package": "posthog-node",
+  "otel_init_file": "api/openrouter.ts"
+}

@@ -21,10 +21,12 @@ import Settings from "@/modals/settings/Settings";
 import UserModal from "@/modals/auth/UserModal";
 import NotificationPromptModal from "@/modals/NotificationPromptModal";
 import { supabase } from "@/utils/supabaseClient";
+import { User } from "@supabase/supabase-js";
 import { warnNotificationsBlocked } from "@/utils/desktopNotifications";
 import { initCrossTabSync } from "@/utils/crossTabSync";
 import { captureReferralParams } from "@/utils/referral";
 import { track } from "@vercel/analytics";
+import posthog from "posthog-js";
 import { useFriendManagement } from "@/hooks/friends/useFriendManagement";
 import { useWorkspaceLoader } from "@/hooks/workspaces/useWorkspaceLoader";
 
@@ -250,19 +252,39 @@ const AppRoute: FC = () => {
 // -------------------------
 function useSupabaseAuthSync(): void {
   const { setUser, clearUser } = useAuthActions();
+  const identifiedUserId = useRef<string | null>(null);
 
   useEffect(() => {
+    const syncUser = (user: User | null): void => {
+      if (user) {
+        setUser(user);
+
+        if (!posthog.__loaded || identifiedUserId.current === user.id) return;
+
+        if (identifiedUserId.current) posthog.reset();
+
+        posthog.identify(user.id, user.email ? { email: user.email } : {});
+        identifiedUserId.current = user.id;
+        return;
+      }
+
+      clearUser();
+
+      if (!posthog.__loaded || !identifiedUserId.current) return;
+
+      posthog.reset();
+      identifiedUserId.current = null;
+    };
+
     // Inicializa usuario si hay sesión
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUser(user);
-      else clearUser();
+      syncUser(user);
     });
 
     // Escucha cambios de sesión
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        if (session?.user) setUser(session.user);
-        else clearUser();
+        syncUser(session?.user ?? null);
       }
     );
 

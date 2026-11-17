@@ -1,0 +1,32 @@
+{
+  "id": "react-react-router-6",
+  "displayName": "React Router v6",
+  "match": {
+    "framework": "react-router",
+    "frameworkVariant": "v6"
+  },
+  "rules": {
+    "file": "references/COMMANDMENTS.md",
+    "description": "Framework-specific rules the integration must follow"
+  },
+  "products": {
+    "integration": [
+      {
+        "file": "references/react-router-v6.md",
+        "description": "React router v6"
+      }
+    ],
+    "error-tracking": [
+      {
+        "file": "references/error-tracking/react.md",
+        "description": "React error tracking installation"
+      }
+    ],
+    "feature-flags": [
+      {
+        "file": "references/feature-flags/react.md",
+        "description": "React feature flags installation"
+      }
+    ]
+  }
+}

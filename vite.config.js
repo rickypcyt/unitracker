@@ -38,6 +38,25 @@ const seoPrerenderPlugin = {
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, 'index.html'), out);
     }
+    // Existing localized landings: correct title/description/canonical in static HTML
+    const extra = [
+      { slug: 'es', title: 'UniTracker - Temporizador Pomodoro y Gestor de Tareas Gratis | Open Source', description: 'Temporizador Pomodoro, gestor de tareas, calendario y analíticas de estudio gratis en una app open source. Funciona offline, sincroniza al volver. Sin anuncios ni suscripciones.' },
+      { slug: 'hi', title: 'UniTracker - Free Pomodoro Timer और Task Manager | Open Source', description: 'एक open source app में free Pomodoro timer, task manager, calendar और study analytics। Offline चलता है, reconnect पर sync होता है। No ads, no subscriptions।' },
+      { slug: 'india', title: 'UniTracker India - Free Study App for JEE, NEET & CBSE | Pomodoro Timer', description: 'Free study app for students in India preparing for JEE, NEET, CBSE boards and university exams. Pomodoro timer, tasks, calendar & analytics. No ads, works offline.' },
+    ];
+    for (const p of extra) {
+      const url = `${SITE}/${p.slug}`;
+      const out = html
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(p.title)}</title>`)
+        .replace(/<meta\s+name="description"[\s\S]*?\/>/, `<meta name="description" content="${esc(p.description)}" />`)
+        .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
+        .replace(/<meta\s+property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
+        .replace(/<meta\s+property="og:title"[\s\S]*?\/>/, `<meta property="og:title" content="${esc(p.title)}" />`)
+        .replace(/<meta\s+property="og:description"[\s\S]*?\/>/, `<meta property="og:description" content="${esc(p.description)}" />`);
+      const dir = path.join(base, p.slug);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'index.html'), out);
+    }
   },
 };
 

@@ -25,6 +25,7 @@ import { formatHMS } from "@/utils/timeUtils";
 import { getLocalDateString } from "@/utils/dateUtils";
 import { StudyService, type SessionLap } from "@/services/StudyService";
 import { TaskService } from "@/services/TaskService";
+import posthog from "posthog-js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -812,6 +813,13 @@ const StudyTimer = ({
         updateData['started_at'] = new Date(Number(localStartedAt)).toISOString();
       }
       await StudyService.updateLap(currentSessionId, updateData);
+      if (posthog.__loaded) {
+        posthog.capture('study_session_completed', {
+          duration_seconds: parseHms(formattedDuration),
+          completed_task_count: completedTasks?.length ?? 0,
+          pomodoro_count: pomodorosToday,
+        });
+      }
 
       // Refresh title right before showing summary
       let finalTitle = studyState.sessionTitle ?? "Untitled Session";

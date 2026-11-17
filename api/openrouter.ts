@@ -1,3 +1,7 @@
+import { randomUUID } from 'node:crypto';
+import { logToPostHog } from './posthogLogs';
+import { PostHog } from 'posthog-node';
+
 interface VercelRequest {
   method?: string;
   headers?: Record<string, string>;
@@ -19,6 +23,27 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173',
 ];
 const APP_URL = 'https://unitracker.vercel.app';
+const posthogToken = process.env.POSTHOG_PROJECT_TOKEN;
+const posthogHost = process.env.POSTHOG_HOST;
+
+if (!posthogToken && process.env.NODE_ENV !== 'production') {
+  console.warn('POSTHOG_PROJECT_TOKEN variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once POSTHOG_PROJECT_TOKEN is configured');
+}
+if (!posthogHost && process.env.NODE_ENV !== 'production') {
+  console.warn('POSTHOG_HOST variable required by PostHog is missing or un-configured, this causes events to be silently missed. This error stops appearing once POSTHOG_HOST is configured');
+}
+
+const posthog = posthogToken && posthogHost
+  ? new PostHog(posthogToken, {
+      host: posthogHost,
+      // Don't send prompts/outputs (user task text) to PostHog
+      privacyMode: true,
+      flushAt: 1,
+      flushInterval: 0,
+      requestTimeout: 2000,
+      fetchRetryCount: 0,
+    })
+  : null;
 
 // Simple in-memory rate limiting (per IP, resets on serverless cold start)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -31,6 +56,65 @@ const MAX_MESSAGES_CHARS = 8000;
 const MAX_OUTPUT_TOKENS = 1500;
 
 // Verify the Supabase access token and return the user id (or null)
+async function captureGeneration({
+  userId,
+  traceId,
+  model,
+  messages,
+  temperature,
+  stream,
+  startedAt,
+  response,
+  data,
+  error,
+}: {
+  userId: string;
+  traceId: string;
+  model: string;
+  messages: unknown[];
+  temperature: number;
+  stream: boolean;
+  startedAt: number;
+  response?: Response;
+  data?: any;
+  error?: unknown;
+}) {
+  if (!posthog) return;
+
+  try {
+    const outputChoices = Array.isArray(data?.choices)
+      ? data.choices.flatMap((choice: any) => choice?.message ? [choice.message] : [])
+      : undefined;
+
+    posthog.capture({
+      distinctId: userId,
+      event: '$ai_generation',
+      properties: {
+        $ai_trace_id: traceId,
+        $ai_session_id: null,
+        $ai_span_name: 'task_generation',
+        $ai_model: model,
+        $ai_provider: 'openrouter',
+        $ai_input: messages,
+        $ai_output_choices: outputChoices,
+        $ai_input_tokens: data?.usage?.prompt_tokens,
+        $ai_output_tokens: data?.usage?.completion_tokens,
+        $ai_latency: (Date.now() - startedAt) / 1000,
+        $ai_http_status: response?.status,
+        $ai_is_error: Boolean(error) || Boolean(response && !response.ok),
+        $ai_error: error instanceof Error ? error.message : error,
+        $ai_stop_reason: data?.choices?.[0]?.finish_reason,
+        $ai_temperature: temperature,
+        $ai_stream: stream,
+        $ai_max_tokens: MAX_OUTPUT_TOKENS,
+      },
+    });
+    await posthog.flush().catch(() => {});
+  } catch {
+    // AI observability must not affect the OpenRouter response.
+  }
+}
+
 async function getUserId(authHeader: string | undefined): Promise<string | null> {
   const token = authHeader?.replace(/^Bearer\s+/i, '');
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -101,25 +185,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const origin = req.headers?.origin || '';
     const referer = ALLOWED_ORIGINS.includes(origin) ? origin : APP_URL;
 
+    const traceId = randomUUID();
+    const generationStartedAt = Date.now();
+    let response: Response;
+
     // Make request to OpenRouter API
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': referer,
-      },
-      body: JSON.stringify({
+    try {
+      response = await fetch(OPENROUTER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': referer,
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature,
+          stream,
+          max_tokens: MAX_OUTPUT_TOKENS
+        })
+      });
+    } catch (error) {
+      logToPostHog('ERROR', 'openrouter generation completed', {
+        outcome: 'network_error',
+        model,
+        duration_ms: Date.now() - generationStartedAt,
+      });
+      await captureGeneration({
+        userId,
+        traceId,
         model,
         messages,
         temperature,
         stream,
-        max_tokens: MAX_OUTPUT_TOKENS
-      })
-    });
+        startedAt: generationStartedAt,
+        error,
+      });
+      throw error;
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
+      await captureGeneration({
+        userId,
+        traceId,
+        model,
+        messages,
+        temperature,
+        stream,
+        startedAt: generationStartedAt,
+        response,
+        error: errorText,
+      });
+      logToPostHog('ERROR', 'openrouter generation completed', {
+        outcome: 'provider_error',
+        model,
+        http_status: response.status,
+        duration_ms: Date.now() - generationStartedAt,
+      });
       console.error('OpenRouter API error:', response.status, errorText);
       return res.status(response.status).json({ 
         error: `OpenRouter API error: ${response.status} ${response.statusText}`,
@@ -128,7 +252,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json();
+    await captureGeneration({
+      userId,
+      traceId,
+      model,
+      messages,
+      temperature,
+      stream,
+      startedAt: generationStartedAt,
+      response,
+      data,
+    });
     
+    logToPostHog('INFO', 'openrouter generation completed', {
+      outcome: 'success',
+      model,
+      http_status: response.status,
+      duration_ms: Date.now() - generationStartedAt,
+    });
+
     // Return the successful response
     return res.status(200).json(data);
 

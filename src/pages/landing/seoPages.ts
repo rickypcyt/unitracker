@@ -118,4 +118,85 @@ export const SEO_PAGES: SeoPage[] = [
       { q: 'Is it free?', a: 'Yes, the core app is free.' },
     ],
   },
+  {
+    slug: 'jee-study-planner',
+    title: 'Free JEE Study Planner & Timer: Track Hours and Chapters | UniTracker',
+    description:
+      'Free study planner for JEE Main and Advanced aspirants. Pomodoro timer, daily targets by subject (Physics, Chemistry, Maths), calendar and study-hour analytics. Works offline.',
+    h1: 'Free JEE Study Planner & Study Timer',
+    intro:
+      'JEE preparation is a marathon of Physics, Chemistry and Maths. UniTracker helps you plan daily targets, log every study hour by subject and see whether you are on track for your exam date.',
+    sections: [
+      {
+        heading: 'Track hours by subject',
+        body: 'Create Physics, Chemistry and Maths as subjects, run Pomodoro sessions against each one and see weekly totals, so you notice immediately which subject is being neglected.',
+      },
+      {
+        heading: 'Plan chapters and mock tests',
+        body: 'Add chapters, revision rounds and mock tests as tasks with deadlines, and view them on a calendar leading up to JEE Main and Advanced.',
+      },
+      {
+        heading: 'Built for long study days',
+        body: 'Customizable focus and break lengths, offline support for poor connections, and a lightweight app that runs on any phone or laptop.',
+      },
+    ],
+    faq: [
+      { q: 'Is this study planner free for JEE students?', a: 'Yes, the core planner, timer and analytics are free.' },
+      { q: 'How many hours should a JEE aspirant study?', a: 'It varies, but consistent daily hours matter more than occasional marathons. Tracking your real hours is the first step to improving them.' },
+    ],
+  },
+  {
+    slug: 'neet-study-planner',
+    title: 'Free NEET Study Planner & Timer for Biology, Physics, Chemistry | UniTracker',
+    description:
+      'Free NEET study planner with a Pomodoro timer, subject-wise hour tracking, revision tasks and exam calendar. Works offline, no ads.',
+    h1: 'Free NEET Study Planner & Timer',
+    intro:
+      'NEET has a huge syllabus. Break it into chapters, schedule revision cycles and measure the hours you put into Biology, Physics and Chemistry with one simple, free app.',
+    sections: [
+      {
+        heading: 'Biology-heavy? Track it separately',
+        body: 'Give Botany, Zoology, Physics and Chemistry their own subjects and see how your hours are split week by week.',
+      },
+      {
+        heading: 'Revision cycles',
+        body: 'Schedule repeat revision tasks and mock tests on the calendar so important chapters are never forgotten.',
+      },
+      {
+        heading: 'Stay consistent',
+        body: 'Streaks and habit tracking help you build a daily routine, which matters more than any single long session.',
+      },
+    ],
+    faq: [
+      { q: 'Is the NEET study planner free?', a: 'Yes, it is free to use.' },
+      { q: 'Does it work without internet?', a: 'Yes, install it as an app and it works offline.' },
+    ],
+  },
+  {
+    slug: 'upsc-study-tracker',
+    title: 'Free UPSC Study Tracker: Log Hours, Syllabus & Revision | UniTracker',
+    description:
+      'Free UPSC preparation tracker. Log study hours by paper, plan syllabus coverage and revisions, and see weekly analytics with a built-in Pomodoro timer.',
+    h1: 'Free UPSC Study Tracker',
+    intro:
+      'UPSC preparation takes a year or more of steady work. Track hours by paper, plan syllabus coverage and keep revision on schedule, with analytics that show your real consistency.',
+    sections: [
+      {
+        heading: 'Hours by paper and topic',
+        body: 'Create subjects for GS papers, optional and current affairs, and log every session so you know where time actually goes.',
+      },
+      {
+        heading: 'Syllabus and revision planning',
+        body: 'Turn the syllabus into tasks with deadlines and schedule revision rounds ahead of Prelims and Mains.',
+      },
+      {
+        heading: 'Notes next to your sessions',
+        body: 'Keep short notes and answer-writing reminders in the same place as your timer and tasks.',
+      },
+    ],
+    faq: [
+      { q: 'Is it free for UPSC aspirants?', a: 'Yes, the core features are free.' },
+      { q: 'Can I use it on mobile?', a: 'Yes, install it as an app from your browser.' },
+    ],
+  },
 ];

@@ -18,6 +18,7 @@ import {
 import { exportSessionsPDF, exportStatsPDF, exportTasksPDF } from '@/utils/pdfExport';
 import { supabase } from '@/utils/supabaseClient';
 import { durationToSeconds } from '@/utils/timeUtils';
+import posthog from 'posthog-js';
 import type { Task } from '@/schemas/task';
 import type { Lap } from '@/types/lap';
 
@@ -173,6 +174,7 @@ export function useDataExportImport(): UseDataExportImportReturn {
         }
         toast.success('Exported stats');
       }
+      if (posthog.__loaded) posthog.capture('data_exported', { data_type: dataType, format });
     } catch (err) {
       toast.error(`Export failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
@@ -217,6 +219,9 @@ export function useDataExportImport(): UseDataExportImportReturn {
         }
 
         toast.success(`Imported ${result.tasks.length} tasks from ${source}`);
+        if (posthog.__loaded) {
+          posthog.capture('tasks_imported', { source, task_count: result.tasks.length });
+        }
       } else {
         toast.error('Please log in to import tasks');
       }
@@ -268,6 +273,13 @@ export function useDataExportImport(): UseDataExportImportReturn {
       toast.success(
         `Restored ${result.metadata.taskCount} tasks, ${result.metadata.lapCount} sessions, ${result.metadata.workspaceCount} workspaces`
       );
+      if (posthog.__loaded) {
+        posthog.capture('backup_restored', {
+          task_count: result.metadata.taskCount,
+          session_count: result.metadata.lapCount,
+          workspace_count: result.metadata.workspaceCount,
+        });
+      }
 
       setLastRestoreResult(result);
       return result;

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { SEO_PAGES } from './seoPages';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import {
@@ -292,6 +293,11 @@ const LandingPage = () => {
 
         {/* Footer — minimal hairline */}
         <footer className="border-t border-white/[0.06]">
+          <nav aria-label="Guides" className="max-w-6xl mx-auto px-5 sm:px-8 pt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/40">
+            {SEO_PAGES.map((p) => (
+              <Link key={p.slug} to={`/${p.slug}`} className="hover:text-white transition-colors">{p.h1}</Link>
+            ))}
+          </nav>
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <span className="text-xs text-white/40">{t('landing.footer.copyright')}</span>
             <div className="flex items-center gap-5 text-[13px] text-white/40">

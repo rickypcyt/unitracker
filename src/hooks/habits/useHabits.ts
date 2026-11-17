@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { HabitService } from '@/services/HabitService';
+import posthog from 'posthog-js';
 
 
 export interface Habit {
@@ -160,6 +161,7 @@ export const useHabits = () => {
         saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
         return nextHabits;
       });
+      if (posthog.__loaded) posthog.capture('habit_created');
       return newHabit;
     } catch (err) {
       console.error('Error creating habit:', err);
@@ -242,6 +244,9 @@ export const useHabits = () => {
         saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
         return nextHabits;
       });
+      if (posthog.__loaded) {
+        posthog.capture('habit_completion_toggled', { completed: newCompletedState });
+      }
 
       return true;
     } catch (err) {

@@ -1,5 +1,6 @@
 import { useAddTaskSuccess, useUpdateTaskSuccess, useWorkspace, useFetchTasks } from '@/store/appStore';
 import { TaskService } from '@/services/TaskService';
+import posthog from 'posthog-js';
 import { useCallback } from 'react';
 
 // Helper function to convert 12h AM/PM format or ISO timestamp to 24h format (HH:MM)
@@ -199,10 +200,29 @@ export function useTaskSubmit() {
     if (initialTask) {
       const data = await TaskService.updateTask(initialTask.id, taskData);
       updateTaskSuccess(data);
+      if (posthog.__loaded) {
+        const logAttributes = {
+          is_recurring: isRecurring,
+          has_deadline: Boolean(deadline),
+          has_scheduled_time: Boolean(start_at || end_at),
+        };
+        posthog.capture('task_updated', logAttributes);
+        posthog.logger.info('task updated', logAttributes);
+      }
       return data;
     } else {
       const data = await TaskService.createTask(taskData);
       addTaskSuccess(data);
+      if (posthog.__loaded) {
+        const logAttributes = {
+          is_recurring: isRecurring,
+          has_deadline: Boolean(deadline),
+          has_scheduled_time: Boolean(start_at || end_at),
+          has_workspace: Boolean(taskData.workspace_id),
+        };
+        posthog.capture('task_created', logAttributes);
+        posthog.logger.info('task created', logAttributes);
+      }
       // Force refresh to ensure the new task appears immediately
       await fetchTasks(activeWorkspaceId ?? activeWorkspace?.id ?? undefined, true);
       return data;

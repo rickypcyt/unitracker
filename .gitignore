@@ -33,3 +33,4 @@ tasks.db
 
 .env
 dayflow-calendar-source
+.env.local

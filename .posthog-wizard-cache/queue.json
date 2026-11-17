@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "runId": "e5725680-a8d0-4ec5-b179-30b3b824f122",
+  "tasks": [
+    {
+      "id": "9159f403-a7fe-4119-9072-703620520380",
+      "type": "warehouse",
+      "status": "pending",
+      "dependsOn": [
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7",
+        "edc85507-9a70-4c8c-a127-695d2d1da527",
+        "094afb35-7afe-4e46-a3ca-7f04a1b7b60b",
+        "972d2eab-9c82-4d86-a048-9a478172bc0f",
+        "d035ec98-4741-41e0-a28b-f8bafece9806",
+        "bba286c9-2eb5-473c-8aaa-2e8b14d29e37",
+        "819ce0c5-522c-4ebe-9297-2727e7661aee",
+        "167b4100-b747-40fd-9261-58e33135c70d"
+      ],
+      "inputs": {
+        "sources": [
+          {
+            "kind": "Cloudflare",
+            "label": "Cloudflare",
+            "mode": "in-cli",
+            "matchedSignal": "found a `static.cloudflareinsights.com` script in `index.html`"
+          },
+          {
+            "kind": "OpenRouter",
+            "label": "OpenRouter",
+            "mode": "in-cli",
+            "matchedSignal": "found `OPENROUTER_API_KEY` in `.env.local`"
+          },
+          {
+            "kind": "Resend",
+            "label": "Resend",
+            "mode": "in-cli",
+            "matchedSignal": "found `resend` in package.json"
+          }
+        ]
+      },
+      "attempts": 0,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "optional": true,
+      "createdAt": "2026-11-17T18:08:25.563Z"
+    },
+    {
+      "id": "42076345-7607-4497-a2e2-6a8581c2616b",
+      "type": "install",
+      "status": "done",
+      "dependsOn": [],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.004Z",
+      "startedAt": "2026-11-17T18:08:42.042Z",
+      "handoff": {
+        "goals": "Install the PostHog SDK using the project's package manager, with real published versions recorded in the application manifest and lockfile.",
+        "did": "Installed the documented React client packages `posthog-js@1` and `@posthog/react@1` using Bun. Bun resolved and installed `posthog-js@1.450.0` and `@posthog/react@1.11.3`, updated `package.json`, and saved `bun.lock`. The API directory contains server code but no existing server-side PostHog event sending, so `posthog-node` was not added.",
+        "forNextAgent": "Import the installed browser packages as `posthog-js` and `@posthog/react` when adding the client integration. The app uses React Router 7; apply the React Router integration pattern to its actual routing structure. No server SDK is currently installed.",
+        "filesTouched": [
+          "package.json",
+          "bun.lock"
+        ],
+        "evidence": "Read the documented React Router SDK reference, then ran `bun add posthog-js@1 @posthog/react@1` successfully. Bun reported the resolved versions, and a post-install read of `package.json` confirms both dependencies are declared as version `1`.",
+        "assumptions": "The API endpoints do not require `posthog-node` because no existing server-side analytics event sends were found during the scoped inspection.",
+        "conflict": "",
+        "reportSection": "",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:09:40.122Z"
+    },
+    {
+      "id": "fbf910bc-3de7-413b-994b-650fb0af87b7",
+      "type": "init",
+      "status": "done",
+      "dependsOn": [],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.007Z",
+      "startedAt": "2026-11-17T18:08:42.049Z",
+      "handoff": {
+        "goals": "Initialize PostHog for the Vite React application, configure its public environment values through wizard tools, and document the variables for developers.",
+        "did": "Updated `src/main.tsx` to import the shared `posthog-js` client, initialize it once before render when both Vite public configuration values exist, and expose that same instance through `PostHogProvider` around the app. In development, a missing token or host now raises the required explicit configuration error; production remains a no-op. This enables later call sites to use `usePostHog()` from `@posthog/react` and contributes default PostHog autocapture, page/session analytics, replay, and subsequent product events. Updated `src/env.d.ts` with optional Vite environment typings for both PostHog values. Created `.env.example` with non-secret placeholders. Used the environment tool to set the configured public project token and host in `.env.local`. No CSP was added or changed: `index.html` explicitly has no active CSP meta tag, and no server CSP implementation was found in the targeted app files.",
+        "forNextAgent": "Reach the initialized singleton with `usePostHog()` from `@posthog/react` inside React components (or import `posthog` from `posthog-js` only where a hook cannot be used). Do not initialize another client. Both `posthog-js` and `@posthog/react` are present in `package.json`. The app is React 18 with React Router 7 (the supplied React Router v6 pattern remains compatible at the provider/entry-point level).",
+        "filesTouched": [
+          ".env.example",
+          ".env.local",
+          "src/env.d.ts",
+          "src/main.tsx"
+        ],
+        "evidence": "Re-read all three source/template files after editing. `check_env_keys` reports both `VITE_PUBLIC_POSTHOG_PROJECT_TOKEN` and `VITE_PUBLIC_POSTHOG_HOST` as present in `.env.local`; it also recognizes their documentation in `.env.example`. Confirmed `package.json` declares `posthog-js` and `@posthog/react`. Per task instruction, no build, lint, or test was run.",
+        "assumptions": "The configured Vite public host is the intended direct PostHog ingestion host. No reverse proxy is currently configured. No active CSP needs PostHog directive changes.",
+        "conflict": "None.",
+        "reportSection": "",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:09:59.107Z"
+    },
+    {
+      "id": "edc85507-9a70-4c8c-a127-695d2d1da527",
+      "type": "identify",
+      "status": "done",
+      "dependsOn": [
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.010Z",
+      "startedAt": "2026-11-17T18:10:01.121Z",
+      "handoff": {
+        "goals": "Wire client-side PostHog identification to the app’s stable authenticated user identity so browser events and errors inherit it, and clear it on logout.",
+        "did": "Updated `src/App.tsx` only. The existing centralized Supabase auth synchronization now imports the initialized `posthog-js` singleton and tracks the previously identified user ID. On an existing session or auth success it calls `posthog.identify(user.id, { email })` exactly once for the Supabase UUID, with email retained solely as a person property. Repeated auth notifications for the same user do not repeat identification. A direct account switch resets before identifying the new UUID; an identified sign-out resets PostHog. Calls are guarded by `posthog.__loaded`, preserving production no-op behavior when PostHog configuration is absent. This establishes identity once at the auth boundary, so all later browser-side captures and PostHog-reported errors inherit it automatically.",
+        "forNextAgent": "No per-event distinct-ID tagging is needed for browser PostHog calls: the shared client persists the Supabase UUID identity after authentication. The API has no PostHog server SDK/events per upstream handoff, so no backend request identity wiring was added. Any later browser instrumentation should use the already initialized shared client or `usePostHog()` hook.",
+        "filesTouched": [
+          "src/App.tsx"
+        ],
+        "evidence": "Re-read `src/App.tsx` after the targeted edit. Verified the identify call uses `user.id` (Supabase’s stable UUID), email appears only in identify person properties, duplicate same-user auth notifications return early, account switches reset before identify, and identified sign-outs reset. Per task instruction, no build, lint, or tests were run.",
+        "assumptions": "Supabase `User.id` is the application’s stable authenticated primary key, and the existing `src/main.tsx` initialization runs before this rendered auth effect.",
+        "conflict": "",
+        "reportSection": "",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:10:45.230Z"
+    },
+    {
+      "id": "094afb35-7afe-4e46-a3ca-7f04a1b7b60b",
+      "type": "error-tracking",
+      "status": "done",
+      "dependsOn": [
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.013Z",
+      "startedAt": "2026-11-17T18:10:01.129Z",
+      "handoff": {
+        "goals": "Ensure uncaught React rendering errors reach PostHog through the SDK-supported global mechanism, in one application entry-point location.",
+        "did": "Updated src/main.tsx to import PostHogErrorBoundary from @posthog/react and mounted it around the rendered application tree, inside the existing Sentry boundary and PostHogProvider. The boundary uses the app’s existing ErrorFallback, preserving the established error UI while allowing uncaught React errors in the application tree to be captured by PostHog Error Tracking.",
+        "forNextAgent": "PostHog is initialized once in src/main.tsx by the prior step. The global PostHogErrorBoundary now covers ChakraProvider, routing, App, and the existing client analytics components. No manual exception captures or additional SDK initialization were added.",
+        "filesTouched": [
+          "src/main.tsx"
+        ],
+        "evidence": "Re-read src/main.tsx after the edit and confirmed the PostHogErrorBoundary import and its placement around the full rendered application subtree. Per task instruction, no build, lint, tests, dependency installation, or app startup was run.",
+        "assumptions": "Assumed @posthog/react@1.11.3 exports PostHogErrorBoundary as documented by the supplied reference integration; package installation was completed by the upstream task.",
+        "conflict": "None.",
+        "reportSection": "## Error tracking\n\nAdded a global `PostHogErrorBoundary` at the React entry point in `src/main.tsx`. It wraps the rendered application tree and retains the existing `ErrorFallback`, so uncaught React render errors are reported to PostHog Error Tracking without scattering manual exception capture across routes or components.",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:10:27.917Z"
+    },
+    {
+      "id": "972d2eab-9c82-4d86-a048-9a478172bc0f",
+      "type": "capture",
+      "status": "done",
+      "dependsOn": [
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7",
+        "edc85507-9a70-4c8c-a127-695d2d1da527"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.016Z",
+      "startedAt": "2026-11-17T18:10:50.117Z",
+      "handoff": {
+        "goals": "Identify meaningful app actions, instrument them with attributable PostHog browser captures, and record the event contract for reporting.",
+        "did": "Created `.posthog-wizard-cache/.posthog-events.json` with the nine events introduced. Updated `src/hooks/tasks/useTaskSubmit.ts` to capture successful `task_created` and `task_updated` outcomes, with non-PII task-configuration properties. Updated `src/hooks/habits/useHabits.ts` for successful `habit_created` and `habit_completion_toggled` outcomes. Updated `src/hooks/settings/useDataExportImport.ts` for successful `data_exported`, `tasks_imported`, and `backup_restored` outcomes, including only type/count metadata. Updated `src/modals/workspaces/WorkspaceCreateModal.tsx` to capture successful `workspace_created` with selected icon metadata. Updated `src/pages/session/StudyTimer.tsx` to capture successful `study_session_completed` with duration, completed-task count, and pomodoro count. Every call uses the initialized `posthog-js` singleton guarded by `posthog.__loaded`; identity is inherited from the centralized Supabase identification established upstream.",
+        "forNextAgent": "Review the five instrumented browser files and event-plan cache. Captures are emitted only after the corresponding persistence/export action succeeds and contain no user-entered content, email, names, ids, titles, or notes. No server-side SDK was added because upstream identified no server event pipeline.",
+        "filesTouched": [
+          ".posthog-wizard-cache/.posthog-events.json",
+          "src/hooks/tasks/useTaskSubmit.ts",
+          "src/hooks/habits/useHabits.ts",
+          "src/hooks/settings/useDataExportImport.ts",
+          "src/modals/workspaces/WorkspaceCreateModal.tsx",
+          "src/pages/session/StudyTimer.tsx"
+        ],
+        "evidence": "Re-read each edited source file and the event-plan JSON after editing. A project-wide source grep confirmed the nine new `posthog.capture` call sites and their snake_case event names. Per task instruction, no build, lint, or test was run.",
+        "assumptions": "The existing shared browser client is initialized before these components execute, and its upstream Supabase auth integration persists the stable user identity for plain capture calls.",
+        "conflict": "",
+        "reportSection": "",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:11:50.185Z"
+    },
+    {
+      "id": "d035ec98-4741-41e0-a28b-f8bafece9806",
+      "type": "ai-observability",
+      "status": "done",
+      "dependsOn": [
+        "972d2eab-9c82-4d86-a048-9a478172bc0f"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "optional": true,
+      "createdAt": "2026-11-17T18:08:42.019Z",
+      "startedAt": "2026-11-17T18:11:53.005Z",
+      "handoff": {
+        "goals": "Add AI Observability to every production LLM call already made by the application, without changing LLM request behavior or instrumenting developer-only tooling.",
+        "did": "Selected `ai-observability-manual-capture`: the production `api/openrouter.ts` call uses raw `fetch` against OpenRouter and the manifest has no vendor LLM SDK, so the OpenRouter wrapper is not applicable. Updated `api/openrouter.ts` to construct a guarded server-only `posthog-node` client from `POSTHOG_PROJECT_TOKEN` and `POSTHOG_HOST`, with `privacyMode: false`, serverless-safe batching (`flushAt: 1`, `flushInterval: 0`, 2-second request timeout, no retries), and no exception-autocapture option. The existing OpenRouter request is unchanged; each completed, rejected, or network-failed generation now emits a non-blocking, caught-and-flushed `$ai_generation` event with the authenticated Supabase UUID as `distinctId`, a fresh UUID `$ai_trace_id`, actual request/response content, model, provider, usage, latency, status, and error metadata. This feeds AI Observability generation, latency, token, status, and failure analysis. The AI Task Generator has no multi-turn conversation or tool loop, so `$ai_session_id` is explicitly `null` and no `$ai_span` events were added. Updated `.env.example` to document server-only PostHog configuration names and set the supplied public project token/host in `.env.local` through the env tool. Created `.posthog-wizard-cache/.posthog-ai.json` so reporting recognizes the OpenRouter/manual-capture setup. The Vite dev-server OpenRouter proxy in `vite.config.js` was inspected but intentionally left untouched as developer-only LLM tooling; the deployed serverless endpoint is the production target. No MCP server or MCP-server LLM calls were detected.",
+        "forNextAgent": "Review/install must add `posthog-node` before build/type checking; this task deliberately did not change the dependency manifest, lockfile, run a package manager, import-check, build, app, or paid LLM request. Also configure `POSTHOG_PROJECT_TOKEN` and `POSTHOG_HOST` in the production serverless/Vercel environment; `.env.local` only covers local execution. To verify after deployment, sign in, open the Tasks flow’s AI Task Generator, submit one task prompt, then inspect the newest generation under AI Observability > Traces at https://us.posthog.com. Expect one trace containing one `task_generation` generation attributed to the authenticated Supabase UUID; no AI session is expected because each request is one-shot. Delivery is wired but unverified. Privacy mode: effective setting is off (`privacyMode: false`) in `api/openrouter.ts` near the module-level PostHog constructor, so manual capture sends prompt and completion content. Before sending sensitive prompts or outputs, set that option to `true` and update `captureGeneration` in the same file to omit `$ai_input`, `$ai_output_choices`, and any sensitive manual error content; manual capture properties are explicitly supplied and should not rely on an SDK option to redact them. See https://posthog.com/docs/ai-observability/privacy-mode.",
+        "filesTouched": [
+          "api/openrouter.ts",
+          ".env.example",
+          ".env.local",
+          ".posthog-wizard-cache/.posthog-ai.json"
+        ],
+        "evidence": "Re-read `api/openrouter.ts` after editing and confirmed the guarded `posthog-node` client, one `randomUUID()` trace per OpenRouter request, `$ai_generation` capture on success/HTTP failure/network failure, stable authenticated distinct ID, and caught serverless flush. Re-read `.env.example` and the AI run record. `check_env_keys` confirmed both server-side and existing Vite PostHog configuration keys are present in `.env.local` (and documented in `.env.example`). A targeted grep confirmed the import and all three capture call paths. No runtime verification was performed by instruction.",
+        "assumptions": "The authenticated Supabase UUID returned by the existing `getUserId` function is stable and suitable as the server-side distinct ID. Each AI Task Generator submission is a one-shot task-generation interaction rather than part of a persistent conversation, which is why its AI session ID is null. The deployment platform makes configured server environment variables available to `api/openrouter.ts`.",
+        "conflict": "`posthog-node` is intentionally imported but not yet declared/installed because this task explicitly defers dependency-manifest and package-manager work to review.",
+        "reportSection": "",
+        "packages": [
+          "posthog-node"
+        ]
+      },
+      "finishedAt": "2026-11-17T18:14:15.201Z"
+    },
+    {
+      "id": "bba286c9-2eb5-473c-8aaa-2e8b14d29e37",
+      "type": "dashboard",
+      "status": "done",
+      "dependsOn": [
+        "972d2eab-9c82-4d86-a048-9a478172bc0f",
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7",
+        "edc85507-9a70-4c8c-a127-695d2d1da527"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.022Z",
+      "startedAt": "2026-11-17T18:11:53.075Z",
+      "handoff": {
+        "goals": "Create a starter PostHog dashboard with a handful of insights based on the browser events instrumented by the integration, then hand off its URL.",
+        "did": "Created the PostHog dashboard `Analytics basics (wizard)` (ID 2369761), tagged `wizard`, with five attached, tagged starter insights: `Task activity (wizard)` for `task_created` and `task_updated`; `Workspaces created (wizard)` for `workspace_created`; `Habit activity (wizard)` for `habit_created` and `habit_completion_toggled`; `Completed study sessions (wizard)` for `study_session_completed`; and `Data management activity (wizard)` for `data_exported`, `tasks_imported`, and `backup_restored`. Applied a non-overlapping 12-column layout and hid tile descriptions. These views feed the team's starter product-activity dashboard and will populate as the newly instrumented events arrive.",
+        "forNextAgent": "Dashboard URL: https://us.posthog.com/project/744218/dashboard/2369761. The dashboard contains five saved insights and requires no code or configuration changes. No MCP server instrumentation handoff indicated a server, so no `$mcp_tool_call` tile was added; the dashboard primarily covers app browser events as required.",
+        "filesTouched": [],
+        "evidence": "PostHog MCP returned dashboard ID 2369761 and URL on creation; each of the five `insight-create` calls returned a saved insight attached to dashboard 2369761; `dashboard-get` returned all five tile IDs; and `dashboard-update` returned the final dashboard with all five tiles assigned non-overlapping `sm` layouts.",
+        "assumptions": "The fresh browser integration has not necessarily ingested any app events yet, so insight data may initially be empty; the saved definitions are expected to populate automatically after capture begins.",
+        "conflict": "",
+        "reportSection": "## Starter analytics dashboard\n\nCreated [Analytics basics (wizard)](https://us.posthog.com/project/744218/dashboard/2369761) with five 30-day starter views for the new browser event contract: task activity, workspace creation, habit activity, completed study sessions, and data-management activity. All dashboard artifacts are marked `wizard` and will populate as the app begins sending events.",
+        "packages": []
+      },
+      "finishedAt": "2026-11-17T18:13:09.381Z"
+    },
+    {
+      "id": "819ce0c5-522c-4ebe-9297-2727e7661aee",
+      "type": "logs",
+      "status": "done",
+      "dependsOn": [
+        "d035ec98-4741-41e0-a28b-f8bafece9806"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "optional": true,
+      "createdAt": "2026-11-17T18:08:42.025Z",
+      "startedAt": "2026-11-17T18:14:18.267Z",
+      "handoff": {
+        "goals": "Configure PostHog Logs capture for the project's supported browser and Node/Vercel API runtimes, using the documented platform integrations while exporting only log lines added in this task.",
+        "did": "- `src/main.tsx`: configured the already-initialized `posthog-js` client with Logs resource identity (`unitracker-web` and the Vite build mode). This enables the browser-native PostHog logger without console autocapture.\n- `src/hooks/tasks/useTaskSubmit.ts`: added two structured browser log records, `task created` and `task updated`, only after their existing persistence operations succeed. Their attributes are limited to task configuration booleans and feed Logs queries for task-save outcomes; no identifiers, titles, notes, or other user-entered content are included.\n- `api/posthogLogs.ts`: added a dedicated `LoggerProvider`-owned logger (not the global OpenTelemetry Logs API) with an OTLP HTTP exporter that derives its ingestion endpoint and authorization from `POSTHOG_HOST` and `POSTHOG_PROJECT_TOKEN`. It uses a batch processor, does not delay application startup or request responses, exports only calls made through `logToPostHog`, and attempts a caught flush only at process shutdown.\n- `api/openrouter.ts`: added purpose-written structured API logs for OpenRouter generation completion in success, provider-error, and network-error paths. They include only outcome, allowed model, response status where applicable, and duration; request messages, error text, keys, and user identifiers are excluded. These feed operational Logs analysis for AI generation availability and latency.\nExisting console output and log handlers remain unchanged and are not exported by this integration.",
+        "forNextAgent": "Review/install the listed packages before running type-check or build; this task deliberately did not edit `package.json`/`bun.lock`, install packages, or run validation. The required configuration names are already present from upstream: browser `VITE_PUBLIC_POSTHOG_PROJECT_TOKEN` and `VITE_PUBLIC_POSTHOG_HOST`; server `POSTHOG_PROJECT_TOKEN` and `POSTHOG_HOST`. Ensure the server values are configured in Vercel production as well as local development. Delivery is wired but unverified. To verify browser Logs, create or update a task and filter PostHog Logs by service `unitracker-web` for `task created` or `task updated`. To verify API Logs, submit the AI Task Generator and filter service `unitracker-api` for `openrouter generation completed`; inspect `outcome`, `model`, and `duration_ms`. Only records explicitly added by this run are exported. To route existing browser console logging too, add `captureConsoleLogs: true` to the existing `logs` configuration in `src/main.tsx` only after auditing its output; this is intentionally not enabled. For existing API logging, replace a selected safe `console.*` call with `logToPostHog(...)` rather than attaching the exporter to a global logger.",
+        "filesTouched": [
+          "src/main.tsx",
+          "src/hooks/tasks/useTaskSubmit.ts",
+          "api/posthogLogs.ts",
+          "api/openrouter.ts"
+        ],
+        "evidence": "Read the React/React Router framework commandments, installed and read the JavaScript and Node.js Logs skills plus their platform references, inspected the existing runtime/logging setup, detected Bun as the preferred package manager, and re-read every changed file after editing. Targeted grep confirmed exactly the two browser `posthog.logger` call sites and the three API `logToPostHog` outcome call sites, with no `captureConsoleLogs` configuration. No build, lint, type-check, dependency installation, runtime request, or delivery observation was run, per task scope.",
+        "assumptions": "The Vercel `api/` directory is deployed as Node.js serverless functions; `POSTHOG_PROJECT_TOKEN` and `POSTHOG_HOST` are made available to that runtime in deployment; and the package resolver will select mutually compatible current OpenTelemetry packages alongside the already-required `posthog-node`. No pre-existing OpenTelemetry or MCP server runtime was found in the inspected project files.",
+        "conflict": "No conflict; package installation and validation are intentionally left for the review task.",
+        "reportSection": "## Log capture\n\nConfigured PostHog Logs for the browser and Node/Vercel API runtimes. Browser task saves emit structured `task created` and `task updated` records under `unitracker-web`; OpenRouter generation completion emits structured success, provider-error, and network-error records under `unitracker-api`. The API exporter is isolated to a dedicated LoggerProvider-owned logger and derives both endpoint and authorization from server environment variables. Only log lines added by this run are exported; existing console output remains local. Install the listed OpenTelemetry packages (and the upstream-required `posthog-node`) before validation. Delivery remains unverified: create or update a task, or run the AI Task Generator, then search Logs at https://us.posthog.com filtered by the appropriate service. To export existing browser console output too, add `captureConsoleLogs: true` to the existing `logs` configuration after a privacy audit.",
+        "packages": [
+          "bun add @opentelemetry/exporter-logs-otlp-http",
+          "bun add @opentelemetry/resources",
+          "bun add @opentelemetry/sdk-logs",
+          "bun add posthog-node"
+        ]
+      },
+      "finishedAt": "2026-11-17T18:16:03.870Z"
+    },
+    {
+      "id": "167b4100-b747-40fd-9261-58e33135c70d",
+      "type": "review",
+      "status": "running",
+      "dependsOn": [
+        "42076345-7607-4497-a2e2-6a8581c2616b",
+        "fbf910bc-3de7-413b-994b-650fb0af87b7",
+        "edc85507-9a70-4c8c-a127-695d2d1da527",
+        "094afb35-7afe-4e46-a3ca-7f04a1b7b60b",
+        "972d2eab-9c82-4d86-a048-9a478172bc0f",
+        "d035ec98-4741-41e0-a28b-f8bafece9806",
+        "819ce0c5-522c-4ebe-9297-2727e7661aee"
+      ],
+      "inputs": {},
+      "attempts": 1,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.028Z",
+      "startedAt": "2026-11-17T18:16:06.804Z"
+    },
+    {
+      "id": "df1ff2b2-e18c-4d33-9538-014472e11672",
+      "type": "report",
+      "status": "pending",
+      "dependsOn": [
+        "bba286c9-2eb5-473c-8aaa-2e8b14d29e37",
+        "167b4100-b747-40fd-9261-58e33135c70d",
+        "9159f403-a7fe-4119-9072-703620520380"
+      ],
+      "inputs": {},
+      "attempts": 0,
+      "maxAttempts": 2,
+      "enqueuedBy": "orchestrator",
+      "createdAt": "2026-11-17T18:08:42.032Z"
+    }
+  ]
+}

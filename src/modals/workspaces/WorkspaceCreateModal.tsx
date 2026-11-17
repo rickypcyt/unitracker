@@ -4,6 +4,7 @@ import BaseModal from '@/modals/shared/BaseModal';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useState } from 'react';
 import { WorkspaceService } from '@/services/WorkspaceService';
+import posthog from 'posthog-js';
 
 const iconOptions = [
   { name: 'Briefcase', icon: Briefcase },
@@ -63,6 +64,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
       });
 
       onWorkspaceCreated(data);
+      if (posthog.__loaded) posthog.capture('workspace_created', { icon: selectedIcon });
       onClose();
     } catch (error) {
       console.error('Error creating workspace:', error);

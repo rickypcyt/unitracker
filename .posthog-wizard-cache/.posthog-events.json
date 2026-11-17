@@ -1,0 +1,47 @@
+[
+  {
+    "event": "task_created",
+    "description": "A signed-in user successfully creates a task.",
+    "file": "src/hooks/tasks/useTaskSubmit.ts"
+  },
+  {
+    "event": "task_updated",
+    "description": "A signed-in user successfully saves changes to an existing task.",
+    "file": "src/hooks/tasks/useTaskSubmit.ts"
+  },
+  {
+    "event": "habit_created",
+    "description": "A signed-in user successfully creates a habit.",
+    "file": "src/hooks/habits/useHabits.ts"
+  },
+  {
+    "event": "habit_completion_toggled",
+    "description": "A signed-in user successfully marks a habit complete or incomplete.",
+    "file": "src/hooks/habits/useHabits.ts"
+  },
+  {
+    "event": "data_exported",
+    "description": "A user successfully exports tasks, sessions, or statistics.",
+    "file": "src/hooks/settings/useDataExportImport.ts"
+  },
+  {
+    "event": "tasks_imported",
+    "description": "A signed-in user successfully imports tasks from a supported source.",
+    "file": "src/hooks/settings/useDataExportImport.ts"
+  },
+  {
+    "event": "backup_restored",
+    "description": "A user successfully restores a valid backup.",
+    "file": "src/hooks/settings/useDataExportImport.ts"
+  },
+  {
+    "event": "workspace_created",
+    "description": "A signed-in user successfully creates a workspace.",
+    "file": "src/modals/workspaces/WorkspaceCreateModal.tsx"
+  },
+  {
+    "event": "study_session_completed",
+    "description": "A signed-in user successfully completes a study session with non-zero duration.",
+    "file": "src/pages/session/StudyTimer.tsx"
+  }
+]
