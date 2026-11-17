@@ -25,14 +25,43 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per IP
 
+// Only these models can be requested (prevents using the endpoint to run expensive models)
+const ALLOWED_MODELS = ['openrouter/free'];
+const MAX_MESSAGES_CHARS = 8000;
+const MAX_OUTPUT_TOKENS = 1500;
+
+// Verify the Supabase access token and return the user id (or null)
+async function getUserId(authHeader: string | undefined): Promise<string | null> {
+  const token = authHeader?.replace(/^Bearer\s+/i, '');
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  if (!token || !url || !anonKey) return null;
+  try {
+    const r = await fetch(`${url}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${token}`, apikey: anonKey },
+    });
+    if (!r.ok) return null;
+    const user = (await r.json()) as { id?: string };
+    return user.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Rate limiting check
-  const clientIp = (req.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() || 'unknown';
+  // Require a logged-in user
+  const userId = await getUserId(req.headers?.['authorization'] ?? req.headers?.['Authorization']);
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  // Rate limiting check (per user)
+  const clientIp = userId;
   const now = Date.now();
   const record = rateLimitMap.get(clientIp);
 
@@ -51,6 +80,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Validate required fields
     if (!model || !messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Missing required fields: model, messages' });
+    }
+
+    if (!ALLOWED_MODELS.includes(model)) {
+      return res.status(400).json({ error: 'Model not allowed' });
+    }
+    if (JSON.stringify(messages).length > MAX_MESSAGES_CHARS) {
+      return res.status(413).json({ error: 'Input too long' });
     }
 
     // Get API key from environment variables (server-side only)
@@ -77,7 +113,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         model,
         messages,
         temperature,
-        stream
+        stream,
+        max_tokens: MAX_OUTPUT_TOKENS
       })
     });
 

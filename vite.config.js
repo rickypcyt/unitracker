@@ -4,6 +4,42 @@ import path from "path";
 import react from '@vitejs/plugin-react-swc';
 import { VitePWA } from 'vite-plugin-pwa';
 import { visualizer } from 'rollup-plugin-visualizer';
+import fs from 'fs';
+import { SEO_PAGES, SITE } from './src/pages/landing/seoPages.ts';
+
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+// Writes dist/<slug>/index.html for each SEO page with real title, meta tags
+// and body text so crawlers see content without running JavaScript.
+const seoPrerenderPlugin = {
+  name: 'seo-prerender',
+  apply: 'build',
+  closeBundle() {
+    const base = path.resolve(process.cwd(), 'dist');
+    const tpl = path.join(base, 'index.html');
+    if (!fs.existsSync(tpl)) return;
+    const html = fs.readFileSync(tpl, 'utf-8');
+    for (const p of SEO_PAGES) {
+      const url = `${SITE}/${p.slug}`;
+      let out = html
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(p.title)}</title>`)
+        .replace(/<meta\s+name="description"[\s\S]*?\/>/, `<meta name="description" content="${esc(p.description)}" />`)
+        .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${url}" />`)
+        .replace(/<meta\s+property="og:url"[^>]*>/, `<meta property="og:url" content="${url}" />`)
+        .replace(/<meta\s+property="og:title"[\s\S]*?\/>/, `<meta property="og:title" content="${esc(p.title)}" />`)
+        .replace(/<meta\s+property="og:description"[\s\S]*?\/>/, `<meta property="og:description" content="${esc(p.description)}" />`);
+      const body =
+        `<main><h1>${esc(p.h1)}</h1><p>${esc(p.intro)}</p>` +
+        p.sections.map((s) => `<section><h2>${esc(s.heading)}</h2><p>${esc(s.body)}</p></section>`).join('') +
+        p.faq.map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('') +
+        `</main>`;
+      out = out.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
+      const dir = path.join(base, p.slug);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'index.html'), out);
+    }
+  },
+};
 
 export default defineConfig(({ command, mode }) => {
   // Load env vars from .env files for server-side use (dev middleware)
@@ -73,6 +109,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       ...(command === 'serve' ? [openRouterDevPlugin] : []),
       react(),
+      seoPrerenderPlugin,
       // Keep the PWA virtual module available, but skip Workbox generation for fast/mobile builds.
       VitePWA({
           disable: shouldDisableCompression || isFastDev,

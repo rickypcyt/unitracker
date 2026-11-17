@@ -5,6 +5,7 @@ import { getLocalDateString } from '@/utils/dateUtils';
 import { normalizeNaturalOrYMDDate } from '@/hooks/tasks/useTaskDateUtils';
 import { useRef } from 'react';
 import { useTaskAI } from '@/hooks/tasks/useTaskAI';
+import { supabase } from '@/utils/supabaseClient';
 type AITaskFormProps = {
   onClose: () => void;
   onSwitchToManual?: () => void;
@@ -153,10 +154,19 @@ const AITaskForm = ({
           stream: false
         };
         if (AI_DEBUG) {}
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) {
+          return {
+            success: false,
+            error: 'Please sign in to use AI'
+          };
+        }
         const response = await fetch('/api/openrouter', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
           },
           body: JSON.stringify(requestBody),
           signal: controller.signal

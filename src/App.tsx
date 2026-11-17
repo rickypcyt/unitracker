@@ -8,6 +8,8 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import FloatingFooter from "@/components/layout/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
 import IndiaLandingPage from "@/pages/landing/IndiaLandingPage";
+import SeoLandingPage from "@/pages/landing/SeoLandingPage";
+import { SEO_PAGES } from "@/pages/landing/seoPages";
 import i18n from "@/i18n";
 import PageLoader from "@/components/ui/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
@@ -392,6 +394,9 @@ const App: FC = () => {
             <Route path="/es" element={<LocalizedLanding lang="es" />} />
             <Route path="/hi" element={<LocalizedLanding lang="hi" />} />
             <Route path="/india" element={<IndiaLandingPage />} />
+            {SEO_PAGES.map((p) => (
+              <Route key={p.slug} path={`/${p.slug}`} element={<SeoLandingPage slug={p.slug} />} />
+            ))}
             <Route path="/app" element={<Navigate to={PAGE_PATHS.session} replace />} />
             <Route path={PAGE_PATHS.session} element={<AppRoute />} />
             <Route path={PAGE_PATHS.tasks} element={<AppRoute />} />
