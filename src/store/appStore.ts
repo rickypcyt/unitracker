@@ -326,6 +326,19 @@ const DEFAULT_TASK_STATE: TaskState = {
   isCached: false,
   lastFetch: null
 };
+// Last fetched tasks (written by TaskActions after every fetch/mutation) so lists paint
+// instantly on reload instead of waiting for the network. Only used when a Supabase
+// session exists; logout clears localStorage.
+const readHydratedTasks = (): TaskState['tasks'] => {
+  try {
+    const hasSession = Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (!hasSession) return [];
+    const parsed = JSON.parse(localStorage.getItem('tasksHydrated') || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 const DEFAULT_LAP_STATE: LapState = {
   laps: [],
   loading: false,
@@ -520,7 +533,7 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
     }
   })),
   // State replacements for Redux
-  tasks: DEFAULT_TASK_STATE,
+  tasks: { ...DEFAULT_TASK_STATE, tasks: readHydratedTasks() },
   laps: DEFAULT_LAP_STATE,
   auth: DEFAULT_AUTH_STATE,
   layout: DEFAULT_LAYOUT_STATE,

@@ -8,7 +8,10 @@ const ALL_WORKSPACE_ID = 'all';
 
 export class TaskService {
   static async fetchTasks(workspaceId?: string): Promise<Task[]> {
-    const { data: { user } } = await supabase.auth.getUser();
+    // getSession() reads the stored session (no network round trip, unlike getUser());
+    // RLS still validates the JWT on every query below.
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) throw new Error('Usuario no autenticado');
 
     // Fetch shared workspaces and owned tasks in parallel

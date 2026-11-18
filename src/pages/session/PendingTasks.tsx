@@ -221,7 +221,7 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
           </ActionTooltip>
         </div>
       )}
-      {isAuthLoading || (isLoggedIn && loading && pending.length === 0) ? (
+      {(isAuthLoading || (isLoggedIn && loading)) && pending.length === 0 ? (
         <p role="status" className="flex-1 py-6 flex items-center justify-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
       ) : pending.length === 0 ? (
         <div className="flex-1 py-6 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)]">
