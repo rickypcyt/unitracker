@@ -2687,3 +2687,19 @@ input.no-spinners {
 .scratchpad-mono * {
   font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }
+
+/* ─── @dayflow/core utility clash ───────────────────────────────────────
+   @dayflow/core/dist/styles.css ships prebuilt Tailwind v4 utilities that move
+   elements with the `translate` property. Our Tailwind v3 utilities with the
+   same class names use `transform`. Both apply, so the offset is doubled
+   (e.g. scratchpad checkboxes sat 8px too high). Keep only the v3 transform.
+   Remove this block after migrating to Tailwind 4. */
+.-translate-x-1\/2,
+.-translate-y-1\/2 {
+  translate: none;
+}
+@media (min-width: 640px) {
+  .sm\:-translate-y-1\/2 {
+    translate: none;
+  }
+}
