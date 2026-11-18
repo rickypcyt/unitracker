@@ -266,7 +266,7 @@ const HabitsPage = memo(() => {
 
   if (loading && isLoggedIn && displayHabits.length === 0) {
     return (
-      <div className="w-full px-2 py-4 sm:px-6 md:px-8 lg:px-12 xl:px-20" aria-label={t('habits.loadingAria')}>
+      <div className="w-full py-4" aria-label={t('habits.loadingAria')}>
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-16 sm:h-20 animate-pulse rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]" />
@@ -311,9 +311,9 @@ const HabitsPage = memo(() => {
           content="Build positive study habits with our habit tracker. Set daily goals, track progress, and develop consistent study routines."
         />
       </Helmet>
-      <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 pb-24 sm:pb-8 overflow-hidden">
+      <div className="w-full pb-24 sm:pb-8 overflow-hidden">
       {/* Week navigation + stats + New Habit */}
-      <div className="flex items-center justify-between gap-3 mt-4 mb-4">
+      <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-0.5 rounded-full border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] px-1.5 py-1 shadow-sm">
           <button
             onClick={() => setWeekOffset(o => o - 1)}
@@ -468,7 +468,7 @@ const HabitsPage = memo(() => {
                                 isFuture
                                   ? 'border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)] opacity-50 cursor-not-allowed'
                                   : isCompleted
-                                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] active:scale-95'
+                                  ? 'border-[var(--accent-primary)] bg-transparent active:scale-95'
                                   : isToday
                                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5 active:scale-95'
                                   : 'border-[var(--border-primary)] bg-[var(--bg-secondary)] active:scale-95'
@@ -478,7 +478,7 @@ const HabitsPage = memo(() => {
                               <span
                                 className={`text-sm sm:text-base font-bold tabular-nums ${
                                   isCompleted
-                                    ? 'text-white'
+                                    ? 'text-[var(--accent-primary)]'
                                     : isToday
                                     ? 'text-[var(--accent-primary)]'
                                     : 'text-[var(--text-secondary)]'
@@ -486,6 +486,9 @@ const HabitsPage = memo(() => {
                               >
                                 {d}
                               </span>
+                              {isCompleted && (
+                                <Check size={12} strokeWidth={3.5} className="absolute right-1 top-1 text-[var(--accent-primary)]" aria-hidden="true" />
+                              )}
                             </button>
                           </div>
                         );
@@ -520,7 +523,7 @@ const HabitsPage = memo(() => {
                   return (
                     <div
                       key={`note-${dateKey}`}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 ${isToday ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]' : `bg-[var(--bg-secondary)] ${isFuture ? 'border-dashed border-[var(--border-primary)]' : 'border-[var(--border-primary)]'}`} ${isPast ? 'opacity-70' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 focus-within:border-[var(--accent-primary)] transition-colors ${isToday ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]' : `bg-[var(--bg-secondary)] ${isFuture ? 'border-dashed border-[var(--border-primary)]' : 'border-[var(--border-primary)]'}`} ${isPast ? 'opacity-70' : ''}`}
                     >
                       <div className="flex flex-col items-center justify-center w-12 flex-shrink-0 leading-tight">
                         <span className={`text-xs font-semibold uppercase tracking-wide ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
@@ -534,7 +537,7 @@ const HabitsPage = memo(() => {
                       <input
                         type="text"
                         placeholder={t('habits.addNote')}
-                        className="flex-1 px-2 py-1.5 text-base bg-transparent border-none outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] disabled:cursor-not-allowed"
+                        className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-base bg-transparent border-none !outline-none text-[var(--text-primary)] placeholder-[var(--text-tertiary)] disabled:cursor-not-allowed"
                         defaultValue={journalNotes[dateKey] || ''}
                         onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}
                         onKeyDown={(e) => handleNoteKeyDownForMonth(y, m, d, e)}

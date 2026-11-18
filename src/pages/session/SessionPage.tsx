@@ -102,27 +102,34 @@ const SessionPage = memo(() => {
     </div>
   );
 
+  // xl: 3 columns × 2 rows. Calendar and timer share row 1 (the calendar is absolutely
+  // positioned inside its cell so the timer sets the row height and the calendar matches it).
   const timersMonthRow = (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] gap-4 items-stretch">
-      <motion.div variants={item} className="min-w-0 h-full order-3 xl:order-1">
-        <PendingTasks />
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] xl:grid-rows-[auto_1fr] gap-4 items-stretch">
+      {/* Timer (row 1, middle) */}
+      <motion.div variants={item} className="min-w-0 order-1 xl:col-start-2 xl:row-start-1">
+        {timersSection}
       </motion.div>
-      <div className="min-w-0 order-1 xl:order-2 flex flex-col gap-4 h-full overflow-hidden">
-        <motion.div variants={item}>
-          {timersSection}
-        </motion.div>
-        <motion.div variants={item} className="flex-1 min-h-0">
-          <ScratchPad />
-        </motion.div>
-      </div>
-      <div className="min-w-0 order-2 xl:order-3 flex flex-col gap-4 h-full overflow-hidden">
-        <motion.div variants={item} className="dashboard-noise-card w-full overflow-hidden p-3 flex-none">
-          <NoiseGenerator />
-        </motion.div>
-        <motion.div variants={item} className="flex-1 min-h-0 overflow-hidden pb-px">
-          <MonthView />
-        </motion.div>
-      </div>
+      {/* Scratchpad (row 2, middle) */}
+      <motion.div variants={item} className="min-w-0 min-h-0 order-2 xl:col-start-2 xl:row-start-2 xl:h-full">
+        <ScratchPad />
+      </motion.div>
+      {/* Calendar (row 1, left) — same height as the timer on xl */}
+      <motion.div variants={item} className="min-w-0 order-3 xl:col-start-1 xl:row-start-1 xl:relative xl:min-h-0">
+        <div className="xl:absolute xl:inset-0">
+          <MonthView fillHeight />
+        </div>
+      </motion.div>
+      {/* Noise generator (row 2, left) */}
+      <motion.div variants={item} className="order-4 xl:col-start-1 xl:row-start-2 min-w-0 dashboard-noise-card w-full overflow-hidden p-3 self-start">
+        <NoiseGenerator />
+      </motion.div>
+      {/* Pending tasks (right) — spans both rows; the other columns set its height on xl, it scrolls inside */}
+      <motion.div variants={item} className="min-w-0 order-5 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-1 xl:row-span-2 xl:relative xl:min-h-0">
+        <div className="xl:absolute xl:inset-0">
+          <PendingTasks fillHeight />
+        </div>
+      </motion.div>
     </div>
   );
 
@@ -183,7 +190,7 @@ const SessionPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/session" />
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
-      <div className="w-full session-page px-4 sm:px-6 lg:px-0 pt-4 pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
+      <div className="w-full session-page pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
         <motion.div
           variants={container}
           initial="hidden"

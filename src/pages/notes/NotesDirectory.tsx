@@ -20,6 +20,8 @@ interface NotesDirectoryProps {
   loading: boolean;
   error: string | null;
   onCreateNote: (noteData: Note) => void | Promise<void>;
+  /** When provided, "new note" creates a blank note right away instead of opening the modal */
+  onQuickCreate?: (assignment?: string) => void | Promise<void>;
   onNoteSelect?: (noteId: string) => void;
   selectedNoteId?: string;
   onDelete?: (note: Note) => void;
@@ -86,6 +88,7 @@ const NotesDirectory = ({
   loading,
   error,
   onCreateNote,
+  onQuickCreate,
   onNoteSelect,
   selectedNoteId,
   onDelete,
@@ -158,6 +161,15 @@ const NotesDirectory = ({
 
   const closeCreateModal = () => setIsCreateModalOpen(false);
 
+  const startCreate = () => {
+    if (!onQuickCreate) {
+      setIsCreateModalOpen(true);
+      return;
+    }
+    // Inside an assignment folder the new note belongs to it (the "unassigned" bucket has no name)
+    void onQuickCreate(selectedAssignment && selectedAssignment !== t('notes.unassigned') ? selectedAssignment : undefined);
+  };
+
   const handleCreate = async (noteData: Note) => {
     await onCreateNote(noteData);
     closeCreateModal();
@@ -177,7 +189,7 @@ const NotesDirectory = ({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--navbar-h))] w-full max-w-6xl flex-col p-4 pb-24 sm:p-6 sm:pb-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           {selectedAssignment && (
@@ -194,7 +206,7 @@ const NotesDirectory = ({
           </h1>
         </div>
         <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={startCreate}
           className="inline-flex flex-shrink-0 items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
         >
           <Plus size={17} />
@@ -225,7 +237,7 @@ const NotesDirectory = ({
             <h2 className="text-xl font-semibold text-[var(--text-primary)]">{t('notes.emptyTitle')}</h2>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">{t('notes.emptyDesc')}</p>
             <button
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={startCreate}
               className="mt-5 inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
             >
               <Plus size={17} />

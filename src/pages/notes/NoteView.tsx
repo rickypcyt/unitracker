@@ -1,4 +1,4 @@
-import { ArrowLeft, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Folder, Save, Trash2, X } from 'lucide-react';
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -57,6 +57,22 @@ const NoteView: React.FC<NoteViewProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const editorRef = useRef<{ getCurrentContent: () => string } | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Assignments already used by other notes: suggestions for the inline assignment field
+  const assignmentSuggestions = Array.from(
+    new Set(allNotes.map(n => (n.assignment || '').trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
+
+  // A brand-new (untitled) note opens with the cursor in the title
+  useEffect(() => {
+    if (!note.title) {
+      const id = requestAnimationFrame(() => titleInputRef.current?.focus());
+      return () => cancelAnimationFrame(id);
+    }
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.id]);
 
   // Helper function to safely update description only when there's an actual change
   const handleDescriptionChange = useCallback((newDescription: string) => {
@@ -117,7 +133,7 @@ const NoteView: React.FC<NoteViewProps> = ({
     }
     autoSaveTimeoutRef.current = setTimeout(() => {
       autoSave();
-    }, 1000); // Save after 1 second of inactivity
+    }, 2000); // Save after 2 seconds of inactivity
   }, [autoSave]);
 
   // Cleanup timeout on unmount
@@ -157,7 +173,9 @@ const NoteView: React.FC<NoteViewProps> = ({
     setDate(note.date);
     setHasUnsavedChanges(false);
     setIsInitialized(true);
-  }, [note]);
+    // Only when a different note is opened: re-running on every save would overwrite what
+    // the user typed while the request was in flight.
+  }, [note.id]);
 
   const handleCancel = () => {
     setTitle(note.title);
@@ -291,60 +309,79 @@ const NoteView: React.FC<NoteViewProps> = ({
     );
   }
 
-  // Render view mode
+  // Render view mode — Obsidian-style: slim header, inline title, readable column
   return (
-    <div className="h-full flex flex-col relative">
-      {/* Note Header — sticky: back left, title center, actions right */}
-      <div className="sticky top-0 z-30 px-3 sm:px-6 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
-          {/* Left: Back + metadata */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex flex-shrink-0 items-center gap-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors font-medium"
-                title={t('notes.backToNotes')}
-              >
-                <ArrowLeft size={18} />
-                <span className="hidden sm:inline">{t('notes.back')}</span>
-              </button>
-            )}
-
-          </div>
-
-          {/* Center: Title */}
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-40 min-w-0 truncate text-lg sm:w-72 sm:text-2xl font-bold text-[var(--text-primary)] bg-transparent border-none focus:outline-none focus:ring-0 text-center"
-            placeholder={t('notes.noteTitlePlaceholder')}
-          />
-
-          {/* Right: Save + Delete */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+    <div className="h-full flex flex-col relative bg-[var(--bg-primary)]">
+      {/* Slim header: breadcrumb left, status + actions right */}
+      <div className="flex h-10 flex-shrink-0 items-center justify-between gap-3 border-b border-[var(--border-primary)] px-3 sm:px-4 text-xs text-[var(--text-secondary)]">
+        <div className="flex min-w-0 items-center gap-2">
+          {onBack && (
             <button
-              onClick={handleDelete}
-              className="p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
-              title={t('notes.deleteNote')}
+              onClick={onBack}
+              className="flex flex-shrink-0 items-center gap-1 font-medium"
+              title={t('notes.backToNotes')}
             >
-              <Trash2 size={16} />
+              <ArrowLeft size={16} />
             </button>
-            <button
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges || isSaving}
-              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
-            >
-              <Save size={14} />
-              <span>{isSaving ? t('notes.saving') : t('common.save')}</span>
-            </button>
-          </div>
+          )}
+          <span className="truncate">
+            {assignment.trim() || t('notes.unassigned')}
+            <span className="mx-1.5 opacity-50">/</span>
+            <span className="text-[var(--text-primary)]">{title || t('notes.noteTitlePlaceholder')}</span>
+          </span>
+        </div>
+        <div className="flex flex-shrink-0 items-center gap-1">
+          <span className="mr-1 tabular-nums" aria-live="polite">
+            {isSaving ? t('notes.saving') : hasUnsavedChanges ? 'Unsaved' : 'Saved'}
+          </span>
+          <button
+            onClick={handleSave}
+            disabled={!hasUnsavedChanges || isSaving}
+            className="flex h-7 w-7 items-center justify-center rounded-md disabled:opacity-30"
+            title={t('common.save')}
+            aria-label={t('common.save')}
+          >
+            <Save size={15} />
+          </button>
+          <button
+            onClick={handleDelete}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-red-500"
+            title={t('notes.deleteNote')}
+            aria-label={t('notes.deleteNote')}
+          >
+            <Trash2 size={15} />
+          </button>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-8">
-        <div className="notes-editor-paper mx-auto w-full max-w-3xl min-h-[calc(100vh-10rem)] px-4 sm:min-h-[calc(100vh-12rem)] sm:px-6">
+      {/* Document */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="obsidian-doc mx-auto w-full max-w-[46rem] px-6 pb-24 pt-10 sm:px-10">
+          {/* Assignment: editable inline (saved with the note) */}
+          <div className="mb-3 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+            <Folder size={15} className="shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
+            <input
+              type="text"
+              list="note-assignment-options"
+              value={assignment}
+              onChange={(e) => setAssignment(e.target.value)}
+              placeholder={t('notes.assignmentPlaceholder')}
+              aria-label={t('notes.assignmentPlaceholder')}
+              className="min-w-0 flex-1 rounded-md border-none bg-transparent py-1 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/70 !outline-none"
+            />
+            <datalist id="note-assignment-options">
+              {assignmentSuggestions.map(option => <option key={option} value={option} />)}
+            </datalist>
+          </div>
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mb-4 w-full border-none bg-transparent text-3xl font-extrabold tracking-tight text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-0 sm:text-4xl"
+            placeholder={t('notes.noteTitlePlaceholder')}
+            aria-label={t('notes.noteTitlePlaceholder')}
+          />
           <Suspense fallback={<EditorLoader />}>
             <MarkdownWysiwyg
               ref={editorRef}
@@ -352,7 +389,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               onChange={(data: { body: string }) => handleDescriptionChange(data.body)}
               showTitleInput={false}
               variant="notes"
-              className="h-full [&_.ProseMirror]:text-sm [&_.ProseMirror]:sm:text-base [&_.ProseMirror_p]:text-sm [&_.ProseMirror_p]:sm:text-base [&_.ProseMirror_h1]:text-lg [&_.ProseMirror_h1]:sm:text-xl [&_.ProseMirror_h2]:text-base [&_.ProseMirror_h2]:sm:text-lg [&_.ProseMirror_h3]:text-sm [&_.ProseMirror_h3]:sm:text-base"
+              className="h-full"
             />
           </Suspense>
         </div>

@@ -251,6 +251,30 @@ const StudyTimer = ({
     return () => window.removeEventListener("study-open-settings", handler);
   }, [currentSessionId, updateModal]);
 
+  // Open "new session" / "resume session" modals from the unified panel's idle state
+  useEffect(() => {
+    const openStart = () => {
+      if (!isLoggedIn) {
+        updateModal("isLoginPromptOpen", true);
+        return;
+      }
+      updateModal("isStartModalOpen", true);
+    };
+    const openSessions = () => {
+      if (!isLoggedIn) {
+        updateModal("isLoginPromptOpen", true);
+        return;
+      }
+      updateModal("isSessionsModalOpen", true);
+    };
+    window.addEventListener("study-open-start-session", openStart);
+    window.addEventListener("study-open-sessions", openSessions);
+    return () => {
+      window.removeEventListener("study-open-start-session", openStart);
+      window.removeEventListener("study-open-sessions", openSessions);
+    };
+  }, [isLoggedIn, updateModal]);
+
   // Listen for lap add from the panel dropdown menu
   useEffect(() => {
     const handler = () => {
@@ -655,7 +679,8 @@ const StudyTimer = ({
     }
     const activeId = currentSessionId ?? getFromLocalStorage<string | null>(STORAGE_KEYS.ACTIVE_SESSION_ID, null, false);
     if (!activeId) {
-      updateModal("isSessionsModalOpen", true);
+      // No active session: go straight to "new session" (previous sessions are reachable via "Resume")
+      updateModal("isStartModalOpen", true);
       return;
     }
     const now = typeof baseTimestamp === "number" && Number.isFinite(baseTimestamp) ? baseTimestamp : Date.now();

@@ -1,6 +1,6 @@
-import { Plus, Settings as SettingsIcon } from 'lucide-react';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appStore';
+import { Plus, Search, Settings as SettingsIcon, X } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFetchTasks, useTasksOnly, useWorkspace, useWorkspaceActions } from '@/store/appStore';
 
 import { Helmet } from "react-helmet-async";
 import { KanbanBoard } from '@/pages/tasks/KanbanBoard';
@@ -38,7 +38,27 @@ const TasksPage = memo(() => {
   const { workspaces, currentWorkspace: activeWorkspace } = useWorkspace();
   const { setCurrentWorkspace } = useWorkspaceActions();
   const fetchTasks = useFetchTasks();
+  const allTasks = useTasksOnly();
+  const [query, setQuery] = useState('');
   const lastWheelSwitchRef = useRef(0);
+
+  // Summary for the toolbar: pending / due today / overdue in the current workspace
+  const summary = useMemo(() => {
+    const todayKey = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+    const scoped = (allTasks || []).filter((task: any) =>
+      !task.completed && (!activeWorkspace || activeWorkspace.id === 'all' || task.workspace_id === activeWorkspace.id)
+    );
+    let today = 0;
+    let overdue = 0;
+    scoped.forEach((task: any) => {
+      const raw = task.deadline || task.due_date;
+      if (!raw) return;
+      const key = String(raw).slice(0, 10);
+      if (key === todayKey) today += 1;
+      else if (key < todayKey) overdue += 1;
+    });
+    return { pending: scoped.length, today, overdue };
+  }, [allTasks, activeWorkspace]);
 
   // Touch swipe refs and state
   const touchStartX = useRef(0);
@@ -219,13 +239,42 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="w-full px-3 sm:px-3 pt-4 pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
+      <div className="tasks-ui w-full pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector (footer island shows the name from sm up) */}
       <div className="sm:hidden w-full mb-4">
         <WorkspaceSelector />
       </div>
       
-      <KanbanBoard columnCount={columnCount} viewMode={viewMode} />
+      {/* Toolbar: title + live summary on the left, search on the right */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 className="m-0 p-0 text-[length:var(--t-page-title,24px)] font-bold leading-none tracking-tight text-[var(--text-primary)]">Tasks</h1>
+          <div className="flex items-center gap-1.5 whitespace-nowrap text-[length:var(--t-meta,12px)] font-semibold leading-none tabular-nums">
+            <span className="rounded-full bg-[var(--accent-primary)]/15 px-3 py-1.5 text-[var(--accent-primary)]">{summary.pending} pending</span>
+            {summary.today > 0 && <span className="rounded-full bg-green-500/15 px-3 py-1.5 text-green-500">{summary.today} today</span>}
+            {summary.overdue > 0 && <span className="rounded-full bg-red-500/15 px-3 py-1.5 text-red-400">{summary.overdue} overdue</span>}
+          </div>
+        </div>
+        <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 transition-colors focus-within:border-[var(--accent-primary)] sm:w-72 2xl:w-80">
+          <Search size={15} className="shrink-0 text-[var(--text-secondary)]" aria-hidden="true" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Escape') setQuery(''); }}
+            placeholder="Search tasks…"
+            aria-label="Search tasks"
+            className="min-w-0 flex-1 border-none bg-transparent text-[length:var(--t-title,14px)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/70 !outline-none"
+          />
+          {query && (
+            <button type="button" onClick={() => setQuery('')} className="shrink-0 text-[var(--text-secondary)]" aria-label="Clear search">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <KanbanBoard columnCount={columnCount} viewMode={viewMode} query={query} />
       {/* Floating buttons: settings + add task */}
       <div className={`fixed ${fabPositionClass[fabPosition]} z-50 flex flex-row items-center gap-2`}>
         <button

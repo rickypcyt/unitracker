@@ -62,6 +62,10 @@
 
 /* DayFlow Calendar Custom CSS Variables */
 :root {
+  /* Height of the top navbar — single source of truth for layout offsets */
+  --navbar-h: 3.5rem;
+  /* Horizontal gutter shared by the navbar and every page */
+  --page-gutter: 0.75rem;
   /* Light mode variables for DayFlow */
   --dayflow-bg-primary: #ffffff;
   --dayflow-bg-secondary: #f5f5f5;
@@ -367,8 +371,7 @@
 
   /* Fuente base */
   html {
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Helvetica, Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     min-height: 100vh;
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
@@ -836,7 +839,7 @@
     padding-bottom: clamp(4rem, 6vw, 6rem);
   }
   .font-heading {
-    font-family: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     letter-spacing: -0.02em;
   }
 }
@@ -1700,8 +1703,7 @@ h1 {
 /* Dedicated typeface for floating timer digits — crisp monospaced digits
    with tabular figures so the clock never jitters between second flips */
 .font-timer-digits {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
-    monospace;
+  font-family: Arial, Helvetica, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2049,7 +2051,7 @@ h1 {
 /* Digits — the centerpiece */
 .utp-body .relative.w-32.h-32 span.font-mono,
 .utp-body .countdown-time-input {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: Arial, Helvetica, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: clamp(1.35rem, 1.1vw + 1rem, 1.9rem);
   line-height: 1;
@@ -2095,7 +2097,7 @@ h1 {
 }
 
 .utp-body .timer-adjust-btn {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 10px;
   font-weight: 500;
 }
@@ -2197,7 +2199,7 @@ h1 {
   border: 2px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
   color: var(--text-secondary);
   background: transparent;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -2475,9 +2477,10 @@ input.no-spinners {
 }
 
 .ProseMirror h1 {
-  font-size: 1.5em;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 1.75em;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .ProseMirror h2 {
@@ -2518,7 +2521,7 @@ input.no-spinners {
 }
 
 .ProseMirror blockquote {
-  border-left: 3px solid var(--border-primary);
+  border-left: 3px solid var(--accent-primary);
   padding-left: 1em;
   color: var(--text-secondary);
   font-style: italic;
@@ -2608,6 +2611,102 @@ input.no-spinners {
   text-align: left;
 }
 
+/* Obsidian-like reading/writing typography for notes */
+.obsidian-doc .ProseMirror {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.obsidian-doc .ProseMirror p,
+.obsidian-doc .ProseMirror li {
+  line-height: 1.75;
+}
+
+.obsidian-doc .ProseMirror h1 { font-size: 2em; margin-top: 1.4em; }
+.obsidian-doc .ProseMirror h2 { font-size: 1.6em; margin-top: 1.3em; }
+.obsidian-doc .ProseMirror h3 { font-size: 1.37em; margin-top: 1.2em; }
+.obsidian-doc .ProseMirror > :first-child { margin-top: 0; }
+
+.obsidian-doc .ProseMirror code,
+.obsidian-doc .ProseMirror pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Checked tasks read as done */
+.ProseMirror li[data-type="taskItem"][data-checked="true"] > div {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+/* Placeholder on empty first paragraph */
+.obsidian-doc .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.ProseMirror ::selection {
+  background: color-mix(in srgb, var(--accent-primary) 28%, transparent);
+}
+
 .ProseMirror .selectedCell {
   background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --navbar-h: 4rem;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-gutter: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-gutter: 2rem;
+  }
+}
+
+.page-gutter {
+  padding-inline: var(--page-gutter);
+}
+
+/* ─── Single typeface: Arial everywhere ─────────────────────────────────
+   Forced on every element so component libraries and `font-mono` utilities
+   can't bring other fonts back. Code stays monospace on purpose. */
+*,
+*::before,
+*::after {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.ProseMirror pre,
+.ProseMirror pre *,
+.ProseMirror code,
+.obsidian-doc .ProseMirror pre,
+.obsidian-doc .ProseMirror code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+}
+
+/* ─── Tasks page: fluid type scale ──────────────────────────────────────
+   Grows smoothly from phones to laptops (~1366px) to big monitors (~2560px)
+   so small text never gets tiny on a large screen. */
+.tasks-ui {
+  --t-page-title: clamp(1.5rem, 1.2rem + 0.5vw, 2rem);        /* 24 → 32px */
+  --t-title: clamp(0.875rem, 0.692rem + 0.251vw, 1.125rem);   /* task titles, search: 14 → 18px */
+  --t-head: clamp(0.78rem, 0.634rem + 0.209vw, 1rem);         /* column / section headers: 12.5 → 16px */
+  --t-meta: clamp(0.75rem, 0.636rem + 0.188vw, 0.97rem);      /* chips, pills, counts: 12 → 15.5px */
+}
+
+/* Scratchpad is the one place that stays monospace (Arial everywhere else) */
+.scratchpad-mono,
+.scratchpad-mono * {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
 }

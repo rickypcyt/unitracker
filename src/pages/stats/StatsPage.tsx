@@ -62,8 +62,8 @@ const StatsPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/analytics" />
         <link rel="canonical" href="https://unitracker.me/analytics" />
       </Helmet>
-      <div className="w-full px-0 overflow-hidden mt-2 pb-24 sm:pb-0">
-      <div className="space-y-3 mb-4 mx-2 sm:mx-2 md:mx-2 lg:mx-6">
+      <div className="w-full px-0 overflow-hidden pb-24 sm:pb-0">
+      <div className="space-y-3 mb-4">
         {/* Stats card */}
         <Statistics />
 

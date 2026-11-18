@@ -1,8 +1,21 @@
+import { ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { useState } from 'react';
+
 import { AssignmentCard } from './AssignmentCard';
 import type { ColumnCount } from '@/modals/tasks/TaskPageSettingsModal';
 import React from 'react';
 
+export interface WorkspaceSection {
+  id: string;
+  name: string;
+  byAssignment: Record<string, any[]>;
+}
+
+const COLLAPSED_KEY = 'tasks.collapsedWorkspaceSections';
+
 interface AssignmentColumnsProps {
+  /** "All" view: render one section per workspace, each with its own assignment columns */
+  workspaceSections?: WorkspaceSection[];
   incompletedByAssignment: Record<string, any[]>;
   currentWorkspacePins: Record<string, boolean>;
   onTogglePin: (assignment: string) => void;
@@ -40,8 +53,25 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   onAssignmentDoubleClick,
   completedByAssignment = {},
   columnCount = 1,
+  workspaceSections,
   children,
 }) => {
+  const [collapsedSections, setCollapsedSections] = useState<string[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  });
+  const toggleSection = (id: string) => {
+    setCollapsedSections(previous => {
+      const next = previous.includes(id) ? previous.filter(x => x !== id) : [...previous, id];
+      try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+      return next;
+    });
+  };
+
   // Create a column for each assignment (show all assignments)
   const assignmentList = Object.keys(incompletedByAssignment);
   
@@ -82,20 +112,33 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
     assignmentName: assignment // Keep the original assignment name for pin functionality
   }));
 
-  const gridColsClass = {
-    1: 'lg:grid-cols-1',
-    2: 'lg:grid-cols-2',
-    3: 'lg:grid-cols-3',
-    4: 'lg:grid-cols-4',
+  // Masonry: cards keep their natural height and flow into columns (no more square cards)
+  const columnsClass = {
+    1: 'columns-1',
+    2: 'columns-1 md:columns-2',
+    3: 'columns-1 md:columns-2 xl:columns-3',
+    4: 'columns-1 md:columns-2 xl:columns-3 2xl:columns-4',
   }[columnCount];
 
-  return (
-    <div className="flex flex-col justify-center w-full">
-      <div className={`grid ${gridColsClass} mx-auto gap-4 w-full`}>
-        {fixedColumns.map((column) => (
+  // Sort one workspace's assignments the same way as the flat view (pinned first, then by task count)
+  const buildColumns = (byAssignment: Record<string, any[]>, keyPrefix: string) =>
+    Object.keys(byAssignment)
+      .sort((a, b) => {
+        const pinDiff = Number(!!currentWorkspacePins[b]) - Number(!!currentWorkspacePins[a]);
+        if (pinDiff !== 0) return pinDiff;
+        return (byAssignment[b]?.length || 0) - (byAssignment[a]?.length || 0);
+      })
+      .map((assignment, index) => ({
+        id: `${keyPrefix}column${index + 1}`,
+        title: assignment,
+        tasks: byAssignment[assignment] || [],
+        assignmentName: assignment,
+      }));
+
+  const renderColumn = (column: { id: string; title: string; tasks: any[]; assignmentName: string }) => (
           <div
             key={column.id}
-            className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md lg:aspect-square"
+            className="mb-3 w-full break-inside-avoid rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 p-2.5"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard
@@ -118,16 +161,47 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
               completedCount={completedByAssignment[column.assignmentName] || 0}
             />
           </div>
-        ))}
-        {/* Invisible skeleton slots — reserve space for one full row so the
-            grid keeps a consistent minimum height */}
-        {Array.from({ length: Math.max(0, columnCount - fixedColumns.length) }).map((_, i) => (
-          <div
-            key={`ghost-${i}`}
-            aria-hidden
-            className="hidden lg:block w-full rounded-xl border-2 border-transparent p-3 lg:aspect-square select-none pointer-events-none"
-          />
-        ))}
+  );
+
+  if (workspaceSections && workspaceSections.length > 0) {
+    return (
+      <div className="flex flex-col justify-center w-full gap-6">
+        {workspaceSections.map(section => {
+          const open = !collapsedSections.includes(section.id);
+          const columns = buildColumns(section.byAssignment, `${section.id}-`);
+          const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
+          return (
+            <section key={section.id} aria-label={section.name} className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => toggleSection(section.id)}
+                aria-expanded={open}
+                className="flex h-9 w-full items-center gap-2 border-b border-[var(--border-primary)] px-1 text-left"
+              >
+                {open
+                  ? <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />
+                  : <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" />}
+                <Layers size={16} className="shrink-0 text-[var(--accent-primary)]" />
+                <h2 className="truncate text-[length:var(--t-title,16px)] font-bold tracking-tight text-[var(--text-primary)]">{section.name}</h2>
+                <span className="shrink-0 rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">{total}</span>
+              </button>
+              {open && (
+                <div className={`${columnsClass} gap-3 w-full`}>
+                  {columns.map(column => renderColumn(column))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+        {children && <div className="mt-2 w-full">{children}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col justify-center w-full">
+      <div className={`${columnsClass} gap-3 w-full`}>
+        {fixedColumns.map(column => renderColumn(column))}
       </div>
       {children && (
         <div className="mt-4 w-full">

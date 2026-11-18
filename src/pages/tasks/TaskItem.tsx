@@ -159,14 +159,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     
-    const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-sm font-medium whitespace-nowrap";
+    const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[length:var(--t-meta,12px)] font-medium leading-none whitespace-nowrap";
     const deadlineColor = task.deadline && task.deadline !== ''
         ? (isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline))
         : 'text-[var(--text-secondary)]';
 
     return (
         <div
-            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2.5 sm:p-3 rounded-xl transition-all duration-200 cursor-pointer gap-2.5 sm:gap-3 items-stretch overflow-hidden
+            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] px-2 py-1.5 rounded-lg cursor-pointer gap-2 items-center overflow-hidden
                 bg-[var(--bg-primary)] border border-[var(--border-primary)]
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                 ${task.completed ? 'opacity-50' : ''}
@@ -182,29 +182,29 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full h-8 w-8"
+                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full h-6 w-6"
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
-                        <CheckCircle2 className="text-[var(--accent-primary)]" size={22} strokeWidth={2.2} />
+                        <CheckCircle2 className="text-[var(--accent-primary)]" size={18} strokeWidth={2.2} />
                     ) : (
-                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={22} strokeWidth={2.2} />
+                        <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={18} strokeWidth={2.2} />
                     )}
                 </button>
             </div>
 
             {/* Contenido principal */}
-            <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-1.5">
+            <div className="col-start-2 row-start-1 min-w-0 flex flex-col justify-center gap-1">
                 {/* Row 1: Assignment + Title + actions */}
                 <div className="w-full flex items-center justify-between gap-2">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         {showAssignment && task.assignment && (
-                            <span className="flex-shrink-0 truncate text-[var(--accent-primary)] text-sm font-semibold uppercase tracking-wide max-w-[40%]">
+                            <span className="flex-shrink-0 truncate text-[var(--accent-primary)] text-[length:var(--t-meta,12px)] font-semibold uppercase tracking-wide max-w-[40%]">
                                 {task.assignment}
                             </span>
                         )}
                         <span
-                            className={`min-w-0 flex-1 font-semibold text-base leading-snug transition-colors duration-200 overflow-hidden text-ellipsis line-clamp-1 ${
+                            className={`min-w-0 flex-1 font-medium text-[length:var(--t-title,14px)] leading-snug overflow-hidden text-ellipsis line-clamp-2 ${
                                 task.completed
                                     ? "line-through text-[var(--text-secondary)]"
                                     : "text-[var(--text-primary)]"
@@ -218,32 +218,32 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                         <button
                             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="p-1 rounded-md text-[var(--text-secondary)]"
+                            className="p-0.5 rounded-md text-[var(--text-secondary)]"
                             title="Edit task"
                             aria-label="Edit task"
                         >
-                            <Pencil size={14} />
+                            <Pencil size={13} />
                         </button>
                         {onDelete && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
                                 onMouseDown={(e) => e.stopPropagation()}
-                                className="p-1 rounded-md text-[var(--text-secondary)]"
+                                className="p-0.5 rounded-md text-[var(--text-secondary)]"
                                 title="Delete task"
                                 aria-label="Delete task"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={13} />
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Row 2: meta chips — deadline / recurrence / time */}
-                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-1 min-w-0">
                 {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
                     <>
                         <span className={`${chip} text-[var(--accent-primary)]`} style={{ backgroundColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
-                            <Zap size={13} className="flex-shrink-0" />
+                            <Zap size={11} className="flex-shrink-0" />
                             <span className="truncate max-w-[12rem]">{formatRecurrenceText(task.recurrence_weekdays)}</span>
                         </span>
                         {task.start_at && (
@@ -267,12 +267,15 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 ) : (
                     <span className={`${chip} text-[var(--text-secondary)] opacity-50`}>No deadline</span>
                 )}
+                {!task.completed && (
+                    <span className="ml-auto">
+                        <TaskStatusPicker task={task} />
+                    </span>
+                )}
                 </div>
 
             </div>
 
-            {/* Row 3: Status selector (hidden once completed) */}
-            {!task.completed && <TaskStatusPicker task={task} />}
         </div>
     );
 };

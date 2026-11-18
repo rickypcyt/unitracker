@@ -153,11 +153,13 @@ const PageContent: FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-hidden flex flex-row">
+    <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-clip flex flex-col">
       <Navbar />
-      <div className="min-w-0 flex-1 relative">
+      <main className="min-w-0 flex-1 relative">
         <Suspense fallback={<PageLoader />}>
-          <div className="px-4 pb-4 pt-[4.5rem] lg:pt-20 lg:px-8 2xl:px-12 overflow-x-hidden">
+          {/* Navbar is in normal flow, so no top offset is needed to clear it.
+              Pages get one uniform top gap here; full-bleed pages (notes) opt out. */}
+          <div className={`overflow-x-hidden ${activePage === 'notes' ? '' : 'page-gutter pt-6 pb-4'}`}>
             {activePage === 'session' && <SessionPage />}
 
             {activePage === 'tasks' && (
@@ -173,7 +175,7 @@ const PageContent: FC = () => {
             {activePage === 'admin' && <AdminDashboard />}
           </div>
         </Suspense>
-      </div>
+      </main>
       <FloatingFooter
         workspaces={workspacesWithTaskCount}
         activeWorkspace={activeWorkspace}

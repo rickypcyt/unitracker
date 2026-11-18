@@ -55,7 +55,7 @@ export class NoteService {
       .insert([{
         title: noteData.title || '',
         assignment: noteData.assignment ?? null,
-        subject_id: noteData.subject_id ?? null,
+        ...(noteData.subject_id ? { subject_id: noteData.subject_id } : {}),
         description: noteData.description ?? '',
         date: noteData.date,
         user_id: noteData.user_id,

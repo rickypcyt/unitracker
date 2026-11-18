@@ -1,12 +1,13 @@
 import { Check, Clock, Folder, Play, Target, Timer } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/shared/FormElements";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 import AutocompleteInput from "@/modals/shared/AutocompleteInput";
 import BaseModal from "@/modals/shared/BaseModal";
 import { supabase } from "@/utils/supabaseClient";
 import { useTranslation } from "react-i18next";
-import { useAppStore, useWorkspace } from "@/store/appStore";
+import { useAppStore, useLaps, useTasksOnly, useWorkspace } from "@/store/appStore";
 import { StudyService } from "@/services/StudyService";
 import { ALL_WORKSPACE_ID } from "@/hooks/tasks/useTaskBoard";
 
@@ -27,7 +28,7 @@ const StartSessionModal = ({
   onClose,
   onStart
 }: StartSessionModalProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     syncSettings
   } = useAppStore();
@@ -43,6 +44,58 @@ const StartSessionModal = ({
   const [syncCountdown, setSyncCountdown] = useState(syncCountdownWithTimer);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const { laps } = useLaps();
+  const tasks = useTasksOnly();
+
+  // Recent sessions (unique by name + assignment) — one click to repeat them
+  const recentSessions = useMemo(() => {
+    const seen = new Set<string>();
+    const list: { name: string; assignment: string }[] = [];
+    [...(laps || [])]
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .forEach((lap: any) => {
+        const name = (lap.name || "").trim();
+        if (!name) return;
+        const assignment = (lap.session_assignment || "").trim();
+        const key = `${name.toLowerCase()}|${assignment.toLowerCase()}`;
+        if (seen.has(key) || list.length >= 4) return;
+        seen.add(key);
+        list.push({ name, assignment });
+      });
+    return list;
+  }, [laps]);
+
+  // Assignment suggestions: recent session assignments first, then the ones used in tasks
+  const assignmentSuggestions = useMemo(() => {
+    const ordered: string[] = [];
+    const add = (value?: string | null) => {
+      const v = (value || "").trim();
+      if (v && !ordered.some(o => o.toLowerCase() === v.toLowerCase())) ordered.push(v);
+    };
+    recentSessions.forEach(r => add(r.assignment));
+    [...(laps || [])]
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .forEach((lap: any) => add(lap.session_assignment));
+    (tasks || []).forEach((task: any) => add(task.assignment));
+    return ordered;
+  }, [recentSessions, laps, tasks]);
+
+  // Reset to a ready-to-go form each time the modal opens: default title, focused and selected
+  useEffect(() => {
+    if (!isOpen) return;
+    const today = new Date().toLocaleDateString(i18n.language, { weekday: "short", day: "numeric" });
+    setSessionTitle(`${t("session.startSession.defaultTitle", { defaultValue: "Study session" })} · ${today}`);
+    setSessionDescription("");
+    setAssignment("");
+    setTitleError("");
+    const id = requestAnimationFrame(() => {
+      const input = document.getElementById("session-title") as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // Pre-select current workspace when modal opens (or null if "All" is selected)
   useEffect(() => {
@@ -105,6 +158,7 @@ const StartSessionModal = ({
       onClose();
     } catch (error) {
       console.error("Error starting session:", error instanceof Error ? error.message : error);
+      toast.error(t("session.startSession.startError", { defaultValue: "Couldn't start the session. Please try again." }));
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +192,45 @@ const StartSessionModal = ({
 
   if (!isOpen) return null;
   return <BaseModal isOpen={isOpen} onClose={onClose} title={t("session.startSession.title")} className="w-full px-4 sm:px-5" maxWidth="max-w-2xl" fullWidthOnMd={false}>
-      <div className="space-y-6 w-full max-w-2xl mx-auto">
+      <div
+        className="space-y-6 w-full max-w-2xl mx-auto"
+        onKeyDown={e => {
+          if (e.key !== "Enter" || e.shiftKey || e.defaultPrevented) return;
+          const target = e.target as HTMLElement;
+          // Enter in the title / assignment fields starts the session; the description keeps its newlines
+          if (target.id === "session-title" || target.id === "assignment") {
+            e.preventDefault();
+            if (isFormValid && !isSubmitting) handleStart();
+          }
+        }}
+      >
+          {/* Recent sessions: repeat one with a single click */}
+          {recentSessions.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">
+                {t("session.startSession.recent", { defaultValue: "Recent" })}
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {recentSessions.map(recent => (
+                  <button
+                    key={`${recent.name}|${recent.assignment}`}
+                    type="button"
+                    onClick={() => {
+                      setSessionTitle(recent.name);
+                      setAssignment(recent.assignment);
+                      setTitleError("");
+                    }}
+                    className="max-w-full truncate rounded-full border-2 border-[var(--border-primary)] px-3 py-1.5 text-sm font-medium text-[var(--text-primary)]"
+                    title={recent.assignment ? `${recent.name} · ${recent.assignment}` : recent.name}
+                  >
+                    {recent.name}
+                    {recent.assignment && <span className="ml-1.5 text-[var(--text-secondary)]">· {recent.assignment}</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Session Details Section */}
           <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
             <div className="flex items-center gap-3 mb-4">
@@ -165,7 +257,7 @@ const StartSessionModal = ({
                   <label htmlFor="assignment" className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
                     {t("session.startSession.assignmentOptional")}
                   </label>
-                  <AutocompleteInput id="assignment" value={assignment} onChange={setAssignment} placeholder={t("session.startSession.assignmentPlaceholder")} suggestions={[]} />
+                  <AutocompleteInput id="assignment" value={assignment} onChange={setAssignment} placeholder={t("session.startSession.assignmentPlaceholder")} suggestions={assignmentSuggestions} />
                 </div>
               </div>
               
@@ -252,6 +344,7 @@ const StartSessionModal = ({
               </> : <>
                 <Play size={18} />
                 <span>{t("session.startSession.startSession")}</span>
+                <kbd className="ml-1 rounded-md border border-current/30 px-1.5 py-0.5 text-[11px] font-medium opacity-70">Enter ↵</kbd>
               </>}
           </button>
         </div>

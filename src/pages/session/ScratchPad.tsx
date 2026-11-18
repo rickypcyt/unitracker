@@ -44,8 +44,8 @@ const ScratchPad = memo(() => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [text, setText] = useState(loadNote);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const lastFocusedIndexRef = useRef(0);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const mirrorRef = useRef<HTMLDivElement | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const remoteDisabledRef = useRef(false);
 
@@ -101,180 +101,212 @@ const ScratchPad = memo(() => {
   };
 
   const lines = text === "" ? [] : text.split("\n");
-  const lineCount = lines.length;
+  const parsedLines = lines.map(parseLine);
+  const totalTodos = parsedLines.filter(p => p.type === "checkbox").length;
+  const doneTodos = parsedLines.filter(p => p.type === "checkbox" && p.checked).length;
+  const progress = totalTodos > 0 ? Math.round((doneTodos / totalTodos) * 100) : 0;
 
-  const updateLine = (index: number, newLine: string) => {
-    const next = [...lines];
-    next[index] = newLine;
-    handleChange(next.join("\n"));
+  // Text mode: toggle the checkbox marker on every line touched by the selection
+  const toggleCheckboxInSelection = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const before = text.slice(0, start);
+    const firstLine = before.split("\n").length - 1;
+    const lastLine = firstLine + text.slice(start, end).split("\n").length - 1;
+    const all = text.split("\n");
+    const targets = all.slice(firstLine, lastLine + 1).map(parseLine);
+    const allAreBoxes = targets.every(p => p.type === "checkbox");
+    for (let i = firstLine; i <= lastLine; i++) {
+      const p = parseLine(all[i] ?? "");
+      all[i] = allAreBoxes ? (p.type === "checkbox" ? p.text : all[i] ?? "") : (p.type === "checkbox" ? all[i] ?? "" : `[ ] ${all[i] ?? ""}`);
+    }
+    handleChange(all.join("\n"));
+    requestAnimationFrame(() => el.focus());
   };
 
-  const insertCheckbox = () => {
-    // Insert on the currently focused line (or the last focused one,
-    // since clicking the button moves focus away from the inputs)
-    const active = document.activeElement;
-    let index = inputRefs.current.findIndex(el => el === active);
-    if (index === -1) index = lastFocusedIndexRef.current;
-    if (index < 0 || index >= Math.max(lines.length, 1)) index = Math.max(0, lines.length - 1);
+  const MARKER_RE = /^\[( |x)\]\s?/;
 
-    const next = [...lines];
-    const parsed = parseLine(next[index] ?? "");
-    next[index] = parsed.type === "checkbox" ? parsed.text : `[ ] ${next[index] ?? ""}`;
-    handleChange(next.join("\n"));
+  // Which rendered checkbox (if any) sits under the pointer? The mirror layer holds the real elements.
+  const checkboxAt = (clientX: number, clientY: number): number | null => {
+    const mirror = mirrorRef.current;
+    if (!mirror) return null;
+    const icons = mirror.querySelectorAll<HTMLElement>("[data-checkbox]");
+    for (const icon of Array.from(icons)) {
+      const r = icon.getBoundingClientRect();
+      if (clientX >= r.left - 4 && clientX <= r.right + 4 && clientY >= r.top - 2 && clientY <= r.bottom + 2) {
+        return Number(icon.dataset.checkbox);
+      }
+    }
+    return null;
+  };
+
+  const toggleLine = (index: number) => {
+    const el = textareaRef.current;
+    const selStart = el?.selectionStart ?? 0;
+    const selEnd = el?.selectionEnd ?? 0;
+    const all = text.split("\n");
+    const p = parseLine(all[index] ?? "");
+    if (p.type !== "checkbox") return;
+    all[index] = p.checked
+      ? `[ ] ${p.text}`
+      : `[x] ${p.text} · ${new Date().toTimeString().slice(0, 5)}`;
+    handleChange(all.join("\n"));
     requestAnimationFrame(() => {
-      const el = inputRefs.current[index];
-      el?.focus();
-      el?.setSelectionRange(el.value.length, el.value.length);
+      if (!el) return;
+      el.setSelectionRange(selStart, selEnd);
     });
   };
 
-  const toggleCheckbox = (index: number, parsed: ReturnType<typeof parseLine>) => {
-    if (parsed.type !== "checkbox") return;
-    if (parsed.checked) {
-      updateLine(index, `[ ] ${parsed.text}`);
-    } else {
-      const time = new Date().toTimeString().slice(0, 5);
-      updateLine(index, `[x] ${parsed.text} · ${time}`);
-    }
+  const handleSurfaceMouseDown = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const index = checkboxAt(e.clientX, e.clientY);
+    if (index === null) return;
+    e.preventDefault();
+    toggleLine(index);
   };
 
-  const handleLineKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number, parsed: ReturnType<typeof parseLine>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const next = [...lines];
-      if (parsed.type === "checkbox" && parsed.text === "") {
-        // Enter on an empty checkbox exits the list — strip the marker
-        next[index] = "";
-        handleChange(next.join("\n"));
-      } else {
-        next.splice(index + 1, 0, parsed.type === "checkbox" ? "[ ] " : "");
-        handleChange(next.join("\n"));
-        requestAnimationFrame(() => inputRefs.current[index + 1]?.focus());
-      }
-    } else if (e.key === "Backspace" && parsed.text === "" && parsed.type === "checkbox" && lines.length === 1) {
-      e.preventDefault();
-      updateLine(index, "");
-    } else if (e.key === "Backspace" && parsed.text === "" && lines.length > 1) {
-      e.preventDefault();
-      const next = [...lines];
-      next.splice(index, 1);
-      handleChange(next.join("\n"));
-      requestAnimationFrame(() => inputRefs.current[Math.max(0, index - 1)]?.focus());
+  const handleSurfaceMouseMove = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    e.currentTarget.style.cursor = checkboxAt(e.clientX, e.clientY) !== null ? "pointer" : "text";
+  };
+
+  // Enter on a checkbox line continues the list; Enter on an empty one exits it
+  const handleSurfaceKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Enter" || e.shiftKey || e.ctrlKey || e.metaKey) return;
+    const el = e.currentTarget;
+    if (el.selectionStart !== el.selectionEnd) return;
+    const caret = el.selectionStart;
+    const lineStart = text.lastIndexOf("\n", caret - 1) + 1;
+    const nextBreak = text.indexOf("\n", caret);
+    const lineEnd = nextBreak === -1 ? text.length : nextBreak;
+    const line = text.slice(lineStart, lineEnd);
+    const p = parseLine(line);
+    if (p.type !== "checkbox") return;
+    e.preventDefault();
+    if (p.text === "") {
+      // Empty checkbox: strip the marker and leave the list
+      handleChange(text.slice(0, lineStart) + text.slice(lineEnd));
+      requestAnimationFrame(() => el.setSelectionRange(lineStart, lineStart));
+      return;
     }
+    const insert = "\n[ ] ";
+    handleChange(text.slice(0, caret) + insert + text.slice(caret));
+    const pos = caret + insert.length;
+    requestAnimationFrame(() => el.setSelectionRange(pos, pos));
+  };
+
+  const surfaceFont: React.CSSProperties = {
+    fontFamily: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+    fontSize: "14px",
+    lineHeight: "24px",
+    // Textareas don't inherit the page's letter-spacing, the mirror div does: pin both to the same value
+    // (and turn ligatures off) so the typed text and the drawn text never drift apart.
+    letterSpacing: "normal",
+    fontVariantLigatures: "none",
+    fontKerning: "none",
+    whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere",
+    padding: "12px",
   };
 
   return (
-    <div className="w-full h-full min-h-[220px] max-h-[400px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col overflow-hidden">
-      <div className="grid grid-cols-[1fr_auto] sm:grid-cols-[1fr_auto_1fr] items-center gap-x-3 pb-3">
-        <div className="flex items-center gap-2 justify-self-start">
+    <div className="w-full h-full min-h-[260px] max-h-[460px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pb-3">
+        <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <StickyNote size={18} className="text-[var(--accent-primary)]" />
           </div>
-          <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
+          <h3 className="text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)] leading-tight">
             {t('session.scratchpad.title')}
           </h3>
-        </div>
-        <button
-          onClick={insertCheckbox}
-          className="justify-self-end sm:justify-self-center flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50 hover:bg-[var(--accent-primary)]/10 transition-colors"
-          title={t('session.scratchpad.insertCheckbox')}
-          aria-label={t('session.scratchpad.insertCheckbox')}
-        >
-          <CheckSquare size={15} />
-          {t('session.scratchpad.insertCheckbox')}
-        </button>
-        <div className="col-span-2 sm:col-span-1 flex items-center gap-2 justify-self-end">
-          {lineCount > 0 && (
-            <span className="text-xs text-[var(--text-secondary)] tabular-nums">
-              {t('session.scratchpad.lines', { count: lineCount })}
+          {totalTodos > 0 && (
+            <span className="rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">
+              {doneTodos}/{totalTodos}
             </span>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleCheckboxInSelection}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)]"
+            title={t('session.scratchpad.insertCheckbox')}
+            aria-label={t('session.scratchpad.insertCheckbox')}
+          >
+            <CheckSquare size={15} />
+          </button>
           {text && (
             <button
               onClick={() => handleChange("")}
-              className="p-2 rounded-full text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)]"
               title={t('session.scratchpad.clearNote')}
               aria-label={t('session.scratchpad.clearNote')}
             >
-              <Eraser size={18} />
+              <Eraser size={16} />
             </button>
           )}
         </div>
       </div>
 
-      <div className="flex-1 w-full min-h-[140px] rounded-xl bg-[var(--bg-secondary)]/50 p-3 pr-1.5 overflow-y-auto custom-scrollbar">
-        {lines.length === 0 ? (
-          <input
-            ref={(el) => { inputRefs.current[0] = el; }}
-            value=""
-            onChange={(e) => handleChange(e.target.value)}
-            onFocus={() => { lastFocusedIndexRef.current = 0; }}
-            placeholder={t('session.scratchpad.placeholder')}
-            spellCheck={false}
-            className="scratchpad-textarea w-full bg-transparent text-base leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none"
+      {/* Progress */}
+      {totalTodos > 0 && (
+        <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-secondary)]" aria-hidden="true">
+          <div
+            className="h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
           />
-        ) : (
-          lines.map((line, i) => {
-            const parsed = parseLine(line);
-            if (parsed.type === "checkbox") {
-              return (
-                <div key={i} className="flex items-center gap-2.5 py-0.5">
-                  <button
-                    type="button"
-                    onClick={() => toggleCheckbox(i, parsed)}
-                    className="flex-shrink-0 cursor-pointer flex items-center justify-center rounded-full transition-transform duration-200 hover:scale-110 focus:outline-none"
-                    aria-label={parsed.checked ? t('session.scratchpad.markNotDone') : t('session.scratchpad.markDone')}
-                  >
-                    {parsed.checked ? (
-                      <CheckCircle2 size={19} strokeWidth={2.2} className="text-[var(--accent-primary)]" />
-                    ) : (
-                      <Circle size={19} strokeWidth={2.2} className="text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-colors" />
-                    )}
-                  </button>
-                  <input
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    value={parsed.text}
-                    onChange={(e) =>
-                      updateLine(
-                        i,
-                        parsed.checked
-                          ? `[x] ${e.target.value} · ${parsed.doneAt ?? new Date().toTimeString().slice(0, 5)}`
-                          : `[ ] ${e.target.value}`
-                      )
-                    }
-                    onKeyDown={(e) => handleLineKeyDown(e, i, parsed)}
-                    onFocus={() => { lastFocusedIndexRef.current = i; }}
-                    spellCheck={false}
-                    placeholder={t('session.scratchpad.taskPlaceholder')}
-                    className={`scratchpad-textarea flex-1 min-w-0 bg-transparent text-base leading-relaxed focus:outline-none placeholder:text-[var(--text-secondary)]/50 ${
-                      parsed.checked
-                        ? "text-[var(--text-secondary)]"
-                        : "text-[var(--text-primary)]"
-                    }`}
-                  />
-                  {parsed.doneAt && (
-                    <span className="text-xs text-[var(--text-secondary)] tabular-nums flex-shrink-0">
-                      {parsed.doneAt}
-                    </span>
-                  )}
-                </div>
-              );
+        </div>
+      )}
+
+      {/* Body — one selectable surface: a transparent textarea over a mirror layer that draws the checkboxes */}
+      <div className="relative flex-1 min-h-[140px] overflow-hidden rounded-xl bg-[var(--bg-secondary)]/50">
+        <div
+          ref={mirrorRef}
+          aria-hidden="true"
+          className="scratchpad-mono pointer-events-none absolute inset-0 overflow-hidden text-[var(--text-primary)]"
+          style={surfaceFont}
+        >
+          {lines.map((line, i) => {
+            const p = parsedLines[i];
+            const marker = line.match(MARKER_RE);
+            if (!p || p.type !== "checkbox" || !marker) {
+              return <div key={i}>{line === "" ? <br /> : line}</div>;
             }
+            const rest = line.slice(marker[0].length);
             return (
-              <input
-                key={i}
-                ref={(el) => { inputRefs.current[i] = el; }}
-                value={line}
-                onChange={(e) => updateLine(i, e.target.value)}
-                onKeyDown={(e) => handleLineKeyDown(e, i, parsed)}
-                onFocus={() => { lastFocusedIndexRef.current = i; }}
-                spellCheck={false}
-                placeholder={i === 0 ? t('session.scratchpad.placeholder') : ''}
-                className="scratchpad-textarea w-full bg-transparent text-base leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:outline-none py-0.5"
-              />
+              <div key={i}>
+                {/* The raw marker stays in the layout (transparent) so widths match the textarea exactly; the icon is drawn over it */}
+                <span data-checkbox={i} className="relative inline-block">
+                  <span className="text-transparent">{marker[0]}</span>
+                  <span className="absolute top-1/2 flex -translate-y-1/2" style={{ left: "calc((3ch - 16px) / 2)" }}>
+                    {p.checked ? (
+                      <CheckCircle2 size={16} strokeWidth={2.2} className="text-[var(--accent-primary)]" />
+                    ) : (
+                      <Circle size={16} strokeWidth={2.2} className="text-[var(--text-secondary)]" />
+                    )}
+                  </span>
+                </span>
+                <span className={p.checked ? "text-[var(--text-secondary)] line-through" : ""}>{rest}</span>
+              </div>
             );
-          })
-        )}
+          })}
+        </div>
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => handleChange(e.target.value)}
+          onScroll={(e) => {
+            if (mirrorRef.current) mirrorRef.current.scrollTop = e.currentTarget.scrollTop;
+          }}
+          onMouseDown={handleSurfaceMouseDown}
+          onMouseMove={handleSurfaceMouseMove}
+          onKeyDown={handleSurfaceKeyDown}
+          spellCheck={false}
+          placeholder={t('session.scratchpad.textPlaceholder', { defaultValue: 'Write everything you need to do. Start a line with [ ] to make it a checkbox.' })}
+          aria-label={t('session.scratchpad.title')}
+          className="scratchpad-mono hide-scrollbar absolute inset-0 h-full w-full resize-none overflow-y-auto border-0 bg-transparent text-transparent caret-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]/50 selection:bg-[var(--accent-primary)]/30 focus:outline-none"
+          style={surfaceFont}
+        />
       </div>
     </div>
   );

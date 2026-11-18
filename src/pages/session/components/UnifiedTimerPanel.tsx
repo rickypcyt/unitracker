@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, Flag, Link, LogOut, MoreVertical, Pause, PictureInPicture, Play, RotateCcw, Settings, Timer as TimerIcon, Trash2, Unlink, Watch } from "lucide-react";
+import { Bell, BellOff, Clock, Flag, Link, LogOut, MoreVertical, Pause, PictureInPicture, Play, Plus, RotateCcw, Settings, Timer as TimerIcon, Trash2, Unlink, Watch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -7,7 +7,9 @@ import Countdown from "@/pages/session/Countdown";
 import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
 import { SYNC_EVENTS } from "@/hooks/session/useStudySync";
-import { useAppStore } from "@/store/appStore";
+import { useAppStore, useStudyState } from "@/store/appStore";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { StudyService } from "@/services/StudyService";
 import {
   MINI_PLAYER_OPEN_EVENT,
 } from "@/utils/studyTimerRemote";
@@ -44,6 +46,31 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
   const studyRunning = useAppStore(s => s.ui.isStudyRunning);
   const pomoRunning = useAppStore(s => s.ui.isPomoRunning);
   const countdownRunning = useAppStore(s => s.countdownTimerState === "running");
+  // No session yet → show the "Start new session" entry state instead of the dead timers
+  const studyState = useStudyState();
+  const idle = studyState.sessionStatus === "inactive" && !studyRunning;
+
+  // Only offer "Resume" when there is actually an unfinished session to resume
+  const { isLoggedIn } = useAuth();
+  const [hasPrevious, setHasPrevious] = useState(false);
+  useEffect(() => {
+    if (!idle || !isLoggedIn) {
+      setHasPrevious(false);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const unfinished = await StudyService.getUnfinishedSessions();
+        if (!cancelled) setHasPrevious(unfinished.length > 0);
+      } catch {
+        if (!cancelled) setHasPrevious(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [idle, isLoggedIn]);
 
   // Alarm state from localStorage
   const [pomoAlarm, setPomoAlarm] = useState(() => localStorage.getItem("pomodoroAlarmEnabled") !== "false");
@@ -296,12 +323,12 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       className="utp flex w-full h-full flex-col"
     >
       {/* Timer tiles */}
-      <div className={`relative z-10 grid flex-1 gap-3 px-4 pt-1 grid-cols-1 ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
+      <div aria-hidden={idle} className={`relative z-10 grid flex-1 gap-3 px-4 pt-1 grid-cols-1 ${idle ? "invisible" : ""} ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
         {visibleTimers.map((id) => renderTile(id))}
       </div>
 
       {/* Shared controls */}
-      <div className="relative z-10 flex items-center justify-center gap-3 sm:gap-4 mx-4 mt-2 pt-4 pb-4">
+      <div aria-hidden={idle} className={`relative z-10 flex items-center justify-center gap-3 sm:gap-4 mx-4 mt-2 pt-4 pb-4 ${idle ? "invisible" : ""}`}>
         <div className="flex gap-2">
           <button type="button" className="utp-ctrl" onClick={() => adjustStudy(-600)} aria-label="-10 min">-10</button>
           <button type="button" className="utp-ctrl" onClick={() => adjustStudy(-300)} aria-label="-5 min">-5</button>
@@ -342,6 +369,38 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
           <button type="button" className="utp-ctrl" onClick={() => adjustStudy(600)} aria-label="+10 min">+10</button>
         </div>
       </div>
+      {idle && (
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-[var(--bg-primary)] px-6 py-10 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+            <Play size={28} className="translate-x-0.5" />
+          </span>
+          <div className="space-y-1.5">
+            <h3 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              {t("session.unifiedTimer.readyTitle", { defaultValue: "Ready to focus?" })}
+            </h3>
+            <p className="mx-auto max-w-sm text-sm text-[var(--text-secondary)]">
+              {t("session.unifiedTimer.readyDesc", { defaultValue: "Start a session to track your study time, pomodoros and countdowns together." })}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("study-open-start-session"))}
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-7 py-3 text-base font-semibold text-[var(--accent-primary)]"
+          >
+            <Plus size={18} />
+            {t("session.studyTimer.startNewSession")}
+          </button>
+          {hasPrevious && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("study-open-sessions"))}
+              className="text-sm text-[var(--text-secondary)] underline underline-offset-4"
+            >
+              {t("session.unifiedTimer.resumeSession", { defaultValue: "Resume a previous session" })}
+            </button>
+          )}
+        </div>
+      )}
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent(MINI_PLAYER_OPEN_EVENT))}

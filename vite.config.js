@@ -264,9 +264,6 @@ export default defineConfig(({ command, mode }) => {
         'react/jsx-dev-runtime',
         '@dayflow/core'
       ],
-      exclude: [
-        'chart.js'
-      ],
       ...(isDev && !isFastDev && {
         esbuildOptions: {
           target: 'es2020',

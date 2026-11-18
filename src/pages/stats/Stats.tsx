@@ -1,3 +1,4 @@
+import { Clock } from 'lucide-react';
 import { ReactElement } from 'react';
 import { useLaps } from '@/store/appStore';
 
@@ -120,24 +121,76 @@ export const periods = [
   { label: 'Last Year', timeKey: 'lastYearMinutes', sessionKey: 'sessionsLastYear' },
 ] as const;
 
-export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-    {periods.map(({ label, timeKey, sessionKey }) => (
-      <div
-        key={label}
-        className="flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] px-2 py-4 text-center"
-      >
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
-        <span className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] tabular-nums leading-none">
-          {formatMinutesToHMS(statsData[timeKey])}
-        </span>
-        <span className="text-xs text-[var(--text-secondary)] tabular-nums">
-          {statsData[sessionKey]} sessions
+const PERIOD_COLORS: Record<string, string> = {
+  'Today': '#0A84FF',
+  'Yesterday': '#a855f7',
+  'This Week': '#22c55e',
+  'This Month': '#f59e0b',
+  'This Year': '#ef4444',
+  'Last Year': '#14b8a6',
+};
+
+export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => {
+  const maxMinutes = Math.max(1, ...periods.map(({ timeKey }) => statsData[timeKey] || 0));
+  return (
+    <section
+      aria-label="Study time by period"
+      className="overflow-hidden rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+    >
+      {/* Card header */}
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--border-primary)] px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Clock size={16} className="text-[var(--accent-primary)]" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">Study time</h3>
+        </div>
+        <span className="text-xs tabular-nums text-[var(--text-secondary)]">
+          {statsData.sessionsYear} sessions this year
         </span>
       </div>
-    ))}
-  </div>
-);
+
+      {/* Cells separated by 1px dividers (gap reveals the border colour behind) */}
+      <div className="grid grid-cols-2 gap-px bg-[var(--border-primary)] sm:grid-cols-3 lg:grid-cols-6">
+        {periods.map(({ label, timeKey, sessionKey }) => {
+          const color = PERIOD_COLORS[label] ?? 'var(--accent-primary)';
+          const minutes = statsData[timeKey] || 0;
+          const sessions = statsData[sessionKey] || 0;
+          const active = minutes > 0;
+          const pct = Math.round((minutes / maxMinutes) * 100);
+          return (
+            <div key={label} className="flex flex-col gap-1.5 bg-[var(--bg-secondary)] px-4 py-4">
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2 w-2 flex-shrink-0 rounded-full"
+                  style={{ backgroundColor: color, opacity: active ? 1 : 0.4 }}
+                  aria-hidden="true"
+                />
+                <span className="truncate text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
+              </div>
+              <span
+                className="text-xl font-bold leading-tight tabular-nums sm:text-2xl"
+                style={{ color: active ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+              >
+                {formatMinutesToHMS(minutes)}
+              </span>
+              <span className="text-xs tabular-nums text-[var(--text-secondary)]">
+                {sessions} {sessions === 1 ? 'session' : 'sessions'}
+              </span>
+              <div
+                className="mt-1 h-1 w-full overflow-hidden rounded-full"
+                style={{ backgroundColor: `color-mix(in srgb, ${color} 15%, transparent)` }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${pct}%`, backgroundColor: color }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
 
 const Statistics = (): ReactElement => {
   const { laps } = useLaps();

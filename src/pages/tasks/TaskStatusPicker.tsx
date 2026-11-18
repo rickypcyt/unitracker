@@ -51,38 +51,28 @@ const TaskStatusPicker = ({ task }: TaskStatusPickerProps) => {
     }
   };
 
+  const cycle = TASK_STATUSES.filter((st) => st.id !== "completed");
+  const config = cycle.find((st) => st.id === current) ?? cycle[0]!;
+  const next = cycle[(cycle.findIndex((st) => st.id === config.id) + 1) % cycle.length]!;
+
+  // One compact pill: shows the current status and cycles To Do → In Progress → On Hold on click
   return (
-    <div
-      role="group"
-      aria-label="Task status"
-      className="col-span-2 row-start-2 flex flex-nowrap gap-0.5 min-w-0 w-full overflow-x-auto rounded-lg bg-[var(--bg-secondary)]/70 border border-[var(--border-primary)] p-0.5"
-      onClick={(e) => e.stopPropagation()}
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        void setStatus(next.id);
+      }}
       onMouseDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
+      title={`${config.label} — click for ${next.label}`}
+      aria-label={`Status: ${config.label}. Click to change to ${next.label}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--t-meta,12px)] font-semibold leading-none select-none ${config.textColor}`}
+      style={{ backgroundColor: "color-mix(in srgb, currentColor 12%, transparent)" }}
     >
-      {TASK_STATUSES.filter((s) => s.id !== 'completed').map((s) => {
-        const selected = s.id === current;
-        return (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => setStatus(s.id)}
-            aria-pressed={selected}
-            className={`flex-1 shrink-0 whitespace-nowrap flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium leading-none text-center transition-colors select-none ${
-              selected
-                ? `${s.textColor} bg-[var(--bg-primary)] shadow-sm`
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${selected ? s.bgColor : "bg-current opacity-40"}`}
-            />
-            {s.label}
-          </button>
-        );
-      })}
-    </div>
+      <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${config.bgColor}`} />
+      {config.label}
+    </button>
   );
 };
 

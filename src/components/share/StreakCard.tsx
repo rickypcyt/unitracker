@@ -37,7 +37,7 @@ const StreakCard = ({ streakDays, bestStreak, totalFocusLabel }: StreakCardProps
         position: 'relative',
         overflow: 'hidden',
         background: 'linear-gradient(135deg, #0b1020 0%, #131a33 55%, #0d1226 100%)',
-        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'Arial, Helvetica, sans-serif',
         color: '#f1f5f9',
         display: 'flex',
         flexDirection: 'column',

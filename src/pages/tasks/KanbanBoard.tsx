@@ -44,9 +44,11 @@ interface ContextMenuState {
 interface KanbanBoardProps {
   columnCount?: ColumnCount;
   viewMode?: ViewMode;
+  /** Free-text filter applied to titles, assignments and descriptions */
+  query?: string;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewMode = 'assignment' }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewMode = 'assignment', query = '' }) => {
   const { isLoggedIn } = useAuth();
   const {
     isDemo,
@@ -105,20 +107,60 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return pinsWithDefaults;
   }, [pinnedColumns, filteredTasks]);
 
+  const normalizedQuery = query.trim().toLowerCase();
+  const matchesQuery = useCallback((task: any) => {
+    if (!normalizedQuery) return true;
+    return [task.title, task.assignment, task.description]
+      .some((field: any) => typeof field === 'string' && field.toLowerCase().includes(normalizedQuery));
+  }, [normalizedQuery]);
+  const visibleIncompletedTasks = useMemo(
+    () => (normalizedQuery ? incompletedTasks.filter(matchesQuery) : incompletedTasks),
+    [incompletedTasks, matchesQuery, normalizedQuery]
+  );
+
   // Create a modified incompletedByAssignment for "All" workspace
   const incompletedByAssignmentForAll = useMemo(() => {
     if (activeWorkspace?.id === ALL_WORKSPACE_ID) {
       // When "All" workspace is selected, group all tasks by assignment
       const grouped: Record<string, any[]> = {};
-      incompletedTasks.forEach((task: any) => {
+      visibleIncompletedTasks.forEach((task: any) => {
         const assignment = task.assignment || "No assignment";
         if (!grouped[assignment]) grouped[assignment] = [];
         grouped[assignment].push(task);
       });
       return grouped;
     }
-    return incompletedByAssignment;
-  }, [activeWorkspace?.id, incompletedTasks, incompletedByAssignment]);
+    if (!normalizedQuery) return incompletedByAssignment;
+    // Searching: keep only matching tasks and hide columns that end up empty
+    const filtered: Record<string, any[]> = {};
+    Object.entries(incompletedByAssignment).forEach(([assignment, list]) => {
+      const matches = (list as any[]).filter(matchesQuery);
+      if (matches.length > 0) filtered[assignment] = matches;
+    });
+    return filtered;
+  }, [activeWorkspace?.id, visibleIncompletedTasks, incompletedByAssignment, normalizedQuery, matchesQuery]);
+  // "All" view: one section per workspace, each with its own assignment columns
+  const workspaceSections = useMemo(() => {
+    if (activeWorkspace?.id !== ALL_WORKSPACE_ID) return undefined;
+    const byWorkspace = new Map<string, Record<string, any[]>>();
+    visibleIncompletedTasks.forEach((task: any) => {
+      const key = task.workspace_id || 'none';
+      const assignment = task.assignment || 'No assignment';
+      if (!byWorkspace.has(key)) byWorkspace.set(key, {});
+      const group = byWorkspace.get(key)!;
+      if (!group[assignment]) group[assignment] = [];
+      group[assignment].push(task);
+    });
+    const known = (workspaces || []).filter((w: any) => byWorkspace.has(w.id));
+    const sections = known.map((w: any) => ({ id: w.id as string, name: w.name as string, byAssignment: byWorkspace.get(w.id)! }));
+    // Tasks whose workspace is missing from the list (or none) go last
+    const knownIds = new Set(known.map((w: any) => w.id));
+    byWorkspace.forEach((byAssignment, id) => {
+      if (!knownIds.has(id)) sections.push({ id, name: id === 'none' ? 'No workspace' : 'Other', byAssignment });
+    });
+    return sections;
+  }, [activeWorkspace?.id, visibleIncompletedTasks, workspaces]);
+
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
@@ -488,7 +530,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
         <div className="flex-1 min-h-0">
           {viewMode === 'status' ? (
             <StatusBoard
-              incompletedTasks={incompletedTasks}
+              incompletedTasks={visibleIncompletedTasks}
               onAddTask={handleAddTask}
               onTaskToggle={handleToggleCompletion}
               onTaskDelete={handleConfirmDeleteTask}
@@ -498,6 +540,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
           ) : (
             <AssignmentColumns
             incompletedByAssignment={incompletedByAssignmentForAll}
+            {...(workspaceSections ? { workspaceSections } : {})}
             currentWorkspacePins={currentWorkspacePins}
             onTogglePin={handleTogglePin}
             onAddTask={handleAddTask}

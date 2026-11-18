@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -100,30 +100,34 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   };
   
   return (
-    <div className="bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-xl p-3 shadow-2xl min-w-[200px] text-center backdrop-blur-md">
-      <div className="font-semibold text-[var(--accent-primary)] mb-2 text-center text-sm">{dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</div>
-      <div className="flex items-center justify-center gap-2 mb-1">
-        <div className="text-[var(--text-primary)] text-center text-sm">Time: <b className="text-base">{formatMinutesToHMText(entry.minutes)}</b></div>
+    <div className="min-w-[180px] rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 text-left shadow-xl">
+      <div className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+        {dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatMinutesToHMText(entry.minutes)}</span>
         {getTrendIcon()}
       </div>
-      <div className="text-[var(--text-secondary)] text-center text-xs mb-2">Tasks: <b className="text-[var(--text-primary)]">{dayTasks.length}</b></div>
+      <div className="mt-2 flex items-center justify-between gap-4 border-t border-[var(--border-primary)] pt-2 text-xs text-[var(--text-secondary)]">
+        <span>Tasks completed</span>
+        <b className="tabular-nums text-[var(--text-primary)]">{dayTasks.length}</b>
+      </div>
       {tags.length > 0 && (
-        <div className="text-[var(--text-secondary)] text-center text-xs mt-2">
-          <div className="font-medium mb-1">Tags:</div>
-          <div className="flex flex-wrap gap-1 justify-center">
-            {tags.map((tag: any, index: number) => (
-              <span key={index} className="bg-[var(--bg-secondary)] px-2 py-1 rounded text-xs">
-                {tag}
-              </span>
-            ))}
-          </div>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {tags.map((tag: any, index: number) => (
+            <span key={index} className="rounded-md bg-[var(--bg-secondary)] px-1.5 py-0.5 text-xs text-[var(--text-secondary)]">
+              {tag}
+            </span>
+          ))}
         </div>
       )}
     </div>
   );
 };
 
-const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxisTicks = undefined }: any) => {
+const StatsChart = ({ data, title: titleProp, accentColor, small = false, customTitle, xAxisTicks = undefined, period }: any) => {
+  // `period` (week|month|year) is explicit; fall back to the legacy title sniffing
+  const title: string = period === 'month' ? 'This Month' : titleProp;
   const tasks = useTasksOnly();
   const [isSmall, setIsSmall] = useState(false);
 
@@ -178,7 +182,7 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
   );
   const isMonthChart = title === 'This Month';
   const isYearChart = title === 'This Year' || !isNaN(parseInt(title));
-  const chartBoxClass = `${small ? 'h-40' : 'h-48 sm:h-56 lg:h-64'} w-full rounded-xl bg-[var(--bg-secondary)]/50 transition-all duration-300 z-10`;
+  const chartBoxClass = `${small ? 'h-40' : 'h-56 sm:h-64 lg:h-72'} w-full z-10`;
 
   // Para 'This Year' o años específicos: escalar y mostrar etiquetas enteras según el mayor valor
   const yearDivisor = (title === 'This Year' || !isNaN(parseInt(title))) && dataMaxMinutes > 0
@@ -211,6 +215,13 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
     const steps = Math.max(1, Math.floor(upper / 60));
     return Array.from({ length: steps + 1 }, (_, i) => i * 60);
   })();
+
+  const elapsedUnits = Array.isArray(data) ? data.filter((d: any) => !d?.date || new Date(d.date) <= today) : [];
+  const avgMinutes = elapsedUnits.length
+    ? Math.round(elapsedUnits.reduce((sum: number, d: any) => sum + (d?.minutes || 0), 0) / elapsedUnits.length)
+    : 0;
+  const gradientId = 'statsBarGradient';
+  const todayGradientId = 'statsBarToday';
 
   // Compute X axis ticks optionally. Only pass the prop if defined to satisfy TS exactOptionalPropertyTypes
   const xTicks = (
@@ -249,8 +260,16 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                 isYearChart ? 12 : 8
               }
             >
-              {/** Build ticks for Month on small screens: every 5 days */}
-              {(() => null)()}
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={accentColor} stopOpacity={0.9} />
+                  <stop offset="100%" stopColor={accentColor} stopOpacity={0.45} />
+                </linearGradient>
+                <linearGradient id={todayGradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--accent-primary)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--accent-primary)" stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
               <XAxis
                 dataKey={
                   isWeekChart
@@ -294,17 +313,28 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
               />
               <Tooltip 
                 content={<CustomTooltip tasks={tasks} data={data} title={title} />} 
-                cursor={{ fill: 'rgba(30,144,255,0.12)' }} 
+                cursor={{ fill: 'var(--text-primary)', fillOpacity: 0.05, radius: 8 }} 
                 wrapperStyle={small ? { transform: 'translateY(-40px)' } : {}}
                 animationDuration={200}
                 isAnimationActive={false}
               />
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" opacity={0.3} vertical={false} />
+              <CartesianGrid strokeDasharray="2 6" stroke="var(--border-primary)" opacity={0.7} vertical={false} />
+              {avgMinutes > 0 && (
+                <ReferenceLine
+                  y={avgMinutes}
+                  stroke="var(--accent-primary)"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.55}
+                  ifOverflow="extendDomain"
+                />
+              )}
               <Bar
                 dataKey="minutes"
-                fill={accentColor}
-                radius={[6, 6, 0, 0]}
-                animationDuration={300}
+                fill={`url(#${gradientId})`}
+                radius={[8, 8, 3, 3]}
+                maxBarSize={isYearChart ? 36 : isMonthChart ? 18 : 44}
+                background={{ fill: 'var(--bg-secondary)', radius: 8 }}
+                animationDuration={500}
                 animationBegin={0}
               >
                 {chartData.map((entry: any, index: number) => {
@@ -314,12 +344,12 @@ const StatsChart = ({ data, title, accentColor, small = false, customTitle, xAxi
                     <Cell 
                       key={`cell-${index}`} 
                       fill={
-                        isToday 
-                          ? 'var(--accent-primary)' 
-                          : hasData 
-                            ? accentColor 
-                            : 'var(--bg-tertiary)'
-                      } 
+                        isToday
+                          ? `url(#${todayGradientId})`
+                          : hasData
+                            ? `url(#${gradientId})`
+                            : 'transparent'
+                      }
                     />
                   );
                 })}

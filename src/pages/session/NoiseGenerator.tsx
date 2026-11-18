@@ -101,9 +101,7 @@ function SoundControl({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`relative rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 ${
+      className={`relative overflow-hidden rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-md ${
         isPlaying
           ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
           : "border-[var(--border-primary)]"
@@ -141,8 +139,25 @@ function SoundControl({
             <span className="font-semibold text-[var(--text-primary)] truncate">
               {label}
             </span>
+            {isPlaying && (
+              <div className="flex items-end gap-0.5 h-3.5 mr-auto ml-1" aria-hidden>
+                {[0, 1, 2, 3].map((b) => (
+                  <motion.span
+                    key={b}
+                    className={`w-0.5 rounded-full ${theme.gradient}`}
+                    animate={{ height: ["30%", "100%", "50%", "90%", "30%"] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1.2,
+                      ease: "easeInOut",
+                      delay: b * 0.15,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
             <span
-              className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
+              className={`text-xs font-medium tabular-nums px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
             >
               {percentage}%
             </span>
@@ -153,14 +168,19 @@ function SoundControl({
             thumbClassName={`h-5 w-5 rounded-full ${theme.thumb} border-2 border-[var(--bg-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2`}
             trackClassName="h-2 rounded-full"
             renderTrack={(
-              props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>
+              props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>,
+              state: { index: number }
             ) => {
               const { key, ...rest } = props;
               return (
                 <div
                   key={key}
                   {...rest}
-                  className={`h-2 rounded-full ${theme.gradient}`}
+                  className={`h-2 rounded-full transition-opacity ${
+                    state.index === 0
+                      ? theme.gradient
+                      : "bg-[var(--border-primary)]"
+                  }`}
                 />
               );
             }}
@@ -342,7 +362,7 @@ function NoiseSettingsModal({
       title={t('session.noise.modalTitle')}
       maxWidth="max-w-lg"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {sounds.map((sound, idx) => {
           const theme = getSoundTheme(sound.key);
           const Icon =
@@ -355,32 +375,41 @@ function NoiseSettingsModal({
           return (
             <div
               key={sound.key}
-              className={`rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 transition-all ${
-                sound.isPlaying ? `ring-1 ${theme.activeRing}` : ""
+              className={`rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all ${
+                sound.isPlaying
+                  ? `${theme.activeBorder} ring-1 ${theme.activeRing}`
+                  : "border-[var(--border-primary)]"
               }`}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className={`flex h-9 w-9 items-center justify-center rounded-lg ${theme.iconBg}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${theme.iconBg}`}
                 >
-                  <Icon size={18} className={theme.iconText} />
+                  <Icon size={20} className={theme.iconText} />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-[var(--text-primary)]">
                     {sound.label}
                   </h4>
                   <p className="text-xs text-[var(--text-secondary)]">
-                    Max volume and presets
+                    {t('session.noise.maxAndPresets', { defaultValue: 'Max volume and presets' })}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mb-4">
-                <label className="text-sm text-[var(--text-secondary)]">
-                  Max volume
-                </label>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-[var(--text-secondary)]">
+                    {t('session.noise.maxVolume', { defaultValue: 'Max volume' })}
+                  </label>
+                  <span
+                    className={`text-xs font-medium tabular-nums px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
+                  >
+                    {sound.max.toFixed(1)}
+                  </span>
+                </div>
                 <input
-                  type="number"
+                  type="range"
                   min={0.1}
                   max={5}
                   step={0.1}
@@ -389,19 +418,22 @@ function NoiseSettingsModal({
                     const value = parseFloat(e.target.value);
                     if (!isNaN(value)) setMaxVolume(idx, value);
                   }}
-                  className="w-20 px-3 py-1.5 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30"
+                  className="w-full h-2 cursor-pointer accent-[var(--accent-primary)]"
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)] mb-2">
+                {t('session.noise.presets', { defaultValue: 'Presets' })}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {presetsMap[sound.key as keyof PresetsMap].map(
                   (preset: Preset, pIdx: number) => (
                     <button
                       key={preset.label}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
+                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
                         selectedPresets[idx] === pIdx
-                          ? `${theme.iconBg} ${theme.iconText} ring-1 ${theme.activeRing}`
-                          : "bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-primary)]"
+                          ? `${theme.iconBg} ${theme.iconText} ${theme.activeBorder}`
+                          : "bg-[var(--bg-secondary)] border-transparent text-[var(--text-secondary)] hover:bg-[var(--border-primary)] hover:text-[var(--text-primary)]"
                       }`}
                       onClick={() => {
                         applyPreset(

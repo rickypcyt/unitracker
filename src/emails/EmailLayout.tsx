@@ -29,7 +29,7 @@ export const EmailLayout: React.FC<EmailLayoutProps> = ({ children, preview, con
     <Html>
       <Head />
       <Preview>{preview}</Preview>
-      <Body style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', margin: 0, padding: 0, backgroundColor: '#f4f5f7' }}>
+      <Body style={{ fontFamily: 'Arial, Helvetica, sans-serif', margin: 0, padding: 0, backgroundColor: '#f4f5f7' }}>
         <Container style={{ maxWidth: 600, margin: '0 auto', padding: '20px' }}>
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>

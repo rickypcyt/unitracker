@@ -112,17 +112,17 @@ export const AssignmentCard = ({
       data-column-id={assignment}
       data-testid={`column-${assignment}`}
     >
-      <div className="flex items-center justify-between w-full mt-1 mb-1 sm:mt-2 sm:mb-2">
+      <div className="flex items-center justify-between w-full mb-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onTogglePin}
-              className="flex items-center justify-center p-1 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors flex-shrink-0"
+              className="flex items-center justify-center p-0.5 rounded-md flex-shrink-0"
               title={pinned ? "Unpin column" : "Pin column"}
             >
               {pinned ? (
-                <Pin size={18} className="text-[var(--accent-primary)] transition-all duration-200 fill-[var(--accent-primary)]" />
+                <Pin size={14} className="text-[var(--accent-primary)] fill-[var(--accent-primary)]" />
               ) : (
-                <PinOff size={18} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200" />
+                <PinOff size={14} className="text-[var(--text-secondary)]" />
               )}
             </button>
             {isEditing ? (
@@ -155,10 +155,10 @@ export const AssignmentCard = ({
               </div>
             ) : (
               <div className="flex items-center gap-2 min-w-0">
-                <h3 className="font-bold text-lg tracking-tight text-[var(--text-primary)] truncate">
+                <h3 className="font-bold text-[length:var(--t-head,13px)] uppercase tracking-wider text-[var(--text-primary)] truncate">
                   {assignment}
                 </h3>
-                <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]" title={`${tasks.length} pending`}>
+                <span className="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[length:var(--t-meta,12px)] font-semibold leading-none tabular-nums bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]" title={`${tasks.length} pending`}>
                   {tasks.length}
                 </span>
               </div>
@@ -167,10 +167,10 @@ export const AssignmentCard = ({
           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <button
               onClick={onAddTask}
-              className="p-1.5 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
+              className="p-1 rounded-md text-[var(--text-secondary)] active:scale-95"
               title="Add task"
             >
-              <Plus size={18} />
+              <Plus size={15} />
             </button>
             <ColumnDropdownMenu
               assignment={assignment}

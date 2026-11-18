@@ -60,24 +60,24 @@ interface PeriodNavProps {
 }
 
 const PeriodNav = ({ label, onPrevious, onNext, isNextDisabled }: PeriodNavProps) => (
-  <div className="flex items-center gap-1.5">
+  <div className="flex items-center gap-1 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
     <button
       onClick={onPrevious}
-      className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)]"
       aria-label="Previous"
     >
-      <ChevronLeft size={18} className="text-[var(--text-primary)]" />
+      <ChevronLeft size={18} />
     </button>
-    <span className="font-semibold text-sm sm:text-base text-center select-none transition-colors duration-200 text-[var(--accent-primary)] min-w-[80px] sm:min-w-[120px]">
+    <span className="min-w-[96px] select-none text-center text-sm font-semibold text-[var(--text-primary)] sm:min-w-[132px]">
       {label}
     </span>
     <button
       onClick={onNext}
-      className="p-2 rounded-lg bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-30"
       aria-label="Next"
       disabled={isNextDisabled}
     >
-      <ChevronRight size={18} className={`text-[var(--text-primary)] ${isNextDisabled ? 'opacity-40' : ''}`} />
+      <ChevronRight size={18} />
     </button>
   </div>
 );
@@ -89,20 +89,36 @@ const PeriodSelector = ({
   period: 'week' | 'month' | 'year';
   onChange: (period: 'week' | 'month' | 'year') => void;
 }) => (
-  <div className="flex w-full sm:w-auto items-center justify-between gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
+  <div className="flex w-full items-center gap-1 rounded-xl bg-[var(--bg-secondary)] p-1 sm:w-auto" role="tablist" aria-label="Chart period">
     {(['week', 'month', 'year'] as const).map(option => (
       <button
         key={option}
+        role="tab"
+        aria-selected={period === option}
         onClick={() => onChange(option)}
-        className={`flex-1 sm:flex-none rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors sm:px-3 sm:text-sm ${
+        className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold capitalize transition-colors sm:flex-none sm:px-4 ${
           period === option
-            ? 'bg-[var(--accent-primary)] text-white'
-            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
+            ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+            : 'text-[var(--text-secondary)]'
         }`}
       >
         {option}
       </button>
     ))}
+  </div>
+);
+
+const fmtHM = (minutes: number) => `${Math.floor(minutes / 60)}h ${String(Math.round(minutes % 60)).padStart(2, '0')}m`;
+
+const SummaryStat = ({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'up' | 'down' }) => (
+  <div className="min-w-0 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 py-2.5">
+    <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{label}</div>
+    <div className={`mt-0.5 truncate text-lg font-bold tabular-nums leading-tight sm:text-xl ${
+      tone === 'up' ? 'text-green-500' : tone === 'down' ? 'text-red-500' : 'text-[var(--text-primary)]'
+    }`}>
+      {value}
+    </div>
+    {sub && <div className="truncate text-xs text-[var(--text-secondary)]">{sub}</div>}
   </div>
 );
 
@@ -279,10 +295,49 @@ const StatsChartsPanel = memo(() => {
     ? monthOffset >= 0
     : yearOffset === 0;
 
+  // Summary for the shown period + comparison with the previous one
+  const summary = useMemo(() => {
+    const today = new Date();
+    const total = chartData.reduce((sum, d) => sum + (d.minutes || 0), 0);
+    const elapsed = chartData.filter(d => !d.date || new Date(d.date) <= today).length;
+    const avg = Math.round(total / Math.max(1, elapsed));
+    const best = chartData.reduce((top, d) => (d.minutes > (top?.minutes ?? 0) ? d : top), null as null | (typeof chartData)[number]);
+    const activeUnits = chartData.filter(d => d.minutes > 0).length;
+
+    let prevTotal: number | null = null;
+    if (!isDemo) {
+      let from: Date;
+      let to: Date;
+      if (period === 'week') {
+        to = new Date(shownWeekMonday);
+        to.setHours(0, 0, 0, 0);
+        from = new Date(to);
+        from.setDate(from.getDate() - 7);
+      } else if (period === 'month') {
+        from = new Date(shownMonthDate.getFullYear(), shownMonthDate.getMonth() - 1, 1);
+        to = new Date(shownMonthDate.getFullYear(), shownMonthDate.getMonth(), 1);
+      } else {
+        from = new Date(shownYear - 1, 0, 1);
+        to = new Date(shownYear, 0, 1);
+      }
+      prevTotal = laps.reduce((sum, lap) => {
+        const d = new Date(lap.created_at);
+        return d >= from && d < to ? sum + Math.round(durationToSeconds(lap.duration) / 60) : sum;
+      }, 0);
+    }
+    const delta = prevTotal && prevTotal > 0 ? Math.round(((total - prevTotal) / prevTotal) * 100) : null;
+    return { total, avg, best, activeUnits, delta };
+  }, [chartData, period, laps, isDemo, shownWeekMonday, shownMonthDate, shownYear]);
+
+  const unitLabel = period === 'year' ? 'month' : 'day';
+  const bestLabel = summary.best && summary.best.minutes > 0
+    ? (period === 'month' ? `${monthLabels[Number(summary.best.date.slice(5, 7)) - 1] ?? ''} ${(summary.best as any).realDay}` : summary.best.dayName)
+    : '—';
+
   return (
     <div className="w-full">
       <ChartCard
-        paddingClass="p-2"
+        paddingClass="p-3 sm:p-4"
         isDemo={isDemo}
         header={
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -296,7 +351,19 @@ const StatsChartsPanel = memo(() => {
           </div>
         }
       >
+        {/* Summary row */}
+        <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <SummaryStat label="Total" value={fmtHM(summary.total)} sub={`${summary.activeUnits} active ${unitLabel}${summary.activeUnits === 1 ? '' : 's'}`} />
+          <SummaryStat label={`Avg / ${unitLabel}`} value={fmtHM(summary.avg)} />
+          <SummaryStat label="Best" value={bestLabel} sub={summary.best && summary.best.minutes > 0 ? fmtHM(summary.best.minutes) : 'No data yet'} />
+          <SummaryStat
+            label={`vs previous ${period}`}
+            value={summary.delta === null ? '—' : `${summary.delta > 0 ? '+' : ''}${summary.delta}%`}
+            {...(summary.delta !== null && summary.delta !== 0 ? { tone: summary.delta > 0 ? 'up' as const : 'down' as const } : {})}
+          />
+        </div>
         <StatsChart
+          period={period}
           data={chartData}
           title={chartLabel}
           accentColor={accentColor}
