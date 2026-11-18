@@ -1,43 +1,105 @@
 import { CheckCircle2, Circle, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { format } from 'date-fns';
 import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
 import type { Task } from '@/schemas/task';
 
 const POPOVER_WIDTH = 260;
+/** Minimum distance kept between the popover and the viewport edges. */
+const VIEWPORT_MARGIN = 8;
+/** Gap between the anchor day and the popover. */
+const ANCHOR_GAP = 8;
 
 interface Props {
   day: Date | null;
   tasks: Task[];
   onClose: () => void;
-  top?: number;
-  /** horizontal center of the anchor day, relative to the month section */
-  left?: number;
+  /** The day cell the popover points at; its viewport rect drives placement. */
+  anchor?: HTMLElement | null;
 }
 
-const DayTasksPopover = ({ day, tasks, onClose, top, left }: Props) => {
+type Placement = { top: number; left: number; width: number; maxHeight?: number };
+
+/**
+ * Centre the popover under the anchor, then keep it fully on screen: clamp it
+ * horizontally to the viewport and flip it above the anchor when there is not
+ * enough room below (and more room above).
+ */
+export const computePlacement = (
+  anchor: { top: number; bottom: number; left: number; width: number },
+  popoverHeight: number,
+  viewport: { width: number; height: number },
+): Placement => {
+  const width = Math.min(POPOVER_WIDTH, viewport.width - VIEWPORT_MARGIN * 2);
+  const centre = anchor.left + anchor.width / 2;
+  const left = Math.min(
+    Math.max(centre - width / 2, VIEWPORT_MARGIN),
+    viewport.width - width - VIEWPORT_MARGIN,
+  );
+
+  const spaceBelow = viewport.height - anchor.bottom - ANCHOR_GAP - VIEWPORT_MARGIN;
+  const spaceAbove = anchor.top - ANCHOR_GAP - VIEWPORT_MARGIN;
+  const openAbove = popoverHeight > spaceBelow && spaceAbove > spaceBelow;
+  const available = Math.max(0, openAbove ? spaceAbove : spaceBelow);
+  const height = Math.min(popoverHeight, available);
+  const top = openAbove ? anchor.top - ANCHOR_GAP - height : anchor.bottom + ANCHOR_GAP;
+
+  return { top, left, width, ...(popoverHeight > available ? { maxHeight: available } : {}) };
+};
+
+const DayTasksPopover = ({ day, tasks, onClose, anchor }: Props) => {
   const { busy, editTask: openEditor, toggleTask, requestDelete, modals } = useSessionTaskActions('calendar', onClose);
   const editTask = (task: Task | null) => {
     if (day) openEditor(task, format(day, 'yyyy-MM-dd'));
   };
 
-  if (!day) return null;
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [placement, setPlacement] = useState<Placement | null>(null);
 
-  const position = {
-    top: top ?? 0,
-    left: left ?? 0,
-  };
+  const reposition = useCallback(() => {
+    const el = popoverRef.current;
+    if (!el || !anchor) return;
+    // Measure the natural height (ignoring a previous maxHeight clamp).
+    const previousMax = el.style.maxHeight;
+    el.style.maxHeight = '';
+    const height = el.offsetHeight;
+    el.style.maxHeight = previousMax;
+    setPlacement(computePlacement(
+      anchor.getBoundingClientRect(),
+      height,
+      { width: window.innerWidth, height: window.innerHeight },
+    ));
+  }, [anchor]);
+
+  // Position before paint so the popover never flashes off-screen, and follow
+  // the anchor on scroll/resize or when the task list changes size.
+  useLayoutEffect(() => {
+    if (!day) return;
+    reposition();
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
+    return () => {
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
+    };
+  }, [day, tasks.length, reposition]);
+
+  if (!day) return null;
 
   return createPortal(
     <>
       <div
+        ref={popoverRef}
         role="dialog"
         aria-label={`Tasks for ${format(day, 'MMMM d, yyyy')}`}
         style={{
-          top: position.top,
-          left: position.left - POPOVER_WIDTH / 2,
-          width: POPOVER_WIDTH,
-          transform: 'translateX(-50%)',
+          top: placement?.top ?? 0,
+          left: placement?.left ?? 0,
+          width: placement?.width ?? POPOVER_WIDTH,
+          maxHeight: placement?.maxHeight,
+          // Hidden until measured so it never shows up in the wrong place.
+          visibility: anchor && !placement ? 'hidden' : 'visible',
         }}
         className="fixed z-[100000] max-h-72 overflow-y-auto rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl text-left"
       >

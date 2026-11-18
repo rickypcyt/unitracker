@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import DayTasksPopover from './DayTasksPopover';
+import DayTasksPopover, { computePlacement } from './DayTasksPopover';
 
 const mocks = vi.hoisted(() => ({
   updateTask: vi.fn(), deleteTask: vi.fn(), save: vi.fn(), remove: vi.fn(), fetch: vi.fn(),
@@ -51,5 +51,28 @@ describe('DayTasksPopover', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Complete Physics exam' }));
     expect(screen.getByText('Login required')).toBeInTheDocument();
     expect(mocks.save).not.toHaveBeenCalled();
+  });
+});
+
+describe('computePlacement', () => {
+  const viewport = { width: 1000, height: 800 };
+  const cell = (left: number, top: number) => ({ left, top, bottom: top + 30, width: 30 });
+
+  it('centres under the anchor when there is room', () => {
+    expect(computePlacement(cell(485, 100), 200, viewport)).toEqual({ top: 138, left: 370, width: 260 });
+  });
+
+  it('clamps to the left and right viewport edges', () => {
+    expect(computePlacement(cell(0, 100), 200, viewport).left).toBe(8);
+    expect(computePlacement(cell(970, 100), 200, viewport).left).toBe(1000 - 260 - 8);
+  });
+
+  it('flips above the anchor when it would overflow the bottom', () => {
+    const p = computePlacement(cell(485, 700), 200, viewport);
+    expect(p.top).toBe(700 - 8 - 200);
+  });
+
+  it('shrinks to fit narrow viewports', () => {
+    expect(computePlacement(cell(100, 100), 200, { width: 200, height: 800 })).toMatchObject({ left: 8, width: 184 });
   });
 });

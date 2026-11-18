@@ -33,14 +33,10 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   );
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
+  const [popoverAnchor, setPopoverAnchor] = useState<HTMLElement | null>(null);
   const openDay = (day: Date, button: HTMLButtonElement) => {
     setSelectedDay(day);
-    const rect = button.getBoundingClientRect();
-    setPopoverPos({
-      top: rect.bottom + 8,
-      left: rect.left + rect.width / 2,
-    });
+    setPopoverAnchor(button);
   };
   const sectionRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,7 +166,7 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
         <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#30d158]" />{doneCount} {t('session.monthView.done', { defaultValue: 'done' })}</span>
       </div>
 
-      <DayTasksPopover top={popoverPos.top} left={popoverPos.left} day={selectedDay} tasks={selectedDay ? getDayTasks(source, selectedDay) : []} onClose={() => setSelectedDay(null)} />
+      <DayTasksPopover anchor={popoverAnchor} day={selectedDay} tasks={selectedDay ? getDayTasks(source, selectedDay) : []} onClose={() => setSelectedDay(null)} />
     </section>
   );
 };

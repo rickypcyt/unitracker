@@ -7,7 +7,7 @@ import Countdown from "@/pages/session/Countdown";
 import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
 import { SYNC_EVENTS } from "@/hooks/session/useStudySync";
-import { useAppStore, useStudyState } from "@/store/appStore";
+import { useAppStore } from "@/store/appStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { StudyService } from "@/services/StudyService";
 import {
@@ -47,8 +47,10 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
   const pomoRunning = useAppStore(s => s.ui.isPomoRunning);
   const countdownRunning = useAppStore(s => s.countdownTimerState === "running");
   // No session yet → show the "Start new session" entry state instead of the dead timers
-  const studyState = useStudyState();
-  const idle = studyState.sessionStatus === "inactive" && !studyRunning;
+  // The store's studyState.sessionStatus is never written (StudyTimer keeps its own
+  // local copy), so derive "idle" from studyTimerState, which pause/start/reset do set.
+  const studyTimerState = useAppStore(s => s.studyTimerState);
+  const idle = studyTimerState === "stopped" && !studyRunning;
 
   // Only offer "Resume" when there is actually an unfinished session to resume
   const { isLoggedIn } = useAuth();
