@@ -37,3 +37,11 @@ export const sharedWorkspaceSchema = z.object({
 });
 
 export type SharedWorkspace = z.infer<typeof sharedWorkspaceSchema>;
+
+// Form input for create/edit workspace modals (react-hook-form)
+export const workspaceFormSchema = z.object({
+  name: z.string().trim().min(1, 'Workspace name is required').max(60),
+  icon: z.string().min(1),
+});
+
+export type WorkspaceFormValues = z.infer<typeof workspaceFormSchema>;

@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 
 import BaseModal from '@/modals/shared/BaseModal';
+import { habitFormSchema, type HabitFormValues } from '@/schemas/habit';
 
 interface HabitCreateModalProps {
   isOpen: boolean;
@@ -15,19 +18,20 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
   onAdd
 }) => {
   const { t } = useTranslation();
-  const [habitName, setHabitName] = useState('');
+  const { register, handleSubmit, reset, formState: { isValid } } = useForm<HabitFormValues>({
+    resolver: zodResolver(habitFormSchema),
+    defaultValues: { name: '' },
+    mode: 'onChange',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (habitName.trim()) {
-      onAdd({ name: habitName.trim() });
-      setHabitName('');
-      onClose();
-    }
+  const onSubmit = ({ name }: HabitFormValues) => {
+    onAdd({ name });
+    reset();
+    onClose();
   };
 
   const handleClose = () => {
-    setHabitName('');
+    reset();
     onClose();
   };
 
@@ -38,7 +42,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
       title={t('habits.createTitle')}
       maxWidth="max-w-md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label
             htmlFor="habitName"
@@ -49,8 +53,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
           <input
             id="habitName"
             type="text"
-            value={habitName}
-            onChange={(e) => setHabitName(e.target.value)}
+            {...register('name')}
             placeholder={t('habits.habitNamePlaceholder')}
             className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
@@ -67,7 +70,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
           </button>
             <button
               type="submit"
-              disabled={!habitName.trim()}
+              disabled={!isValid}
               className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
             {t('habits.create')}

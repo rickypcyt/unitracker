@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import { Habit } from '@/types/common';
+import { habitFormSchema, type HabitFormValues } from '@/schemas/habit';
 
 interface HabitEditModalProps {
   isOpen: boolean;
@@ -20,20 +23,20 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
   habit
 }) => {
   const { t } = useTranslation();
-  const [habitName, setHabitName] = useState('');
+  const { register, handleSubmit, reset, formState: { isValid } } = useForm<HabitFormValues>({
+    resolver: zodResolver(habitFormSchema),
+    defaultValues: { name: habit?.name ?? '' },
+    mode: 'onChange',
+  });
 
   useEffect(() => {
-    if (habit) {
-      setHabitName(habit.name);
-    }
-  }, [habit]);
+    if (habit) reset({ name: habit.name });
+  }, [habit, reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (habitName.trim() && habit) {
-      onSave(habit.id, habitName.trim());
-      onClose();
-    }
+  const onSubmit = ({ name }: HabitFormValues) => {
+    if (!habit) return;
+    onSave(habit.id, name);
+    onClose();
   };
 
   const handleDelete = () => {
@@ -44,7 +47,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
   };
 
   const handleClose = () => {
-    setHabitName('');
+    reset({ name: habit?.name ?? '' });
     onClose();
   };
 
@@ -57,7 +60,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
       title={t('habits.editTitle')}
       maxWidth="max-w-md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label
             htmlFor="editHabitName"
@@ -68,8 +71,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
           <input
             id="editHabitName"
             type="text"
-            value={habitName}
-            onChange={(e) => setHabitName(e.target.value)}
+            {...register('name')}
             placeholder={t('habits.habitNameEditPlaceholder')}
             className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
@@ -94,7 +96,7 @@ const HabitEditModal: React.FC<HabitEditModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!habitName.trim()}
+              disabled={!isValid}
               className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md hover:bg-[var(--accent-primary)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {t('common.save')}

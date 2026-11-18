@@ -3,6 +3,9 @@ import { BookOpen, Briefcase, Code, Coffee, Database, FolderOpen, Gamepad2, Glob
 import BaseModal from '@/modals/shared/BaseModal';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { workspaceFormSchema, type WorkspaceFormValues } from '@/schemas/workspace';
 import { WorkspaceService } from '@/services/WorkspaceService';
 import posthog from 'posthog-js';
 
@@ -40,42 +43,32 @@ type Props = {
 };
 
 const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) => {
-  const [workspaceName, setWorkspaceName] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user } = useAuth() as any;
-  const [selectedIcon, setSelectedIcon] = useState('Briefcase');
+  const { register, handleSubmit, reset, setValue, watch, formState: { isValid, isSubmitting: loading } } = useForm<WorkspaceFormValues>({
+    resolver: zodResolver(workspaceFormSchema),
+    defaultValues: { name: '', icon: 'Briefcase' },
+    mode: 'onChange',
+  });
+  const selectedIcon = watch('icon');
+  const setSelectedIcon = (icon: string) => setValue('icon', icon, { shouldValidate: true });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!workspaceName.trim()) {
-      setError('Workspace name is required');
-      return;
-    }
-
-    setLoading(true);
+  const onSubmit = async ({ name, icon }: WorkspaceFormValues) => {
     setError('');
-
     try {
-      const data = await WorkspaceService.createWorkspace({
-        name: workspaceName.trim(),
-        user_id: user?.id,
-        icon: selectedIcon
-      });
-
+      const data = await WorkspaceService.createWorkspace({ name, user_id: user?.id, icon });
       onWorkspaceCreated(data);
-      if (posthog.__loaded) posthog.capture('workspace_created', { icon: selectedIcon });
+      if (posthog.__loaded) posthog.capture('workspace_created', { icon });
+      reset();
       onClose();
     } catch (error) {
       console.error('Error creating workspace:', error);
       setError('Failed to create workspace');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setWorkspaceName('');
+    reset();
     setError('');
     onClose();
   };
@@ -89,7 +82,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
       title="Create New Workspace"
       maxWidth="max-w-md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pt-2 sm:pt-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2 sm:pt-4">
         <div className="flex items-center gap-3 mb-6">
           {(() => {
             const IconComp = iconOptions.find(opt => opt.name === selectedIcon)?.icon || Briefcase;
@@ -104,8 +97,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             <input
               type="text"
               id="workspaceName"
-              value={workspaceName}
-              onChange={(e) => setWorkspaceName(e.target.value)}
+              {...register('name')}
               className="w-full px-3 py-2 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
               placeholder="Enter workspace name..."
               autoFocus
@@ -159,7 +151,7 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             </button>
             <button
               type="submit"
-              disabled={loading || !workspaceName.trim()}
+              disabled={loading || !isValid}
               className="flex-1 px-4 py-2 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating...' : 'Create Workspace'}

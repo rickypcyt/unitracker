@@ -3,13 +3,15 @@ import '@/pages/calendar/datepicker-overrides.css';
 
 import { Calendar, Sparkles, Wand2 } from 'lucide-react';
 import { parseDateForDB, to12Hour, to24Hour } from '@/utils/timeUtils';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import AutocompleteInput from '@/modals/shared/AutocompleteInput';
 import BaseModal from '@/modals/shared/BaseModal';
 import MarkdownWysiwyg from '@/components/editor/MarkdownWysiwyg';
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useFormState } from '@/hooks/common/useFormState';
+import { taskFormSchema, type TaskFormValues } from '@/schemas/taskForm';
 import { useTaskSubmit } from '@/hooks/tasks/useTaskSubmit';
 import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
@@ -98,42 +100,38 @@ const TaskForm = ({
     isRecurring: !!(initialTask?.recurrence_type === 'weekly'),
     recurrence_weekdays: getInitialRecurrence()
   };
-  const validationRules = {
-    title: {
-      required: true,
-      minLength: 3,
-      maxLength: 100
-    },
-    assignment: {
-      required: true
-    },
-    difficulty: {
-      required: true
-    },
-    description: {
-      maxLength: 500
-    },
-    deadline: {
-      required: false,
-      validate: validateDeadline
-    },
-    start_at: {
-      required: false,
-      validate: validateTime
-    },
-    end_at: {
-      required: false,
-      validate: validateTime
+  // react-hook-form + zod (see schemas/taskForm.ts). The adapter below keeps the
+  // formData / handleChange / errors shape the JSX already uses.
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: initialFormState as TaskFormValues,
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+  });
+  const formData = form.watch() as any;
+  const hasInteracted = form.formState.isDirty;
+  const errors: any = Object.fromEntries(
+    Object.entries(form.formState.errors).map(([field, error]) => [field, String((error as { message?: string })?.message ?? '')])
+  );
+  const handleChange = useCallback((field: string, value: any) => {
+    form.setValue(field as keyof TaskFormValues, value, {
+      shouldDirty: true,
+      shouldValidate: form.formState.isSubmitted,
+    });
+  }, [form]);
+
+  // Reset when the task being edited changes (same behavior as the old useFormState)
+  const initialFormKey = JSON.stringify(initialFormState);
+  const lastInitialFormKey = useRef(initialFormKey);
+  useEffect(() => {
+    if (lastInitialFormKey.current !== initialFormKey) {
+      lastInitialFormKey.current = initialFormKey;
+      form.reset(initialFormState as TaskFormValues);
     }
-  };
-  const {
-    formData,
-    errors,
-    handleChange,
-    validateForm,
-    hasInteracted
-  } = useFormState(initialFormState as any, validationRules as any) as any;
-  const [recurrenceError, setRecurrenceError] = useState<string | null>(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFormKey]);
+
+  const recurrenceError = errors['recurrence'] || null;
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const isEditingExistingTask = Boolean(initialTask);
   // Force hasSubmitted to be false initially (debug)
@@ -179,47 +177,15 @@ const TaskForm = ({
     e.preventDefault();
     setHasSubmitted(true); // Mark that user has attempted to submit
 
-    if (formData.isRecurring) {
-      setRecurrenceError(null);
-      if (!formData.recurrence_weekdays?.length) {
-        setRecurrenceError('Select at least one day');
-        return;
-      }
-      if (!formData.start_at || !formData.start_at.trim()) {
-        setRecurrenceError('Start time is required');
-        return;
-      }
-      if (!formData.end_at || !formData.end_at.trim()) {
-        setRecurrenceError('End time is required');
-        return;
-      }
-      const start24 = to24Hour(formData.start_at);
-      const end24 = to24Hour(formData.end_at);
-      if (!start24) {
-        setRecurrenceError('Invalid start time format');
-        return;
-      }
-      if (!end24) {
-        setRecurrenceError('Invalid end time format');
-        return;
-      }
-      const [sh, sm] = start24.split(':').map(Number);
-      const [eh, em] = end24.split(':').map(Number);
-      if ((eh ?? 0) * 60 + (em ?? 0) <= (sh ?? 0) * 60 + (sm ?? 0)) {
-        setRecurrenceError('End time must be after start time');
-        return;
-      }
-    } else {
-      if (!validateForm()) {
-        return;
-      }
+    if (!(await form.trigger())) {
+      return;
     }
     try {
       if (!typedUser) return;
 
       // Preserve provided times; convert later during saveTask
       const updatedFormData = {
-        ...formData
+        ...form.getValues()
       };
       const saved = await saveTask({
         formData: {
@@ -352,28 +318,6 @@ const TaskForm = ({
     }
     return null;
   }
-  function validateDeadline(value: string): true | string {
-    if (!value) return true;
-
-    // Validate DD/MM/YYYY format
-    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-    const match = value.match(dateRegex);
-    if (!match) {
-      return 'Please enter a valid date in DD/MM/YYYY format';
-    }
-    const [, day, month, year] = match;
-    const date = new Date(`${year}-${month}-${day}`);
-    return isNaN(date.getTime()) ? 'Please enter a valid date in DD/MM/YYYY format' : true;
-  }
-  function validateTime(value: string): true | string {
-    if (!value) return true;
-
-    // Validate 12h AM/PM format (HH:MM AM/PM) or 24h format (HH:MM)
-    const time12Regex = /^(\d{1,2}):([0-5][0-9])\s*(AM|PM)$/i;
-    const time24Regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    return time12Regex.test(value) || time24Regex.test(value) ? true : 'Please enter a valid time (e.g., 10:30 AM or 14:30)';
-  }
-
   // Computed values
   const uniqueAssignments = [...new Set(tasks.map((task: any) => task.assignment || 'No Subject').filter(a => a && a !== 'No Subject'))].sort();
   const selectableWorkspaces = (workspaces || []).filter((w: any) => w.id !== 'all');
@@ -479,7 +423,7 @@ const TaskForm = ({
   const renderRecurrenceToggle = () => <label className="flex items-center gap-3 cursor-pointer group sm:self-end sm:mb-2.5">
       <div className="relative">
         <input type="checkbox" checked={formData.isRecurring} onChange={e => {
-        setRecurrenceError(null);
+        form.clearErrors('recurrence' as keyof TaskFormValues);
         handleChange('isRecurring', e.target.checked);
       }} className="opacity-0 absolute h-6 w-6" />
         <div className={`w-6 h-6 border-2 rounded flex items-center justify-center transition-colors duration-200
@@ -498,7 +442,7 @@ const TaskForm = ({
           <div className="flex flex-wrap gap-1">
             {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all text-base font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent' : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
                 <input type="checkbox" className="sr-only" checked={(formData.recurrence_weekdays || []).includes(d)} onChange={e => {
-            setRecurrenceError(null);
+            form.clearErrors('recurrence' as keyof TaskFormValues);
             const current = (formData.recurrence_weekdays || []) as number[];
             const next = e.target.checked ? [...current, d].sort((a, b) => a - b) : current.filter(x => x !== d);
             handleChange('recurrence_weekdays', next);

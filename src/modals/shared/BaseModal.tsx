@@ -3,6 +3,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 import { X } from "lucide-react";
+import { Drawer } from "vaul";
+
+import { useMediaQuery } from "@/hooks/common/useMediaQuery";
 
 type BaseModalProps = {
   isOpen: boolean;
@@ -24,6 +27,8 @@ type BaseModalProps = {
   maxHeight?: string;
   height?: string;
   backdropBlur?: boolean;
+  /** On phones, render as a draggable bottom sheet (vaul). Set false to keep the centered modal. */
+  mobileSheet?: boolean;
 };
 
 // Constants
@@ -61,7 +66,10 @@ const BaseModal = ({
   maxHeight = "max-h-[90vh]",
   height = "h-auto",
   backdropBlur = true,
+  mobileSheet = true,
 }: BaseModalProps) => {
+  const isPhone = useMediaQuery("(max-width: 639px)");
+  const asSheet = mobileSheet && isPhone;
   const lastActiveElement = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const hasUnsavedChangesRef = useRef(hasUnsavedChanges);
@@ -140,6 +148,7 @@ const BaseModal = ({
 
   // Modal lifecycle effects
   useEffect(() => {
+    if (asSheet) return; // vaul handles focus, Escape and scroll lock
     if (isOpen) {
       manageFocus();
       document.addEventListener("keydown", handleKeyDown);
@@ -153,7 +162,56 @@ const BaseModal = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.classList.remove("overflow-hidden");
     };
-  }, [isOpen, handleKeyDown, manageFocus, restoreFocus]);
+  }, [asSheet, isOpen, handleKeyDown, manageFocus, restoreFocus]);
+
+  if (asSheet) {
+    const sheetPadding = {
+      none: '',
+      sm: 'px-3 pb-3',
+      md: 'px-4 pb-4',
+      lg: 'px-5 pb-5',
+    }[padding as string] ?? padding;
+
+    return (
+      <Drawer.Root
+        open={isOpen}
+        onOpenChange={(open) => { if (!open) handleClose(); }}
+        dismissible={closeOnOverlayClick}
+        repositionInputs={false}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay
+            className={`BaseModal fixed inset-0 ${zIndex} ${overlayClassName ?? DEFAULT_OVERLAY_CLASS} ${backdropBlur ? 'backdrop-blur-sm' : ''}`}
+          />
+          <Drawer.Content
+            aria-describedby={undefined}
+            onEscapeKeyDown={(e) => { if (!closeOnEsc) e.preventDefault(); }}
+            className={`BaseModal fixed inset-x-0 bottom-0 ${zIndex} flex max-h-[92dvh] ${height !== "h-auto" ? height : ""} flex-col rounded-t-2xl border-t-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl outline-none pb-[env(safe-area-inset-bottom)] ${className}`}
+          >
+            <div aria-hidden className="mx-auto mt-2.5 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-[var(--border-primary)]" />
+            {showHeader ? (
+              <header className="flex items-center justify-between px-2 pb-2">
+                <div className="shrink-0 w-9" />
+                <Drawer.Title className="text-lg font-semibold text-[var(--text-primary)] truncate flex-1 text-center">
+                  {title ?? ''}
+                </Drawer.Title>
+                {showCloseButton ? (
+                  <button type="button" onClick={handleClose} aria-label="Close modal" title="Close" className="shrink-0 p-2 rounded-md text-[var(--text-secondary)]">
+                    <X size={22} />
+                  </button>
+                ) : <div className="shrink-0 w-9" />}
+              </header>
+            ) : (
+              <Drawer.Title className="sr-only">{title ?? 'Dialog'}</Drawer.Title>
+            )}
+            <main className={`flex-1 min-h-0 overflow-y-auto ${sheetPadding} ${contentClassName}`.trim()}>
+              {children}
+            </main>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
+    );
+  }
 
   // Don't render if modal is closed
   if (!isOpen) return null;

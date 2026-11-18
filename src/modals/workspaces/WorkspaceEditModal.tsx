@@ -1,5 +1,8 @@
 import { Briefcase, Edit, FolderOpen, Home, Settings, User, Users, Zap } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { workspaceFormSchema, type WorkspaceFormValues } from '@/schemas/workspace';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import React from 'react';
@@ -20,10 +23,14 @@ interface WorkspaceEditModalProps {
 }
 
 const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose, workspace, onWorkspaceUpdated }) => {
-  const [workspaceName, setWorkspaceName] = useState('');
-  const [selectedIcon, setSelectedIcon] = useState('Briefcase');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { register, handleSubmit, reset, setValue, watch, formState: { isValid, isSubmitting: loading } } = useForm<WorkspaceFormValues>({
+    resolver: zodResolver(workspaceFormSchema),
+    defaultValues: { name: workspace?.name ?? '', icon: workspace?.icon || 'Briefcase' },
+    mode: 'onChange',
+  });
+  const selectedIcon = watch('icon');
+  const setSelectedIcon = (icon: string) => setValue('icon', icon, { shouldValidate: true });
 
   const iconOptions: IconOption[] = [
     { name: 'Briefcase', icon: Briefcase },
@@ -35,38 +42,26 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
     { name: 'Zap', icon: Zap },
   ];
 
-  useEffect(() => {
-    if (workspace) {
-      setWorkspaceName(workspace.name || '');
-      setSelectedIcon(workspace.icon || 'Briefcase');
-    }
-  }, [workspace]);
+  const initialValues = () => ({ name: workspace?.name || '', icon: workspace?.icon || 'Briefcase' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!workspaceName.trim()) {
-      setError('Workspace name is required');
-      return;
-    }
-    setLoading(true);
+  useEffect(() => {
+    if (workspace) reset(initialValues());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspace, reset]);
+
+  const onSubmit = async ({ name, icon }: WorkspaceFormValues) => {
     setError('');
     try {
-      const data = await WorkspaceService.updateWorkspace(workspace.id, {
-        name: workspaceName.trim(),
-        icon: selectedIcon
-      });
+      const data = await WorkspaceService.updateWorkspace(workspace.id, { name, icon });
       onWorkspaceUpdated(data);
       onClose();
     } catch {
       setError('Failed to update workspace');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setWorkspaceName('');
-    setSelectedIcon('Briefcase');
+    reset(initialValues());
     setError('');
     onClose();
   };
@@ -89,7 +84,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
           <Edit size={24} className="text-[var(--accent-primary)]" />
           <h2 className="text-xl font-semibold text-[var(--text-primary)]">Edit Workspace</h2>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
               Workspace Name
@@ -97,8 +92,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
             <input
               type="text"
               id="workspaceName"
-              value={workspaceName}
-              onChange={(e) => setWorkspaceName(e.target.value)}
+              {...register('name')}
               className="w-full px-3 py-2 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
               placeholder="Enter workspace name..."
               autoFocus
@@ -142,7 +136,7 @@ const WorkspaceEditModal: React.FC<WorkspaceEditModalProps> = ({ isOpen, onClose
             </button>
             <button
               type="submit"
-              disabled={loading || !workspaceName.trim()}
+              disabled={loading || !isValid}
               className="flex-1 px-4 py-2 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Updating...' : 'Update Workspace'}

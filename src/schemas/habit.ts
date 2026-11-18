@@ -47,3 +47,10 @@ export const createHabitSchema = habitSchema.omit({
 });
 
 export type CreateHabitInput = z.infer<typeof createHabitSchema>;
+
+// Form input for create/edit habit modals (react-hook-form)
+export const habitFormSchema = z.object({
+  name: z.string().trim().min(1, 'Habit name is required').max(100),
+});
+
+export type HabitFormValues = z.infer<typeof habitFormSchema>;
