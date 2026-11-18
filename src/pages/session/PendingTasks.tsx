@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, Circle, EyeOff, ListTodo, Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronDown, ChevronRight, Circle, EyeOff, Layers, ListTodo, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { format, isBefore, isToday, isValid, parseISO, startOfDay, differenceInDays } from 'date-fns';
 import { track } from '@vercel/analytics';
@@ -43,14 +43,37 @@ const PendingTasks = () => {
   const userKey = user?.id || 'demo';
   const ignored = Array.isArray(ignoredByUser?.[userKey]) ? ignoredByUser[userKey]! : [];
   const { tasks, loading, error } = useTasks();
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, workspaces } = useWorkspace();
+  const [collapsedByUser, setCollapsedByUser] = useLocalStorage<Record<string, string[]>>('session.pendingTasks.collapsed', {});
+  const collapsed = Array.isArray(collapsedByUser?.[userKey]) ? collapsedByUser[userKey]! : [];
+  const toggleCollapsed = (key: string) => {
+    setCollapsedByUser(previous => {
+      const current = Array.isArray(previous?.[userKey]) ? previous[userKey]! : [];
+      return { ...previous, [userKey]: current.includes(key) ? current.filter(k => k !== key) : [...current, key] };
+    });
+  };
+  const showWorkspace =!!currentWorkspace && (currentWorkspace.isAll || currentWorkspace.id === 'all');
+  const workspaceNames = useMemo(() => new Map((workspaces || []).map((w: any) => [w.id, w.name as string])), [workspaces]);
   const fetchTasks = useFetchTasks();
   const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : getDemoTasks()).filter(task =>
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   )), [isLoggedIn, tasks, currentWorkspace]);
   const pending = workspacePending.filter(task => !ignored.includes(task.id));
   const hiddenCount = workspacePending.length - pending.length;
-  const groupedPending = groupByAssignment(pending);
+  const sections = useMemo(() => {
+    if (!showWorkspace) return [{ id: 'current', name: '', tasks: pending }];
+    const map = new Map<string, Task[]>();
+    pending.forEach(task => {
+      const key = task.workspace_id || 'none';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(task);
+    });
+    return Array.from(map.entries()).map(([id, list]) => ({
+      id,
+      name: workspaceNames.get(id) || t('session.pendingTasks.noWorkspace', { defaultValue: 'No workspace' }),
+      tasks: list,
+    }));
+  }, [pending, showWorkspace, workspaceNames, t]);
 
   const ignoreTask = (task: Task) => {
     setIgnoredByUser(previous => ({ ...previous, [userKey]: [...ignored, task.id] }));
@@ -69,13 +92,13 @@ const PendingTasks = () => {
 
   return (
     <section aria-labelledby="pending-tasks-title" className="w-full h-full min-h-0 max-h-[700px] overflow-hidden flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
-      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4 -ml-2">
+      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4 pb-3 border-b border-[var(--border-primary)]">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <ListTodo size={18} className="text-[var(--accent-primary)]" />
           </div>
-          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-semibold text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
-          <span className="shrink-0 text-xs font-medium rounded-full px-2 py-1 bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">{pending.length}</span>
+          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
+          <span className="shrink-0 text-xs font-semibold rounded-full px-2 py-0.5 bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{pending.length}</span>
         </div>
       </div>
       {hiddenCount > 0 && (
@@ -102,30 +125,56 @@ const PendingTasks = () => {
         <div className="hide-scrollbar flex-1 min-h-0 overflow-y-auto flex flex-col space-y-3" style={{
           padding: '0 0 0.5rem 0',
         }}>
-          {groupedPending.map(([assignment, tasks]) => (
+          {sections.map(section => (
+            <div key={section.id} className={showWorkspace ? 'flex flex-col space-y-3 rounded-xl border-2 border-[var(--border-primary)] p-3' : 'flex flex-col space-y-3'}>
+              {showWorkspace && (
+                <button
+                  type="button"
+                  onClick={() => toggleCollapsed(`ws:${section.id}`)}
+                  aria-expanded={!collapsed.includes(`ws:${section.id}`)}
+                  className="flex w-full items-center gap-2 text-left"
+                >
+                  {collapsed.includes(`ws:${section.id}`) ? <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" /> : <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />}
+                  <Layers size={16} className="shrink-0 text-[var(--accent-primary)]" />
+                  <h4 className="truncate text-sm font-bold text-[var(--text-primary)]">{section.name}</h4>
+                  <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{section.tasks.length}</span>
+                </button>
+              )}
+              {!(showWorkspace && collapsed.includes(`ws:${section.id}`)) && groupByAssignment(section.tasks).map(([assignment, tasks]) => {
+                const assignmentKey = `as:${section.id}:${assignment}`;
+                const assignmentCollapsed = collapsed.includes(assignmentKey);
+                return (
             <div key={assignment} className="flex flex-col">
               {/* Assignment Header */}
-              <div className="mb-2">
-                <span className="text-xs font-semibold text-[var(--accent-primary)] capitalize truncate">
+              <button
+                type="button"
+                onClick={() => toggleCollapsed(assignmentKey)}
+                aria-expanded={!assignmentCollapsed}
+                className={`flex w-full items-center gap-2 px-1 text-left ${assignmentCollapsed ? '' : 'mb-2'}`}
+              >
+                {assignmentCollapsed ? <ChevronRight size={14} className="shrink-0 text-[var(--text-secondary)]" /> : <ChevronDown size={14} className="shrink-0 text-[var(--text-secondary)]" />}
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] truncate">
                   {assignment}
                 </span>
-              </div>
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--text-secondary)]">{tasks.length}</span>
+                <span className="h-px flex-1 bg-[var(--border-primary)]" aria-hidden="true" />
+              </button>
               {/* Tasks List */}
-              <ul className="flex flex-col space-y-1.5">
+              <ul className={`flex flex-col space-y-1.5 ${assignmentCollapsed ? 'hidden' : ''}`}>
                 {tasks.map(task => {
                   const due = getDueDate(task);
                   const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
                   return (
-                    <li key={task.id} className="shrink-0 flex items-center gap-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 px-1 py-2">
+                    <li key={task.id} className={`shrink-0 flex items-center gap-1.5 rounded-xl border px-2 py-2.5 ${overdue ? 'border-red-500/40 bg-red-500/5' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/40'}`}>
                       <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
-                        <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} /></button>
+                        <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={22} strokeWidth={2.2} /></button>
                       </ActionTooltip>
                       <div className="min-w-0 flex-1">
                         <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
-                          <button onClick={() => editTask(task)} className="block w-full text-sm font-medium text-left text-[var(--text-primary)] break-words">{task.title}</button>
+                          <button onClick={() => editTask(task)} className="block w-full text-base font-semibold leading-snug text-left text-[var(--text-primary)] break-words">{task.title}</button>
                         </ActionTooltip>
-                        <div className="mt-0.5 flex items-center gap-1">
-                          <span className={`flex items-center gap-1.5 text-xs ${overdue ? 'text-red-400' : 'text-[var(--text-secondary)]'}`}>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className={`inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium ${overdue ? 'bg-red-500/10 text-red-400' : due && isToday(due) ? 'bg-green-500/10 text-green-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
                             <CalendarDays size={13} />
                             {due ? (() => {
                               if (isToday(due)) return t('common.today');
@@ -140,10 +189,10 @@ const PendingTasks = () => {
                       </div>
                       <div className="flex items-center shrink-0">
                         <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
-                          <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><Pencil size={16} /></button>
+                          <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] disabled:opacity-50"><Pencil size={16} /></button>
                         </ActionTooltip>
                         <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
-                          <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-primary)] disabled:opacity-50"><EyeOff size={16} /></button>
+                          <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] disabled:opacity-50"><EyeOff size={16} /></button>
                         </ActionTooltip>
                         <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
                           <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
@@ -153,6 +202,9 @@ const PendingTasks = () => {
                   );
                 })}
               </ul>
+            </div>
+                );
+              })}
             </div>
           ))}
         </div>

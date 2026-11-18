@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Flame, Plus, Target, Trophy } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Flame, Notebook, Plus, Target, Trophy } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -313,7 +313,7 @@ const HabitsPage = memo(() => {
       </Helmet>
       <div className="w-full px-2 sm:px-6 md:px-8 lg:px-12 xl:px-20 pb-24 sm:pb-8 overflow-hidden">
       {/* Week navigation + stats + New Habit */}
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mt-4 mb-4">
+      <div className="flex items-center justify-between gap-3 mt-4 mb-4">
         <div className="flex items-center gap-0.5 rounded-full border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] px-1.5 py-1 shadow-sm">
           <button
             onClick={() => setWeekOffset(o => o - 1)}
@@ -342,26 +342,6 @@ const HabitsPage = memo(() => {
           )}
         </div>
 
-        {/* Inline stats */}
-        <div className="flex items-center gap-x-4 sm:gap-x-6 order-3 sm:order-none w-full sm:w-auto justify-center sm:justify-start">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.topStreak}</span>
-            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.currentStreak')}</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.bestStreak}</span>
-            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.bestStreak')}</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.weekCompletionRate}%</span>
-            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.thisWeek')}</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] leading-tight">{stats.totalCompletions}</span>
-            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{t('habits.totalCompletions')}</span>
-          </div>
-        </div>
-
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-full hover:bg-[var(--accent-primary)]/10 transition-colors text-sm font-semibold"
@@ -370,6 +350,28 @@ const HabitsPage = memo(() => {
           <span className="hidden sm:inline">{t('habits.newHabit')}</span>
         </button>
       </div>
+
+      {/* Stat cards */}
+      {displayHabits.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
+          {[
+            { icon: Flame, value: stats.topStreak, label: t('habits.currentStreak') },
+            { icon: Trophy, value: stats.bestStreak, label: t('habits.bestStreak') },
+            { icon: Target, value: `${stats.weekCompletionRate}%`, label: t('habits.thisWeek') },
+            { icon: Check, value: stats.totalCompletions, label: t('habits.totalCompletions') },
+          ].map(({ icon: Icon, value, label }) => (
+            <div key={label} className="flex items-center gap-3 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 py-2.5 sm:px-4 sm:py-3">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                <Icon size={18} />
+              </span>
+              <div className="min-w-0">
+                <div className="text-xl font-bold leading-tight tabular-nums text-[var(--text-primary)]">{value}</div>
+                <div className="truncate text-xs text-[var(--text-secondary)]">{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Weekly content */}
       <div className="mb-4">
@@ -385,7 +387,11 @@ const HabitsPage = memo(() => {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Habits tracker (bottom on mobile/md, right on desktop) */}
             <div className="space-y-4 pt-2 order-2">
-              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.title')}</h3>
+              <div className="flex items-center gap-2 px-1">
+                <Target size={16} className="text-[var(--accent-primary)]" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">{t('habits.title')}</h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{displayHabits.length}</span>
+              </div>
               {displayHabits.map((habit) => {
                 const completions = habit.completions as Record<string, boolean>;
                 const { current, best } = calculateStreak(completions);
@@ -398,17 +404,21 @@ const HabitsPage = memo(() => {
                 return (
                   <div
                     key={habit.id}
-                    className="p-4 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)]"
+                    className="p-4 rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-sm"
                   >
                     {/* Habit name + streak */}
                     <button
                       onClick={() => handleStartEditHabit(habit as Habit)}
-                      className="w-full text-left min-w-0 group"
+                      className="w-full text-left min-w-0"
                     >
-                      <div className="text-base font-semibold truncate text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                        {habit.name}
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-lg font-bold truncate text-[var(--text-primary)]">{habit.name}</span>
+                        <span className="flex-shrink-0 text-sm font-semibold tabular-nums text-[var(--text-secondary)]">{weekDone}/7</span>
                       </div>
-                      <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1 text-sm text-[var(--text-secondary)]">
+                      <div className="mt-2 h-1.5 w-full rounded-full bg-[var(--bg-secondary)] overflow-hidden">
+                        <div className="h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500 ease-out" style={{ width: `${Math.round((weekDone / 7) * 100)}%` }} />
+                      </div>
+                      <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-[var(--text-secondary)]">
                         {current > 0 && (
                           <span className="flex items-center gap-1">
                             <Flame size={14} className="text-[var(--accent-primary)]" />
@@ -458,10 +468,10 @@ const HabitsPage = memo(() => {
                                 isFuture
                                   ? 'border-dashed border-[var(--border-primary)] bg-[var(--bg-secondary)] opacity-50 cursor-not-allowed'
                                   : isCompleted
-                                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] hover:scale-105 active:scale-95'
+                                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] active:scale-95'
                                   : isToday
-                                  ? 'border-[var(--accent-primary)]/50 hover:border-[var(--accent-primary)] bg-[var(--accent-primary)]/5 hover:scale-105 active:scale-95'
-                                  : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/60 bg-[var(--bg-secondary)] hover:scale-105 active:scale-95'
+                                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5 active:scale-95'
+                                  : 'border-[var(--border-primary)] bg-[var(--bg-secondary)] active:scale-95'
                               }`}
                               aria-label={t(isCompleted ? 'habits.unmarkAria' : 'habits.markAria', { name: habit.name, date: date.toLocaleDateString(i18n.language) })}
                             >
@@ -488,8 +498,14 @@ const HabitsPage = memo(() => {
             </div>
 
             {/* Journal notes (top on mobile/md, left on desktop) */}
-            <div className="space-y-2 pt-2 order-1">
-              <h3 className="text-base font-semibold text-[var(--text-secondary)] px-1">{t('habits.journalNotes')}</h3>
+            <div className="space-y-2.5 pt-2 order-1">
+              <div className="flex items-center gap-2 px-1 mb-1">
+                <Notebook size={16} className="text-[var(--accent-primary)]" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">{t('habits.journalNotes')}</h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">
+                  {weekDays.filter(d => journalNotes[`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`]).length}/7
+                </span>
+              </div>
               {(() => {
                 const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -504,11 +520,17 @@ const HabitsPage = memo(() => {
                   return (
                     <div
                       key={`note-${dateKey}`}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 bg-[var(--bg-secondary)] ${isFuture ? 'border-dashed border-[var(--border-primary)]' : 'border-[var(--border-primary)]'} ${isPast ? 'opacity-60' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 ${isToday ? 'bg-[var(--accent-primary)]/5 border-[var(--accent-primary)]' : `bg-[var(--bg-secondary)] ${isFuture ? 'border-dashed border-[var(--border-primary)]' : 'border-[var(--border-primary)]'}`} ${isPast ? 'opacity-70' : ''}`}
                     >
-                      <span className={`text-sm font-semibold w-28 flex-shrink-0 ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                        {capitalizeFirst(date.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric' }))}
-                      </span>
+                      <div className="flex flex-col items-center justify-center w-12 flex-shrink-0 leading-tight">
+                        <span className={`text-xs font-semibold uppercase tracking-wide ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                          {date.toLocaleDateString(i18n.language, { weekday: 'short' })}
+                        </span>
+                        <span className={`text-xl font-bold tabular-nums ${isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                          {d}
+                        </span>
+                      </div>
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${journalNotes[dateKey] ? 'bg-[var(--accent-primary)]' : 'bg-transparent'}`} aria-hidden="true" />
                       <input
                         type="text"
                         placeholder={t('habits.addNote')}

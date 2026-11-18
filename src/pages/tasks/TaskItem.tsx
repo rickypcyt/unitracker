@@ -166,8 +166,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
     return (
         <div
-            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2.5 sm:p-3 rounded-xl transition-all duration-200 cursor-pointer gap-2.5 sm:gap-3 items-stretch
+            className={`group relative grid grid-cols-[auto_minmax(0,1fr)] p-2.5 sm:p-3 rounded-xl transition-all duration-200 cursor-pointer gap-2.5 sm:gap-3 items-stretch overflow-hidden
                 bg-[var(--bg-primary)] border border-[var(--border-primary)]
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
                 ${task.completed ? 'opacity-50' : ''}
             `}
             onDoubleClick={handleDoubleClick}
@@ -181,7 +182,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
-                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full transition-transform duration-200 hover:scale-110 h-8 w-8"
+                    className="bg-transparent border-none cursor-pointer flex items-center justify-center focus:outline-none rounded-full h-8 w-8"
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
@@ -213,11 +214,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             {task.title}
                         </span>
                     </div>
-                    <div className="flex items-center gap-0.5 flex-shrink-0 opacity-40 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-0.5 flex-shrink-0 opacity-70">
                         <button
                             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="p-1 rounded-md hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                            className="p-1 rounded-md text-[var(--text-secondary)]"
                             title="Edit task"
                             aria-label="Edit task"
                         >
@@ -227,7 +228,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             <button
                                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
                                 onMouseDown={(e) => e.stopPropagation()}
-                                className="p-1 rounded-md hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                                className="p-1 rounded-md text-[var(--text-secondary)]"
                                 title="Delete task"
                                 aria-label="Delete task"
                             >

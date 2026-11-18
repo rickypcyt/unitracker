@@ -63,7 +63,7 @@ const TaskForm = ({
   const hiddenDeadlineDateTimeRef = useRef<HTMLInputElement>(null);
 
   // Local workspace state for this task only
-  const [selectedWorkspace] = useState(() => {
+  const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
     // If current workspace is "All", select the first available workspace instead
     if (activeWorkspace?.id === 'all' && workspaces && workspaces.length > 0) {
       return workspaces[0];
@@ -376,6 +376,7 @@ const TaskForm = ({
 
   // Computed values
   const uniqueAssignments = [...new Set(tasks.map((task: any) => task.assignment || 'No Subject').filter(a => a && a !== 'No Subject'))].sort();
+  const selectableWorkspaces = (workspaces || []).filter((w: any) => w.id !== 'all');
   const modalTitle = initialTask ? 'Edit Task' : initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task';
   // Render Components
   const renderTabSelector = () => <div className="w-full flex justify-center mb-4">
@@ -651,6 +652,19 @@ const TaskForm = ({
                 <AutocompleteInput id="assignment" value={formData.assignment} onChange={value => handleChange('assignment', value)} error={displayErrors.assignment} required placeholder="Enter assignment name" suggestions={uniqueAssignments} />
               </div>}
           </div>
+
+          {/* Workspace (new tasks only) */}
+          {!initialTask && selectableWorkspaces.length > 0 && <div>
+              <label htmlFor="workspace" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                Workspace:
+              </label>
+              <select id="workspace" value={selectedWorkspace?.id ?? ''} onChange={e => {
+            const ws = selectableWorkspaces.find((w: any) => w.id === e.target.value);
+            if (ws) setSelectedWorkspace(ws);
+          }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all leading-6">
+                {selectableWorkspaces.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
+              </select>
+            </div>}
 
           {/* Difficulty and Date */}
           <div className="space-y-4">

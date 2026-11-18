@@ -50,7 +50,10 @@ const Navbar = () => {
         const isStale = activeWorkspace && !data.some((ws: any) => ws.id === activeWorkspace.id);
         if (savedId) {
           const found = data.find((ws: any) => ws.id === savedId);
-          if (found) {
+          if (savedId === 'all') {
+            // "All" is a synthetic workspace, not part of the fetched list
+            setCurrentWorkspace({ id: 'all', name: 'All', icon: 'Workflow', isAll: true });
+          } else if (found) {
             setCurrentWorkspace(found);
           } else if (data.length > 0) {
             setCurrentWorkspace(data[0]!);

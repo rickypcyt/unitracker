@@ -13,13 +13,13 @@ const AnalyticsJournal = () => {
       <QuickStats />
 
       {/* Tab buttons */}
-      <div className="flex gap-2">
+      <div className="flex w-fit gap-1 rounded-xl bg-[var(--bg-secondary)] p-1">
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             activeTab === 'analytics'
-              ? 'bg-[var(--accent-primary)] text-white'
-              : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]/30'
+              ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+              : 'text-[var(--text-secondary)]'
           }`}
         >
           <BarChart3 size={16} />
@@ -27,10 +27,10 @@ const AnalyticsJournal = () => {
         </button>
         <button
           onClick={() => setActiveTab('journal')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             activeTab === 'journal'
-              ? 'bg-[var(--accent-primary)] text-white'
-              : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]/30'
+              ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
+              : 'text-[var(--text-secondary)]'
           }`}
         >
           <Notebook size={16} />

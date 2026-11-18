@@ -42,7 +42,6 @@ export const AssignmentCard = ({
   onMoveToWorkspace,
   onDeleteAssignment,
   onUpdateAssignment,
-  completedCount = 0,
 }: AssignmentCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
@@ -102,9 +101,6 @@ export const AssignmentCard = ({
     onAddTask();
   };
 
-  const totalTasks = tasks.length + completedCount;
-  const progressPct = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
-
   return (
     <div
       onDoubleClick={handleColumnDoubleClick}
@@ -158,9 +154,14 @@ export const AssignmentCard = ({
                 </button>
               </div>
             ) : (
-              <h3 className="font-semibold text-lg text-[var(--text-primary)] truncate">
-                {assignment}
-              </h3>
+              <div className="flex items-center gap-2 min-w-0">
+                <h3 className="font-bold text-lg tracking-tight text-[var(--text-primary)] truncate">
+                  {assignment}
+                </h3>
+                <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]" title={`${tasks.length} pending`}>
+                  {tasks.length}
+                </span>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
@@ -186,18 +187,6 @@ export const AssignmentCard = ({
             />
           </div>
       </div>
-
-      {/* Progress bar */}
-      {totalTasks > 0 && (
-        <div className="flex items-center gap-2 mb-2 px-1">
-          <div className="h-1.5 flex-1 rounded-full bg-[var(--bg-primary)] overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300 bg-[var(--accent-primary)]"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-      )}
 
       <div
         className={`relative flex-1 min-h-0 space-y-1.5 transition-all duration-200 hide-scrollbar pb-2 ${isMinimized ? 'hidden' : ''}`}
