@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useAppStore, useWorkspace, useWorkspaceActions } from '@/store/appStore';

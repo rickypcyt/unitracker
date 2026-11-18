@@ -14,7 +14,7 @@ import SessionSummaryModal from "@/modals/session/SessionSummaryModal";
 import SessionsModal from "@/modals/session/TodaysSessionsModal";
 import StartSessionModal from "@/modals/session/StartSessionModal";
 import { supabase } from "@/utils/supabaseClient";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/auth/useAuth";
 import useEventListener from "@/hooks/common/useEventListener";

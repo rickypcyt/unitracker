@@ -15,7 +15,7 @@ import { deleteLap } from "@/store/LapActions";
 import { formatDateShort } from "@/utils/dateUtils";
 import { durationToSeconds, formatDurationHMS, formatHMS } from "@/utils/timeUtils";
 import { getMonthYear } from "@/hooks/session/useTimers";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/auth/useAuth";
 import useDemoMode from "@/utils/useDemoMode";
 import { useLaps } from "@/store/appStore";

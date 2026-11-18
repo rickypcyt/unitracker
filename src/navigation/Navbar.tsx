@@ -5,7 +5,7 @@ import { useFetchTasks, useWorkspace, useWorkspaceActions } from '@/store/appSto
 import SessionLayoutButton from './SessionLayoutButton';
 import SettingsButton from './SettingsButton';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useFriendManagement } from '@/hooks/friends/useFriendManagement';

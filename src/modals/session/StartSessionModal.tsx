@@ -1,7 +1,7 @@
 import { Check, Clock, Folder, Play, Target, Timer } from "lucide-react";
 import { FormInput, FormTextarea } from "@/modals/shared/FormElements";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import AutocompleteInput from "@/modals/shared/AutocompleteInput";
 import BaseModal from "@/modals/shared/BaseModal";

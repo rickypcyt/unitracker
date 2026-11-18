@@ -253,7 +253,6 @@ export default defineConfig(({ command, mode }) => {
         'react-redux',
         '@reduxjs/toolkit',
         'framer-motion',
-        'react-toastify',
         'lucide-react',
         '@supabase/supabase-js',
         '@supabase/postgrest-js',

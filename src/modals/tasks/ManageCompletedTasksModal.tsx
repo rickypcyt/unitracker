@@ -6,7 +6,7 @@ import { useDeleteTaskSuccess, useFetchTasks, useTasks, useToggleTaskStatus, use
 import BaseModal from '@/modals/shared/BaseModal';
 import DeleteCompletedModal from './DeleteTasksPop';
 import { TaskService } from '@/services/TaskService';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import type { Task } from '@/schemas/task';

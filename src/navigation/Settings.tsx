@@ -8,7 +8,7 @@ import DeleteCompletedModal from '@/modals/tasks/DeleteTasksPop';
 import ManageAssignmentsModal from '@/modals/tasks/ManageAssignmentsModal';
 import StudySessions from '@/pages/stats/StudySessions';
 import type { User } from '@supabase/supabase-js';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useAppStore } from '@/store/appStore';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useTheme from '@/hooks/settings/useTheme';

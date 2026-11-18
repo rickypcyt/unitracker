@@ -13,8 +13,7 @@ import { SEO_PAGES } from "@/pages/landing/seoPages";
 import i18n from "@/i18n";
 import PageLoader from "@/components/ui/PageLoader";
 import { NoiseProvider } from "@/utils/NoiseContext";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "sonner";
 import TourManager from "@/components/onboarding/TourManager";
 import Settings from "@/modals/settings/Settings";
 
@@ -398,15 +397,17 @@ const App: FC = () => {
 
   return (
     <>
-      <ToastContainer
+      <Toaster
         position="top-right"
-        autoClose={3000}
-        toastStyle={{
-          background: "var(--bg-secondary)",
-          color: "var(--text-primary)",
-          padding: "12px 16px",
-          borderRadius: "8px",
-          border: "2px solid var(--border-primary)",
+        duration={3000}
+        toastOptions={{
+          style: {
+            background: "var(--bg-secondary)",
+            color: "var(--text-primary)",
+            padding: "12px 16px",
+            borderRadius: "8px",
+            border: "2px solid var(--border-primary)",
+          },
         }}
       />
       <NoiseProvider>

@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import type { Lap } from '@/types/lap';
 
 interface SessionDetailsModalProps {

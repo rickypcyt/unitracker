@@ -864,23 +864,6 @@ h1 {
 }
 
 /* =========================
-   4. Toastify Custom Styles
-   ========================= */
-.Toastify__toast {
-  animation: fadeOut 0.5s ease-out 4s forwards;
-  background-color: var(--bg-primary) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-primary) !important;
-}
-.Toastify__toast-body,
-.Toastify__close-button {
-  color: var(--text-primary) !important;
-}
-.Toastify__progress-bar {
-  background: var(--border-primary) !important;
-}
-
-/* =========================
    5. Accesibilidad y Reset
    ========================= */
 /* Puedes agregar resets y mejoras de accesibilidad aquí si lo deseas */
@@ -1382,41 +1365,35 @@ h1 {
   @apply text-[var(--accent-primary)];
 }
 
-.Toastify__toast-container {
+/* Sonner toasts */
+[data-sonner-toaster] {
   z-index: 999999 !important;
 }
-.Toastify__toast-container--top-right {
+[data-sonner-toaster][data-y-position='top'] {
   top: 3.5rem !important; /* clear the top bar on mobile/tablet */
 }
 @media (min-width: 1024px) {
-  .Toastify__toast-container--top-right {
+  [data-sonner-toaster][data-y-position='top'] {
     top: 1em !important;
   }
 }
 
 /* Pomodoro toast variants */
-.Toastify__toast.pomo-toast-work {
+[data-sonner-toast].pomo-toast-work {
   background: var(--accent-primary) !important;
   color: #fff !important;
   border: 1px solid var(--accent-primary) !important;
   box-shadow: 0 4px 24px rgba(0,0,0,0.18) !important;
   font-weight: 600 !important;
 }
-.Toastify__toast.pomo-toast-work .Toastify__close-button,
-.Toastify__toast.pomo-toast-work .Toastify__progress-bar {
-  color: #fff !important;
-  background: #fff !important;
-}
-
-.Toastify__toast.pomo-toast-break {
+[data-sonner-toast].pomo-toast-break {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
   border: 1.5px solid #22c55e !important;
   box-shadow: 0 4px 24px rgba(34,197,94,0.15) !important;
   font-weight: 500 !important;
 }
-
-.Toastify__toast.pomo-toast-longBreak {
+[data-sonner-toast].pomo-toast-longBreak {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
   border: 1.5px solid #3b82f6 !important;

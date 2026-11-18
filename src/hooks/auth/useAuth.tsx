@@ -3,7 +3,7 @@ import { ReactNode, createContext, useContext, useEffect, useRef, useState } fro
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabaseClient';
 import { getStoredReferral } from '@/utils/referral';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { track } from '@vercel/analytics';
 
 interface AuthContextType {

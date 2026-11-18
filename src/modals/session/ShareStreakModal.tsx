@@ -1,7 +1,7 @@
 import { ClipboardCopy, Download, Loader2, Share2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import StreakCard, { STREAK_CARD_HEIGHT, STREAK_CARD_WIDTH } from '@/components/share/StreakCard';
 import WhatsAppIcon from '@/components/share/WhatsAppIcon';

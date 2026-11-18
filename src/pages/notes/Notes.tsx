@@ -6,7 +6,7 @@ import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import NoteView from './NoteView';
 import NotesDirectory from './NotesDirectory';
 import NotesSidepanel from './NotesSidepanel';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { FileText, Plus } from 'lucide-react';
 import { getDemoNotes } from '@/utils/demoData';
 import { useAuth } from '@/hooks/auth/useAuth';

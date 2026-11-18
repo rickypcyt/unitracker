@@ -7,7 +7,7 @@ import DeleteSessionModal from './DeleteSessionModal';
 import SessionDetailsModal from './SessionDetailsModal';
 import { getMonthYear } from '@/hooks/session/useTimers';
 import { durationToSeconds, formatDurationHMS, formatHMS } from '@/utils/timeUtils';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useAuth } from '@/hooks/auth/useAuth';
 import useDemoMode from '@/utils/useDemoMode';
 import { useLaps } from '@/store/appStore';

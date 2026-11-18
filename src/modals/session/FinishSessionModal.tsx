@@ -8,7 +8,7 @@ import TaskForm from '@/pages/tasks/TaskForm';
 import { formatHMS } from '@/utils/timeUtils';
 import { getLocalDateString } from '@/utils/dateUtils';
 import { supabase } from '@/utils/supabaseClient';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { StudyService, SessionTaskService } from '@/services/StudyService';
 import { TaskService } from '@/services/TaskService';
 

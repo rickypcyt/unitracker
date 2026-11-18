@@ -1,7 +1,7 @@
 import { Bell, BellOff, MousePointerClick } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import { useNotificationPromptStore } from '@/store/notificationPromptStore';

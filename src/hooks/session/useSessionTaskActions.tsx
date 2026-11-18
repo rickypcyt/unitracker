@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { track } from '@vercel/analytics';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { useAppStore, useFetchTasks } from '@/store/appStore';

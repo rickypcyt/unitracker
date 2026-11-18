@@ -13,7 +13,7 @@ import { getLocalDateString } from '@/utils/dateUtils';
 import { requestDesktopPermission, showDesktopNotification } from '@/utils/desktopNotifications';
 import { supabase } from '@/utils/supabaseClient';
 // import { supabase } from '@/utils/supabaseClient'; // No longer used
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { updateLap } from '@/store/LapActions';
 // import { useAuth } from '@/hooks/useAuth'; // Not used
 import useEventListener from '@/hooks/common/useEventListener';
@@ -650,7 +650,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
     const toastType = isWork ? willTakeLongBreak ? 'longBreak' : 'break' : 'work';
     const toastMsg = isWork ? willTakeLongBreak ? 'Work session complete! Time for a long break!' : 'Work session complete! Time for a break!' : "Break is over! Let's get back to work!";
     toast(toastMsg, {
-      autoClose: 4000,
+      duration: 4000,
       className: `pomo-toast-${toastType}`,
     });
     showNotification(notifTitle, {
