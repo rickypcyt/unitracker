@@ -512,13 +512,13 @@ const TaskForm = ({
     </div>;
 
   // Local state for time inputs (12h format for display)
-  const [displayStartTime, setDisplayStartTime] = useState(() => {
+  const [, setDisplayStartTime] = useState(() => {
     if (initialFormState.start_at) {
       return to12Hour(initialFormState.start_at);
     }
     return '';
   });
-  const [displayEndTime, setDisplayEndTime] = useState(() => {
+  const [, setDisplayEndTime] = useState(() => {
     if (initialFormState.end_at) {
       return to12Hour(initialFormState.end_at);
     }

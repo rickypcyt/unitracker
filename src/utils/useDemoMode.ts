@@ -36,7 +36,7 @@ export default function useDemoMode() {
     if (workspaces.length === 0 || allDemo) {
       setWorkspaces(demoWorkspaces);
       if (!currentWorkspace || currentWorkspace.id.startsWith('demo-ws-')) {
-        const match = demoWorkspaces.find(ws => ws.id === currentWorkspace?.id) || demoWorkspaces[0];
+        const match = demoWorkspaces.find(ws => ws.id === currentWorkspace?.id) ?? demoWorkspaces[0]!;
         setCurrentWorkspace(match);
       }
     }

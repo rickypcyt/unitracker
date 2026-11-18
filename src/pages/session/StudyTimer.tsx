@@ -1,4 +1,4 @@
-import { Check, Clock, Flag, MoreVertical, Pause, Play, RotateCcw, X } from "lucide-react";
+import { Check, Clock, Flag, MoreVertical, Pause, Play, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/session/useStudySync";
 import { useStudyTimer } from "@/hooks/session/useTimers";

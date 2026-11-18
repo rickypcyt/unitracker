@@ -84,7 +84,7 @@ const LocalWorkspaceSelector: React.FC<LocalWorkspaceSelectorProps> = ({
                   selectedWorkspace?.id === workspace.id ? 'bg-[var(--bg-secondary)]' : ''
                 }`}
               >
-                {getWorkspaceIcon(workspace.icon, selectedWorkspace?.id === workspace.id)}
+                {getWorkspaceIcon(workspace.icon ?? "", selectedWorkspace?.id === workspace.id)}
                 <span className="text-sm text-[var(--text-primary)]">{workspace.name}</span>
                 {selectedWorkspace?.id === workspace.id && (
                   <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full ml-auto" />

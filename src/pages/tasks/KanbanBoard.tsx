@@ -232,7 +232,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     localStorage.setItem('kanbanAssignmentSortConfig', JSON.stringify(newAssignmentSortConfig));
 
     const tasksInAssignment = incompletedByAssignment[assignmentId] || [];
-    let sortedTasks = [...tasksInAssignment];
+    const sortedTasks = [...tasksInAssignment];
 
     switch (sortType) {
       case 'alphabetical': {

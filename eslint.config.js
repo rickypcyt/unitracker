@@ -1,43 +1,40 @@
-import { FlatCompat } from '@eslint/eslintrc'
-import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss'
+import js from '@eslint/js'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import reactHooks from 'eslint-plugin-react-hooks'
 import security from 'eslint-plugin-security'
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-})
-
-export default [
-  // Mantiene reglas estilo Next.js / Core Web Vitals / TS
-  ...compat.config({
-    extends: ['next', 'next/core-web-vitals', 'next/typescript'],
-  }),
-  // Soporte para Tailwind CSS
-  {
-    files: ['**/*.css'],
-    plugins: {
-      '@tailwindcss': eslintPluginTailwindcss,
-    },
-    rules: {
-      ...eslintPluginTailwindcss.configs.recommended.rules,
-      '@tailwindcss/no-custom-classname': 'warn',
-      '@tailwindcss/enforces-shorthand': 'warn',
-    },
-  },
-  // Capa adicional de seguridad para TS/JS/React
+export default tseslint.config(
+  { ignores: ['dist', 'dev-dist', 'android', 'node_modules', 'public', 'docs', 'api', '**/*.d.ts', 'scripts'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
-    plugins: {
-      security,
-    },
+    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    plugins: { 'react-hooks': reactHooks, security },
     rules: {
-      // Reglas recomendadas de eslint-plugin-security
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-empty': 'warn',
+      'no-undef': 'off', // TypeScript handles this
+      'no-useless-escape': 'warn',
+      'no-useless-assignment': 'warn',
+      'no-case-declarations': 'warn',
+      'no-prototype-builtins': 'warn',
+      'no-useless-catch': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/no-unsafe-function-type': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn',
+      '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'security/detect-eval-with-expression': 'error',
-      'security/detect-non-literal-fs-filename': 'warn',
-      'security/detect-non-literal-regexp': 'warn',
       'security/detect-non-literal-require': 'error',
-      'security/detect-object-injection': 'off', // puede ser ruidosa en apps web
+      'security/detect-non-literal-regexp': 'warn',
       'security/detect-possible-timing-attacks': 'warn',
       'security/detect-pseudoRandomBytes': 'warn',
     },
   },
-]
+)

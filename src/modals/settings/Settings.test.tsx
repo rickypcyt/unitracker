@@ -18,13 +18,12 @@ vi.mock('@/modals/auth/UserModal', () => ({ default: () => null }));
 describe('Settings mobile navigation', () => {
   beforeEach(() => mocks.seen.mockClear());
 
-  it('shows every section in a mobile grid instead of a horizontal scrolling row', () => {
+  it('shows every section in a horizontally scrollable row on mobile', () => {
     render(<SettingsContent />);
     const sections = screen.getByRole('group', { name: 'Settings sections' });
-    expect(sections).toHaveClass('grid', 'grid-cols-3', 'sm:flex', 'shrink-0');
-    expect(sections).not.toHaveClass('overflow-x-auto');
+    expect(sections).toHaveClass('flex', 'overflow-x-auto', 'shrink-0');
     for (const name of ['Look', 'Account', 'Data', "What's New", 'About']) {
-      expect(within(sections).getByRole('button', { name })).toHaveClass('min-w-0');
+      expect(within(sections).getByRole('button', { name })).toHaveClass('shrink-0', 'sm:flex-1');
     }
   });
 

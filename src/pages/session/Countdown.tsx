@@ -1,4 +1,4 @@
-import { Bell, BellOff, Check, Pause, Pencil, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
+import { Bell, BellOff, Check, Pause, Pencil, Play, RefreshCw, RefreshCwOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/ui/SectionTitle';

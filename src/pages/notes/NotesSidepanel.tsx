@@ -144,7 +144,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
       const next = e.key === 'ArrowDown' ? Math.min(rows.length - 1, current + 1) : Math.max(0, current - 1);
       rows[next]?.focus();
     } else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && current >= 0) {
-      const folder = rows[current]?.dataset.folder;
+      const folder = rows[current]?.dataset['folder'];
       if (!folder) return;
       const isCollapsed = collapsed.has(folder);
       if ((e.key === 'ArrowLeft' && !isCollapsed) || (e.key === 'ArrowRight' && isCollapsed)) {

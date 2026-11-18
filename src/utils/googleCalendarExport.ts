@@ -289,7 +289,7 @@ const WEEKDAY_MAP: Record<number, string> = {
 export const generateICSFile = (tasks: Task[]): string => {
   const events = tasksToCalendarEvents(tasks);
   
-  let icsContent = [
+  const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//UniTracker//Export//EN',

@@ -136,7 +136,7 @@ const ScratchPad = memo(() => {
     for (const icon of Array.from(icons)) {
       const r = icon.getBoundingClientRect();
       if (clientX >= r.left - 4 && clientX <= r.right + 4 && clientY >= r.top - 2 && clientY <= r.bottom + 2) {
-        return Number(icon.dataset.checkbox);
+        return Number(icon.dataset['checkbox']);
       }
     }
     return null;

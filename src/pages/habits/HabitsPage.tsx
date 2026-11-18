@@ -23,9 +23,9 @@ const calculateStreak = (completions: Record<string, boolean>): { current: numbe
   if (completedDates.length === 0) return { current: 0, best: 0 };
 
   let current = 0;
-  let checkDate = completedDates.includes(todayStr) ? today : (completedDates.includes(yesterdayStr) ? yesterday : null);
+  const checkDate = completedDates.includes(todayStr) ? today : (completedDates.includes(yesterdayStr) ? yesterday : null);
   if (checkDate) {
-    let d = new Date(checkDate);
+    const d = new Date(checkDate);
     while (true) {
       const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       if (completions[ds]) {

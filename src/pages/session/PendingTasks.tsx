@@ -10,7 +10,6 @@ import { getDemoTasks } from '@/utils/demoData';
 import ActionTooltip from '@/components/ui/ActionTooltip';
 import type { Task } from '@/schemas/task';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 
 const getDueDate = (task: Task) => {
   const value = task.deadline || task.due_date;

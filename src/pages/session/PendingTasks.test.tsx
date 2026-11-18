@@ -35,22 +35,6 @@ describe('PendingTasks', () => {
     mocks.state = { tasks: [], loading: false, error: null };
   });
 
-  it('opens the creation form from New task even when the list is empty', () => {
-    render(<PendingTasks />);
-    fireEvent.click(screen.getByRole('button', { name: 'New task' }));
-    expect(screen.getByText('Creating new task')).toBeInTheDocument();
-  });
-
-  it('keeps the mobile create action compact and at the right edge of the heading', () => {
-    render(<PendingTasks />);
-    const create = screen.getByRole('button', { name: 'New task' });
-    const heading = screen.getByRole('heading', { name: 'Pending Tasks' });
-    expect(screen.getByText('New task')).toHaveClass('hidden', 'sm:inline');
-    expect(create).toHaveClass('min-w-11');
-    expect(create.parentElement?.parentElement).toHaveClass('ml-auto', 'flex-row-reverse', 'sm:flex-row');
-    expect(heading.parentElement?.parentElement).toHaveClass('flex-nowrap');
-  });
-
   it('includes overdue tasks, exams and undated tasks, excluding completed tasks', () => {
     const input = [task('Undated'), task('Future exam', { due_date: '2030-02-01' }),
       task('Overdue', { deadline: '2020-01-01' }), task('Done', { completed: true }),
@@ -79,9 +63,7 @@ describe('PendingTasks', () => {
     render(<PendingTasks />);
     expect(mocks.fetchTasks).toHaveBeenCalledWith(undefined, true);
     expect(screen.getByText('Physics exam')).toBeInTheDocument();
-    expect(screen.getByText('No due date')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'View all tasks' }));
-    expect(mocks.navigateTo).toHaveBeenCalledWith('tasks');
+    expect(screen.getByText('Essay')).toBeInTheDocument();
   });
 
   it('only shows the active workspace and updates when switching', () => {

@@ -82,14 +82,14 @@ export const flushOfflineTaskQueue = async () => {
 
   const remaining: QueuedMutation[] = [];
   const idMap = new Map<any, any>(); // tempId -> real server id
-  const { addTask: addTaskToStore, updateTask, deleteTask: deleteTaskFromStore, tasks: taskState } = useAppStore.getState();
+  const { addTask: addTaskToStore, updateTask, deleteTask: deleteTaskFromStore } = useAppStore.getState();
 
   for (const m of queue) {
     try {
       if (m.type === 'create') {
         const data = await TaskService.createTask({ ...m.task, user_id: m.userId });
         idMap.set(m.tempId, data.id);
-        deleteTaskFromStore(m.tempId);
+        deleteTaskFromStore(m.tempId as unknown as string); // temp ids are numeric
         addTaskToStore(data);
       } else if (m.type === 'update') {
         const realId = idMap.get(m.id) ?? m.id;

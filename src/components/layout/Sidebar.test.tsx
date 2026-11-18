@@ -11,7 +11,7 @@ describe('Top navbar', () => {
   it('renders one horizontal navigation without sidebar or hamburger', () => {
     const { container } = render(<Navbar />);
     const navigation = screen.getByRole('navigation', { name: 'Main navigation' });
-    expect(within(navigation).getAllByRole('button')).toHaveLength(6);
+    expect(within(navigation).getAllByRole('button')).toHaveLength(5);
     expect(screen.getByRole('button', { name: 'Study' })).toHaveAttribute('aria-current', 'page');
     expect(screen.queryByRole('button', { name: 'Open menu' })).not.toBeInTheDocument();
     expect(container.querySelector('aside')).toBeNull();

@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, Flag, Link, LogOut, MoreVertical, Pause, PictureInPicture, Play, Plus, RotateCcw, Settings, Timer as TimerIcon, Trash2, Unlink, Watch } from "lucide-react";
+import { Bell, BellOff, Clock, Flag, Link, MoreVertical, Pause, PictureInPicture, Play, Plus, RotateCcw, Settings, Timer as TimerIcon, Unlink, Watch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -118,7 +118,6 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
 
 
   const openPomoSettings = () => window.dispatchEvent(new CustomEvent("pomodoro-open-settings"));
-  const openStudySettings = () => window.dispatchEvent(new CustomEvent("study-open-settings"));
 
   const visibleTimers = order.filter(id =>
     id === "study" || (id === "pomodoro" && showPomodoro) || (id === "countdown" && showCountdown)

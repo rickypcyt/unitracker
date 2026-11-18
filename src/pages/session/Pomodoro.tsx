@@ -1,4 +1,4 @@
-import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
+import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff } from 'lucide-react';
 // Pomodoro.tsx - Refactored
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppStore, usePomodoroModes, useUiActions } from '@/store/appStore';
