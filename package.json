@@ -60,6 +60,7 @@
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "@supabase/supabase-js": "^2.54.0",
+    "@tanstack/react-query": "^5.108.0",
     "@tiptap/core": "3.33.1",
     "@tiptap/extension-list": "3.33.1",
     "@tiptap/extension-placeholder": "3.33.1",

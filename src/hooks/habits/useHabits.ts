@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/auth/useAuth';
 import { HabitService } from '@/services/HabitService';
 import posthog from 'posthog-js';
@@ -41,30 +42,26 @@ type HabitCache = {
 };
 
 const HABITS_CACHE_TTL = 5 * 60 * 1000;
-const habitMemoryCache = new Map<string, HabitCache>();
-const habitRequests = new Map<string, Promise<HabitCache>>();
+const EMPTY: HabitCache = { habits: [], dailyNotes: {}, savedAt: 0 };
 
-const getHabitCache = (userId: string): HabitCache | null => {
-  const memoryCache = habitMemoryCache.get(userId);
-  if (memoryCache) return memoryCache;
+export const habitsQueryKey = (userId: string | undefined) => ['habits', userId] as const;
 
+// localStorage copy so the page paints instantly on reload; TanStack Query owns the live cache
+const readHabitCache = (userId: string): HabitCache | null => {
   try {
     const saved = localStorage.getItem(`habits-cache:${userId}`);
     if (!saved) return null;
     const parsed = JSON.parse(saved) as HabitCache;
     if (Array.isArray(parsed.habits) && parsed.dailyNotes && typeof parsed.savedAt === 'number') {
-      habitMemoryCache.set(userId, parsed);
       return parsed;
     }
   } catch (error) {
     console.error('Error reading habits cache:', error);
   }
-
   return null;
 };
 
 const saveHabitCache = (userId: string, cache: HabitCache): void => {
-  habitMemoryCache.set(userId, cache);
   try {
     localStorage.setItem(`habits-cache:${userId}`, JSON.stringify(cache));
   } catch (error) {
@@ -72,255 +69,171 @@ const saveHabitCache = (userId: string, cache: HabitCache): void => {
   }
 };
 
+const toDateString = (date: Date): string => {
+  // Use local date to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const fetchHabitData = async (userId: string): Promise<HabitCache> => {
-  const existingRequest = habitRequests.get(userId);
-  if (existingRequest) return existingRequest;
+  const [habitsData, completionsData, notesData] = await Promise.all([
+    HabitService.fetchHabits(userId),
+    HabitService.fetchCompletions(userId, []),
+    HabitService.fetchJournalNotes(userId)
+  ]);
 
-  const request = (async () => {
-    // Fetch habits, completions, and journal notes in parallel
-    const [habitsData, completionsData, notesData] = await Promise.all([
-      HabitService.fetchHabits(userId),
-      HabitService.fetchCompletions(userId, []),
-      HabitService.fetchJournalNotes(userId)
-    ]);
+  const dailyNotes: Record<string, string> = {};
+  notesData.forEach(note => {
+    dailyNotes[note.note_date] = note.note || '';
+  });
 
-    const dailyNotes: Record<string, string> = {};
+  const habits: HabitWithCompletions[] = habitsData.map(habit => {
+    const completions: Record<string, boolean> = {};
+    completionsData
+      .filter(completion => completion.habit_id === habit.id)
+      .forEach(completion => {
+        completions[completion.completion_date] = completion.completed;
+      });
+    return { ...habit, completions };
+  });
 
-    notesData.forEach(note => {
-      dailyNotes[note.note_date] = note.note || '';
-    });
-
-    const habits: HabitWithCompletions[] = habitsData.map(habit => {
-      const completions: Record<string, boolean> = {};
-      completionsData
-        .filter(completion => completion.habit_id === habit.id)
-        .forEach(completion => {
-          completions[completion.completion_date] = completion.completed;
-        });
-
-      return { ...habit, completions };
-    });
-
-    const cache = { habits, dailyNotes, savedAt: Date.now() };
-    saveHabitCache(userId, cache);
-    return cache;
-  })();
-
-  habitRequests.set(userId, request);
-  try {
-    return await request;
-  } finally {
-    habitRequests.delete(userId);
-  }
+  const cache = { habits, dailyNotes, savedAt: Date.now() };
+  saveHabitCache(userId, cache);
+  return cache;
 };
 
 export const useHabits = () => {
   const { user, isLoggedIn } = useAuth();
-  const cachedHabits = user?.id ? getHabitCache(user.id) : null;
-  const [habits, setHabits] = useState<HabitWithCompletions[]>(cachedHabits?.habits ?? []);
-  const [dailyNotes, setDailyNotes] = useState<Record<string, string>>(cachedHabits?.dailyNotes ?? {});
-  const [loading, setLoading] = useState(Boolean(isLoggedIn && user && !cachedHabits));
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const userId = isLoggedIn ? user?.id : undefined;
+  const [mutationError, setMutationError] = useState<string | null>(null);
 
-  const loadHabits = async (showLoading = true) => {
-    if (!user || !isLoggedIn) {
-      setHabits([]);
-      setDailyNotes({});
-      setLoading(false);
-      return;
-    }
+  const query = useQuery({
+    queryKey: habitsQueryKey(userId),
+    queryFn: () => fetchHabitData(userId!),
+    enabled: Boolean(userId),
+    staleTime: HABITS_CACHE_TTL,
+    initialData: () => (userId ? readHabitCache(userId) ?? undefined : undefined),
+    initialDataUpdatedAt: () => (userId ? readHabitCache(userId)?.savedAt : undefined),
+  });
 
-    try {
-      if (showLoading) setLoading(true);
-      setError(null);
-      const cache = await fetchHabitData(user.id);
-      setHabits(cache.habits);
-      setDailyNotes(cache.dailyNotes);
-    } catch (err) {
-      console.error('Error loading habits:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load habits');
-    } finally {
-      setLoading(false);
-    }
+  const data = userId ? query.data ?? EMPTY : EMPTY;
+
+  // Apply a local change to the cached data and mirror it to localStorage
+  const updateCache = (updater: (prev: HabitCache) => Omit<HabitCache, 'savedAt'>) => {
+    if (!userId) return;
+    queryClient.setQueryData<HabitCache>(habitsQueryKey(userId), prev => {
+      const next = { ...updater(prev ?? EMPTY), savedAt: Date.now() };
+      saveHabitCache(userId, next);
+      return next;
+    });
   };
 
-  // Create a new habit
+  const fail = (message: string, err: unknown) => {
+    console.error(message, err);
+    setMutationError(err instanceof Error ? err.message : message);
+  };
+
   const createHabit = async (name: string): Promise<HabitWithCompletions | null> => {
-    if (!user || !isLoggedIn) return null;
-
+    if (!userId) return null;
     try {
-      const data = await HabitService.createHabit(user.id, name);
-
-      const newHabit: HabitWithCompletions = {
-        ...data,
-        completions: {}
-      };
-
-      setHabits(prev => {
-        const nextHabits = [...prev, newHabit];
-        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
-        return nextHabits;
-      });
+      const created = await HabitService.createHabit(userId, name);
+      const newHabit: HabitWithCompletions = { ...created, completions: {} };
+      updateCache(prev => ({ ...prev, habits: [...prev.habits, newHabit] }));
       if (posthog.__loaded) posthog.capture('habit_created');
       return newHabit;
     } catch (err) {
-      console.error('Error creating habit:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create habit');
+      fail('Failed to create habit', err);
       return null;
     }
   };
 
-  // Update habit name
   const updateHabit = async (habitId: string, newName: string): Promise<boolean> => {
-    if (!user || !isLoggedIn) return false;
-
+    if (!userId) return false;
     try {
-      await HabitService.updateHabit(habitId, user.id, newName);
-
-      setHabits(prev => {
-        const nextHabits = prev.map(habit =>
-          habit.id === habitId
-            ? { ...habit, name: newName.trim() }
-            : habit
-        );
-        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
-        return nextHabits;
-      });
-
+      await HabitService.updateHabit(habitId, userId, newName);
+      updateCache(prev => ({
+        ...prev,
+        habits: prev.habits.map(habit => habit.id === habitId ? { ...habit, name: newName.trim() } : habit),
+      }));
       return true;
     } catch (err) {
-      console.error('Error updating habit:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update habit');
+      fail('Failed to update habit', err);
       return false;
     }
   };
 
-  // Delete habit
   const deleteHabit = async (habitId: string): Promise<boolean> => {
-    if (!user || !isLoggedIn) return false;
-
+    if (!userId) return false;
     try {
-      await HabitService.deleteHabit(habitId, user.id);
-
-      setHabits(prev => {
-        const nextHabits = prev.filter(habit => habit.id !== habitId);
-        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
-        return nextHabits;
-      });
+      await HabitService.deleteHabit(habitId, userId);
+      updateCache(prev => ({ ...prev, habits: prev.habits.filter(habit => habit.id !== habitId) }));
       return true;
     } catch (err) {
-      console.error('Error deleting habit:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete habit');
+      fail('Failed to delete habit', err);
       return false;
     }
   };
 
-  // Toggle habit completion for a specific date
   const toggleHabitCompletion = async (habitId: string, date: Date): Promise<boolean> => {
-    if (!user || !isLoggedIn) {
+    if (!userId) {
       console.error('toggleHabitCompletion: User not authenticated');
       return false;
     }
-
-    // Use local date to avoid timezone issues
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`; // YYYY-MM-DD format
-
+    const dateString = toDateString(date);
     try {
-      const newCompletedState = await HabitService.toggleCompletion(habitId, user.id, dateString);
-
-      // Update local state
-      setHabits(prev => {
-        const nextHabits = prev.map(habit => {
-          if (habit.id === habitId) {
-            const newCompletions = { ...habit.completions };
-            newCompletions[dateString] = newCompletedState;
-            return { ...habit, completions: newCompletions };
-          }
-          return habit;
-        });
-        saveHabitCache(user.id, { habits: nextHabits, dailyNotes, savedAt: Date.now() });
-        return nextHabits;
-      });
-      if (posthog.__loaded) {
-        posthog.capture('habit_completion_toggled', { completed: newCompletedState });
-      }
-
+      const completed = await HabitService.toggleCompletion(habitId, userId, dateString);
+      updateCache(prev => ({
+        ...prev,
+        habits: prev.habits.map(habit => habit.id === habitId
+          ? { ...habit, completions: { ...habit.completions, [dateString]: completed } }
+          : habit),
+      }));
+      if (posthog.__loaded) posthog.capture('habit_completion_toggled', { completed });
       return true;
     } catch (err) {
-      console.error('Error toggling habit completion:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update habit completion');
+      fail('Failed to update habit completion', err);
       return false;
     }
   };
 
-  // Save or update journal note
   const saveJournalNote = async (date: Date, note: string): Promise<boolean> => {
-    if (!user || !isLoggedIn) return false;
-
-    // Use local date to avoid timezone issues
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`; // YYYY-MM-DD format
-
+    if (!userId) return false;
+    const dateString = toDateString(date);
     try {
-      await HabitService.saveJournalNote(user.id, dateString, note);
-
-      const trimmedNote = note.trim();
-      // Update local state
-      setDailyNotes(prev => {
-        const newNotes = { ...prev };
-        if (trimmedNote === '') {
-          delete newNotes[dateString];
-        } else {
-          newNotes[dateString] = trimmedNote;
-        }
-        saveHabitCache(user.id, { habits, dailyNotes: newNotes, savedAt: Date.now() });
-        return newNotes;
+      await HabitService.saveJournalNote(userId, dateString, note);
+      const trimmed = note.trim();
+      updateCache(prev => {
+        const dailyNotes = { ...prev.dailyNotes };
+        if (trimmed === '') delete dailyNotes[dateString];
+        else dailyNotes[dateString] = trimmed;
+        return { ...prev, dailyNotes };
       });
-
       return true;
     } catch (err) {
-      console.error('Error saving daily note:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save daily note');
+      fail('Failed to save daily note', err);
       return false;
     }
   };
 
-  // Load once per cache window and keep cached data visible while refreshing.
-  useEffect(() => {
-    if (!user || !isLoggedIn) {
-      setHabits([]);
-      setDailyNotes({});
-      setLoading(false);
-      return;
-    }
+  const refreshHabits = async () => {
+    if (userId) await query.refetch();
+  };
 
-    const cache = getHabitCache(user.id);
-    if (cache) {
-      setHabits(cache.habits);
-      setDailyNotes(cache.dailyNotes);
-      setLoading(false);
-
-      if (Date.now() - cache.savedAt < HABITS_CACHE_TTL) return;
-    }
-
-    void loadHabits(!cache);
-  }, [user?.id, isLoggedIn]);
+  const queryError = query.error ? (query.error instanceof Error ? query.error.message : 'Failed to load habits') : null;
 
   return {
-    habits,
-    journalNotes: dailyNotes,
-    loading,
-    error,
+    habits: data.habits,
+    journalNotes: data.dailyNotes,
+    loading: Boolean(userId) && query.isPending,
+    error: mutationError ?? queryError,
     createHabit,
     updateHabit,
     deleteHabit,
     toggleHabitCompletion,
     saveJournalNote,
-    refreshHabits: loadHabits
+    refreshHabits
   };
 };

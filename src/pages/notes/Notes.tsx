@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import DeleteNoteModal from '@/modals/notes/DeleteNoteModal';
 import { Helmet } from "react-helmet-async";
@@ -56,8 +57,37 @@ const Notes: React.FC = () => {
     loginPromptOpen,
     closeLoginPrompt,
   } = useDemoMode();
-  const [notes, setNotes] = useState<Note[]>(() => readNotesCache()?.notes ?? []);
-  const [loading, setLoading] = useState(() => !readNotesCache());
+  const queryClient = useQueryClient();
+  const userId: string | undefined = user?.id;
+  // Logged in: notes come from Supabase. Guest: notes live in localStorage under 'notes'.
+  const notesKey = ['notes', userId ?? 'guest'] as const;
+  const notesQuery = useQuery({
+    queryKey: notesKey,
+    enabled: !isAuthLoading,
+    queryFn: async (): Promise<Note[]> => {
+      if (userId) {
+        const data = (await NoteService.fetchNotes(userId)) as Note[];
+        writeNotesCache(userId, data);
+        return data;
+      }
+      const saved = localStorage.getItem('notes');
+      return saved ? JSON.parse(saved) : [];
+    },
+    // Instant paint from the per-user cache, refreshed in the background
+    initialData: () => {
+      const cached = readNotesCache();
+      return userId && cached?.userId === userId ? cached.notes : undefined;
+    },
+    initialDataUpdatedAt: 0,
+  });
+  // While auth resolves, keep showing the last cached list
+  const notes: Note[] = isAuthLoading ? (readNotesCache()?.notes ?? []) : (notesQuery.data ?? []);
+  const setNotes = (next: Note[] | ((previous: Note[]) => Note[])) => {
+    queryClient.setQueryData<Note[]>(notesKey, previous =>
+      typeof next === 'function' ? next(previous ?? []) : next);
+  };
+  const [mutating, setLoading] = useState(false);
+  const loading = mutating || (isAuthLoading ? !readNotesCache() : notesQuery.isPending);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
@@ -128,58 +158,16 @@ const Notes: React.FC = () => {
     }
   };
 
-  // Cargar notas al montar (de Supabase si hay usuario, si no de localStorage)
-  const userId: string | undefined = user?.id;
-  const loadedForUserRef = React.useRef<string | null>(null);
-
   useEffect(() => {
-    if (isAuthLoading) return; // keep showing the cached list until we know who the user is
-    let cancelled = false;
-    const fetchNotes = async (): Promise<void> => {
-      setError(null);
-      if (userId) {
-        // Instant paint from the cache (if it belongs to this user), then refresh
-        const cached = readNotesCache();
-        if (cached && cached.userId === userId) {
-          setNotes(cached.notes);
-          setLoading(false);
-        } else {
-          setNotes([]);
-          setLoading(true);
-        }
-        try {
-          const data = await NoteService.fetchNotes(userId);
-          if (cancelled) return;
-          setNotes(data as Note[]);
-          loadedForUserRef.current = userId;
-          writeNotesCache(userId, data as Note[]);
-        } catch {
-          if (!cancelled) setError(t('notes.errorLoading'));
-        }
-      } else {
-        loadedForUserRef.current = null;
-        const saved = localStorage.getItem('notes');
-        setNotes(saved ? JSON.parse(saved) : []);
-      }
-      if (!cancelled) setLoading(false);
-    };
-    void fetchNotes();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, isAuthLoading]);
+    if (notesQuery.error) setError(t('notes.errorLoading'));
+  }, [notesQuery.error, t]);
 
-  // Keep the per-user cache in sync with local edits (create / update / delete)
+  // Persist local edits: per-user cache when logged in, 'notes' when guest
   useEffect(() => {
-    if (userId && loadedForUserRef.current === userId) writeNotesCache(userId, notes);
-  }, [notes, userId]);
-
-  // Guardar en localStorage si no hay usuario
-  useEffect(() => {
-    if (!user && !isAuthLoading) {
-      localStorage.setItem('notes', JSON.stringify(notes));
-    }
-  }, [notes, user, isAuthLoading]);
+    if (isAuthLoading || !notesQuery.isSuccess) return;
+    if (userId) writeNotesCache(userId, notes);
+    else localStorage.setItem('notes', JSON.stringify(notes));
+  }, [notes, userId, isAuthLoading, notesQuery.isSuccess]);
 
   // Handler para agregar nota
   const getSafeDate = (dateStr: string | null | undefined): string => {
