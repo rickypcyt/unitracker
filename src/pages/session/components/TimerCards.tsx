@@ -9,11 +9,20 @@ const card =
  * Classic layout: study timer, pomodoro and countdown as three independent cards.
  * Each timer renders its own header (sync toggle, settings, alarm) and controls.
  */
-const TimerCards = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?: boolean }) => {
+const TimerCards = ({
+  isSynced,
+  isRunning,
+  className = "",
+}: {
+  isSynced?: boolean;
+  isRunning?: boolean;
+  /** Extra classes for the grid wrapper (e.g. `2xl:contents` to place the cards in a parent grid) */
+  className?: string;
+}) => {
   const syncProps = isSynced !== undefined ? { isSynced } : {};
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full xl:h-full 2xl:h-auto 2xl:items-start">
+    <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 w-full xl:h-full 2xl:h-auto 2xl:items-start ${className}`}>
       <div className={card}>
         <Pomodoro />
       </div>

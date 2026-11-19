@@ -539,7 +539,7 @@ export default function NoiseGenerator() {
         <div className="flex items-center gap-2">
           <button
             onClick={handlePlayPauseAll}
-            className={`flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-full text-sm font-medium transition-all ${
+            className={`noise-play-all flex items-center justify-center gap-2 w-10 h-10 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-full text-sm font-medium transition-all ${
               anySoundPlaying
                 ? "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
                 : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:border-[var(--accent-primary)]/50"
@@ -547,7 +547,7 @@ export default function NoiseGenerator() {
             aria-label={anySoundPlaying ? t('session.noise.pauseAll') : t('session.noise.playAll')}
           >
             {anySoundPlaying ? <Pause size={18} /> : <Play size={18} />}
-            <span className="hidden sm:inline">
+            <span className="noise-play-all-label hidden sm:inline">
               {anySoundPlaying ? t('session.noise.pauseAll') : t('session.noise.playAll')}
             </span>
           </button>
