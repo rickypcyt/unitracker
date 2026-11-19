@@ -1,4 +1,5 @@
-import { Check, Clock, Flag, MoreVertical, Pause, Play, X } from "lucide-react";
+import SectionTitle from "@/components/ui/SectionTitle";
+import { Check, Flag, MoreVertical, Pause, Play, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/session/useStudySync";
 import { useStudyTimer } from "@/hooks/session/useTimers";
@@ -1111,15 +1112,10 @@ const StudyTimer = ({
   }];
   return <div className="flex flex-col h-full w-full">
       {/* Header */}
-      {hideHeader ? null : <div className="flex items-center justify-between gap-2 mb-1.5 px-1">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-[var(--accent-primary)]/10">
-            <Clock size={16} className="text-[var(--accent-primary)]" />
-          </div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t("session.studyTimer.title")}</h3>
-        </div>
-        {currentSessionId && <button onClick={() => updateModal("isEditModalOpen", true)} className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors" aria-label={t("session.studyTimer.configureSession")}>
-          <MoreVertical size={16} />
+      {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
+        <SectionTitle title={t("session.studyTimer.title")} tooltip="Tracks the time of your study session. Start a session, add lap notes and finish it to save it to your stats." size="sm" />
+        {currentSessionId && <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={t("session.studyTimer.configureSession")}>
+          <MoreVertical size={20} />
         </button>}
       </div>}
 

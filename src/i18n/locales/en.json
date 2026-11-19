@@ -167,14 +167,6 @@
       "issues": "Issues",
       "getStarted": "Get started"
     },
-    "mock": {
-      "today": "Today",
-      "t1": "Finish calculus problem set",
-      "t2": "Read chapter 4",
-      "t3": "Review lab notes",
-      "focus": "Focus session",
-      "streak": "7-day streak"
-    },
     "how": {
       "eyebrow": "// How it works",
       "title": "From chaos to a plan in 3 steps.",

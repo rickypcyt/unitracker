@@ -167,14 +167,6 @@
       "issues": "Issues",
       "getStarted": "शुरू करें"
     },
-    "mock": {
-      "today": "आज",
-      "t1": "Calculus problem set पूरा करें",
-      "t2": "Chapter 4 पढ़ें",
-      "t3": "Lab notes revise करें",
-      "focus": "Focus session",
-      "streak": "7 दिन की streak"
-    },
     "how": {
       "eyebrow": "// कैसे काम करता है",
       "title": "3 steps में chaos से plan तक।",

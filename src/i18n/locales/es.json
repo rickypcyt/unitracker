@@ -167,14 +167,6 @@
       "issues": "Issues",
       "getStarted": "Empezar"
     },
-    "mock": {
-      "today": "Hoy",
-      "t1": "Terminar problemas de cálculo",
-      "t2": "Leer capítulo 4",
-      "t3": "Repasar notas de laboratorio",
-      "focus": "Sesión de enfoque",
-      "streak": "Racha de 7 días"
-    },
     "how": {
       "eyebrow": "// Cómo funciona",
       "title": "Del caos a un plan en 3 pasos.",
