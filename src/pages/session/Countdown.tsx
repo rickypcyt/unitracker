@@ -861,7 +861,7 @@ const Countdown: React.FC<CountdownProps> = ({
             const circumference = 2 * Math.PI * radius;
             const ringColor = '#22c55e';
             return (
-              <div className="relative w-32 h-32">
+              <div className="timer-ring relative w-32 h-32">
                 {!(isSynced || syncCountdownWithTimer) && (
                   <button onClick={handleEditTime} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Edit countdown time" title="Edit time">
                     <Pencil size={18} />
@@ -901,7 +901,7 @@ const Countdown: React.FC<CountdownProps> = ({
             );
           })()
         ) : (
-          <div className="relative w-32 h-32">
+          <div className="timer-ring relative w-32 h-32">
             {isEditingTime && (
               <button onClick={() => setIsEditingTime(false)} className="timer-ctrl-btn absolute left-full top-0 bottom-0 my-auto ml-3" aria-label="Done editing time" title="Done">
                 <Check size={18} />

@@ -26,7 +26,7 @@ describe('PendingTasks live store synchronization', () => {
     act(() => useAppStore.getState().updateTaskSuccess({ ...original, title: 'Updated physics exam', deadline: '2030-03-02' }));
     expect(screen.getByText('Updated physics exam')).toBeInTheDocument();
     expect(screen.queryByText('Physics exam')).not.toBeInTheDocument();
-    expect(screen.getByText('Saturday, Mar 2, 2030')).toBeInTheDocument();
+    expect(screen.getByText('Sat, Mar 2')).toBeInTheDocument();
   });
 
   it('removes tasks immediately when marked completed or moved to another workspace', () => {

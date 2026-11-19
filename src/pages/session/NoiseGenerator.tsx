@@ -101,7 +101,7 @@ function SoundControl({
 
   return (
     <motion.div
-      className={`relative overflow-hidden rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-md ${
+      className={`noise-item relative overflow-hidden rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-md ${
         isPlaying
           ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
           : "border-[var(--border-primary)]"
@@ -116,7 +116,7 @@ function SoundControl({
             ease: "easeInOut",
             delay: index * 0.15,
           }}
-          className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
+          className={`noise-icon relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
         >
           <Icon size={22} className={theme.iconText} />
           {isPlaying && (
@@ -135,7 +135,7 @@ function SoundControl({
         </motion.div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="noise-item-head flex items-center justify-between gap-2 mb-2">
             <span className="font-semibold text-[var(--text-primary)] truncate">
               {label}
             </span>
@@ -200,7 +200,7 @@ function SoundControl({
           type="button"
           onClick={isPlaying ? stop : start}
           aria-label={isPlaying ? `Stop ${label}` : `Play ${label}`}
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 ${
+          className={`noise-play flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 ${
             isPlaying
               ? `${theme.iconBg} ${theme.iconText}`
               : `bg-[var(--bg-secondary)] text-[var(--text-secondary)] ${theme.buttonHover}`
@@ -525,7 +525,7 @@ export default function NoiseGenerator() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between pb-3"
+        className="noise-header flex items-center justify-between pb-3"
       >
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
@@ -567,7 +567,7 @@ export default function NoiseGenerator() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="flex flex-col gap-3 py-2"
+        className="noise-list flex flex-col gap-3 py-2"
       >
         {sounds.map((sound, idx) => (
           <motion.div key={sound.key} variants={item}>

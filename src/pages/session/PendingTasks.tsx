@@ -130,48 +130,49 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
     const due = getDueDate(task);
     const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
     return (
-      <li key={task.id} className={`shrink-0 flex items-center gap-1.5 rounded-xl border px-2 py-2.5 ${overdue ? 'border-red-500/40 bg-red-500/5' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/40'}`}>
+      <li key={task.id} className={`group shrink-0 flex items-center gap-1 rounded-lg border pl-0.5 pr-1 py-1 ${overdue ? 'border-red-500/40 bg-red-500/5' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/40'}`}>
         <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
-          <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-9 min-w-9 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={22} strokeWidth={2.2} /></button>
+          <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-8 min-w-8 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} strokeWidth={2.2} /></button>
         </ActionTooltip>
         <div className="min-w-0 flex-1">
           <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
-            <button onClick={() => editTask(task)} className="block w-full text-base font-semibold leading-snug text-left text-[var(--text-primary)] break-words">{task.title}</button>
+            <button onClick={() => editTask(task)} className="block w-full text-sm font-semibold leading-tight text-left text-[var(--text-primary)] break-words">{task.title}</button>
           </ActionTooltip>
-          <div className="mt-1 flex flex-wrap items-center gap-1">
-            <span className={`inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium ${overdue ? 'bg-red-500/10 text-red-400' : due && isToday(due) ? 'bg-green-500/10 text-green-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
-              <CalendarDays size={13} />
+          <div className="mt-0.5 flex flex-wrap items-center gap-1">
+            <span className={`inline-flex items-center gap-1 rounded px-1 text-[11px] leading-4 font-medium ${overdue ? 'bg-red-500/10 text-red-400' : due && isToday(due) ? 'bg-green-500/10 text-green-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+              <CalendarDays size={11} />
               {due ? (() => {
                 if (isToday(due)) return t('common.today');
                 if (overdue) {
                   const daysAgo = differenceInDays(new Date(), due);
                   return t('session.pendingTasks.daysAgo', { count: daysAgo });
                 }
-                return format(due, 'EEEE, MMM d, yyyy');
+                return format(due, 'EEE, MMM d');
               })() : t('common.noDueDate')}
             </span>
             {showContext && task.assignment && (
-              <span className="inline-flex min-w-0 max-w-[10rem] items-center rounded-md bg-[var(--accent-primary)]/10 px-1.5 py-0.5 text-xs font-medium text-[var(--accent-primary)]" title={task.assignment}>
+              <span className="inline-flex min-w-0 max-w-[10rem] items-center rounded bg-[var(--accent-primary)]/10 px-1 text-[11px] leading-4 font-medium text-[var(--accent-primary)]" title={task.assignment}>
                 <span className="truncate">{task.assignment}</span>
               </span>
             )}
             {showContext && showWorkspace && task.workspace_id && workspaceNames.get(task.workspace_id) && (
-              <span className="inline-flex min-w-0 max-w-[9rem] items-center gap-1 rounded-md bg-[var(--bg-secondary)] px-1.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]" title={workspaceNames.get(task.workspace_id)}>
+              <span className="inline-flex min-w-0 max-w-[9rem] items-center gap-1 rounded bg-[var(--bg-secondary)] px-1 text-[11px] leading-4 font-medium text-[var(--text-secondary)]" title={workspaceNames.get(task.workspace_id)}>
                 <Layers size={11} className="shrink-0" />
                 <span className="truncate">{workspaceNames.get(task.workspace_id)}</span>
               </span>
             )}
           </div>
         </div>
-        <div className="flex items-center shrink-0">
+        {/* Actions: always visible on touch, revealed on hover/focus with a mouse */}
+        <div className="flex items-center shrink-0 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 transition-opacity">
           <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
-            <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] disabled:opacity-50"><Pencil size={16} /></button>
+            <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1 text-[var(--text-secondary)] disabled:opacity-50"><Pencil size={14} /></button>
           </ActionTooltip>
           <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
-            <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1.5 text-[var(--text-secondary)] disabled:opacity-50"><EyeOff size={16} /></button>
+            <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1 text-[var(--text-secondary)] disabled:opacity-50"><EyeOff size={14} /></button>
           </ActionTooltip>
           <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
-            <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1.5 text-red-400 disabled:opacity-50"><Trash2 size={16} /></button>
+            <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1 text-red-400 disabled:opacity-50"><Trash2 size={14} /></button>
           </ActionTooltip>
         </div>
       </li>
@@ -248,7 +249,7 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
                   <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--text-secondary)]">{bucket.tasks.length}</span>
                   <span className="h-px flex-1 bg-[var(--border-primary)]" aria-hidden="true" />
                 </button>
-                <ul className={`flex flex-col space-y-1.5 ${bucketCollapsed ? 'hidden' : ''}`}>
+                <ul className={`flex flex-col space-y-1 ${bucketCollapsed ? 'hidden' : ''}`}>
                   {bucket.tasks.map(task => renderTask(task, true))}
                 </ul>
               </div>
@@ -288,7 +289,7 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
                 <span className="h-px flex-1 bg-[var(--border-primary)]" aria-hidden="true" />
               </button>
               {/* Tasks List */}
-              <ul className={`flex flex-col space-y-1.5 ${assignmentCollapsed ? 'hidden' : ''}`}>
+              <ul className={`flex flex-col space-y-1 ${assignmentCollapsed ? 'hidden' : ''}`}>
                 {tasks.map(task => renderTask(task))}
               </ul>
             </div>

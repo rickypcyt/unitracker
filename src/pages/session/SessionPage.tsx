@@ -77,7 +77,7 @@ const SessionPage = memo(() => {
   };
 
   const timersSection = (
-    <motion.div variants={item} className="w-full min-w-0 flex flex-col" data-tour="session-timer">
+    <motion.div variants={item} className="w-full min-w-0 h-full flex flex-col" data-tour="session-timer">
       {!isLoggedIn && (
         <button
           onClick={() => loginWithGoogle()}
@@ -102,30 +102,42 @@ const SessionPage = memo(() => {
     </div>
   );
 
-  // Timers get their own full-width row; below it: calendar + noise | scratchpad | pending tasks.
-  // On xl the pending-tasks column is absolutely positioned so the other columns set the row height.
+  // xl: 3 columns × 2 equal rows. Row 1: calendar | timers. Row 2: noise | scratchpad.
+  // Right: pending tasks spans both rows (absolute, scrolls inside).
+  // - xl (1280–1535): rows are as tall as the tallest block (the noise generator).
+  // - 2xl (≥1536): wider middle column; the timer cards are square and set the row height,
+  //   every other block is absolute in its cell (fills it, scrolls inside).
   const timersMonthRow = (
-    <>
-      {timersSection}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_minmax(0,0.8fr)] gap-4 items-stretch">
-        <div className="min-w-0 flex flex-col gap-4 order-2 xl:order-1">
-          <motion.div variants={item} className="min-w-0">
-            <MonthView />
-          </motion.div>
-          <motion.div variants={item} className="min-w-0 dashboard-noise-card w-full overflow-hidden p-3">
-            <NoiseGenerator />
-          </motion.div>
-        </div>
-        <motion.div variants={item} className="min-w-0 min-h-0 order-1 xl:order-2">
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.8fr)_minmax(0,0.8fr)] 2xl:grid-cols-[minmax(0,0.8fr)_minmax(0,2fr)_minmax(0,0.8fr)] xl:grid-rows-2 gap-4 items-stretch">
+      {/* Timer (row 1, middle) */}
+      <motion.div variants={item} className="min-w-0 order-1 xl:col-start-2 xl:row-start-1 xl:h-full">
+        {timersSection}
+      </motion.div>
+      {/* Scratchpad (row 2, middle) */}
+      <motion.div variants={item} className="min-w-0 min-h-0 order-2 xl:col-start-2 xl:row-start-2 xl:relative">
+        <div className="xl:h-full 2xl:absolute 2xl:inset-0 2xl:[&>*]:max-h-none 2xl:[&>*]:min-h-0">
           <ScratchPad />
-        </motion.div>
-        <motion.div variants={item} className="min-w-0 order-3 lg:col-span-2 xl:col-span-1 xl:relative xl:min-h-0">
-          <div className="xl:absolute xl:inset-0">
-            <PendingTasks fillHeight />
-          </div>
-        </motion.div>
-      </div>
-    </>
+        </div>
+      </motion.div>
+      {/* Calendar (row 1, left) */}
+      <motion.div variants={item} className="min-w-0 order-3 xl:col-start-1 xl:row-start-1 xl:relative xl:min-h-0">
+        <div className="xl:h-full 2xl:absolute 2xl:inset-0">
+          <MonthView fillHeight />
+        </div>
+      </motion.div>
+      {/* Noise generator (row 2, left) */}
+      <motion.div variants={item} className="order-4 xl:col-start-1 xl:row-start-2 min-w-0 xl:relative xl:min-h-0">
+        <div className="noise-fit dashboard-noise-card w-full overflow-hidden p-3 xl:h-full 2xl:absolute 2xl:inset-0 2xl:overflow-y-auto">
+          <NoiseGenerator />
+        </div>
+      </motion.div>
+      {/* Pending tasks (right) — spans both rows; the other columns set its height on xl, it scrolls inside */}
+      <motion.div variants={item} className="min-w-0 order-5 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-1 xl:row-span-2 xl:relative xl:min-h-0">
+        <div className="xl:absolute xl:inset-0">
+          <PendingTasks fillHeight />
+        </div>
+      </motion.div>
+    </div>
   );
 
   const toolsRow = (

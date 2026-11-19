@@ -1,5 +1,6 @@
 import SectionTitle from "@/components/ui/SectionTitle";
-import { Check, Flag, MoreVertical, Pause, Play, X } from "lucide-react";
+import { Check, Flag, MoreVertical, Pause, PictureInPicture, Play, X } from "lucide-react";
+import { MINI_PLAYER_OPEN_EVENT } from "@/utils/studyTimerRemote";
 import { createPortal } from "react-dom";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/session/useStudySync";
 import { useStudyTimer } from "@/hooks/session/useTimers";
@@ -157,12 +158,15 @@ interface StudyTimerProps {
   isSynced?: boolean | undefined;
   hideHeader?: boolean;
   hideControls?: boolean;
+  /** Show the "open mini player" button at the right of the header */
+  showMiniPlayerButton?: boolean;
 }
 const StudyTimer = ({
   onSyncChange,
   isSynced,
   hideHeader = false,
-  hideControls = false
+  hideControls = false,
+  showMiniPlayerButton = false
 }: StudyTimerProps) => {
   const { t } = useTranslation();
   const {
@@ -680,8 +684,8 @@ const StudyTimer = ({
     }
     const activeId = currentSessionId ?? getFromLocalStorage<string | null>(STORAGE_KEYS.ACTIVE_SESSION_ID, null, false);
     if (!activeId) {
-      // No active session: go straight to "new session" (previous sessions are reachable via "Resume")
-      updateModal("isStartModalOpen", true);
+      // No active session: show previous sessions first (resume one or start a new one from there)
+      updateModal("isSessionsModalOpen", true);
       return;
     }
     const now = typeof baseTimestamp === "number" && Number.isFinite(baseTimestamp) ? baseTimestamp : Date.now();
@@ -1114,8 +1118,11 @@ const StudyTimer = ({
       {/* Header */}
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
         <SectionTitle title={t("session.studyTimer.title")} tooltip="Tracks the time of your study session. Start a session, add lap notes and finish it to save it to your stats." size="sm" />
-        {currentSessionId && <button onClick={() => updateModal("isEditModalOpen", true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={t("session.studyTimer.configureSession")}>
+        {currentSessionId && <button onClick={() => updateModal("isEditModalOpen", true)} className={`absolute ${showMiniPlayerButton ? "right-6" : "right-0"} top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors`} aria-label={t("session.studyTimer.configureSession")}>
           <MoreVertical size={20} />
+        </button>}
+        {showMiniPlayerButton && <button type="button" onClick={() => window.dispatchEvent(new CustomEvent(MINI_PLAYER_OPEN_EVENT))} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label={t("session.miniPlayer.openAria")} title={t("session.miniPlayer.openTitle")}>
+          <PictureInPicture size={20} />
         </button>}
       </div>}
 
@@ -1143,9 +1150,9 @@ const StudyTimer = ({
           const secondsInHour = totalSec % 3600;
           const hourProgress = secondsInHour / 3600;
           return (
-            <div className="relative w-32 h-32">
+            <div className="timer-ring relative w-32 h-32">
               {currentSessionId && !isSynced && (
-                <div className="absolute right-full top-[68%] -translate-y-1/2 mr-6 flex gap-2">
+                <div className="study-side-left absolute right-full top-[68%] -translate-y-1/2 mr-6 flex gap-2">
                   <button
                     onClick={handleLapButton}
                     className={`timer-ctrl-btn ${lapInputOpen ? 'border-[#0A84FF]' : ''}`}
@@ -1156,7 +1163,7 @@ const StudyTimer = ({
                 </div>
               )}
               {currentSessionId && (
-                <div className="absolute left-full top-[68%] -translate-y-1/2 ml-3 flex gap-2">
+                <div className="study-side-right absolute left-full top-[68%] -translate-y-1/2 ml-3 flex gap-2">
                   <button
                     onClick={() => updateModal("isFinishModalOpen", true)}
                     className="timer-ctrl-btn"

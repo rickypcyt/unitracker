@@ -1326,7 +1326,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
           const radius = 52;
           const circumference = 2 * Math.PI * radius;
           return (
-            <div className="relative w-32 h-32">
+            <div className="timer-ring relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-primary)" strokeWidth="5" opacity="0.5" />
                 <circle
