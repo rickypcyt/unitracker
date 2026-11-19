@@ -102,7 +102,10 @@
   "landing": {
     "nav": {
       "github": "GitHub",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "features": "Features",
+      "demo": "Live demo",
+      "faq": "FAQ"
     },
     "hero": {
       "eyebrow": "// Free & open source",
@@ -165,7 +168,11 @@
       "copyright": "unitracker © 2026 · MIT",
       "india": "India",
       "issues": "Issues",
-      "getStarted": "Get started"
+      "getStarted": "Get started",
+      "product": "Product",
+      "guides": "Guides",
+      "community": "Community",
+      "regional": "Regional"
     },
     "how": {
       "eyebrow": "// How it works",
@@ -210,6 +217,23 @@
           "a": "Your data is yours. You can export everything at any time."
         }
       ]
+    },
+    "free": {
+      "line": "Free without limits."
+    },
+    "cards": {
+      "github": {
+        "t": "Star us on GitHub",
+        "d": "UniTracker is open source. Read the code, follow progress."
+      },
+      "issues": {
+        "t": "Report an issue",
+        "d": "Found a bug or have an idea? Tell us on GitHub."
+      },
+      "guides": {
+        "t": "Study guides",
+        "d": "Pomodoro, study timers and productivity how-tos."
+      }
     }
   },
   "common": {

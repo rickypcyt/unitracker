@@ -105,39 +105,39 @@ const SessionPage = memo(() => {
     </div>
   );
 
-  // xl (1280–1535): 3 columns × 2 equal rows. Row 1: calendar | timers. Row 2: noise |
-  //   scratchpad. Rows are as tall as the tallest block (the noise generator).
+  // md–xl (768–1535): 2 columns. Timers full width, then noise | calendar, then
+  //   pending tasks | scratchpad. (A 3-column layout is too cramped for the timer cards here.)
   // 2xl (≥1536): 4 equal columns + pending tasks. Row 1: calendar, pomo, sessions,
   //   countdown. Row 2: noise | scratchpad (3 cols). The timer cards are square and set the
   //   row height, so calendar and noise are the same square size; every other block is
   //   absolute in its cell (fills it, scrolls inside). Pending tasks spans both rows.
   const timersMonthRow = (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.8fr)_minmax(0,0.8fr)] 2xl:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.4fr)] xl:grid-rows-2 gap-4 items-stretch">
-      {/* Timer (row 1, middle) */}
-      <motion.div variants={item} className="min-w-0 order-1 xl:col-start-2 xl:row-start-1 xl:h-full 2xl:contents">
+    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.4fr)] 2xl:grid-rows-2 gap-4 items-stretch">
+      {/* Timers: full width; on 2xl the cards are placed directly in this grid (row 1, cols 2-4) */}
+      <motion.div variants={item} className="min-w-0 order-1 md:col-span-2 2xl:contents">
         {renderTimers(true)}
       </motion.div>
-      {/* Scratchpad (row 2, middle) */}
-      <motion.div variants={item} className="min-w-0 min-h-0 order-2 xl:col-start-2 xl:row-start-2 2xl:col-span-3 xl:relative">
-        <div className="xl:h-full 2xl:absolute 2xl:inset-0 2xl:[&>*]:max-h-none 2xl:[&>*]:min-h-0">
+      {/* Scratchpad */}
+      <motion.div variants={item} className="min-w-0 min-h-0 order-2 md:order-5 2xl:col-start-2 2xl:col-span-3 2xl:row-start-2 2xl:relative">
+        <div className="md:h-full md:[&>*]:max-h-none 2xl:absolute 2xl:inset-0 2xl:[&>*]:min-h-0">
           <ScratchPad />
         </div>
       </motion.div>
-      {/* Calendar (row 1, left) */}
-      <motion.div variants={item} className="min-w-0 order-3 xl:col-start-1 xl:row-start-1 xl:relative xl:min-h-0">
-        <div className="xl:h-full 2xl:absolute 2xl:inset-0">
+      {/* Calendar */}
+      <motion.div variants={item} className="min-w-0 order-3 2xl:col-start-1 2xl:row-start-1 2xl:relative 2xl:min-h-0">
+        <div className="md:h-full md:[&>section]:aspect-auto md:[&>section]:h-full 2xl:absolute 2xl:inset-0">
           <MonthView fillHeight />
         </div>
       </motion.div>
-      {/* Noise generator (row 2, left) */}
-      <motion.div variants={item} className="order-4 xl:col-start-1 xl:row-start-2 min-w-0 xl:relative xl:min-h-0">
-        <div className="noise-fit dashboard-noise-card w-full overflow-hidden p-3 xl:h-full 2xl:absolute 2xl:inset-0 2xl:overflow-y-auto">
+      {/* Noise generator */}
+      <motion.div variants={item} className="order-4 md:order-2 2xl:col-start-1 2xl:row-start-2 min-w-0 2xl:relative 2xl:min-h-0">
+        <div className="noise-fit dashboard-noise-card w-full overflow-hidden p-3 md:h-full 2xl:absolute 2xl:inset-0 2xl:overflow-y-auto">
           <NoiseGenerator />
         </div>
       </motion.div>
-      {/* Pending tasks (right) — spans both rows; the other columns set its height on xl, it scrolls inside */}
-      <motion.div variants={item} className="min-w-0 order-5 lg:col-span-2 xl:col-span-1 xl:col-start-3 2xl:col-start-5 xl:row-start-1 xl:row-span-2 xl:relative xl:min-h-0">
-        <div className="xl:absolute xl:inset-0">
+      {/* Pending tasks — on 2xl it spans both rows (absolute, scrolls inside) */}
+      <motion.div variants={item} className="min-w-0 order-5 md:order-4 2xl:col-start-5 2xl:row-start-1 2xl:row-span-2 2xl:relative 2xl:min-h-0">
+        <div className="md:h-full 2xl:absolute 2xl:inset-0">
           <PendingTasks fillHeight />
         </div>
       </motion.div>

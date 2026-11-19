@@ -1300,7 +1300,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
         }} />}
         </button>
 
-        <SectionTitle title="Pomo" tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks." size="sm" />
+        <SectionTitle title="Pomodoro" tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks." size="sm" />
 
         <button onClick={() => setIsSettingsModalOpen(true)} className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Configure pomodoro">
           <MoreVertical size={20} />

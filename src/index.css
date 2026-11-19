@@ -2864,15 +2864,6 @@ input.no-spinners {
 }
 
 @container (max-width: 360px) {
-  /* Narrow square card: "Play all" becomes an icon button so the title stays on one line */
-  .noise-fit .noise-play-all-label {
-    display: none;
-  }
-  .noise-fit .noise-play-all {
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0;
-  }
   .noise-fit .noise-header h3 {
     white-space: nowrap;
   }
@@ -2898,11 +2889,26 @@ input.no-spinners {
 }
 .timer-card .timer-ring span.font-mono,
 .timer-card .timer-ring .countdown-time-input {
-  font-size: calc(var(--ring) * 0.16);
+  font-size: calc(var(--ring) * 0.125);
 }
 .timer-card .timer-ring .countdown-time-input {
-  width: 1.5em;
+  width: 1.3em;
 }
 .timer-card .timer-ring .flex.items-center.gap-0\.5 {
   gap: calc(var(--ring) * 0.01);
+}
+
+/* Narrow noise card (3-column md layout): keep the sound name readable, wrap the % badge */
+.noise-item-head {
+  flex-wrap: wrap;
+}
+.noise-item-head > :first-child {
+  min-width: 5.5rem;
+}
+
+/* Mobile: carousel cards are almost full width — keep the ring compact so they aren't tall */
+@media (max-width: 767px) {
+  .timer-card {
+    --ring: clamp(6.5rem, 46cqw, 8.5rem);
+  }
 }

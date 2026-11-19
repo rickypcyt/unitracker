@@ -6,55 +6,59 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
-  BarChart3,
-  Calendar,
   Check,
-  CheckCircle2,
   ChevronDown,
   ChevronRight,
+  BookOpen,
+  Bug,
   Github,
   ListTodo,
-  NotebookPen,
   Timer,
   TrendingUp,
-  WifiOff,
 } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
-import Countdown from '@/pages/session/Countdown';
-import Pomodoro from '@/pages/session/Pomodoro';
-import StudyTimer from '@/pages/session/StudyTimer';
+import TimerCards from '@/pages/session/components/TimerCards';
 
 const features = [
-  { icon: Timer, key: 'pomodoro' },
-  { icon: CheckCircle2, key: 'tasks' },
-  { icon: Calendar, key: 'calendar' },
-  { icon: BarChart3, key: 'analytics' },
-  { icon: NotebookPen, key: 'notes' },
-  { icon: WifiOff, key: 'offline' },
+  { key: 'pomodoro' },
+  { key: 'tasks' },
+  { key: 'calendar' },
+  { key: 'analytics' },
+  { key: 'notes' },
+  { key: 'offline' },
 ] as const;
 
 const stepIcons = [ListTodo, Timer, TrendingUp] as const;
 
-const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode }) => (
-  <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden">
-    <div className="flex items-center gap-2 px-4 h-9 border-b border-white/[0.06]">
-      <div className="flex gap-1.5">
-        <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-        <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-        <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-      </div>
-      <span className="text-[11px] text-white/40 ml-2">unitracker/{title}</span>
-    </div>
-    <div className="p-3 max-h-[420px] overflow-y-auto">
-      {children}
-    </div>
+// Obsidian-style section heading: big title with a short accent dash underneath
+const SectionHeading = ({ children, sub, center = false }: { children: ReactNode; sub?: ReactNode; center?: boolean }) => (
+  <div className={center ? 'text-center mx-auto max-w-2xl' : 'max-w-2xl'}>
+    <h2 className="text-3xl sm:text-5xl font-heading font-bold tracking-[-0.03em] leading-[1.05] text-white">{children}</h2>
+    <span className={`block h-1 w-12 rounded-full bg-[var(--accent-primary)] mt-5 ${center ? 'mx-auto' : ''}`} />
+    {sub && <p className="mt-5 text-base sm:text-lg text-white/55 leading-relaxed">{sub}</p>}
   </div>
 );
 
-const Eyebrow = ({ children }: { children: ReactNode }) => (
-  <p className="text-sm sm:text-base uppercase tracking-[0.2em] font-semibold text-[var(--accent-primary)] mb-4">
-    {children}
-  </p>
+// Big layered app window — the real timers living inside it
+const AppWindow = ({ children }: { children: ReactNode }) => (
+  <div className="relative">
+    <div
+      aria-hidden="true"
+      className="absolute -inset-x-10 -inset-y-8 -z-10 opacity-30 blur-3xl"
+      style={{ background: 'radial-gradient(ellipse at 50% 60%, var(--accent-primary) 0%, transparent 65%)' }}
+    />
+    <div className="rounded-2xl border border-white/10 bg-[#0a0a0c]/90 backdrop-blur-xl shadow-[0_30px_120px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
+      <div className="flex items-center gap-2 px-4 h-10 border-b border-white/[0.08] bg-white/[0.02]">
+        <div className="flex gap-1.5">
+          <span className="w-3 h-3 rounded-full bg-white/15" />
+          <span className="w-3 h-3 rounded-full bg-white/15" />
+          <span className="w-3 h-3 rounded-full bg-white/15" />
+        </div>
+        <span className="mx-auto text-[12px] text-white/35 pr-12">unitracker.me/session</span>
+      </div>
+      {children}
+    </div>
+  </div>
 );
 
 // Resets onboarding flags so entering the app replays welcome → color → login
@@ -173,24 +177,28 @@ const LandingPage = () => {
         }
       `}</style>
 
-      <div className="dark h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-black text-[#e4e4e7] pb-16 antialiased" style={{ colorScheme: 'dark' }}>
-      <div className="relative isolate">
-        {/* Ambient accent glows — spread down the whole page */}
+      <div className="dark h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-black text-[#e4e4e7] antialiased" style={{ colorScheme: 'dark' }}>
+      <div className="relative isolate pb-16 sm:pb-0">
+        {/* Ambient accent glows */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute right-[-12%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '6%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute left-[-15%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '22%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute right-[-10%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '38%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute left-[-12%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '54%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute right-[-14%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '70%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute left-[-10%] w-[720px] h-[520px] opacity-[0.13] blur-3xl" style={{ top: '86%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
+          <div className="absolute left-1/2 -translate-x-1/2 w-[1100px] h-[620px] opacity-[0.16] blur-3xl" style={{ top: '-4%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
+          <div className="absolute right-[-15%] w-[720px] h-[520px] opacity-[0.1] blur-3xl" style={{ top: '38%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
+          <div className="absolute left-[-15%] w-[720px] h-[520px] opacity-[0.1] blur-3xl" style={{ top: '62%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
         </div>
 
-        {/* Nav — minimal, hairline */}
-        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.08]">
+        {/* Nav */}
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.06]">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-            <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
-              <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
-            </Link>
+            <div className="flex items-center gap-8">
+              <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
+                <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
+              </Link>
+              <div className="hidden md:flex items-center gap-6 text-[13px] text-white/55">
+                <a href="#features" className="hover:text-white transition-colors">{t('landing.nav.features')}</a>
+                <a href="#demo" className="hover:text-white transition-colors">{t('landing.nav.demo')}</a>
+                <a href="#faq" className="hover:text-white transition-colors">{t('landing.nav.faq')}</a>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <LanguageToggle langs={['en', 'es']} />
               <a
@@ -204,7 +212,7 @@ const LandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 {t('landing.nav.getStarted')}
               </Link>
@@ -212,47 +220,39 @@ const LandingPage = () => {
           </div>
         </nav>
 
-        {/* Hero — Resend style: eyebrow, tight headline, minimal CTAs */}
-        <section className="relative overflow-hidden">
-          <div
-            className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[700px] h-[500px] opacity-[0.14] blur-3xl"
-            style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }}
-          />
-          <div
-            className="pointer-events-none absolute top-40 -left-40 w-[400px] h-[400px] opacity-[0.07] blur-3xl"
-            style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 70%)' }}
-          />
-          <div className="relative max-w-4xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28 pb-14 text-center">
-            <div className="animate-um-rise flex flex-col items-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/70 mb-6">
+        {/* Hero — centered headline, two CTAs, then the app window */}
+        <section className="relative">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
+            <div className="animate-um-rise text-center flex flex-col items-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/70 mb-7">
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-pulse" />
                 {t('landing.hero.badge')}
               </span>
-              <h1 className="text-white text-[2.75rem] sm:text-7xl font-heading font-bold mb-5 tracking-[-0.035em] leading-[1.02]">
+              <h1 className="text-white text-[2.9rem] sm:text-8xl font-heading font-bold mb-6 tracking-[-0.04em] leading-[1]">
                 {t('landing.hero.title1')}<br />
                 <span className="text-[var(--accent-primary)]">{t('landing.hero.title2')}</span>
               </h1>
-              <p className="text-base sm:text-lg text-white/60 max-w-xl mb-8 leading-relaxed">
+              <p className="text-base sm:text-xl text-white/60 max-w-xl mb-9 leading-relaxed">
                 {t('landing.hero.subtitle')}
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+              <div className="flex flex-wrap items-center justify-center gap-3 mb-5">
                 <Link
                   to="/app"
                   onClick={startOnboarding}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--accent-primary)] text-white font-semibold text-[15px] shadow-lg shadow-[var(--accent-primary)]/30 hover:opacity-90 hover:-translate-y-0.5 transition-all"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-[15px] hover:-translate-y-0.5 transition-all"
                 >
                   {t('landing.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a
                   href="#demo"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 text-white/80 font-medium text-[15px] hover:bg-white/5 hover:text-white transition-colors"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-white/15 text-white/80 font-medium text-[15px] hover:bg-white/[0.06] hover:text-white transition-colors"
                 >
                   {t('landing.hero.ctaSecondary')}
                   <ChevronDown className="w-4 h-4" />
                 </a>
               </div>
-              <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-white/50">
+              <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-white/45">
                 {(t('landing.hero.trust', { returnObjects: true }) as unknown as string[]).map((item) => (
                   <li key={item} className="inline-flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5 text-[var(--accent-primary)]" strokeWidth={3} /> {item}
@@ -260,143 +260,162 @@ const LandingPage = () => {
                 ))}
               </ul>
             </div>
-          </div>
-        </section>
 
-        {/* Live timers */}
-        <section id="demo" className="border-t border-white/[0.06] scroll-mt-14">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>{t('landing.timers.eyebrow')}</Eyebrow>
-            <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-2">
-              {t('landing.timers.title')}
-            </h2>
-            <p className="text-white/50 text-sm mb-8 max-w-md">
-              {t('landing.timers.subtitle')}
-            </p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl">
-              <ShowcaseFrame title={t('landing.timers.studyTimer')}>
-                <StudyTimer hideHeader />
-              </ShowcaseFrame>
-              <ShowcaseFrame title={t('landing.timers.pomodoro')}>
-                <Pomodoro hideHeader fresh />
-              </ShowcaseFrame>
-              <ShowcaseFrame title={t('landing.timers.countdown')}>
-                <Countdown hideHeader />
-              </ShowcaseFrame>
+            {/* The real app, live */}
+            <div id="demo" className="animate-um-rise mt-14 sm:mt-20 scroll-mt-20" style={{ animationDelay: '0.12s' }}>
+              <AppWindow>
+                <div className="p-3 sm:p-5">
+                  <TimerCards fresh />
+                </div>
+              </AppWindow>
+              <p className="mt-5 text-center text-[13px] text-white/40">{t('landing.timers.subtitle')}</p>
             </div>
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="border-t border-white/[0.06]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>{t('landing.how.eyebrow')}</Eyebrow>
-            <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
-              {t('landing.how.title')}
-            </h2>
+        {/* Three-up value row */}
+        <section className="mt-24 sm:mt-32">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
             <ol className="grid md:grid-cols-3 gap-4">
               {(t('landing.how.steps', { returnObjects: true }) as unknown as { title: string; desc: string }[]).map((s, i) => {
                 const Icon = stepIcons[i] ?? Timer;
                 return (
-                  <li key={s.title} className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 transition-colors">
-                    <div className="flex items-center justify-between mb-5">
-                      <span className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/15 flex items-center justify-center">
-                        <Icon className="w-[18px] h-[18px] text-[var(--accent-primary)]" />
+                  <li key={s.title} className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-7 hover:border-[var(--accent-primary)]/40 transition-colors">
+                    <div className="flex items-center justify-between mb-7">
+                      <span className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/15 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
                       </span>
-                      <span className="font-mono text-xs text-white/30">0{i + 1}</span>
+                      <span className="font-mono text-sm text-white/25">0{i + 1}</span>
                     </div>
-                    <h3 className="text-base font-semibold text-white mb-1.5">{s.title}</h3>
-                    <p className="text-sm text-white/50 leading-relaxed">{s.desc}</p>
+                    <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">{s.title}</h3>
+                    <p className="text-[15px] text-white/50 leading-relaxed">{s.desc}</p>
                   </li>
                 );
               })}
             </ol>
+            <div className="mt-10 flex flex-col items-center gap-3 text-center">
+              <p className="text-2xl sm:text-3xl font-heading font-bold tracking-tight text-white">{t('landing.free.line')}</p>
+              <Link to="/app" onClick={startOnboarding} className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--accent-primary)] hover:opacity-80 transition-opacity">
+                {t('landing.footer.getStarted')} <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* Features — hairline grid, Resend style */}
-        <section className="border-t border-white/[0.06]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>{t('landing.features.eyebrow')}</Eyebrow>
-            <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
-              {t('landing.features.title')}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-white/[0.06]">
+        {/* Features — one unified list with big headers */}
+        <section id="features" className="mt-24 sm:mt-32 scroll-mt-20">
+          <div className="max-w-5xl mx-auto px-5 sm:px-8">
+            <SectionHeading center>{t('landing.features.title')}</SectionHeading>
+            <div className="mt-10 sm:mt-14 border-t border-white/10">
               {features.map((f) => (
                 <div
                   key={f.key}
-                  className="border-b border-r border-white/[0.06] p-6 hover:bg-white/[0.03] transition-colors group"
+                  className="group grid md:grid-cols-[1.15fr_1fr] gap-x-10 gap-y-1 items-baseline border-b border-white/10 py-5 sm:py-6"
                 >
-                  <f.icon className="w-4 h-4 text-[var(--accent-primary)] mb-4" />
-                  <h3 className="text-sm font-semibold text-white/90 mb-1">{t(`landing.features.${f.key}.label`)}</h3>
-                  <p className="text-[13px] text-white/45 leading-relaxed">{t(`landing.features.${f.key}.desc`)}</p>
+                  <h3 className="text-3xl sm:text-5xl font-heading font-bold tracking-[-0.03em] leading-[1.05] text-white group-hover:text-[var(--accent-primary)] transition-colors">
+                    {t(`landing.features.${f.key}.label`)}
+                  </h3>
+                  <p className="text-base sm:text-lg text-white/50 leading-snug">
+                    {t(`landing.features.${f.key}.desc`)}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* FAQ — removes last-second objections */}
-        <section className="border-t border-white/[0.06]">
-          <div className="max-w-3xl mx-auto px-5 sm:px-8 py-16">
-            <Eyebrow>{t('landing.faq.eyebrow')}</Eyebrow>
-            <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-8">
-              {t('landing.faq.title')}
-            </h2>
-            <div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">
+        {/* FAQ */}
+        <section id="faq" className="mt-28 sm:mt-40 scroll-mt-20">
+          <div className="max-w-3xl mx-auto px-5 sm:px-8">
+            <SectionHeading center>{t('landing.faq.title')}</SectionHeading>
+            <div className="mt-12 divide-y divide-white/[0.08] border-y border-white/[0.08]">
               {faqItems.map((item) => (
-                <details key={item.q} className="group py-4">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-medium text-white/90 [&::-webkit-details-marker]:hidden">
+                <details key={item.q} className="group py-5">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base sm:text-lg font-medium text-white/90 [&::-webkit-details-marker]:hidden">
                     {item.q}
                     <ChevronDown className="w-4 h-4 text-white/40 transition-transform group-open:rotate-180 flex-shrink-0" />
                   </summary>
-                  <p className="mt-3 text-sm text-white/50 leading-relaxed">{item.a}</p>
+                  <p className="mt-3 text-[15px] text-white/50 leading-relaxed">{item.a}</p>
                 </details>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="relative overflow-hidden border-t border-white/[0.06]">
+        {/* Closing — big CTA + three link cards */}
+        <section className="relative mt-28 sm:mt-40">
           <div
-            className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] opacity-[0.16] blur-3xl"
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 w-[900px] h-[420px] opacity-[0.18] blur-3xl"
             style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }}
           />
-          <div className="relative max-w-3xl mx-auto px-5 sm:px-8 py-24 text-center">
-            <Eyebrow>{t('landing.cta.eyebrow')}</Eyebrow>
-            <h2 className="text-3xl sm:text-5xl font-heading font-bold tracking-tight mb-4 leading-[1.08]">
-              {t('landing.cta.title')}
-            </h2>
-            <p className="text-white/50 text-sm mb-8">{t('landing.cta.subtitle')}</p>
+          <div className="relative max-w-6xl mx-auto px-5 sm:px-8 text-center">
+            <SectionHeading center sub={t('landing.cta.subtitle')}>{t('landing.cta.title')}</SectionHeading>
             <Link
               to="/app"
               onClick={startOnboarding}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-lg bg-[var(--accent-primary)] text-white font-semibold text-base shadow-lg shadow-[var(--accent-primary)]/30 hover:opacity-90 hover:-translate-y-0.5 transition-all"
+              className="mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-base hover:-translate-y-0.5 transition-all"
             >
               {t('landing.cta.button')}
               <ArrowRight className="w-4 h-4" />
             </Link>
+            <div className="mt-16 grid md:grid-cols-3 gap-4 text-left">
+              <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+                <Github className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
+                <h3 className="font-semibold text-white mb-1">{t('landing.cards.github.t')}</h3>
+                <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.github.d')}</p>
+              </a>
+              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+                <Bug className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
+                <h3 className="font-semibold text-white mb-1">{t('landing.cards.issues.t')}</h3>
+                <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.issues.d')}</p>
+              </a>
+              <Link to={`/${SEO_PAGES[0]?.slug ?? ''}`} className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+                <BookOpen className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
+                <h3 className="font-semibold text-white mb-1">{t('landing.cards.guides.t')}</h3>
+                <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.guides.d')}</p>
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* Footer — minimal hairline */}
-        <footer className="border-t border-white/[0.06]">
-          <nav aria-label="Guides" className="max-w-6xl mx-auto px-5 sm:px-8 pt-8 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-white/40">
-            {SEO_PAGES.map((p) => (
-              <Link key={p.slug} to={`/${p.slug}`} className="hover:text-white transition-colors">{p.h1}</Link>
-            ))}
-          </nav>
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <span className="text-xs text-white/40">{t('landing.footer.copyright')}</span>
-            <div className="flex items-center gap-5 text-[13px] text-white/40">
-              <Link to="/india" className="hover:text-white transition-colors">{t('landing.footer.india')}</Link>
-              <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a>
-              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="hover:text-white transition-colors">{t('landing.footer.issues')}</a>
-              <Link to="/app" onClick={startOnboarding} className="hover:text-white transition-colors flex items-center gap-0.5">
-                {t('landing.footer.getStarted')} <ChevronRight className="w-3 h-3" />
-              </Link>
+        {/* Footer — multi-column */}
+        <footer className="mt-24 border-t border-white/[0.06]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-[13px]">
+            <div className="col-span-2 md:col-span-1">
+              <span className="font-heading text-[15px] font-bold tracking-tight">
+                <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
+              </span>
+              <p className="mt-3 text-white/40 max-w-[16rem] leading-relaxed">{t('landing.hero.badge')}</p>
             </div>
+            <div>
+              <h4 className="font-semibold text-white/80 mb-3">{t('landing.footer.product')}</h4>
+              <ul className="space-y-2 text-white/45">
+                <li><a href="#features" className="hover:text-white transition-colors">{t('landing.nav.features')}</a></li>
+                <li><a href="#demo" className="hover:text-white transition-colors">{t('landing.nav.demo')}</a></li>
+                <li><a href="#faq" className="hover:text-white transition-colors">{t('landing.nav.faq')}</a></li>
+                <li><Link to="/app" onClick={startOnboarding} className="hover:text-white transition-colors">{t('landing.footer.getStarted')}</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white/80 mb-3">{t('landing.footer.guides')}</h4>
+              <ul className="space-y-2 text-white/45">
+                {SEO_PAGES.map((p) => (
+                  <li key={p.slug}><Link to={`/${p.slug}`} className="hover:text-white transition-colors">{p.h1}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white/80 mb-3">{t('landing.footer.community')}</h4>
+              <ul className="space-y-2 text-white/45">
+                <li><a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="hover:text-white transition-colors">GitHub</a></li>
+                <li><a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="hover:text-white transition-colors">{t('landing.footer.issues')}</a></li>
+                <li><Link to="/india" className="hover:text-white transition-colors">{t('landing.footer.india')}</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 border-t border-white/[0.06] text-xs text-white/35">
+            {t('landing.footer.copyright')}
           </div>
         </footer>
 
@@ -405,7 +424,7 @@ const LandingPage = () => {
           <Link
             to="/app"
             onClick={startOnboarding}
-            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-[var(--accent-primary)] text-white font-semibold text-sm shadow-lg shadow-[var(--accent-primary)]/30"
+            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-black border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-sm"
           >
             {t('landing.cta.button')}
             <ArrowRight className="w-4 h-4" />

@@ -102,7 +102,10 @@
   "landing": {
     "nav": {
       "github": "GitHub",
-      "getStarted": "शुरू करें"
+      "getStarted": "शुरू करें",
+      "features": "फ़ीचर्स",
+      "demo": "लाइव डेमो",
+      "faq": "FAQ"
     },
     "hero": {
       "eyebrow": "// Free और open source",
@@ -165,7 +168,11 @@
       "copyright": "unitracker © 2026 · MIT",
       "india": "India",
       "issues": "Issues",
-      "getStarted": "शुरू करें"
+      "getStarted": "शुरू करें",
+      "product": "प्रोडक्ट",
+      "guides": "गाइड",
+      "community": "कम्युनिटी",
+      "regional": "क्षेत्रीय"
     },
     "how": {
       "eyebrow": "// कैसे काम करता है",
@@ -210,6 +217,23 @@
           "a": "आपका data आपका है। आप कभी भी सब कुछ export कर सकते हैं।"
         }
       ]
+    },
+    "free": {
+      "line": "बिना किसी सीमा के मुफ़्त।"
+    },
+    "cards": {
+      "github": {
+        "t": "GitHub पर स्टार करें",
+        "d": "UniTracker open source है। कोड पढ़ें और प्रगति देखें।"
+      },
+      "issues": {
+        "t": "समस्या बताएँ",
+        "d": "कोई bug मिला या आइडिया है? GitHub पर बताएँ।"
+      },
+      "guides": {
+        "t": "स्टडी गाइड",
+        "d": "Pomodoro, स्टडी टाइमर और प्रोडक्टिविटी टिप्स।"
+      }
     }
   },
   "common": {
