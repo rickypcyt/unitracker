@@ -41,6 +41,9 @@ const SessionsModal = ({
   const [sessions, setSessions] = useState<Session[]>([]);
   const [unfinishedSessions, setUnfinishedSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  // The modal only renders once we know there is something to show. Reset on close so a
+  // re-open never paints the previous (stale) contents for a frame.
+  const [ready, setReady] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const fetchTodaysSessions = async () => {
     try {
@@ -50,20 +53,40 @@ const SessionsModal = ({
       console.error('Error fetching today\'s sessions:', error);
     }
   };
-  const fetchUnfinishedSessions = async () => {
+  const fetchUnfinishedSessions = async (): Promise<Session[] | null> => {
     try {
-      const data = await StudyService.getUnfinishedSessions();
-      setUnfinishedSessions(data as Session[]);
+      const data = (await StudyService.getUnfinishedSessions()) as Session[];
+      setUnfinishedSessions(data);
+      return data;
     } catch (error) {
       console.error('Error fetching unfinished sessions:', error);
+      return null;
     }
   };
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setReady(false);
+      return;
+    }
+    let cancelled = false;
     setLoading(true);
-    Promise.all([fetchTodaysSessions(), fetchUnfinishedSessions()]).finally(() => {
-      setLoading(false);
-    });
+    Promise.all([fetchTodaysSessions(), fetchUnfinishedSessions()])
+      .then(([, unfinished]) => {
+        if (cancelled) return;
+        // Nothing to resume: skip this modal and go straight to starting a new session
+        if (unfinished && unfinished.length === 0) {
+          onClose();
+          onStartNewSession?.();
+          return;
+        }
+        setReady(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen]);
   const handleContinueSession = (sessionId: string) => {
     onSessionSelected(sessionId);
@@ -120,6 +143,8 @@ const SessionsModal = ({
   const hasUnfinished = unfinishedSessions.length > 0;
   const hasToday = sessions.length > 0;
   if (!isOpen) return null;
+  // Stay hidden until we know there is something to show (no flash of an empty modal)
+  if (!ready) return null;
   return createPortal(<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)] relative">
         <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">

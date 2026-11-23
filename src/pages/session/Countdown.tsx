@@ -1,4 +1,4 @@
-import { Bell, BellOff, Check, Pause, Pencil, Play, RefreshCw, RefreshCwOff } from 'lucide-react';
+import { Bell, BellOff, Check, Pause, Pencil, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import SectionTitle from '@/components/ui/SectionTitle';
@@ -978,12 +978,27 @@ const Countdown: React.FC<CountdownProps> = ({
               </button> : <button onClick={() => handlePlayPause()} disabled={calculateSeconds(baselineTimeRef.current) === 0} className="timer-ctrl-btn timer-ctrl-btn-countdown" aria-label="Start countdown">
                 <Play size={18} />
               </button>}
+            <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset countdown" title="Reset">
+              <RotateCcw size={18} />
+            </button>
           </div>
           <div className="flex gap-1 shrink-0">
             <button onClick={() => handleTimeAdjustment(900)} className="timer-adjust-btn" aria-label="Add 15 minutes">+15</button>
             <button onClick={() => handleTimeAdjustment(1800)} className="timer-adjust-btn" aria-label="Add 30 minutes">+30</button>
           </div>
         </>}
+        {(isSynced || syncCountdownWithTimer) && <button
+          onClick={() => {
+            handleReset();
+            // Synced: tell the study timer and pomodoro to reset as well
+            window.dispatchEvent(new CustomEvent('resetTimerSync', { detail: { baseTimestamp: Date.now() } }));
+          }}
+          className="timer-ctrl-btn"
+          aria-label="Reset countdown"
+          title="Reset"
+        >
+          <RotateCcw size={18} />
+        </button>}
       </div>}
     </div>;
 };

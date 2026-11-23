@@ -100,11 +100,18 @@ const useTheme = () => {
     if (isLoggedIn) {
       setShowWelcomeModal(false);
       setShowThemeSelectionModal(false);
-      setShowAccentColorModal(false);
       setShowLoginModal(false);
       localStorage.setItem("hasSeenLoginModal", "true");
     }
   }, [isLoggedIn]);
+
+  // After signing in, let new accounts pick their accent colour (once)
+  useEffect(() => {
+    if (isAuthLoading || !isLoggedIn) return;
+    if (localStorage.getItem("hasSeenAccentColorModal")) return;
+    const timer = setTimeout(() => setShowAccentColorModal(true), 600);
+    return () => clearTimeout(timer);
+  }, [isAuthLoading, isLoggedIn]);
 
   // Función para aplicar el tema
   const applyTheme = useCallback((theme: Theme) => {
@@ -200,12 +207,6 @@ const useTheme = () => {
   const handleCloseWelcome = () => {
     setShowWelcomeModal(false);
     localStorage.setItem("hasSeenWelcomeModal", "true");
-    // Automatically show accent color modal after a short delay
-    setTimeout(() => {
-      if (!localStorage.getItem("hasSeenAccentColorModal")) {
-        setShowAccentColorModal(true);
-      }
-    }, 0);
   };
 
   const handleCloseThemeSelection = () => {
@@ -358,7 +359,7 @@ const useTheme = () => {
     accentPalette,
     showWelcomeModal: !isAuthLoading && !isLoggedIn && showWelcomeModal,
     showThemeSelectionModal: !isAuthLoading && !isLoggedIn && showThemeSelectionModal,
-    showAccentColorModal: !isAuthLoading && !isLoggedIn && showAccentColorModal,
+    showAccentColorModal: !isAuthLoading && isLoggedIn && showAccentColorModal,
     showLoginModal: !isAuthLoading && !isLoggedIn && showLoginModal,
     showTour,
     handleCloseWelcome,

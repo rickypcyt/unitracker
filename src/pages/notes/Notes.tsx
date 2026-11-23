@@ -307,7 +307,7 @@ const Notes: React.FC = () => {
       <React.Fragment>
         {isDesktop ? (
           /* Obsidian-style two-pane layout: file tree left, editor right */
-          <div className="flex h-[calc(100dvh-var(--navbar-h))] w-full overflow-hidden">
+          <div className="flex h-[calc(100dvh-var(--navbar-h)-var(--demo-banner-h,0px))] w-full overflow-hidden">
             <aside className="relative h-full flex-shrink-0 border-r border-[var(--border-primary)]" style={{ width: sidebarWidth }}>
               <NotesSidepanel
                 notes={notesToShow}
@@ -358,7 +358,7 @@ const Notes: React.FC = () => {
         ) : (
         <div className="w-full relative">
         {/* Main Content Container */}
-        <div className="h-[calc(100dvh-var(--navbar-h))] w-full overflow-hidden">
+        <div className="h-[calc(100dvh-var(--navbar-h)-var(--demo-banner-h,0px))] w-full overflow-hidden">
           {selectedNote ? (
             <NoteView
               note={selectedNote}

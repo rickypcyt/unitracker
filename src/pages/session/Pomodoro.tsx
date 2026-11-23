@@ -1,4 +1,4 @@
-import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff } from 'lucide-react';
+import { Bell, BellOff, MoreVertical, Pause, Play, RefreshCw, RefreshCwOff, RotateCcw } from 'lucide-react';
 // Pomodoro.tsx - Refactored
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppStore, usePomodoroModes, useUiActions } from '@/store/appStore';
@@ -778,20 +778,18 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
       localStorage.removeItem('pomodoroState');
       localStorage.removeItem('pomodoroIsRunning');
     }
-    if (!fromSync) {
+    // Only broadcast when synced: an unsynced Pomodoro reset must not stop the study timer
+    if (!fromSync && syncPomodoroWithTimer) {
       window.dispatchEvent(new CustomEvent('resetTimerSync', {
         detail: {
           baseTimestamp: now
         }
       }));
-      // Always emit resetCountdownSync when Pomodoro is synced to ensure all timers reset together
-      if (syncPomodoroWithTimer) {
-        window.dispatchEvent(new CustomEvent('resetCountdownSync', {
-          detail: {
-            baseTimestamp: now
-          }
-        }));
-      }
+      window.dispatchEvent(new CustomEvent('resetCountdownSync', {
+        detail: {
+          baseTimestamp: now
+        }
+      }));
     }
   }, [currentModeConfig, syncPomodoroWithTimer, resetPomodoroCount]);
   const handleModeChange = useCallback((index: number) => {
@@ -1372,6 +1370,9 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
                 </button> : <button onClick={() => handleStop()} className="timer-ctrl-btn timer-ctrl-btn-pomo" aria-label="Pause timer">
                   <Pause size={18} />
                 </button>}
+              <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset">
+                <RotateCcw size={18} />
+              </button>
             </div>
             <div className="flex gap-1 shrink-0">
               {[300, 600].map(adj => <button key={adj} onClick={() => handleTimeAdjustment(adj)} className="timer-adjust-btn" aria-label={`Add ${adj / 60} minutes`}>
@@ -1379,6 +1380,9 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
                 </button>)}
             </div>
           </>}
+        {syncPomodoroWithTimer && <button onClick={() => handleReset()} className="timer-ctrl-btn" aria-label="Reset timer" title="Reset">
+            <RotateCcw size={18} />
+          </button>}
       </div>}
 
       

@@ -110,6 +110,21 @@ const TasksPage = memo(() => {
     return () => window.removeEventListener('openWorkspaceModal', handleOpenWorkspaceModal);
   }, []);
 
+  // Arriving from the session page's "+" button: open the new-task flow right away
+  const addTaskRef = useRef(handleAddTask);
+  addTaskRef.current = handleAddTask;
+  useEffect(() => {
+    if (!isVisible) return;
+    let pendingOpen = false;
+    try {
+      pendingOpen = sessionStorage.getItem('openAddTaskOnMount') === '1';
+      if (pendingOpen) sessionStorage.removeItem('openAddTaskOnMount');
+    } catch { /* storage unavailable */ }
+    if (!pendingOpen) return;
+    const timer = setTimeout(() => addTaskRef.current(), 400);
+    return () => clearTimeout(timer);
+  }, [isVisible]);
+
   const handleColumnCountChange = (count: ColumnCount) => {
     setColumnCount(count);
     localStorage.setItem('taskPageColumnCount', String(count));

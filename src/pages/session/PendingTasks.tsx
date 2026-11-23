@@ -1,8 +1,9 @@
-import { CalendarDays, CheckCircle2, ChevronDown, ChevronRight, Circle, EyeOff, Layers, ListTodo, Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { CalendarDays, CheckCircle2, ChevronDown, Plus, ChevronRight, Circle, EyeOff, Layers, ListTodo, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { addWeeks, differenceInDays, endOfWeek, format, isBefore, isToday, isTomorrow, isValid, parseISO, startOfDay } from 'date-fns';
 import { track } from '@vercel/analytics';
 import { useAuth } from '@/hooks/auth/useAuth';
+import { useNavigation } from '@/navigation/NavigationContext';
 import { useLocalStorage } from '@/hooks/common/useLocalStorage';
 import { useSessionTaskActions } from '@/hooks/session/useSessionTaskActions';
 import { useFetchTasks, useTasks, useWorkspace } from '@/store/appStore';
@@ -49,6 +50,7 @@ const BUCKETS: { id: BucketId; label: string; tone: string }[] = [
 const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
   const { isLoggedIn, isAuthLoading, user } = useAuth();
   const { t } = useTranslation();
+  const { navigateTo } = useNavigation();
   const { busy, editTask, toggleTask, requestDelete, modals } = useSessionTaskActions('pending');
   const [ignoredByUser, setIgnoredByUser] = useLocalStorage<Record<string, string[]>>('session.pendingTasks.ignored', {});
   const userKey = user?.id || 'demo';
@@ -68,6 +70,11 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
   const showWorkspace =!!currentWorkspace && (currentWorkspace.isAll || currentWorkspace.id === 'all');
   const workspaceNames = useMemo(() => new Map((workspaces || []).map((w: any) => [w.id, w.name as string])), [workspaces]);
   const fetchTasks = useFetchTasks();
+  // "+" jumps to the Tasks page and opens the new-task form there
+  const goAddTask = () => {
+    try { sessionStorage.setItem('openAddTaskOnMount', '1'); } catch { /* storage unavailable */ }
+    navigateTo('tasks');
+  };
   const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : getDemoTasks()).filter(task =>
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   )), [isLoggedIn, tasks, currentWorkspace]);
@@ -190,6 +197,16 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
           <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
           <span className="shrink-0 text-xs font-semibold rounded-full px-2 py-0.5 bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{pending.length}</span>
         </div>
+        <ActionTooltip content={t('session.pendingTasks.addTask', { defaultValue: 'Add task' })}>
+          <button
+            type="button"
+            onClick={goAddTask}
+            aria-label={t('session.pendingTasks.addTask', { defaultValue: 'Add task' })}
+            className="shrink-0 flex h-9 w-9 items-center justify-center rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+          >
+            <Plus size={18} />
+          </button>
+        </ActionTooltip>
       </div>
       {hiddenCount > 0 && (
         <ActionTooltip content={t('session.pendingTasks.restoreIgnoredTooltip')}>
@@ -206,6 +223,18 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
       )}
       {(isAuthLoading || (isLoggedIn && loading)) && pending.length === 0 ? (
         <p role="status" className="flex-1 py-6 flex items-center justify-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
+      ) : isLoggedIn && tasks.length === 0 ? (
+        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-4 text-center text-[var(--text-secondary)]">
+          <ListTodo size={28} className="text-[var(--accent-primary)]" />
+          <p className="max-w-xs text-sm">{t('session.pendingTasks.emptyFirst', { defaultValue: 'No tasks yet. Go to the Tasks page to create your first task.' })}</p>
+          <button
+            type="button"
+            onClick={() => navigateTo('tasks')}
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+          >
+            {t('session.pendingTasks.goToTasks', { defaultValue: 'Go to Tasks' })}
+          </button>
+        </div>
       ) : pending.length === 0 ? (
         <div className="flex-1 py-6 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)]">
           <CheckCircle2 size={24} className="text-[var(--accent-primary)]" />

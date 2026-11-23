@@ -7,7 +7,7 @@
     "hero": {
       "eyebrow": "// Free study app for Indian students",
       "title": "Study smarter for JEE, NEET & boards.",
-      "subtitle": "Pomodoro timer, task manager, calendar and study analytics — built for long preparation hours. Free forever, works offline on any phone.",
+      "subtitle": "Pomodoro timer, task manager, calendar and study analytics — built for long preparation hours. Free, works offline on any phone.",
       "cta": "Start for free",
       "share": "Share on WhatsApp",
       "shareMessage": "Found this free study app — Pomodoro timer, tasks & analytics for JEE/NEET/boards prep. No ads, works offline: https://unitracker.me/india"
@@ -89,7 +89,7 @@
     "cta": {
       "eyebrow": "// Start now",
       "title": "Tracking in 30 seconds.",
-      "subtitle": "Free forever · No ads · Open source",
+      "subtitle": "Free · No ads · Open source",
       "button": "Get started"
     },
     "footer": {
@@ -116,7 +116,7 @@
       "badge": "Free & open source · No ads",
       "ctaSecondary": "Try the timers",
       "trust": [
-        "Free forever",
+        "Free",
         "No ads",
         "Works offline",
         "Open source"
@@ -161,7 +161,7 @@
     "cta": {
       "eyebrow": "// Start now",
       "title": "Your best semester starts today.",
-      "subtitle": "Free forever · No ads · Open source",
+      "subtitle": "Free · No ads · Open source",
       "button": "Start for free"
     },
     "footer": {
@@ -345,6 +345,9 @@
       "today": "Today"
     },
     "pendingTasks": {
+      "emptyFirst": "No tasks yet. Go to the Tasks page to create your first task.",
+      "goToTasks": "Go to Tasks",
+      "addTask": "Add task",
       "title": "Pending Tasks",
       "newTask": "New task",
       "newTaskTooltip": "Create a new task in your current workspace.",
@@ -718,6 +721,10 @@
     "createEvent": "Create event"
   },
   "demo": {
+    "banner": {
+      "text": "This is a demo preview. Please sign up to start using the app.",
+      "cta": "Sign up"
+    },
     "suffix": "(demo)",
     "workspaces": {
       "university": "University",

@@ -488,7 +488,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-semibold hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
             >
               <Plus size={18} />
-              Create your first task
+              Click here to create your first task
             </button>
           ) : (
             <p className="text-sm text-[var(--text-secondary)] opacity-70">

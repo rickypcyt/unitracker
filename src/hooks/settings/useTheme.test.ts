@@ -29,6 +29,20 @@ describe('useTheme', () => {
     expect(result.current.showWelcomeModal).toBe(true);
   });
 
+  it('offers the accent colour only after signing in', () => {
+    vi.useFakeTimers();
+    const { result, rerender } = renderHook(() => useTheme());
+    auth.isAuthLoading = false;
+    rerender();
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(result.current.showAccentColorModal).toBe(false);
+    auth.isLoggedIn = true;
+    rerender();
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(result.current.showAccentColorModal).toBe(true);
+    vi.useRealTimers();
+  });
+
   it('shares and persists accent changes across hook instances', () => {
     const { result } = renderHook(() => ({ first: useTheme(), second: useTheme() }));
     act(() => result.current.first.setAccentPalette('#BF5AF2'));

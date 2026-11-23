@@ -14,7 +14,7 @@ const Navbar = () => {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-0 h-[var(--navbar-h)] flex-shrink-0 z-[10000] bg-[var(--bg-primary)] border-b border-[var(--border-primary)] grid grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center page-gutter gap-2 lg:gap-6" data-tour="navbar">
+    <header className="sticky top-[var(--demo-banner-h,0px)] h-[var(--navbar-h)] flex-shrink-0 z-[10000] bg-[var(--bg-primary)] border-b border-[var(--border-primary)] grid grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center page-gutter gap-2 lg:gap-6" data-tour="navbar">
       <button onClick={() => navigateTo('session')} className="justify-self-start text-lg font-bold shrink-0 select-none min-h-11 flex items-center" aria-label={t('nav.home')}>
         <span className="text-[var(--text-primary)]">U<span className="hidden lg:inline">ni</span></span>
         <span className="text-[var(--accent-primary)]">T<span className="hidden lg:inline">racker</span></span>

@@ -196,10 +196,11 @@ export const AssignmentCard = ({
           <div className="flex items-center gap-1 flex-shrink-0 ml-2">
             <button
               onClick={onAddTask}
-              className="p-1 rounded-md text-[var(--text-secondary)] active:scale-95"
+              className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               title="Add task"
+              aria-label="Add task"
             >
-              <Plus size={15} />
+              <Plus size={22} strokeWidth={2} />
             </button>
             <ColumnDropdownMenu
               assignment={assignment}

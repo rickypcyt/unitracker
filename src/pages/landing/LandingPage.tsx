@@ -7,12 +7,14 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowRight,
-  Check,
   ChevronDown,
   ChevronRight,
   BookOpen,
   Bug,
   Github,
+  Gift,
+  EyeOff,
+  Code2,
   BarChart3,
   CalendarDays,
   ListTodo,
@@ -34,6 +36,7 @@ const features = [
 ] as const;
 
 const stepIcons = [ListTodo, Timer, TrendingUp] as const;
+const trustIcons = [Gift, EyeOff, WifiOff, Code2] as const;
 
 // Neon-style section heading: mono eyebrow + big left-aligned title
 const SectionHeading = ({ children, sub, eyebrow, center = false }: { children: ReactNode; sub?: ReactNode; eyebrow?: ReactNode; center?: boolean }) => (
@@ -49,8 +52,6 @@ const SectionHeading = ({ children, sub, eyebrow, center = false }: { children: 
 // Primary CTA: accent outline, no fill
 const primaryBtn =
   'inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold text-[15px] hover:bg-[var(--accent-primary)]/10 hover:-translate-y-0.5 transition-all';
-const ghostBtn =
-  'inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 text-white/80 font-medium text-[15px] hover:bg-white/[0.06] hover:text-white transition-colors';
 
 // Big framed app window — the real timers living inside it
 const AppWindow = ({ children }: { children: ReactNode }) => (
@@ -204,31 +205,31 @@ const LandingPage = () => {
 
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.06]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex items-center justify-between">
+            <div className="flex items-center gap-10">
+              <Link to="/" className="font-heading text-xl sm:text-2xl font-bold tracking-tight">
                 <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
               </Link>
-              <div className="hidden md:flex items-center gap-6 text-[13px] text-white/55">
+              <div className="hidden md:flex items-center gap-8 text-[15px] text-white/60">
                 <a href="#features" className="hover:text-white transition-colors">{t('landing.nav.features')}</a>
                 <a href="#demo" className="hover:text-white transition-colors">{t('landing.nav.demo')}</a>
                 <a href="#faq" className="hover:text-white transition-colors">{t('landing.nav.faq')}</a>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <LanguageToggle langs={['en', 'es']} />
               <a
                 href="https://github.com/rickypcyt/unitracker"
                 target="_blank"
                 rel="noopener"
-                className="hidden sm:flex px-3 py-1.5 rounded-md text-[13px] font-medium text-white/50 hover:text-white transition-colors items-center gap-1.5"
+                className="hidden sm:flex px-3 py-2 rounded-md text-[15px] font-medium text-white/60 hover:text-white transition-colors items-center gap-2"
               >
-                <Github className="w-3.5 h-3.5" /> {t('landing.nav.github')}
+                <Github className="w-4 h-4" /> {t('landing.nav.github')}
               </a>
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                className="text-[15px] font-semibold px-5 py-2 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 {t('landing.nav.getStarted')}
               </Link>
@@ -238,31 +239,36 @@ const LandingPage = () => {
 
         {/* Hero — centered headline, two CTAs, then the app window */}
         <section className="relative">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
-            <div className="animate-um-rise flex flex-col items-start max-w-4xl">
-              <h1 className="text-white text-[2.9rem] sm:text-7xl lg:text-[5.5rem] font-heading font-semibold mb-6 tracking-[-0.045em] leading-[0.98]">
-                {t('landing.hero.title1')}<br />
-                <span className="text-[var(--accent-primary)]">{t('landing.hero.title2')}</span>
-              </h1>
-              <p className="text-base sm:text-xl text-white/55 max-w-xl mb-9 leading-relaxed">
-                {t('landing.hero.subtitle')}
-              </p>
-              <div className="flex flex-wrap items-center gap-3 mb-8">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10 pt-20 sm:pt-28">
+            <div className="animate-um-rise grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16">
+              <div className="flex flex-col items-start">
+                <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-heading font-semibold mb-5 tracking-[-0.045em] leading-[0.98]">
+                  {t('landing.hero.title1')}<br />
+                  <span className="text-[var(--accent-primary)]">{t('landing.hero.title2')}</span>
+                </h1>
+                <p className="text-base sm:text-xl text-white/55 max-w-xl mb-9 leading-relaxed">
+                  {t('landing.hero.subtitle')}
+                </p>
                 <Link to="/app" onClick={startOnboarding} className={primaryBtn}>
                   {t('landing.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <a href="#demo" className={ghostBtn}>
-                  {t('landing.hero.ctaSecondary')}
-                  <ChevronDown className="w-4 h-4" />
-                </a>
               </div>
-              <ul className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-white/40">
-                {(t('landing.hero.trust', { returnObjects: true }) as unknown as string[]).map((item) => (
-                  <li key={item} className="inline-flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[var(--accent-primary)]" strokeWidth={3} /> {item}
-                  </li>
-                ))}
+
+              {/* Trust points as cards */}
+              <ul className="grid grid-cols-2 gap-3">
+                {(t('landing.hero.trust', { returnObjects: true }) as unknown as string[]).map((item, i) => {
+                  const Icon = trustIcons[i] ?? Gift;
+                  return (
+                    <li
+                      key={item}
+                      className="group flex min-h-[8.5rem] flex-col justify-between rounded-xl border border-white/10 bg-white/[0.02] p-5 transition-colors hover:border-[var(--accent-primary)]/50 hover:bg-white/[0.04]"
+                    >
+                      <Icon className="h-6 w-6 text-[var(--accent-primary)]" strokeWidth={1.75} />
+                      <span className="mt-6 text-lg font-semibold leading-tight tracking-tight text-white">{item}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
@@ -280,7 +286,7 @@ const LandingPage = () => {
 
         {/* Three-up value row */}
         <section className="mt-24 sm:mt-32">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10">
             <ol className="grid md:grid-cols-3 border border-white/10 rounded-xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-white/10">
               {(t('landing.how.steps', { returnObjects: true }) as unknown as { title: string; desc: string }[]).map((s, i) => {
                 const Icon = stepIcons[i] ?? Timer;
@@ -307,7 +313,7 @@ const LandingPage = () => {
 
         {/* Features — one unified list with big headers */}
         <section id="features" className="mt-24 sm:mt-32 scroll-mt-20">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10">
             <SectionHeading eyebrow={t('landing.nav.features')}>{t('landing.features.title')}</SectionHeading>
             {/* Bento grid with shared 1px borders */}
             <div className="mt-10 sm:mt-14 grid md:grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10">
@@ -341,7 +347,7 @@ const LandingPage = () => {
 
         {/* FAQ */}
         <section id="faq" className="mt-28 sm:mt-40 scroll-mt-20">
-          <div className="max-w-3xl mx-auto px-5 sm:px-8">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-10">
             <SectionHeading center>{t('landing.faq.title')}</SectionHeading>
             <div className="mt-12 divide-y divide-white/[0.08] border-y border-white/[0.08]">
               {faqItems.map((item) => (
@@ -364,7 +370,7 @@ const LandingPage = () => {
             className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0 w-[900px] h-[420px] opacity-[0.18] blur-3xl"
             style={{ background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }}
           />
-          <div className="relative max-w-6xl mx-auto px-5 sm:px-8 text-center">
+          <div className="relative max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10 text-center">
             <SectionHeading center sub={t('landing.cta.subtitle')}>{t('landing.cta.title')}</SectionHeading>
             <Link
               to="/app"
@@ -396,7 +402,7 @@ const LandingPage = () => {
 
         {/* Footer — multi-column */}
         <footer className="mt-24 border-t border-white/[0.06]">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-[13px]">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-[13px]">
             <div className="col-span-2 md:col-span-1">
               <span className="font-heading text-[15px] font-bold tracking-tight">
                 <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
@@ -429,7 +435,7 @@ const LandingPage = () => {
               </ul>
             </div>
           </div>
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-6 border-t border-white/[0.06] text-xs text-white/35">
+          <div className="max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-10 py-6 border-t border-white/[0.06] text-xs text-white/35">
             {t('landing.footer.copyright')}
           </div>
         </footer>

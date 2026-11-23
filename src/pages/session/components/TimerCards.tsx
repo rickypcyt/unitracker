@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import Countdown from "@/pages/session/Countdown";
 import Pomodoro from "@/pages/session/Pomodoro";
 import StudyTimer from "@/pages/session/StudyTimer";
+import DemoStudyTimer from "@/pages/landing/DemoStudyTimer";
 
 const card =
   "timer-card relative min-w-0 flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 sm:p-4 2xl:aspect-square";
@@ -27,7 +28,7 @@ type Props = {
   isRunning?: boolean;
   /** Extra classes for the grid wrapper (e.g. `2xl:contents` to place the cards in a parent grid) */
   className?: string;
-  /** Demo mode: pomodoro ignores the user's saved state (used on the landing page) */
+  /** Demo mode (landing page): pomodoro ignores saved state and the study timer is an in-memory example session */
   fresh?: boolean;
 };
 
@@ -106,7 +107,7 @@ const MobileTimer = ({ isSynced, isRunning, fresh }: Omit<Props, "className">) =
       </div>
 
       <div className={`${card} 2xl:aspect-auto`}>
-        <StudyTimer {...syncProps} showMiniPlayerButton />
+        {fresh ? <DemoStudyTimer /> : <StudyTimer {...syncProps} showMiniPlayerButton />}
       </div>
 
       {extra > 0 && (
@@ -147,7 +148,7 @@ const TimerCards = ({ isSynced, isRunning, className = "", fresh = false }: Prop
       </div>
 
       <div className={card}>
-        <StudyTimer {...syncProps} showMiniPlayerButton />
+        {fresh ? <DemoStudyTimer /> : <StudyTimer {...syncProps} showMiniPlayerButton />}
       </div>
 
       <div className={card}>

@@ -2717,6 +2717,26 @@ input.no-spinners {
   container-type: inline-size;
 }
 
+/* Study timer: the four side buttons sit in the corners of the ring
+   (lap + reset on the left, finish + cancel on the right) at any card width. */
+.timer-card .study-side-left,
+.timer-card .study-side-right {
+  top: -0.25rem;
+  bottom: -0.25rem;
+  margin: 0;
+  transform: none;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.timer-card .study-side-left {
+  right: auto;
+  left: -3rem;
+}
+.timer-card .study-side-right {
+  left: auto;
+  right: -3rem;
+}
+
 @container (max-width: 300px) {
   .timer-card .timer-adjust-btn {
     width: 2rem;
@@ -2736,10 +2756,12 @@ input.no-spinners {
   /* Study timer: lap / finish / cancel move from beside the ring into its corners */
   .timer-card .study-side-left,
   .timer-card .study-side-right {
-    top: auto;
+    top: -0.25rem;
     bottom: -0.25rem;
     margin: 0;
     transform: none;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .timer-card .study-side-left {
     right: auto;

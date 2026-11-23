@@ -7,7 +7,7 @@
     "hero": {
       "eyebrow": "// App de estudio gratuita para estudiantes de India",
       "title": "Estudia mejor para JEE, NEET y exámenes finales.",
-      "subtitle": "Temporizador Pomodoro, gestor de tareas, calendario y analíticas de estudio — pensado para largas horas de preparación. Gratis para siempre, funciona offline en cualquier teléfono.",
+      "subtitle": "Temporizador Pomodoro, gestor de tareas, calendario y analíticas de estudio — pensado para largas horas de preparación. Gratis, funciona offline en cualquier teléfono.",
       "cta": "Empezar gratis",
       "share": "Compartir en WhatsApp",
       "shareMessage": "Encontré esta app de estudio gratuita — temporizador Pomodoro, tareas y analíticas para preparar JEE/NEET/exámenes. Sin anuncios, funciona offline: https://unitracker.me/india"
@@ -89,7 +89,7 @@
     "cta": {
       "eyebrow": "// Empieza ahora",
       "title": "Registrando en 30 segundos.",
-      "subtitle": "Gratis para siempre · Sin anuncios · Open source",
+      "subtitle": "Gratis · Sin anuncios · Open source",
       "button": "Empezar"
     },
     "footer": {
@@ -116,7 +116,7 @@
       "badge": "Gratis y open source · Sin anuncios",
       "ctaSecondary": "Probar los temporizadores",
       "trust": [
-        "Gratis para siempre",
+        "Gratis",
         "Sin anuncios",
         "Funciona offline",
         "Open source"
@@ -161,7 +161,7 @@
     "cta": {
       "eyebrow": "// Empieza ahora",
       "title": "Tu mejor semestre empieza hoy.",
-      "subtitle": "Gratis para siempre · Sin anuncios · Open source",
+      "subtitle": "Gratis · Sin anuncios · Open source",
       "button": "Empezar gratis"
     },
     "footer": {
@@ -345,6 +345,9 @@
       "today": "Hoy"
     },
     "pendingTasks": {
+      "emptyFirst": "Aún no hay tareas. Ve a la página de Tareas para crear tu primera tarea.",
+      "goToTasks": "Ir a Tareas",
+      "addTask": "Añadir tarea",
       "title": "Tareas pendientes",
       "newTask": "Nueva tarea",
       "newTaskTooltip": "Crea una tarea nueva en tu workspace actual.",
@@ -718,6 +721,10 @@
     "createEvent": "Crear evento"
   },
   "demo": {
+    "banner": {
+      "text": "Esta es una vista previa de demostración. Regístrate para empezar a usar la app.",
+      "cta": "Registrarme"
+    },
     "suffix": "(demo)",
     "workspaces": {
       "university": "Universidad",

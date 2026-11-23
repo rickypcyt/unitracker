@@ -1,5 +1,5 @@
 import SectionTitle from "@/components/ui/SectionTitle";
-import { Check, Flag, MoreVertical, Pause, PictureInPicture, Play, X } from "lucide-react";
+import { Check, Flag, MoreVertical, Pause, PictureInPicture, Play, RotateCcw, X } from "lucide-react";
 import { MINI_PLAYER_OPEN_EVENT } from "@/utils/studyTimerRemote";
 import { createPortal } from "react-dom";
 import { SYNC_EVENTS, useEmitSyncEvents } from "@/hooks/session/useStudySync";
@@ -1159,6 +1159,14 @@ const StudyTimer = ({
                     aria-label={t("session.studyTimer.addLapNote")}
                   >
                     <Flag size={18} className={lapInputOpen ? 'text-[#0A84FF]' : ''} />
+                  </button>
+                  <button
+                    onClick={() => reset()}
+                    className="timer-ctrl-btn"
+                    aria-label="Reset timer"
+                    title="Reset"
+                  >
+                    <RotateCcw size={18} />
                   </button>
                 </div>
               )}

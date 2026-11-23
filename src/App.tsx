@@ -39,6 +39,7 @@ import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";import FloatingTimerPlayer from "@/pages/session/components/FloatingTimerPlayer";
+import DemoBanner from "@/components/layout/DemoBanner";
 import Navbar from "@/components/layout/Sidebar";
 
 // Preload map: import functions for each page to enable hover-based preloading
@@ -152,6 +153,7 @@ const PageContent: FC = () => {
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-clip flex flex-col">
+      <DemoBanner />
       <Navbar />
       <main className="min-w-0 flex-1 relative">
         <Suspense fallback={<PageLoader />}>
@@ -331,6 +333,16 @@ const UserModalGate: FC = () => {
   );
 };
 
+// Cheap synchronous hint (no network): an OAuth redirect in progress or a stored Supabase session
+const likelySignedIn = (): boolean => {
+  try {
+    if (window.location.hash.includes("access_token") || window.location.search.includes("code=")) return true;
+    return Object.keys(localStorage).some((key) => key.startsWith("sb-") && key.endsWith("-auth-token"));
+  } catch {
+    return false;
+  }
+};
+
 const RootRoute: FC = () => {
   const { isLoggedIn, isAuthLoading } = useAuth();
 
@@ -341,7 +353,10 @@ const RootRoute: FC = () => {
     }
   }, []);
 
-  if (isAuthLoading) return <PageLoader fullScreen />;
+  // The landing page never shows a spinner: render it while auth resolves. The only time we wait
+  // behind a loader is when someone is clearly already signed in (stored session) or is returning
+  // from an OAuth redirect, so they don't see the landing flash before the app opens.
+  if (isAuthLoading && likelySignedIn()) return <PageLoader fullScreen />;
   return isLoggedIn ? <Navigate to={PAGE_PATHS.session} replace /> : <LandingPage />;
 };
 
