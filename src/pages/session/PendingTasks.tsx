@@ -63,7 +63,8 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
       return { ...previous, [userKey]: current.includes(key) ? current.filter(k => k !== key) : [...current, key] };
     });
   };
-  const [groupBy, setGroupBy] = useLocalStorage<'date' | 'workspace'>('session.pendingTasks.groupBy', 'date');
+  // Grouping by workspace/course was removed from the UI: always group by date
+  const groupBy = 'date' as 'date' | 'workspace';
   const showWorkspace =!!currentWorkspace && (currentWorkspace.isAll || currentWorkspace.id === 'all');
   const workspaceNames = useMemo(() => new Map((workspaces || []).map((w: any) => [w.id, w.name as string])), [workspaces]);
   const fetchTasks = useFetchTasks();
@@ -188,25 +189,6 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
           </div>
           <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
           <span className="shrink-0 text-xs font-semibold rounded-full px-2 py-0.5 bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{pending.length}</span>
-        </div>
-        <div role="tablist" aria-label={t('session.pendingTasks.groupBy', { defaultValue: 'Group by' })} className="flex shrink-0 items-center gap-0.5 rounded-lg bg-[var(--bg-secondary)] p-0.5">
-          {([
-            ['date', t('session.pendingTasks.byDate', { defaultValue: 'Date' })],
-            ['workspace', showWorkspace ? t('session.pendingTasks.byWorkspace', { defaultValue: 'Workspace' }) : t('session.pendingTasks.byCourse', { defaultValue: 'Course' })],
-          ] as const).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              role="tab"
-              aria-selected={groupBy === value}
-              onClick={() => setGroupBy(value)}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                groupBy === value ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
         </div>
       </div>
       {hiddenCount > 0 && (
