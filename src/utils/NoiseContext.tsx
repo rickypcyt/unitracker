@@ -214,20 +214,24 @@ class BrownNoiseNode extends BaseSoundNode {
   constructor(volume: number) {
     super(volume);
 
-    const deepBrown = new Tone.Noise("brown").start();
-    const deepFilter = new Tone.Filter(60, "lowpass", -24);
+    // Each layer owns its own band so the mix has real depth:
+    // sub (40-80 Hz) / body (120-350 Hz) / air (300-700 Hz).
+    // Sources start at random offsets so the noise loops never line up.
+    const deepBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
+    const deepFilter = new Tone.Filter(80, "lowpass", -24);
     deepFilter.Q.value = 0.2;
     this.deepGain = new Tone.Gain(0.3);
 
-    const mainBrown = new Tone.Noise("brown").start();
-    const mainFilter = new Tone.Filter(180, "lowpass", -12);
+    const mainBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
+    const mainHighpass = new Tone.Filter(120, "highpass", -12);
+    const mainFilter = new Tone.Filter(350, "lowpass", -12);
     mainFilter.Q.value = 0.3;
-    this.mainGain = new Tone.Gain(0.5);
+    this.mainGain = new Tone.Gain(0.55);
 
-    const midBrown = new Tone.Noise("brown").start();
-    const midFilter = new Tone.Filter(300, "bandpass", -12);
-    midFilter.Q.value = 0.5;
-    this.midGain = new Tone.Gain(0.15);
+    const midBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
+    const midFilter = new Tone.Filter(450, "bandpass", -12);
+    midFilter.Q.value = 0.6;
+    this.midGain = new Tone.Gain(0.3);
 
     // High frequency texture layer removed to eliminate hiss
     // const highTexture = new Tone.Noise("pink").start();
@@ -237,22 +241,23 @@ class BrownNoiseNode extends BaseSoundNode {
 
     const slowLFO = new Tone.LFO(0.015, 0.9, 1.1).start();
     const mediumLFO = new Tone.LFO(0.03, 0.95, 1.05).start();
-    // const highLFO = new Tone.LFO(0.08, 0.01, 0.03).start();
+    // Irregular drift on the air layer + on the other LFO rates so the
+    // "breathing" never repeats exactly
+    const driftLFO = new Tone.LFO(0.011, 0.8, 1.2).start();
+    const driftRate = new Tone.LFO(0.017, 0.02, 0.05).start();
+    driftRate.connect(mediumLFO.frequency);
+    driftLFO.connect(this.midGain.gain);
 
     slowLFO.connect(this.deepGain.gain);
     mediumLFO.connect(this.mainGain.gain);
-    // highLFO.connect(this.highGain.gain);
 
-    const smoothingFilter = new Tone.Filter(500, "lowpass", -12);
+    // Gentle top-end roll-off at 900 Hz keeps body in the 500-800 Hz range
+    // that small speakers can actually reproduce, without any hiss
+    const smoothingFilter = new Tone.Filter(900, "lowpass", -12);
     smoothingFilter.Q.value = 0.2;
 
-    const compressor = new Tone.Compressor({
-      threshold: -18,
-      ratio: 2,
-      attack: 0.01,
-      release: 0.5,
-      knee: 6,
-    });
+    // Limiter instead of a compressor: no pumping on a steady signal
+    const compressor = new Tone.Limiter(-6);
 
     this.outputGain = new Tone.Gain(volume * 0.4)
       .connect(smoothingFilter)
@@ -260,7 +265,7 @@ class BrownNoiseNode extends BaseSoundNode {
       .connect(AudioEngine.getInstance().getMasterOut());
 
     deepBrown.chain(deepFilter, this.deepGain, this.outputGain);
-    mainBrown.chain(mainFilter, this.mainGain, this.outputGain);
+    mainBrown.chain(mainHighpass, mainFilter, this.mainGain, this.outputGain);
     midBrown.chain(midFilter, this.midGain, this.outputGain);
     // highTexture.chain(highFilter, this.highGain, this.outputGain);
 
@@ -269,6 +274,7 @@ class BrownNoiseNode extends BaseSoundNode {
       deepFilter,
       this.deepGain,
       mainBrown,
+      mainHighpass,
       mainFilter,
       this.mainGain,
       midBrown,
@@ -276,6 +282,8 @@ class BrownNoiseNode extends BaseSoundNode {
       this.midGain,
       slowLFO,
       mediumLFO,
+      driftLFO,
+      driftRate,
       smoothingFilter,
       compressor,
       this.outputGain,
@@ -291,6 +299,11 @@ class BrownNoiseNode extends BaseSoundNode {
 class RainSoundNode extends BaseSoundNode {
   private backgroundGain: Tone.Gain;
   private topPinkGain: Tone.Gain;
+  private dropSynth: Tone.NoiseSynth;
+  private dropFilter: Tone.Filter;
+  private dropGain: Tone.Gain;
+  private dropTimers = new Set<ReturnType<typeof setTimeout>>();
+  private disposed = false;
 
   constructor(volume: number) {
     super(volume);
@@ -306,10 +319,30 @@ class RainSoundNode extends BaseSoundNode {
     backgroundFilter.Q.value = 0.4;
     this.backgroundGain = new Tone.Gain(volume * 0.5);
 
+    // Slow swell on the bed so the rain drifts between lighter and heavier.
+    // The LFO is summed onto a 0-valued gain param, so it sets the level itself.
+    const swell = new Tone.Gain(0);
+    const swellLFO = new Tone.LFO(0.02, 0.65, 1).start();
+    swellLFO.connect(swell.gain);
+
+    // The bed stays dry: sending it to the reverb is what made it smeared
     backgroundRain.connect(backgroundFilter);
-    backgroundFilter.connect(this.backgroundGain);
-    this.backgroundGain.connect(masterOut);
-    this.backgroundGain.connect(wetGain);
+    backgroundFilter.chain(swell, this.backgroundGain, masterOut);
+
+    // Individual drops: very short band-passed noise bursts at random
+    // pitches and times. Drops (not the bed) feed the reverb.
+    this.dropFilter = new Tone.Filter(2500, "bandpass");
+    this.dropFilter.Q.value = 1.2;
+    this.dropGain = new Tone.Gain(volume * 0.9);
+    this.dropSynth = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.0005, decay: 0.012, sustain: 0 },
+    });
+    this.dropSynth.chain(this.dropFilter, this.dropGain);
+    this.dropGain.connect(masterOut);
+    this.dropGain.connect(wetGain);
+    this.scheduleDrop(true);
+    this.scheduleDrop(false);
 
     // Subtle high-frequency pink layer for texture
     const topPinkNoise = new Tone.Noise("pink").start();
@@ -324,7 +357,12 @@ class RainSoundNode extends BaseSoundNode {
     [
       backgroundRain,
       backgroundFilter,
+      swell,
+      swellLFO,
       this.backgroundGain,
+      this.dropSynth,
+      this.dropFilter,
+      this.dropGain,
       topPinkNoise,
       topBand,
       topLow,
@@ -333,10 +371,44 @@ class RainSoundNode extends BaseSoundNode {
     ].forEach((node) => this.registerNode(node));
   }
 
+  // fine = dense light drizzle, coarse = sparser heavy drops
+  private scheduleDrop(fine: boolean): void {
+    if (this.disposed) return;
+    const wait = fine ? 12 + Math.random() * 60 : 120 + Math.random() * 420;
+    const timer = setTimeout(() => {
+      this.dropTimers.delete(timer);
+      if (this.disposed) return;
+      if (this.volume > 0 && Tone.context.state === "running") {
+        try {
+          this.dropFilter.frequency.value = fine
+            ? 1800 + Math.random() * 2400
+            : 900 + Math.random() * 1300;
+          this.dropSynth.triggerAttackRelease(
+            fine ? 0.004 : 0.008,
+            Tone.now(),
+            (fine ? 0.15 : 0.35) * (0.4 + Math.random() * 0.6)
+          );
+        } catch {
+          // node disposed mid-tick
+        }
+      }
+      this.scheduleDrop(fine);
+    }, wait);
+    this.dropTimers.add(timer);
+  }
+
+  override dispose(): void {
+    this.disposed = true;
+    this.dropTimers.forEach((t) => clearTimeout(t));
+    this.dropTimers.clear();
+    super.dispose();
+  }
+
   setVolume(volume: number): void {
     this.volume = volume;
     const isMuted = volume === 0;
 
+    this.setGainWithRamp(this.dropGain, isMuted ? 0 : volume * 0.9);
     this.setGainWithRamp(this.backgroundGain, isMuted ? 0 : volume * 0.5);
     this.setGainWithRamp(this.topPinkGain, isMuted ? 0 : volume * 0.075);
   }
@@ -347,6 +419,31 @@ class OceanWavesNode extends BaseSoundNode {
   private outputGain: Tone.Gain;
   private componentGains: Map<string, Tone.Gain> = new Map();
   private noiseSources: Map<string, Tone.Noise> = new Map();
+  private drifting: { lfo: Tone.LFO; base: number }[] = [];
+  private driftTimer: ReturnType<typeof setTimeout> | null = null;
+  private disposed = false;
+
+  private scheduleDrift(): void {
+    if (this.disposed) return;
+    this.driftTimer = setTimeout(() => {
+      if (this.disposed) return;
+      try {
+        this.drifting.forEach(({ lfo, base }) => {
+          // ±40% around the base rate, glided over a few seconds
+          lfo.frequency.rampTo(base * (0.6 + Math.random() * 0.8), 4 + Math.random() * 4);
+        });
+      } catch {
+        // node disposed mid-tick
+      }
+      this.scheduleDrift();
+    }, 5000 + Math.random() * 6000);
+  }
+
+  override dispose(): void {
+    this.disposed = true;
+    if (this.driftTimer) clearTimeout(this.driftTimer);
+    super.dispose();
+  }
 
   constructor(volume: number) {
     super(volume);
@@ -380,6 +477,14 @@ class OceanWavesNode extends BaseSoundNode {
     this.createBreakingWaves(this.outputGain);
     this.createFoam(this.outputGain);
     this.createSplashes(this.outputGain);
+
+    // Irregular swell timing: the main wave cycles get re-tuned at random
+    // so no two waves have the same period
+    this.drifting.push(
+      { lfo: primaryWaveLFO, base: 0.06 },
+      { lfo: secondaryWaveLFO, base: 0.12 }
+    );
+    this.scheduleDrift();
 
     this.registerNode(this.masterGain);
     this.registerNode(wetGain);
@@ -444,7 +549,8 @@ class OceanWavesNode extends BaseSoundNode {
 
     const washCycleLFO = new Tone.LFO(0.06, 0, 1).start();
     const washFrequencyLFO = new Tone.LFO(0.06, 200, 600).start();
-    
+    this.drifting.push({ lfo: washCycleLFO, base: 0.06 });
+
     washCycleLFO.connect(gain.gain);
     washFrequencyLFO.connect(filter.frequency);
 
@@ -464,6 +570,7 @@ class OceanWavesNode extends BaseSoundNode {
 
     const lfo = new Tone.LFO(0.12, 0.05, 0.2).start();
     lfo.connect(gain.gain);
+    this.drifting.push({ lfo, base: 0.12 });
 
     noise.chain(filter, gain, outputGain);
 
@@ -477,16 +584,20 @@ class OceanWavesNode extends BaseSoundNode {
     noise.volume.value = -Infinity;
     const filter = new Tone.Filter(1500, "highpass");
     filter.Q.value = 0.5;
+    // Ceiling so the foam stays a soft fizz instead of a hiss
+    const ceiling = new Tone.Filter(5000, "lowpass", -24);
     const gain = new Tone.Gain(0);
 
-    const lfo = new Tone.LFO(0.18, 0.02, 0.08).start();
+    // Dips to zero so foam appears as pulses, not a constant layer
+    const lfo = new Tone.LFO(0.12, 0, 0.08).start();
     lfo.connect(gain.gain);
+    this.drifting.push({ lfo, base: 0.12 });
 
-    noise.chain(filter, gain, outputGain);
+    noise.chain(filter, ceiling, gain, outputGain);
 
     this.noiseSources.set("foam", noise);
     this.componentGains.set("foam", gain);
-    [noise, filter, gain, lfo].forEach((n) => this.registerNode(n));
+    [noise, filter, ceiling, gain, lfo].forEach((n) => this.registerNode(n));
   }
 
   private createSplashes(outputGain: Tone.Gain): void {
@@ -494,13 +605,14 @@ class OceanWavesNode extends BaseSoundNode {
     noise.volume.value = -Infinity;
     const filter = new Tone.Filter(2000, "bandpass");
     filter.Q.value = 1.0;
+    const ceiling = new Tone.Filter(4000, "lowpass", -24);
     const gain = new Tone.Gain(0);
 
-    noise.chain(filter, gain, outputGain);
+    noise.chain(filter, ceiling, gain, outputGain);
 
     this.noiseSources.set("splash", noise);
     this.componentGains.set("splash", gain);
-    [noise, filter, gain].forEach((n) => this.registerNode(n));
+    [noise, filter, ceiling, gain].forEach((n) => this.registerNode(n));
   }
 
   private fadeIn(volume: number): void {
