@@ -12,42 +12,54 @@ import {
   BookOpen,
   Bug,
   Github,
+  BarChart3,
+  CalendarDays,
   ListTodo,
+  NotebookPen,
   Timer,
   TrendingUp,
+  WifiOff,
 } from 'lucide-react';
 import LanguageToggle from '@/components/ui/LanguageToggle';
 import TimerCards from '@/pages/session/components/TimerCards';
 
 const features = [
-  { key: 'pomodoro' },
-  { key: 'tasks' },
-  { key: 'calendar' },
-  { key: 'analytics' },
-  { key: 'notes' },
-  { key: 'offline' },
+  { key: 'pomodoro', icon: Timer, span: 'md:col-span-2' },
+  { key: 'tasks', icon: ListTodo, span: '' },
+  { key: 'calendar', icon: CalendarDays, span: '' },
+  { key: 'analytics', icon: BarChart3, span: 'md:col-span-2' },
+  { key: 'notes', icon: NotebookPen, span: '' },
+  { key: 'offline', icon: WifiOff, span: '' },
 ] as const;
 
 const stepIcons = [ListTodo, Timer, TrendingUp] as const;
 
-// Obsidian-style section heading: big title with a short accent dash underneath
-const SectionHeading = ({ children, sub, center = false }: { children: ReactNode; sub?: ReactNode; center?: boolean }) => (
+// Neon-style section heading: mono eyebrow + big left-aligned title
+const SectionHeading = ({ children, sub, eyebrow, center = false }: { children: ReactNode; sub?: ReactNode; eyebrow?: ReactNode; center?: boolean }) => (
   <div className={center ? 'text-center mx-auto max-w-2xl' : 'max-w-2xl'}>
-    <h2 className="text-3xl sm:text-5xl font-heading font-bold tracking-[-0.03em] leading-[1.05] text-white">{children}</h2>
-    <span className={`block h-1 w-12 rounded-full bg-[var(--accent-primary)] mt-5 ${center ? 'mx-auto' : ''}`} />
-    {sub && <p className="mt-5 text-base sm:text-lg text-white/55 leading-relaxed">{sub}</p>}
+    {eyebrow && (
+      <span className="block mb-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--accent-primary)]">{eyebrow}</span>
+    )}
+    <h2 className="text-3xl sm:text-5xl font-heading font-semibold tracking-[-0.035em] leading-[1.05] text-white">{children}</h2>
+    {sub && <p className="mt-5 text-base sm:text-lg text-white/50 leading-relaxed">{sub}</p>}
   </div>
 );
 
-// Big layered app window — the real timers living inside it
+// Primary CTA: solid accent fill with dark text (Neon-style)
+const primaryBtn =
+  'inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-primary)] text-black font-semibold text-[15px] hover:brightness-110 hover:-translate-y-0.5 transition-all';
+const ghostBtn =
+  'inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 text-white/80 font-medium text-[15px] hover:bg-white/[0.06] hover:text-white transition-colors';
+
+// Big framed app window — the real timers living inside it
 const AppWindow = ({ children }: { children: ReactNode }) => (
   <div className="relative">
     <div
       aria-hidden="true"
-      className="absolute -inset-x-10 -inset-y-8 -z-10 opacity-30 blur-3xl"
+      className="absolute -inset-x-10 -inset-y-8 -z-10 opacity-25 blur-3xl"
       style={{ background: 'radial-gradient(ellipse at 50% 60%, var(--accent-primary) 0%, transparent 65%)' }}
     />
-    <div className="rounded-2xl border border-white/10 bg-[#0a0a0c]/90 backdrop-blur-xl shadow-[0_30px_120px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
+    <div className="rounded-xl border border-white/10 bg-[#0a0a0c]/90 backdrop-blur-xl shadow-[0_30px_120px_-20px_rgba(0,0,0,0.9)] overflow-hidden">
       <div className="flex items-center gap-2 px-4 h-10 border-b border-white/[0.08] bg-white/[0.02]">
         <div className="flex gap-1.5">
           <span className="w-3 h-3 rounded-full bg-white/15" />
@@ -172,6 +184,14 @@ const LandingPage = () => {
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-um-rise { animation: um-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .um-grid {
+          background-image:
+            linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+          background-size: 64px 64px;
+          -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 100%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 30%, transparent 100%);
+        }
         @media (prefers-reduced-motion: reduce) {
           .animate-um-rise { animation: none !important; }
         }
@@ -181,9 +201,8 @@ const LandingPage = () => {
       <div className="relative isolate pb-16 sm:pb-0">
         {/* Ambient accent glows */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute left-1/2 -translate-x-1/2 w-[1100px] h-[620px] opacity-[0.16] blur-3xl" style={{ top: '-4%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute right-[-15%] w-[720px] h-[520px] opacity-[0.1] blur-3xl" style={{ top: '38%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-          <div className="absolute left-[-15%] w-[720px] h-[520px] opacity-[0.1] blur-3xl" style={{ top: '62%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
+          <div className="um-grid absolute inset-x-0 top-0 h-[900px]" />
+          <div className="absolute left-1/2 -translate-x-1/2 w-[1000px] h-[480px] opacity-[0.14] blur-3xl" style={{ top: '-8%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
         </div>
 
         {/* Nav */}
@@ -212,7 +231,7 @@ const LandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-md border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-full bg-[var(--accent-primary)] text-black hover:brightness-110 transition-all"
               >
                 {t('landing.nav.getStarted')}
               </Link>
@@ -223,36 +242,30 @@ const LandingPage = () => {
         {/* Hero — centered headline, two CTAs, then the app window */}
         <section className="relative">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
-            <div className="animate-um-rise text-center flex flex-col items-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/70 mb-7">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] animate-pulse" />
+            <div className="animate-um-rise flex flex-col items-start max-w-4xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] pl-2 pr-3.5 py-1 text-xs font-medium text-white/70 mb-8">
+                <span className="rounded-full bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">New</span>
                 {t('landing.hero.badge')}
+                <ChevronRight className="w-3.5 h-3.5 text-white/40" />
               </span>
-              <h1 className="text-white text-[2.9rem] sm:text-8xl font-heading font-bold mb-6 tracking-[-0.04em] leading-[1]">
+              <h1 className="text-white text-[2.9rem] sm:text-7xl lg:text-[5.5rem] font-heading font-semibold mb-6 tracking-[-0.045em] leading-[0.98]">
                 {t('landing.hero.title1')}<br />
                 <span className="text-[var(--accent-primary)]">{t('landing.hero.title2')}</span>
               </h1>
-              <p className="text-base sm:text-xl text-white/60 max-w-xl mb-9 leading-relaxed">
+              <p className="text-base sm:text-xl text-white/55 max-w-xl mb-9 leading-relaxed">
                 {t('landing.hero.subtitle')}
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 mb-5">
-                <Link
-                  to="/app"
-                  onClick={startOnboarding}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-[15px] hover:-translate-y-0.5 transition-all"
-                >
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <Link to="/app" onClick={startOnboarding} className={primaryBtn}>
                   {t('landing.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <a
-                  href="#demo"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-white/15 text-white/80 font-medium text-[15px] hover:bg-white/[0.06] hover:text-white transition-colors"
-                >
+                <a href="#demo" className={ghostBtn}>
                   {t('landing.hero.ctaSecondary')}
                   <ChevronDown className="w-4 h-4" />
                 </a>
               </div>
-              <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-white/45">
+              <ul className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[12px] text-white/40">
                 {(t('landing.hero.trust', { returnObjects: true }) as unknown as string[]).map((item) => (
                   <li key={item} className="inline-flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5 text-[var(--accent-primary)]" strokeWidth={3} /> {item}
@@ -276,26 +289,24 @@ const LandingPage = () => {
         {/* Three-up value row */}
         <section className="mt-24 sm:mt-32">
           <div className="max-w-6xl mx-auto px-5 sm:px-8">
-            <ol className="grid md:grid-cols-3 gap-4">
+            <ol className="grid md:grid-cols-3 border border-white/10 rounded-xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-white/10">
               {(t('landing.how.steps', { returnObjects: true }) as unknown as { title: string; desc: string }[]).map((s, i) => {
                 const Icon = stepIcons[i] ?? Timer;
                 return (
-                  <li key={s.title} className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-7 hover:border-[var(--accent-primary)]/40 transition-colors">
-                    <div className="flex items-center justify-between mb-7">
-                      <span className="w-11 h-11 rounded-xl bg-[var(--accent-primary)]/15 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
-                      </span>
-                      <span className="font-mono text-sm text-white/25">0{i + 1}</span>
+                  <li key={s.title} className="group p-7 bg-white/[0.015] hover:bg-white/[0.035] transition-colors">
+                    <div className="flex items-center justify-between mb-10">
+                      <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
+                      <span className="font-mono text-xs text-white/30">0{i + 1}</span>
                     </div>
                     <h3 className="text-xl font-semibold text-white mb-2 tracking-tight">{s.title}</h3>
-                    <p className="text-[15px] text-white/50 leading-relaxed">{s.desc}</p>
+                    <p className="text-[15px] text-white/45 leading-relaxed">{s.desc}</p>
                   </li>
                 );
               })}
             </ol>
-            <div className="mt-10 flex flex-col items-center gap-3 text-center">
-              <p className="text-2xl sm:text-3xl font-heading font-bold tracking-tight text-white">{t('landing.free.line')}</p>
-              <Link to="/app" onClick={startOnboarding} className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--accent-primary)] hover:opacity-80 transition-opacity">
+            <div className="mt-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <p className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight text-white">{t('landing.free.line')}</p>
+              <Link to="/app" onClick={startOnboarding} className="inline-flex items-center gap-1.5 font-mono text-[13px] uppercase tracking-wider text-[var(--accent-primary)] hover:opacity-80 transition-opacity">
                 {t('landing.footer.getStarted')} <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -304,22 +315,34 @@ const LandingPage = () => {
 
         {/* Features — one unified list with big headers */}
         <section id="features" className="mt-24 sm:mt-32 scroll-mt-20">
-          <div className="max-w-5xl mx-auto px-5 sm:px-8">
-            <SectionHeading center>{t('landing.features.title')}</SectionHeading>
-            <div className="mt-10 sm:mt-14 border-t border-white/10">
-              {features.map((f) => (
-                <div
-                  key={f.key}
-                  className="group grid md:grid-cols-[1.15fr_1fr] gap-x-10 gap-y-1 items-baseline border-b border-white/10 py-5 sm:py-6"
-                >
-                  <h3 className="text-3xl sm:text-5xl font-heading font-bold tracking-[-0.03em] leading-[1.05] text-white group-hover:text-[var(--accent-primary)] transition-colors">
-                    {t(`landing.features.${f.key}.label`)}
-                  </h3>
-                  <p className="text-base sm:text-lg text-white/50 leading-snug">
-                    {t(`landing.features.${f.key}.desc`)}
-                  </p>
-                </div>
-              ))}
+          <div className="max-w-6xl mx-auto px-5 sm:px-8">
+            <SectionHeading eyebrow={t('landing.nav.features')}>{t('landing.features.title')}</SectionHeading>
+            {/* Bento grid with shared 1px borders */}
+            <div className="mt-10 sm:mt-14 grid md:grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10">
+              {features.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <div
+                    key={f.key}
+                    className={`group relative bg-black p-7 sm:p-8 min-h-[220px] flex flex-col justify-between hover:bg-white/[0.03] transition-colors ${f.span}`}
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: 'radial-gradient(400px circle at 0% 0%, color-mix(in srgb, var(--accent-primary) 12%, transparent), transparent 70%)' }}
+                    />
+                    <Icon className="relative w-6 h-6 text-[var(--accent-primary)]" strokeWidth={1.75} />
+                    <div className="relative mt-10">
+                      <h3 className="text-2xl sm:text-3xl font-heading font-semibold tracking-[-0.03em] text-white mb-2">
+                        {t(`landing.features.${f.key}.label`)}
+                      </h3>
+                      <p className="text-[15px] text-white/45 leading-relaxed max-w-md">
+                        {t(`landing.features.${f.key}.desc`)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -354,23 +377,23 @@ const LandingPage = () => {
             <Link
               to="/app"
               onClick={startOnboarding}
-              className="mt-9 inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-base hover:-translate-y-0.5 transition-all"
+              className={`mt-9 ${primaryBtn}`}
             >
               {t('landing.cta.button')}
               <ArrowRight className="w-4 h-4" />
             </Link>
             <div className="mt-16 grid md:grid-cols-3 gap-4 text-left">
-              <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+              <a href="https://github.com/rickypcyt/unitracker" target="_blank" rel="noopener" className="group rounded-xl border border-white/10 bg-white/[0.02] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
                 <Github className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
                 <h3 className="font-semibold text-white mb-1">{t('landing.cards.github.t')}</h3>
                 <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.github.d')}</p>
               </a>
-              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+              <a href="https://github.com/rickypcyt/unitracker/issues" target="_blank" rel="noopener" className="group rounded-xl border border-white/10 bg-white/[0.02] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
                 <Bug className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
                 <h3 className="font-semibold text-white mb-1">{t('landing.cards.issues.t')}</h3>
                 <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.issues.d')}</p>
               </a>
-              <Link to={`/${SEO_PAGES[0]?.slug ?? ''}`} className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
+              <Link to={`/${SEO_PAGES[0]?.slug ?? ''}`} className="group rounded-xl border border-white/10 bg-white/[0.02] p-6 hover:border-[var(--accent-primary)]/40 hover:bg-white/[0.05] transition-colors">
                 <BookOpen className="w-5 h-5 text-[var(--accent-primary)] mb-4" />
                 <h3 className="font-semibold text-white mb-1">{t('landing.cards.guides.t')}</h3>
                 <p className="text-sm text-white/50 leading-relaxed">{t('landing.cards.guides.d')}</p>
@@ -424,7 +447,7 @@ const LandingPage = () => {
           <Link
             to="/app"
             onClick={startOnboarding}
-            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-black border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-sm"
+            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-full bg-[var(--accent-primary)] text-black hover:brightness-110 font-semibold text-sm"
           >
             {t('landing.cta.button')}
             <ArrowRight className="w-4 h-4" />
