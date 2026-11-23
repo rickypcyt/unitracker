@@ -199,4 +199,32 @@ export const SEO_PAGES: SeoPage[] = [
       { q: 'Can I use it on mobile?', a: 'Yes, install it as an app from your browser.' },
     ],
   },
+  {
+    slug: 'uk-university-study-planner',
+    title: 'Free Revision & Assignment Planner for UK University Students | UniTracker',
+    description:
+      'A free revision planner and assignment tracker for UK university students. Track modules, coursework deadlines and dissertation work, with a Pomodoro timer and revision stats.',
+    h1: 'Free Study Planner for UK University Students',
+    intro:
+      'Juggling modules, coursework deadlines and exam season? UniTracker is a free revision planner that tracks your assignments, logs your study hours by module and shows how your revision is really going.',
+    sections: [
+      {
+        heading: 'Track every module and deadline',
+        body: 'Create a subject for each module, add coursework and dissertation milestones as tasks with deadlines, and see everything due this week on one calendar.',
+      },
+      {
+        heading: 'Plan your revision for exam season',
+        body: 'Schedule revision sessions ahead of your January and summer exams. A built-in Pomodoro timer logs each session to the right module, so you can see which subjects need more time.',
+      },
+      {
+        heading: 'Free, with no ads',
+        body: 'No subscription and no ads. Start straight away without an account, or sign in with Google to sync between your laptop and phone.',
+      },
+    ],
+    faq: [
+      { q: 'Is UniTracker free for UK students?', a: 'Yes. All core features are free, with no ads or subscription.' },
+      { q: 'Can I track coursework and dissertation deadlines?', a: 'Yes. Add each piece of coursework as a task with a deadline and break a dissertation into smaller milestones.' },
+      { q: 'Does it work on my phone?', a: 'Yes. Install it as an app from your browser and it works offline.' },
+    ],
+  },
 ];
