@@ -108,7 +108,8 @@ const useTheme = () => {
   // After signing in, let new accounts pick their accent colour (once)
   useEffect(() => {
     if (isAuthLoading || !isLoggedIn) return;
-    if (localStorage.getItem("hasSeenAccentColorModal")) return;
+    // Already picked (or changed it in settings) on this device: never ask again
+    if (localStorage.getItem("hasSeenAccentColorModal") || localStorage.getItem("accentPalette")) return;
     const timer = setTimeout(() => setShowAccentColorModal(true), 600);
     return () => clearTimeout(timer);
   }, [isAuthLoading, isLoggedIn]);

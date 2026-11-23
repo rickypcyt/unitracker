@@ -127,7 +127,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   // Function to clear all caches and local storage
+  // Device preferences that must survive logging out (accent colour, theme, language, onboarding flags)
+  const PRESERVED_KEYS = [
+    'accentPalette',
+    'hasSeenAccentColorModal',
+    'themePreference',
+    'i18nextLng',
+    'hasSeenWelcomeModal',
+    'hasSeenThemeSelectionModal',
+    'hasSeenTour',
+  ];
+
   const clearAllCaches = () => {
+    const preserved: Record<string, string> = {};
+    try {
+      PRESERVED_KEYS.forEach((key) => {
+        const value = localStorage.getItem(key);
+        if (value !== null) preserved[key] = value;
+      });
+    } catch {
+      // storage unavailable: nothing to preserve
+    }
     try {
       // Clear localStorage
       localStorage.clear();
@@ -188,6 +208,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
     } catch (error) {
       console.error('Error clearing caches:', error);
+    }
+    try {
+      Object.entries(preserved).forEach(([key, value]) => localStorage.setItem(key, value));
+    } catch {
+      // storage unavailable
     }
   };
 

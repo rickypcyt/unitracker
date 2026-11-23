@@ -78,7 +78,8 @@ const AppWindow = ({ children }: { children: ReactNode }) => (
 // Resets onboarding flags so entering the app replays welcome → color → login
 export const startOnboarding = () => {
   try {
-    ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal', 'hasSeenAccentColorModal']
+    // The accent-colour flag is intentionally kept: it is asked once per device, not per visit
+    ['hasSeenWelcomeModal', 'hasSeenThemeSelectionModal']
       .forEach((k) => localStorage.removeItem(k));
   } catch {}
 };
