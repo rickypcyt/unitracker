@@ -206,88 +206,25 @@ abstract class BaseSoundNode implements SoundNode {
 }
 
 class BrownNoiseNode extends BaseSoundNode {
-  private deepGain: Tone.Gain;
-  private mainGain: Tone.Gain;
-  private midGain: Tone.Gain;
   private outputGain: Tone.Gain;
 
   constructor(volume: number) {
     super(volume);
 
-    // Each layer owns its own band so the mix has real depth:
-    // sub (40-80 Hz) / body (120-350 Hz) / air (300-700 Hz).
-    // Sources start at random offsets so the noise loops never line up.
-    const deepBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
-    const deepFilter = new Tone.Filter(80, "lowpass", -24);
-    deepFilter.Q.value = 0.2;
-    this.deepGain = new Tone.Gain(0.3);
+    // True brown noise: white noise integrated (−6 dB/octave), i.e. the
+    // classic "white noise but all low end". Tone's generator already uses
+    // a leaky integrator, so we feed it straight out with no tonal shaping.
+    const brown = new Tone.Noise("brown").start();
 
-    const mainBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
-    const mainHighpass = new Tone.Filter(120, "highpass", -12);
-    const mainFilter = new Tone.Filter(350, "lowpass", -12);
-    mainFilter.Q.value = 0.3;
-    this.mainGain = new Tone.Gain(0.55);
+    // Only remove inaudible sub-sonic content / DC so speakers don't waste
+    // headroom on it. Everything audible is left untouched.
+    const dcBlock = new Tone.Filter(20, "highpass", -12);
 
-    const midBrown = new Tone.Noise("brown").start(`+${Math.random() * 2}`);
-    const midFilter = new Tone.Filter(450, "bandpass", -12);
-    midFilter.Q.value = 0.6;
-    this.midGain = new Tone.Gain(0.3);
+    this.outputGain = new Tone.Gain(volume * 0.4);
 
-    // High frequency texture layer removed to eliminate hiss
-    // const highTexture = new Tone.Noise("pink").start();
-    // const highFilter = new Tone.Filter(1000, "highpass", -24);
-    // highFilter.Q.value = 0.3;
-    // this.highGain = new Tone.Gain(0.02);
+    brown.chain(dcBlock, this.outputGain, AudioEngine.getInstance().getMasterOut());
 
-    const slowLFO = new Tone.LFO(0.015, 0.9, 1.1).start();
-    const mediumLFO = new Tone.LFO(0.03, 0.95, 1.05).start();
-    // Irregular drift on the air layer + on the other LFO rates so the
-    // "breathing" never repeats exactly
-    const driftLFO = new Tone.LFO(0.011, 0.8, 1.2).start();
-    const driftRate = new Tone.LFO(0.017, 0.02, 0.05).start();
-    driftRate.connect(mediumLFO.frequency);
-    driftLFO.connect(this.midGain.gain);
-
-    slowLFO.connect(this.deepGain.gain);
-    mediumLFO.connect(this.mainGain.gain);
-
-    // Gentle top-end roll-off at 900 Hz keeps body in the 500-800 Hz range
-    // that small speakers can actually reproduce, without any hiss
-    const smoothingFilter = new Tone.Filter(900, "lowpass", -12);
-    smoothingFilter.Q.value = 0.2;
-
-    // Limiter instead of a compressor: no pumping on a steady signal
-    const compressor = new Tone.Limiter(-6);
-
-    this.outputGain = new Tone.Gain(volume * 0.4)
-      .connect(smoothingFilter)
-      .connect(compressor)
-      .connect(AudioEngine.getInstance().getMasterOut());
-
-    deepBrown.chain(deepFilter, this.deepGain, this.outputGain);
-    mainBrown.chain(mainHighpass, mainFilter, this.mainGain, this.outputGain);
-    midBrown.chain(midFilter, this.midGain, this.outputGain);
-    // highTexture.chain(highFilter, this.highGain, this.outputGain);
-
-    [
-      deepBrown,
-      deepFilter,
-      this.deepGain,
-      mainBrown,
-      mainHighpass,
-      mainFilter,
-      this.mainGain,
-      midBrown,
-      midFilter,
-      this.midGain,
-      slowLFO,
-      mediumLFO,
-      driftLFO,
-      driftRate,
-      smoothingFilter,
-      compressor,
-      this.outputGain,
-    ].forEach((node) => this.registerNode(node));
+    [brown, dcBlock, this.outputGain].forEach((node) => this.registerNode(node));
   }
 
   setVolume(volume: number): void {
@@ -297,120 +234,73 @@ class BrownNoiseNode extends BaseSoundNode {
 }
 
 class RainSoundNode extends BaseSoundNode {
-  private backgroundGain: Tone.Gain;
-  private topPinkGain: Tone.Gain;
-  private dropSynth: Tone.NoiseSynth;
-  private dropFilter: Tone.Filter;
-  private dropGain: Tone.Gain;
-  private dropTimers = new Set<ReturnType<typeof setTimeout>>();
-  private disposed = false;
+  private bodyGain: Tone.Gain;
+  private airGain: Tone.Gain;
+  private rumbleGain: Tone.Gain;
 
   constructor(volume: number) {
     super(volume);
 
     const engine = AudioEngine.getInstance();
     const masterOut = engine.getMasterOut();
-    // ~0.3 wet — send gain preserves the original wet/dry ratio (w / (1 - w))
-    const wetGain = new Tone.Gain(0.43).connect(engine.getReverbSend());
+    // Light room tail (~0.2 wet) so the wash feels open, not smeared
+    const wetGain = new Tone.Gain(0.25).connect(engine.getReverbSend());
 
-    // Background rain bed — steady filtered pink noise
-    const backgroundRain = new Tone.Noise("pink").start();
-    const backgroundFilter = new Tone.Filter(800, "lowpass", -24);
-    backgroundFilter.Q.value = 0.4;
-    this.backgroundGain = new Tone.Gain(volume * 0.5);
+    // Body: the steady "shhh" of rain on leaves. Pink noise with the sub
+    // and the hissy top both rolled off (steep slopes, no resonance).
+    const body = new Tone.Noise("pink").start();
+    const bodyHigh = new Tone.Filter(180, "highpass", -12);
+    const bodyLow = new Tone.Filter(2600, "lowpass", -24);
+    this.bodyGain = new Tone.Gain(volume * 0.5);
 
-    // Slow swell on the bed so the rain drifts between lighter and heavier.
-    // The LFO is summed onto a 0-valued gain param, so it sets the level itself.
+    // Slow swell so the rain breathes between lighter and heavier.
+    // LFO sums onto a 0-valued gain param, so it sets the level itself.
     const swell = new Tone.Gain(0);
-    const swellLFO = new Tone.LFO(0.02, 0.65, 1).start();
+    const swellLFO = new Tone.LFO(0.025, 0.8, 1).start();
     swellLFO.connect(swell.gain);
 
-    // The bed stays dry: sending it to the reverb is what made it smeared
-    backgroundRain.connect(backgroundFilter);
-    backgroundFilter.chain(swell, this.backgroundGain, masterOut);
+    body.chain(bodyHigh, bodyLow, swell, this.bodyGain, masterOut);
+    this.bodyGain.connect(wetGain);
 
-    // Individual drops: very short band-passed noise bursts at random
-    // pitches and times. Drops (not the bed) feed the reverb.
-    this.dropFilter = new Tone.Filter(2500, "bandpass");
-    this.dropFilter.Q.value = 1.2;
-    this.dropGain = new Tone.Gain(volume * 0.9);
-    this.dropSynth = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.0005, decay: 0.012, sustain: 0 },
-    });
-    this.dropSynth.chain(this.dropFilter, this.dropGain);
-    this.dropGain.connect(masterOut);
-    this.dropGain.connect(wetGain);
-    this.scheduleDrop(true);
-    this.scheduleDrop(false);
+    // Air: a soft, wide mid band that adds the "fullness" of a downpour
+    const air = new Tone.Noise("pink").start();
+    const airBand = new Tone.Filter(1100, "bandpass");
+    airBand.Q.value = 0.35;
+    const airLow = new Tone.Filter(3200, "lowpass", -24);
+    this.airGain = new Tone.Gain(volume * 0.18);
+    air.chain(airBand, airLow, this.airGain, masterOut);
 
-    // Subtle high-frequency pink layer for texture
-    const topPinkNoise = new Tone.Noise("pink").start();
-    // Band-limited so the unfiltered top end doesn't turn into a hiss
-    const topBand = new Tone.Filter(400, "highpass");
-    const topLow = new Tone.Filter(2200, "lowpass", -24);
-    this.topPinkGain = new Tone.Gain(volume * 0.075);
-    topPinkNoise.chain(topBand, topLow, this.topPinkGain);
-    this.topPinkGain.connect(masterOut);
-    this.topPinkGain.connect(wetGain);
+    // Rumble: distant low-end warmth so it's relaxing rather than thin
+    const rumble = new Tone.Noise("brown").start();
+    const rumbleLow = new Tone.Filter(220, "lowpass", -24);
+    this.rumbleGain = new Tone.Gain(volume * 0.22);
+    rumble.chain(rumbleLow, this.rumbleGain, masterOut);
 
     [
-      backgroundRain,
-      backgroundFilter,
+      body,
+      bodyHigh,
+      bodyLow,
       swell,
       swellLFO,
-      this.backgroundGain,
-      this.dropSynth,
-      this.dropFilter,
-      this.dropGain,
-      topPinkNoise,
-      topBand,
-      topLow,
-      this.topPinkGain,
+      this.bodyGain,
+      air,
+      airBand,
+      airLow,
+      this.airGain,
+      rumble,
+      rumbleLow,
+      this.rumbleGain,
       wetGain,
     ].forEach((node) => this.registerNode(node));
-  }
-
-  // fine = dense light drizzle, coarse = sparser heavy drops
-  private scheduleDrop(fine: boolean): void {
-    if (this.disposed) return;
-    const wait = fine ? 12 + Math.random() * 60 : 120 + Math.random() * 420;
-    const timer = setTimeout(() => {
-      this.dropTimers.delete(timer);
-      if (this.disposed) return;
-      if (this.volume > 0 && Tone.context.state === "running") {
-        try {
-          this.dropFilter.frequency.value = fine
-            ? 1800 + Math.random() * 2400
-            : 900 + Math.random() * 1300;
-          this.dropSynth.triggerAttackRelease(
-            fine ? 0.004 : 0.008,
-            Tone.now(),
-            (fine ? 0.15 : 0.35) * (0.4 + Math.random() * 0.6)
-          );
-        } catch {
-          // node disposed mid-tick
-        }
-      }
-      this.scheduleDrop(fine);
-    }, wait);
-    this.dropTimers.add(timer);
-  }
-
-  override dispose(): void {
-    this.disposed = true;
-    this.dropTimers.forEach((t) => clearTimeout(t));
-    this.dropTimers.clear();
-    super.dispose();
   }
 
   setVolume(volume: number): void {
     this.volume = volume;
     const isMuted = volume === 0;
 
-    this.setGainWithRamp(this.dropGain, isMuted ? 0 : volume * 0.9);
-    this.setGainWithRamp(this.backgroundGain, isMuted ? 0 : volume * 0.5);
-    this.setGainWithRamp(this.topPinkGain, isMuted ? 0 : volume * 0.075);
+    this.setGainWithRamp(this.bodyGain, isMuted ? 0 : volume * 0.5);
+    this.setGainWithRamp(this.airGain, isMuted ? 0 : volume * 0.18);
+    this.setGainWithRamp(this.rumbleGain, isMuted ? 0 : volume * 0.22);
   }
 }
 
@@ -421,6 +311,9 @@ class OceanWavesNode extends BaseSoundNode {
   private noiseSources: Map<string, Tone.Noise> = new Map();
   private drifting: { lfo: Tone.LFO; base: number }[] = [];
   private driftTimer: ReturnType<typeof setTimeout> | null = null;
+  private washTimer: ReturnType<typeof setTimeout> | null = null;
+  private washFilter!: Tone.Filter;
+  private washGain!: Tone.Gain;
   private disposed = false;
 
   private scheduleDrift(): void {
@@ -442,7 +335,40 @@ class OceanWavesNode extends BaseSoundNode {
   override dispose(): void {
     this.disposed = true;
     if (this.driftTimer) clearTimeout(this.driftTimer);
+    if (this.washTimer) clearTimeout(this.washTimer);
     super.dispose();
+  }
+
+  // One wave cycle: the wash rushes in (louder + brighter), lingers, then is
+  // pulled back out by the tide (quieter + darker), then a pause before the next.
+  private scheduleWave(): void {
+    if (this.disposed) return;
+    const rise = 3 + Math.random() * 2.5;
+    const hold = 0.4 + Math.random() * 0.8;
+    const fall = 5 + Math.random() * 3;
+    const rest = 0.5 + Math.random() * 2.5;
+    const peak = 0.55 + Math.random() * 0.45;
+
+    try {
+      this.washFilter.frequency.rampTo(2800 + Math.random() * 1400, rise);
+      this.washGain.gain.rampTo(0.5 * peak, rise);
+    } catch {
+      return;
+    }
+
+    this.washTimer = setTimeout(() => {
+      if (this.disposed) return;
+      try {
+        this.washFilter.frequency.rampTo(450, fall);
+        this.washGain.gain.rampTo(0.03, fall);
+      } catch {
+        return;
+      }
+      this.washTimer = setTimeout(
+        () => this.scheduleWave(),
+        (fall + rest) * 1000
+      );
+    }, (rise + hold) * 1000);
   }
 
   constructor(volume: number) {
@@ -451,6 +377,19 @@ class OceanWavesNode extends BaseSoundNode {
     const engine = AudioEngine.getInstance();
     this.masterGain = new Tone.Gain(0).connect(engine.getMasterOut());
     this.outputGain = new Tone.Gain(0).connect(this.masterGain);
+
+    // Tide wash: brighter pink noise whose level AND brightness swell in and
+    // drain out with each wave — the "sea pulled back by the tide" sound.
+    const washNoise = new Tone.Noise("pink").start();
+    const washHigh = new Tone.Filter(250, "highpass", -12);
+    this.washFilter = new Tone.Filter(450, "lowpass", -24);
+    this.washFilter.Q.value = 0.5;
+    this.washGain = new Tone.Gain(0.03);
+    washNoise.chain(washHigh, this.washFilter, this.washGain, this.masterGain);
+    [washNoise, washHigh, this.washFilter, this.washGain].forEach((n) =>
+      this.registerNode(n)
+    );
+    this.scheduleWave();
 
     // Shared reverb send (~0.4 wet) tapped after masterGain so it follows
     // volume, with a short delay to keep ocean's pre-delay character.
