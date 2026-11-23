@@ -136,11 +136,12 @@ function SoundControl({
 
         <div className="flex-1 min-w-0">
           <div className="noise-item-head flex items-center justify-between gap-2 mb-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5">
             <span className="font-semibold text-[var(--text-primary)] truncate">
               {label}
             </span>
             {isPlaying && (
-              <div className="flex items-end gap-0.5 h-3.5 mr-auto ml-1" aria-hidden>
+              <div className="flex items-end gap-0.5 h-3.5 shrink-0" aria-hidden>
                 {[0, 1, 2, 3].map((b) => (
                   <motion.span
                     key={b}
@@ -156,8 +157,9 @@ function SoundControl({
                 ))}
               </div>
             )}
+            </div>
             <span
-              className={`text-xs font-medium tabular-nums px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
+              className={`shrink-0 text-xs font-medium tabular-nums px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
             >
               {percentage}%
             </span>

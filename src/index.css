@@ -2900,10 +2900,10 @@ input.no-spinners {
 
 /* Narrow noise card (3-column md layout): keep the sound name readable, wrap the % badge */
 .noise-item-head {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .noise-item-head > :first-child {
-  min-width: 5.5rem;
+  min-width: 0;
 }
 
 /* Mobile: carousel cards are almost full width — keep the ring compact so they aren't tall */
