@@ -272,6 +272,16 @@
     "settings": "Ajustes",
     "home": "Inicio de UniTracker"
   },
+  "leaderboard": {
+    "title": "Ranking",
+    "periods": { "week": "Semana", "month": "Mes", "year": "Año", "all": "Total" },
+    "you": "tú",
+    "sessions_one": "{{count}} sesión",
+    "sessions_other": "{{count}} sesiones",
+    "empty": "Aún no hay tiempo registrado en este periodo.",
+    "error": "No se pudo cargar el ranking.",
+    "retry": "Reintentar"
+  },
   "settings": {
     "title": "Ajustes",
     "tabs": {

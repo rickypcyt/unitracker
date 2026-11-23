@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { memo, useMemo, useState } from 'react';
 
 import ChartCard from './ChartCard';
@@ -340,14 +340,20 @@ const StatsChartsPanel = memo(() => {
         paddingClass="p-3 sm:p-4"
         isDemo={isDemo}
         header={
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="grid w-full gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <div className="flex items-center gap-2">
+              <BarChart3 size={16} className="text-[var(--accent-primary)]" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">Charts</h3>
+            </div>
             <PeriodSelector period={period} onChange={setPeriod} />
-            <PeriodNav
-              label={chartLabel}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-              isNextDisabled={isNextDisabled}
-            />
+            <div className="flex sm:justify-self-end">
+              <PeriodNav
+                label={chartLabel}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                isNextDisabled={isNextDisabled}
+              />
+            </div>
           </div>
         }
       >

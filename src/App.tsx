@@ -36,8 +36,7 @@ import Notes from "@/pages/notes/Notes";
 import SessionPage from "@/pages/session/SessionPage";
 import StatsPage from "@/pages/stats/StatsPage";
 import TasksPage from "@/pages/tasks/TasksPage";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import FloatingTimerPlayer from "@/pages/session/components/FloatingTimerPlayer";
+import AdminDashboard from "@/pages/admin/AdminDashboard";import FloatingTimerPlayer from "@/pages/session/components/FloatingTimerPlayer";
 import Navbar from "@/components/layout/Sidebar";
 
 // Preload map: import functions for each page to enable hover-based preloading
@@ -48,8 +47,7 @@ const preloadMap: Record<string, () => Promise<unknown>> = {
   habits: () => import("@/pages/habits/HabitsPage"),
   notes: () => import("@/pages/notes/Notes"),
   focusWidget: () => import("@/pages/FocusWidgetPage"),
-  admin: () => import("@/pages/admin/AdminDashboard"),
-};
+  admin: () => import("@/pages/admin/AdminDashboard"),};
 
 const preloadedPages = new Set<string>();
 
@@ -72,8 +70,7 @@ const pagesMap: Record<string, FC> = {
   habits: HabitsPage,
   notes: Notes,
   focusWidget: FocusWidgetPage,
-  admin: AdminDashboard,
-};
+  admin: AdminDashboard,};
 
 
 // -------------------------
@@ -171,8 +168,7 @@ const PageContent: FC = () => {
 
             {activePage === 'notes' && <Notes />}
 
-            {activePage === 'admin' && <AdminDashboard />}
-          </div>
+            {activePage === 'admin' && <AdminDashboard />}          </div>
         </Suspense>
       </main>
       <FloatingFooter
@@ -429,8 +425,7 @@ const App: FC = () => {
             <Route path={PAGE_PATHS.habits} element={<AppRoute />} />
             <Route path={PAGE_PATHS.notes} element={<AppRoute />} />
             <Route path={PAGE_PATHS.focusWidget} element={<AppRoute />} />
-            <Route path={PAGE_PATHS.admin} element={<AppRoute />} />
-            {/* Legacy route aliases */}
+            <Route path={PAGE_PATHS.admin} element={<AppRoute />} />            {/* Legacy route aliases */}
             <Route path="/stats" element={<Navigate to={PAGE_PATHS.analytics} replace />} />
             <Route path="/focusWidget" element={<Navigate to={PAGE_PATHS.focusWidget} replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />

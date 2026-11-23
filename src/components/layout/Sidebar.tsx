@@ -7,8 +7,7 @@ const navItems = [
   { page: 'habits', key: 'journal', icon: Notebook },
   { page: 'session', key: 'study', icon: Clock },
   { page: 'notes', key: 'notes', icon: BookOpen },
-  { page: 'analytics', key: 'analytics', icon: BarChart3 },
-] as const;
+  { page: 'analytics', key: 'analytics', icon: BarChart3 },] as const;
 
 const Navbar = () => {
   const { activePage, navigateTo, openSettings } = useNavigation();

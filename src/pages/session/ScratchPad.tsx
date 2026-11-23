@@ -104,7 +104,6 @@ const ScratchPad = memo(() => {
   const parsedLines = lines.map(parseLine);
   const totalTodos = parsedLines.filter(p => p.type === "checkbox").length;
   const doneTodos = parsedLines.filter(p => p.type === "checkbox" && p.checked).length;
-  const progress = totalTodos > 0 ? Math.round((doneTodos / totalTodos) * 100) : 0;
 
   // Text mode: toggle the checkbox marker on every line touched by the selection
   const toggleCheckboxInSelection = () => {
@@ -239,7 +238,7 @@ const ScratchPad = memo(() => {
   return (
     <div className="w-full h-full min-h-[260px] max-h-[460px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
             <StickyNote size={18} className="text-[var(--accent-primary)]" />
@@ -252,8 +251,6 @@ const ScratchPad = memo(() => {
               {doneTodos}/{totalTodos}
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2">
           <button
             onClick={toggleCheckboxInSelection}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)]"
@@ -262,6 +259,8 @@ const ScratchPad = memo(() => {
           >
             <CheckSquare size={15} />
           </button>
+        </div>
+        <div className="flex items-center gap-2">
           {text && (
             <button
               onClick={() => handleChange("")}
@@ -274,16 +273,6 @@ const ScratchPad = memo(() => {
           )}
         </div>
       </div>
-
-      {/* Progress */}
-      {totalTodos > 0 && (
-        <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-secondary)]" aria-hidden="true">
-          <div
-            className="h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
 
       {/* Body — one selectable surface: a transparent textarea over a mirror layer that draws the checkboxes */}
       <div className="relative flex-1 min-h-[140px] overflow-hidden rounded-xl bg-[var(--bg-secondary)]/50">

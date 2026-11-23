@@ -2,6 +2,7 @@ import { memo, useEffect } from 'react';
 import { useFetchTasks, useWorkspace } from '@/store/appStore';
 
 import { Helmet } from "react-helmet-async";
+import Leaderboard from '@/pages/stats/Leaderboard';
 import Statistics from '@/pages/stats/Stats';
 import StatsChartsPanel from '@/pages/stats/StatsChartsPanel';
 import { fetchLaps } from '@/store/LapActions';
@@ -71,6 +72,9 @@ const StatsPage = memo(() => {
         <div className="space-y-3">
           <StatsChartsPanel />
         </div>
+
+        {/* Public top 10 ranking */}
+        <Leaderboard />
       </div>
     </div>
     </>

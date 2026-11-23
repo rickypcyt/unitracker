@@ -1,6 +1,9 @@
 import { supabase } from '@/utils/supabaseClient';
 import type { Lap, UpdateLapInput } from '@/schemas/lap';
 
+// Max time credited to an unfinished session that gets auto-closed (12h)
+const MAX_AUTO_CLOSED_SESSION_SECONDS = 12 * 60 * 60;
+
 export interface SessionLap {
   id: string;
   session_id: string;
@@ -201,7 +204,11 @@ export class StudyService {
       if (s.duration) {
         payload['duration'] = s.duration;
       } else if (s.started_at) {
-        const elapsed = Math.floor((Date.now() - new Date(s.started_at).getTime()) / 1000);
+        // A session abandoned for days/months must not be credited with all that time
+        const elapsed = Math.min(
+          Math.max(0, Math.floor((Date.now() - new Date(s.started_at).getTime()) / 1000)),
+          MAX_AUTO_CLOSED_SESSION_SECONDS,
+        );
         payload['duration'] = `${Math.floor(elapsed / 3600).toString().padStart(2, '0')}:${Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0')}:${(elapsed % 60).toString().padStart(2, '0')}`;
       }
       return supabase.from('study_laps').update(payload).eq('id', s.id).eq('user_id', user.id);

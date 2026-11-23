@@ -272,6 +272,16 @@
     "settings": "Settings",
     "home": "UniTracker home"
   },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "periods": { "week": "Week", "month": "Month", "year": "Year", "all": "All time" },
+    "you": "you",
+    "sessions_one": "{{count}} session",
+    "sessions_other": "{{count}} sessions",
+    "empty": "No tracked time yet for this period.",
+    "error": "Couldn't load the leaderboard.",
+    "retry": "Retry"
+  },
   "settings": {
     "title": "Settings",
     "tabs": {

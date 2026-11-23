@@ -272,6 +272,16 @@
     "settings": "सेटिंग्स",
     "home": "UniTracker होम"
   },
+  "leaderboard": {
+    "title": "लीडरबोर्ड",
+    "periods": { "week": "सप्ताह", "month": "महीना", "year": "साल", "all": "कुल" },
+    "you": "आप",
+    "sessions_one": "{{count}} सेशन",
+    "sessions_other": "{{count}} सेशन",
+    "empty": "इस अवधि के लिए अभी कोई समय दर्ज नहीं है।",
+    "error": "लीडरबोर्ड लोड नहीं हो सका।",
+    "retry": "फिर कोशिश करें"
+  },
   "settings": {
     "title": "सेटिंग्स",
     "tabs": {

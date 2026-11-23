@@ -84,8 +84,7 @@ export const NavigationProvider = ({ children }: { children: React.ReactNode }) 
         'habits': { left: 'tasks', right: 'session' },
         'notes': { left: 'session', right: 'analytics' },
         'focusWidget': { left: 'session', right: 'session' },
-        'admin': { left: 'analytics', right: 'tasks' },
-      };
+        'admin': { left: 'analytics', right: 'tasks' },      };
 
       const routes = pageMap[activePage] || pageMap['session'];
       
