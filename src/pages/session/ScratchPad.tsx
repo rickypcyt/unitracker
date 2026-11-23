@@ -1,4 +1,4 @@
-import { CheckCircle2, CheckSquare, Circle, Eraser, StickyNote } from "lucide-react";
+import { CheckCircle2, CheckSquare, Circle, Eraser, StickyNote, Trash2 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/hooks/auth/useAuth";
@@ -159,7 +159,33 @@ const ScratchPad = memo(() => {
     });
   };
 
+  // Same hit-test, for the trash icon shown on checked lines
+  const trashAt = (clientX: number, clientY: number): number | null => {
+    const mirror = mirrorRef.current;
+    if (!mirror) return null;
+    const icons = mirror.querySelectorAll<HTMLElement>("[data-trash]");
+    for (const icon of Array.from(icons)) {
+      const r = icon.getBoundingClientRect();
+      if (clientX >= r.left - 4 && clientX <= r.right + 4 && clientY >= r.top - 2 && clientY <= r.bottom + 2) {
+        return Number(icon.dataset['trash']);
+      }
+    }
+    return null;
+  };
+
+  const deleteLine = (index: number) => {
+    const all = text.split("\n");
+    all.splice(index, 1);
+    handleChange(all.join("\n"));
+  };
+
   const handleSurfaceMouseDown = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const trash = trashAt(e.clientX, e.clientY);
+    if (trash !== null) {
+      e.preventDefault();
+      deleteLine(trash);
+      return;
+    }
     const index = checkboxAt(e.clientX, e.clientY);
     if (index === null) return;
     e.preventDefault();
@@ -167,7 +193,8 @@ const ScratchPad = memo(() => {
   };
 
   const handleSurfaceMouseMove = (e: React.MouseEvent<HTMLTextAreaElement>) => {
-    e.currentTarget.style.cursor = checkboxAt(e.clientX, e.clientY) !== null ? "pointer" : "text";
+    const overIcon = checkboxAt(e.clientX, e.clientY) !== null || trashAt(e.clientX, e.clientY) !== null;
+    e.currentTarget.style.cursor = overIcon ? "pointer" : "text";
   };
 
   // Enter on a checkbox line continues the list; Enter on an empty one exits it
@@ -274,7 +301,15 @@ const ScratchPad = memo(() => {
             }
             const rest = line.slice(marker[0].length);
             return (
-              <div key={i}>
+              <div key={i} className={`relative ${p.checked ? "pr-7" : ""}`}>
+                {p.checked && (
+                  <span
+                    data-trash={i}
+                    className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center text-[var(--text-secondary)]"
+                  >
+                    <Trash2 size={14} />
+                  </span>
+                )}
                 {/* The raw marker stays in the layout (transparent) so widths match the textarea exactly; the icon is drawn over it */}
                 <span data-checkbox={i} className="relative inline-block">
                   <span className="text-transparent">{marker[0]}</span>

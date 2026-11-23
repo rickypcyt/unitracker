@@ -302,7 +302,7 @@ class RainSoundNode extends BaseSoundNode {
 
     // Background rain bed — steady filtered pink noise
     const backgroundRain = new Tone.Noise("pink").start();
-    const backgroundFilter = new Tone.Filter(800, "lowpass");
+    const backgroundFilter = new Tone.Filter(800, "lowpass", -24);
     backgroundFilter.Q.value = 0.4;
     this.backgroundGain = new Tone.Gain(volume * 0.5);
 
@@ -313,8 +313,11 @@ class RainSoundNode extends BaseSoundNode {
 
     // Subtle high-frequency pink layer for texture
     const topPinkNoise = new Tone.Noise("pink").start();
+    // Band-limited so the unfiltered top end doesn't turn into a hiss
+    const topBand = new Tone.Filter(400, "highpass");
+    const topLow = new Tone.Filter(2200, "lowpass", -24);
     this.topPinkGain = new Tone.Gain(volume * 0.075);
-    topPinkNoise.connect(this.topPinkGain);
+    topPinkNoise.chain(topBand, topLow, this.topPinkGain);
     this.topPinkGain.connect(masterOut);
     this.topPinkGain.connect(wetGain);
 
@@ -323,6 +326,8 @@ class RainSoundNode extends BaseSoundNode {
       backgroundFilter,
       this.backgroundGain,
       topPinkNoise,
+      topBand,
+      topLow,
       this.topPinkGain,
       wetGain,
     ].forEach((node) => this.registerNode(node));
