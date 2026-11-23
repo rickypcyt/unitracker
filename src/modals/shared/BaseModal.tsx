@@ -241,17 +241,17 @@ const BaseModal = ({
   `.trim();
 
   const headerClasses = `
-    relative bg-[var(--bg-primary)] flex items-center 
-    justify-between p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
+    relative bg-[var(--bg-primary)] grid grid-cols-[3.5rem_1fr_3.5rem] items-center
+    p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
   `.trim();
 
   const titleClasses = `
     text-lg font-semibold 
-    text-[var(--text-primary)] truncate flex-1 text-center
+    text-[var(--text-primary)] truncate min-w-0 text-center
   `.trim();
 
   const closeButtonClasses = `
-    shrink-0 mr-3 p-2 sm:p-2.5 rounded-md 
+    shrink-0 mr-3 justify-self-end p-2 sm:p-2.5 rounded-md
     text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
     hover:bg-[var(--bg-secondary)]
   `.trim();
@@ -271,14 +271,16 @@ const BaseModal = ({
       >
         {showHeader && (
           <header className={headerClasses}>
-            <div className="shrink-0 w-9"></div>
-            {title && (
+            <div aria-hidden="true"></div>
+            {title ? (
               <h2 id="modal-title" className={titleClasses}>
                 {title}
               </h2>
+            ) : (
+              <div aria-hidden="true"></div>
             )}
 
-            {showCloseButton && (
+            {showCloseButton ? (
               <button
                 type="button"
                 onClick={handleClose}
@@ -288,6 +290,8 @@ const BaseModal = ({
               >
                 <X size={22} />
               </button>
+            ) : (
+              <div aria-hidden="true"></div>
             )}
           </header>
         )}

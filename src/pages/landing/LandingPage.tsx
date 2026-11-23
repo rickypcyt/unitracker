@@ -1,3 +1,4 @@
+import AnimatedBackdrop from '@/components/layout/AnimatedBackdrop';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
@@ -28,7 +29,7 @@ const features = [
   { key: 'tasks', icon: ListTodo, span: '' },
   { key: 'calendar', icon: CalendarDays, span: '' },
   { key: 'analytics', icon: BarChart3, span: 'md:col-span-2' },
-  { key: 'notes', icon: NotebookPen, span: '' },
+  { key: 'notes', icon: NotebookPen, span: 'md:col-span-2' },
   { key: 'offline', icon: WifiOff, span: '' },
 ] as const;
 
@@ -45,9 +46,9 @@ const SectionHeading = ({ children, sub, eyebrow, center = false }: { children: 
   </div>
 );
 
-// Primary CTA: solid accent fill with dark text (Neon-style)
+// Primary CTA: accent outline, no fill
 const primaryBtn =
-  'inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--accent-primary)] text-black font-semibold text-[15px] hover:brightness-110 hover:-translate-y-0.5 transition-all';
+  'inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold text-[15px] hover:bg-[var(--accent-primary)]/10 hover:-translate-y-0.5 transition-all';
 const ghostBtn =
   'inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 text-white/80 font-medium text-[15px] hover:bg-white/[0.06] hover:text-white transition-colors';
 
@@ -199,11 +200,7 @@ const LandingPage = () => {
 
       <div className="dark h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-black text-[#e4e4e7] antialiased" style={{ colorScheme: 'dark' }}>
       <div className="relative isolate pb-16 sm:pb-0">
-        {/* Ambient accent glows */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="um-grid absolute inset-x-0 top-0 h-[900px]" />
-          <div className="absolute left-1/2 -translate-x-1/2 w-[1000px] h-[480px] opacity-[0.14] blur-3xl" style={{ top: '-8%', background: 'radial-gradient(ellipse at center, var(--accent-primary) 0%, transparent 65%)' }} />
-        </div>
+        <AnimatedBackdrop fixed />
 
         {/* Nav */}
         <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.06]">
@@ -231,7 +228,7 @@ const LandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-full bg-[var(--accent-primary)] text-black hover:brightness-110 transition-all"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-full border border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
               >
                 {t('landing.nav.getStarted')}
               </Link>
@@ -243,11 +240,6 @@ const LandingPage = () => {
         <section className="relative">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-20 sm:pt-28">
             <div className="animate-um-rise flex flex-col items-start max-w-4xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] pl-2 pr-3.5 py-1 text-xs font-medium text-white/70 mb-8">
-                <span className="rounded-full bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider">New</span>
-                {t('landing.hero.badge')}
-                <ChevronRight className="w-3.5 h-3.5 text-white/40" />
-              </span>
               <h1 className="text-white text-[2.9rem] sm:text-7xl lg:text-[5.5rem] font-heading font-semibold mb-6 tracking-[-0.045em] leading-[0.98]">
                 {t('landing.hero.title1')}<br />
                 <span className="text-[var(--accent-primary)]">{t('landing.hero.title2')}</span>
@@ -447,7 +439,7 @@ const LandingPage = () => {
           <Link
             to="/app"
             onClick={startOnboarding}
-            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-full bg-[var(--accent-primary)] text-black hover:brightness-110 font-semibold text-sm"
+            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3 rounded-full border border-[var(--accent-primary)] bg-black/60 backdrop-blur-md text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 font-semibold text-sm"
           >
             {t('landing.cta.button')}
             <ArrowRight className="w-4 h-4" />

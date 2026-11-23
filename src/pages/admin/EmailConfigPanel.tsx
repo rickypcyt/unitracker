@@ -1,19 +1,22 @@
 import { Mail, Send, Settings, Eye } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import AnniversaryEmail from '@/emails/AnniversaryEmail';
 import { defaultEmailConfig, type EmailConfig } from '@/emails/EmailLayout';
 import FriendNotificationEmail from '@/emails/FriendNotificationEmail';
 import TaskReminderEmail from '@/emails/TaskReminderEmail';
 import WeeklyStatsEmail from '@/emails/WeeklyStatsEmail';
 import WelcomeEmail from '@/emails/WelcomeEmail';
+import { supabase } from '@/utils/supabaseClient';
 
-type EmailType = 'welcome' | 'task-reminder' | 'weekly-stats' | 'friend-notification';
+type EmailType = 'welcome' | 'task-reminder' | 'weekly-stats' | 'friend-notification' | 'anniversary';
 
 const EMAIL_TYPES: { id: EmailType; label: string; description: string }[] = [
   { id: 'welcome', label: 'Welcome', description: 'Sent when a new user registers' },
   { id: 'task-reminder', label: 'Task Reminder', description: 'Sent when tasks are due soon' },
   { id: 'weekly-stats', label: 'Weekly Stats', description: 'Weekly summary of user activity' },
   { id: 'friend-notification', label: 'Friend Notification', description: 'Sent on friend interactions' },
+  { id: 'anniversary', label: 'Anniversary', description: 'UniTracker turns 2: invite users back' },
 ];
 
 const EmailConfigPanel: React.FC = () => {
@@ -21,6 +24,7 @@ const EmailConfigPanel: React.FC = () => {
   const [selectedType, setSelectedType] = useState<EmailType>('welcome');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const [testEmail, setTestEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -29,31 +33,36 @@ const EmailConfigPanel: React.FC = () => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 
-  const handlePreview = async () => {
-    setPreviewLoading(true);
-    setSendResult(null);
-    try {
-      const { render } = await import('@react-email/render');
-      const sampleData = getSampleData(selectedType);
-      let html: string;
-
-      if (selectedType === 'welcome') {
-        html = await render(React.createElement(WelcomeEmail, { ...sampleData, config } as any));
-      } else if (selectedType === 'task-reminder') {
-        html = await render(React.createElement(TaskReminderEmail, { ...sampleData, config } as any));
-      } else if (selectedType === 'weekly-stats') {
-        html = await render(React.createElement(WeeklyStatsEmail, { ...sampleData, config } as any));
-      } else {
-        html = await render(React.createElement(FriendNotificationEmail, { ...sampleData, config } as any));
+  // Live preview: re-render (debounced) whenever the config or email type changes
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setPreviewLoading(true);
+      try {
+        const { render } = await import('@react-email/render');
+        const sampleData = getSampleData(selectedType);
+        const component =
+          selectedType === 'welcome' ? WelcomeEmail
+          : selectedType === 'task-reminder' ? TaskReminderEmail
+          : selectedType === 'weekly-stats' ? WeeklyStatsEmail
+          : selectedType === 'anniversary' ? AnniversaryEmail
+          : FriendNotificationEmail;
+        const html = await render(React.createElement(component as any, { ...sampleData, config }));
+        if (!cancelled) {
+          setPreviewHtml(html);
+          setPreviewError(null);
+        }
+      } catch (err) {
+        if (!cancelled) setPreviewError(err instanceof Error ? err.message : 'Unknown');
+      } finally {
+        if (!cancelled) setPreviewLoading(false);
       }
-
-      setPreviewHtml(html);
-    } catch (err) {
-      setSendResult({ success: false, message: `Preview error: ${err instanceof Error ? err.message : 'Unknown'}` });
-    } finally {
-      setPreviewLoading(false);
-    }
-  };
+    }, 150);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [config, selectedType]);
 
   const handleSendTest = async () => {
     if (!testEmail.trim()) {
@@ -66,9 +75,16 @@ const EmailConfigPanel: React.FC = () => {
 
     try {
       const sampleData = getSampleData(selectedType);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        setSendResult({ success: false, message: 'Not authenticated' });
+        return;
+      }
+
       const response = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           type: selectedType,
           to: testEmail.trim(),
@@ -103,6 +119,8 @@ const EmailConfigPanel: React.FC = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div className="space-y-6 min-w-0">
       {/* Config inputs */}
       <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
@@ -161,11 +179,11 @@ const EmailConfigPanel: React.FC = () => {
       {/* Email type selector */}
       <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
         <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Select Email Type</h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {EMAIL_TYPES.map((type) => (
             <button
               key={type.id}
-              onClick={() => { setSelectedType(type.id); setPreviewHtml(null); setSendResult(null); }}
+              onClick={() => { setSelectedType(type.id); setSendResult(null); }}
               className={`p-3 rounded-lg border text-left transition-all ${
                 selectedType === type.id
                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
@@ -179,18 +197,9 @@ const EmailConfigPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* Preview & Test */}
+      {/* Test send */}
       <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={handlePreview}
-            disabled={previewLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] text-[var(--text-primary)] text-sm font-medium hover:bg-[var(--bg-secondary)]/30 disabled:opacity-50 transition-all"
-          >
-            <Eye size={16} />
-            {previewLoading ? 'Loading...' : 'Preview Email'}
-          </button>
-
           <div className="flex flex-1 gap-2">
             <input
               type="email"
@@ -202,7 +211,7 @@ const EmailConfigPanel: React.FC = () => {
             <button
               onClick={handleSendTest}
               disabled={sending}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-all border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
             >
               <Send size={16} />
               {sending ? 'Sending...' : 'Send Test'}
@@ -216,18 +225,29 @@ const EmailConfigPanel: React.FC = () => {
           </div>
         )}
 
-        {previewHtml && (
-          <div className="mt-4">
-            <p className="text-xs font-medium text-[var(--text-secondary)] mb-2">Email Preview:</p>
-            <div className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden bg-white max-h-[500px] overflow-y-auto">
-              <iframe
-                srcDoc={previewHtml}
-                className="w-full h-[500px] border-0"
-                title="Email Preview"
-              />
-            </div>
+      </div>
+      </div>
+
+      {/* Live preview (right) */}
+      <div className="lg:sticky lg:top-4 bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Eye size={16} className="text-[var(--text-secondary)]" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Live Preview</h3>
           </div>
+          {previewLoading && <span className="text-xs text-[var(--text-secondary)]">Updating...</span>}
+        </div>
+        {previewError && (
+          <div className="p-3 mb-3 rounded-lg text-sm bg-red-500/10 text-red-500">Preview error: {previewError}</div>
         )}
+        <div className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden bg-white">
+          <iframe
+            srcDoc={previewHtml ?? ''}
+            className="w-full h-[70vh] border-0"
+            title="Email Preview"
+          />
+        </div>
+      </div>
       </div>
     </div>
   );
@@ -258,6 +278,8 @@ function getSampleData(type: EmailType): Record<string, unknown> {
         },
         statsUrl: 'https://unitracker.me',
       };
+    case 'anniversary':
+      return { userName: 'John', appUrl: 'https://unitracker.me' };
     case 'friend-notification':
       return {
         userName: 'John',

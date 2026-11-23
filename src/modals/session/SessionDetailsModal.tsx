@@ -122,13 +122,13 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setIsEditing(false)}
-                                        className="bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                                        className="border-2 border-white/40 hover:bg-white/15 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleSaveEdit}
-                                        className="bg-white text-[var(--accent-primary)] hover:bg-white/90 rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
+                                        className="border-2 border-white text-white hover:bg-white/15 rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
                                     >
                                         Save
                                     </button>

@@ -55,7 +55,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
             type="text"
             {...register('name')}
             placeholder={t('habits.habitNamePlaceholder')}
-            className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
+            className="w-full px-3 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)]"
             autoFocus
           />
         </div>
@@ -64,14 +64,14 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-md text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="flex-1 rounded-xl border-2 border-[var(--border-primary)] px-4 py-2.5 font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-secondary)]"
           >
             {t('common.cancel')}
           </button>
             <button
               type="submit"
               disabled={!isValid}
-              className="flex-1 px-4 py-2 bg-transparent border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2.5 font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10 disabled:cursor-not-allowed disabled:opacity-50"
             >
             {t('habits.create')}
           </button>

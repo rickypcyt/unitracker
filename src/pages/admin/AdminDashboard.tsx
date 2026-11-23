@@ -41,14 +41,27 @@ const AdminDashboard = () => {
     const fetchProfiles = async () => {
       setLoading(true);
       setError(null);
-      const { data, error: err } = await supabase
-        .from('profiles')
-        .select('id, email, username, avatar_url, created_at, last_sign_in_at')
-        .order('created_at', { ascending: false });
-      if (err) {
-        setError(err.message);
+      // Server-side admin check lives in the admin_list_profiles() SQL function
+      // PostgREST caps each response (1000 rows by default), so page through the results.
+      const PAGE_SIZE = 1000;
+      const all: Profile[] = [];
+      let fetchError: string | null = null;
+      for (let from = 0; ; from += PAGE_SIZE) {
+        const { data, error: err } = await supabase
+          .rpc('admin_list_profiles')
+          .range(from, from + PAGE_SIZE - 1);
+        if (err) {
+          fetchError = err.message;
+          break;
+        }
+        const rows = (data as Profile[]) || [];
+        all.push(...rows);
+        if (rows.length < PAGE_SIZE) break;
+      }
+      if (fetchError) {
+        setError(fetchError);
       } else {
-        setProfiles((data as Profile[]) || []);
+        setProfiles(all);
       }
       setLoading(false);
     };
@@ -196,7 +209,7 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab('stats')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'stats'
-              ? 'bg-[var(--accent-primary)] text-white'
+              ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
               : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
           }`}
         >
@@ -207,7 +220,7 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab('email')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'email'
-              ? 'bg-[var(--accent-primary)] text-white'
+              ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
               : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
           }`}
         >

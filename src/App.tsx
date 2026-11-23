@@ -7,6 +7,8 @@ import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import FloatingFooter from "@/components/layout/FloatingFooter";
 import LandingPage from "@/pages/landing/LandingPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import LegalPage from "@/pages/legal/LegalPage";
 import IndiaLandingPage from "@/pages/landing/IndiaLandingPage";
 import SeoLandingPage from "@/pages/landing/SeoLandingPage";
 import { SEO_PAGES } from "@/pages/landing/seoPages";
@@ -332,8 +334,27 @@ const UserModalGate: FC = () => {
 const RootRoute: FC = () => {
   const { isLoggedIn, isAuthLoading } = useAuth();
 
+  // Coming back from an OAuth login (tokens in the URL): load the app while the session is processed
+  useEffect(() => {
+    if (window.location.hash.includes("access_token") || window.location.search.includes("code=")) {
+      preloadPage("session");
+    }
+  }, []);
+
   if (isAuthLoading) return <PageLoader fullScreen />;
   return isLoggedIn ? <Navigate to={PAGE_PATHS.session} replace /> : <LandingPage />;
+};
+
+const LoginRoute: FC = () => {
+  const { isLoggedIn, isAuthLoading } = useAuth();
+
+  // Warm up the app chunk while the user signs in, so the redirect back doesn't wait on it
+  useEffect(() => {
+    preloadPage("session");
+  }, []);
+
+  if (isAuthLoading) return <PageLoader fullScreen />;
+  return isLoggedIn ? <Navigate to={PAGE_PATHS.session} replace /> : <LoginPage />;
 };
 
 // Dedicated language URLs (/es, /hi) — forces the locale so each version
@@ -412,6 +433,9 @@ const App: FC = () => {
           <NotificationPromptModal />
           <Routes>
             <Route path="/" element={<RootRoute />} />
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/terms" element={<LegalPage doc="terms" />} />
+            <Route path="/privacy" element={<LegalPage doc="privacy" />} />
             <Route path="/es" element={<LocalizedLanding lang="es" />} />
             <Route path="/hi" element={<LocalizedLanding lang="hi" />} />
             <Route path="/india" element={<IndiaLandingPage />} />

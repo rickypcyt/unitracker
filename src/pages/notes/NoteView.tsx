@@ -318,10 +318,11 @@ const NoteView: React.FC<NoteViewProps> = ({
           {onBack && (
             <button
               onClick={onBack}
-              className="flex flex-shrink-0 items-center gap-1 font-medium"
+              className="-ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center font-medium md:ml-0 md:h-7 md:w-7"
               title={t('notes.backToNotes')}
+              aria-label={t('notes.backToNotes')}
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={20} />
             </button>
           )}
           <span className="truncate">

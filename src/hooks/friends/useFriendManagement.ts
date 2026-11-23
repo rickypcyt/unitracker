@@ -113,7 +113,7 @@ export const useFriendManagement = (userId?: string | null) => {
     if (partnerIds.length > 0) {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, username, email, avatar_url')
+        .select('id, username, avatar_url')
         .in('id', partnerIds);
 
       if (profilesError) {

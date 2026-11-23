@@ -38,11 +38,217 @@ export const getDemoTasks = () => [
   { id: 'demo-task-3', title: `${t('tasks.restApi')}${suffix()}`, assignment: 'demo-assignment-b', workspace_id: 'demo-ws-2', completed: false, due_date: tomorrowStr, deadline: tomorrowStr, created_at: tomorrowStr, difficulty: 'hard', completed_at: null },
 ];
 
-export const getDemoNotes = () => [
-  { id: 'demo-note-1', title: `${t('notes.formulas.title')}${suffix()}`, assignment: 'demo-assignment-a', description: t('notes.formulas.desc'), date: todayStr },
-  { id: 'demo-note-2', title: `${t('notes.meeting.title')}${suffix()}`, assignment: 'demo-assignment-b', description: t('notes.meeting.desc'), date: yesterdayStr },
-  { id: 'demo-note-3', title: `${t('notes.design.title')}${suffix()}`, assignment: 'demo-assignment-a', description: t('notes.design.desc'), date: todayStr },
-];
+// Demo notes are written in Markdown so the Obsidian-style editor shows headings,
+// task lists, tables and code. `assignment` is the folder name shown in the sidebar.
+const DEMO_NOTES_CONTENT = {
+  en: {
+    math: 'Advanced Mathematics',
+    web: 'Web Project',
+    notes: [
+      {
+        title: 'Important formulas',
+        folder: 'math',
+        body: `# Important formulas
+
+Quick reference for the midterm. Review it before the **Calculus** session.
+
+## Integration by parts
+
+\`∫ u dv = uv − ∫ v du\`
+
+Pick \`u\` with the **LIATE** rule: Logarithmic, Inverse trig, Algebraic, Trig, Exponential.
+
+## Chain rule
+
+If \`y = f(g(x))\` then \`y' = f'(g(x)) · g'(x)\`.
+
+## Common derivatives
+
+| Function | Derivative |
+| --- | --- |
+| \`sin x\` | \`cos x\` |
+| \`eˣ\` | \`eˣ\` |
+| \`ln x\` | \`1/x\` |
+
+## To review
+
+- [x] Integration by parts
+- [x] Chain rule
+- [ ] Taylor series
+- [ ] Practice exam 2019
+`,
+      },
+      {
+        title: 'Design ideas',
+        folder: 'math',
+        body: `# Design ideas
+
+> Notes for the **modeling project**: keep the architecture simple first, optimize later.
+
+## Options
+
+1. **MVC**: easy to explain, good for the first version.
+2. **Microservices**: only if the team grows.
+
+## Example
+
+\`\`\`ts
+// Keep the data layer behind one interface
+interface Repository<T> {
+  get(id: string): Promise<T>
+  save(item: T): Promise<void>
+}
+\`\`\`
+
+## Next steps
+
+- [ ] Sketch the data model
+- [ ] Compare MVC vs microservices
+- [ ] Present to the group on Friday
+`,
+      },
+      {
+        title: 'Client meeting',
+        folder: 'web',
+        body: `# Client meeting
+
+**Date:** next Friday · **Topic:** new payment module
+
+## Requirements
+
+- Accept card and bank transfer
+- Send a receipt by email
+- Refunds within 14 days
+
+## Decisions
+
+| Item | Owner | Status |
+| --- | --- | --- |
+| API design | Me | In progress |
+| UI mockups | Sam | Done |
+| Payment provider | Client | Pending |
+
+## Action items
+
+- [x] Send the meeting summary
+- [ ] Draft the REST API
+- [ ] Confirm the deadline
+`,
+      },
+    ],
+  },
+  es: {
+    math: 'Matemáticas Avanzadas',
+    web: 'Proyecto Web',
+    notes: [
+      {
+        title: 'Fórmulas importantes',
+        folder: 'math',
+        body: `# Fórmulas importantes
+
+Referencia rápida para el parcial. Repásala antes de la sesión de **Cálculo**.
+
+## Integración por partes
+
+\`∫ u dv = uv − ∫ v du\`
+
+Elige \`u\` con la regla **LIATE**: Logarítmica, Inversa trigonométrica, Algebraica, Trigonométrica, Exponencial.
+
+## Regla de la cadena
+
+Si \`y = f(g(x))\` entonces \`y' = f'(g(x)) · g'(x)\`.
+
+## Derivadas comunes
+
+| Función | Derivada |
+| --- | --- |
+| \`sin x\` | \`cos x\` |
+| \`eˣ\` | \`eˣ\` |
+| \`ln x\` | \`1/x\` |
+
+## Por repasar
+
+- [x] Integración por partes
+- [x] Regla de la cadena
+- [ ] Series de Taylor
+- [ ] Examen de práctica 2019
+`,
+      },
+      {
+        title: 'Ideas de diseño',
+        folder: 'math',
+        body: `# Ideas de diseño
+
+> Notas del **proyecto de modelado**: primero una arquitectura simple, optimizar después.
+
+## Opciones
+
+1. **MVC**: fácil de explicar, bueno para la primera versión.
+2. **Microservicios**: solo si el equipo crece.
+
+## Ejemplo
+
+\`\`\`ts
+// Mantén la capa de datos detrás de una interfaz
+interface Repository<T> {
+  get(id: string): Promise<T>
+  save(item: T): Promise<void>
+}
+\`\`\`
+
+## Siguientes pasos
+
+- [ ] Dibujar el modelo de datos
+- [ ] Comparar MVC y microservicios
+- [ ] Presentar al grupo el viernes
+`,
+      },
+      {
+        title: 'Reunión con el cliente',
+        folder: 'web',
+        body: `# Reunión con el cliente
+
+**Fecha:** próximo viernes · **Tema:** nuevo módulo de pagos
+
+## Requisitos
+
+- Aceptar tarjeta y transferencia bancaria
+- Enviar el recibo por correo
+- Reembolsos en 14 días
+
+## Decisiones
+
+| Punto | Responsable | Estado |
+| --- | --- | --- |
+| Diseño de la API | Yo | En curso |
+| Maquetas de la UI | Sam | Hecho |
+| Proveedor de pagos | Cliente | Pendiente |
+
+## Pendientes
+
+- [x] Enviar el resumen de la reunión
+- [ ] Redactar la API REST
+- [ ] Confirmar la fecha límite
+`,
+      },
+    ],
+  },
+} as const;
+
+export const getDemoNotes = () => {
+  const lang = (i18n.resolvedLanguage ?? i18n.language ?? 'en').startsWith('es') ? 'es' : 'en';
+  const content = DEMO_NOTES_CONTENT[lang];
+  const stamps = [todayStr, todayStr, yesterdayStr];
+  return content.notes.map((n, i) => ({
+    id: `demo-note-${i + 1}`,
+    title: n.title,
+    assignment: content[n.folder as 'math' | 'web'],
+    description: n.body,
+    date: stamps[i] as string,
+    created_at: `${stamps[i]}T09:00:00`,
+    last_edited: `${stamps[i]}T09:00:00`,
+  }));
+};
 
 export const getDemoSessions = () => [
   { id: 'demo-session-1', name: `${t('sessions.mathStudy')}${suffix()}`, started_at: todayStr + 'T09:00:00', ended_at: todayStr + 'T10:30:00', duration: '01:30:00', tasks_completed: 2, pomodoros_completed: 3 },

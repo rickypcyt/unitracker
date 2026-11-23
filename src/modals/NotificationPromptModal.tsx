@@ -76,7 +76,7 @@ const NotificationPromptModal = () => {
           <button
             type="button"
             onClick={handleEnable}
-            className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold bg-[var(--accent-primary)] text-white hover:opacity-90 transition-colors"
+            className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             {t('notifications.title')}
           </button>

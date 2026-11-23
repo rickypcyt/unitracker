@@ -92,7 +92,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               key={color.value}
               onClick={() => handleColorSelect(color.value)}
               aria-pressed={selectedColor.toLowerCase() === color.value.toLowerCase()}
-              className={`group relative p-2 sm:p-5 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-100 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
+              className={`group relative aspect-square flex flex-col items-center justify-center p-1.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[var(--bg-secondary)]/30 border-2 transition-all duration-100 hover:shadow-lg hover:shadow-[var(--accent-primary)]/10 active:scale-[0.98] ${
                 selectedColor.toLowerCase() === color.value.toLowerCase()
                   ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
                   : 'border-[var(--border-primary)]/30 hover:border-[var(--accent-primary)]/30 hover:bg-[var(--bg-secondary)]/50'
@@ -101,7 +101,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               {/* Color preview */}
               <div className="flex items-center justify-center mb-1.5 sm:mb-3">
                 <div
-                  className="w-8 h-8 sm:w-14 sm:h-14 rounded-full shadow-lg transition-transform duration-100 group-hover:scale-110"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full shadow-lg transition-transform duration-100 group-hover:scale-110"
                   style={{ backgroundColor: color.value }}
                 />
               </div>
@@ -114,11 +114,11 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
               )}
 
               {/* Color info */}
-              <div className="text-center">
-                <h3 className="font-bold text-[10px] sm:text-base text-[var(--text-primary)] sm:mb-1 leading-tight truncate">
+              <div className="text-center w-full">
+                <h3 className="font-bold text-[10px] sm:text-sm text-[var(--text-primary)] sm:mb-0.5 leading-tight truncate">
                   {t(accentColorI18nKey(color.name))}
                 </h3>
-                <p className="hidden sm:block text-xs text-[var(--text-secondary)]">
+                <p className="hidden sm:block text-[11px] leading-tight text-[var(--text-secondary)] truncate">
                   {t(accentColorDescI18nKey(color.name))}
                 </p>
               </div>

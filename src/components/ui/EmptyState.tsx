@@ -37,7 +37,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           {ctaLabel && onCtaClick && (
             <button
               onClick={onCtaClick}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent-primary)] text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition-all w-full sm:w-auto"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all w-full sm:w-auto border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
             >
               {ctaLabel}
             </button>

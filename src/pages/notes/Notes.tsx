@@ -5,7 +5,6 @@ import DeleteNoteModal from '@/modals/notes/DeleteNoteModal';
 import { Helmet } from "react-helmet-async";
 import LoginPromptModal from '@/modals/auth/LoginPromptModal';
 import NoteView from './NoteView';
-import NotesDirectory from './NotesDirectory';
 import NotesSidepanel from './NotesSidepanel';
 import { toast } from 'sonner';
 import { FileText, Plus } from 'lucide-react';
@@ -93,10 +92,10 @@ const Notes: React.FC = () => {
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(undefined);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches);
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 768px)').matches);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
+    const mq = window.matchMedia('(min-width: 768px)');
     const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
@@ -357,9 +356,9 @@ const Notes: React.FC = () => {
             </main>
           </div>
         ) : (
-        <div className="w-full min-h-screen relative">
+        <div className="w-full relative">
         {/* Main Content Container */}
-        <div className="w-full h-full">
+        <div className="h-[calc(100dvh-var(--navbar-h))] w-full overflow-hidden">
           {selectedNote ? (
             <NoteView
               note={selectedNote}
@@ -372,22 +371,18 @@ const Notes: React.FC = () => {
               onBack={() => setSelectedNoteId(undefined)}
             />
           ) : (
-            <NotesDirectory
-              onQuickCreate={openCreate}
-              onCreateNote={async noteData => {
-                if (!user) {
-                  setShowLoginModal(true);
-                  return;
-                }
-                await handleAddNote(noteData);
-              }}
-              notes={notesToShow}
-              loading={loading}
-              error={error}
-              onNoteSelect={handleNoteSelect}
-              selectedNoteId={selectedNoteId}
-              onDelete={(note) => setNoteToDelete(note)}
-            />
+            /* Obsidian-style file explorer, full screen on phones */
+            <div className="h-full w-full">
+              <NotesSidepanel
+                roomy
+                notes={notesToShow}
+                loading={loading}
+                error={error}
+                selectedNoteId={selectedNoteId}
+                onNoteSelect={handleNoteSelect}
+                onCreateNote={openCreate}
+              />
+            </div>
           )}
         </div>
       </div>

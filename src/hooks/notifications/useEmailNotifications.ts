@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/hooks/auth/useAuth';
+import { supabase } from '@/utils/supabaseClient';
 
 export type EmailType = 'welcome' | 'task-reminder' | 'weekly-stats' | 'friend-notification';
 
@@ -54,9 +55,13 @@ export const useEmailNotifications = () => {
   ): Promise<{ success: boolean; error?: string }> => {
     setSending(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) return { success: false, error: 'Not authenticated' };
+
       const response = await fetch('/api/send-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ type, to, data, config: configOverride }),
       });
 

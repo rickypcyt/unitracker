@@ -1,5 +1,7 @@
 import { isSupportedType, processAvatarFile } from '@/utils/avatarImage';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import { ChangeEvent } from 'react';
@@ -28,6 +30,8 @@ interface UploadResult {
 
 const UserModal = ({ isOpen, onClose }: UserModalProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processed, setProcessed] = useState<{
@@ -223,6 +227,33 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
       setUsernameLoading(false);
     }
   };
+
+  // Signed-out visitors (demo) can't have a profile: ask them to log in instead
+  if (!user) {
+    return (
+      <BaseModal isOpen={isOpen} onClose={onClose} title="User Info" maxWidth="max-w-md">
+        <div className="flex flex-col items-center gap-4 px-6 py-8 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-4xl text-[var(--accent-primary)]">
+            ?
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-[var(--text-primary)]">{t('settings.account.notSignedIn')}</p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{t('settings.account.signInToSync')}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate('/login');
+            }}
+            className="w-full rounded-lg border-2 border-[var(--accent-primary)] px-4 py-2.5 font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+          >
+            {t('settings.account.logIn')}
+          </button>
+        </div>
+      </BaseModal>
+    );
+  }
 
   return (
     <BaseModal

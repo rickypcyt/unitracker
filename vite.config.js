@@ -115,6 +115,42 @@ export default defineConfig(({ command, mode }) => {
     },
   };
 
+  // Dev-only middleware that runs api/send-email.ts (Vercel function) locally
+  const sendEmailDevPlugin = {
+    name: 'send-email-dev-api',
+    configureServer(server) {
+      server.middlewares.use('/api/send-email', (req, res) => {
+        const sendJson = (status, data) => {
+          res.statusCode = status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(data));
+        };
+        let raw = '';
+        req.on('data', (chunk) => { raw += chunk; });
+        req.on('end', async () => {
+          try {
+            // Expose .env.local values (RESEND_API_KEY, SUPABASE_*, ADMIN_EMAIL...) to the handler
+            for (const [k, v] of Object.entries(env)) {
+              if (process.env[k] === undefined) process.env[k] = v;
+            }
+            const mod = await server.ssrLoadModule('/api/send-email.ts');
+            const vercelRes = {
+              status(code) { res.statusCode = code; return vercelRes; },
+              json: (data) => sendJson(res.statusCode || 200, data),
+              send: (data) => res.end(data),
+            };
+            await mod.default(
+              { method: req.method, headers: req.headers, body: raw ? JSON.parse(raw) : {} },
+              vercelRes,
+            );
+          } catch (err) {
+            sendJson(500, { error: err instanceof Error ? err.message : 'Internal error' });
+          }
+        });
+      });
+    },
+  };
+
   // Disable compression for mobile builds
   const shouldDisableCompression = process.env.DISABLE_COMPRESSION === 'true' ||
                                   process.env.CAPACITOR_PLATFORM ||
@@ -126,7 +162,7 @@ export default defineConfig(({ command, mode }) => {
   
   return {
     plugins: [
-      ...(command === 'serve' ? [openRouterDevPlugin] : []),
+      ...(command === 'serve' ? [openRouterDevPlugin, sendEmailDevPlugin] : []),
       react(),
       seoPrerenderPlugin,
       // Keep the PWA virtual module available, but skip Workbox generation for fast/mobile builds.

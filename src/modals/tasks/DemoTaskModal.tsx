@@ -97,7 +97,7 @@ const DemoTaskModal: React.FC<DemoTaskModalProps> = ({ isOpen, onClose, workspac
           <button
             onClick={handleGoogle}
             disabled={isLoggingIn}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--accent-primary)] text-white font-semibold py-2.5 hover:opacity-90 disabled:opacity-60 transition-opacity"
+            className="w-full flex items-center justify-center gap-2 rounded-xl font-semibold py-2.5 disabled:opacity-60 transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             <LogIn size={18} />
             {isLoggingIn ? t('auth.login.redirecting') : t('auth.login.signInGoogle')}

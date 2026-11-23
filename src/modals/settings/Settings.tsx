@@ -156,9 +156,9 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   <div className="relative">
                     <div className="w-full h-11 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
                       <div
-                        className="absolute top-1 bottom-1 rounded-md transition-all duration-300 ease-in-out"
+                        className="absolute top-1 bottom-1 rounded-md border-2 transition-all duration-300 ease-in-out"
                         style={{
-                          backgroundColor: accentPalette,
+                          borderColor: accentPalette,
                           width: "calc(33.333% - 4px)",
                           left:
                             themePreference === "light"
@@ -173,24 +173,24 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Light theme"
                       >
-                        <Sun size={17} className={themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "light" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.light")}</span>
+                        <Sun size={17} className={themePreference === "light" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "light" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.light")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("auto")}
                         className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="System theme"
                       >
-                        <Monitor size={17} className={themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "auto" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.system")}</span>
+                        <Monitor size={17} className={themePreference === "auto" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "auto" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.system")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("dark")}
                         className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Dark theme"
                       >
-                        <Moon size={17} className={themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "dark" ? "text-white" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.dark")}</span>
+                        <Moon size={17} className={themePreference === "dark" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
+                        <span className={`text-sm ${themePreference === "dark" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.dark")}</span>
                       </button>
                     </div>
                   </div>
@@ -257,14 +257,18 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   </button>
                   <button
                     onClick={() => setShowAddFriendModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    disabled={!isLoggedIn}
+                    title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
                   >
                     <Users size={20} className="text-[var(--accent-primary)]" />
                     {t("settings.account.addFriends")}
                   </button>
                   <button
                     onClick={() => setShowFriendsModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    disabled={!isLoggedIn}
+                    title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
                   >
                     <Users size={20} className="text-[var(--accent-primary)]" />
                     {t("settings.account.manageFriends")}
@@ -308,21 +312,27 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     onClick={() => setShowManageAssignmentsModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    disabled={!isLoggedIn}
+                    title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
                   >
                     <List size={20} className="text-[var(--accent-primary)]" />
                     {t("settings.data.manageAssignments")}
                   </button>
                   <button
                     onClick={() => setShowSessionsModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    disabled={!isLoggedIn}
+                    title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
                   >
                     <Clock size={20} className="text-[var(--accent-primary)]" />
                     {t("settings.data.manageSessions")}
                   </button>
                   <button
                     onClick={() => setShowCompletedTasksModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    disabled={!isLoggedIn}
+                    title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
                   >
                     <CheckCircle size={20} className="text-[var(--accent-primary)]" />
                     {t("settings.data.manageCompletedTasks")}

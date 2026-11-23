@@ -164,7 +164,7 @@ const ContextualTooltip: React.FC<ContextualTooltipProps> = ({
         </p>
         <button
           onClick={handleDismiss}
-          className="mt-3 w-full px-3 py-1.5 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold hover:opacity-90 transition-all"
+          className="mt-3 w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
         >
           Got it
         </button>

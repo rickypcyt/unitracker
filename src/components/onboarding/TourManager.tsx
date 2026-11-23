@@ -1,11 +1,9 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import AccentColorModal from '@/modals/settings/AccentColorModal';
-import EnhancedLoginModal from '@/modals/auth/EnhancedLoginModal';
 import FirstTaskPrompt from '@/components/onboarding/FirstTaskPrompt';
 import ThemeManager from '@/components/settings/ThemeManager';
-import Tour from '@/components/onboarding/Tour';
-import WelcomeModal from '@/modals/auth/WelcomeModal';
 import useTheme from '@/hooks/settings/useTheme';
 
 interface TourManagerProps {
@@ -18,37 +16,42 @@ const TourManager: React.FC<TourManagerProps> = ({ children }) => {
     showAccentColorModal, 
     showLoginModal,
     showTour,
-    handleCloseTour,
     handleTourComplete,
     handleCloseWelcome,
     handleCloseAccentColor,
     handleCloseLogin,
     handleAccentColorSelection,
-    handleLogin
   } = useTheme();
+  const navigate = useNavigate();
+
+  // The welcome modal was removed: skip straight to the next onboarding step
+  useEffect(() => {
+    if (showWelcomeModal) handleCloseWelcome();
+  }, [showWelcomeModal]);
+
+  // The "Unlock Your Full Potential" modal was replaced by the /login page
+  useEffect(() => {
+    if (!showLoginModal) return;
+    handleCloseLogin();
+    navigate('/login');
+  }, [showLoginModal]);
+
+  // The product tour was removed. Mark it as done right away: FirstTaskPrompt waits for
+  // the "hasSeenTour" flag before it can nudge new users to create their first task.
+  useEffect(() => {
+    if (showTour) handleTourComplete();
+  }, [showTour]);
 
   return (
     <>
       <ThemeManager />
       {children}
-      {showWelcomeModal && (
-        <WelcomeModal 
-          onClose={handleCloseWelcome} 
-        />
-      )}
       {showAccentColorModal && (
         <AccentColorModal 
           onClose={handleCloseAccentColor}
           onAccentColorSelect={handleAccentColorSelection}
         />
       )}
-      {showLoginModal && (
-        <EnhancedLoginModal 
-          onClose={handleCloseLogin}
-          onLogin={handleLogin}
-        />
-      )}
-      <Tour isOpen={showTour} onClose={handleCloseTour} onComplete={handleTourComplete} />
       <FirstTaskPrompt />
     </>
   );

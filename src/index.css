@@ -371,11 +371,10 @@
 
   /* Fuente base */
   html {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     min-height: 100vh;
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
-    font-size: 1rem; /* text-base equivalent */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
@@ -383,7 +382,7 @@
     backface-visibility: hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "kern";
     font-variant-numeric: tabular-nums;
-    font-size: 16px;
+    font-size: 112.5%; /* 18px base: every rem-based size (text-sm, text-base...) scales up */
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: none;
@@ -839,7 +838,7 @@
     padding-bottom: clamp(4rem, 6vw, 6rem);
   }
   .font-heading {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
     letter-spacing: -0.02em;
   }
 }
@@ -1680,7 +1679,7 @@ h1 {
 /* Dedicated typeface for floating timer digits — crisp monospaced digits
    with tabular figures so the clock never jitters between second flips */
 .font-timer-digits {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2028,7 +2027,7 @@ h1 {
 /* Digits — the centerpiece */
 .utp-body .relative.w-32.h-32 span.font-mono,
 .utp-body .countdown-time-input {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: clamp(1.35rem, 1.1vw + 1rem, 1.9rem);
   line-height: 1;
@@ -2074,7 +2073,7 @@ h1 {
 }
 
 .utp-body .timer-adjust-btn {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   font-size: 10px;
   font-weight: 500;
 }
@@ -2176,7 +2175,7 @@ h1 {
   border: 2px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
   color: var(--text-secondary);
   background: transparent;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   font-size: 11px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -2661,7 +2660,7 @@ input.no-spinners {
 *,
 *::before,
 *::after {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif !important;
 }
 
 .ProseMirror pre,

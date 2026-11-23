@@ -1,7 +1,7 @@
-import { Heading, Section, Text } from '@react-email/components';
+import { Section, Text } from '@react-email/components';
 import React from 'react';
 
-import { EmailButton, EmailLayout, type EmailConfig } from './EmailLayout';
+import { EmailButton, EmailHero, EmailLayout, emailText, emailTheme, type EmailConfig } from './EmailLayout';
 
 interface FriendNotificationEmailProps {
   userName: string;
@@ -25,30 +25,27 @@ export const FriendNotificationEmail: React.FC<FriendNotificationEmailProps> = (
   appUrl = 'https://unitracker.me',
 }) => (
   <EmailLayout preview={`${friendName} ${actionText[action]}`} config={config}>
-    <Heading style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: '0 0 16px' }}>
-      {friendName} {actionText[action]}! 👥
-    </Heading>
-    <Text style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.6 }}>
-      Hi {userName}, <strong>{friendName}</strong> {actionText[action]} on {config.appName}.
-    </Text>
-    <Section style={{ margin: '24px 0' }}>
-      <div
-        style={{
-          padding: '16px 20px',
-          backgroundColor: '#f9fafb',
-          borderRadius: 10,
-          textAlign: 'center',
-        }}
-      >
-        <Text style={{ fontSize: 16, color: '#111827', margin: 0 }}>
-          {action === 'request' ? 'You have a pending friend request waiting for you.' : `You and ${friendName} are now friends!`}
-        </Text>
-      </div>
-    </Section>
-    <Text style={{ fontSize: 15, color: '#4b5563' }}>
-      {action === 'request' ? 'View and respond to friend requests:' : 'Start studying together:'}
-    </Text>
-    <EmailButton href={appUrl} label={action === 'request' ? 'View Requests' : 'Open App'} color={config.primaryColor} />
+    <EmailHero
+      title={`${friendName} ${actionText[action]}`}
+      cta={
+        <EmailButton
+          href={appUrl}
+          label={action === 'request' ? 'View requests' : 'Open app'}
+          color={config.primaryColor}
+        />
+      }
+    >
+      <Text style={emailText.body}>
+        Hi {userName}, <span style={{ color: emailTheme.fg, fontWeight: 600 }}>{friendName}</span> {actionText[action]}{' '}
+        on {config.appName}.
+      </Text>
+      <Text style={emailText.body}>
+        {action === 'request'
+          ? 'You have a pending friend request waiting for you.'
+          : `You and ${friendName} are now friends. Study together!`}
+      </Text>
+    </EmailHero>
+    <Section style={{ padding: '0 0 8px' }} />
   </EmailLayout>
 );
 

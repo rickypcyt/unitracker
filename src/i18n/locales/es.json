@@ -109,9 +109,9 @@
     },
     "hero": {
       "eyebrow": "// Gratis y open source",
-      "title1": "Termina más.",
-      "title2": "Estresa menos.",
-      "subtitle": "El tracker de estudio todo en uno: temporizadores Pomodoro, tareas, calendario y analíticas en una app rápida. Funciona offline y sincroniza cuando vuelves.",
+      "title1": "Registra cada hora.",
+      "title2": "Termina cada tarea.",
+      "subtitle": "Registra tus horas de estudio, añade tareas en segundos y mira tu progreso. Temporizadores Pomodoro, calendario y analíticas en una app rápida que funciona offline.",
       "cta": "Empezar gratis",
       "badge": "Gratis y open source · Sin anuncios",
       "ctaSecondary": "Probar los temporizadores",

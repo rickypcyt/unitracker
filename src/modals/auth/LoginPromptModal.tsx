@@ -4,8 +4,7 @@ import { createPortal } from 'react-dom';
 import { LogIn } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginPromptModalProps {
   isOpen: boolean;
@@ -14,12 +13,8 @@ interface LoginPromptModalProps {
 
 const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const { loginWithGoogle, prepareGoogleLogin } = useAuth();
+  const navigate = useNavigate();
   const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isOpen) prepareGoogleLogin?.();
-  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,18 +45,18 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
         </p>
         <div className="flex flex-col gap-3">
           <button
-            onClick={async () => {
-              const ok = await loginWithGoogle();
-              if (ok) onClose();
+            onClick={() => {
+              onClose();
+              navigate('/login');
             }}
-            className="w-full px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/80 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             <LogIn size={20} />
-            {t('auth.login.logInGoogle')}
+            {t('settings.account.logIn')}
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-[var(--bg-secondary)] hover:bg-[var(--bg-secondary)]/80 text-[var(--text-primary)] rounded-lg transition-colors border-2 border-[var(--border-primary)]"
+            className="w-full px-4 py-2 text-[var(--text-primary)] rounded-lg transition-colors border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]"
           >
             {t('common.cancel')}
           </button>

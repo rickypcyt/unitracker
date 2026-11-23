@@ -320,7 +320,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
           </button>
           <button
             onClick={handleSave}
-            className="px-3.5 py-1.5 rounded-lg text-sm font-medium bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+            className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             Apply
           </button>

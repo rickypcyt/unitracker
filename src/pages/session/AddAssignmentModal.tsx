@@ -95,7 +95,7 @@ const AddAssignmentModal = ({
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity text-sm font-medium"
+            className="px-4 py-2 rounded-lg transition-opacity text-sm font-medium border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             Create & Add Task
           </button>

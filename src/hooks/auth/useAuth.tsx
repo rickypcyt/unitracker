@@ -45,6 +45,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
       authEventReceived = true;
+      // Drop the OAuth tokens from the address bar once the session is stored
+      if (session && window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
       setIsAuthLoading(false);

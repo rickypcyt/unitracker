@@ -109,7 +109,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
         const {
           data: profileData,
           error: profileError
-        } = await supabase.from('profiles').select('id, username, email, avatar_url').in('id', partnerIds);
+        } = await supabase.from('profiles').select('id, username, avatar_url').in('id', partnerIds);
         if (!profileError && profileData) {
           partnerProfiles = profileData.reduce<Record<string, any>>((acc, profile) => {
             acc[profile.id] = profile;

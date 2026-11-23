@@ -183,7 +183,7 @@ const IndiaLandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-md bg-[var(--accent-primary)] text-white hover:opacity-90 transition-opacity"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-md transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               >
                 {t('india.nav.getStarted')}
               </Link>
@@ -210,7 +210,7 @@ const IndiaLandingPage = () => {
                 <Link
                   to="/app"
                   onClick={startOnboarding}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold text-sm transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
                 >
                   {t('india.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
@@ -340,7 +340,7 @@ const IndiaLandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md bg-[var(--accent-primary)] text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md font-semibold text-sm transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
               >
                 {t('india.cta.button')}
                 <ArrowRight className="w-4 h-4" />

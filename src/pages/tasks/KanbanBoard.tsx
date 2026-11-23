@@ -430,7 +430,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
           {isLoggedIn ? (
             <button
               onClick={() => window.dispatchEvent(new Event('openWorkspaceModal'))}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
             >
               <Plus size={18} />
               Create your first workspace

@@ -69,7 +69,7 @@ const FinishSessionConfirmationModal: React.FC<FinishSessionConfirmationModalPro
           <button
             onClick={handleConfirm}
             disabled={isLoading || activeTasks.length === 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center border-2 border-green-500 text-green-500 hover:bg-green-500/10"
           >
             {isLoading ? (
               'Finishing...'

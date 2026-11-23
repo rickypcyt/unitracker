@@ -29,9 +29,13 @@ const Leaderboard = () => {
   const { user } = useAuth();
   const [period, setPeriod] = useState<LeaderboardPeriod>('month');
 
+  // Signed-out users can't call the leaderboard RPC, so they get sample data
+  const isDemo = !user;
+
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['leaderboard', period],
-    queryFn: () => LeaderboardService.getTop(period, TOP_N),
+    queryKey: ['leaderboard', period, isDemo ? 'demo' : 'live'],
+    queryFn: () =>
+      isDemo ? Promise.resolve(LeaderboardService.getDemoTop(period, TOP_N)) : LeaderboardService.getTop(period, TOP_N),
     staleTime: 60 * 1000,
   });
 
@@ -89,7 +93,7 @@ const Leaderboard = () => {
           <p className="mb-3 text-sm text-[var(--text-secondary)]">{t('leaderboard.error')}</p>
           <button
             onClick={() => refetch()}
-            className="rounded-lg bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-black"
+            className="rounded-lg px-4 py-2 text-sm font-semibold border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
           >
             {t('leaderboard.retry')}
           </button>

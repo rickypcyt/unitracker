@@ -148,7 +148,7 @@ const ShareStreakModal = ({ isOpen, onClose }: ShareStreakModalProps) => {
           type="button"
           onClick={copyImage}
           disabled={!png}
-          className={`${buttonClass} bg-[var(--accent-primary)] text-white hover:opacity-90 disabled:opacity-50`}
+          className={`${buttonClass} disabled:opacity-50 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10`}
         >
           <ClipboardCopy size={16} />
           Copy image

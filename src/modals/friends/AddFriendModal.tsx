@@ -583,14 +583,14 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
                 <span className="text-[var(--text-primary)] font-medium">{req.from_user?.username || req.from_user_id}</span>
                 <div className="flex gap-2">
                   <button
-                    className="px-2 py-1 rounded bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
+                    className="px-2 py-1 rounded text-sm font-semibold border-2 border-green-500 text-green-500 hover:bg-green-500/10"
                     onClick={() => handleAcceptClick(req)}
                     disabled={processingIds.includes(req.id)}
                   >
                     {processingIds.includes(req.id) ? 'Processing...' : 'Accept'}
                   </button>
                   <button
-                    className="px-2 py-1 rounded bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+                    className="px-2 py-1 rounded text-sm font-semibold border-2 border-red-500 text-red-500 hover:bg-red-500/10"
                     onClick={() => handleRejectClick(req)}
                     disabled={processingIds.includes(req.id)}
                   >

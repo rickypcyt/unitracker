@@ -20,6 +20,8 @@ interface NotesSidepanelProps {
   onNoteSelect: (noteId: string) => void;
   selectedNoteId?: string | undefined;
   onCreateNote: (assignment?: string) => void;
+  /** Bigger rows and touch targets (phones) */
+  roomy?: boolean;
 }
 
 type SortMode = 'name' | 'recent';
@@ -46,6 +48,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   selectedNoteId,
   onNoteSelect,
   onCreateNote,
+  roomy = false,
 }) => {
   const { t } = useTranslation();
   const treeRef = useRef<HTMLDivElement>(null);
@@ -154,7 +157,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     }
   };
 
-  const iconBtn = 'flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-secondary)]';
+  const iconBtn = `flex items-center justify-center rounded-md text-[var(--text-secondary)] ${roomy ? 'h-10 w-10' : 'h-7 w-7'}`;
+  const iconSize = roomy ? 20 : 16;
+  const rowText = roomy ? 'text-base' : 'text-[13px]';
+  const rowPad = roomy ? 'py-2.5' : 'py-1';
 
   if (error) {
     return (
@@ -167,9 +173,9 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
   return (
     <div className="flex h-full w-full flex-col bg-[var(--bg-secondary)]">
       {/* Toolbar */}
-      <div className="flex items-center justify-center gap-1 px-2 pt-2">
+      <div className={`flex items-center gap-1 px-2 pt-2 ${roomy ? 'justify-end' : 'justify-center'}`}>
         <button onClick={() => onCreateNote()} className={`${iconBtn} text-[var(--accent-primary)]`} aria-label={t('notes.createNote')} title={t('notes.createNote')}>
-          <Plus size={17} />
+          <Plus size={iconSize + 1} />
         </button>
         <button
           onClick={() => setSortMode(m => (m === 'name' ? 'recent' : 'name'))}
@@ -177,7 +183,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
           aria-label={sortMode === 'name' ? t('notes.sortRecent', { defaultValue: 'Sort by recent' }) : t('notes.sortName', { defaultValue: 'Sort by name' })}
           title={sortMode === 'name' ? t('notes.sortRecent', { defaultValue: 'Sort by recent' }) : t('notes.sortName', { defaultValue: 'Sort by name' })}
         >
-          {sortMode === 'name' ? <ArrowDownAZ size={16} /> : <Clock size={16} />}
+          {sortMode === 'name' ? <ArrowDownAZ size={iconSize} /> : <Clock size={iconSize} />}
         </button>
         <button
           onClick={toggleAll}
@@ -186,14 +192,14 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
           aria-label={allCollapsed ? t('notes.expandAll', { defaultValue: 'Expand all' }) : t('notes.collapseAll', { defaultValue: 'Collapse all' })}
           title={allCollapsed ? t('notes.expandAll', { defaultValue: 'Expand all' }) : t('notes.collapseAll', { defaultValue: 'Collapse all' })}
         >
-          {allCollapsed ? <ChevronsUpDown size={16} /> : <ChevronsDownUp size={16} />}
+          {allCollapsed ? <ChevronsUpDown size={iconSize} /> : <ChevronsDownUp size={iconSize} />}
         </button>
       </div>
 
       {/* Search */}
       <div className="px-2 py-2">
-        <div className="flex h-7 items-center gap-2 rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 transition-colors focus-within:border-[var(--accent-primary)]">
-          <Search size={13} className="flex-shrink-0 text-[var(--text-secondary)]" />
+        <div className={`flex items-center gap-2 rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 transition-colors focus-within:border-[var(--accent-primary)] ${roomy ? 'h-11 px-3' : 'h-7'}`}>
+          <Search size={roomy ? 17 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />
           <input
             type="text"
             value={searchQuery}
@@ -206,7 +212,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
               }
             }}
             placeholder={t('notes.searchPlaceholderShort')}
-            className="min-w-0 flex-1 border-none bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder-[var(--text-secondary)] focus:outline-none focus:ring-0"
+            className={`min-w-0 flex-1 border-none bg-transparent text-[var(--text-primary)] outline-none placeholder-[var(--text-secondary)] focus:outline-none focus:ring-0 ${roomy ? 'text-base' : 'text-sm'}`}
           />
           {searching && (
             <button onClick={() => setSearchQuery('')} className="flex-shrink-0 text-[var(--text-secondary)]" aria-label={t('common.cancel')}>
@@ -221,7 +227,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
         {folders.length === 0 ? (
           <div className="py-8 text-center">
             <FileText className="mx-auto mb-2 h-8 w-8 text-[var(--text-secondary)] opacity-50" />
-            <p className="text-sm text-[var(--text-secondary)]">
+            <p className={`text-[var(--text-secondary)] ${roomy ? 'text-base' : 'text-sm'}`}>
               {searching ? t('notes.noMatch') : t('notes.noNotesYet')}
             </p>
           </div>
@@ -237,23 +243,23 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                       data-row
                       data-folder={folder}
                       onClick={() => toggleFolder(folder)}
-                      className="flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 py-1 text-left"
+                      className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 text-left ${rowPad}`}
                     >
                       {open
-                        ? <ChevronDown size={13} className="flex-shrink-0 text-[var(--text-secondary)]" />
-                        : <ChevronRight size={13} className="flex-shrink-0 text-[var(--text-secondary)]" />}
+                        ? <ChevronDown size={roomy ? 16 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />
+                        : <ChevronRight size={roomy ? 16 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />}
                       {open
-                        ? <FolderOpen size={14} className="flex-shrink-0 text-[var(--text-secondary)]" />
-                        : <Folder size={14} className="flex-shrink-0 text-[var(--text-secondary)]" />}
-                      <span className={`truncate text-[13px] ${hasActive ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{folder}</span>
+                        ? <FolderOpen size={roomy ? 18 : 14} className="flex-shrink-0 text-[var(--text-secondary)]" />
+                        : <Folder size={roomy ? 18 : 14} className="flex-shrink-0 text-[var(--text-secondary)]" />}
+                      <span className={`truncate ${rowText} ${hasActive ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{folder}</span>
                     </button>
                     <button
                       onClick={() => onCreateNote(folder === t('notes.unassigned') ? '' : folder)}
-                      className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)]"
+                      className={`flex flex-shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] ${roomy ? 'h-9 w-9' : 'h-6 w-6'}`}
                       title={t('notes.createNoteInAssignment', { assignment: folder })}
                       aria-label={t('notes.createNoteInAssignment', { assignment: folder })}
                     >
-                      <Plus size={13} />
+                      <Plus size={roomy ? 17 : 13} />
                     </button>
                   </div>
 
@@ -268,7 +274,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                               data-row
                               onClick={() => onNoteSelect(note.id || key)}
                               aria-current={active ? 'page' : undefined}
-                              className={`flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[13px] ${
+                              className={`flex w-full items-center gap-1.5 rounded px-2 text-left ${rowPad} ${rowText} ${
                                 active
                                   ? 'bg-[var(--accent-primary)]/15 font-medium text-[var(--text-primary)]'
                                   : 'text-[var(--text-secondary)]'
