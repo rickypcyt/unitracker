@@ -4,6 +4,7 @@ import { formatDateShort, getTimeRemainingString, parseDateFromString } from '@/
 import React from 'react';
 import { Task } from '@/types/taskStorage';
 import TaskStatusPicker from '@/pages/tasks/TaskStatusPicker';
+import { normalizeTaskStatus } from '@/constants/taskStatus';
 import { to12Hour } from '@/utils/timeUtils';
 
 // Helper para formatear días de recurrencia
@@ -267,7 +268,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 ) : (
                     <span className={`${chip} text-[var(--text-secondary)] opacity-50`}>No deadline</span>
                 )}
-                {!task.completed && (
+                {/* Plain "To Do" is the default, so it isn't shown; In Progress / On Hold are */}
+                {!task.completed && normalizeTaskStatus(task.status) !== 'todo' && (
                     <span className="ml-auto">
                         <TaskStatusPicker task={task} />
                     </span>

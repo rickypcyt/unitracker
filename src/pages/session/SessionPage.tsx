@@ -107,12 +107,12 @@ const SessionPage = memo(() => {
 
   // md–xl (768–1535): 2 columns. Timers full width, then noise | calendar, then
   //   pending tasks | scratchpad. (A 3-column layout is too cramped for the timer cards here.)
-  // 2xl (≥1536): 4 equal columns + pending tasks. Row 1: calendar, pomo, sessions,
+  // 2xl (≥1536): 5 equal columns (the 5th is pending tasks, same width as the timers). Row 1: calendar, pomo, sessions,
   //   countdown. Row 2: noise | scratchpad (3 cols). The timer cards are square and set the
   //   row height, so calendar and noise are the same square size; every other block is
   //   absolute in its cell (fills it, scrolls inside). Pending tasks spans both rows.
   const timersMonthRow = (
-    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.4fr)] 2xl:grid-rows-2 gap-4 items-stretch">
+    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-[repeat(5,minmax(0,1fr))] 2xl:grid-rows-2 gap-4 items-stretch">
       {/* Timers: full width; on 2xl the cards are placed directly in this grid (row 1, cols 2-4) */}
       <motion.div variants={item} className="min-w-0 order-1 md:col-span-2 2xl:contents">
         {renderTimers(true)}

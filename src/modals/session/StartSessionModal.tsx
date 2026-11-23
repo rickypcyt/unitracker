@@ -47,7 +47,7 @@ const StartSessionModal = ({
   const { laps } = useLaps();
   const tasks = useTasksOnly();
 
-  // Recent sessions (unique by name + assignment) — one click to repeat them
+  // Recent sessions (unique by name + assignment) — feed the assignment suggestions
   const recentSessions = useMemo(() => {
     const seen = new Set<string>();
     const list: { name: string; assignment: string }[] = [];
@@ -204,33 +204,6 @@ const StartSessionModal = ({
           }
         }}
       >
-          {/* Recent sessions: repeat one with a single click */}
-          {recentSessions.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-[var(--text-secondary)]">
-                {t("session.startSession.recent", { defaultValue: "Recent" })}
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {recentSessions.map(recent => (
-                  <button
-                    key={`${recent.name}|${recent.assignment}`}
-                    type="button"
-                    onClick={() => {
-                      setSessionTitle(recent.name);
-                      setAssignment(recent.assignment);
-                      setTitleError("");
-                    }}
-                    className="max-w-full truncate rounded-full border-2 border-[var(--border-primary)] px-3 py-1.5 text-sm font-medium text-[var(--text-primary)]"
-                    title={recent.assignment ? `${recent.name} · ${recent.assignment}` : recent.name}
-                  >
-                    {recent.name}
-                    {recent.assignment && <span className="ml-1.5 text-[var(--text-secondary)]">· {recent.assignment}</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Session Details Section */}
           <div className="bg-[var(--bg-secondary)] rounded-xl p-4">
             <div className="flex items-center gap-3 mb-4">
@@ -321,34 +294,35 @@ const StartSessionModal = ({
                   </button>
                 </div>
               </div>
+
             </div>
           </div>
-        </div>
 
-        {/* Action Section */}
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleStart}
-            disabled={isSubmitting || !sessionTitle.trim()}
-            className={`flex-1 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-              isSubmitting || !sessionTitle.trim()
-                ? "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-secondary)] cursor-not-allowed"
-                : "border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 shadow-md"
-            }`}
-            aria-label={isSubmitting ? t("session.startSession.startingAria") : t("session.startSession.startSessionAria")}
-          >
-            {isSubmitting ? <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-primary)] border-t-transparent" aria-hidden="true"></div>
-                <span>{t("session.startSession.starting")}</span>
-              </> : <>
-                <Play size={18} />
-                <span>{t("session.startSession.startSession")}</span>
-                <kbd className="ml-1 rounded-md border border-current/30 px-1.5 py-0.5 text-[11px] font-medium opacity-70">Enter ↵</kbd>
-              </>}
-          </button>
-        </div>
-
+          {/* Action buttons — compact and right-aligned, same as the other modals */}
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="cancel-button border-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t("common.cancel", { defaultValue: "Cancel" })}
+            </button>
+            <button
+              onClick={handleStart}
+              disabled={isSubmitting || !sessionTitle.trim()}
+              className="px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] shadow-none hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={isSubmitting ? t("session.startSession.startingAria") : t("session.startSession.startSessionAria")}
+            >
+              {isSubmitting ? <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--accent-primary)] border-t-transparent" aria-hidden="true"></div>
+                  <span>{t("session.startSession.starting")}</span>
+                </> : <>
+                  <Play size={16} />
+                  <span>{t("session.startSession.startSession")}</span>
+                </>}
+            </button>
+          </div>
+      </div>
       </BaseModal>;
 };
 export default StartSessionModal;

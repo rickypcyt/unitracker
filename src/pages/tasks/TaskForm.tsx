@@ -17,6 +17,7 @@ import { useTasks } from '@/store/appStore';
 import { useWorkspace } from '@/store/appStore';
 
 type TaskFormProps = {
+  initialWorkspaceId?: string | null;
   initialAssignment?: string | null;
   initialTask?: any | null;
   initialDeadline?: string | Date | null;
@@ -39,6 +40,7 @@ const DIFFICULTY_OPTIONS = [{
   activeClass: 'bg-[#FF003C]/15 text-[#FF003C]'
 }] as const;
 const TaskForm = ({
+  initialWorkspaceId = null,
   initialAssignment = null,
   initialTask = null,
   initialDeadline = null,
@@ -66,6 +68,9 @@ const TaskForm = ({
 
   // Local workspace state for this task only
   const [selectedWorkspace, setSelectedWorkspace] = useState(() => {
+    // Opened from a workspace header: preselect that workspace
+    const requested = initialWorkspaceId ? (workspaces || []).find((w: any) => w.id === initialWorkspaceId) : null;
+    if (requested) return requested;
     // If current workspace is "All", select the first available workspace instead
     if (activeWorkspace?.id === 'all' && workspaces && workspaces.length > 0) {
       return workspaces[0];

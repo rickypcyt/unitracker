@@ -76,9 +76,20 @@ class AudioEngine {
     return AudioEngine.instance;
   }
 
-  async initialize(): Promise<boolean> {
-    if (this.initialized) return true;
+  private initPromise: Promise<boolean> | null = null;
 
+  // Concurrent callers (user click + restore-on-refresh) share one run, so the
+  // audio context is never created twice. A failed run can be retried.
+  initialize(): Promise<boolean> {
+    if (this.initialized) return Promise.resolve(true);
+    this.initPromise ??= this.doInitialize().then((ok) => {
+      if (!ok) this.initPromise = null;
+      return ok;
+    });
+    return this.initPromise;
+  }
+
+  private async doInitialize(): Promise<boolean> {
     try {
       // Large output buffer — ambient noise doesn't need ~10ms latency, and
       // bigger render chunks survive CPU spikes that would otherwise underrun.
@@ -167,6 +178,7 @@ class AudioEngine {
     this.reverbSend = null;
     this.sharedReverb = null;
     this.initialized = false;
+    this.initPromise = null;
   }
 }
 
@@ -205,424 +217,277 @@ abstract class BaseSoundNode implements SoundNode {
   }
 }
 
+// Sounds below are built from simple Tone.js primitives: filtered noise plus,
+// for rain and waves, a Transport-scheduled Loop. Each node scales one output
+// gain by the user volume and tears down its own loops on dispose.
+abstract class LoopedSoundNode extends BaseSoundNode {
+  protected loops: Tone.Loop[] = [];
+  protected outputGain!: Tone.Gain;
+
+  protected startLoop(loop: Tone.Loop): void {
+    const transport = Tone.getTransport();
+    // Start at the current transport position (not 0): the transport is a
+    // shared singleton that is usually already running.
+    loop.start(transport.seconds);
+    if (transport.state !== "started") transport.start();
+    this.loops.push(loop);
+  }
+
+  override dispose(): void {
+    this.loops.forEach((loop) => {
+      try {
+        loop.stop();
+        loop.dispose();
+      } catch (e) {
+        console.warn("Error disposing loop:", e);
+      }
+    });
+    this.loops = [];
+    super.dispose();
+  }
+}
+
+// Brown noise: Tone's built-in generator (−6 dB/octave), softened a little.
 class BrownNoiseNode extends BaseSoundNode {
   private outputGain: Tone.Gain;
 
   constructor(volume: number) {
     super(volume);
 
-    // True brown noise: white noise integrated (−6 dB/octave), i.e. the
-    // classic "white noise but all low end". Tone's generator already uses
-    // a leaky integrator, so we feed it straight out with no tonal shaping.
-    const brown = new Tone.Noise("brown").start();
+    const noise = new Tone.Noise("brown").start();
 
-    // Only remove inaudible sub-sonic content / DC so speakers don't waste
-    // headroom on it. Everything audible is left untouched.
-    const dcBlock = new Tone.Filter(20, "highpass", -12);
+    // Bassy and smooth: remove inaudible sub-sonic energy, cut everything
+    // above ~300 Hz steeply (no resonance bump), and add a gentle low shelf.
+    const highpass = new Tone.Filter(25, "highpass", -12);
+    const lowpass = new Tone.Filter({ type: "lowpass", frequency: 300, rolloff: -24, Q: 0.5 });
+    const lowShelf = new Tone.Filter({ type: "lowshelf", frequency: 140, gain: 4 });
 
-    this.outputGain = new Tone.Gain(volume * 0.4);
+    this.outputGain = new Tone.Gain(0).connect(AudioEngine.getInstance().getMasterOut());
+    noise.chain(highpass, lowpass, lowShelf, this.outputGain);
+    this.outputGain.gain.rampTo(volume * 0.2, 0.5);
 
-    brown.chain(dcBlock, this.outputGain, AudioEngine.getInstance().getMasterOut());
-
-    [brown, dcBlock, this.outputGain].forEach((node) => this.registerNode(node));
+    [noise, highpass, lowpass, lowShelf, this.outputGain].forEach((n) => this.registerNode(n));
   }
 
   setVolume(volume: number): void {
     this.volume = volume;
-    this.setGainWithRamp(this.outputGain, volume * 0.4);
+    this.setGainWithRamp(this.outputGain, volume * 0.2);
   }
 }
 
-class RainSoundNode extends BaseSoundNode {
-  private bodyGain: Tone.Gain;
-  private airGain: Tone.Gain;
-  private rumbleGain: Tone.Gain;
+class RainSoundNode extends LoopedSoundNode {
+  constructor(volume: number) {
+    super(volume);
+
+    const engine = AudioEngine.getInstance();
+    this.outputGain = new Tone.Gain(0).connect(engine.getMasterOut());
+    // ~0.25 wet via the shared reverb
+    const wetSend = new Tone.Gain(0.33).connect(engine.getReverbSend());
+    this.outputGain.connect(wetSend);
+
+    const bed = new Tone.Noise("pink").start();
+    const highpass = new Tone.Filter(500, "highpass");
+    const lowpass = new Tone.Filter(8000, "lowpass");
+    const bedGain = new Tone.Gain(0.3);
+    bed.chain(highpass, lowpass, bedGain, this.outputGain);
+
+    const dropFilter = new Tone.Filter({ type: "bandpass", frequency: 3000, Q: 3 });
+    const dropPan = new Tone.Panner(0);
+    const drop = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.025, sustain: 0, release: 0.01 },
+      volume: -10,
+    });
+    drop.chain(dropFilter, dropPan, this.outputGain);
+
+    const dropLoop = new Tone.Loop((time) => {
+      dropFilter.frequency.setValueAtTime(1500 + Math.random() * 6000, time);
+      dropPan.pan.setValueAtTime(Math.random() * 2 - 1, time);
+      drop.triggerAttackRelease(0.02, time, 0.2 + Math.random() * 0.8);
+    }, 0.025);
+    dropLoop.probability = 0.5; // higher = heavier rain
+    dropLoop.humanize = 0.02; // avoids a metronome feel
+    this.startLoop(dropLoop);
+
+    [bed, highpass, lowpass, bedGain, dropFilter, dropPan, drop, wetSend, this.outputGain].forEach(
+      (n) => this.registerNode(n)
+    );
+    this.outputGain.gain.rampTo(volume * 0.7, 0.5);
+  }
+
+  setVolume(volume: number): void {
+    this.volume = volume;
+    this.setGainWithRamp(this.outputGain, volume * 0.7);
+  }
+}
+
+// Waves: one wave at a time, wide stereo that stays even. Left and right use
+// independent (uncorrelated) noise for width, but share ONE envelope, so both
+// sides swell and drain together at the same level. Per wave: a single slow
+// build, a short crest, and one long retreat — then a pause before the next.
+//   sea   — brown-noise low end that swells with the wave
+//   body  — pink-noise mids, level + brightness follow the wave
+//   foam  — white-noise high end: fizzes at the crest, fades as water drains
+interface OceanChannel {
+  seaGain: Tone.Gain;
+  bodyGain: Tone.Gain;
+  bodyFilter: Tone.Filter;
+  foamGain: Tone.Gain;
+  foamLow: Tone.Filter;
+}
+
+class OceanWavesNode extends LoopedSoundNode {
+  private channels: OceanChannel[] = [];
 
   constructor(volume: number) {
     super(volume);
 
     const engine = AudioEngine.getInstance();
-    const masterOut = engine.getMasterOut();
-    // Light room tail (~0.2 wet) so the wash feels open, not smeared
-    const wetGain = new Tone.Gain(0.25).connect(engine.getReverbSend());
+    this.outputGain = new Tone.Gain(0).connect(engine.getMasterOut());
+    this.registerNode(this.outputGain);
 
-    // Body: the steady "shhh" of rain on leaves. Pink noise with the sub
-    // and the hissy top both rolled off (steep slopes, no resonance).
-    const body = new Tone.Noise("pink").start();
-    const bodyHigh = new Tone.Filter(180, "highpass", -12);
-    const bodyLow = new Tone.Filter(2600, "lowpass", -24);
-    this.bodyGain = new Tone.Gain(volume * 0.5);
+    this.channels.push(this.createChannel(-0.7), this.createChannel(0.7));
 
-    // Slow swell so the rain breathes between lighter and heavier.
-    // LFO sums onto a 0-valued gain param, so it sets the level itself.
-    const swell = new Tone.Gain(0);
-    const swellLFO = new Tone.LFO(0.025, 0.8, 1).start();
-    swellLFO.connect(swell.gain);
+    this.outputGain.gain.rampTo(volume * 0.85, 1.5);
 
-    body.chain(bodyHigh, bodyLow, swell, this.bodyGain, masterOut);
-    this.bodyGain.connect(wetGain);
-
-    // Air: a soft, wide mid band that adds the "fullness" of a downpour
-    const air = new Tone.Noise("pink").start();
-    const airBand = new Tone.Filter(1100, "bandpass");
-    airBand.Q.value = 0.35;
-    const airLow = new Tone.Filter(3200, "lowpass", -24);
-    this.airGain = new Tone.Gain(volume * 0.18);
-    air.chain(airBand, airLow, this.airGain, masterOut);
-
-    // Rumble: distant low-end warmth so it's relaxing rather than thin
-    const rumble = new Tone.Noise("brown").start();
-    const rumbleLow = new Tone.Filter(220, "lowpass", -24);
-    this.rumbleGain = new Tone.Gain(volume * 0.22);
-    rumble.chain(rumbleLow, this.rumbleGain, masterOut);
-
-    [
-      body,
-      bodyHigh,
-      bodyLow,
-      swell,
-      swellLFO,
-      this.bodyGain,
-      air,
-      airBand,
-      airLow,
-      this.airGain,
-      rumble,
-      rumbleLow,
-      this.rumbleGain,
-      wetGain,
-    ].forEach((node) => this.registerNode(node));
+    // Waves are scheduled one after another (never overlapping) with a
+    // rule-based "controlled random" rhythm — see runWave().
+    const transport = Tone.getTransport();
+    if (transport.state !== "started") transport.start();
+    this.eventId = transport.scheduleOnce((time) => this.runWave(time), "+0.2");
   }
 
-  setVolume(volume: number): void {
-    this.volume = volume;
-    const isMuted = volume === 0;
+  // ---- Controlled randomness -------------------------------------------
+  // Real swell comes in sets: a few waves close together, then a lull.
+  //  - sets of 2-4 waves, short rests inside a set, a long lull between sets
+  //  - size is a bounded random walk that drifts back toward "medium", so
+  //    a big wave tends to be followed by a smaller one (never extremes twice)
+  //  - bigger waves take a little longer to build and to drain
+  //  - two consecutive waves never last nearly the same time
+  private eventId: number | null = null;
+  private waveInSet = 0;
+  private setSize = 3;
+  private lastPeak = 0.75;
+  private lastTotal = 0;
 
-    this.setGainWithRamp(this.bodyGain, isMuted ? 0 : volume * 0.5);
-    this.setGainWithRamp(this.airGain, isMuted ? 0 : volume * 0.18);
-    this.setGainWithRamp(this.rumbleGain, isMuted ? 0 : volume * 0.22);
-  }
-}
-
-class OceanWavesNode extends BaseSoundNode {
-  private masterGain: Tone.Gain;
-  private outputGain: Tone.Gain;
-  private componentGains: Map<string, Tone.Gain> = new Map();
-  private noiseSources: Map<string, Tone.Noise> = new Map();
-  private drifting: { lfo: Tone.LFO; base: number }[] = [];
-  private driftTimer: ReturnType<typeof setTimeout> | null = null;
-  private washTimer: ReturnType<typeof setTimeout> | null = null;
-  private washFilter!: Tone.Filter;
-  private washGain!: Tone.Gain;
-  private disposed = false;
-
-  private scheduleDrift(): void {
+  private runWave(time: number): void {
     if (this.disposed) return;
-    this.driftTimer = setTimeout(() => {
-      if (this.disposed) return;
-      try {
-        this.drifting.forEach(({ lfo, base }) => {
-          // ±40% around the base rate, glided over a few seconds
-          lfo.frequency.rampTo(base * (0.6 + Math.random() * 0.8), 4 + Math.random() * 4);
-        });
-      } catch {
-        // node disposed mid-tick
-      }
-      this.scheduleDrift();
-    }, 5000 + Math.random() * 6000);
+
+    const drift = (Math.random() - 0.5) * 0.5 + (0.75 - this.lastPeak) * 0.35;
+    const peak = Math.min(1, Math.max(0.5, this.lastPeak + drift));
+    const roll = () => ({
+      rise: 3.2 + peak * 1.2 + Math.random() * 0.5,
+      fall: 5.5 + peak * 1.5 + Math.random() * 1,
+    });
+    let { rise, fall } = roll();
+    if (Math.abs(rise + fall - this.lastTotal) < 0.8) ({ rise, fall } = roll());
+    this.lastPeak = peak;
+    this.lastTotal = rise + fall;
+
+    this.playWave(time, rise, fall, peak);
+
+    this.waveInSet += 1;
+    let rest: number;
+    if (this.waveInSet >= this.setSize) {
+      this.waveInSet = 0;
+      this.setSize = 2 + Math.floor(Math.random() * 3); // 2-4
+      rest = 8 + Math.random() * 5; // long lull between sets
+    } else {
+      rest = 1.5 + Math.random() * 3; // short rest inside a set
+    }
+
+    // +1.2 s lets the foam tail finish so the next wave never overlaps it
+    const delay = rise + fall + 1.2 + rest;
+    this.eventId = Tone.getTransport().scheduleOnce(
+      (t) => this.runWave(t),
+      `+${delay}`
+    );
   }
 
   override dispose(): void {
     this.disposed = true;
-    if (this.driftTimer) clearTimeout(this.driftTimer);
-    if (this.washTimer) clearTimeout(this.washTimer);
+    if (this.eventId !== null) Tone.getTransport().clear(this.eventId);
     super.dispose();
   }
 
-  // One wave cycle: the wash rushes in (louder + brighter), lingers, then is
-  // pulled back out by the tide (quieter + darker), then a pause before the next.
-  private scheduleWave(): void {
-    if (this.disposed) return;
-    const rise = 3 + Math.random() * 2.5;
-    const hold = 0.4 + Math.random() * 0.8;
-    const fall = 5 + Math.random() * 3;
-    const rest = 0.5 + Math.random() * 2.5;
-    const peak = 0.55 + Math.random() * 0.45;
+  private disposed = false;
 
-    try {
-      this.washFilter.frequency.rampTo(2800 + Math.random() * 1400, rise);
-      this.washGain.gain.rampTo(0.5 * peak, rise);
-    } catch {
-      return;
+  private playWave(time: number, rise: number, fall: number, peak: number): void {
+    const bright = 2800 + Math.random() * 1500;
+    const crest = time + rise;
+    const end = crest + fall;
+
+    for (const ch of this.channels) {
+      ch.bodyGain.gain.cancelAndHoldAtTime(time);
+      ch.bodyGain.gain.linearRampToValueAtTime(0.5 * peak, crest);
+      ch.bodyGain.gain.exponentialRampToValueAtTime(0.06, end);
+
+      ch.bodyFilter.frequency.cancelAndHoldAtTime(time);
+      ch.bodyFilter.frequency.exponentialRampToValueAtTime(bright, crest);
+      ch.bodyFilter.frequency.exponentialRampToValueAtTime(500, end);
+
+      ch.seaGain.gain.cancelAndHoldAtTime(time);
+      ch.seaGain.gain.linearRampToValueAtTime(0.1 + 0.12 * peak, crest);
+      ch.seaGain.gain.exponentialRampToValueAtTime(0.1, end);
+
+      // Foam rides the same single pass: appears near the crest, gone by the end
+      ch.foamGain.gain.cancelAndHoldAtTime(time);
+      // One exponential build across the whole rise (linear in dB, so it
+      // sounds like a smooth swell), then a long fade on the retreat
+      ch.foamGain.gain.exponentialRampToValueAtTime(0.2 * peak, crest + 0.5);
+      ch.foamGain.gain.exponentialRampToValueAtTime(0.0005, end + 1);
+      ch.foamLow.frequency.cancelAndHoldAtTime(time);
+      ch.foamLow.frequency.exponentialRampToValueAtTime(6500, crest + 0.5);
+      ch.foamLow.frequency.exponentialRampToValueAtTime(2500, end + 1);
     }
-
-    this.washTimer = setTimeout(() => {
-      if (this.disposed) return;
-      try {
-        this.washFilter.frequency.rampTo(450, fall);
-        this.washGain.gain.rampTo(0.03, fall);
-      } catch {
-        return;
-      }
-      this.washTimer = setTimeout(
-        () => this.scheduleWave(),
-        (fall + rest) * 1000
-      );
-    }, (rise + hold) * 1000);
   }
 
-  constructor(volume: number) {
-    super(volume);
+  private createChannel(pan: number): OceanChannel {
+    const panner = new Tone.Panner(pan).connect(this.outputGain);
 
-    const engine = AudioEngine.getInstance();
-    this.masterGain = new Tone.Gain(0).connect(engine.getMasterOut());
-    this.outputGain = new Tone.Gain(0).connect(this.masterGain);
+    const sea = new Tone.Noise("brown").start();
+    const seaLow = new Tone.Filter(200, "lowpass", -24);
+    const seaGain = new Tone.Gain(0.1);
+    sea.chain(seaLow, seaGain, panner);
 
-    // Tide wash: brighter pink noise whose level AND brightness swell in and
-    // drain out with each wave — the "sea pulled back by the tide" sound.
-    const washNoise = new Tone.Noise("pink").start();
-    const washHigh = new Tone.Filter(250, "highpass", -12);
-    this.washFilter = new Tone.Filter(450, "lowpass", -24);
-    this.washFilter.Q.value = 0.5;
-    this.washGain = new Tone.Gain(0.03);
-    washNoise.chain(washHigh, this.washFilter, this.washGain, this.masterGain);
-    [washNoise, washHigh, this.washFilter, this.washGain].forEach((n) =>
-      this.registerNode(n)
-    );
-    this.scheduleWave();
+    const body = new Tone.Noise("pink").start();
+    const bodyHigh = new Tone.Filter(220, "highpass", -12);
+    const bodyFilter = new Tone.Filter(500, "lowpass", -12);
+    const bodyGain = new Tone.Gain(0.06);
+    body.chain(bodyHigh, bodyFilter, bodyGain, panner);
 
-    // Shared reverb send (~0.4 wet) tapped after masterGain so it follows
-    // volume, with a short delay to keep ocean's pre-delay character.
-    const wetGain = new Tone.Gain(0.67);
-    const wetDelay = new Tone.Delay(0.14);
-    this.masterGain.connect(wetGain);
-    wetGain.connect(wetDelay);
-    wetDelay.connect(engine.getReverbSend());
+    const foam = new Tone.Noise("white").start();
+    const foamHigh = new Tone.Filter(1800, "highpass", -12);
+    const foamLow = new Tone.Filter(6500, "lowpass", -12);
+    const foamGain = new Tone.Gain(0.0005);
+    foam.chain(foamHigh, foamLow, foamGain, panner);
+    // Soft diffuse tail on the highs only: blends the fizz into the wave
+    // instead of it popping in. The low end stays dry.
+    const foamSend = new Tone.Gain(0.6).connect(AudioEngine.getInstance().getReverbSend());
+    foamGain.connect(foamSend);
 
-    // Create wave modulation LFOs
-    const primaryWaveLFO = new Tone.LFO(0.06, 0.5, 0.9).start();
-    const secondaryWaveLFO = new Tone.LFO(0.12, 0.3, 0.7).start();
-    const randomModulation = new Tone.LFO(0.04, 0.02, 0.08).start();
-    
-    randomModulation.connect(primaryWaveLFO.frequency);
-    randomModulation.connect(secondaryWaveLFO.frequency);
-    primaryWaveLFO.connect(this.outputGain.gain);
-    secondaryWaveLFO.connect(this.outputGain.gain);
+    [
+      panner,
+      sea,
+      seaLow,
+      seaGain,
+      body,
+      bodyHigh,
+      bodyFilter,
+      bodyGain,
+      foam,
+      foamHigh,
+      foamLow,
+      foamGain,
+      foamSend,
+    ].forEach((n) => this.registerNode(n));
 
-    this.createDeepOcean(this.outputGain);
-    this.createMainWaves(this.outputGain);
-    this.createSurface(this.outputGain);
-    this.createWaveRetreat(this.outputGain);
-    this.createBreakingWaves(this.outputGain);
-    this.createFoam(this.outputGain);
-    this.createSplashes(this.outputGain);
-
-    // Irregular swell timing: the main wave cycles get re-tuned at random
-    // so no two waves have the same period
-    this.drifting.push(
-      { lfo: primaryWaveLFO, base: 0.06 },
-      { lfo: secondaryWaveLFO, base: 0.12 }
-    );
-    this.scheduleDrift();
-
-    this.registerNode(this.masterGain);
-    this.registerNode(wetGain);
-    this.registerNode(wetDelay);
-    this.registerNode(this.outputGain);
-    this.registerNode(primaryWaveLFO);
-    this.registerNode(secondaryWaveLFO);
-    this.registerNode(randomModulation);
-
-    this.fadeIn(volume);
-  }
-
-  private createDeepOcean(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("brown").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(80, "lowpass");
-    filter.Q.value = 0.3;
-    const gain = new Tone.Gain(0);
-
-    noise.chain(filter, gain, outputGain);
-
-    this.noiseSources.set("deep", noise);
-    this.componentGains.set("deep", gain);
-    [noise, filter, gain].forEach((n) => this.registerNode(n));
-  }
-
-  private createMainWaves(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("brown").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(150, "lowpass");
-    filter.Q.value = 0.6;
-    const gain = new Tone.Gain(0);
-
-    noise.chain(filter, gain, outputGain);
-
-    this.noiseSources.set("main", noise);
-    this.componentGains.set("main", gain);
-    [noise, filter, gain].forEach((n) => this.registerNode(n));
-  }
-
-  private createSurface(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("pink").start();
-    noise.volume.value = -Infinity;
-    const highpass = new Tone.Filter(80, "highpass");
-    const lowpass = new Tone.Filter(800, "lowpass");
-    lowpass.Q.value = 0.8;
-    const gain = new Tone.Gain(0);
-
-    noise.chain(highpass, lowpass, gain, outputGain);
-
-    this.noiseSources.set("surface", noise);
-    this.componentGains.set("surface", gain);
-    [noise, highpass, lowpass, gain].forEach((n) => this.registerNode(n));
-  }
-
-  private createWaveRetreat(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("pink").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(400, "bandpass");
-    filter.Q.value = 2.0;
-    const gain = new Tone.Gain(0);
-
-    const washCycleLFO = new Tone.LFO(0.06, 0, 1).start();
-    const washFrequencyLFO = new Tone.LFO(0.06, 200, 600).start();
-    this.drifting.push({ lfo: washCycleLFO, base: 0.06 });
-
-    washCycleLFO.connect(gain.gain);
-    washFrequencyLFO.connect(filter.frequency);
-
-    noise.chain(filter, gain, outputGain);
-
-    this.noiseSources.set("retreat", noise);
-    this.componentGains.set("retreat", gain);
-    [noise, filter, gain, washCycleLFO, washFrequencyLFO].forEach((n) => this.registerNode(n));
-  }
-
-  private createBreakingWaves(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("pink").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(600, "bandpass");
-    filter.Q.value = 1.5;
-    const gain = new Tone.Gain(0);
-
-    const lfo = new Tone.LFO(0.12, 0.05, 0.2).start();
-    lfo.connect(gain.gain);
-    this.drifting.push({ lfo, base: 0.12 });
-
-    noise.chain(filter, gain, outputGain);
-
-    this.noiseSources.set("breaking", noise);
-    this.componentGains.set("breaking", gain);
-    [noise, filter, gain, lfo].forEach((n) => this.registerNode(n));
-  }
-
-  private createFoam(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("pink").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(1500, "highpass");
-    filter.Q.value = 0.5;
-    // Ceiling so the foam stays a soft fizz instead of a hiss
-    const ceiling = new Tone.Filter(5000, "lowpass", -24);
-    const gain = new Tone.Gain(0);
-
-    // Dips to zero so foam appears as pulses, not a constant layer
-    const lfo = new Tone.LFO(0.12, 0, 0.08).start();
-    lfo.connect(gain.gain);
-    this.drifting.push({ lfo, base: 0.12 });
-
-    noise.chain(filter, ceiling, gain, outputGain);
-
-    this.noiseSources.set("foam", noise);
-    this.componentGains.set("foam", gain);
-    [noise, filter, ceiling, gain, lfo].forEach((n) => this.registerNode(n));
-  }
-
-  private createSplashes(outputGain: Tone.Gain): void {
-    const noise = new Tone.Noise("pink").start();
-    noise.volume.value = -Infinity;
-    const filter = new Tone.Filter(2000, "bandpass");
-    filter.Q.value = 1.0;
-    const ceiling = new Tone.Filter(4000, "lowpass", -24);
-    const gain = new Tone.Gain(0);
-
-    noise.chain(filter, ceiling, gain, outputGain);
-
-    this.noiseSources.set("splash", noise);
-    this.componentGains.set("splash", gain);
-    [noise, filter, ceiling, gain].forEach((n) => this.registerNode(n));
-  }
-
-  private fadeIn(volume: number): void {
-    setTimeout(() => {
-      // Fade in noise sources
-      this.noiseSources.get("deep")?.volume.rampTo(-18, 0.5);
-      this.noiseSources.get("main")?.volume.rampTo(-12, 0.5);
-      this.noiseSources.get("surface")?.volume.rampTo(-8, 0.5);
-      this.noiseSources.get("retreat")?.volume.rampTo(-14, 0.5);
-      this.noiseSources.get("breaking")?.volume.rampTo(-10, 0.5);
-      this.noiseSources.get("foam")?.volume.rampTo(-16, 0.5);
-      this.noiseSources.get("splash")?.volume.rampTo(-18, 0.5);
-
-      // Fade in component gains
-      this.componentGains.get("deep")?.gain.rampTo(0.25, 2.5);
-      this.componentGains.get("main")?.gain.rampTo(0.6, 2.5);
-      this.componentGains.get("surface")?.gain.rampTo(0.4, 2.5);
-      this.componentGains.get("retreat")?.gain.rampTo(0.1, 2.8);
-      this.componentGains.get("breaking")?.gain.rampTo(0.15, 3.0);
-      this.componentGains.get("foam")?.gain.rampTo(0.05, 3.2);
-      this.componentGains.get("splash")?.gain.rampTo(0.03, 3.4);
-
-      // Fade in output and master gains
-      this.outputGain.gain.rampTo(0.6, 2.5);
-      this.masterGain.gain.rampTo(volume * 0.5, 3.0);
-    }, 200);
+    return { seaGain, bodyGain, bodyFilter, foamGain, foamLow };
   }
 
   setVolume(volume: number): void {
     this.volume = volume;
-    const isMuted = volume === 0;
-    const baseVolume = isMuted ? 0 : Math.max(volume, 0.0001) * 0.5;
-
-    if (isMuted) {
-      this.masterGain.gain.cancelScheduledValues(0);
-      this.masterGain.gain.setValueAtTime(0, Tone.context.currentTime);
-      
-      this.outputGain.gain.cancelScheduledValues(0);
-      this.outputGain.gain.setValueAtTime(0, Tone.context.currentTime);
-
-      this.componentGains.forEach((gain) => {
-        gain.gain.cancelScheduledValues(0);
-        gain.gain.setValueAtTime(0, Tone.context.currentTime);
-      });
-
-      this.noiseSources.forEach((noise) => {
-        noise.volume.cancelScheduledValues(0);
-        noise.volume.setValueAtTime(-Infinity, Tone.context.currentTime);
-      });
-    } else {
-      this.setGainWithRamp(this.masterGain, baseVolume);
-      this.setGainWithRamp(this.outputGain, 0.5);
-
-      // Set component gains with proper ratios
-      this.componentGains.get("deep")?.gain.rampTo(0.15, 0.1);
-      this.componentGains.get("main")?.gain.rampTo(0.5, 0.1);
-      this.componentGains.get("surface")?.gain.rampTo(0.3, 0.1);
-      this.componentGains.get("retreat")?.gain.rampTo(0.08, 0.1);
-      this.componentGains.get("breaking")?.gain.rampTo(0.12, 0.1);
-      this.componentGains.get("foam")?.gain.rampTo(0.06, 0.1);
-      this.componentGains.get("splash")?.gain.rampTo(0.04, 0.1);
-
-      // Set noise source volumes
-      this.noiseSources.get("deep")?.volume.rampTo(-20, 0.1);
-      this.noiseSources.get("main")?.volume.rampTo(-15, 0.1);
-      this.noiseSources.get("surface")?.volume.rampTo(-10, 0.1);
-      this.noiseSources.get("retreat")?.volume.rampTo(-15, 0.1);
-      this.noiseSources.get("breaking")?.volume.rampTo(-12, 0.1);
-      this.noiseSources.get("foam")?.volume.rampTo(-18, 0.1);
-      this.noiseSources.get("splash")?.volume.rampTo(-20, 0.1);
-    }
+    this.setGainWithRamp(this.outputGain, volume * 0.85);
   }
 }
 
@@ -634,8 +499,8 @@ const SOUND_CONFIGS: SoundConfig[] = [
     icon: "Cloud",
     min: 0,
     max: 3,
-    defaultVolume: 1.5,
-    volumeMultiplier: 0.5,
+    defaultVolume: 1,
+    volumeMultiplier: 1,
     create: (volume: number) => new BrownNoiseNode(volume),
   },
   {
@@ -645,7 +510,7 @@ const SOUND_CONFIGS: SoundConfig[] = [
     min: 0,
     max: 3,
     defaultVolume: 1,
-    volumeMultiplier: 1.0,
+    volumeMultiplier: 1,
     create: (volume: number) => new RainSoundNode(volume),
   },
   {
@@ -653,18 +518,21 @@ const SOUND_CONFIGS: SoundConfig[] = [
     label: "Ocean Waves",
     icon: "Waves",
     min: 0,
-    max: 5,
-    defaultVolume: 0.8,
-    volumeMultiplier: 0.5,
+    max: 3,
+    defaultVolume: 1,
+    volumeMultiplier: 1,
     create: (volume: number) => new OceanWavesNode(volume),
   },
 ];
 
 // ==================== STORAGE ====================
+const MAX_VOLUME = 3;
+
 class SoundStorage {
   static getVolume(key: string, defaultValue: number): number {
     const stored = localStorage.getItem(`${key}Volume`);
-    return stored ? parseFloat(stored) : defaultValue;
+    const parsed = stored ? parseFloat(stored) : NaN;
+    return Number.isFinite(parsed) ? Math.min(parsed, MAX_VOLUME) : defaultValue;
   }
 
   static setVolume(key: string, volume: number): void {
@@ -679,19 +547,9 @@ class SoundStorage {
     localStorage.setItem(`${key}IsPlaying`, isPlaying.toString());
   }
 
-  static getMaxVolume(key: string, index: number, defaultValue: number): number {
-    const stored = localStorage.getItem(`${key}MaxVolume`);
-    if (stored !== null) {
-      const parsed = parseFloat(stored);
-      if (!isNaN(parsed)) return parsed;
-    }
-    // Migrate the old component-level "noiseMaxVolumes" array if present
-    try {
-      const legacy = JSON.parse(localStorage.getItem("noiseMaxVolumes") ?? "null");
-      if (Array.isArray(legacy) && typeof legacy[index] === "number") {
-        return legacy[index];
-      }
-    } catch {}
+  // Max volume is fixed (the settings that changed it were removed), so
+  // every sound shares the same slider scale; stored values are ignored.
+  static getMaxVolume(_key: string, _index: number, defaultValue: number): number {
     return defaultValue;
   }
 
@@ -862,6 +720,44 @@ export function NoiseProvider({ children }: { children: ReactNode }) {
         });
     }
   }, [sounds, startSound, stopSound]);
+
+  // After a refresh the saved "playing" state is restored, but browsers only
+  // allow audio after a user gesture. initializeAudio() waits for the first
+  // click/key press, then the sounds that were playing start again by themselves.
+  const startSoundRef = useRef(startSound);
+  startSoundRef.current = startSound;
+  const initializeAudioRef = useRef(initializeAudio);
+  initializeAudioRef.current = initializeAudio;
+
+  useEffect(() => {
+    const toRestore = sounds
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => s.isPlaying)
+      .map(({ i }) => i);
+    if (toRestore.length === 0) return;
+
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    void (async () => {
+      const ok = await initializeAudioRef.current();
+      if (!ok || cancelled) return;
+      toRestore.forEach((index, order) => {
+        // staggered, like toggleAllSounds, to avoid building every graph on one frame
+        timers.push(
+          setTimeout(() => {
+            if (!cancelled) void startSoundRef.current(index).catch(console.error);
+          }, order * 150)
+        );
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+    // Only on mount: the saved state is what we restore
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     return () => {

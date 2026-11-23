@@ -3,7 +3,7 @@ import { ALL_WORKSPACE_ID, useTaskBoard } from '@/hooks/tasks/useTaskBoard';
 import { ClipboardCheck, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { AssignmentColumns } from '@/pages/tasks/AssignmentColumns';
+import { AssignmentColumns, type WorkspaceSection } from '@/pages/tasks/AssignmentColumns';
 import type { ColumnCount } from '@/modals/tasks/TaskPageSettingsModal';
 import type { ViewMode } from '@/modals/tasks/TaskPageSettingsModal';
 import { CompletedTasksSection } from '@/pages/tasks/CompletedTasksSection';
@@ -152,7 +152,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
       group[assignment].push(task);
     });
     const known = (workspaces || []).filter((w: any) => byWorkspace.has(w.id));
-    const sections = known.map((w: any) => ({ id: w.id as string, name: w.name as string, byAssignment: byWorkspace.get(w.id)! }));
+    const sections: WorkspaceSection[] = known.map((w: any) => ({ id: w.id as string, name: w.name as string, icon: w.icon as string | undefined, byAssignment: byWorkspace.get(w.id)! }));
     // Tasks whose workspace is missing from the list (or none) go last
     const knownIds = new Set(known.map((w: any) => w.id));
     byWorkspace.forEach((byAssignment, id) => {
@@ -163,6 +163,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<string | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const [showDeleteCompletedModal, setShowDeleteCompletedModal] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
@@ -323,7 +324,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
       return;
     }
     setSelectedAssignment(assignment);
+    setSelectedWorkspaceId(null);
     setShowTaskForm(true);
+  };
+
+  // "+" on a workspace header (All view): new task with that workspace preselected
+  const handleAddTaskToWorkspace = (workspaceId: string) => {
+    handleAddTask(null);
+    setSelectedWorkspaceId(workspaceId);
   };
 
 
@@ -354,6 +362,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
   const handleCloseTaskForm = () => {
     setShowTaskForm(false);
     setSelectedAssignment(null);
+    setSelectedWorkspaceId(null);
     setEditingTask(null);
     setFocusOnDate(false);
   };
@@ -505,6 +514,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
           <TaskFormManager
             onClose={handleCloseTaskForm}
             initialAssignment={selectedAssignment}
+            initialWorkspaceId={selectedWorkspaceId}
             initialTask={editingTask}
             focusOnDate={focusOnDate}
             onTaskCreated={() => {
@@ -544,6 +554,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
             currentWorkspacePins={currentWorkspacePins}
             onTogglePin={handleTogglePin}
             onAddTask={handleAddTask}
+            onAddTaskToWorkspace={handleAddTaskToWorkspace}
             onTaskToggle={handleToggleCompletion}
             onTaskDelete={handleConfirmDeleteTask}
             onEditTask={handleEditTask}
@@ -595,6 +606,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
         <TaskFormManager
           onClose={handleCloseTaskForm}
           initialAssignment={selectedAssignment}
+          initialWorkspaceId={selectedWorkspaceId}
           initialTask={editingTask}
           focusOnDate={focusOnDate}
           onTaskCreated={() => {

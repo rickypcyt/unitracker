@@ -1,5 +1,5 @@
 import { Pin, PinOff, Plus, Save, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { AssignmentTask } from '@/pages/tasks/AssignmentTask';
 import ColumnDropdownMenu from '@/pages/tasks/components/ColumnDropdownMenu';
@@ -46,6 +46,35 @@ export const AssignmentCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment);
   const [isMinimized, setIsMinimized] = useState(false);
+
+  // Show at most 4 tasks, then scroll. Task heights vary (description, deadline, ...),
+  // so the limit is measured from the real 4th item instead of using a fixed number.
+  const VISIBLE_TASKS = 4;
+  const MIN_LIST_HEIGHT = '15rem';
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const [listMaxHeight, setListMaxHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      const items = Array.from(list.children) as HTMLElement[];
+      if (items.length <= VISIBLE_TASKS) {
+        setListMaxHeight(undefined);
+        return;
+      }
+      const first = items[0];
+      const last = items[VISIBLE_TASKS - 1];
+      if (!first || !last) return;
+      // +8: the bottom margin (mb-2) of the last visible task
+      setListMaxHeight(last.offsetTop + last.offsetHeight - first.offsetTop + 8);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    Array.from(list.children).forEach((child) => observer.observe(child));
+    return () => observer.disconnect();
+  }, [tasks, isMinimized]);
 
   // Ordenar tareas por deadline (atrasadas primero, futuras después)
   const sortedTasks = useMemo(() => {
@@ -192,12 +221,15 @@ export const AssignmentCard = ({
         className={`relative flex-1 min-h-0 space-y-1.5 transition-all duration-200 hide-scrollbar pb-2 ${isMinimized ? 'hidden' : ''}`}
         style={{
           overflowY: 'auto',
+          maxHeight: listMaxHeight,
+          // Room for ~4 tasks even when there are fewer, so all cards look uniform
+          minHeight: isMinimized ? undefined : MIN_LIST_HEIGHT,
           padding: '0 0 0.5rem 0',
           position: 'relative',
           zIndex: 1,
         }}
       >
-        <div className="flex-1 min-h-0 h-full flex flex-col">
+        <div ref={listRef} className="flex-1 min-h-0 h-full flex flex-col">
           {sortedTasks.length === 0 ? (
             <div
               onClick={onAddTask}

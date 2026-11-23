@@ -4,13 +4,11 @@ import {
   Headphones,
   Pause,
   Play,
-  SlidersHorizontal,
   Waves,
 } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import BaseModal from "@/modals/shared/BaseModal";
 import ReactSlider from "react-slider";
 import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
@@ -220,261 +218,15 @@ function SoundControl({
 }
 
 // -------------------------
-// NoiseSettingsModal
-// -------------------------
-function NoiseSettingsModal({
-  isOpen,
-  onClose,
-  sounds,
-  setMaxVolume,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  sounds: ReturnType<typeof useNoise>["sounds"];
-  setMaxVolume: (index: number, maxVolume: number) => void;
-}) {
-  const { t } = useTranslation();
-  const [selectedPresets, setSelectedPresets] = useState<[number, number, number]>([0, 0, 0]);
-
-  // Tipos para los presets
-  type BrownPreset = {
-    label: string;
-    filterFreq: number;
-  };
-
-  type RainPreset = {
-    label: string;
-    highpass: number;
-    lowpass: number;
-    reverbWet: number;
-  };
-
-  type OceanPreset = {
-    label: string;
-    pinkHigh: number;
-    pinkLow: number;
-    reverbWet: number;
-    waveLfoFreq?: number;
-  };
-
-  type Preset = BrownPreset | RainPreset | OceanPreset;
-
-  type PresetsMap = {
-    brown: BrownPreset[];
-    rain: RainPreset[];
-    ocean: OceanPreset[];
-  };
-
-  const presetsMap: PresetsMap = {
-    brown: [
-      { label: "Default", filterFreq: 200 },
-      { label: "Deep", filterFreq: 60 },
-      { label: "Balanced", filterFreq: 200 },
-      { label: "Bright", filterFreq: 400 },
-    ],
-    rain: [
-      { label: "Default", highpass: 200, lowpass: 1500, reverbWet: 0.2 },
-      { label: "Soft", highpass: 100, lowpass: 1000, reverbWet: 0.1 },
-      { label: "Medium", highpass: 200, lowpass: 1500, reverbWet: 0.2 },
-      { label: "Heavy", highpass: 300, lowpass: 2000, reverbWet: 0.4 },
-    ],
-    ocean: [
-      {
-        label: "Default",
-        pinkHigh: 200,
-        pinkLow: 1200,
-        reverbWet: 0.4,
-        waveLfoFreq: 0.1,
-      },
-      {
-        label: "Calm",
-        pinkHigh: 100,
-        pinkLow: 800,
-        reverbWet: 0.2,
-        waveLfoFreq: 0.04,
-      },
-      {
-        label: "Waves",
-        pinkHigh: 200,
-        pinkLow: 1200,
-        reverbWet: 0.4,
-        waveLfoFreq: 0.1,
-      },
-      {
-        label: "Storm",
-        pinkHigh: 400,
-        pinkLow: 1800,
-        reverbWet: 0.7,
-        waveLfoFreq: 0.2,
-      },
-    ],
-  };
-
-  // Tipo para el soundRef basado en la clave del sonido
-  type SoundRef = {
-    filter?: { frequency: { value: number } };
-    highpass?: { frequency: { value: number } };
-    lowpass?: { frequency: { value: number } };
-    reverb?: { wet: { value: number } };
-    pinkHighpass?: { frequency: { value: number } };
-    pinkLowpass?: { frequency: { value: number } };
-    waveLFO?: { frequency: { value: number } };
-  };
-
-  const applyPreset = useCallback(
-    (soundKey: keyof PresetsMap, soundRef: SoundRef | null | undefined, preset: Preset) => {
-      if (!soundRef) return;
-      
-      if (soundKey === 'brown' && 'filterFreq' in preset) {
-        if (soundRef.filter) {
-          soundRef.filter.frequency.value = preset.filterFreq;
-        }
-      } else if (soundKey === 'rain' && 'highpass' in preset && 'lowpass' in preset) {
-        if (soundRef.highpass) {
-          soundRef.highpass.frequency.value = preset.highpass;
-        }
-        if (soundRef.lowpass) {
-          soundRef.lowpass.frequency.value = preset.lowpass;
-        }
-        if (soundRef.reverb && 'reverbWet' in preset) {
-          soundRef.reverb.wet.value = preset.reverbWet;
-        }
-      } else if (soundKey === 'ocean' && 'pinkHigh' in preset && 'pinkLow' in preset) {
-        if (soundRef.pinkHighpass) {
-          soundRef.pinkHighpass.frequency.value = preset.pinkHigh;
-        }
-        if (soundRef.pinkLowpass) {
-          soundRef.pinkLowpass.frequency.value = preset.pinkLow;
-        }
-        if (soundRef.reverb) {
-          soundRef.reverb.wet.value = preset.reverbWet;
-        }
-        if (soundRef.waveLFO && 'waveLfoFreq' in preset && preset.waveLfoFreq !== undefined) {
-          soundRef.waveLFO.frequency.value = preset.waveLfoFreq;
-        }
-      }
-    },
-    []
-  );
-
-  return (
-    <BaseModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t('session.noise.modalTitle')}
-      maxWidth="max-w-lg"
-    >
-      <div className="space-y-4">
-        {sounds.map((sound, idx) => {
-          const theme = getSoundTheme(sound.key);
-          const Icon =
-            sound.icon === "Cloud"
-              ? Cloud
-              : sound.icon === "CloudRain"
-              ? CloudRain
-              : Waves;
-
-          return (
-            <div
-              key={sound.key}
-              className={`rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all ${
-                sound.isPlaying
-                  ? `${theme.activeBorder} ring-1 ${theme.activeRing}`
-                  : "border-[var(--border-primary)]"
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-full ${theme.iconBg}`}
-                >
-                  <Icon size={20} className={theme.iconText} />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-[var(--text-primary)]">
-                    {sound.label}
-                  </h4>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {t('session.noise.maxAndPresets', { defaultValue: 'Max volume and presets' })}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-[var(--text-secondary)]">
-                    {t('session.noise.maxVolume', { defaultValue: 'Max volume' })}
-                  </label>
-                  <span
-                    className={`text-xs font-medium tabular-nums px-2.5 py-0.5 rounded-full ${theme.badge} ${theme.badgeText}`}
-                  >
-                    {sound.max.toFixed(1)}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0.1}
-                  max={5}
-                  step={0.1}
-                  value={sound.max}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value);
-                    if (!isNaN(value)) setMaxVolume(idx, value);
-                  }}
-                  className="w-full h-2 cursor-pointer accent-[var(--accent-primary)]"
-                />
-              </div>
-
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-secondary)] mb-2">
-                {t('session.noise.presets', { defaultValue: 'Presets' })}
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {presetsMap[sound.key as keyof PresetsMap].map(
-                  (preset: Preset, pIdx: number) => (
-                    <button
-                      key={preset.label}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all border ${
-                        selectedPresets[idx] === pIdx
-                          ? `${theme.iconBg} ${theme.iconText} ${theme.activeBorder}`
-                          : "bg-[var(--bg-secondary)] border-transparent text-[var(--text-secondary)] hover:bg-[var(--border-primary)] hover:text-[var(--text-primary)]"
-                      }`}
-                      onClick={() => {
-                        applyPreset(
-                          sound.key as keyof PresetsMap,
-                          sound.soundRef,
-                          preset
-                        );
-                        setSelectedPresets((sel) =>
-                          sel.map((v, i) =>
-                            i === idx ? pIdx : v
-                          ) as [number, number, number]
-                        );
-                      }}
-                    >
-                      {preset.label}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </BaseModal>
-  );
-}
-
-// -------------------------
 // NoiseGenerator main
 // -------------------------
 export default function NoiseGenerator() {
   const { t } = useTranslation();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
     sounds,
     startSound,
     stopSound,
     setVolume,
-    setMaxVolume,
     isInitialized,
     initializeAudio,
   } = useNoise();
@@ -514,15 +266,6 @@ export default function NoiseGenerator() {
             </h3>
           </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            className="p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
-            onClick={() => setIsSettingsOpen(true)}
-            aria-label={t('session.noise.settings')}
-          >
-            <SlidersHorizontal size={20} />
-          </button>
-        </div>
       </motion.div>
 
       {/* Sound controls */}
@@ -555,14 +298,6 @@ export default function NoiseGenerator() {
           </motion.div>
         ))}
       </motion.div>
-
-      {/* Settings modal */}
-      <NoiseSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        sounds={sounds}
-        setMaxVolume={setMaxVolume}
-      />
     </div>
   );
 }

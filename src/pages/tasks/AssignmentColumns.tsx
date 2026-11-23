@@ -1,13 +1,15 @@
-import { ChevronDown, ChevronRight, Layers } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { AssignmentCard } from './AssignmentCard';
 import type { ColumnCount } from '@/modals/tasks/TaskPageSettingsModal';
+import { getWorkspaceIconComponent } from '@/utils/workspaceIcons';
 import React from 'react';
 
 export interface WorkspaceSection {
   id: string;
   name: string;
+  icon?: string | undefined;
   byAssignment: Record<string, any[]>;
 }
 
@@ -20,6 +22,8 @@ interface AssignmentColumnsProps {
   currentWorkspacePins: Record<string, boolean>;
   onTogglePin: (assignment: string) => void;
   onAddTask: (assignment: string | null) => void;
+  /** "+" on a workspace header (All view): add a task with that workspace preselected */
+  onAddTaskToWorkspace?: (workspaceId: string) => void;
   onTaskToggle: (task: any) => void;
   onTaskDelete: (taskId: string) => void;
   onEditTask: (task: any) => void;
@@ -40,6 +44,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   currentWorkspacePins,
   onTogglePin,
   onAddTask,
+  onAddTaskToWorkspace,
   onTaskToggle,
   onTaskDelete,
   onEditTask,
@@ -170,21 +175,37 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
           const open = !collapsedSections.includes(section.id);
           const columns = buildColumns(section.byAssignment, `${section.id}-`);
           const total = columns.reduce((sum, column) => sum + column.tasks.length, 0);
+          const WorkspaceIcon = getWorkspaceIconComponent(section.icon);
+          // The "No workspace" / "Other" groups have no real workspace to add to
+          const canAdd = !!onAddTaskToWorkspace && section.id !== 'none' && section.icon !== undefined;
           return (
             <section key={section.id} aria-label={section.name} className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => toggleSection(section.id)}
-                aria-expanded={open}
-                className="flex h-9 w-full items-center gap-2 border-b border-[var(--border-primary)] px-1 text-left"
-              >
-                {open
-                  ? <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />
-                  : <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" />}
-                <Layers size={16} className="shrink-0 text-[var(--accent-primary)]" />
-                <h2 className="truncate text-[length:var(--t-title,16px)] font-bold tracking-tight text-[var(--text-primary)]">{section.name}</h2>
-                <span className="shrink-0 rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">{total}</span>
-              </button>
+              <div className="flex h-9 w-full items-center gap-2 border-b border-[var(--border-primary)]">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.id)}
+                  aria-expanded={open}
+                  className="flex h-full min-w-0 flex-1 items-center gap-2 px-1 text-left"
+                >
+                  {open
+                    ? <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />
+                    : <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" />}
+                  <WorkspaceIcon size={16} className="shrink-0 text-[var(--accent-primary)]" />
+                  <h2 className="truncate text-[length:var(--t-title,16px)] font-bold tracking-tight text-[var(--text-primary)]">{section.name}</h2>
+                  <span className="shrink-0 rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">{total}</span>
+                </button>
+                {canAdd && (
+                  <button
+                    type="button"
+                    onClick={() => onAddTaskToWorkspace?.(section.id)}
+                    className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--accent-primary)] active:scale-95"
+                    title={`Add task to ${section.name}`}
+                    aria-label={`Add task to ${section.name}`}
+                  >
+                    <Plus size={16} />
+                  </button>
+                )}
+              </div>
               {open && (
                 <div className={`${columnsClass} gap-3 w-full`}>
                   {columns.map(column => renderColumn(column))}
