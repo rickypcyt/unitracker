@@ -15,8 +15,28 @@ const loadNote = () => {
   }
 };
 
+const PENDING_KEY = "unitracker.scratchpad.pending";
+
+const isPending = () => {
+  try {
+    return localStorage.getItem(PENDING_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const setPending = (on: boolean) => {
+  try {
+    if (on) localStorage.setItem(PENDING_KEY, "1");
+    else localStorage.removeItem(PENDING_KEY);
+  } catch {
+    // ignore
+  }
+};
+
 const saveLocal = (value: string) => {
   try {
+    setPending(true);
     localStorage.setItem(STORAGE_KEY, value);
   } catch {
     // storage full or unavailable — keep in-memory only
@@ -54,8 +74,13 @@ const ScratchPad = memo(() => {
       .from("profiles")
       .update({ scratchpad: value })
       .eq("id", userId);
-    // Column missing or request failed — stay local-only from here on
-    if (error) remoteDisabledRef.current = true;
+    if (error) {
+      // Keep the "unsynced" flag so the local copy wins on next load
+      remoteDisabledRef.current = true;
+      return;
+    }
+    // Only clear the flag if nothing newer was typed while the request was in flight
+    if (loadNote() === value) setPending(false);
   };
 
   // Pull the user's saved note on login; migrate the local one if the cloud copy is empty
@@ -74,11 +99,17 @@ const ScratchPad = memo(() => {
         return;
       }
       const remote = (data?.scratchpad as string | null) ?? "";
-      if (remote) {
+      if (isPending()) {
+        // Local edits never reached the cloud (e.g. refresh within the debounce window): local wins
+        const local = loadNote();
+        if (local !== remote) await remoteSave(user.id, local);
+        else setPending(false);
+      } else if (remote) {
         if (remote !== loadNote()) {
           setText(remote);
           saveLocal(remote);
         }
+        setPending(false);
       } else {
         const local = loadNote();
         if (local) await remoteSave(user.id, local);
