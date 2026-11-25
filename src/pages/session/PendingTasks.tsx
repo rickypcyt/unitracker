@@ -70,11 +70,8 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
   const showWorkspace =!!currentWorkspace && (currentWorkspace.isAll || currentWorkspace.id === 'all');
   const workspaceNames = useMemo(() => new Map((workspaces || []).map((w: any) => [w.id, w.name as string])), [workspaces]);
   const fetchTasks = useFetchTasks();
-  // "+" jumps to the Tasks page and opens the new-task form there
-  const goAddTask = () => {
-    try { sessionStorage.setItem('openAddTaskOnMount', '1'); } catch { /* storage unavailable */ }
-    navigateTo('tasks');
-  };
+  // "+" opens the new-task form right here, same as the floating island's quick add
+  const goAddTask = () => editTask(null);
   const workspacePending = useMemo(() => getPendingTasks((isLoggedIn ? tasks : getDemoTasks()).filter(task =>
     currentWorkspace ? currentWorkspace.isAll || currentWorkspace.id === 'all' || task.workspace_id === currentWorkspace.id : !task.workspace_id
   )), [isLoggedIn, tasks, currentWorkspace]);
