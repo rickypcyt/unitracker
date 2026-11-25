@@ -218,6 +218,18 @@
         }
       ]
     },
+    "stats": {
+      "eyebrow": "Comunidad",
+      "title": "Números hasta hoy",
+      "sub": "Estudiantes usando UniTracker, histórico total.",
+      "users": "Usuarios",
+      "sessions": "Sesiones creadas",
+      "hours": "Horas registradas",
+      "avgDay": "Promedio por usuario, por día de estudio",
+      "avgWeek": "Promedio por usuario, por semana de estudio",
+      "avgMonth": "Promedio por usuario, por mes de estudio",
+      "unit": "h"
+    },
     "free": {
       "line": "Gratis y sin límites."
     },

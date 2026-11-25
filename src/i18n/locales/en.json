@@ -218,6 +218,18 @@
         }
       ]
     },
+    "stats": {
+      "eyebrow": "Community",
+      "title": "Numbers so far",
+      "sub": "Students using UniTracker, all-time.",
+      "users": "Users",
+      "sessions": "Sessions created",
+      "hours": "Hours tracked",
+      "avgDay": "Avg. per user, per day studied",
+      "avgWeek": "Avg. per user, per week studied",
+      "avgMonth": "Avg. per user, per month studied",
+      "unit": "h"
+    },
     "free": {
       "line": "Free without limits."
     },

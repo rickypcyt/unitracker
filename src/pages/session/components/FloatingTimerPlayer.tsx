@@ -89,18 +89,26 @@ const FloatingTimerPlayer = () => {
       });
 
       // Copy all stylesheets so the player matches the app theme
-      document.querySelectorAll("style, link[rel='stylesheet']").forEach(node => {
-        if (node instanceof HTMLLinkElement) {
-          const link = pip.document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = node.href;
-          pip.document.head.appendChild(link);
-        } else if (node instanceof HTMLStyleElement) {
+      // Read the live CSSOM (not the <style> text) so Tailwind 4 / HeroUI output,
+      // constructed sheets and JS-inserted rules all come across.
+      const copySheet = (sheet: CSSStyleSheet) => {
+        try {
+          const css = Array.from(sheet.cssRules).map(rule => rule.cssText).join("\n");
           const style = pip.document.createElement("style");
-          style.textContent = node.textContent;
+          style.textContent = css;
           pip.document.head.appendChild(style);
+        } catch {
+          // Cross-origin sheet (e.g. fonts): fall back to linking it
+          if (sheet.href) {
+            const link = pip.document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = sheet.href;
+            pip.document.head.appendChild(link);
+          }
         }
-      });
+      };
+      Array.from(document.styleSheets).forEach(copySheet);
+      document.adoptedStyleSheets.forEach(copySheet);
 
       // Mirror theme classes/vars (dark/light, accent color) and keep them in sync
       const syncTheme = () => {
