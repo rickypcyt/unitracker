@@ -1,6 +1,8 @@
 # UniTracker
 
-![UniTracker — track your study streak](docs/banner.png)
+![UniTracker landing page](docs/landing.png)
+
+![UniTracker session page](docs/session.png)
 
 **6 apps in 1 — replace your entire productivity stack.**
 
