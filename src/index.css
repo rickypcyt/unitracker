@@ -2864,6 +2864,7 @@ input.no-spinners {
   bottom: -0.25rem;
   margin: 0;
   transform: none;
+  translate: none;
   flex-direction: column;
   justify-content: space-between;
 }
@@ -2892,26 +2893,29 @@ input.no-spinners {
     column-gap: 0.25rem;
   }
 
-  /* Study timer: lap / finish / cancel move from beside the ring into its corners */
+  /* Study timer: side buttons become two columns hugging the ring, inside the card.
+     The ring shrinks a little while a session is active to leave room for them. */
+  .timer-card:has(.study-side-left),
+  .timer-card:has(.study-side-right) {
+    --ring: clamp(6rem, 50cqw, 13rem);
+  }
   .timer-card .study-side-left,
   .timer-card .study-side-right {
-    top: -0.25rem;
-    bottom: -0.25rem;
+    top: 0.25rem;
+    bottom: 0.25rem;
     margin: 0;
     transform: none;
+    translate: none;
     flex-direction: column;
     justify-content: space-between;
   }
   .timer-card .study-side-left {
     right: auto;
-    left: -1.5rem;
+    left: -2.25rem;
   }
   .timer-card .study-side-right {
     left: auto;
-    right: -1.5rem;
-    top: -0.25rem;
-    flex-direction: column;
-    justify-content: space-between;
+    right: -2.25rem;
   }
   .timer-card .study-side-left .timer-ctrl-btn,
   .timer-card .study-side-right .timer-ctrl-btn {

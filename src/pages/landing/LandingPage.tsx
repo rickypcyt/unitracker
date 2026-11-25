@@ -259,7 +259,36 @@ const LandingPage = () => {
                 </Link>
               </div>
 
-              {/* Trust points as cards */}
+              {stats ? (
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10">
+                    {[
+                      { label: t('landing.stats.users'), value: nf.format(stats.users) },
+                      { label: t('landing.stats.sessions'), value: nf.format(stats.sessions) },
+                      { label: t('landing.stats.hours'), value: nf.format(Math.round(stats.hours)) },
+                    ].map((m) => (
+                      <div key={m.label} className="bg-black p-4 sm:p-5">
+                        <div className="text-2xl sm:text-4xl font-heading font-semibold tracking-[-0.04em] text-white">{m.value}</div>
+                        <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-(--accent-primary)">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10">
+                    {[
+                      { label: t('landing.stats.avgDay'), value: stats.avg_hours_per_day },
+                      { label: t('landing.stats.avgWeek'), value: stats.avg_hours_per_week },
+                      { label: t('landing.stats.avgMonth'), value: stats.avg_hours_per_month },
+                    ].map((m) => (
+                      <div key={m.label} className="bg-black p-4">
+                        <div className="text-xl sm:text-2xl font-heading font-semibold tracking-tight text-white">
+                          {nf.format(Number(m.value ?? 0))}{t('landing.stats.unit')}
+                        </div>
+                        <div className="mt-1 text-[11px] leading-snug text-white/45">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
               <ul className="grid grid-cols-2 gap-3">
                 {(t('landing.hero.trust', { returnObjects: true }) as unknown as string[]).map((item, i) => {
                   const Icon = trustIcons[i] ?? Gift;
@@ -274,6 +303,7 @@ const LandingPage = () => {
                   );
                 })}
               </ul>
+              )}
             </div>
 
             {/* The real app, live */}
@@ -314,41 +344,6 @@ const LandingPage = () => {
             </div>
           </div>
         </section>
-
-        {/* Community stats — all-time aggregates */}
-        {stats && (
-          <section className="mt-24 sm:mt-32">
-            <div className="max-w-352 mx-auto px-4 sm:px-6 lg:px-10">
-              <SectionHeading eyebrow={t('landing.stats.eyebrow')} sub={t('landing.stats.sub')}>{t('landing.stats.title')}</SectionHeading>
-              <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10">
-                {[
-                  { label: t('landing.stats.users'), value: nf.format(stats.users) },
-                  { label: t('landing.stats.sessions'), value: nf.format(stats.sessions) },
-                  { label: t('landing.stats.hours'), value: nf.format(Math.round(stats.hours)) },
-                ].map((m) => (
-                  <div key={m.label} className="bg-black p-7 sm:p-8">
-                    <div className="text-4xl sm:text-6xl font-heading font-semibold tracking-[-0.04em] text-white">{m.value}</div>
-                    <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-(--accent-primary)">{m.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-px grid grid-cols-1 sm:grid-cols-3 gap-px rounded-xl overflow-hidden border border-white/10 bg-white/10 mt-4">
-                {[
-                  { label: t('landing.stats.avgDay'), value: stats.avg_hours_per_day },
-                  { label: t('landing.stats.avgWeek'), value: stats.avg_hours_per_week },
-                  { label: t('landing.stats.avgMonth'), value: stats.avg_hours_per_month },
-                ].map((m) => (
-                  <div key={m.label} className="bg-black p-6">
-                    <div className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight text-white">
-                      {nf.format(Number(m.value ?? 0))}{t('landing.stats.unit')}
-                    </div>
-                    <div className="mt-1 text-[13px] text-white/45">{m.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Features — one unified list with big headers */}
         <section id="features" className="mt-24 sm:mt-32 scroll-mt-20">
