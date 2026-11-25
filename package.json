@@ -51,6 +51,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
+    "@heroui/react": "^3",
     "@hookform/resolvers": "^7.0.7",
     "@opentelemetry/exporter-logs-otlp-http": "^0.301.2",
     "@opentelemetry/resources": "^3.1.1",

@@ -1,43 +1,23 @@
-import { cloneElement, useEffect, useId, useState } from 'react';
-import type { ReactElement } from 'react';
-import { createPortal } from 'react-dom';
+import type { ReactNode } from 'react';
+import { Tooltip } from '@heroui/react';
 
 interface Props {
   content: string;
-  children: ReactElement<{ 'aria-describedby'?: string }>;
+  children: ReactNode;
 }
 
-const ActionTooltip = ({ content, children }: Props) => {
-  const id = useId();
-  const [anchor, setAnchor] = useState<{ left: number; top: number; below: boolean } | null>(null);
-
-  const show = (target: HTMLElement) => {
-    const rect = target.getBoundingClientRect();
-    const width = Math.min(240, window.innerWidth - 16);
-    const below = rect.top < 160;
-    setAnchor({ left: Math.max(8, Math.min(rect.left + rect.width / 2 - width / 2, window.innerWidth - width - 8)), top: below ? rect.bottom + 8 : rect.top - 8, below });
-  };
-
-  useEffect(() => {
-    if (!anchor) return;
-    const close = () => setAnchor(null);
-    window.addEventListener('scroll', close, true);
-    window.addEventListener('resize', close);
-    return () => {
-      window.removeEventListener('scroll', close, true);
-      window.removeEventListener('resize', close);
-    };
-  }, [anchor]);
-
-  return (
-    <span className="inline-flex" onMouseEnter={event => show(event.currentTarget)} onMouseLeave={() => setAnchor(null)} onFocusCapture={event => show(event.currentTarget)} onBlurCapture={() => setAnchor(null)} onClickCapture={() => setAnchor(null)} onKeyDown={event => { if (event.key === 'Escape') setAnchor(null); }}>
-      {cloneElement(children, { 'aria-describedby': anchor ? [children.props['aria-describedby'], id].filter(Boolean).join(' ') : children.props['aria-describedby'] })}
-      {anchor && createPortal(
-        <span id={id} role="tooltip" className="fixed z-100000 pointer-events-none rounded-lg border border-(--border-primary) bg-(--bg-secondary) px-3 py-2 text-xs leading-relaxed text-(--text-primary) shadow-lg" style={{ left: anchor.left, top: anchor.top, width: 'min(240px, calc(100vw - 16px))', transform: anchor.below ? undefined : 'translateY(-100%)' }}>{content}</span>,
-        document.body,
-      )}
-    </span>
-  );
-};
+const ActionTooltip = ({ content, children }: Props) => (
+  <Tooltip delay={300} closeDelay={0}>
+    <Tooltip.Trigger render={props => <span {...props} role={undefined} tabIndex={undefined} className="inline-flex" />}>
+      {children}
+    </Tooltip.Trigger>
+    <Tooltip.Content
+      placement="top"
+      className="max-w-[240px] rounded-lg border border-(--border-primary) bg-(--bg-secondary) px-3 py-2 text-xs leading-relaxed text-(--text-primary) shadow-lg"
+    >
+      {content}
+    </Tooltip.Content>
+  </Tooltip>
+);
 
 export default ActionTooltip;

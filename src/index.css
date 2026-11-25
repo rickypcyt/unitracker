@@ -11,6 +11,7 @@
 
 /* Importa las capas base, componentes y utilidades de Tailwind */
 @import 'tailwindcss';
+@import '@heroui/styles';
 
 @import 'tw-animate-css';
 @source '../node_modules/@dayflow/core';
