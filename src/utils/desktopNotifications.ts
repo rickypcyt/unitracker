@@ -1,6 +1,42 @@
+import { Capacitor } from "@capacitor/core";
+import { haptic } from "@/utils/haptics";
 import { useNotificationPromptStore } from "@/store/notificationPromptStore";
 
 let lastBlockedWarning = 0;
+
+/** Native (Capacitor) path: ask for permission via the LocalNotifications plugin. */
+const ensureNativePermission = async (): Promise<boolean> => {
+  try {
+    const { LocalNotifications } = await import("@capacitor/local-notifications");
+    const current = await LocalNotifications.checkPermissions();
+    if (current.display === "granted") return true;
+    if (current.display === "denied") return false;
+    const result = await LocalNotifications.requestPermissions();
+    return result.display === "granted";
+  } catch (error) {
+    console.error("[Notifications] native permission failed:", error);
+    return false;
+  }
+};
+
+const showNativeNotification = async (title: string, body?: string): Promise<void> => {
+  void haptic("success");
+  if (!(await ensureNativePermission())) return;
+  try {
+    const { LocalNotifications } = await import("@capacitor/local-notifications");
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: Date.now() % 2_147_483_647, // must fit in int32
+          title,
+          body: body ?? "",
+        },
+      ],
+    });
+  } catch (error) {
+    console.error("[Notifications] native schedule failed:", error);
+  }
+};
 
 export type DesktopPermission = NotificationPermission | "unsupported";
 
@@ -30,6 +66,10 @@ export const warnNotificationsBlocked = () => {
  * — browsers reject requests fired without one.
  */
 export const requestDesktopPermission = async (): Promise<DesktopPermission> => {
+  if (Capacitor.isNativePlatform()) {
+    const granted = await ensureNativePermission();
+    return granted ? "granted" : "denied";
+  }
   const current = getDesktopPermission();
   if (current === "unsupported") return current;
   if (current === "denied") {
@@ -51,6 +91,10 @@ export const showDesktopNotification = (
   title: string,
   options: NotificationOptions = {}
 ) => {
+  if (Capacitor.isNativePlatform()) {
+    void showNativeNotification(title, options.body);
+    return;
+  }
   const perm = getDesktopPermission();
   if (perm === "unsupported") return;
 

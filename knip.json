@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/**/*.test.{ts,tsx}",
+    "e2e/**/*.ts",
+    "api/**/*.ts",
+    "scripts/**/*.{js,ts,mjs}",
+    "vite.config.js",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "api/**/*.ts"
+  ],
+  "ignoreDependencies": [
+    "autoprefixer",
+    "postcss-nesting",
+    "tailwindcss-animate",
+    "@tailwindcss/forms",
+    "@capacitor/cli",
+    "@capacitor/android",
+    "@capacitor/status-bar",
+    "@capacitor/haptics",
+    "@capacitor/local-notifications",
+    "terser",
+    "typescript",
+    "@fontsource/inter",
+    "@fontsource/jetbrains-mono"
+  ],
+  "vite": false,
+  "vitest": false
+}
