@@ -10,6 +10,7 @@
 @import 'highlight.js/styles/github.css';
 
 /* Importa las capas base, componentes y utilidades de Tailwind */
+@config "../tailwind.config.js";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
