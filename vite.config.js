@@ -280,9 +280,6 @@ export default defineConfig(({ command, mode }) => {
     ],
     optimizeDeps: {
       include: [
-        '@chakra-ui/react',
-        '@emotion/react',
-        '@emotion/styled',
         'react',
         'react-dom',
         'react-dom/client',
